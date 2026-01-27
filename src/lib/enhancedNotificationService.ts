@@ -1,6 +1,7 @@
 /**
  * Enhanced Notification Service for Critical Booking Alerts
  * Implements escalating notifications and stronger vibration patterns
+ * 🇮🇩 ALWAYS USES INDONESIAN LANGUAGE FOR THERAPIST NOTIFICATIONS
  */
 
 interface EscalatingNotificationConfig {
@@ -11,9 +12,29 @@ interface EscalatingNotificationConfig {
     urgencyLevel?: 'normal' | 'high' | 'critical';
 }
 
+// 🇮🇩 Indonesian notification translations for therapists
+const INDONESIAN_NOTIFICATIONS = {
+    newBooking: 'Booking Baru',
+    urgentBooking: 'MENDESAK: Booking Baru',
+    finalNotice: 'PEMBERITAHUAN TERAKHIR: Booking Baru',
+    respondWithin: 'RESPONS DALAM',
+    seconds: 'DETIK',
+    bookingExpires: 'BOOKING KEDALUWARSA DALAM',
+    newBookingReceived: 'Booking baru diterima',
+    pleaseTakeAction: 'Harap segera ambil tindakan',
+};
+
 export class EnhancedNotificationService {
     private static escalatingTimers: Map<string, NodeJS.Timeout[]> = new Map();
     private static isServiceWorkerReady: boolean = false;
+
+    /**
+     * Get Indonesian language for all therapist notifications
+     */
+    private static getNotificationLanguage(): 'id' {
+        // 🇮🇩 ALWAYS return Indonesian for therapist dashboard
+        return 'id';
+    }
 
     /**
      * Initialize the enhanced notification system
@@ -61,6 +82,7 @@ export class EnhancedNotificationService {
 
     /**
      * Show escalating notifications (3 notifications over 2 minutes)
+     * 🇮🇩 All notifications in Indonesian
      */
     static async showEscalatingNotifications(config: EscalatingNotificationConfig): Promise<void> {
         const notificationId = config.bookingId || `notification-${Date.now()}`;
@@ -70,31 +92,31 @@ export class EnhancedNotificationService {
 
         const timers: NodeJS.Timeout[] = [];
 
-        // Immediate notification (MAXIMUM STRENGTH)
+        // Immediate notification (MAXIMUM STRENGTH) - Indonesian
         await this.showEnhancedNotification({
-            title: `🚨 ${config.title}`,
-            body: config.body,
+            title: `🚨 ${INDONESIAN_NOTIFICATIONS.newBooking}`,
+            body: config.body || INDONESIAN_NOTIFICATIONS.newBookingReceived,
             urgency: 'critical',
             vibrationPattern: [1000, 200, 1000, 200, 1000], // Maximum 5 second vibration
             requireInteraction: true
         });
 
-        // Second notification after 30 seconds (MAXIMUM URGENCY)
+        // Second notification after 30 seconds (MAXIMUM URGENCY) - Indonesian
         const timer1 = setTimeout(async () => {
             await this.showEnhancedNotification({
-                title: `⏰ URGENT: ${config.title}`,
-                body: `${config.body}\n⚠️ RESPOND WITHIN 90 SECONDS!`,
+                title: `⏰ ${INDONESIAN_NOTIFICATIONS.urgentBooking}`,
+                body: `${config.body || INDONESIAN_NOTIFICATIONS.newBookingReceived}\n⚠️ ${INDONESIAN_NOTIFICATIONS.respondWithin} 90 ${INDONESIAN_NOTIFICATIONS.seconds}!`,
                 urgency: 'critical',
                 vibrationPattern: [800, 150, 800, 150, 800, 150, 800], // 6.2 second vibration
                 requireInteraction: true
             });
         }, 30000); // 30 seconds
 
-        // Final notification after 90 seconds (ABSOLUTE MAXIMUM URGENCY)
+        // Final notification after 90 seconds (ABSOLUTE MAXIMUM URGENCY) - Indonesian
         const timer2 = setTimeout(async () => {
             await this.showEnhancedNotification({
-                title: `🔥 FINAL NOTICE: ${config.title}`,
-                body: `${config.body}\n🚨 BOOKING EXPIRES IN 30 SECONDS!`,
+                title: `🔥 ${INDONESIAN_NOTIFICATIONS.finalNotice}`,
+                body: `${config.body || INDONESIAN_NOTIFICATIONS.newBookingReceived}\n🚨 ${INDONESIAN_NOTIFICATIONS.bookingExpires} 30 ${INDONESIAN_NOTIFICATIONS.seconds}!`,
                 urgency: 'critical',
                 vibrationPattern: [1000, 200, 1000, 200, 1000, 200, 1000], // 7 second maximum
                 requireInteraction: true

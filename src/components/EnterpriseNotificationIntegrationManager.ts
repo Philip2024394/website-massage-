@@ -4,7 +4,10 @@
 // Bulletproof notification system with comprehensive booking flow integration
 // Designed for enterprise-level reliability and testing
 
-import { PWANotificationManager } from '../lib/pwaFeatures';
+import { logger } from '../services/enterpriseLogger';
+
+// Note: PWANotificationManager import removed - module does not exist
+// import { PWANotificationManager } from '../lib/pwaFeatures';
 
 export interface EnterpriseNotificationConfig {
   therapistId: string;
@@ -94,7 +97,7 @@ class EnterpriseNotificationIntegrationManager {
       this.log('✅ [ENTERPRISE] Notification integration manager initialized successfully');
       
     } catch (error) {
-      console.error('❌ [ENTERPRISE] Failed to initialize notification manager:', error);
+      logger.error('❌ [ENTERPRISE] Failed to initialize notification manager:', { error });
       throw error;
     }
   }
@@ -112,7 +115,7 @@ class EnterpriseNotificationIntegrationManager {
       navigator.serviceWorker.addEventListener('message', this.handleServiceWorkerMessage.bind(this));
       
     } catch (error) {
-      console.error('❌ [ENTERPRISE] Service worker registration failed:', error);
+      logger.error('❌ [ENTERPRISE] Service worker registration failed:', { error });
       throw error;
     }
   }
@@ -156,6 +159,7 @@ class EnterpriseNotificationIntegrationManager {
 
   private async monitorExistingBookingSystems(): Promise<void> {
     // Hook into existing booking service subscriptions
+    // Note: This intercepts legacy console.log calls from old booking system
     const originalConsoleLog = console.log;
     console.log = (...args) => {
       // Intercept booking-related logs and enhance them
@@ -164,7 +168,12 @@ class EnterpriseNotificationIntegrationManager {
           this.enhanceExistingBookingNotification(args[1]);
         }
       }
-      originalConsoleLog.apply(console, args);
+      // Forward to enterprise logger
+      if (args.length > 0 && typeof args[0] === 'string') {
+        logger.info(args[0], { additionalArgs: args.slice(1) });
+      } else {
+        originalConsoleLog.apply(console, args);
+      }
     };
   }
 
@@ -235,7 +244,7 @@ class EnterpriseNotificationIntegrationManager {
       this.log('✅ [ENTERPRISE] Enterprise booking notification triggered successfully');
       
     } catch (error) {
-      console.error('❌ [ENTERPRISE] Failed to trigger booking notification:', error);
+      logger.error('❌ [ENTERPRISE] Failed to trigger booking notification:', { error, bookingId: booking.bookingId });
       // Fallback notification
       this.triggerFallbackNotification(booking);
     }
@@ -310,7 +319,7 @@ class EnterpriseNotificationIntegrationManager {
       }));
       
     } catch (error) {
-      console.warn('⚠️ [ENTERPRISE] Failed to check upcoming bookings:', error);
+      logger.warn('⚠️ [ENTERPRISE] Failed to check upcoming bookings:', { error });
     }
   }
 
@@ -347,7 +356,7 @@ class EnterpriseNotificationIntegrationManager {
       this.log('✅ [ENTERPRISE] Schedule reminder triggered successfully');
       
     } catch (error) {
-      console.error('❌ [ENTERPRISE] Failed to trigger schedule reminder:', error);
+      logger.error('❌ [ENTERPRISE] Failed to trigger schedule reminder:', { error });
     }
   }
 
@@ -558,7 +567,7 @@ class EnterpriseNotificationIntegrationManager {
       audio.volume = 1.0;
       
       audio.play().catch(err => {
-        console.warn('⚠️ [ENTERPRISE] Failed to play continuous sound:', err);
+        logger.warn('⚠️ [ENTERPRISE] Failed to play continuous sound:', { error: err });
       });
 
       // Store audio reference for stopping
@@ -572,7 +581,7 @@ class EnterpriseNotificationIntegrationManager {
       }, 10 * 60 * 1000);
       
     } catch (error) {
-      console.warn('⚠️ [ENTERPRISE] Failed to setup continuous sound:', error);
+      logger.warn('⚠️ [ENTERPRISE] Failed to setup continuous sound:', { error });
     }
   }
 
@@ -1034,28 +1043,28 @@ class EnterpriseNotificationIntegrationManager {
     const total = this.testResults.length;
     const passRate = ((passed / total) * 100).toFixed(1);
     
-    console.group('🏢 ENTERPRISE NOTIFICATION TEST RESULTS');
-    console.log(`📊 Overall: ${passed}/${total} tests passed (${passRate}%)`);
-    console.log('');
-    
-    this.testResults.forEach((result, index) => {
-      const icon = result.success ? '✅' : '❌';
-      console.log(`${icon} Test ${index + 1}: ${result.message} (${result.duration}ms)`);
-      if (result.details) {
-        console.log('   Details:', result.details);
-      }
+    logger.info('🏢 ENTERPRISE NOTIFICATION TEST RESULTS', {
+      passed,
+      total,
+      passRate,
+      results: this.testResults.map((result, index) => ({
+        testNumber: index + 1,
+        success: result.success,
+        message: result.message,
+        duration: result.duration,
+        details: result.details
+      }))
     });
     
-    console.log('');
-    console.log('🎯 Enterprise Features Status:');
-    console.log('   📱 PWA Integration: Active');
-    console.log('   🔔 Notification Override: Ready');
-    console.log('   📳 2-Minute Vibration: Ready');
-    console.log('   🔊 Continuous Sound: Ready');
-    console.log('   👁️ Visual Alerts: Ready');
-    console.log('   ⚙️ Service Worker: Active');
-    console.log('   🛡️ Error Recovery: Active');
-    console.groupEnd();
+    logger.info('🎯 Enterprise Features Status', {
+      pwaIntegration: 'Active',
+      notificationOverride: 'Ready',
+      twoMinuteVibration: 'Ready',
+      continuousSound: 'Ready',
+      visualAlerts: 'Ready',
+      serviceWorker: 'Active',
+      errorRecovery: 'Active'
+    });
     
     // Display results in UI if test mode
     if (this.config.testMode) {
@@ -1185,7 +1194,7 @@ class EnterpriseNotificationIntegrationManager {
         requireInteraction: true
       });
     } catch (error) {
-      console.error('❌ [ENTERPRISE] Even fallback notification failed:', error);
+      logger.error('❌ [ENTERPRISE] Even fallback notification failed:', { error, bookingId: booking.bookingId });
       // Last resort - browser alert
       alert(`🚨 NEW BOOKING: ${booking.customerName} - ${booking.serviceType}`);
     }
@@ -1203,7 +1212,7 @@ class EnterpriseNotificationIntegrationManager {
 
   private log(message: string, ...args: any[]): void {
     if (this.config.debugLogging) {
-      console.log(message, ...args);
+      logger.debug(message, { additionalData: args });
     }
   }
 

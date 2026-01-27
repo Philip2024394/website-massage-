@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { databases, DATABASE_ID } from '../../../src/lib/appwrite';
+import { databases, DATABASE_ID } from '../lib/appwrite';
 
 const ChatCollectionDiagnostic: React.FC = () => {
     const [results, setResults] = useState<Record<string, any>>({});

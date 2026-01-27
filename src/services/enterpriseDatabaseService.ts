@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * 🏢 ENTERPRISE DATABASE OPTIMIZATION SERVICE
  * 
@@ -101,14 +102,14 @@ class EnterpriseDatabaseService {
     this.initializeCriticalIndexes();
     this.initializeConnectionPools();
     this.startOptimizationMonitoring();
-    console.log('🏢 Enterprise database service initialized');
+    logger.info('🏢 Enterprise database service initialized');
   }
 
   /**
    * Initialize critical database indexes
    */
   private initializeCriticalIndexes(): void {
-    console.log('🗂️ Initializing critical database indexes...');
+    logger.info('🗂️ Initializing critical database indexes...');
 
     // Bookings collection indexes
     this.addIndex('bookings', {
@@ -179,7 +180,7 @@ class EnterpriseDatabaseService {
       createdAt: -1
     }, 'client_created_compound');
 
-    console.log(`✅ Initialized ${this.getTotalIndexCount()} database indexes`);
+    logger.info(`✅ Initialized ${this.getTotalIndexCount()} database indexes`);
   }
 
   /**
@@ -214,7 +215,7 @@ class EnterpriseDatabaseService {
     };
 
     this.indexes.get(collection)!.push(index);
-    console.log(`📊 Added index [${collection}.${name}]: ${Object.keys(fields).join(', ')}`);
+    logger.info(`📊 Added index [${collection}.${name}]: ${Object.keys(fields).join(', ')}`);
   }
 
   /**
@@ -242,7 +243,7 @@ class EnterpriseDatabaseService {
       this.connectionPools.set(config.id, pool);
     });
 
-    console.log(`🏊 Initialized ${pools.length} connection pools`);
+    logger.info(`🏊 Initialized ${pools.length} connection pools`);
   }
 
   /**
@@ -261,7 +262,7 @@ class EnterpriseDatabaseService {
       this.cleanupOldData();
     }, 300000);
 
-    console.log('🔍 Database optimization monitoring started');
+    logger.info('🔍 Database optimization monitoring started');
   }
 
   /**
@@ -321,7 +322,7 @@ class EnterpriseDatabaseService {
 
     this.slowQueries.push(slowQuery);
 
-    console.warn(`🐌 Slow query detected: ${params.collection}.${params.operation} (${params.duration}ms)`);
+    logger.warn(`🐌 Slow query detected: ${params.collection}.${params.operation} (${params.duration}ms)`);
 
     // Alert if too many slow queries
     const recentSlowQueries = this.slowQueries.filter(
@@ -329,7 +330,7 @@ class EnterpriseDatabaseService {
     );
 
     if (recentSlowQueries.length > this.thresholds.maxSlowQueriesPerMinute) {
-      console.error(`🚨 CRITICAL: ${recentSlowQueries.length} slow queries in the last minute`);
+      logger.error(`🚨 CRITICAL: ${recentSlowQueries.length} slow queries in the last minute`);
     }
   }
 
@@ -641,7 +642,7 @@ class EnterpriseDatabaseService {
       peakUsageTime: this.detectPeakUsage(recentQueries)
     };
 
-    console.log('📈 Query pattern analysis:', patternAnalysis);
+    logger.info('📈 Query pattern analysis:', patternAnalysis);
   }
 
   /**

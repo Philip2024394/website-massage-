@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * Chat Notification Service
  * Handles sound notifications and browser notifications for new messages
@@ -44,7 +45,7 @@ class ChatNotificationService {
         if (this.audio) {
             this.audio.currentTime = 0;
             this.audio.play().catch(error => {
-                console.warn('Failed to play notification sound:', error);
+                logger.warn('Failed to play notification sound:', error);
             });
         }
     }

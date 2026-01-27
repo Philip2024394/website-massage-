@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * 🏢 ENTERPRISE MONITORING & OBSERVABILITY SERVICE
  * 
@@ -93,7 +94,7 @@ class EnterpriseMonitoringService {
     this.sessionId = this.generateSessionId();
     this.initializeDefaultAlerts();
     this.startMonitoring();
-    console.log('🏢 Enterprise monitoring service initialized');
+    logger.info('🏢 Enterprise monitoring service initialized');
   }
 
   /**
@@ -102,7 +103,7 @@ class EnterpriseMonitoringService {
   startMonitoring(): void {
     if (this.isMonitoring) return;
 
-    console.log('🔍 Starting enterprise monitoring...');
+    logger.info('🔍 Starting enterprise monitoring...');
     
     this.isMonitoring = true;
     
@@ -133,7 +134,7 @@ class EnterpriseMonitoringService {
   stopMonitoring(): void {
     if (!this.isMonitoring) return;
 
-    console.log('⏹️ Stopping enterprise monitoring...');
+    logger.info('⏹️ Stopping enterprise monitoring...');
     
     this.isMonitoring = false;
     
@@ -150,7 +151,7 @@ class EnterpriseMonitoringService {
    * Run health checks on all services
    */
   private async runHealthChecks(): Promise<void> {
-    console.log('🏥 Running health checks...');
+    logger.info('🏥 Running health checks...');
     
     const healthPromises = this.services.map(service => 
       this.checkServiceHealth(service.name, service.url, service.critical)
@@ -269,7 +270,7 @@ class EnterpriseMonitoringService {
 
     this.healthChecks.set(serviceName, healthCheck);
     
-    console.log(`🏥 ${serviceName} health: ${status}`);
+    logger.info(`🏥 ${serviceName} health: ${status}`);
   }
 
   /**
@@ -444,7 +445,7 @@ class EnterpriseMonitoringService {
       });
     }
 
-    console.log(`📊 Business metric [${params.name}]: ${params.value}${params.unit}`);
+    logger.info(`📊 Business metric [${params.name}]: ${params.value}${params.unit}`);
   }
 
   /**
@@ -477,13 +478,13 @@ class EnterpriseMonitoringService {
 
     // Log critical events
     if (params.severity === 'critical') {
-      console.error(`🚨 CRITICAL: ${params.message}`, params.data);
+      logger.error(`🚨 CRITICAL: ${params.message}`, params.data);
     } else if (params.severity === 'error') {
-      console.error(`❌ ERROR: ${params.message}`, params.data);
+      logger.error(`❌ ERROR: ${params.message}`, params.data);
     } else if (params.severity === 'warning') {
-      console.warn(`⚠️ WARNING: ${params.message}`, params.data);
+      logger.warn(`⚠️ WARNING: ${params.message}`, params.data);
     } else {
-      console.log(`ℹ️ INFO: ${params.message}`, params.data);
+      logger.info(`ℹ️ INFO: ${params.message}`, params.data);
     }
 
     // Trigger alerts if rules match
@@ -529,7 +530,7 @@ class EnterpriseMonitoringService {
   private triggerAlert(rule: AlertRule, event: MonitoringEvent): void {
     rule.lastTriggered = new Date();
     
-    console.error(`🚨 ALERT TRIGGERED: ${rule.name}`, {
+    logger.error(`🚨 ALERT TRIGGERED: ${rule.name}`, {
       rule: rule.name,
       condition: rule.condition,
       event: event.message,
@@ -720,7 +721,7 @@ class EnterpriseMonitoringService {
     this.businessMetrics = [];
     this.systemMetrics = [];
     this.healthChecks.clear();
-    console.log('🧹 Monitoring data cleared');
+    logger.info('🧹 Monitoring data cleared');
   }
 
   /**
@@ -729,7 +730,7 @@ class EnterpriseMonitoringService {
   destroy(): void {
     this.stopMonitoring();
     this.clearData();
-    console.log('🧹 Monitoring service destroyed');
+    logger.info('🧹 Monitoring service destroyed');
   }
 }
 

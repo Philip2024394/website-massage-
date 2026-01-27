@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * ⚡ APPWRITE RETRY SERVICE - FACEBOOK STANDARDS
  * 
@@ -97,7 +98,7 @@ export async function withRetry<T>(
       
       // Success!
       if (attempt > 0) {
-        console.log(`✅ Retry successful after ${attempt} attempts (${totalDelayMs}ms total delay)`);
+        logger.info(`✅ Retry successful after ${attempt} attempts (${totalDelayMs}ms total delay)`);
       }
       
       return {
@@ -117,7 +118,7 @@ export async function withRetry<T>(
         const delayMs = calculateDelay(attempt, fullConfig);
         totalDelayMs += delayMs;
         
-        console.warn(`⚠️ Operation failed (attempt ${attempt + 1}/${fullConfig.maxAttempts}), retrying in ${Math.round(delayMs)}ms...`, {
+        logger.warn(`⚠️ Operation failed (attempt ${attempt + 1}/${fullConfig.maxAttempts}), retrying in ${Math.round(delayMs)}ms...`, {
           error: error.message,
           code: error.code || error.status
         });
@@ -126,7 +127,7 @@ export async function withRetry<T>(
       } else {
         // Not retryable or max attempts reached
         if (!shouldRetry && attempt < fullConfig.maxAttempts - 1) {
-          console.error(`❌ Non-retryable error encountered:`, error);
+          logger.error(`❌ Non-retryable error encountered:`, error);
         }
         break;
       }
@@ -134,7 +135,7 @@ export async function withRetry<T>(
   }
   
   // All attempts failed
-  console.error(`❌ Operation failed after ${fullConfig.maxAttempts} attempts (${totalDelayMs}ms total delay)`, lastError);
+  logger.error(`❌ Operation failed after ${fullConfig.maxAttempts} attempts (${totalDelayMs}ms total delay)`, lastError);
   
   return {
     success: false,
@@ -164,7 +165,7 @@ export async function withAppwriteRetry<T>(
   }
   
   // Log detailed error for monitoring
-  console.error(`🚨 ${operationName} failed after ${result.attempts} attempts:`, {
+  logger.error(`🚨 ${operationName} failed after ${result.attempts} attempts:`, {
     error: result.error,
     totalDelay: result.totalDelayMs,
     timestamp: new Date().toISOString()
@@ -228,7 +229,7 @@ export class CircuitBreaker {
       
       // Try half-open state
       this.state = 'half-open';
-      console.log('🔄 Circuit breaker entering HALF-OPEN state');
+      logger.info('🔄 Circuit breaker entering HALF-OPEN state');
     }
     
     try {
@@ -238,7 +239,7 @@ export class CircuitBreaker {
       if (this.state === 'half-open') {
         this.state = 'closed';
         this.failureCount = 0;
-        console.log('✅ Circuit breaker CLOSED (recovered)');
+        logger.info('✅ Circuit breaker CLOSED (recovered)');
       }
       
       return result;
@@ -248,7 +249,7 @@ export class CircuitBreaker {
       
       if (this.failureCount >= this.threshold) {
         this.state = 'open';
-        console.error(`🚨 Circuit breaker OPENED after ${this.failureCount} failures`);
+        logger.error(`🚨 Circuit breaker OPENED after ${this.failureCount} failures`);
       }
       
       throw error;

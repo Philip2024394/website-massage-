@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * BOOKING VALIDATION SERVICE
  * 
@@ -228,7 +229,7 @@ export function validateBookingPayload(rawData: any): ValidationResult {
   // Step 3: Check for extra fields (warn but don't fail)
   for (const key of Object.keys(rawData)) {
     if (!ALLOWED_BOOKING_FIELDS.includes(key)) {
-      console.warn(`[BOOKING_VALIDATION] Unknown field "${key}" will be ignored`);
+      logger.warn(`[BOOKING_VALIDATION] Unknown field "${key}" will be ignored`);
     }
   }
 
@@ -310,7 +311,7 @@ export function calculateResponseDeadline(): Date {
  */
 export function logValidation(stage: string, data: any) {
   console.group(`[BOOKING_VALIDATION] ${stage}`);
-  console.log(data);
+  logger.info(data);
   console.groupEnd();
 }
 
@@ -322,6 +323,6 @@ export function logPayload(payload: any) {
 
 export function logAppwriteResponse(response: any) {
   console.group('[APPWRITE_RESPONSE]');
-  console.log('Success:', response.$id);
+  logger.info('Success:', response.$id);
   console.groupEnd();
 }

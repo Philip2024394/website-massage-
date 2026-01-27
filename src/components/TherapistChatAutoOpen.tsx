@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Clock, Check, X, Volume2, VolumeX, MessageCircle, User, MapPin, DollarSign } from 'lucide-react';
+import { Clock, Check, X, Bell, MessageCircle, User, MapPin, DollarSign } from 'lucide-react';
 import { bookingSoundService } from '../services/bookingSound.service';
 import { enterpriseBookingFlowService } from '../services/enterpriseBookingFlowService';
 
@@ -82,7 +82,7 @@ export const TherapistChatAutoOpen: React.FC<TherapistChatAutoOpenProps> = ({
     if (soundEnabled) {
       try {
         if (notification.urgency === 'emergency') {
-          await bookingSoundService.playUrgentBooking();
+          await bookingSoundService.playBookingRequest();
         } else {
           await bookingSoundService.playTherapistAlert();
         }
@@ -121,11 +121,11 @@ export const TherapistChatAutoOpen: React.FC<TherapistChatAutoOpenProps> = ({
       // Play warning sounds at specific intervals
       if (soundEnabled) {
         if (remainingSeconds === 60 || remainingSeconds === 30 || remainingSeconds === 10) {
-          bookingSoundService.playTimeoutWarning().catch(console.error);
+          bookingSoundService.playUserAlert().catch(console.error);
         }
         
         if (remainingSeconds <= 10 && remainingSeconds > 0) {
-          bookingSoundService.playTimerTick().catch(console.error);
+          bookingSoundService.playNotification().catch(console.error);
         }
       }
 
@@ -344,7 +344,7 @@ export const TherapistChatAutoOpen: React.FC<TherapistChatAutoOpenProps> = ({
           `}
           title={soundEnabled ? 'Disable sound notifications' : 'Enable sound notifications'}
         >
-          {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          <Bell className={`w-4 h-4 ${soundEnabled ? '' : 'opacity-30'}`} />
         </button>
       </div>
 
@@ -358,7 +358,11 @@ export const TherapistChatAutoOpen: React.FC<TherapistChatAutoOpenProps> = ({
         return (
           <div
             key={notification.id}
-            ref={el => el && notificationRefs.current.set(notification.id, el)}
+            ref={el => { 
+              if (el) {
+                notificationRefs.current.set(notification.id, el); 
+              }
+            }}
             className={`
               bg-white rounded-xl shadow-2xl border-l-4 ${urgencyColor.replace('bg-', 'border-')}
               transform transition-all duration-300 hover:scale-102

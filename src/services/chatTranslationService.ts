@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
@@ -151,14 +152,14 @@ class ChatTranslationService {
 
         // Check if the collection is disabled (empty string)
         if (!APPWRITE_CONFIG.collections.chatTranslations) {
-            console.log('🌍 Chat translations collection is disabled, using default translations...');
+            logger.info('🌍 Chat translations collection is disabled, using default translations...');
             this.loadDefaultTranslations();
             this.isLoaded = true;
             return;
         }
 
         try {
-            console.log('🌍 Loading chat translations from Appwrite...');
+            logger.info('🌍 Loading chat translations from Appwrite...');
             
             // Try to fetch existing translations
             const result = await databases.listDocuments(
@@ -168,7 +169,7 @@ class ChatTranslationService {
             );
 
             if (result.documents.length === 0) {
-                console.log('📝 No translations found, creating default translations...');
+                logger.info('📝 No translations found, creating default translations...');
                 await this.createDefaultTranslations();
             } else {
                 // Load existing translations
@@ -176,12 +177,12 @@ class ChatTranslationService {
                     const translation = doc as unknown as ChatTranslation;
                     this.translations.set(translation.key, translation);
                 });
-                console.log(`✅ Loaded ${result.documents.length} chat translations`);
+                logger.info(`✅ Loaded ${result.documents.length} chat translations`);
             }
 
             this.isLoaded = true;
         } catch (error) {
-            console.warn('⚠️ Failed to load translations from Appwrite, using defaults:', error);
+            logger.warn('⚠️ Failed to load translations from Appwrite, using defaults:', error);
             this.loadDefaultTranslations();
             this.isLoaded = true;
         }
@@ -191,7 +192,7 @@ class ChatTranslationService {
     private async createDefaultTranslations(): Promise<void> {
         // Check if the collection is disabled
         if (!APPWRITE_CONFIG.collections.chatTranslations) {
-            console.log('🌍 Chat translations collection is disabled, skipping creation');
+            logger.info('🌍 Chat translations collection is disabled, skipping creation');
             this.loadDefaultTranslations();
             return;
         }
@@ -212,9 +213,9 @@ class ChatTranslationService {
                 this.translations.set(translation.key, doc as unknown as ChatTranslation);
             }
             
-            console.log(`✅ Created ${defaultChatTranslations.length} default translations in Appwrite`);
+            logger.info(`✅ Created ${defaultChatTranslations.length} default translations in Appwrite`);
         } catch (error) {
-            console.error('❌ Failed to create default translations:', error);
+            logger.error('❌ Failed to create default translations:', error);
             this.loadDefaultTranslations();
         }
     }
@@ -236,7 +237,7 @@ class ChatTranslationService {
         const translation = this.translations.get(key);
         
         if (!translation) {
-            console.warn(`⚠️ Translation not found for key: ${key}`);
+            logger.warn(`⚠️ Translation not found for key: ${key}`);
             return key; // Return key as fallback
         }
 
@@ -256,7 +257,7 @@ class ChatTranslationService {
     async setTranslation(key: string, en: string, id: string, category: ChatTranslation['category']): Promise<void> {
         // Check if the collection is disabled
         if (!APPWRITE_CONFIG.collections.chatTranslations) {
-            console.log('🌍 Chat translations collection is disabled, updating local translations only');
+            logger.info('🌍 Chat translations collection is disabled, updating local translations only');
             // Store locally only
             const localTranslation: ChatTranslation = {
                 $id: `local-${key}`,
@@ -295,9 +296,9 @@ class ChatTranslationService {
                 this.translations.set(key, doc as unknown as ChatTranslation);
             }
 
-            console.log(`✅ Translation updated: ${key}`);
+            logger.info(`✅ Translation updated: ${key}`);
         } catch (error) {
-            console.error(`❌ Failed to save translation: ${key}`, error);
+            logger.error(`❌ Failed to save translation: ${key}`, error);
             // Update in memory as fallback
             this.translations.set(key, {
                 $id: `local-${key}`,
@@ -338,10 +339,10 @@ class ChatTranslationService {
         try {
             if (typeof window !== 'undefined') {
                 localStorage.setItem('preferredLanguage', language === 'en' ? 'gb' : language);
-                console.log(`🌐 Language preference set to: ${language}`);
+                logger.info(`🌐 Language preference set to: ${language}`);
             }
         } catch (error) {
-            console.error('❌ Failed to save language preference:', error);
+            logger.error('❌ Failed to save language preference:', error);
         }
     }
 
@@ -352,7 +353,7 @@ class ChatTranslationService {
                 return saved === 'gb' ? 'en' : saved === 'id' ? 'id' : 'en';
             }
         } catch (error) {
-            console.error('❌ Failed to get language preference:', error);
+            logger.error('❌ Failed to get language preference:', error);
         }
         return 'en'; // Default fallback
     }
@@ -362,20 +363,20 @@ class ChatTranslationService {
         let success = 0;
         let failed = 0;
 
-        console.log('🔄 Starting translation sync to Appwrite...');
+        logger.info('🔄 Starting translation sync to Appwrite...');
 
         for (const translation of defaultChatTranslations) {
             try {
                 await this.setTranslation(translation.key, translation.en, translation.id, translation.category);
                 success++;
-                console.log(`✅ Synced: ${translation.key}`);
+                logger.info(`✅ Synced: ${translation.key}`);
             } catch (error) {
                 failed++;
-                console.error(`❌ Failed to sync: ${translation.key}`, error);
+                logger.error(`❌ Failed to sync: ${translation.key}`, error);
             }
         }
 
-        console.log(`🔄 Translation sync completed: ${success} success, ${failed} failed`);
+        logger.info(`🔄 Translation sync completed: ${success} success, ${failed} failed`);
         return { success, failed };
     }
 

@@ -16,7 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, Search } from 'lucide-react';
-import { commissionTrackingService } from '../../../src/lib/appwrite';
+import { commissionService } from '../lib/appwrite';
 
 interface AdminPaymentVerificationProps {
     adminId: string;
@@ -50,7 +50,7 @@ export const AdminPaymentVerification: React.FC<AdminPaymentVerificationProps> =
             setLoading(true);
             
             // Load commission payments (Pro members)
-            const commissions = await commissionTrackingService.getPaymentsAwaitingVerification();
+            const commissions = await commissionService.getPaymentsAwaitingVerification();
             setCommissionPayments(commissions);
 
             // Load membership payments (Plus members)
@@ -74,7 +74,7 @@ export const AdminPaymentVerification: React.FC<AdminPaymentVerificationProps> =
         setVerifying(paymentId);
         
         try {
-            await commissionTrackingService.verifyPayment(paymentId, adminId, approved, reason);
+            await commissionService.verifyPayment(paymentId, adminId, approved, reason);
             alert(approved ? '✅ Commission payment verified!' : '❌ Commission payment rejected');
             await loadPayments();
         } catch (error) {

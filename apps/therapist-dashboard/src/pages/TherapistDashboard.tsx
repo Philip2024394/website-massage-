@@ -15,7 +15,7 @@ import { locations } from '../../../../locations';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import TherapistLayout from '../components/TherapistLayout';
-import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar } from 'lucide-react';
+import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock } from 'lucide-react';
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../../../src/utils/browserCompatibility';
 
 interface TherapistPortalPageProps {
@@ -931,6 +931,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
       {/* Main Content */}
       <main className="max-w-sm mx-auto px-4 py-6">
+          
+          {/* Page Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-gray-900">Edit Profile</h2>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+              <span className="text-xs text-gray-500">this month</span>
+            </div>
+          </div>
           
           {/* Booking Request Cards */}
           {therapist?.$id && (

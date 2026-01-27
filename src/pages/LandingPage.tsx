@@ -851,14 +851,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         </div>
 
                         {/* Cities List - Scrollable container (max-height 40vh on mobile) */}
-                        <div className="scrollable space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '40vh' }}>
+                        <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '40vh' }}>
                             {filteredCities.length > 0 ? (
                                 <>
                                     {filteredCities.map((city, index) => (
                                         <button
                                             key={`${city.name}-${index}`}
                                             onClick={() => handleCitySelectNew(city)}
-                                            className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                                            className={`w-full p-3 rounded-lg border-2 text-left transition-all flex-shrink-0 ${
                                                 selectedCity === city.name
                                                     ? "border-orange-500 bg-orange-500 text-white shadow-lg"
                                                     : "border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-white"

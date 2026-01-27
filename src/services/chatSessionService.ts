@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 import { databases, ID, Query, account } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite/config';
 import { appwriteHealthMonitor } from './appwriteHealthMonitor';
@@ -80,7 +81,7 @@ const retryOperation = async <T>(
             throw error;
         }
         
-        console.warn(`Operation failed, retrying... (${CONFIG.RETRY_ATTEMPTS - attempts + 1}/${CONFIG.RETRY_ATTEMPTS})`, error);
+        logger.warn(`Operation failed, retrying... (${CONFIG.RETRY_ATTEMPTS - attempts + 1}/${CONFIG.RETRY_ATTEMPTS})`, error);
         await new Promise(resolve => setTimeout(resolve, delay));
         return retryOperation(operation, attempts - 1, delay * 2); // Exponential backoff
     }
@@ -104,7 +105,7 @@ export const chatSessionService = {
             const remoteSession = await this.getActiveSession(localChatInfo.therapistId);
             
             if (!remoteSession) {
-                console.warn('🔄 Local session exists but no remote session found. Creating remote session...');
+                logger.warn('🔄 Local session exists but no remote session found. Creating remote session...');
                 
                 try {
                     const correctedSession = await this.createSession({
@@ -128,7 +129,7 @@ export const chatSessionService = {
                     
                     return { isValid: true, correctedSession };
                 } catch (error) {
-                    console.warn('⚠️ Could not create corrective session:', error);
+                    logger.warn('⚠️ Could not create corrective session:', error);
                     return { isValid: false };
                 }
             }
@@ -141,13 +142,13 @@ export const chatSessionService = {
             );
             
             if (hasDataMismatch) {
-                console.log('🔄 Data mismatch detected, syncing with remote session');
+                logger.info('🔄 Data mismatch detected, syncing with remote session');
                 return { isValid: true, correctedSession: remoteSession };
             }
             
             return { isValid: true };
         } catch (error) {
-            console.warn('⚠️ Session consistency check failed:', error);
+            logger.warn('⚠️ Session consistency check failed:', error);
             return { isValid: false };
         }
     },
@@ -166,9 +167,9 @@ export const chatSessionService = {
             try {
                 const currentUser = await account.get();
                 userId = currentUser.$id;
-                console.log('✅ Got current user ID:', userId);
+                logger.info('✅ Got current user ID:', userId);
             } catch (error) {
-                console.warn('⚠️ Could not get user ID, session creation may fail:', error);
+                logger.warn('⚠️ Could not get user ID, session creation may fail:', error);
                 // Continue anyway - Appwrite will reject if userId is required
             }
 
@@ -197,11 +198,11 @@ export const chatSessionService = {
             if (appwritePayload.profilePicture) {
                 if (typeof appwritePayload.profilePicture === 'string') {
                     appwritePayload.profilePicture = [appwritePayload.profilePicture];
-                    console.log('✅ Converted profilePicture string to array:', appwritePayload.profilePicture);
+                    logger.info('✅ Converted profilePicture string to array:', appwritePayload.profilePicture);
                 } else if (!Array.isArray(appwritePayload.profilePicture)) {
                     // If it's not a string and not an array, remove it to prevent errors
                     delete appwritePayload.profilePicture;
-                    console.warn('⚠️ Removed invalid profilePicture (not string or array)');
+                    logger.warn('⚠️ Removed invalid profilePicture (not string or array)');
                 }
             }
 
@@ -211,14 +212,14 @@ export const chatSessionService = {
                 if (isNaN(discount) || discount < 1 || discount > 100) {
                     delete appwritePayload.discountPercentage;
                     delete appwritePayload.discountActive;  // Remove discountActive if percentage is invalid
-                    console.log('✅ Removed invalid discountPercentage and discountActive:', appwritePayload.discountPercentage);
+                    logger.info('✅ Removed invalid discountPercentage and discountActive:', appwritePayload.discountPercentage);
                 } else {
                     appwritePayload.discountPercentage = discount;
                 }
             } else if (appwritePayload.discountActive) {
                 // If discountActive is true but no percentage provided, remove discountActive
                 delete appwritePayload.discountActive;
-                console.log('✅ Removed discountActive (no discountPercentage provided)');
+                logger.info('✅ Removed discountActive (no discountPercentage provided)');
             }
 
             // ✅ FIX: Validate discountActive (must be boolean)
@@ -227,15 +228,15 @@ export const chatSessionService = {
             }
 
             // LOG EVERY FIELD AND ITS TYPE
-            console.log('🔬 FULL PAYLOAD DEBUG:', JSON.stringify(appwritePayload, null, 2));
-            console.log('🔬 FIELD TYPES:', Object.keys(appwritePayload).map(key => ({
+            logger.info('🔬 FULL PAYLOAD DEBUG:', JSON.stringify(appwritePayload, null, 2));
+            logger.info('🔬 FIELD TYPES:', Object.keys(appwritePayload).map(key => ({
                 field: key,
                 type: typeof appwritePayload[key],
                 value: appwritePayload[key],
                 isObject: typeof appwritePayload[key] === 'object' && appwritePayload[key] !== null
             })));
 
-            console.log('💾 Creating chat session:', { 
+            logger.info('💾 Creating chat session:', { 
                 sessionId, 
                 bookingId: appwritePayload.bookingId,
                 providerId: appwritePayload.providerId,
@@ -253,13 +254,13 @@ export const chatSessionService = {
                 );
             });
 
-            console.log('✅ Chat session created successfully:', result.$id);
+            logger.info('✅ Chat session created successfully:', result.$id);
             return result as unknown as ChatSession;
         } catch (error: any) {
-            console.error('❌ CHAT SESSION CREATION FAILED - FULL ERROR:', error);
-            console.error('❌ Error message:', error?.message);
-            console.error('❌ Error response:', error?.response);
-            console.error('❌ Failed to create chat session:', {
+            logger.error('❌ CHAT SESSION CREATION FAILED - FULL ERROR:', error);
+            logger.error('❌ Error message:', error?.message);
+            logger.error('❌ Error response:', error?.response);
+            logger.error('❌ Failed to create chat session:', {
                 message: error?.message,
                 code: error?.code,
                 type: error?.type,
@@ -319,16 +320,16 @@ export const chatSessionService = {
                 
                 // Check if session is actually expired (server-side cleanup might be delayed)
                 if (session.expiresAt && new Date(session.expiresAt) <= new Date()) {
-                    console.log('⏰ Session expired, closing automatically:', session.sessionId);
+                    logger.info('⏰ Session expired, closing automatically:', session.sessionId);
                     await this.closeSession(session.sessionId).catch(console.warn);
                     return null;
                 }
                 
-                console.log('📖 Retrieved active chat session:', session.sessionId);
+                logger.info('📖 Retrieved active chat session:', session.sessionId);
                 return session;
             }
 
-            console.log('📭 No active session found for provider:', providerId);
+            logger.info('📭 No active session found for provider:', providerId);
             return null;
         } catch (error: any) {
             // Silently handle missing collection (400/404 errors)
@@ -338,11 +339,11 @@ export const chatSessionService = {
             }
             
             if (error instanceof AppwriteConnectionError) {
-                console.error('🌐 Connection error while fetching session:', error.message);
+                logger.error('🌐 Connection error while fetching session:', error.message);
                 return null; // Graceful degradation
             }
             
-            console.warn('⚠️ Failed to get active session:', error);
+            logger.warn('⚠️ Failed to get active session:', error);
             return null;
         }
     },
@@ -370,17 +371,17 @@ export const chatSessionService = {
             // ✅ FIX: Convert pricing object to JSON string if it exists (Appwrite requires string)
             if (updatedData.pricing && typeof updatedData.pricing === 'object') {
                 updatedData.pricing = JSON.stringify(updatedData.pricing);
-                console.log('✅ Stringified pricing for update:', updatedData.pricing);
+                logger.info('✅ Stringified pricing for update:', updatedData.pricing);
             }
 
             // ✅ FIX: Convert profilePicture to array if it's a string (Appwrite schema requires array)
             if (updatedData.profilePicture) {
                 if (typeof updatedData.profilePicture === 'string') {
                     updatedData.profilePicture = [updatedData.profilePicture];
-                    console.log('✅ Converted profilePicture string to array for update');
+                    logger.info('✅ Converted profilePicture string to array for update');
                 } else if (!Array.isArray(updatedData.profilePicture)) {
                     delete updatedData.profilePicture;
-                    console.warn('⚠️ Removed invalid profilePicture from update');
+                    logger.warn('⚠️ Removed invalid profilePicture from update');
                 }
             }
 
@@ -390,14 +391,14 @@ export const chatSessionService = {
                 if (isNaN(discount) || discount < 1 || discount > 100) {
                     delete updatedData.discountPercentage;
                     delete updatedData.discountActive;  // Remove discountActive if percentage is invalid
-                    console.log('✅ Removed invalid discountPercentage and discountActive from update:', updatedData.discountPercentage);
+                    logger.info('✅ Removed invalid discountPercentage and discountActive from update:', updatedData.discountPercentage);
                 } else {
                     updatedData.discountPercentage = discount;
                 }
             } else if (updatedData.discountActive) {
                 // If discountActive is true but no percentage provided, remove discountActive
                 delete updatedData.discountActive;
-                console.log('✅ Removed discountActive from update (no discountPercentage provided)');
+                logger.info('✅ Removed discountActive from update (no discountPercentage provided)');
             }
 
             // ✅ FIX: Validate discountActive (must be boolean)
@@ -414,14 +415,14 @@ export const chatSessionService = {
                 );
             });
 
-            console.log('✅ Chat session updated:', sessionId);
+            logger.info('✅ Chat session updated:', sessionId);
             return result as unknown as ChatSession;
         } catch (error) {
             if (error instanceof Error && error.message.includes('Document not found')) {
                 throw new SessionNotFoundError(`Session ${sessionId} not found or already deleted`);
             }
             
-            console.error('❌ Failed to update chat session:', error);
+            logger.error('❌ Failed to update chat session:', error);
             throw error;
         }
     },
@@ -430,7 +431,7 @@ export const chatSessionService = {
     async closeSession(sessionId: string): Promise<void> {
         try {
             if (!sessionId?.trim()) {
-                console.warn('⚠️ No session ID provided for closing');
+                logger.warn('⚠️ No session ID provided for closing');
                 return;
             }
 
@@ -439,14 +440,14 @@ export const chatSessionService = {
                 updatedAt: new Date().toISOString()
             });
 
-            console.log('🔒 Chat session closed:', sessionId);
+            logger.info('🔒 Chat session closed:', sessionId);
         } catch (error) {
             if (error instanceof SessionNotFoundError) {
-                console.log('📝 Session already closed or deleted:', sessionId);
+                logger.info('📝 Session already closed or deleted:', sessionId);
                 return; // Graceful handling - session is effectively closed
             }
             
-            console.error('❌ Failed to close chat session:', error);
+            logger.error('❌ Failed to close chat session:', error);
             // Don't throw - closing should be graceful
         }
     },
@@ -462,7 +463,7 @@ export const chatSessionService = {
 
             return result as unknown as ChatSession;
         } catch (error) {
-            console.warn('⚠️ Failed to get session by ID:', error);
+            logger.warn('⚠️ Failed to get session by ID:', error);
             return null;
         }
     },
@@ -484,7 +485,7 @@ export const chatSessionService = {
 
             return result.documents.map(doc => doc as unknown as ChatSession);
         } catch (error) {
-            console.warn('⚠️ Failed to list active sessions:', error);
+            logger.warn('⚠️ Failed to list active sessions:', error);
             return [];
         }
     },
@@ -507,10 +508,10 @@ export const chatSessionService = {
             }
 
             if (expiredSessions.documents.length > 0) {
-                console.log(`🧹 Cleaned up ${expiredSessions.documents.length} expired chat sessions`);
+                logger.info(`🧹 Cleaned up ${expiredSessions.documents.length} expired chat sessions`);
             }
         } catch (error) {
-            console.warn('⚠️ Failed to cleanup expired sessions:', error);
+            logger.warn('⚠️ Failed to cleanup expired sessions:', error);
         }
     }
 };

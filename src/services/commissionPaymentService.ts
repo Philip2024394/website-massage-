@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 import type { CommissionRecord } from '../types';
 import { CommissionPaymentStatus, CommissionPaymentMethod } from '../types';
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
@@ -59,7 +60,7 @@ class CommissionPaymentService {
                 ...recordData
             };
 
-            console.log('📝 Commission record created:', record);
+            logger.info('📝 Commission record created:', record);
 
             // Send notification to provider about pending payment
             await this.notifyProviderPendingPayment(providerId, providerType, record);
@@ -69,7 +70,7 @@ class CommissionPaymentService {
 
             return record;
         } catch (error) {
-            console.error('Error creating commission record:', error);
+            logger.error('Error creating commission record:', error);
             throw error;
         }
     }
@@ -129,14 +130,14 @@ class CommissionPaymentService {
                 updatedAt: updatedDoc.updatedAt
             };
 
-            console.log('📤 Payment proof uploaded:', updatedRecord);
+            logger.info('📤 Payment proof uploaded:', updatedRecord);
 
             // Notify hotel/villa about new payment proof to verify
             await this.notifyHotelVillaNewPaymentProof(updatedRecord.hotelVillaId, updatedRecord);
 
             return updatedRecord;
         } catch (error) {
-            console.error('Error uploading payment proof:', error);
+            logger.error('Error uploading payment proof:', error);
             throw error;
         }
     }
@@ -201,7 +202,7 @@ class CommissionPaymentService {
                     updatedAt: updatedDoc.updatedAt
                 };
 
-                console.log('✅ Payment verified:', updatedRecord);
+                logger.info('✅ Payment verified:', updatedRecord);
 
                 // Set provider back to Available status
                 await this.setProviderAvailable(updatedRecord.providerId, updatedRecord.providerType);
@@ -247,7 +248,7 @@ class CommissionPaymentService {
                     updatedAt: updatedDoc.updatedAt
                 };
 
-                console.log('❌ Payment rejected:', updatedRecord);
+                logger.info('❌ Payment rejected:', updatedRecord);
 
                 // Provider stays Busy until they reupload valid proof
                 // Notify provider payment was rejected and why
@@ -261,7 +262,7 @@ class CommissionPaymentService {
                 return updatedRecord;
             }
         } catch (error) {
-            console.error('Error verifying payment:', error);
+            logger.error('Error verifying payment:', error);
             throw error;
         }
     }
@@ -274,7 +275,7 @@ class CommissionPaymentService {
         providerType: 'therapist' | 'place'
     ): Promise<CommissionRecord[]> {
         try {
-            console.log(`📋 Fetching pending payments for ${providerType} ${providerId}`);
+            logger.info(`📋 Fetching pending payments for ${providerType} ${providerId}`);
 
             // Query Appwrite for pending commission records
             const docs = await databases.listDocuments(
@@ -312,7 +313,7 @@ class CommissionPaymentService {
 
             return records;
         } catch (error) {
-            console.error('Error fetching provider pending payments:', error);
+            logger.error('Error fetching provider pending payments:', error);
             return [];
         }
     }
@@ -324,7 +325,7 @@ class CommissionPaymentService {
         hotelVillaId: number
     ): Promise<CommissionRecord[]> {
         try {
-            console.log(`📋 Fetching verification queue for hotel/villa ${hotelVillaId}`);
+            logger.info(`📋 Fetching verification queue for hotel/villa ${hotelVillaId}`);
 
             // Query Appwrite for records awaiting verification
             const docs = await databases.listDocuments(
@@ -361,7 +362,7 @@ class CommissionPaymentService {
 
             return records;
         } catch (error) {
-            console.error('Error fetching verification queue:', error);
+            logger.error('Error fetching verification queue:', error);
             return [];
         }
     }
@@ -374,7 +375,7 @@ class CommissionPaymentService {
         status?: CommissionPaymentStatus
     ): Promise<CommissionRecord[]> {
         try {
-            console.log(`📊 Fetching commission history for hotel/villa ${hotelVillaId}`);
+            logger.info(`📊 Fetching commission history for hotel/villa ${hotelVillaId}`);
 
             const queries = [Query.equal('hotelVillaId', hotelVillaId.toString())];
             
@@ -413,7 +414,7 @@ class CommissionPaymentService {
 
             return records;
         } catch (error) {
-            console.error('Error fetching commission history:', error);
+            logger.error('Error fetching commission history:', error);
             return [];
         }
     }
@@ -435,7 +436,7 @@ class CommissionPaymentService {
         paymentInstructions?: string;
     }> {
         try {
-            console.log(`🏦 Fetching bank details for ${hotelVillaType} ${hotelVillaId}`);
+            logger.info(`🏦 Fetching bank details for ${hotelVillaType} ${hotelVillaId}`);
 
             // Determine which collection to query
             const collectionId = hotelVillaType === 'hotel' 
@@ -444,7 +445,7 @@ class CommissionPaymentService {
 
             // Check if collection is configured
             if (!collectionId) {
-                console.warn(`⚠️ ${hotelVillaType} collection not configured - skipping commission calculation`);
+                logger.warn(`⚠️ ${hotelVillaType} collection not configured - skipping commission calculation`);
                 return {};
             }
 
@@ -456,7 +457,7 @@ class CommissionPaymentService {
             );
 
             if (docs.documents.length === 0) {
-                console.warn(`${hotelVillaType} ${hotelVillaId} not found`);
+                logger.warn(`${hotelVillaType} ${hotelVillaId} not found`);
                 return {};
             }
 
@@ -473,7 +474,7 @@ class CommissionPaymentService {
                 paymentInstructions: doc.paymentInstructions
             };
         } catch (error) {
-            console.error('Error fetching bank details:', error);
+            logger.error('Error fetching bank details:', error);
             return {};
         }
     }
@@ -506,7 +507,7 @@ class CommissionPaymentService {
         providerType: 'therapist' | 'place'
     ): Promise<void> {
         try {
-            console.log(`⏸️ Setting ${providerType} ${providerId} to Busy`);
+            logger.info(`⏸️ Setting ${providerType} ${providerId} to Busy`);
 
             const collectionId = providerType === 'therapist' 
                 ? COLLECTIONS.THERAPISTS 
@@ -522,9 +523,9 @@ class CommissionPaymentService {
                 }
             );
 
-            console.log(`✅ ${providerType} ${providerId} set to Busy - awaiting commission payment`);
+            logger.info(`✅ ${providerType} ${providerId} set to Busy - awaiting commission payment`);
         } catch (error) {
-            console.error(`Error setting ${providerType} to Busy:`, error);
+            logger.error(`Error setting ${providerType} to Busy:`, error);
             throw error;
         }
     }
@@ -537,7 +538,7 @@ class CommissionPaymentService {
         providerType: 'therapist' | 'place'
     ): Promise<void> {
         try {
-            console.log(`✅ Setting ${providerType} ${providerId} to Available`);
+            logger.info(`✅ Setting ${providerType} ${providerId} to Available`);
 
             const collectionId = providerType === 'therapist' 
                 ? COLLECTIONS.THERAPISTS 
@@ -553,9 +554,9 @@ class CommissionPaymentService {
                 }
             );
 
-            console.log(`✅ ${providerType} ${providerId} is now Available - commission payment verified`);
+            logger.info(`✅ ${providerType} ${providerId} is now Available - commission payment verified`);
         } catch (error) {
-            console.error(`Error setting ${providerType} to Available:`, error);
+            logger.error(`Error setting ${providerType} to Available:`, error);
             throw error;
         }
     }
@@ -569,7 +570,7 @@ class CommissionPaymentService {
         _record: CommissionRecord
     ): Promise<void> {
         // TODO: Send notification to provider
-        console.log(`🔔 Notifying ${providerType} ${providerId} about pending commission payment`);
+        logger.info(`🔔 Notifying ${providerType} ${providerId} about pending commission payment`);
         
         // Notification message example:
         // "Service completed! Please pay commission of Rp ${record.commissionAmount.toLocaleString()} 
@@ -584,7 +585,7 @@ class CommissionPaymentService {
         _record: CommissionRecord
     ): Promise<void> {
         // TODO: Send notification to hotel/villa
-        console.log(`🔔 Notifying hotel/villa ${hotelVillaId} about new payment proof to verify`);
+        logger.info(`🔔 Notifying hotel/villa ${hotelVillaId} about new payment proof to verify`);
         
         // Notification message example:
         // "${record.providerName} has uploaded payment proof for booking #${record.bookingId}. 
@@ -600,7 +601,7 @@ class CommissionPaymentService {
         _record: CommissionRecord
     ): Promise<void> {
         // TODO: Send notification to provider
-        console.log(`🔔 Notifying ${providerType} ${providerId} that payment was verified`);
+        logger.info(`🔔 Notifying ${providerType} ${providerId} that payment was verified`);
         
         // Notification message example:
         // "Payment verified! Your commission payment of Rp ${record.commissionAmount.toLocaleString()} 
@@ -617,7 +618,7 @@ class CommissionPaymentService {
         _reason: string
     ): Promise<void> {
         // TODO: Send notification to provider
-        console.log(`🔔 Notifying ${providerType} ${providerId} that payment was rejected`);
+        logger.info(`🔔 Notifying ${providerType} ${providerId} that payment was rejected`);
         
         // Notification message example:
         // "Payment proof rejected: ${reason}. Please upload a clearer screenshot. 
@@ -712,7 +713,7 @@ class CommissionPaymentService {
                 awaitingVerification
             };
         } catch (error) {
-            console.error('Error calculating hotel/villa commissions:', error);
+            logger.error('Error calculating hotel/villa commissions:', error);
             return {
                 total: 0,
                 verified: 0,

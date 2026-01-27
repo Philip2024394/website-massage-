@@ -1030,7 +1030,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             {/* Booking Buttons - Positioned under price containers */}
             <div className={`flex gap-2 px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}`}>
                 <button
-                    onClick={(e) => {
+                    onClick={async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         
@@ -1043,15 +1043,47 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             (e.target as HTMLElement).removeAttribute('data-clicking');
                         });
                         
-                        console.log('[BOOKING] Profile Book Therapist clicked');
-                        devLog('🟫 Book Therapist button clicked - opening PERSISTENT CHAT');
+                        console.log('🚀 [ENTERPRISE] Book Now clicked on therapist card');
                         
-                        // ✅ SIMPLIFIED DIRECT INTEGRATION: 2-layer chain (was 4-layer)
-                        // OLD: TherapistCard → onQuickBookWithChat → App.tsx → CustomEvent → Listener → Chat
-                        // NEW: TherapistCard → openBookingChat → PersistentChatProvider → Chat
-                        openBookingChat(therapist);
+                        try {
+                            // Create enterprise booking request
+                            const bookingId = await enterpriseBookingFlowService.createBookingRequest({
+                                userId: 'current_user', // Replace with actual user ID
+                                userDetails: {
+                                    name: 'Current User', // Replace with actual user data
+                                    phone: '+1234567890',
+                                    location: 'User Location'
+                                },
+                                serviceType: 'book-now',
+                                services: [
+                                    {
+                                        id: 'massage',
+                                        name: 'Massage Service',
+                                        duration: 90,
+                                        price: pricing?.[0]?.price || 100
+                                    }
+                                ],
+                                totalPrice: pricing?.[0]?.price || 100,
+                                duration: 90,
+                                location: {
+                                    address: locationAreaDisplayName,
+                                    coordinates: { lat: 0, lng: 0 } // Replace with actual coordinates
+                                },
+                                preferredTherapists: [therapist.$id],
+                                urgency: 'normal'
+                            });
+                            
+                            console.log(`✅ Enterprise booking request created: ${bookingId}`);
+                            
+                            // Open booking chat as fallback
+                            openBookingChat(therapist);
+                            
+                        } catch (error) {
+                            console.error('❌ Enterprise booking failed:', error);
+                            // Fallback to original booking flow
+                            openBookingChat(therapist);
+                        }
                         
-                        console.log('[CHAT] Chat opened from profile - Direct Integration');
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
                     }}
@@ -1063,7 +1095,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 {/* Check if therapist has bank details for scheduled bookings */}
                 {therapist.bankName && therapist.accountNumber && therapist.accountName ? (
                     <button 
-                        onClick={(e) => {
+                        onClick={async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             
@@ -1076,14 +1108,49 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 (e.target as HTMLElement).removeAttribute('data-clicking');
                             });
                             
-                            console.log('📅 Schedule button clicked - opening PERSISTENT CHAT');
+                            console.log('🚀 [ENTERPRISE] Scheduled booking clicked on therapist card');
                             
-                            // ✅ SIMPLIFIED DIRECT INTEGRATION: Schedule booking
-                            // Direct call to PersistentChatProvider instead of complex event chain
-                            openScheduleChat(therapist);
+                            try {
+                                // Create enterprise scheduled booking request
+                                const bookingId = await enterpriseBookingFlowService.createBookingRequest({
+                                    userId: 'current_user', // Replace with actual user ID
+                                    userDetails: {
+                                        name: 'Current User', // Replace with actual user data
+                                        phone: '+1234567890',
+                                        location: 'User Location'
+                                    },
+                                    serviceType: 'scheduled',
+                                    scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow by default
+                                    services: [
+                                        {
+                                            id: 'massage',
+                                            name: 'Massage Service',
+                                            duration: 90,
+                                            price: pricing?.[0]?.price || 100
+                                        }
+                                    ],
+                                    totalPrice: pricing?.[0]?.price || 100,
+                                    duration: 90,
+                                    location: {
+                                        address: locationAreaDisplayName,
+                                        coordinates: { lat: 0, lng: 0 } // Replace with actual coordinates
+                                    },
+                                    preferredTherapists: [therapist.$id],
+                                    urgency: 'normal'
+                                });
+                                
+                                console.log(`✅ Enterprise scheduled booking request created: ${bookingId}`);
+                                
+                                // Open schedule chat as fallback
+                                openScheduleChat(therapist);
+                                
+                            } catch (error) {
+                                console.error('❌ Enterprise scheduled booking failed:', error);
+                                // Fallback to original booking flow
+                                openScheduleChat(therapist);
+                            }
                             
                             onIncrementAnalytics('bookings');
-                            // Increment bookings count for UI display
                             setBookingsCount(prev => prev + 1);
                         }} 
                         className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"

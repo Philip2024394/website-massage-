@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * 🏢 ENTERPRISE PERFORMANCE SERVICE
  * 
@@ -86,7 +87,7 @@ class EnterprisePerformanceService {
   private initializePerformanceMonitoring(): void {
     if (typeof window === 'undefined') return;
 
-    console.log('🏢 Initializing enterprise performance monitoring...');
+    logger.info('🏢 Initializing enterprise performance monitoring...');
 
     // Monitor long tasks that block the main thread
     if ('PerformanceObserver' in window) {
@@ -112,7 +113,7 @@ class EnterprisePerformanceService {
 
         this.isMonitoring = true;
       } catch (error) {
-        console.warn('⚠️ Performance Observer not supported:', error);
+        logger.warn('⚠️ Performance Observer not supported:', error);
       }
     }
 
@@ -142,7 +143,7 @@ class EnterprisePerformanceService {
     // Time to First Byte
     this.measureTTFB();
 
-    console.log('✅ Web Vitals monitoring active');
+    logger.info('✅ Web Vitals monitoring active');
   }
 
   /**
@@ -164,7 +165,7 @@ class EnterprisePerformanceService {
 
       observer.observe({ entryTypes: [entryType] });
     } catch (error) {
-      console.warn(`⚠️ Could not observe ${entryType}:`, error);
+      logger.warn(`⚠️ Could not observe ${entryType}:`, error);
     }
   }
 
@@ -186,7 +187,7 @@ class EnterprisePerformanceService {
 
       observer.observe({ entryTypes: ['first-input'] });
     } catch (error) {
-      console.warn('⚠️ Could not observe first-input:', error);
+      logger.warn('⚠️ Could not observe first-input:', error);
     }
   }
 
@@ -213,7 +214,7 @@ class EnterprisePerformanceService {
 
       observer.observe({ entryTypes: ['layout-shift'] });
     } catch (error) {
-      console.warn('⚠️ Could not observe layout-shift:', error);
+      logger.warn('⚠️ Could not observe layout-shift:', error);
     }
   }
 
@@ -262,7 +263,7 @@ class EnterprisePerformanceService {
       this.alertPerformanceIssue(metric);
     }
 
-    console.log(`📊 ${metricType}: ${value}ms (${rating})`);
+    logger.info(`📊 ${metricType}: ${value}ms (${rating})`);
   }
 
   /**
@@ -288,7 +289,7 @@ class EnterprisePerformanceService {
 
     this.metrics.push(metric);
 
-    console.log(`📈 Custom metric [${params.name}]: ${params.value}`);
+    logger.info(`📈 Custom metric [${params.name}]: ${params.value}`);
   }
 
   /**
@@ -317,7 +318,7 @@ class EnterprisePerformanceService {
     this.queryMetrics.push(queryMetric);
 
     if (isSlowQuery) {
-      console.warn(`🐌 Slow query detected: ${params.collection}.${params.operation} took ${params.duration}ms`);
+      logger.warn(`🐌 Slow query detected: ${params.collection}.${params.operation} took ${params.duration}ms`);
       this.alertSlowQuery(queryMetric);
     }
   }
@@ -378,20 +379,20 @@ class EnterprisePerformanceService {
     const uncachedResources = this.resourceTimings.filter(r => !r.cached);
 
     if (largeResources.length > 0) {
-      console.warn('🚨 Large resources detected:', largeResources.map(r => ({
+      logger.warn('🚨 Large resources detected:', largeResources.map(r => ({
         name: r.name.split('/').pop(),
         size: `${(r.size / 1024).toFixed(1)}KB`
       })));
     }
 
     if (slowResources.length > 0) {
-      console.warn('🐌 Slow resources detected:', slowResources.map(r => ({
+      logger.warn('🐌 Slow resources detected:', slowResources.map(r => ({
         name: r.name.split('/').pop(),
         duration: `${r.duration.toFixed(0)}ms`
       })));
     }
 
-    console.log(`📊 Resource analysis: ${this.resourceTimings.length} resources, ${uncachedResources.length} uncached`);
+    logger.info(`📊 Resource analysis: ${this.resourceTimings.length} resources, ${uncachedResources.length} uncached`);
   }
 
   /**
@@ -419,7 +420,7 @@ class EnterprisePerformanceService {
    * Alert on performance issues
    */
   private alertPerformanceIssue(metric: PerformanceMetric): void {
-    console.warn(`🚨 Performance issue: ${metric.metricType} = ${metric.value} (${metric.rating})`);
+    logger.warn(`🚨 Performance issue: ${metric.metricType} = ${metric.value} (${metric.rating})`);
     
     // In production, this would send to monitoring service
     if (typeof window !== 'undefined' && (window as any).performanceAlert) {
@@ -431,7 +432,7 @@ class EnterprisePerformanceService {
    * Alert on slow database queries
    */
   private alertSlowQuery(query: DatabaseQueryMetric): void {
-    console.warn('🗄️ Slow database query:', {
+    logger.warn('🗄️ Slow database query:', {
       collection: query.collection,
       operation: query.operation,
       duration: `${query.duration}ms`,
@@ -490,7 +491,7 @@ class EnterprisePerformanceService {
       summary
     };
 
-    console.log('📊 Performance Report Generated:', summary);
+    logger.info('📊 Performance Report Generated:', summary);
     
     return report;
   }
@@ -602,7 +603,7 @@ class EnterprisePerformanceService {
     this.metrics = [];
     this.resourceTimings = [];
     this.queryMetrics = [];
-    console.log('🧹 Performance metrics cleared');
+    logger.info('🧹 Performance metrics cleared');
   }
 
   /**
@@ -616,7 +617,7 @@ class EnterprisePerformanceService {
       this.vitalsObserver.disconnect();
     }
     this.isMonitoring = false;
-    console.log('🧹 Performance monitoring stopped');
+    logger.info('🧹 Performance monitoring stopped');
   }
 }
 

@@ -16,6 +16,22 @@ const isAdminMode = process.env.VITE_PORT === '3004' || process.argv.includes('-
 export default defineConfig({
   plugins: [
     react(),
+    // ✅ APPS IMPORT RESOLVER: Allow apps/ to import from root src/
+    {
+      name: 'resolve-apps-imports',
+      async resolveId(source, importer, options) {
+        // Handle ../../../../src/ imports from apps/ directories (Windows + Unix paths)
+        if (importer && (importer.includes('/apps/') || importer.includes('\\apps\\')) && 
+            source.startsWith('../../../../src/')) {
+          // Convert relative path to absolute path from root
+          const relativePath = source.replace('../../../../src/', './src/');
+          // Let Vite resolve the converted path with proper extension handling
+          const resolved = await this.resolve(relativePath, undefined, { skipSelf: true, ...options });
+          return resolved;
+        }
+        return null;
+      }
+    },
     // ✅ SPA ROUTING PLUGIN: Handle client-side routes on refresh
     {
       name: 'spa-fallback',
@@ -78,6 +94,8 @@ export default defineConfig({
       '@/hooks': path.resolve(__dirname, './hooks'),
       '@/utils': path.resolve(__dirname, './utils'),
       '@/types': path.resolve(__dirname, './types'),
+      // CRITICAL: Allow apps/ to resolve root src/ imports
+      'src': path.resolve(__dirname, './src'),
     },
   },
   server: {
@@ -142,6 +160,9 @@ export default defineConfig({
     // Includes: Chrome 73+, Firefox 63+, Safari 12.1+, Edge 79+
     target: ['es2019', 'chrome73', 'firefox63', 'safari12.1', 'edge79'],
     chunkSizeWarningLimit: 1000,
+    commonjsOptions: {
+      exclude: ['apps/**/*'] // Exclude dashboard apps from root build
+    },
     rollupOptions: {
       external: [],
       input: {

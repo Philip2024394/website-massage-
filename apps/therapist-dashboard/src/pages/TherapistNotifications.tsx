@@ -203,11 +203,29 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
 
   const filteredNotifications = getFilteredNotifications();
 
+  const dict = {
+    therapistDashboard: {
+      thisMonth: 'this month'
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Page Header */}
+      <div className="max-w-7xl mx-auto px-4 pt-6 pb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+            <Clock className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+            <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
+          </div>
+        </div>
+      </div>
+      
       {/* Minimalistic Header */}
       <TherapistPageHeader
-        title="Notifications"
+        title=""
         subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
         onBackToStatus={onBack}
         icon={

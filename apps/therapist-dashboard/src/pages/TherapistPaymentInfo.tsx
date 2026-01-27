@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
-import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import TherapistLayout from '../components/TherapistLayout';
 import { therapistService } from '../../../../src/lib/appwriteService';
 import { showToast } from '../../../../src/utils/showToastPortal';
@@ -197,6 +197,24 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
       {/* Main Content */}
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-6">
+          {/* Page Header with Online Hours */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
+                <p className="text-sm text-gray-600">30% pay commission per booking</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+              <span className="text-xs text-gray-500">this month</span>
+            </div>
+          </div>
+          
           {/* Info Section */}
           <div className="border border-gray-200 rounded-lg p-6">
             <div className="flex items-start gap-4">

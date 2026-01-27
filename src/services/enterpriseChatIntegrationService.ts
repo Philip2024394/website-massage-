@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * 🚀 ENTERPRISE CHAT INTEGRATION SERVICE
  * 
@@ -71,7 +72,7 @@ class EnterpriseChatIntegrationService {
    */
   async initialize(): Promise<void> {
     try {
-      console.log('💬 Initializing Enterprise Chat Integration Service...');
+      logger.info('💬 Initializing Enterprise Chat Integration Service...');
       
       // Set up real-time listeners
       await this.setupRealtimeListeners();
@@ -82,10 +83,10 @@ class EnterpriseChatIntegrationService {
       // Load active chat rooms
       await this.loadActiveChatRooms();
       
-      console.log('✅ Chat Integration Service initialized');
+      logger.info('✅ Chat Integration Service initialized');
       
     } catch (error) {
-      console.error('❌ Failed to initialize chat service:', error);
+      logger.error('❌ Failed to initialize chat service:', error);
       throw error;
     }
   }
@@ -132,7 +133,7 @@ class EnterpriseChatIntegrationService {
       `Chat started for booking #${bookingId.substr(-8)}. Your therapist will provide updates and coordinate arrival.`
     );
 
-    console.log(`💬 Created booking chat room: ${chatRoomId}`);
+    logger.info(`💬 Created booking chat room: ${chatRoomId}`);
     
     return chatRoomId;
   }
@@ -166,7 +167,7 @@ class EnterpriseChatIntegrationService {
     // Add to queue if offline
     if (!this.isOnline) {
       this.messageQueue.push(chatMessage);
-      console.log('📱 Message queued for when online');
+      logger.info('📱 Message queued for when online');
       return messageId;
     }
 
@@ -187,12 +188,12 @@ class EnterpriseChatIntegrationService {
       // Notify participants
       await this.notifyParticipants(chatRoom!, chatMessage);
 
-      console.log(`💬 Message sent in ${chatRoomId}: ${message.substr(0, 50)}...`);
+      logger.info(`💬 Message sent in ${chatRoomId}: ${message.substr(0, 50)}...`);
       
       return messageId;
 
     } catch (error) {
-      console.error('❌ Failed to send message:', error);
+      logger.error('❌ Failed to send message:', error);
       
       // Queue for retry
       this.messageQueue.push(chatMessage);
@@ -223,7 +224,7 @@ class EnterpriseChatIntegrationService {
     reason: 'booking-received' | 'new-message' | 'booking-update' = 'new-message'
   ): Promise<void> {
     try {
-      console.log(`💬 Auto-opening chat for ${participantId} (${reason})`);
+      logger.info(`💬 Auto-opening chat for ${participantId} (${reason})`);
 
       // Send real-time notification to open chat
       await this.sendRealtimeNotification(participantId, {
@@ -243,7 +244,7 @@ class EnterpriseChatIntegrationService {
       }
 
     } catch (error) {
-      console.error('❌ Failed to auto-open chat:', error);
+      logger.error('❌ Failed to auto-open chat:', error);
     }
   }
 
@@ -256,7 +257,7 @@ class EnterpriseChatIntegrationService {
     therapistId: string, 
     placeId?: string
   ): Promise<string> {
-    console.log(`✅ Starting chat flow for accepted booking: ${bookingId}`);
+    logger.info(`✅ Starting chat flow for accepted booking: ${bookingId}`);
 
     // Create chat room
     const chatRoomId = await this.createBookingChatRoom(bookingId, userId, therapistId, placeId);
@@ -309,7 +310,7 @@ class EnterpriseChatIntegrationService {
         }
 
       } catch (error) {
-        console.error(`❌ Failed to notify participant ${participant.id}:`, error);
+        logger.error(`❌ Failed to notify participant ${participant.id}:`, error);
       }
     }
   }
@@ -361,7 +362,7 @@ class EnterpriseChatIntegrationService {
   async markMessagesAsRead(chatRoomId: string, userId: string): Promise<void> {
     try {
       // Implementation would update read status in database
-      console.log(`👀 Marked messages as read in ${chatRoomId} for ${userId}`);
+      logger.info(`👀 Marked messages as read in ${chatRoomId} for ${userId}`);
 
       // Update unread count
       const chatRoom = this.activeChatRooms.get(chatRoomId);
@@ -373,7 +374,7 @@ class EnterpriseChatIntegrationService {
       }
 
     } catch (error) {
-      console.error('❌ Failed to mark messages as read:', error);
+      logger.error('❌ Failed to mark messages as read:', error);
     }
   }
 
@@ -383,14 +384,14 @@ class EnterpriseChatIntegrationService {
   private async setupRealtimeListeners(): Promise<void> {
     try {
       // Setup WebSocket/Appwrite Realtime connections
-      console.log('🔄 Setting up real-time chat listeners...');
+      logger.info('🔄 Setting up real-time chat listeners...');
       
       // Listen for incoming messages
       // Listen for participant status changes
       // Listen for connection events
       
     } catch (error) {
-      console.error('❌ Failed to setup real-time listeners:', error);
+      logger.error('❌ Failed to setup real-time listeners:', error);
     }
   }
 
@@ -415,7 +416,7 @@ class EnterpriseChatIntegrationService {
   private async syncOfflineMessages(): Promise<void> {
     if (this.messageQueue.length === 0) return;
 
-    console.log(`📤 Syncing ${this.messageQueue.length} offline messages...`);
+    logger.info(`📤 Syncing ${this.messageQueue.length} offline messages...`);
 
     const messages = [...this.messageQueue];
     this.messageQueue = [];
@@ -426,7 +427,7 @@ class EnterpriseChatIntegrationService {
       } catch (error) {
         // Re-queue failed messages
         this.messageQueue.push(message);
-        console.error('❌ Failed to sync message:', error);
+        logger.error('❌ Failed to sync message:', error);
       }
     }
   }
@@ -437,10 +438,10 @@ class EnterpriseChatIntegrationService {
   private async sendRealtimeMessage(message: ChatMessage): Promise<void> {
     try {
       // Implementation would send via WebSocket/Appwrite Realtime
-      console.log('📡 Sending real-time message:', message.id);
+      logger.info('📡 Sending real-time message:', message.id);
       
     } catch (error) {
-      console.error('❌ Real-time message send failed:', error);
+      logger.error('❌ Real-time message send failed:', error);
       throw error;
     }
   }
@@ -451,10 +452,10 @@ class EnterpriseChatIntegrationService {
   private async sendRealtimeNotification(userId: string, notification: any): Promise<void> {
     try {
       // Implementation would use WebSocket/Appwrite Realtime
-      console.log(`📡 Sending notification to ${userId}:`, notification);
+      logger.info(`📡 Sending notification to ${userId}:`, notification);
       
     } catch (error) {
-      console.error('❌ Real-time notification failed:', error);
+      logger.error('❌ Real-time notification failed:', error);
     }
   }
 
@@ -464,10 +465,10 @@ class EnterpriseChatIntegrationService {
   private async loadActiveChatRooms(): Promise<void> {
     try {
       // Implementation would load from database
-      console.log('📂 Loading active chat rooms...');
+      logger.info('📂 Loading active chat rooms...');
       
     } catch (error) {
-      console.error('❌ Failed to load chat rooms:', error);
+      logger.error('❌ Failed to load chat rooms:', error);
     }
   }
 
@@ -495,7 +496,7 @@ class EnterpriseChatIntegrationService {
    */
   setAudioEnabled(enabled: boolean): void {
     this.audioEnabled = enabled;
-    console.log(`🔊 Chat audio ${enabled ? 'enabled' : 'disabled'}`);
+    logger.info(`🔊 Chat audio ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -519,7 +520,7 @@ class EnterpriseChatIntegrationService {
    * Close chat room
    */
   async closeChatRoom(chatRoomId: string): Promise<void> {
-    console.log(`💬 Closing chat room: ${chatRoomId}`);
+    logger.info(`💬 Closing chat room: ${chatRoomId}`);
     
     const chatRoom = this.activeChatRooms.get(chatRoomId);
     if (chatRoom) {
@@ -541,7 +542,7 @@ export const enterpriseChatIntegrationService = new EnterpriseChatIntegrationSer
 
 // Auto-initialize
 if (typeof window !== 'undefined') {
-  enterpriseChatIntegrationService.initialize().catch(console.error);
+  enterpriseChatIntegrationService.initialize().catch(err => logger.error('Chat integration initialization failed:', { error: err }));
 }
 
 export default enterpriseChatIntegrationService;

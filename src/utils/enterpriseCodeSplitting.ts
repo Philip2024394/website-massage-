@@ -216,20 +216,14 @@ export const EnterpriseSuspense: React.FC<{
   chunkName = 'unknown'
 }) => {
   return (
-    <Suspense 
-      fallback={
-        <div>
-          <Fallback />
-          {process.env.NODE_ENV === 'development' && (
-            <div className="text-xs text-gray-400 mt-2 text-center">
-              Loading: {chunkName}
-            </div>
-          )}
-        </div>
-      }
-    >
-      {children}
-    </Suspense>
+    React.createElement(Suspense, {
+      fallback: React.createElement('div', null,
+        React.createElement(Fallback, null),
+        chunkName && React.createElement('div', { className: 'text-xs text-gray-400 mt-2 text-center' },
+          'Loading: ', chunkName
+        )
+      )
+    }, children)
   );
 };
 

@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * ⚡ CHAT MESSAGE PAGINATION SERVICE - FACEBOOK STANDARDS
  * 
@@ -49,7 +50,7 @@ class ChatPaginationService {
     pageSize: number = this.defaultPageSize
   ): Promise<PaginatedMessages> {
     try {
-      console.log(`📖 Loading initial ${pageSize} messages for conversation: ${conversationId}`);
+      logger.info(`📖 Loading initial ${pageSize} messages for conversation: ${conversationId}`);
       
       // Clear cache for this conversation
       this.messageCache.delete(conversationId);
@@ -75,7 +76,7 @@ class ChatPaginationService {
         timestamp: Date.now()
       });
       
-      console.log(`✅ Loaded ${messages.length} messages (${result.total} total, hasMore: ${hasMore})`);
+      logger.info(`✅ Loaded ${messages.length} messages (${result.total} total, hasMore: ${hasMore})`);
       
       return {
         messages,
@@ -85,7 +86,7 @@ class ChatPaginationService {
       };
       
     } catch (error) {
-      console.error('❌ Failed to load initial messages:', error);
+      logger.error('❌ Failed to load initial messages:', error);
       throw error;
     }
   }
@@ -104,7 +105,7 @@ class ChatPaginationService {
     pageSize: number = this.defaultPageSize
   ): Promise<PaginatedMessages> {
     try {
-      console.log(`📖 Loading ${pageSize} older messages before cursor: ${cursor}`);
+      logger.info(`📖 Loading ${pageSize} older messages before cursor: ${cursor}`);
       
       // Get cursor message timestamp
       const cursorMessage = await databases.getDocument(
@@ -139,7 +140,7 @@ class ChatPaginationService {
         });
       }
       
-      console.log(`✅ Loaded ${messages.length} older messages (hasMore: ${hasMore})`);
+      logger.info(`✅ Loaded ${messages.length} older messages (hasMore: ${hasMore})`);
       
       return {
         messages,
@@ -149,7 +150,7 @@ class ChatPaginationService {
       };
       
     } catch (error) {
-      console.error('❌ Failed to load older messages:', error);
+      logger.error('❌ Failed to load older messages:', error);
       throw error;
     }
   }
@@ -180,7 +181,7 @@ class ChatPaginationService {
       return result.documents;
       
     } catch (error) {
-      console.error('❌ Failed to load newer messages:', error);
+      logger.error('❌ Failed to load newer messages:', error);
       return [];
     }
   }
@@ -199,7 +200,7 @@ class ChatPaginationService {
     pageSize: number = 20
   ): Promise<any[]> {
     try {
-      console.log(`🔍 Searching messages for: "${searchQuery}"`);
+      logger.info(`🔍 Searching messages for: "${searchQuery}"`);
       
       const result = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
@@ -212,11 +213,11 @@ class ChatPaginationService {
         ]
       );
       
-      console.log(`✅ Found ${result.documents.length} matching messages`);
+      logger.info(`✅ Found ${result.documents.length} matching messages`);
       return result.documents;
       
     } catch (error) {
-      console.error('❌ Search failed:', error);
+      logger.error('❌ Search failed:', error);
       return [];
     }
   }
@@ -251,7 +252,7 @@ class ChatPaginationService {
    */
   clearCache(conversationId: string) {
     this.messageCache.delete(conversationId);
-    console.log(`🗑️ Cache cleared for conversation: ${conversationId}`);
+    logger.info(`🗑️ Cache cleared for conversation: ${conversationId}`);
   }
   
   /**
@@ -259,7 +260,7 @@ class ChatPaginationService {
    */
   clearAllCaches() {
     this.messageCache.clear();
-    console.log('🗑️ All message caches cleared');
+    logger.info('🗑️ All message caches cleared');
   }
   
   /**

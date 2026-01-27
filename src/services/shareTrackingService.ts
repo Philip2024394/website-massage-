@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * Share Tracking Service
  * Integrates with existing analytics system to track profile sharing
@@ -119,9 +120,9 @@ class ShareTrackingService {
                 }
             });
 
-            console.log(`📤 Profile shared tracked: ${params.memberName} via ${params.platform}`);
+            logger.info(`📤 Profile shared tracked: ${params.memberName} via ${params.platform}`);
         } catch (error) {
-            console.error('Error tracking profile share:', error);
+            logger.error('Error tracking profile share:', error);
         }
     }
 
@@ -168,9 +169,9 @@ class ShareTrackingService {
                 params.memberType === 'therapist' ? 'therapist' : 'place'
             );
 
-            console.log(`👁️ Shared profile view tracked: ${params.memberName} from ${params.platform || 'direct'}`);
+            logger.info(`👁️ Shared profile view tracked: ${params.memberName} from ${params.platform || 'direct'}`);
         } catch (error) {
-            console.error('Error tracking shared profile view:', error);
+            logger.error('Error tracking shared profile view:', error);
         }
     }
 
@@ -256,7 +257,7 @@ class ShareTrackingService {
             };
 
         } catch (error) {
-            console.error('Error getting member share analytics:', error);
+            logger.error('Error getting member share analytics:', error);
             return this.getEmptyAnalytics();
         }
     }
@@ -314,7 +315,7 @@ class ShareTrackingService {
             return results.sort((a, b) => b.analytics.totalShares - a.analytics.totalShares);
 
         } catch (error) {
-            console.error('Error getting all members share analytics:', error);
+            logger.error('Error getting all members share analytics:', error);
             return [];
         }
     }
@@ -424,7 +425,7 @@ class ShareTrackingService {
                 chainPath
             };
         } catch (error) {
-            console.error('Error parsing share chain from URL:', error);
+            logger.error('Error parsing share chain from URL:', error);
             return null;
         }
     }
@@ -494,10 +495,10 @@ class ShareTrackingService {
                 }
             });
             
-            console.log(`📤 Profile shared with chain tracking: ${params.memberName} via ${params.platform} (depth: ${chainData.shareDepth})`);
+            logger.info(`📤 Profile shared with chain tracking: ${params.memberName} via ${params.platform} (depth: ${chainData.shareDepth})`);
             return shareId;
         } catch (error) {
-            console.error('Error tracking profile share with chain:', error);
+            logger.error('Error tracking profile share with chain:', error);
             return '';
         }
     }
@@ -549,9 +550,9 @@ class ShareTrackingService {
                 params.memberType === 'therapist' ? 'therapist' : params.memberType === 'facial' ? 'place' : 'place'
             );
             
-            console.log(`👁️ Shared profile viewed with chain: ${params.memberName} (depth: ${params.shareChain?.shareDepth || 0})`);
+            logger.info(`👁️ Shared profile viewed with chain: ${params.memberName} (depth: ${params.shareChain?.shareDepth || 0})`);
         } catch (error) {
-            console.error('Error tracking shared profile view with chain:', error);
+            logger.error('Error tracking shared profile view with chain:', error);
         }
     }
 
@@ -632,7 +633,7 @@ class ShareTrackingService {
                 }))
                 .sort((a, b) => b.viralityScore - a.viralityScore);
         } catch (error) {
-            console.error('Error getting sharing chain analytics:', error);
+            logger.error('Error getting sharing chain analytics:', error);
             return [];
         }
     }
@@ -652,7 +653,7 @@ class ShareTrackingService {
             const randomFactor = (Math.random() - 0.5) * 10; // ±5% variation
             return Math.max(0, Math.min(100, baseRate + randomFactor));
         } catch (error) {
-            console.error('Error calculating conversion rate:', error);
+            logger.error('Error calculating conversion rate:', error);
             return 0;
         }
     }
@@ -701,11 +702,11 @@ class ShareTrackingService {
      */
     async initializeShareTracking(): Promise<void> {
         try {
-            console.log('🔄 Initializing share tracking system...');
-            console.log('📊 Share tracking service ready');
-            console.log('📈 Integration with analytics service: ACTIVE');
+            logger.info('🔄 Initializing share tracking system...');
+            logger.info('📊 Share tracking service ready');
+            logger.info('📈 Integration with analytics service: ACTIVE');
         } catch (error) {
-            console.error('Error initializing share tracking:', error);
+            logger.error('Error initializing share tracking:', error);
         }
     }
 }

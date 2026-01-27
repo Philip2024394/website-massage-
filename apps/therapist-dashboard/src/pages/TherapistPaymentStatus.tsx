@@ -92,14 +92,38 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
         );
     }
 
+    const dict = {
+        therapistDashboard: {
+            thisMonth: 'this month'
+        }
+    };
+
     return (
         <div className="min-h-screen bg-white">
-            <TherapistPageHeader
-                title="Payment History"
-                subtitle="Track payment submissions"
-                onBackToStatus={onBack}
-                icon={<div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center"><CreditCard className="w-5 h-5 text-white" /></div>}
-                actions={
+            {/* Page Header */}
+            <div className="max-w-7xl mx-auto px-3 sm:px-5 pt-6 pb-4">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-gray-900">Payment Status</h2>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+                        <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Page Header with Online Hours */}
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                        <CreditCard className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900">Payment Status</h2>
+                        <p className="text-sm text-gray-600">Track payment submissions</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
                     <button
                         onClick={loadPayments}
                         className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
@@ -107,8 +131,13 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                     >
                         <RefreshCw className="w-5 h-5 text-black" />
                     </button>
-                }
-            />
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+                        <span className="text-xs text-gray-500">this month</span>
+                    </div>
+                </div>
+            </div>
 
             <div className="p-3 sm:p-5 space-y-4 max-w-7xl mx-auto">
                 {/* Info Banner */}

@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 import { appwriteDatabases } from '../lib/appwrite/client';
 import { ID } from 'appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
@@ -72,7 +73,7 @@ class SessionTrackingService {
 
             return response.$id;
         } catch (error) {
-            console.error('Error starting session:', error);
+            logger.error('Error starting session:', error);
             throw error;
         }
     }
@@ -99,7 +100,7 @@ class SessionTrackingService {
             this.currentSessionId = null;
             this.sessionStartTime = null;
         } catch (error) {
-            console.error('Error ending session:', error);
+            logger.error('Error ending session:', error);
         }
     }
 
@@ -117,7 +118,7 @@ class SessionTrackingService {
                         }
                     );
                 } catch (error) {
-                    console.error('Error updating heartbeat:', error);
+                    logger.error('Error updating heartbeat:', error);
                 }
             }
         }, 30000);
@@ -195,7 +196,7 @@ class SessionTrackingService {
             // ⚠️ IP-based location intentionally disabled due to inaccuracy in Indonesia.
             // ISPs often route traffic through Jakarta, causing incorrect city detection.
             // If GPS fails, return null instead of using IP fallback.
-            console.log('📍 GPS location unavailable - NO IP fallback (intentionally disabled)');
+            logger.info('📍 GPS location unavailable - NO IP fallback (intentionally disabled)');
             return null;
         }
     }
@@ -206,7 +207,7 @@ class SessionTrackingService {
             const data = await response.json();
             return data.ip;
         } catch (error) {
-            console.error('Error getting IP:', error);
+            logger.error('Error getting IP:', error);
             return 'Unknown';
         }
     }

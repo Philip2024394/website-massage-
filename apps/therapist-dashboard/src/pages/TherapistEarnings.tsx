@@ -250,6 +250,16 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-4">
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+            <Clock className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+            <span className="text-xs text-gray-500">{currentLabels.thisMonth}</span>
+          </div>
+        </div>
+        
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">

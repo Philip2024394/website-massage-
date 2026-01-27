@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * Production-grade booking service
  * Handles all booking operations with enterprise security and error handling
@@ -37,7 +38,7 @@ export class BookingService {
       // Client-side validation before API call
       this.validateBookingRequest(request)
 
-      console.log('📋 Creating booking request:', {
+      logger.info('📋 Creating booking request:', {
         duration: request.serviceDuration,
         location: request.location.address
       })
@@ -60,11 +61,11 @@ export class BookingService {
         )
       }
 
-      console.log('✅ Booking created successfully:', result.data?.id)
+      logger.info('✅ Booking created successfully:', result.data?.id)
       return result.data!
 
     } catch (error) {
-      console.error('❌ Booking creation failed:', error)
+      logger.error('❌ Booking creation failed:', error)
       
       if (error instanceof BookingError) {
         throw error
@@ -93,7 +94,7 @@ export class BookingService {
       
       this.activeSearches.set(searchId, abortController)
 
-      console.log('🔍 Starting therapist search:', {
+      logger.info('🔍 Starting therapist search:', {
         bookingId,
         radius: searchConfig.maxRadius,
         duration: searchConfig.serviceDuration
@@ -123,7 +124,7 @@ export class BookingService {
       return result.data!
 
     } catch (error) {
-      console.error('❌ Search initiation failed:', error)
+      logger.error('❌ Search initiation failed:', error)
       
       if (error instanceof BookingError) {
         throw error
@@ -162,7 +163,7 @@ export class BookingService {
       return result.data!
 
     } catch (error) {
-      console.error('❌ Search status check failed:', error)
+      logger.error('❌ Search status check failed:', error)
       
       // Return failure result instead of throwing to allow retry
       return {
@@ -178,7 +179,7 @@ export class BookingService {
    */
   async acceptTherapist(bookingId: string, therapistId: string): Promise<Booking> {
     try {
-      console.log('✅ Accepting therapist:', { bookingId, therapistId })
+      logger.info('✅ Accepting therapist:', { bookingId, therapistId })
 
       const response = await this.functions.createExecution(
         'acceptTherapist',
@@ -197,11 +198,11 @@ export class BookingService {
         )
       }
 
-      console.log('🎉 Therapist accepted successfully')
+      logger.info('🎉 Therapist accepted successfully')
       return result.data!
 
     } catch (error) {
-      console.error('❌ Therapist acceptance failed:', error)
+      logger.error('❌ Therapist acceptance failed:', error)
       
       if (error instanceof BookingError) {
         throw error
@@ -220,7 +221,7 @@ export class BookingService {
    */
   async cancelBooking(bookingId: string, reason?: string): Promise<void> {
     try {
-      console.log('🛑 Cancelling booking:', { bookingId, reason })
+      logger.info('🛑 Cancelling booking:', { bookingId, reason })
 
       // Cancel any active searches
       this.cancelActiveSearches()
@@ -236,14 +237,14 @@ export class BookingService {
       const result: AppwriteFunctionResponse = JSON.parse(response.responseBody)
 
       if (!result.success) {
-        console.warn('⚠️ Booking cancellation failed:', result.error)
+        logger.warn('⚠️ Booking cancellation failed:', result.error)
         // Don't throw - cancellation should always succeed from UX perspective
       } else {
-        console.log('✅ Booking cancelled successfully')
+        logger.info('✅ Booking cancelled successfully')
       }
 
     } catch (error) {
-      console.error('❌ Booking cancellation error:', error)
+      logger.error('❌ Booking cancellation error:', error)
       // Don't throw - cancellation should always succeed from UX perspective
     }
   }
@@ -252,11 +253,11 @@ export class BookingService {
    * Cancel active searches when user cancels or accepts therapist
    */
   cancelActiveSearches(): void {
-    console.log('🛑 Cancelling active searches:', this.activeSearches.size)
+    logger.info('🛑 Cancelling active searches:', this.activeSearches.size)
     
     for (const [searchId, controller] of this.activeSearches) {
       controller.abort()
-      console.log(`🛑 Cancelled search: ${searchId}`)
+      logger.info(`🛑 Cancelled search: ${searchId}`)
     }
     
     this.activeSearches.clear()
@@ -284,7 +285,7 @@ export class BookingService {
       return result.data!
 
     } catch (error) {
-      console.error('❌ Failed to get booking:', error)
+      logger.error('❌ Failed to get booking:', error)
       return null
     }
   }

@@ -1985,13 +1985,6 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     console.log('🔍 [STAGE 6] Rendering area:', area, 'with', therapistsInArea.length, 'therapists');
                                     return (
                                         <div key={`area-${area}`} className="mb-8">
-                                            {/* Location Area Header */}
-                                            {locationAreas.length > 1 && (
-                                                <h4 className="text-lg font-semibold text-gray-800 mb-3 px-1">
-                                                    📍 Nearby in {area}
-                                                </h4>
-                                            )}
-                                            
                                             {/* Therapist Cards in This Area */}
                                             {therapistsInArea.map((therapist: any, index: number) => {
                                                 console.log('🔍 [STAGE 6] Rendering TherapistHomeCard for:', therapist.name);

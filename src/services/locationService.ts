@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 // Location service for automatic GPS detection and management
 import type { UserLocation } from '../types';
 import { deviceService } from './deviceService';
@@ -56,13 +57,13 @@ class LocationService {
      * Get current device location using GPS with automatic error handling
      */
     public async getCurrentLocation(options?: LocationOptions): Promise<UserLocation> {
-        console.log('📍 LocationService: Getting current location...');
+        logger.info('📍 LocationService: Getting current location...');
         
         // Get device-specific optimizations
         const deviceInfo = deviceService.getDeviceInfo();
         const deviceOptimizations = deviceService.getOptimizations();
         
-        console.log('🔧 Device info:', {
+        logger.info('🔧 Device info:', {
             type: deviceInfo.type,
             platform: deviceInfo.platform,
             browser: deviceInfo.browser,
@@ -79,7 +80,7 @@ class LocationService {
 
         // Check cache first (for recent locations)
         if (this.currentLocation && this.isLocationCacheValid()) {
-            console.log('📍 Using cached location:', this.currentLocation);
+            logger.info('📍 Using cached location:', this.currentLocation);
             return this.currentLocation;
         }
 
@@ -92,13 +93,13 @@ class LocationService {
         };
         
         return new Promise((resolve, reject) => {
-            console.log('📍 Requesting GPS location with device-optimized options:', defaultOptions);
+            logger.info('📍 Requesting GPS location with device-optimized options:', defaultOptions);
             
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    console.log('✅ GPS location obtained:', position);
-                    console.log('📊 GPS accuracy:', position.coords.accuracy, 'meters');
-                    console.log('🎯 GPS coordinates:', {
+                    logger.info('✅ GPS location obtained:', position);
+                    logger.info('📊 GPS accuracy:', position.coords.accuracy, 'meters');
+                    logger.info('🎯 GPS coordinates:', {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
                         altitude: position.coords.altitude,
@@ -111,7 +112,7 @@ class LocationService {
                         this.cacheLocation(location);
                         resolve(location);
                     } catch (error) {
-                        console.error('❌ Error processing GPS position:', error);
+                        logger.error('❌ Error processing GPS position:', error);
                         reject(this.createLocationError(0, 'Failed to process GPS location'));
                     }
                 },
@@ -120,9 +121,9 @@ class LocationService {
                     // They're handled gracefully with fallback location
                     if (error.code === 3) {
                         // Timeout - common and expected, use info level
-                        console.log('⏱️ GPS location timeout (expected) - will use fallback');
+                        logger.info('⏱️ GPS location timeout (expected) - will use fallback');
                     } else {
-                        console.warn('⚠️ GPS location error:', error.message || error);
+                        logger.warn('⚠️ GPS location error:', error.message || error);
                     }
                     reject(this.handleGeolocationError(error));
                 },
@@ -135,17 +136,17 @@ class LocationService {
     private async processGPSPosition(position: GeolocationPosition): Promise<UserLocation> {
         const { latitude, longitude } = position.coords;
         
-        console.log('📍 Processing GPS coordinates:', { latitude, longitude });
-        console.log('📍 Position accuracy:', position.coords.accuracy, 'meters');
+        logger.info('📍 Processing GPS coordinates:', { latitude, longitude });
+        logger.info('📍 Position accuracy:', position.coords.accuracy, 'meters');
         
         // Try to get address using reverse geocoding
         let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`; // Default to coordinates
         
         try {
             address = await this.reverseGeocode(latitude, longitude);
-            console.log('📍 Address resolved:', address);
+            logger.info('📍 Address resolved:', address);
         } catch (error) {
-            console.warn('⚠️ Reverse geocoding failed, using coordinates:', error);
+            logger.warn('⚠️ Reverse geocoding failed, using coordinates:', error);
         }
         
         return {
@@ -161,12 +162,12 @@ class LocationService {
     private async reverseGeocode(lat: number, lng: number): Promise<string> {
         // Check if Google Maps API is available
         if (typeof window !== 'undefined' && (window as any).google?.maps?.Geocoder) {
-            console.log('📍 Using Google Maps for reverse geocoding');
+            logger.info('📍 Using Google Maps for reverse geocoding');
             return this.googleMapsReverseGeocode(lat, lng);
         }
         
         // Fallback to a free geocoding service
-        console.log('📍 Using fallback geocoding service');
+        logger.info('📍 Using fallback geocoding service');
         return this.fallbackReverseGeocode(lat, lng);
     }
     
@@ -206,7 +207,7 @@ class LocationService {
 
         for (const service of services) {
             try {
-                console.log(`📍 Trying ${service.name} for reverse geocoding`);
+                logger.info(`📍 Trying ${service.name} for reverse geocoding`);
                 
                 const response = await fetch(service.url, {
                     headers: {
@@ -215,7 +216,7 @@ class LocationService {
                 });
                 
                 if (!response.ok) {
-                    console.warn(`⚠️ ${service.name} returned ${response.status}`);
+                    logger.warn(`⚠️ ${service.name} returned ${response.status}`);
                     continue;
                 }
                 
@@ -237,17 +238,17 @@ class LocationService {
                 }
                 
                 if (address) {
-                    console.log(`✅ ${service.name} geocoding successful`);
+                    logger.info(`✅ ${service.name} geocoding successful`);
                     return address;
                 }
             } catch (error) {
-                console.warn(`⚠️ ${service.name} failed:`, error);
+                logger.warn(`⚠️ ${service.name} failed:`, error);
                 continue;
             }
         }
         
         // If all services fail, throw error
-        console.warn('⚠️ All fallback geocoding services failed');
+        logger.warn('⚠️ All fallback geocoding services failed');
         throw new Error('All geocoding services failed');
     }
     
@@ -257,7 +258,7 @@ class LocationService {
     private handleGeolocationError(error: GeolocationPositionError): LocationError {
         // Only log detailed errors for non-timeout cases
         if (error.code !== 3) {
-            console.warn('🚨 Geolocation error:', error.message);
+            logger.warn('🚨 Geolocation error:', error.message);
         }
         
         switch (error.code) {
@@ -323,7 +324,7 @@ class LocationService {
                 timestamp: this.lastLocationUpdate
             }));
         } catch (error) {
-            console.warn('Failed to cache location to localStorage:', error);
+            logger.warn('Failed to cache location to localStorage:', error);
         }
     }
     
@@ -355,7 +356,7 @@ class LocationService {
                 }
             }
         } catch (error) {
-            console.warn('Failed to load cached location:', error);
+            logger.warn('Failed to load cached location:', error);
         }
         
         return null;
@@ -377,37 +378,37 @@ class LocationService {
      * Request location with user-friendly prompts and fallbacks
      */
     public async requestLocationWithFallback(): Promise<UserLocation> {
-        console.log('📍 Requesting location with fallback options...');
+        logger.info('📍 Requesting location with fallback options...');
         
         // First, try to load from cache
         const cachedLocation = this.loadCachedLocation();
         if (cachedLocation) {
-            console.log('📍 Using cached location:', cachedLocation);
+            logger.info('📍 Using cached location:', cachedLocation);
             return cachedLocation;
         }
         
         try {
             // Try to get current GPS location
             const location = await this.getCurrentLocation();
-            console.log('✅ GPS location successful:', location);
+            logger.info('✅ GPS location successful:', location);
             return location;
         } catch (error) {
-            console.warn('⚠️ GPS location failed:', error);
+            logger.warn('⚠️ GPS location failed:', error);
             
             const locationError = error as LocationError;
             
             // Show appropriate message based on error type
             if (locationError.isPermissionDenied) {
-                console.log('📍 Location permission denied, using default location');
+                logger.info('📍 Location permission denied, using default location');
             } else if (locationError.isUnavailable) {
-                console.log('📍 GPS unavailable, using default location');
+                logger.info('📍 GPS unavailable, using default location');
             } else if (locationError.isTimeout) {
-                console.log('📍 GPS timeout, using default location');
+                logger.info('📍 GPS timeout, using default location');
             }
             
             // Return default location
             const defaultLocation = this.getDefaultLocation();
-            console.log('📍 Using default location:', defaultLocation);
+            logger.info('📍 Using default location:', defaultLocation);
             return defaultLocation;
         }
     }

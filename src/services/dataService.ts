@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 import { APP_CONFIG } from '../config';
 import { Therapist, Place, User, Agent, HotelVillaServiceStatus } from '../types';
 import { AvailabilityStatus } from '../types';
@@ -652,15 +653,15 @@ export const dataService = {
                 // CRITICAL RULE: If city is specified, apply strict client-side filtering
                 // This ensures NO therapist from wrong city can slip through
                 if (city && city !== 'all') {
-                    console.log(`🔒 STRICT CITY FILTER: Enforcing city="${city}" filter on ${therapists.length} therapists`);
+                    logger.info(`🔒 STRICT CITY FILTER: Enforcing city="${city}" filter on ${therapists.length} therapists`);
                     const filtered = filterTherapistsByCity(therapists, city);
-                    console.log(`🔒 STRICT CITY FILTER: Returning ${filtered.length} therapists for city="${city}"`);
+                    logger.info(`🔒 STRICT CITY FILTER: Returning ${filtered.length} therapists for city="${city}"`);
                     return filtered;
                 }
                 
                 return therapists;
             } catch (error) {
-                console.error('Error in dataService.getTherapists:', error);
+                logger.error('Error in dataService.getTherapists:', error);
                 return [];
             }
         }

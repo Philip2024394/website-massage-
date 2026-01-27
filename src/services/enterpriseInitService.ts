@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * 🏢 ENTERPRISE INITIALIZATION SERVICE
  * 
@@ -25,12 +26,12 @@ class EnterpriseInitializationService {
    */
   async initialize(): Promise<void> {
     if (this.initialized) {
-      console.log('⚠️ Enterprise services already initialized');
+      logger.info('⚠️ Enterprise services already initialized');
       return;
     }
 
     this.startTime = performance.now();
-    console.log('🏢 Initializing Enterprise Services...');
+    logger.info('🏢 Initializing Enterprise Services...');
 
     try {
       // Services auto-initialize in their constructors
@@ -56,13 +57,13 @@ class EnterpriseInitializationService {
 
       this.initialized = true;
       
-      console.log(`✅ Enterprise Services initialized in ${Math.round(initTime)}ms`);
-      console.log('📊 Performance monitoring: ACTIVE');
-      console.log('🔍 System monitoring: ACTIVE');
-      console.log('🗄️ Database optimization: ACTIVE');
-      console.log('📋 Booking flow system: ACTIVE');
-      console.log('💬 Chat integration: ACTIVE');
-      console.log('🎵 Audio notifications: ACTIVE');
+      logger.info(`✅ Enterprise Services initialized in ${Math.round(initTime)}ms`);
+      logger.info('📊 Performance monitoring: ACTIVE');
+      logger.info('🔍 System monitoring: ACTIVE');
+      logger.info('🗄️ Database optimization: ACTIVE');
+      logger.info('📋 Booking flow system: ACTIVE');
+      logger.info('💬 Chat integration: ACTIVE');
+      logger.info('🎵 Audio notifications: ACTIVE');
 
       // Start health monitoring
       this.startHealthMonitoring();
@@ -74,7 +75,7 @@ class EnterpriseInitializationService {
       this.initializeDatabaseTracking();
 
     } catch (error) {
-      console.error('❌ Failed to initialize enterprise services:', error);
+      logger.error('❌ Failed to initialize enterprise services:', error);
       
       trackEvent(
         'error',
@@ -128,7 +129,7 @@ class EnterpriseInitializationService {
       }, 30000); // Check every 30 seconds
     }
 
-    console.log('🔍 Health monitoring started');
+    logger.info('🔍 Health monitoring started');
   }
 
   /**
@@ -163,11 +164,11 @@ class EnterpriseInitializationService {
 
         observer.observe({ entryTypes: ['resource'] });
       } catch (error) {
-        console.warn('Performance budget monitoring not available:', error);
+        logger.warn('Performance budget monitoring not available:', error);
       }
     }
 
-    console.log('📊 Performance budgets monitoring active');
+    logger.info('📊 Performance budgets monitoring active');
   }
 
   /**
@@ -230,7 +231,7 @@ class EnterpriseInitializationService {
       }
     };
 
-    console.log('🗄️ Database query tracking initialized');
+    logger.info('🗄️ Database query tracking initialized');
   }
 
   /**
@@ -257,10 +258,10 @@ class EnterpriseInitializationService {
       }
     });
 
-    console.log('⌨️ Enterprise keyboard shortcuts initialized');
-    console.log('   Ctrl+Shift+P: Performance Dashboard');
-    console.log('   Ctrl+Shift+M: Monitoring Dashboard'); 
-    console.log('   Ctrl+Shift+D: Database Dashboard');
+    logger.info('⌨️ Enterprise keyboard shortcuts initialized');
+    logger.info('   Ctrl+Shift+P: Performance Dashboard');
+    logger.info('   Ctrl+Shift+M: Monitoring Dashboard'); 
+    logger.info('   Ctrl+Shift+D: Database Dashboard');
   }
 
   /**
@@ -311,7 +312,7 @@ class EnterpriseInitializationService {
   cleanup(): void {
     if (!this.initialized) return;
 
-    console.log('🧹 Cleaning up enterprise services...');
+    logger.info('🧹 Cleaning up enterprise services...');
     
     // Services have their own cleanup methods
     enterprisePerformanceService.destroy();

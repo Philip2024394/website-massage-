@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * UNIFIED BOOKING CREATION SERVICE - FACEBOOK STANDARDS ⚡
  * 
@@ -107,11 +108,11 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       time: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[1] : now.toISOString().split('T')[1]
     };
 
-    console.log('📤 Creating booking in localStorage...');
+    logger.info('📤 Creating booking in localStorage...');
     
     const booking = await bookingService.createBooking(bookingData);
     
-    console.log(`✅ Booking created successfully:`, {
+    logger.info(`✅ Booking created successfully:`, {
       bookingId: booking.bookingId,
       type: input.bookingType
     });
@@ -123,7 +124,7 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
     };
 
   } catch (error: any) {
-    console.error('❌ Booking creation failed:', error);
+    logger.error('❌ Booking creation failed:', error);
     
     // ⚡ Enhanced error logging for monitoring
     const errorContext = {
@@ -135,7 +136,7 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       providerId: input.providerId,
       userId: input.userId
     };
-    console.error('🚨 Booking Error Context:', errorContext);
+    logger.error('🚨 Booking Error Context:', errorContext);
     
     // Parse Appwrite error
     const errorMessage = error?.message || error?.toString() || 'Unknown error';

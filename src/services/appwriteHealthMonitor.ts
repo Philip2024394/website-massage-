@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 import { databases, account } from '../lib/appwrite';
 
 interface HealthStatus {
@@ -36,7 +37,7 @@ class AppwriteHealthMonitor {
                 return false; // Circuit still open
             }
             // Try to reset circuit
-            console.log('🔄 Attempting to reset circuit breaker...');
+            logger.info('🔄 Attempting to reset circuit breaker...');
         }
         
         try {
@@ -53,7 +54,7 @@ class AppwriteHealthMonitor {
             
             return true;
         } catch (error) {
-            console.warn('🏥 Appwrite health check failed:', error);
+            logger.warn('🏥 Appwrite health check failed:', error);
             this.recordFailure();
             return false;
         }
@@ -67,7 +68,7 @@ class AppwriteHealthMonitor {
         // Open circuit if too many failures
         if (this.healthStatus.consecutiveFailures >= this.MAX_FAILURES) {
             this.healthStatus.circuitOpen = true;
-            console.error(`🚨 Circuit breaker opened after ${this.MAX_FAILURES} consecutive failures. Chat will use local fallback.`);
+            logger.error(`🚨 Circuit breaker opened after ${this.MAX_FAILURES} consecutive failures. Chat will use local fallback.`);
         }
     }
     
@@ -80,7 +81,7 @@ class AppwriteHealthMonitor {
     openCircuit(): void {
         this.healthStatus.circuitOpen = true;
         this.healthStatus.lastCheckTime = Date.now();
-        console.log('🔧 Circuit breaker manually opened');
+        logger.info('🔧 Circuit breaker manually opened');
     }
     
     // Force circuit breaker closed (for recovery)
@@ -91,7 +92,7 @@ class AppwriteHealthMonitor {
             consecutiveFailures: 0,
             circuitOpen: false
         };
-        console.log('🔧 Circuit breaker manually closed');
+        logger.info('🔧 Circuit breaker manually closed');
     }
     
     // Start periodic health monitoring
@@ -100,7 +101,7 @@ class AppwriteHealthMonitor {
             await this.isHealthy();
         }, this.HEALTH_CHECK_INTERVAL);
         
-        console.log('🏥 Started Appwrite health monitoring');
+        logger.info('🏥 Started Appwrite health monitoring');
     }
 }
 

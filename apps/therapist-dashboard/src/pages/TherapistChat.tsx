@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, User, CheckCircle, Crown, Lock } from 'lucide-react';
+import { MessageCircle, Send, User, CheckCircle, Crown, Lock, Clock } from 'lucide-react';
 import { messagingService } from '../../../../src/lib/appwriteService';
 
 interface Message {
@@ -150,8 +150,26 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
     return date.toLocaleDateString();
   };
 
+  const dict = {
+    therapistDashboard: {
+      thisMonth: 'this month'
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      {/* Page Header */}
+      <div className="max-w-sm mx-auto px-4 pt-6 pb-4 w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Messages</h2>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+            <Clock className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+            <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
+          </div>
+        </div>
+      </div>
+      
       {/* Header */}
       <div className="w-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-lg sticky top-0 z-10">
         <div className="max-w-sm mx-auto px-4 py-4 flex items-center justify-between">

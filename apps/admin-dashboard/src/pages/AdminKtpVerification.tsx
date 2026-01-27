@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { FileCheck, CheckCircle, XCircle, Search, Eye, AlertCircle } from 'lucide-react';
-import { therapistService } from '../../../src/lib/appwrite';
+import { therapistService } from '../lib/appwrite';
 
 interface TherapistKtpData {
   $id: string;

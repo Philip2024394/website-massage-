@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * Taxi Booking Service
  * Handles bike taxi and car taxi booking logic with Appwrite integration
@@ -163,7 +164,7 @@ export const createTaxiBookingLink = async (
                 }
             );
 
-            console.log('Ride request saved to Appwrite:', rideRequest.$id);
+            logger.info('Ride request saved to Appwrite:', rideRequest.$id);
 
             return {
                 success: true,
@@ -174,7 +175,7 @@ export const createTaxiBookingLink = async (
             };
 
         } catch (dbError) {
-            console.error('Error saving to Appwrite, continuing with deep link:', dbError);
+            logger.error('Error saving to Appwrite, continuing with deep link:', dbError);
             
             // Continue with deep link even if database save fails
             return {
@@ -187,7 +188,7 @@ export const createTaxiBookingLink = async (
         }
 
     } catch (error) {
-        console.error('Error creating taxi booking link:', error);
+        logger.error('Error creating taxi booking link:', error);
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Unknown error occurred'

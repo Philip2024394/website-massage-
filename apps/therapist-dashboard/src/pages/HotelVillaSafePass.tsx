@@ -251,153 +251,229 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <TherapistPageHeader 
-        title="Hotel / Villa Safe Pass"
-        onBack={onBack}
-        language={language}
-      />
-      
-      {/* Hero Section */}
-      <section className="bg-white">
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
-              Certified Massage Therapists for Hotels & Villas
-            </h1>
-            <p className="text-xl text-gray-600 font-medium">
-              Professional Safe Pass Certification Program
-            </p>
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+      {/* Page Header with Online Hours */}
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Hotel & Villa Safe Pass Certification</h2>
+              <p className="text-sm text-gray-600">Official certification for hotel & villa access</p>
+            </div>
           </div>
-          
-          {/* Safe Pass Image in Hero */}
-          <div className="flex justify-center mb-6">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+            <Clock className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+            <span className="text-xs text-gray-500">this month</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Hero Section - Minimalistic & Clean */}
+      <section className="bg-white border-b border-orange-100">
+        <div className="max-w-5xl mx-auto px-4 py-12">
+          {/* Enlarged Safe Pass Image */}
+          <div className="flex justify-center mb-8">
             <img 
               src="https://ik.imagekit.io/7grri5v7d/scaffolding_indastreetsssssss-removebg-preview.png" 
               alt="Hotel Villa Safe Pass Certification" 
-              className="w-full max-w-3xl h-auto object-contain drop-shadow-2xl"
+              className="w-full max-w-4xl h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
             />
           </div>
           
-          <div className="text-center max-w-3xl mx-auto">
-            <p className="text-lg text-gray-600 mb-4">
-              Get officially certified to provide spa and massage services at hotels and villas across Indonesia. 
-              The Safe Pass is your professional credential for working in premium hospitality environments.
+          {/* Clean Title */}
+          <div className="text-center max-w-2xl mx-auto space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Hotel & Villa Safe Pass
+            </h1>
+            <p className="text-lg text-gray-600">
+              Professional certification for premium hospitality services
             </p>
-            <div className="flex items-center justify-center gap-4 text-gray-700">
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-blue-600" />
-                <span>Official Certification</span>
+            
+            {/* Status Badges - Minimalistic */}
+            <div className="flex items-center justify-center gap-6 pt-4">
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span>Official</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <span>Admin Verified</span>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span>Verified</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Building className="w-5 h-5 text-orange-600" />
-                <span>Hotel Authorized</span>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span>Authorized</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why Hotels Choose IndaStreet Section */}
-      <section className="py-12 bg-white">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            Why Hotels Choose <span className="text-orange-500">Inda</span><span className="text-gray-900">Street</span> Massage
-          </h2>
+      {/* Benefits Section - Orange Theme */}
+      <section className="py-12">
+        <div className="max-w-5xl mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-orange-500" />
+            <div className="bg-white rounded-2xl p-6 border border-orange-100 hover:shadow-lg transition-shadow">
+              <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mb-4">
+                <Shield className="w-7 h-7 text-white" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Verified Professionals</h3>
-              <p className="text-gray-600 text-sm">All therapists undergo strict Safe Pass certification and background checks</p>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Verified</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">Strict certification and background verification</p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-8 h-8 text-orange-500" />
+            <div className="bg-white rounded-2xl p-6 border border-orange-100 hover:shadow-lg transition-shadow">
+              <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-7 h-7 text-white" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Quality Guaranteed</h3>
-              <p className="text-gray-600 text-sm">Premium spa services meeting international hospitality standards</p>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Premium</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">International hospitality standards</p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building className="w-8 h-8 text-orange-500" />
+            <div className="bg-white rounded-2xl p-6 border border-orange-100 hover:shadow-lg transition-shadow">
+              <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mb-4">
+                <Building className="w-7 h-7 text-white" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Hotel Ready</h3>
-              <p className="text-gray-600 text-sm">Certified for professional conduct in luxury hotel and villa environments</p>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Certified</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">Luxury hotel and villa authorized</p>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
-        {/* Information Section */}
-        <div className="bg-gray-50 rounded-lg shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <Shield className="w-5 h-5 text-blue-600" />
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {/* Application Status - Minimalistic Card */}
+        <div className="bg-white rounded-2xl border border-orange-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Application Status</h2>
+              {getStatusBadge(currentStatus)}
             </div>
-            <h2 className="text-xl font-bold text-gray-900">What is Hotel / Villa Safe Pass?</h2>
           </div>
-
-          <p className="text-gray-600 mb-6">{t('therapistDashboard.safePassDescription')}</p>
           
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Requirements */}
+          <div className="p-6">
+            {currentStatus === 'rejected' && therapist?.safePassRejectionReason && (
+              <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-red-900">Application Rejected</p>
+                    <p className="text-red-700 text-sm mt-1">{therapist.safePassRejectionReason}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Requirements Grid - Clean Layout */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900 text-lg mb-4">Requirements</h3>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3 h-3 text-orange-600" />
+                  </div>
+                  <span className="text-sm text-gray-700">3 recommendation letters</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3 h-3 text-orange-600" />
+                  </div>
+                  <span className="text-sm text-gray-700">Admin approval required</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3 h-3 text-orange-600" />
+                  </div>
+                  <span className="text-sm text-gray-700">Complete profile verification</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3 h-3 text-orange-600" />
+                  </div>
+                  <span className="text-sm text-gray-700">IDR 500,000 fee</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900 text-lg mb-4">Benefits</h3>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-orange-500">•</span>
+                    <span>Hotel/villa authorization</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-orange-500">•</span>
+                    <span>Official Safe Pass card</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-orange-500">•</span>
+                    <span>Enhanced credibility</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-orange-500">•</span>
+                    <span>Premium bookings access</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Identity Information - Minimal Card */}
+        <div className="bg-white rounded-2xl border border-orange-100 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
+            </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Requirements</h3>
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-600">Upload 3 recommendation letters from different hotels or villas</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-600">All letters must be reviewed and approved by admin</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-600">Complete profile verification (KTP, bank details)</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-600">Pay Safe Pass fee after admin approval (IDR 500,000)</span>
-                </div>
+              <h2 className="text-xl font-bold text-gray-900">Identity Information</h2>
+              <p className="text-sm text-gray-600">Will appear on your Safe Pass card</p>
+            </div>
+          </div>
+          
+          {!isProfileComplete() && (
+            <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-amber-900 text-sm">Profile must be completed before Safe Pass approval</p>
+              </div>
+            </div>
+          )}
+          
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Full Name</label>
+              <div className="px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
+                <span className="text-gray-900 font-medium">{therapist?.name || '---'}</span>
               </div>
             </div>
             
-            {/* Benefits */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Benefits</h3>
-              <div className="space-y-2">
-                <div className="text-sm text-gray-600">🏨 Legal authorization to work in hotels and villas</div>
-                <div className="text-sm text-gray-600">🪪 Official Safe Pass card with your details</div>
-                <div className="text-sm text-gray-600">🌟 Enhanced credibility with hotel partners</div>
-                <div className="text-sm text-gray-600">💼 Access to premium hospitality bookings</div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">KTP Status</label>
+              <div className="px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
+                <span className={`font-medium ${therapist?.ktpPhotoUrl ? 'text-green-600' : 'text-red-600'}`}>
+                  {therapist?.ktpPhotoUrl ? '✓ Verified' : '✗ Missing'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Address</label>
+              <div className="px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
+                <span className="text-gray-900 font-medium">{therapist?.location || '---'}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bank Details</label>
+              <div className="px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
+                <span className={`font-medium ${therapist?.bankName && therapist?.accountName ? 'text-green-600' : 'text-red-600'}`}>
+                  {therapist?.bankName && therapist?.accountName ? '✓ Complete' : '✗ Missing'}
+                </span>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Status Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Application Status</h2>
-            {getStatusBadge(currentStatus)}
-          </div>
-          
-          {currentStatus === 'rejected' && therapist?.safePassRejectionReason && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-red-800">Application Rejected</p>
-                  <p className="text-red-700 text-sm mt-1">{therapist.safePassRejectionReason}</p>
-                </div>
               </div>
             </div>
           )}
@@ -464,24 +540,25 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
           </div>
         </div>
 
-        {/* Upload Section */}
+        {/* Upload Section - Clean Orange Theme */}
         {currentStatus !== 'active' && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                <Upload className="w-5 h-5 text-purple-600" />
+          <div className="bg-white rounded-2xl border border-orange-100 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center">
+                <Upload className="w-6 h-6 text-white" />
               </div>
-            <h2 className="text-lg font-bold text-gray-900">{t('therapistDashboard.uploadLetter')}</h2>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">{t('therapistDashboard.uploadLetter')}</h2>
+                <p className="text-sm text-gray-600">{t('therapistDashboard.uploadLetterDesc')}</p>
+              </div>
             </div>
             
-            <p className="text-gray-600 mb-6">{t('therapistDashboard.uploadLetterDesc')}</p>
-            
-            {/* Upload Form */}
+            {/* Upload Form - Minimal Design */}
             {letters.length < 3 && currentStatus !== 'approved' && (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6">
+              <div className="border-2 border-dashed border-orange-200 rounded-xl p-6 mb-6 bg-orange-50/30">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-medium text-gray-700 uppercase tracking-wide mb-2">
                       Hotel/Villa Name
                     </label>
                     <input
@@ -489,15 +566,15 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
                       value={hotelVillaName}
                       onChange={(e) => setHotelVillaName(e.target.value)}
                       placeholder="Enter hotel/villa name"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-medium text-gray-700 uppercase tracking-wide mb-2">
                       Recommendation Letter
                     </label>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                       <input
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png"
@@ -508,45 +585,50 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
                       />
                       <label
                         htmlFor="letter-upload"
-                        className={`flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 ${
+                        className={`flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl cursor-pointer hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm font-medium ${
                           uploading || !hotelVillaName.trim() ? 'opacity-50 cursor-not-allowed' : ''
                         }`}
                       >
                         <Upload className="w-5 h-5" />
                         {uploading ? t('therapistDashboard.uploadInProgress') : t('therapistDashboard.selectFile')}
                       </label>
-                      <span className="text-sm text-gray-500">{t('therapistDashboard.supportedFormats')}</span>
+                      <span className="text-xs text-gray-500">{t('therapistDashboard.supportedFormats')}</span>
                     </div>
                   </div>
                 </div>
               </div>
             )}
             
-            {/* Uploaded Letters List */}
+            {/* Uploaded Letters List - Clean Cards */}
             {letters.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Uploaded Letters ({letters.length}/3)</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900">Uploaded Letters</h3>
+                  <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                    {letters.length}/3
+                  </span>
+                </div>
                 {letters.map((letter, index) => (
-                  <div key={letter.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <div key={letter.id} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl hover:shadow-sm transition-shadow">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <FileCheck className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">{letter.hotelVillaName}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-xs text-gray-500">
                           {letter.fileName} 
                           {letter.fileSize && ` • ${formatFileSize(letter.fileSize)}`}
                         </p>
-                        <p className="text-xs text-gray-400">
-                          Uploaded {new Date(letter.uploadedAt).toLocaleDateString()}
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {new Date(letter.uploadedAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => window.open(letter.url, '_blank')}
-                        className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+                        className="p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
                         title="View Letter"
                       >
                         <Eye className="w-4 h-4" />
@@ -554,7 +636,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
                       {currentStatus !== 'approved' && (
                         <button
                           onClick={() => handleRemoveLetter(letter.id)}
-                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg"
+                          className="p-2.5 text-red-600 hover:text-red-700 hover:bg-red-100 rounded-lg transition-colors"
                           title="Remove"
                         >
                           <X className="w-4 h-4" />
@@ -566,17 +648,17 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
               </div>
             )}
             
-            {/* Submit Button */}
+            {/* Submit Button - Orange Gradient */}
             {letters.length >= 3 && currentStatus === 'pending' && (
-              <div className="pt-6 border-t">
+              <div className="pt-6 mt-6 border-t border-gray-200">
                 <button
                   onClick={handleSubmitApplication}
                   disabled={saving || !isProfileComplete()}
-                  className="w-full bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 rounded-xl hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2 shadow-lg transition-all"
                 >
                   {saving ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
                       {t('therapistDashboard.processing')}
                     </>
                   ) : (
@@ -591,72 +673,71 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
           </div>
         )}
 
-        {/* Payment Section */}
+        {/* Payment Section - Orange Theme */}
         {currentStatus === 'approved' && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <CreditCard className="w-5 h-5 text-green-600" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">{t('therapistDashboard.paymentRequired')}</h2>
-            </div>
-            
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+          <div className="bg-white rounded-2xl border border-orange-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-5">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-6 h-6 text-white" />
                 <div>
-                  <p className="font-medium text-green-800">✅ Application Approved!</p>
-                  <p className="text-green-700 text-sm mt-1">Your recommendation letters have been verified by our admin.</p>
+                  <p className="font-bold text-white text-lg">Application Approved!</p>
+                  <p className="text-green-100 text-sm">Your recommendation letters have been verified</p>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-6">
-              <div>
-                <p className="font-semibold text-gray-900">Safe Pass Fee Payment</p>
-                <p className="text-sm text-gray-600">One-time fee for Safe Pass processing and card issuance (Valid for 1 year)</p>
+            <div className="p-6 space-y-6">
+              <div className="flex items-center justify-between p-5 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200">
+                <div>
+                  <p className="font-bold text-gray-900 text-lg">Safe Pass Fee</p>
+                  <p className="text-sm text-gray-600 mt-1">Valid for 1 year • One-time payment</p>
+                </div>
+                <div className="text-3xl font-bold text-orange-600">IDR 500K</div>
               </div>
-              <div className="text-2xl font-bold text-green-600">IDR 500,000</div>
+              
+              <button
+                onClick={handlePayment}
+                disabled={processingPayment}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2 shadow-lg transition-all"
+              >
+                {processingPayment ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    {t('therapistDashboard.processing')}
+                  </>
+                ) : (
+                  <>
+                    <DollarSign className="w-5 h-5" />
+                    {t('therapistDashboard.payNow')}
+                  </>
+                )}
+              </button>
             </div>
-            
-            <button
-              onClick={handlePayment}
-              disabled={processingPayment}
-              className="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
-            >
-              {processingPayment ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  {t('therapistDashboard.processing')}
-                </>
-              ) : (
-                <>
-                  <DollarSign className="w-5 h-5" />
-                  {t('therapistDashboard.payNow')}
-                </>
-              )}
-            </button>
           </div>
         )}
 
-        {/* Safe Pass Card Preview */}
+        {/* Safe Pass Card Preview - Minimal Design */}
         {currentStatus === 'active' && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <Shield className="w-5 h-5 text-blue-600" />
+          <div className="bg-white rounded-2xl border border-orange-100 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Safe Pass Card Preview</h2>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Your Safe Pass Card</h2>
+                <p className="text-sm text-gray-600">Official certification card</p>
+              </div>
             </div>
             
-            <p className="text-gray-600 mb-6">Your official Safe Pass card (issued after payment)</p>
-            
-            {/* Safe Pass Card Design */}
-            <div className="max-w-md mx-auto bg-gradient-to-br from-blue-600 to-purple-600 text-white p-6 rounded-xl shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-6 h-6" />
-                  <span className="font-bold">SAFE PASS</span>
+            {/* Safe Pass Card - Modern Design */}
+            <div className="max-w-md mx-auto bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white p-8 rounded-2xl shadow-2xl mb-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-8 h-8" />
+                  <div>
+                    <span className="font-bold text-xl">SAFE PASS</span>
+                    <div className="text-xs opacity-90">Certified Professional</div>
+                  </div>
                 </div>
                 <div className="text-right text-xs opacity-75">
                   <div>Hotel & Villa</div>
@@ -664,37 +745,49 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
                 </div>
               </div>
               
-              <div className="space-y-2 text-sm">
-                <div><strong>Name:</strong> {therapist?.name}</div>
-                <div><strong>ID:</strong> SP-{therapist?.$id?.slice(-8) || 'XXXXXXXX'}</div>
-                <div><strong>Location:</strong> {therapist?.location}</div>
-                <div><strong>Valid Until:</strong> {therapist?.safePassExpiry ? new Date(therapist.safePassExpiry).toLocaleDateString() : '---'}</div>
+              <div className="space-y-3 text-sm bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="opacity-75">Name:</span>
+                  <strong>{therapist?.name}</strong>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="opacity-75">ID:</span>
+                  <strong>SP-{therapist?.$id?.slice(-8) || 'XXXXXXXX'}</strong>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="opacity-75">Location:</span>
+                  <strong>{therapist?.location}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="opacity-75">Valid Until:</span>
+                  <strong>{therapist?.safePassExpiry ? new Date(therapist.safePassExpiry).toLocaleDateString() : '---'}</strong>
+                </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between">
-                <div className="text-xs opacity-75">
+              <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between text-xs">
+                <div className="opacity-75">
                   Issued: {therapist?.safePassIssuedAt ? new Date(therapist.safePassIssuedAt).toLocaleDateString() : '---'}
                 </div>
-                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                  <Building className="w-4 h-4" />
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Building className="w-5 h-5" />
                 </div>
               </div>
             </div>
             
-            <div className="flex gap-4 justify-center mt-6">
+            <div className="flex gap-3 justify-center">
               <button
                 onClick={() => setShowCardPreview(!showCardPreview)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="flex items-center gap-2 px-5 py-3 border-2 border-orange-300 text-orange-700 rounded-xl hover:bg-orange-50 font-medium transition-all"
               >
                 <Eye className="w-4 h-4" />
-                View Safe Pass Card
+                View Card
               </button>
               <button
                 onClick={() => therapist?.safePassCardUrl && window.open(therapist.safePassCardUrl, '_blank')}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 font-medium shadow-lg transition-all"
               >
                 <Download className="w-4 h-4" />
-                Download Card
+                Download
               </button>
             </div>
           </div>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Plus, X, CheckCircle, Upload, CreditCard, Building2, AlertCircle } from 'lucide-react';
-import { Therapist, Booking } from '../../../src/types';
-import { therapistService } from '../../../src/lib/appwriteService';
-import { showToast } from '../../../src/utils/showToastPortal';
+import { Therapist, Booking } from '../../../../src/types';
+import { therapistService } from '../../../../src/lib/appwriteService';
+import { showToast } from '../../../../src/utils/showToastPortal';
 import TherapistPageHeader from '../components/TherapistPageHeader';
 
 interface TherapistScheduleProps {
@@ -313,10 +313,28 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
 
   const { systemBookings, manualBookingsToday } = getTodaysBookings();
 
+  const dict = {
+    therapistDashboard: {
+      thisMonth: 'this month'
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white pb-20">
+      {/* Page Header */}
+      <div className="max-w-md mx-auto px-4 pt-6 pb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Schedule</h2>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+            <Clock className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+            <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
+          </div>
+        </div>
+      </div>
+      
       <TherapistPageHeader
-        title="Scheduled Orders"
+        title=""
         subtitle="Manage your appointments and schedule"
         onBackToStatus={onBack || (() => {})}
         icon={<Calendar className="w-6 h-6 text-orange-500" />}

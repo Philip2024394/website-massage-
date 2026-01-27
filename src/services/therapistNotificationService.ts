@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * 🔔 THERAPIST NOTIFICATION SERVICE
  * 
@@ -71,9 +72,9 @@ class TherapistNotificationService {
     try {
       // Use the existing instance instead of creating a new one
       this.audioService = notificationSoundService;
-      console.log('🔊 Therapist audio service initialized');
+      logger.info('🔊 Therapist audio service initialized');
     } catch (error) {
-      console.error('Failed to initialize audio service:', error);
+      logger.error('Failed to initialize audio service:', error);
     }
   }
 
@@ -88,7 +89,7 @@ class TherapistNotificationService {
         // Get location if available
         locationService.getCurrentLocation()
           .then(location => {
-            console.log('📍 User location tracked:', {
+            logger.info('📍 User location tracked:', {
               entryTime,
               referrer,
               userAgent,
@@ -108,7 +109,7 @@ class TherapistNotificationService {
             }));
           })
           .catch(error => {
-            console.log('📍 Location tracking blocked:', error.message);
+            logger.info('📍 Location tracking blocked:', error.message);
           });
       };
 
@@ -130,10 +131,10 @@ class TherapistNotificationService {
 
       // Request vibration permission (implicit)
       if ('vibrate' in navigator) {
-        console.log('📳 Vibration supported');
+        logger.info('📳 Vibration supported');
       }
     } catch (error) {
-      console.warn('Permission request failed:', error);
+      logger.warn('Permission request failed:', error);
     }
   }
 
@@ -141,7 +142,7 @@ class TherapistNotificationService {
    * Send booking notification to therapist
    */
   public async notifyBookingRequest(booking: BookingNotification): Promise<void> {
-    console.log('🔔 Sending booking notification to therapist:', booking.bookingId);
+    logger.info('🔔 Sending booking notification to therapist:', booking.bookingId);
     
     // Store notification
     this.activeNotifications.set(booking.bookingId, booking);
@@ -155,7 +156,7 @@ class TherapistNotificationService {
           stopOnAction: true
         });
       } catch (error) {
-        console.warn('Failed to play notification sound:', error);
+        logger.warn('Failed to play notification sound:', error);
       }
     }
 
@@ -223,7 +224,7 @@ class TherapistNotificationService {
     const booking = this.activeNotifications.get(bookingId);
     if (!booking) return;
 
-    console.log('✅ Therapist accepted booking:', bookingId);
+    logger.info('✅ Therapist accepted booking:', bookingId);
     
     // Stop notification sounds
     if (this.audioService) {
@@ -254,7 +255,7 @@ class TherapistNotificationService {
     const booking = this.activeNotifications.get(bookingId);
     if (!booking) return;
 
-    console.log('❌ Therapist rejected booking:', bookingId, reason);
+    logger.info('❌ Therapist rejected booking:', bookingId, reason);
     
     // Stop notification sounds
     if (this.audioService) {
@@ -288,9 +289,9 @@ class TherapistNotificationService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      console.log(`📤 Booking ${status} sent to server:`, bookingId);
+      logger.info(`📤 Booking ${status} sent to server:`, bookingId);
     } catch (error) {
-      console.error('Failed to send booking response:', error);
+      logger.error('Failed to send booking response:', error);
       throw error;
     }
   }
@@ -298,7 +299,7 @@ class TherapistNotificationService {
   private expireNotification(bookingId: string) {
     const booking = this.activeNotifications.get(bookingId);
     if (booking) {
-      console.log('⏰ Booking notification expired:', bookingId);
+      logger.info('⏰ Booking notification expired:', bookingId);
       
       // Stop sounds
       if (this.audioService) {
@@ -337,7 +338,7 @@ class TherapistNotificationService {
    */
   public updatePreferences(prefs: Partial<NotificationPreferences>) {
     this.preferences = { ...this.preferences, ...prefs };
-    console.log('🔧 Notification preferences updated:', this.preferences);
+    logger.info('🔧 Notification preferences updated:', this.preferences);
   }
 
   /**

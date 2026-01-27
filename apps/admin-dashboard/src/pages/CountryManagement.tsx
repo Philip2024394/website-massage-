@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { databases, APPWRITE_CONFIG, ID } from '../../../src/lib/appwrite';
+import { databases, APPWRITE_CONFIG, ID } from '../lib/appwrite';
 
 // Icon components
 const IconWrapper = ({ emoji, className }: { emoji: string; className?: string }) => (

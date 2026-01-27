@@ -1,109 +1,341 @@
-/**
- * 🎵 ENTERPRISE BOOKING SOUND SERVICE
- * 
- * Complete audio notification system for booking alerts
- * - MP3 playback for therapist notifications
- * - Different sounds for different booking types
- * - Volume control and muting options
- * - Enterprise-grade audio management
- * - Cross-platform compatibility
- * - Critical: Must be audible when phone is in another room
- * - Automatic repetition until action is taken
- */
-
-type BookingStatus = 'pending' | 'match_found' | 'accepted' | 'declined' | 'cancelled' | 'expired';
-
-interface BookingAlert {
-  audio: HTMLAudioElement;
-  interval: NodeJS.Timeout;
-  bookingId: string;
-  startTime: number;
-  repeatCount: number;
-}
-
-export interface BookingSoundConfig {
-  enabled: boolean;
-  volume: number; // 0-1
-  therapistAlertSound: string;
-  userSuccessSound: string;
-  userAlertSound: string;
-  urgentBookingSound: string;
-  timerTickSound: string;
-  timeoutSound: string;
-}
-
-export interface AudioTrack {
-  name: string;
-  url: string;
-  audio?: HTMLAudioElement;
-  duration?: number;
+import { logger } from './enterpriseLogger';
+interface SoundOptions {
+  loop?: boolean;
+  volume?: number;
+  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  fadeIn?: boolean;
+  fadeOut?: boolean;
 }
 
 class BookingSoundService {
-  private activeAlerts: Map<string, BookingAlert> = new Map();
-  private soundPath = '/sounds/booking-notification.mp3'; // Using existing MP3
-  private defaultVolume = 0.8; // Loud enough to hear from another room
-  private repeatInterval = 10000; // 10 seconds as required
-  private maxDuration = 10 * 60 * 1000; // Auto-stop after 10 minutes to prevent infinite alerts
+  private audioContext: AudioContext | null = null;
+  private audioCache: Map<string, AudioBuffer> = new Map();
+  private activeSounds: Map<string, AudioBufferSourceNode> = new Map();
+  private masterVolume: number = 0.7;
 
-  // Enterprise audio configuration
-  private config: BookingSoundConfig = {
-    enabled: true,
-    volume: 0.8,
-    therapistAlertSound: '/sounds/therapist-alert.mp3',
-    userSuccessSound: '/sounds/booking-success.mp3',
-    userAlertSound: '/sounds/user-alert.mp3',
-    urgentBookingSound: '/sounds/urgent-booking.mp3',
-    timerTickSound: '/sounds/timer-tick.mp3',
-    timeoutSound: '/sounds/timeout-warning.mp3'
-  };
+  constructor() {
+    this.initializeAudioContext();
+  }
 
-  private audioTracks = new Map<string, AudioTrack>();
-  private isInitialized = false;
-  private isMuted = false;
-
-  /**
-   * Initialize enterprise audio system
-   */
-  async initialize(): Promise<void> {
-    if (this.isInitialized) return;
-
+  private async initializeAudioContext(): Promise<void> {
     try {
-      console.log('🎵 Initializing Enterprise Booking Sound Service...');
-      
-      // Load audio configuration from storage
-      await this.loadConfig();
-      
-      // Preload audio files
-      await this.preloadAudioTracks();
-      
-      // Set up audio context for better performance
-      await this.setupAudioContext();
-      
-      this.isInitialized = true;
-      console.log('✅ Booking Sound Service initialized');
-      
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     } catch (error) {
-      console.error('❌ Failed to initialize sound service:', error);
-      // Continue without audio
+      logger.warn('Audio context not available:', error);
     }
   }
 
   /**
-   * Play therapist alert sound (new booking received)
+   * Load and cache audio files with fallback tone generation
    */
-  async playTherapistAlert(): Promise<void> {
+  private async loadSound(url: string): Promise<AudioBuffer | null> {
+    if (this.audioCache.has(url)) {
+      return this.audioCache.get(url)!;
+    }
+
     try {
-      await this.playSound('therapist-alert', {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await this.audioContext!.decodeAudioData(arrayBuffer);
+      
+      this.audioCache.set(url, audioBuffer);
+      return audioBuffer;
+    } catch (error) {
+      logger.warn(`Sound file not found: ${url}, using generated tone fallback`);
+      
+      // Generate fallback tone based on sound type
+      const soundName = url.split('/').pop()?.replace('.mp3', '') || '';
+      return this.generateFallbackTone(soundName);
+    }
+  }
+
+  /**
+   * Generate fallback tone when MP3 files are not available
+   */
+  private generateFallbackTone(soundName: string): AudioBuffer | null {
+    if (!this.audioContext) return null;
+
+    const sampleRate = this.audioContext.sampleRate;
+    let frequency = 440;
+    let duration = 0.3;
+    let type: OscillatorType = 'sine';
+
+    // Map sound names to appropriate frequencies and durations
+    switch (soundName) {
+      case 'booking-request':
+        frequency = 800;
+        duration = 0.5;
+        type = 'square';
+        break;
+      case 'therapist-alert':
+        frequency = 750;
+        duration = 0.4;
+        type = 'sine';
+        break;
+      case 'user-success':
+        frequency = 523; // C5
+        duration = 0.6;
+        type = 'sine';
+        break;
+      case 'user-alert':
+        frequency = 600;
+        duration = 0.5;
+        type = 'sawtooth';
+        break;
+      case 'notification':
+        frequency = 440; // A4
+        duration = 0.2;
+        type = 'sine';
+        break;
+      case 'booking-cancelled':
+        frequency = 300;
+        duration = 0.4;
+        type = 'triangle';
+        break;
+      default:
+        frequency = 440;
+        duration = 0.3;
+        type = 'sine';
+    }
+
+    const length = Math.floor(sampleRate * duration);
+    const buffer = this.audioContext.createBuffer(1, length, sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < length; i++) {
+      const t = i / sampleRate;
+      let amplitude = 0.3;
+      
+      // Add envelope (fade in/out)
+      if (i < sampleRate * 0.05) {
+        amplitude *= i / (sampleRate * 0.05);
+      } else if (i > length - sampleRate * 0.1) {
+        amplitude *= (length - i) / (sampleRate * 0.1);
+      }
+      
+      data[i] = Math.sin(2 * Math.PI * frequency * t) * amplitude;
+    }
+
+    this.audioCache.set(`/sounds/${soundName}.mp3`, buffer);
+    return buffer;
+  }
+
+  /**
+   * Play a sound with options
+   */
+  private async playSound(soundName: string, options: SoundOptions = {}): Promise<void> {
+    if (!this.audioContext) {
+      await this.initializeAudioContext();
+      if (!this.audioContext) return;
+    }
+
+    try {
+      const soundUrl = `/sounds/${soundName}.mp3`;
+      const audioBuffer = await this.loadSound(soundUrl);
+      if (!audioBuffer) return;
+
+      // Stop existing sound if not looping
+      if (!options.loop && this.activeSounds.has(soundName)) {
+        this.activeSounds.get(soundName)?.stop();
+        this.activeSounds.delete(soundName);
+      }
+
+      const source = this.audioContext.createBufferSource();
+      const gainNode = this.audioContext.createGain();
+      
+      source.buffer = audioBuffer;
+      source.loop = options.loop || false;
+      
+      // Set volume based on priority and master volume
+      const priorityMultiplier = {
+        low: 0.3,
+        normal: 0.7,
+        high: 1.0,
+        urgent: 1.2
+      }[options.priority || 'normal'];
+      
+      const finalVolume = (options.volume || 0.8) * this.masterVolume * priorityMultiplier;
+      
+      if (options.fadeIn) {
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(finalVolume, this.audioContext.currentTime + 0.5);
+      } else {
+        gainNode.gain.setValueAtTime(finalVolume, this.audioContext.currentTime);
+      }
+
+      source.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+
+      // Handle sound ending
+      source.onended = () => {
+        this.activeSounds.delete(soundName);
+      };
+
+      this.activeSounds.set(soundName, source);
+      source.start();
+
+    } catch (error) {
+      logger.error(`Error playing sound ${soundName}:`, error);
+    }
+  }
+
+  /**
+   * Stop a specific sound
+   */
+  stopSound(soundName: string): void {
+    const sound = this.activeSounds.get(soundName);
+    if (sound) {
+      sound.stop();
+      this.activeSounds.delete(soundName);
+    }
+  }
+
+  /**
+   * Stop all sounds
+   */
+  stopAllSounds(): void {
+    this.activeSounds.forEach((sound, name) => {
+      sound.stop();
+    });
+    this.activeSounds.clear();
+  }
+
+  /**
+   * Set master volume (0-1)
+   */
+  setMasterVolume(volume: number): void {
+    this.masterVolume = Math.max(0, Math.min(1, volume));
+  }
+
+  // Booking-specific sound methods
+
+  /**
+   * Play booking request sound for therapist
+   */
+  async playBookingRequest(): Promise<void> {
+    try {
+      await this.playSound('booking-request', {
         loop: false,
         priority: 'high',
         fadeIn: true
       });
       
-      console.log('🔔 Playing therapist alert sound');
+      logger.info('🔔 Playing booking request sound for therapist');
       
     } catch (error) {
-      console.error('❌ Failed to play therapist alert:', error);
+      logger.error('❌ Failed to play booking request:', error);
+    }
+  }
+
+  /**
+   * Play booking confirmation sound
+   */
+  async playBookingConfirmation(): Promise<void> {
+    try {
+      await this.playSound('booking-confirmed', {
+        loop: false,
+        priority: 'normal',
+        fadeIn: false
+      });
+      
+      logger.info('✅ Playing booking confirmation sound');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play booking confirmation:', error);
+    }
+  }
+
+  /**
+   * Play cancellation sound
+   */
+  async playBookingCancellation(): Promise<void> {
+    try {
+      await this.playSound('booking-cancelled', {
+        loop: false,
+        priority: 'normal',
+        fadeIn: false
+      });
+      
+      logger.info('❌ Playing booking cancellation sound');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play booking cancellation:', error);
+    }
+  }
+
+  /**
+   * Play countdown sound (5, 4, 3, 2, 1)
+   */
+  async playCountdown(): Promise<void> {
+    try {
+      const counts = [5, 4, 3, 2, 1];
+      for (let i = 0; i < counts.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, i * 1000));
+        await this.playSound(`countdown-${counts[i]}`, {
+          loop: false,
+          priority: 'high',
+          fadeIn: false
+        });
+      }
+      
+      logger.info('⏰ Playing countdown sequence');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play countdown:', error);
+    }
+  }
+
+  /**
+   * Play notification sound
+   */
+  async playNotification(): Promise<void> {
+    try {
+      await this.playSound('notification', {
+        loop: false,
+        priority: 'normal',
+        fadeIn: false
+      });
+      
+      logger.info('🔔 Playing notification sound');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play notification:', error);
+    }
+  }
+
+  /**
+   * Play welcome chime for new users
+   */
+  async playWelcomeChime(): Promise<void> {
+    try {
+      // Create a pleasant chime sequence
+      if (!this.audioContext) await this.initializeAudioContext();
+      if (!this.audioContext) return;
+
+      const audioContext = this.audioContext;
+      const notes = [261.63, 329.63, 392.00, 523.25]; // C, E, G, C octave
+
+      for (let i = 0; i < notes.length; i++) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(notes[i], audioContext.currentTime + i * 0.2);
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.2);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.2 + 0.4);
+        
+        oscillator.start(audioContext.currentTime + i * 0.2);
+        oscillator.stop(audioContext.currentTime + i * 0.2 + 0.4);
+      }
+      
+    } catch (error) {
+      logger.warn('⚠️ Failed to play welcome chime:', error);
     }
   }
 
@@ -118,10 +350,10 @@ class BookingSoundService {
         fadeIn: false
       });
       
-      console.log('✅ Playing user success sound');
+      logger.info('✅ Playing user success sound');
       
     } catch (error) {
-      console.error('❌ Failed to play user success:', error);
+      logger.error('❌ Failed to play user success:', error);
     }
   }
 
@@ -133,370 +365,283 @@ class BookingSoundService {
       await this.playSound('user-alert', {
         loop: false,
         priority: 'high',
-        fadeIn: true
+        fadeIn: false
       });
       
-      console.log('⚠️ Playing user alert sound');
+      logger.info('🚨 Playing user alert sound');
       
     } catch (error) {
-      console.error('❌ Failed to play user alert:', error);
+      logger.error('❌ Failed to play user alert:', error);
     }
   }
 
   /**
-   * Play urgent booking sound (emergency booking)
+   * Play therapist alert sound (urgent notification)
    */
-  async playUrgentBooking(): Promise<void> {
+  async playTherapistAlert(): Promise<void> {
     try {
-      await this.playSound('urgent-booking', {
-        loop: true,
-        priority: 'critical',
-        fadeIn: false,
-        autoStop: 10000 // Stop after 10 seconds
-      });
-      
-      console.log('🚨 Playing urgent booking sound');
-      
-    } catch (error) {
-      console.error('❌ Failed to play urgent booking:', error);
-    }
-  }
-
-  /**
-   * Play timer tick sound (countdown)
-   */
-  async playTimerTick(): Promise<void> {
-    try {
-      await this.playSound('timer-tick', {
+      await this.playSound('therapist-alert', {
         loop: false,
-        priority: 'low',
-        volume: 0.3
+        priority: 'urgent',
+        fadeIn: false
       });
       
+      logger.info('🔔 Playing therapist alert sound');
+      
     } catch (error) {
-      console.error('❌ Failed to play timer tick:', error);
+      logger.error('❌ Failed to play therapist alert:', error);
     }
   }
 
   /**
-   * Play timeout warning sound
+   * Play place alert sound (location notification)
    */
-  async playTimeoutWarning(): Promise<void> {
+  async playPlaceAlert(): Promise<void> {
     try {
-      await this.playSound('timeout-warning', {
+      await this.playSound('place-alert', {
+        loop: false,
+        priority: 'normal',
+        fadeIn: false
+      });
+      
+      logger.info('🏢 Playing place alert sound');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play place alert:', error);
+    }
+  }
+
+  /**
+   * Play reminder sound (scheduled booking reminder)
+   */
+  async playReminder(): Promise<void> {
+    try {
+      await this.playSound('reminder', {
         loop: false,
         priority: 'high',
         fadeIn: true
       });
       
-      console.log('⏰ Playing timeout warning sound');
+      logger.info('⏰ Playing reminder sound');
       
     } catch (error) {
-      console.error('❌ Failed to play timeout warning:', error);
+      logger.error('❌ Failed to play reminder:', error);
     }
   }
 
+  // Enhanced Scheduled Booking Sounds
+
   /**
-   * Start booking alert for therapist
-   * CRITICAL: Must be audible even when phone is on table in another room
+   * Play scheduled reminder alert (for therapist reminders)
    */
-  async startBookingAlert(bookingId: string, bookingStatus: BookingStatus = 'pending'): Promise<void> {
-    console.log(`[BOOKING SOUND] Starting alert for booking ${bookingId} (status: ${bookingStatus})`);
-
-    // Stop any existing alert for this booking
-    this.stopBookingAlert(bookingId);
-
-    // Only play for pending/match_found status
-    if (bookingStatus !== 'pending' && bookingStatus !== 'match_found') {
-      console.log(`[BOOKING SOUND] Skipping alert - status ${bookingStatus} not eligible for alerts`);
-      return;
-    }
-
+  async playScheduledReminderAlert(): Promise<void> {
     try {
-      // Create audio element
-      const audio = new Audio(this.soundPath);
-      audio.volume = this.defaultVolume;
-      audio.preload = 'auto';
+      // Play a sequence: attention tone + reminder + fade out
+      await this.playSound('attention-tone', {
+        loop: false,
+        priority: 'urgent',
+        fadeIn: false
+      });
       
-      // Handle autoplay restrictions gracefully
-      const playSound = async () => {
-        try {
-          audio.currentTime = 0; // Reset to start
-          await audio.play();
-          console.log(`[BOOKING SOUND] Repeating alert for booking ${bookingId}`);
-        } catch (error: any) {
-          if (error.name === 'NotAllowedError') {
-            console.warn(`[BOOKING SOUND] Autoplay blocked - user interaction required`);
-          } else {
-            console.error(`[BOOKING SOUND] Audio play error:`, error);
-          }
-        }
-      };
-
-      // Play initial sound immediately
-      await playSound();
-      console.log(`[BOOKING SOUND] Started initial alert for booking ${bookingId}`);
-
-      // Set up repeating interval
-      const interval = setInterval(playSound, this.repeatInterval);
-
-      // Store alert reference
-      const alert: BookingAlert = {
-        audio,
-        interval,
-        bookingId,
-        startTime: Date.now(),
-        repeatCount: 0
-      };
+      // Wait 1 second then play reminder
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      this.activeAlerts.set(bookingId, alert);
-
-      // Auto-stop after max duration to prevent infinite alerts
-      setTimeout(() => {
-        console.log(`[BOOKING SOUND] Auto-stopping alert for booking ${bookingId} after ${this.maxDuration}ms`);
-        this.stopBookingAlert(bookingId);
-      }, this.maxDuration);
-
-      // Track repeat count for logging
-      const countInterval = setInterval(() => {
-        const currentAlert = this.activeAlerts.get(bookingId);
-        if (currentAlert) {
-          currentAlert.repeatCount++;
-          if (currentAlert.repeatCount % 6 === 0) { // Log every minute (6 * 10 seconds)
-            console.log(`[BOOKING SOUND] Alert for booking ${bookingId} has repeated ${currentAlert.repeatCount} times`);
-          }
-        } else {
-          clearInterval(countInterval);
-        }
-      }, this.repeatInterval);
-
+      await this.playSound('scheduled-reminder', {
+        loop: false,
+        priority: 'high',
+        fadeIn: true,
+        fadeOut: true
+      });
+      
+      logger.info('📅 Playing scheduled reminder alert for therapist');
+      
     } catch (error) {
-      console.error(`[BOOKING SOUND] Failed to start alert for booking ${bookingId}:`, error);
-      throw error; // Don't block booking flow if audio fails
+      logger.error('❌ Failed to play scheduled reminder alert:', error);
     }
   }
 
   /**
-   * Stop booking alert immediately
-   * CRITICAL: Must stop on Accept, Decline, Cancel, or Timeout
+   * Play scheduled booking sequence (countdown + booking sound)
    */
-  stopBookingAlert(bookingId: string): void {
-    const alert = this.activeAlerts.get(bookingId);
-    
-    if (alert) {
-      console.log(`[BOOKING SOUND] Stopped alert for booking ${bookingId} after ${alert.repeatCount} repetitions`);
-      
-      // Stop audio
-      try {
-        alert.audio.pause();
-        alert.audio.currentTime = 0;
-        alert.audio.src = ''; // Clear source to free memory
-      } catch (error) {
-        console.warn(`[BOOKING SOUND] Error stopping audio:`, error);
-      }
-
-      // Clear interval
-      clearInterval(alert.interval);
-      
-      // Remove from active alerts
-      this.activeAlerts.delete(bookingId);
-      
-      console.log(`[BOOKING SOUND] Cleanup completed for booking ${bookingId}`);
-    } else {
-      console.log(`[BOOKING SOUND] No active alert found for booking ${bookingId}`);
-    }
-  }
-
-  /**
-   * Stop all active booking alerts
-   * Used for cleanup and testing
-   */
-  stopAllBookingAlerts(): void {
-    console.log(`[BOOKING SOUND] Stopping all active alerts (${this.activeAlerts.size} active)`);
-    
-    const bookingIds = Array.from(this.activeAlerts.keys());
-    bookingIds.forEach(bookingId => {
-      this.stopBookingAlert(bookingId);
-    });
-    
-    console.log(`[BOOKING SOUND] All alerts stopped`);
-  }
-
-  /**
-   * Check if alert is active for booking
-   */
-  isAlertActive(bookingId: string): boolean {
-    return this.activeAlerts.has(bookingId);
-  }
-
-  /**
-   * Get active alert count (for debugging)
-   */
-  getActiveAlertCount(): number {
-    return this.activeAlerts.size;
-  }
-
-  /**
-   * Get alert statistics for a booking
-   */
-  getAlertStats(bookingId: string): { repeatCount: number; duration: number; isActive: boolean } | null {
-    const alert = this.activeAlerts.get(bookingId);
-    if (!alert) {
-      return null;
-    }
-
-    return {
-      repeatCount: alert.repeatCount,
-      duration: Date.now() - alert.startTime,
-      isActive: true
-    };
-  }
-
-  /**
-   * Test audio system (for debugging)
-   * Plays one sound without starting continuous alerts
-   */
-  async testBookingSound(): Promise<boolean> {
-    console.log(`[BOOKING SOUND] Testing audio system...`);
-    
+  async playScheduledBookingSequence(): Promise<void> {
     try {
-      const audio = new Audio(this.soundPath);
-      audio.volume = this.defaultVolume;
-      await audio.play();
-      console.log(`[BOOKING SOUND] Audio test successful`);
-      return true;
-    } catch (error) {
-      console.error(`[BOOKING SOUND] Audio test failed:`, error);
-      return false;
-    }
-  }
-
-  /**
-   * Handle user interaction to enable autoplay
-   * Call this on any user interaction to prepare audio
-   */
-  async enableAutoplay(): Promise<void> {
-    try {
-      const audio = new Audio(this.soundPath);
-      audio.volume = 0.01; // Very quiet test
-      await audio.play();
-      audio.pause();
-      console.log(`[BOOKING SOUND] Autoplay enabled via user interaction`);
-    } catch (error) {
-      console.warn(`[BOOKING SOUND] Could not enable autoplay:`, error);
-    }
-  }
-
-  /**
-   * Cleanup method for component unmount/page unload
-   */
-  cleanup(): void {
-    console.log(`[BOOKING SOUND] Performing cleanup...`);
-    this.stopAllBookingAlerts();
-    console.log(`[BOOKING SOUND] Cleanup completed`);
-  }
-}
-
-// Export singleton instance
-export const bookingSoundService = new BookingSoundService();
-
-// Cleanup on page unload to prevent memory leaks
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
-    bookingSoundService.cleanup();
-  });
-  
-  // Also cleanup on visibility change (when tab becomes hidden)
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      console.log(`[BOOKING SOUND] Tab hidden - maintaining alerts but logging state`);
-      console.log(`[BOOKING SOUND] Active alerts: ${bookingSoundService.getActiveAlertCount()}`);
-    }
-  });
-}
-
-export default bookingSoundService;
-
-/**
- * USAGE EXAMPLE:
- * 
- * // When therapist receives booking request
- * await bookingSoundService.startBookingAlert('booking_123', 'pending');
- * 
- * // When therapist accepts/declines
- * bookingSoundService.stopBookingAlert('booking_123');
- * 
- * // For cleanup
- * bookingSoundService.cleanup();
- * 
- * // Enterprise usage
- * await bookingSoundService.playTherapistAlert();
- * await bookingSoundService.playUserSuccess();
- */
-
-// Enhanced enterprise methods
-BookingSoundService.prototype.playSound = async function(soundName: string, options: {
-  loop?: boolean;
-  priority?: 'low' | 'normal' | 'high' | 'critical';
-  fadeIn?: boolean;
-  volume?: number;
-  autoStop?: number;
-} = {}): Promise<void> {
-  if (!this.config.enabled || this.isMuted) return;
-
-  try {
-    const soundKey = this.getSoundKey(soundName);
-    let audio = await this.getAudio(soundKey);
-    
-    if (!audio) {
-      console.warn(`⚠️ Audio track not found: ${soundName}`);
-      return;
-    }
-
-    // Clone audio for concurrent playback
-    audio = audio.cloneNode() as HTMLAudioElement;
-    
-    // Set audio properties
-    audio.volume = options.volume ?? this.config.volume;
-    audio.loop = options.loop ?? false;
-    
-    // Handle fade in
-    if (options.fadeIn) {
-      audio.volume = 0;
-      this.fadeIn(audio, options.volume ?? this.config.volume);
-    }
-    
-    // Play audio
-    const playPromise = audio.play();
-    
-    if (playPromise) {
-      await playPromise;
-    }
-    
-    // Auto-stop if specified
-    if (options.autoStop) {
-      setTimeout(() => {
-        this.fadeOut(audio, () => {
-          audio.pause();
-          audio.currentTime = 0;
+      // Play preparation tone
+      await this.playSound('preparation-tone', {
+        loop: false,
+        priority: 'high',
+        fadeIn: false
+      });
+      
+      // Wait 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Play 3-2-1 countdown
+      const countdownSounds = ['three', 'two', 'one'];
+      for (const count of countdownSounds) {
+        await this.playSound(`countdown-${count}`, {
+          loop: false,
+          priority: 'urgent',
+          fadeIn: false
         });
-      }, options.autoStop);
-    }
-    
-  } catch (error) {
-    // Handle autoplay restrictions gracefully
-    if (error.name === 'NotAllowedError') {
-      console.warn('⚠️ Audio autoplay blocked - user interaction required');
-      this.showAudioPermissionPrompt();
-    } else {
-      throw error;
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      // Final booking notification
+      await this.playSound('scheduled-booking-ready', {
+        loop: false,
+        priority: 'urgent',
+        fadeIn: false
+      });
+      
+      logger.info('🎯 Playing scheduled booking sequence');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play scheduled booking sequence:', error);
     }
   }
-};
 
-// Initialize enhanced features
-if (typeof window !== 'undefined') {
-  setTimeout(() => {
-    bookingSoundService.initialize().catch(console.error);
-  }, 1000);
+  /**
+   * Play hourly reminder chimes (for 5,4,3,2,1 hour reminders)
+   */
+  async playHourlyReminderChime(hoursRemaining: number): Promise<void> {
+    try {
+      if (!this.audioContext) await this.initializeAudioContext();
+      if (!this.audioContext) return;
+
+      const audioContext = this.audioContext;
+      
+      // Different frequencies for different hour marks
+      const baseFreq = 440; // A note
+      const frequencies = {
+        5: baseFreq * 0.5, // Lower for earlier reminders
+        4: baseFreq * 0.6,
+        3: baseFreq * 0.75,
+        2: baseFreq * 0.9,
+        1: baseFreq * 1.2  // Higher for final hour
+      };
+      
+      const freq = frequencies[hoursRemaining as keyof typeof frequencies] || baseFreq;
+      
+      // Play the specified number of chimes equal to hours remaining
+      for (let i = 0; i < hoursRemaining; i++) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.8);
+        oscillator.type = 'sine';
+        
+        // Fade in and out for each chime
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime + i * 0.8);
+        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + i * 0.8 + 0.1);
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + i * 0.8 + 0.6);
+        
+        oscillator.start(audioContext.currentTime + i * 0.8);
+        oscillator.stop(audioContext.currentTime + i * 0.8 + 0.6);
+      }
+      
+      logger.info(`🔔 Playing ${hoursRemaining} hour reminder chime`);
+      
+    } catch (error) {
+      logger.error(`❌ Failed to play ${hoursRemaining} hour reminder chime:`, error);
+    }
+  }
+
+  /**
+   * Play customer app download prompt sound
+   */
+  async playAppDownloadPrompt(): Promise<void> {
+    try {
+      await this.playSound('app-download-prompt', {
+        loop: false,
+        priority: 'normal',
+        fadeIn: true
+      });
+      
+      logger.info('📱 Playing app download prompt sound');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play app download prompt:', error);
+    }
+  }
+
+  /**
+   * Play enterprise connection sound (WebSocket connected)
+   */
+  async playEnterpriseConnection(): Promise<void> {
+    try {
+      if (!this.audioContext) await this.initializeAudioContext();
+      if (!this.audioContext) return;
+
+      const audioContext = this.audioContext;
+      
+      // Create a "connection established" sound - rising tone sequence
+      const frequencies = [220, 277, 330, 440]; // A, C#, E, A
+      
+      for (let i = 0; i < frequencies.length; i++) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(frequencies[i], audioContext.currentTime + i * 0.15);
+        oscillator.type = 'triangle';
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.15);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3);
+        
+        oscillator.start(audioContext.currentTime + i * 0.15);
+        oscillator.stop(audioContext.currentTime + i * 0.15 + 0.3);
+      }
+      
+      logger.info('🔗 Playing enterprise connection sound');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play enterprise connection sound:', error);
+    }
+  }
+
+  /**
+   * Play enterprise disconnection sound (WebSocket disconnected)
+   */
+  async playEnterpriseDisconnection(): Promise<void> {
+    try {
+      if (!this.audioContext) await this.initializeAudioContext();
+      if (!this.audioContext) return;
+
+      const audioContext = this.audioContext;
+      
+      // Create a "connection lost" sound - falling tone sequence
+      const frequencies = [440, 330, 277, 220]; // A, E, C#, A (descending)
+      
+      for (let i = 0; i < frequencies.length; i++) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(frequencies[i], audioContext.currentTime + i * 0.2);
+        oscillator.type = 'sawtooth';
+        
+        gainNode.gain.setValueAtTime(0.08, audioContext.currentTime + i * 0.2);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.2 + 0.4);
+        
+        oscillator.start(audioContext.currentTime + i * 0.2);
+        oscillator.stop(audioContext.currentTime + i * 0.2 + 0.4);
+      }
+      
+      logger.info('🔌 Playing enterprise disconnection sound');
+      
+    } catch (error) {
+      logger.error('❌ Failed to play enterprise disconnection sound:', error);
+    }
+  }
 }
+
+// Create and export singleton instance
+export const bookingSoundService = new BookingSoundService();
+export default bookingSoundService;

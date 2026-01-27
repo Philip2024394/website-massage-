@@ -5,12 +5,12 @@ import {
     DATABASE_ID, 
     COLLECTIONS,
     Query 
-} from '../../../src/lib/appwrite';
+} from '../lib/appwrite';
 import { 
     therapistService, 
     placesService, 
     bookingService
-} from '../../../src/lib/appwriteService';
+} from '../lib/appwrite';
 
 // Icon replacements that accept className prop like Lucide icons
 const IconWrapper = ({ emoji, className }: { emoji: string; className?: string }) => (

@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 import type { LocationError } from './locationService';
 
 export type Coordinates = { lat: number; lng: number };
@@ -92,19 +93,19 @@ export function createProximityTracker(options: ProximityTrackerOptions): Proxim
 
     const handleError = (error: GeolocationPositionError | LocationError) => {
         // Non-fatal: consumers can surface errors separately if needed
-        console.warn('📍 Proximity tracker geolocation error:', error);
+        logger.warn('📍 Proximity tracker geolocation error:', error);
     };
 
     const start = () => {
         if (typeof window === 'undefined' || !('geolocation' in navigator)) {
-            console.warn('📍 Proximity tracker: geolocation unavailable');
+            logger.warn('📍 Proximity tracker: geolocation unavailable');
             return;
         }
 
         try {
             watchId = navigator.geolocation.watchPosition(handlePosition, handleError, geoOptions);
         } catch (err) {
-            console.warn('📍 Proximity tracker failed to start watch:', err);
+            logger.warn('📍 Proximity tracker failed to start watch:', err);
         }
 
         // Periodic pull to refresh in case watch is throttled by the browser

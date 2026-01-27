@@ -29,6 +29,8 @@ import {
   logAppwriteResponse
 } from '../services/bookingValidationService';
 import { InlineLoadingSkeleton } from './LoadingSkeletons';
+import { enterpriseBookingFlowService } from '../services/enterpriseBookingFlowService';
+import { enterpriseChatIntegrationService } from '../services/enterpriseChatIntegrationService';
 
 // Extend window type for global booking tracker
 declare global {
@@ -278,6 +280,55 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       console.log('[FINAL_BOOKING_PAYLOAD]', JSON.stringify(bookingData, null, 2));
       logPayload(bookingData);
 
+      // ===== 🚀 ENTERPRISE BOOKING FLOW INTEGRATION =====
+      console.log('🏢 [ENTERPRISE] Initiating enterprise booking flow...');
+      
+      try {
+        // Create enterprise booking request with proper data structure
+        const enterpriseBookingId = await enterpriseBookingFlowService.createBookingRequest({
+          userId: authResult.userId || 'anonymous_user',
+          userDetails: {
+            name: customerName.trim(),
+            phone: normalizedWhatsApp,
+            location: locationType === 'home' 
+              ? homeAddress 
+              : `${hotelVillaNameInput}, Room ${roomNumber}`
+          },
+          serviceType: 'book-now', // This is from price slider, always immediate
+          services: [
+            {
+              id: `massage_${selectedDuration}min`,
+              name: `${selectedDuration} Minute Massage`,
+              duration: selectedOption.duration,
+              price: selectedOption.price
+            }
+          ],
+          totalPrice: selectedOption.price,
+          duration: selectedOption.duration,
+          location: {
+            address: locationType === 'home' 
+              ? homeAddress 
+              : `${hotelVillaNameInput}, Room ${roomNumber}`,
+            coordinates: { lat: 0, lng: 0 } // TODO: Get real coordinates
+          },
+          preferredTherapists: [therapistId],
+          urgency: 'normal'
+        });
+        
+        console.log(`✅ [ENTERPRISE] Booking flow initiated: ${enterpriseBookingId}`);
+        
+        // The enterprise system will:
+        // 1. Assign to therapist with 5-minute timer
+        // 2. Play MP3 notification sounds
+        // 3. Auto-open therapist chat window
+        // 4. Handle fallback to other therapists
+        // 5. Create WhatsApp-free chat room
+        
+      } catch (enterpriseError) {
+        console.warn('⚠️ [ENTERPRISE] Enterprise booking failed, continuing with legacy flow:', enterpriseError);
+        // Don't block the booking if enterprise system fails
+      }
+      
       console.log('📤 STEP 1: Creating immediate booking with validated data');
 
       // Create the document using the generated bookingId  

@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * ⚡ ERROR MONITORING SERVICE - FACEBOOK STANDARDS
  * 
@@ -106,17 +107,17 @@ class ErrorMonitoringService {
     
     switch (event.severity) {
       case 'critical':
-        console.error(message, details);
-        if (event.stack) console.error('Stack:', event.stack);
+        logger.error(message, details);
+        if (event.stack) logger.error('Stack:', event.stack);
         break;
       case 'error':
-        console.error(message, details);
+        logger.error(message, details);
         break;
       case 'warning':
-        console.warn(message, details);
+        logger.warn(message, details);
         break;
       case 'info':
-        console.info(message, details);
+        logger.info(message, details);
         break;
     }
   }
@@ -148,8 +149,8 @@ class ErrorMonitoringService {
     const errorRate = this.getErrorRate();
     
     if (errorRate > this.alertThreshold) {
-      console.error(`🚨🚨🚨 CRITICAL ALERT: Error rate is ${errorRate}/min (threshold: ${this.alertThreshold}/min)`);
-      console.error('Recent errors:', this.getRecentErrors(10));
+      logger.error(`🚨🚨🚨 CRITICAL ALERT: Error rate is ${errorRate}/min (threshold: ${this.alertThreshold}/min)`);
+      logger.error('Recent errors:', this.getRecentErrors(10));
     }
   }
   
@@ -245,7 +246,7 @@ class ErrorMonitoringService {
     const error = this.errors.find(e => e.id === errorId);
     if (error) {
       error.resolved = true;
-      console.log(`✅ Error ${errorId} marked as resolved`);
+      logger.info(`✅ Error ${errorId} marked as resolved`);
     }
   }
   
@@ -254,7 +255,7 @@ class ErrorMonitoringService {
    */
   clearHistory() {
     this.errors = [];
-    console.log('🗑️ Error history cleared');
+    logger.info('🗑️ Error history cleared');
   }
   
   /**

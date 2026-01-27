@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
-import { account } from '../../../src/lib/appwrite';
+import { account } from '../../../../src/lib/appwrite';
 import { translations, getStoredLanguage } from '../translations';
 
 interface ResetPasswordPageProps {

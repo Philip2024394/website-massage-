@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { authService, therapistService } from '../../../../src/lib/appwriteService';
 import { systemHealthService } from "../../../../src/lib/systemHealthService";
 import { EnhancedNotificationService } from "../../../../src/lib/enhancedNotificationService";
@@ -6,6 +6,11 @@ import { PWAInstallationEnforcer } from "../../../../src/lib/pwaInstallationEnfo
 import { therapistNotificationManager } from './lib/therapistNotifications';
 import { CardSkeleton } from '../../../../src/components/LoadingSkeletons';
 import TherapistDashboardGuard from '../../../../src/components/TherapistDashboardGuard';
+// Lazy load WebSocket component to avoid initial load issues
+const TherapistDashboardWebSocket = React.lazy(() => import('../../../../src/components/TherapistDashboardWebSocket'));
+// import { enterpriseScheduledReminderService } from '../../../../src/services/enterpriseScheduledReminderService';
+// import { enterpriseWebSocketService } from '../../../../src/services/enterpriseWebSocketService';
+// import { bookingSoundService } from '../../../../src/services/bookingSound.service';
 // import { membershipNotificationService } from './services/membershipNotificationService'; // Unused
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';
@@ -77,12 +82,24 @@ function App() {
   const [showBookingAlerts, setShowBookingAlerts] = useState(true);
   const [enterpriseNotificationManager, setEnterpriseNotificationManager] = useState<any>(null);
   const [showEnterpriseTestPanel, setShowEnterpriseTestPanel] = useState(false);
+  const [connectionState, setConnectionState] = useState('disconnected');
   const [language, setLanguage] = useState<'en' | 'id'>(() => {
-    // Try to get language from localStorage or default to 'id'
-    const stored = localStorage.getItem('indastreet_language');
-    return (stored === 'en' || stored === 'id') ? stored : 'id';
+    // 🇮🇩 THERAPIST DASHBOARD: ALWAYS USE INDONESIAN LANGUAGE
+    // Force Indonesian for all therapists regardless of previous settings
+    localStorage.setItem('indastreet_language', 'id');
+    return 'id';
   });
   const { t } = useTranslations(language);
+
+  // 🇮🇩 ENFORCE INDONESIAN LANGUAGE FOR THERAPIST DASHBOARD
+  useEffect(() => {
+    // Always set to Indonesian when dashboard loads
+    if (language !== 'id') {
+      setLanguage('id');
+      localStorage.setItem('indastreet_language', 'id');
+      console.log('🇮🇩 Therapist Dashboard: Language forced to Indonesian');
+    }
+  }, []); // Run once on mount
 
   // Initialize ULTIMATE enhanced notification system
   useEffect(() => {
@@ -97,7 +114,23 @@ function App() {
         await EnhancedNotificationService.initialize();
         console.log('✅ Enhanced notification system initialized');
         
-        // 🔊 Initialize therapist chat notification system with MP3 sounds
+        // 🔊 Initialize enterprise booking sound service (lazy loaded to avoid 500 errors)
+        try {
+          const { bookingSoundService } = await import('../../../../src/services/bookingSound.service');
+          await bookingSoundService.initialize();
+          console.log('🎵 Enterprise booking sound service initialized');
+        } catch (error) {
+          console.warn('⚠️ Booking sound service failed to initialize:', error);
+        }
+        
+        // 🕐 Initialize scheduled reminder service (lazy loaded)
+        try {
+          const { enterpriseScheduledReminderService } = await import('../../../../src/services/enterpriseScheduledReminderService');
+          await enterpriseScheduledReminderService.initialize();
+          console.log('⏰ Scheduled reminder service initialized');
+        } catch (error) {
+          console.warn('⚠️ Scheduled reminder service failed to initialize:', error);
+        }
         console.log('🔔 Initializing therapist notification manager...');
         therapistNotificationManager.requestNotificationPermission();
         console.log('✅ Therapist notification system ready');
@@ -279,6 +312,46 @@ function App() {
       console.log('⏰ Session refresh timer stopped');
     };
   }, [isAuthenticated, user?.$id]);
+
+  // 📱 Enhanced booking alert handlers for WebSocket integration
+  const handleBookingUpdate = (booking: any) => {
+    console.log('🔄 [BOOKING_UPDATE] Dashboard received booking update:', booking);
+    // Update local booking state, refresh UI components
+    window.dispatchEvent(new CustomEvent('booking-data-updated'));
+  };
+
+  const handleNewBookingNotification = async (booking: any) => {
+    console.log('🆕 [NEW_BOOKING] Dashboard received new booking:', booking);
+    
+    // Show booking alert to therapist
+    if (setShowBookingAlerts) {
+      setShowBookingAlerts(true);
+    }
+    
+    // Trigger booking list refresh
+    window.dispatchEvent(new CustomEvent('refresh-booking-list'));
+    
+    // Navigate to bookings page for urgent bookings
+    if (booking.urgency === 'urgent') {
+      setCurrentPage('bookings');
+    }
+  };
+
+  const handleReminderReceived = (reminder: any) => {
+    console.log('⏰ [REMINDER] Dashboard received scheduled reminder:', reminder);
+    
+    // Show reminder badge on relevant pages
+    window.dispatchEvent(new CustomEvent('reminder-badge-update', {
+      detail: { reminderType: reminder.reminderType, bookingId: reminder.bookingId }
+    }));
+    
+    // Navigate to calendar for time-sensitive reminders
+    if (['therapist_2h', 'therapist_1h'].includes(reminder.reminderType)) {
+      if (currentPage === 'dashboard') {
+        setCurrentPage('schedule'); // Show schedule for immediate preparation
+      }
+    }
+  };
 
   // Listen for service worker messages (booking notifications, etc.)
   useEffect(() => {
@@ -740,6 +813,18 @@ function App() {
     <TherapistDashboardGuard>
       <ChatProvider>
         <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
+          {/* 🔌 ENTERPRISE WEBSOCKET INTEGRATION */}
+          {user?.$id && (
+            <TherapistDashboardWebSocket
+              therapistId={user.$id}
+              isActive={true}
+              onBookingUpdate={handleBookingUpdate}
+              onNewBooking={handleNewBookingNotification}
+              onReminderReceived={handleReminderReceived}
+              onConnectionStateChange={setConnectionState}
+            />
+          )}
+          
           {/* Booking Notification System */}
           {showBookingAlerts && (
             <PersistentBookingAlerts
@@ -781,6 +866,19 @@ function App() {
           {/* 🧪 Enterprise Test Panel - Development/Testing */}
           {(window.location.hostname === 'localhost' || window.location.search.includes('test=1')) && (
             <>
+              {/* Connection Status Indicator */}
+              <div className="fixed top-4 right-4 z-50">
+                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  connectionState === 'connected' 
+                    ? 'bg-green-100 text-green-800' 
+                    : connectionState === 'connecting'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  🔌 WebSocket: {connectionState}
+                </div>
+              </div>
+              
               {/* Floating Test Button */}
               <div className="fixed bottom-20 right-4 z-40">
                 <button

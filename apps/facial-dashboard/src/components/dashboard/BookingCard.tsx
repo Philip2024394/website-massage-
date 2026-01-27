@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-import { BookingStatus } from '../../../src/types';
-import type { Booking } from '../../../src/types';
+import { BookingStatus } from '../../../../../src/types';
+import type { Booking } from '../../../../../src/types';
 
 interface BookingCardProps {
   booking: Booking;

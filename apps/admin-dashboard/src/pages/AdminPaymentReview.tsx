@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Eye, CheckCircle, XCircle, Clock, Calendar, User, DollarSign, FileText, RefreshCw, AlertCircle } from 'lucide-react';
-import { paymentConfirmationService } from '../../../src/lib/appwrite';
+import { commissionService } from '../lib/appwrite';
 
 interface PaymentConfirmation {
     $id: string;
@@ -49,7 +49,7 @@ const AdminPaymentReview: React.FC = () => {
     const loadPayments = async () => {
         try {
             setLoading(true);
-            const data = await paymentConfirmationService.getAllPayments();
+            const data = await commissionService.getAllPayments();
             setPayments(data);
         } catch (error) {
             console.error('Failed to load payments:', error);
@@ -89,7 +89,7 @@ const AdminPaymentReview: React.FC = () => {
             console.log('✅ Approving premium payment for:', payment.userName);
             
             // Step 1: Approve payment record
-            await paymentConfirmationService.approvePayment(payment.$id, 'admin');
+            await commissionService.approvePayment(payment.$id, 'admin');
             console.log('✅ Payment record approved');
             
             // Step 2: Confirm premium status (already active, just update status)
@@ -133,7 +133,7 @@ const AdminPaymentReview: React.FC = () => {
             console.log('❌ Declining payment and REVOKING premium access for:', selectedPayment.userName);
             
             // Step 1: Decline payment record
-            await paymentConfirmationService.declinePayment(
+            await commissionService.declinePayment(
                 selectedPayment.$id,
                 'admin',
                 declineReason.trim()

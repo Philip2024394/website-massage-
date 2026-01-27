@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 import { databases, account, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
@@ -79,7 +80,7 @@ export const chatService = {
                 new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime()
             );
         } catch (error) {
-            console.error('Error fetching admin chats:', error);
+            logger.error('Error fetching admin chats:', error);
             return [];
         }
     },
@@ -117,7 +118,7 @@ export const chatService = {
                 ).length
             };
         } catch (error) {
-            console.error('Error fetching chat thread:', error);
+            logger.error('Error fetching chat thread:', error);
             return null;
         }
     },
@@ -131,7 +132,7 @@ export const chatService = {
             const authResult = await ensureAuthSession('chat messaging');
             
             if (!authResult.success) {
-                console.error('❌ Cannot send chat message without authentication');
+                logger.error('❌ Cannot send chat message without authentication');
                 return null;
             }
             
@@ -154,7 +155,7 @@ export const chatService = {
 
             return response as unknown as ChatMessage;
         } catch (error) {
-            console.error('Error sending message:', error);
+            logger.error('Error sending message:', error);
             return null;
         }
     },
@@ -185,7 +186,7 @@ export const chatService = {
                 );
             }
         } catch (error) {
-            console.error('Error marking messages as read:', error);
+            logger.error('Error marking messages as read:', error);
         }
     },
 
@@ -231,7 +232,7 @@ export const chatService = {
                 averageResponseTime: 0 // Can be calculated based on response patterns
             };
         } catch (error) {
-            console.error('Error fetching chat stats:', error);
+            logger.error('Error fetching chat stats:', error);
             return {
                 totalMessages: 0,
                 activeChats: 0,
@@ -261,7 +262,7 @@ export const chatService = {
                     callback(message as ChatMessage);
                 });
             } catch (error) {
-                console.error('Error in chat subscription:', error);
+                logger.error('Error in chat subscription:', error);
             }
         }, 5000); // Poll every 5 seconds
 

@@ -4,7 +4,7 @@ import {
   Award, Plus, Edit3, Trash2, Eye, EyeOff, Save, X,
   Shield, Star, Zap, Users, Trophy, Search, Filter, Building
 } from 'lucide-react';
-import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES, SAMPLE_ACHIEVEMENTS } from '../../../src/lib/appwrite';
+import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES, SAMPLE_ACHIEVEMENTS } from '../lib/appwrite';
 
 interface AdminAchievementManagerProps {
   onBack: () => void;

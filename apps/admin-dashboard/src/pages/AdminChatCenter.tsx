@@ -5,7 +5,7 @@ import {
     ChevronDown, ChevronRight, User, Building, Sparkles,
     Clock, X, CheckCheck, Paperclip, Image as ImageIcon, FileText
 } from 'lucide-react';
-import { therapistService, placesService, messagingService } from '../../../src/lib/appwrite';
+import { therapistService, placesService } from '../lib/appwrite';
 
 interface Member {
     $id: string;

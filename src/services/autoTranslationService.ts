@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * Auto-Translation Service using Google Translate API
  * Translates text to multiple languages and stores in Appwrite
@@ -41,7 +42,7 @@ class AutoTranslationService {
     sourceLanguage: LanguageCode = 'en'
   ): Promise<string> {
     if (!GOOGLE_TRANSLATE_API_KEY) {
-      console.warn('Google Translate API key not configured');
+      logger.warn('Google Translate API key not configured');
       return text; // Return original text if no API key
     }
 
@@ -68,7 +69,7 @@ class AutoTranslationService {
       const data = await response.json();
       return data.data.translations[0].translatedText;
     } catch (error) {
-      console.error(`Translation error for ${targetLanguage}:`, error);
+      logger.error(`Translation error for ${targetLanguage}:`, error);
       return text; // Fallback to original text
     }
   }
@@ -80,7 +81,7 @@ class AutoTranslationService {
     key: string,
     englishText: string
   ): Promise<TranslationEntry> {
-    console.log(`Translating: "${key}" - "${englishText}"`);
+    logger.info(`Translating: "${key}" - "${englishText}"`);
 
     const translations: TranslationEntry = {
       key,
@@ -98,12 +99,12 @@ class AutoTranslationService {
       try {
         const translated = await this.translateText(englishText, lang);
         translations[lang] = translated;
-        console.log(`  ✓ ${lang}: ${translated}`);
+        logger.info(`  ✓ ${lang}: ${translated}`);
         
         // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
-        console.error(`  ✗ Failed to translate to ${lang}:`, error);
+        logger.error(`  ✗ Failed to translate to ${lang}:`, error);
         translations[lang] = englishText; // Fallback to English
       }
     }
@@ -128,7 +129,7 @@ class AutoTranslationService {
 
       return null;
     } catch (error) {
-      console.error('Error fetching translation from Appwrite:', error);
+      logger.error('Error fetching translation from Appwrite:', error);
       return null;
     }
   }
@@ -149,7 +150,7 @@ class AutoTranslationService {
           existing.$id!,
           translation
         );
-        console.log(`Updated translation in Appwrite: ${translation.key}`);
+        logger.info(`Updated translation in Appwrite: ${translation.key}`);
       } else {
         // Create new translation
         await databases.createDocument(
@@ -158,10 +159,10 @@ class AutoTranslationService {
           ID.unique(),
           translation
         );
-        console.log(`Saved new translation to Appwrite: ${translation.key}`);
+        logger.info(`Saved new translation to Appwrite: ${translation.key}`);
       }
     } catch (error) {
-      console.error('Error saving translation to Appwrite:', error);
+      logger.error('Error saving translation to Appwrite:', error);
       throw error;
     }
   }
@@ -174,12 +175,12 @@ class AutoTranslationService {
     const existing = await this.getTranslation(key);
 
     if (existing) {
-      console.log(`Using cached translation for: ${key}`);
+      logger.info(`Using cached translation for: ${key}`);
       return existing;
     }
 
     // Translation doesn't exist, auto-translate it
-    console.log(`Translating new text: ${key}`);
+    logger.info(`Translating new text: ${key}`);
     const translated = await this.translateToAllLanguages(key, englishText);
 
     // Save to Appwrite for future use
@@ -227,7 +228,7 @@ class AutoTranslationService {
 
       return translations;
     } catch (error) {
-      console.error('Error fetching all translations:', error);
+      logger.error('Error fetching all translations:', error);
       return {};
     }
   }
@@ -260,9 +261,9 @@ class AutoTranslationService {
         updates
       );
 
-      console.log(`Manually updated ${language} translation for: ${key}`);
+      logger.info(`Manually updated ${language} translation for: ${key}`);
     } catch (error) {
-      console.error('Error updating manual translation:', error);
+      logger.error('Error updating manual translation:', error);
       throw error;
     }
   }
@@ -280,10 +281,10 @@ class AutoTranslationService {
           TRANSLATIONS_COLLECTION_ID,
           existing.$id!
         );
-        console.log(`Deleted translation: ${key}`);
+        logger.info(`Deleted translation: ${key}`);
       }
     } catch (error) {
-      console.error('Error deleting translation:', error);
+      logger.error('Error deleting translation:', error);
       throw error;
     }
   }

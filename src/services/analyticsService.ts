@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * Analytics Service - Complete Event Tracking & Metrics System
  * 
@@ -300,9 +301,9 @@ class AnalyticsService {
                 eventData
             );
 
-            console.log(`📊 Event tracked: ${event.eventType}`);
+            logger.info(`📊 Event tracked: ${event.eventType}`);
         } catch (error) {
-            console.error('Error tracking event:', error);
+            logger.error('Error tracking event:', error);
             // Don't throw - analytics should not break app functionality
         }
     }
@@ -514,7 +515,7 @@ class AnalyticsService {
                 periodEnd: endDate
             };
         } catch (error) {
-            console.error('Error getting therapist analytics:', error);
+            logger.error('Error getting therapist analytics:', error);
             throw error;
         }
     }
@@ -575,7 +576,7 @@ class AnalyticsService {
                 periodEnd: endDate
             };
         } catch (error) {
-            console.error('Error getting place analytics:', error);
+            logger.error('Error getting place analytics:', error);
             throw error;
         }
     }
@@ -634,7 +635,7 @@ class AnalyticsService {
                 periodEnd: endDate
             };
         } catch (error) {
-            console.error('Error getting hotel/villa analytics:', error);
+            logger.error('Error getting hotel/villa analytics:', error);
             throw error;
         }
     }
@@ -719,7 +720,7 @@ class AnalyticsService {
                 lastUpdated: new Date().toISOString()
             };
         } catch (error) {
-            console.error('Error getting platform analytics:', error);
+            logger.error('Error getting platform analytics:', error);
             throw error;
         }
     }
@@ -760,7 +761,7 @@ class AnalyticsService {
             );
             return docs.documents[0];
         } catch (error) {
-            console.error('Error fetching therapist:', error);
+            logger.error('Error fetching therapist:', error);
             throw error;
         }
     }
@@ -778,7 +779,7 @@ class AnalyticsService {
             );
             return docs.documents[0];
         } catch (error) {
-            console.error('Error fetching place:', error);
+            logger.error('Error fetching place:', error);
             throw error;
         }
     }

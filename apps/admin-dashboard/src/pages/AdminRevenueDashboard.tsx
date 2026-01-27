@@ -55,11 +55,11 @@ import {
 } from 'lucide-react';
 import {
   adminRevenueTrackerService
-} from '../../../src/lib/appwrite';
+} from '../lib/appwrite';
 import type {
   CommissionStatus,
   BookingLifecycleStatus
-} from '../../../src/lib/appwrite';
+} from '../lib/appwrite';
 
 // Type definitions for admin revenue tracking
 type AdminBookingEntry = {

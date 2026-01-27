@@ -13,7 +13,7 @@ import {
     Eye, Edit, Trash2, RefreshCw, Search, Filter, Calendar,
     Image, FileText, MapPin, Phone, Mail, Star
 } from 'lucide-react';
-import { databases, DATABASE_ID, COLLECTIONS } from '../../../src/lib/appwrite';
+import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 import { Query } from 'appwrite';
 
 interface PendingApproval {

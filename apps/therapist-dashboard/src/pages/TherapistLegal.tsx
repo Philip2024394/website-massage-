@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
-import { FileText, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Shield, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import TherapistPageHeader from '../components/TherapistPageHeader';
 
 interface TherapistLegalProps {
@@ -420,11 +420,29 @@ Last Updated: December 11, 2024`
 
   const content = activeTab === 'terms' ? termsContent : privacyContent;
 
+  const dict = {
+    therapistDashboard: {
+      thisMonth: 'this month'
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-sm mx-auto bg-white min-h-screen shadow-sm">
+        {/* Page Header */}
+        <div className="px-4 pt-6 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900">Legal</h2>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+              <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
+            </div>
+          </div>
+        </div>
+        
         <TherapistPageHeader
-          title="Legal & Policies"
+          title=""
           subtitle="Terms of Service and Privacy Policy for therapists"
           onBackToStatus={onBack}
           actions={

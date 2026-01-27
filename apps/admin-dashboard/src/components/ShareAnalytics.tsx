@@ -10,7 +10,7 @@ import {
     Calendar, Filter, Search, BarChart, Activity,
     Facebook, MessageSquare, X, Mail, RefreshCw
 } from 'lucide-react';
-import { shareTrackingService } from '../../../src/lib/appwrite';
+import { shareTrackingService } from '../lib/appwrite';
 // analyticsService now imported from local appwrite
 const analyticsService = { getStats: async () => ({ totalViews: 0, uniqueVisitors: 0 }) };
 import type { CardData } from '../pages/AdminDashboard';

@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { authService } from '../lib/appwriteService';
+import { authService, therapistService } from '../lib/appwriteService';
 
 interface SaveOperation {
   id: string;
@@ -208,8 +208,8 @@ class EnterpriseSaveManager {
     const user = await authService.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
     
-    // Update therapist profile via API
-    return await authService.updateProfile(user.id, data);
+    // Update therapist profile via therapistService
+    return await therapistService.updateTherapist(user.id, data);
   }
 
   private async saveStatus(data: any) {
@@ -217,7 +217,7 @@ class EnterpriseSaveManager {
     if (!user) throw new Error('User not authenticated');
     
     // Update therapist online status
-    return await authService.updateTherapistStatus(user.id, data.status);
+    return await therapistService.updateTherapist(user.id, { status: data.status });
   }
 
   private async saveAvailability(data: any) {
@@ -225,7 +225,7 @@ class EnterpriseSaveManager {
     if (!user) throw new Error('User not authenticated');
     
     // Save availability schedule
-    return await authService.updateTherapistSchedule(user.id, data);
+    return await therapistService.updateTherapist(user.id, { schedule: data });
   }
 
   private async savePaymentInfo(data: any) {
@@ -233,7 +233,7 @@ class EnterpriseSaveManager {
     if (!user) throw new Error('User not authenticated');
     
     // Update payment information
-    return await authService.updatePaymentInfo(user.id, data);
+    return await therapistService.updateTherapist(user.id, data);
   }
 
   private async saveSettings(data: any) {
@@ -241,7 +241,7 @@ class EnterpriseSaveManager {
     if (!user) throw new Error('User not authenticated');
     
     // Update user settings
-    return await authService.updateUserSettings(user.id, data);
+    return await therapistService.updateTherapist(user.id, data);
   }
 
   // Offline operations

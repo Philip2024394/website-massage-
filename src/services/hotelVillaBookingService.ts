@@ -1,3 +1,4 @@
+import { logger } from './enterpriseLogger';
 /**
  * Hotel/Villa Live Booking System Service
  * 
@@ -33,7 +34,7 @@ export class HotelVillaBookingService {
 
             return newBooking;
         } catch (error) {
-            console.error('Error creating booking:', error);
+            logger.error('Error creating booking:', error);
             throw error;
         }
     }
@@ -53,9 +54,9 @@ export class HotelVillaBookingService {
             // TODO: Implement provider status update
             // await this.updateProviderStatus(providerId, providerType, AvailabilityStatus.Busy);
 
-            console.log(`✅ Booking ${bookingId} confirmed, provider set to Busy`);
+            logger.info(`✅ Booking ${bookingId} confirmed, provider set to Busy`);
         } catch (error) {
-            console.error('Error confirming booking:', error);
+            logger.error('Error confirming booking:', error);
             throw error;
         }
     }
@@ -71,9 +72,9 @@ export class HotelVillaBookingService {
             // Cancel timeout monitoring
             this.cancelTimeout(bookingId);
 
-            console.log(`✅ Provider on the way for booking ${bookingId}`);
+            logger.info(`✅ Provider on the way for booking ${bookingId}`);
         } catch (error) {
-            console.error('Error setting on the way status:', error);
+            logger.error('Error setting on the way status:', error);
             throw error;
         }
     }
@@ -92,9 +93,9 @@ export class HotelVillaBookingService {
             // Immediately trigger fallback
             await this.triggerFallbackSystem(bookingId);
 
-            console.log(`✅ Booking ${bookingId} declined, triggering fallback`);
+            logger.info(`✅ Booking ${bookingId} declined, triggering fallback`);
         } catch (error) {
-            console.error('Error declining booking:', error);
+            logger.error('Error declining booking:', error);
             throw error;
         }
     }
@@ -115,7 +116,7 @@ export class HotelVillaBookingService {
             }, msUntilDeadline);
 
             this.timeoutTrackers.set(booking.$id || booking.id, timeoutId);
-            console.log(`⏰ Timeout monitoring started for booking ${booking.$id || booking.id}: ${msUntilDeadline}ms`);
+            logger.info(`⏰ Timeout monitoring started for booking ${booking.$id || booking.id}: ${msUntilDeadline}ms`);
         }
     }
 
@@ -127,7 +128,7 @@ export class HotelVillaBookingService {
         if (timeoutId) {
             clearTimeout(timeoutId);
             this.timeoutTrackers.delete(bookingId);
-            console.log(`⏹️ Timeout cancelled for booking ${bookingId}`);
+            logger.info(`⏹️ Timeout cancelled for booking ${bookingId}`);
         }
     }
 
@@ -135,7 +136,7 @@ export class HotelVillaBookingService {
      * Handle timeout - trigger fallback system
      */
     private static async handleTimeout(bookingId: string): Promise<void> {
-        console.log(`⏰ Timeout reached for booking ${bookingId}, triggering fallback...`);
+        logger.info(`⏰ Timeout reached for booking ${bookingId}, triggering fallback...`);
         
         try {
             // Mark original booking as timed out
@@ -147,7 +148,7 @@ export class HotelVillaBookingService {
             // Trigger fallback to find alternative providers
             await this.triggerFallbackSystem(bookingId);
         } catch (error) {
-            console.error('Error handling timeout:', error);
+            logger.error('Error handling timeout:', error);
         }
     }
 
@@ -160,7 +161,7 @@ export class HotelVillaBookingService {
             const booking = await appwriteBookingService.getBookingById(bookingId);
             
             if (!booking) {
-                console.error('Booking not found:', bookingId);
+                logger.error('Booking not found:', bookingId);
                 return;
             }
 
@@ -181,15 +182,15 @@ export class HotelVillaBookingService {
                     newProvider.name
                 );
                 
-                console.log(`✅ Booking ${bookingId} reassigned to provider ${newProvider.name}`);
+                logger.info(`✅ Booking ${bookingId} reassigned to provider ${newProvider.name}`);
             } else {
                 // No alternatives found - notify hotel and guest
                 await this.notifyNoProvidersAvailable(bookingId);
                 
-                console.log(`❌ No alternative providers found for booking ${bookingId}`);
+                logger.info(`❌ No alternative providers found for booking ${bookingId}`);
             }
         } catch (error) {
-            console.error('Error in fallback system:', error);
+            logger.error('Error in fallback system:', error);
         }
     }
 
@@ -234,9 +235,9 @@ export class HotelVillaBookingService {
         try {
             // TODO: Implement provider status update via Appwrite
             // This will be handled in a future phase
-            console.log(`📝 Provider ${providerId} status would be updated to ${status}`);
+            logger.info(`📝 Provider ${providerId} status would be updated to ${status}`);
         } catch (error) {
-            console.error('Error updating provider status:', error);
+            logger.error('Error updating provider status:', error);
         }
     }
 
@@ -253,12 +254,12 @@ export class HotelVillaBookingService {
             // 2. Send to hotel dashboard (real-time update)
             // 3. Send to guest (optional - WhatsApp or SMS)
 
-            console.log(`📬 Notifications sent for booking ${booking.id} - event: ${event}`);
-            console.log(`   - Provider: ${booking.providerName}`);
-            console.log(`   - Hotel: ${booking.hotelVillaName}`);
-            console.log(`   - Guest: ${booking.guestName} (Room ${booking.roomNumber})`);
+            logger.info(`📬 Notifications sent for booking ${booking.id} - event: ${event}`);
+            logger.info(`   - Provider: ${booking.providerName}`);
+            logger.info(`   - Hotel: ${booking.hotelVillaName}`);
+            logger.info(`   - Guest: ${booking.guestName} (Room ${booking.roomNumber})`);
         } catch (error) {
-            console.error('Error sending notifications:', error);
+            logger.error('Error sending notifications:', error);
         }
     }
 
@@ -267,7 +268,7 @@ export class HotelVillaBookingService {
      */
     private static async notifyNoProvidersAvailable(bookingId: string): Promise<void> {
         try {
-            console.log(`📧 Notifying hotel and guest: No providers available for booking ${bookingId}`);
+            logger.info(`📧 Notifying hotel and guest: No providers available for booking ${bookingId}`);
             
             // Update booking status to cancelled
             await appwriteBookingService.cancelBooking(
@@ -275,7 +276,7 @@ export class HotelVillaBookingService {
                 'No providers available within service area'
             );
         } catch (error) {
-            console.error('Error notifying no providers available:', error);
+            logger.error('Error notifying no providers available:', error);
         }
     }
 
@@ -290,9 +291,9 @@ export class HotelVillaBookingService {
             // Auto-set provider back to Available
             await this.updateProviderStatus(providerId, providerType, AvailabilityStatus.Available);
 
-            console.log(`✅ Booking ${bookingId} completed, provider ${providerId} set to Available`);
+            logger.info(`✅ Booking ${bookingId} completed, provider ${providerId} set to Available`);
         } catch (error) {
-            console.error('Error completing booking:', error);
+            logger.error('Error completing booking:', error);
             throw error;
         }
     }

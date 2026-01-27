@@ -17,10 +17,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@root': resolve(__dirname, '../..'),
       '@': resolve(__dirname, '../../'),
       '@shared': resolve(__dirname, '../../lib'),
       '@components': resolve(__dirname, '../../components'),
-      '@services': resolve(__dirname, '../../services')
+      '@services': resolve(__dirname, '../../services'),
+      '@src': resolve(__dirname, '../../src'),
     }
   },
   server: {

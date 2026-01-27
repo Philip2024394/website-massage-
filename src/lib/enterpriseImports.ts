@@ -25,22 +25,17 @@ export { ChatProvider } from '../context/ChatProvider';
 export { useTranslations } from '../lib/useTranslations';
 
 // Error boundaries
-export { default as ProductionErrorBoundary } from '../components/ProductionErrorBoundary';
+export { ProductionErrorBoundary } from '../components/ProductionErrorBoundary';
 export { default as TherapistDashboardGuard } from '../components/TherapistDashboardGuard';
 
-// PWA utilities for therapist dashboard
+// PWA utilities for therapist dashboard - removed references to non-existent files
 export const PWAUtils = {
-  installEnforcer: () => import('../lib/pwaInstallationEnforcer').then(m => m.PWAInstallationEnforcer),
-  lifecycleManager: () => import('../apps/therapist-dashboard/src/lib/pwaFeatures').then(m => ({
-    PWALifecycleManager: m.PWALifecycleManager,
-    PWANotificationManager: m.PWANotificationManager,
-    isPWAMode: m.isPWAMode
-  }))
+  installEnforcer: () => import('../lib/pwaInstallationEnforcer').then(m => m.PWAInstallationEnforcer)
 };
 
-// Notification utilities
+// Notification utilities - removed reference to non-existent therapistNotifications
 export const NotificationUtils = {
-  therapistManager: () => import('../apps/therapist-dashboard/src/lib/therapistNotifications').then(m => m.therapistNotificationManager)
+  // Add actual notification utilities here when available
 };
 
 // Safe import wrapper - prevents crashes from missing dependencies

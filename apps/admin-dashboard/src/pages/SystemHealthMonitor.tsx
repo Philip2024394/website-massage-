@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import { useState, useEffect } from 'react';
-import { databases, DATABASE_ID } from '../../../src/lib/appwrite';
+import { databases, DATABASE_ID } from '../lib/appwrite';
 import { Query } from 'appwrite';
 
 interface BookingSystemHealth {
