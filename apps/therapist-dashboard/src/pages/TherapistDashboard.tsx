@@ -932,13 +932,75 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       {/* Main Content */}
       <main className="max-w-sm mx-auto px-4 py-6">
           
-          {/* Page Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-gray-900">Edit Profile</h2>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-              <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
-              <span className="text-xs text-gray-500">this month</span>
+          {/* Page Header with Status Badge and Stats - EXACT MATCH TO HOME PAGE */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-gray-900">Edit Profil</h2>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+                <Clock className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
+                <span className="text-xs text-gray-500">bulan ini</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {/* Available */}
+              <button
+                onClick={() => {
+                  // Status change logic would go here
+                  console.log('Status: Available');
+                }}
+                className={`p-4 rounded-xl border-2 transition-all ${
+                  therapist?.status === 'Available' || therapist?.availability === 'Available'
+                    ? 'bg-green-500 border-green-500 shadow-lg'
+                    : 'bg-white border-gray-300 hover:border-green-500 hover:shadow-md'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <CheckCircle className={`w-8 h-8 ${therapist?.status === 'Available' || therapist?.availability === 'Available' ? 'text-white' : 'text-green-600'}`} />
+                  <div className="text-center">
+                    <h3 className={`text-sm font-bold ${therapist?.status === 'Available' || therapist?.availability === 'Available' ? 'text-white' : 'text-gray-800'}`}>Tersedia</h3>
+                  </div>
+                </div>
+              </button>
+
+              {/* Busy */}
+              <button
+                onClick={() => {
+                  console.log('Status: Busy');
+                }}
+                className={`p-4 rounded-xl border-2 transition-all ${
+                  therapist?.status === 'Busy' || therapist?.availability === 'Busy'
+                    ? 'bg-amber-500 border-amber-500 shadow-lg'
+                    : 'bg-white border-gray-300 hover:border-amber-400 hover:shadow-md'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <Clock className={`w-8 h-8 ${therapist?.status === 'Busy' || therapist?.availability === 'Busy' ? 'text-white' : 'text-yellow-600'}`} />
+                  <div className="text-center">
+                    <h3 className={`text-sm font-bold ${therapist?.status === 'Busy' || therapist?.availability === 'Busy' ? 'text-white' : 'text-gray-800'}`}>Sibuk</h3>
+                  </div>
+                </div>
+              </button>
+
+              {/* Offline */}
+              <button
+                onClick={() => {
+                  console.log('Status: Offline');
+                }}
+                className={`p-4 rounded-xl border-2 transition-all ${
+                  therapist?.status === 'Offline' || therapist?.availability === 'Offline'
+                    ? 'bg-red-500 border-red-500 shadow-lg'
+                    : 'bg-white border-gray-300 hover:border-red-400 hover:shadow-md'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <X className={`w-8 h-8 ${therapist?.status === 'Offline' || therapist?.availability === 'Offline' ? 'text-white' : 'text-red-600'}`} />
+                  <div className="text-center">
+                    <h3 className={`text-sm font-bold ${therapist?.status === 'Offline' || therapist?.availability === 'Offline' ? 'text-white' : 'text-gray-800'}`}>Offline</h3>
+                  </div>
+                </div>
+              </button>
             </div>
           </div>
           
