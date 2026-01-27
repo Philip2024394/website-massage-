@@ -33,7 +33,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   // Calculate isPremium dynamically from therapist prop - recalculates on therapist update
-  const isPremium = therapist?.membershipTier === 'premium' || false;
+  const isPremium = true; // All accounts are premium
 
   useEffect(() => {
     if (isPremium) {
@@ -53,7 +53,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
     setLoading(true);
     try {
       // Fetch real calendar bookings from Appwrite
-      const { bookingService } = await import('../../../../lib/appwriteService');
+      const { bookingService } = await import('../../../../src/lib/appwriteService');
       
       // Get confirmed bookings for this therapist's calendar
       const realBookings = await bookingService.getProviderBookings(therapist.$id);
@@ -230,7 +230,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
               onClick={onNavigateToMembership}
               className="w-full px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg hover:shadow-xl"
             >
-              Upgrade to Premium
+              Premium Features Active
             </button>
           </div>
         </div>

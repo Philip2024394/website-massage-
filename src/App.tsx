@@ -4,57 +4,53 @@
  * Do NOT add additional event listeners for chat.
  */
 import { Helmet } from 'react-helmet';
-import { AppLayout } from '../components/layout/AppLayout';
-import { AppFooterLayout } from '../components/layout/AppFooterLayout';
-import GlobalHeader from '../components/GlobalHeader';
+import { AppLayout } from './components/layout/AppLayout';
+import { AppFooterLayout } from './components/layout/AppFooterLayout';
+import GlobalHeader from './components/GlobalHeader';
 import AppRouter from './AppRouter';
-import { useAllHooks } from '../hooks/useAllHooks';
-import { useAutoReviews } from '../hooks/useAutoReviews';
-import { useMobileLock } from '../hooks/useMobileLock';
-import { usePreventScroll } from '../hooks/usePreventScroll';
-import { useMobileDetection } from '../hooks/useMobileDetection';
-import { useTranslations } from '../lib/useTranslations';
-import { DeviceStylesProvider } from '../components/DeviceAware';
-import BookingStatusTracker from '../components/BookingStatusTracker';
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { lazyWithRetry } from '../utils/lazyWithRetry';
+import { useAllHooks } from './hooks/useAllHooks';
+import { useAutoReviews } from './hooks/useAutoReviews';
+import { useMobileLock } from './hooks/useMobileLock';
+import { usePreventScroll } from './hooks/usePreventScroll';
+import { useMobileDetection } from './hooks/useMobileDetection';
+import { useTranslations } from './lib/useTranslations';
+import { DeviceStylesProvider } from './components/DeviceAware';
+import BookingStatusTracker from './components/BookingStatusTracker';
+import { useState, useEffect, lazy } from 'react';
 
-// 🔒 PRODUCTION-GRADE: Lazy loading with automatic retry on weak networks
-const FloatingChatWindow = lazyWithRetry(
-    () => import('../chat').then(m => ({ default: m.FloatingChatWindow })),
-    { componentName: 'FloatingChatWindow', retries: 3 }
-);
+// Temporarily disabled lazy loading to fix AsyncMode error
+const FloatingChatWindow = lazy(() => import('./chat').then(m => ({ default: m.FloatingChatWindow })));
 // const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
-import { bookingExpirationService } from '../services/bookingExpirationService';
+import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
 // import './utils/disableLocalStorage';
 // (Former cleanupLocalStorage import removed as localStorage persisted data is no longer used)
-import '../lib/globalErrorHandler'; // Initialize global error handling
-import { LanguageProvider } from '../context/LanguageContext';
-import { CityProvider, useCityContext } from '../context/CityContext';
-import { agentShareAnalyticsService } from '../lib/appwriteService';
-import { analyticsService, AnalyticsEventType } from '../services/analyticsService';
-import type { Therapist, Place, Analytics } from '../types';
-import '../lib/notificationSound'; // Initialize notification sound system
-import { pushNotifications } from '../lib/pushNotifications'; // Initialize Appwrite push notifications
+import './lib/globalErrorHandler'; // Initialize global error handling
+import { LanguageProvider } from './context/LanguageContext';
+import { CityProvider, useCityContext } from './context/CityContext';
+import { agentShareAnalyticsService } from './lib/appwriteService';
+import { analyticsService, AnalyticsEventType } from './services/analyticsService';
+import type { Therapist, Place, Analytics } from './types';
+import './lib/notificationSound'; // Initialize notification sound system
+import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
 // REMOVED: chatSessionService import - no longer using global chat sessions
 // REMOVED: ChatErrorBoundary import - no longer using global ChatWindow
-import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from '../utils/urlMapper';
+import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapper';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
-import { useServiceWorkerListener } from '../app/useServiceWorkerListener';
-import { useUrlBookingHandler } from '../app/useUrlBookingHandler';
-import { useAnalyticsHandler } from '../app/useAnalyticsHandler';
-import { ChatProvider, useChatContext } from '../context/ChatProvider';
-import { isPWA, shouldAllowRedirects } from '../utils/pwaDetection';
-import { APP_CONFIG } from '../config';
+import { useServiceWorkerListener } from './app/useServiceWorkerListener';
+import { useUrlBookingHandler } from './app/useUrlBookingHandler';
+import { useAnalyticsHandler } from './app/useAnalyticsHandler';
+import { ChatProvider, useChatContext } from './context/ChatProvider';
+import { isPWA, shouldAllowRedirects } from './utils/pwaDetection';
+import { APP_CONFIG } from './config';
 
 // 🔒 PERSISTENT CHAT SYSTEM - Facebook Messenger style
-import { PersistentChatProvider } from '../context/PersistentChatProvider';
-import { PersistentChatWindow } from '../components/PersistentChatWindow';
+import { PersistentChatProvider } from './context/PersistentChatProvider';
+import { PersistentChatWindow } from './components/PersistentChatWindow';
 
 // 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring
-import { AdminErrorNotification } from '../components/AdminErrorNotification';
+import { AdminErrorNotification } from './components/AdminErrorNotification';
 
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering');
@@ -87,28 +83,18 @@ const App = () => {
                 const pendingDeeplink = sessionStorage.getItem('pending_deeplink');
                 const directTherapistId = sessionStorage.getItem('direct_therapist_id');
                 
-                // Clear all redirect-causing session storage items (only sessionStorage, not localStorage)
-                const redirectKeys = ['pending_deeplink', 'direct_therapist_id', 'selected_therapist', 'selected_therapist_id'];
-                let clearCount = 0;
-                
-                redirectKeys.forEach(key => {
-                    const value = sessionStorage.getItem(key);
-                    if (value) {
-                        sessionStorage.removeItem(key);
-                        clearCount++;
-                        console.log(`🚨 [REDIRECT FIX] Cleared ${key}:`, value);
-                    }
-                });
-                
-                if (clearCount > 0) {
-                    console.log(`🚨 [REDIRECT FIX] Cleared ${clearCount} redirect-causing session storage items for home page`);
-                    console.log('🚨 [REDIRECT FIX] Current path:', currentPath);
-                    // Force a clean state reset
-                    if (state.selectedTherapist) {
-                        state.setSelectedTherapist(null);
-                        console.log('🚨 [REDIRECT FIX] Reset selectedTherapist state to null');
-                    }
+                if (pendingDeeplink) {
+                    console.log('🚨 [REDIRECT FIX] Clearing unwanted pending deeplink on home page visit:', pendingDeeplink);
+                    sessionStorage.removeItem('pending_deeplink');
                 }
+                
+                if (directTherapistId) {
+                    console.log('🚨 [REDIRECT FIX] Clearing direct_therapist_id on home page visit:', directTherapistId);
+                    sessionStorage.removeItem('direct_therapist_id');
+                }
+                
+                console.log('🚨 [REDIRECT FIX] Current path:', currentPath);
+                console.log('🚨 [REDIRECT FIX] Cleared all redirect-causing session storage items');
             }
         };
         
@@ -274,74 +260,6 @@ const App = () => {
         }
     }, [state.loggedInProvider]); // Also depend on auth state
     
-    // ===== COUNTRY-BASED AUTO-REDIRECT =====
-    // Automatically redirect to country-specific landing page based on IP detection
-    useEffect(() => {
-        const shouldAutoRedirect = async () => {
-            try {
-                // Only redirect on initial home page visit
-                const currentPath = window.location.pathname + window.location.hash;
-                const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 
-                                  currentPath === '' || currentPath === '/#';
-                
-                if (!isHomePage) {
-                    console.log('🌍 [AUTO-REDIRECT] Skipping - not on home page');
-                    return;
-                }
-                
-                // Check if user has already been redirected this session
-                const hasRedirectedThisSession = sessionStorage.getItem('country_auto_redirected');
-                if (hasRedirectedThisSession) {
-                    console.log('🌍 [AUTO-REDIRECT] Skipping - already redirected this session');
-                    return;
-                }
-                
-                // Import the service dynamically to avoid circular dependencies
-                const { ipGeolocationService } = await import('../lib/ipGeolocationService');
-                
-                // Get user's detected location
-                const location = await ipGeolocationService.getUserLocation();
-                
-                console.log('🌍 [AUTO-REDIRECT] Detected location:', {
-                    country: location.countryCode,
-                    method: location.method,
-                    isNearest: location.isNearest,
-                    originalCountry: location.originalCountryCode
-                });
-                
-                // Don't redirect if using saved preference or manual selection
-                if (location.method === 'saved' || location.method === 'manual') {
-                    console.log('🌍 [AUTO-REDIRECT] Skipping - user has saved preference');
-                    return;
-                }
-                
-                // Get the country route
-                const countryRoute = ipGeolocationService.getCountryRoute(location.countryCode);
-                
-                if (countryRoute && countryRoute !== 'home') {
-                    console.log('🌍 [AUTO-REDIRECT] Redirecting to country page:', countryRoute);
-                    
-                    if (location.isNearest) {
-                        console.log(`📍 [NEAREST COUNTRY] Redirected from ${location.originalCountryCode} to nearest: ${location.countryCode}`);
-                    }
-                    
-                    // Mark that we've redirected
-                    sessionStorage.setItem('country_auto_redirected', 'true');
-                    
-                    // Navigate to country-specific page
-                    navigation.setPage(countryRoute);
-                } else {
-                    console.log('🌍 [AUTO-REDIRECT] Using default home page');
-                }
-            } catch (error) {
-                console.error('❌ [AUTO-REDIRECT] Failed:', error);
-                // Silently fail - user stays on home page
-            }
-        };
-        
-        shouldAutoRedirect();
-    }, []); // Run once on mount
-    
     // Log mobile detection info for debugging (only when mobile detected)
     useEffect(() => {
         if (mobileDetection.isMobileDevice || mobileDetection.isMobileScreen) {
@@ -428,8 +346,8 @@ const App = () => {
                     console.log('✅ Appwrite SDK already available from CDN');
                 }
 
-                const { account } = await import('../lib/appwrite');
-                const { sessionCache } = await import('../lib/sessionCache');
+                const { account } = await import('./lib/appwrite');
+                const { sessionCache } = await import('./lib/sessionCache');
 
                 const cached = sessionCache.get();
                 if (cached) {
@@ -494,7 +412,7 @@ const App = () => {
 
             try {
                 console.log('🔌 Testing realtime WebSocket connection...');
-                const { appwriteClient } = await import('../lib/appwrite/client');
+                const { appwriteClient } = await import('./lib/appwrite/client');
                 
                 // Simple connection test with shorter timeout
                 let connectionEstablished = false;
@@ -574,7 +492,7 @@ const App = () => {
                 // Clear any cached data if needed
                 if ('sessionCache' in window) {
                     // Refresh session data
-                    const { sessionCache } = await import('../lib/sessionCache');
+                    const { sessionCache } = await import('./lib/sessionCache');
                     sessionCache.clear();
                 }
                 
@@ -719,7 +637,7 @@ const App = () => {
         // ⚠️ URL SYNC TEMPORARILY DISABLED - Causing redirect loops with HashRouter
         // TODO: Fix URL mapping to work with hash routes (/#/page instead of /page)
         // Update browser URL when page changes
-        const currentUrlPath = window.location.pathname;
+        const currentPath = window.location.pathname;
         const expectedUrl = getUrlForPage(state.page);
         
         console.log('\n' + '🔄'.repeat(50));
@@ -834,24 +752,17 @@ const App = () => {
                     const found = state.therapists.find((t: any) => 
                         (t.id || t.$id || '').toString() === therapistId
                     );
-                    
-                    // 🚨 CRITICAL: Don't auto-select therapist if user is navigating to home
-                    if (found && !isNavigatingToHome) {
-                        console.log('🔗 [URL PROCESSING] Auto-selecting therapist from URL:', found.name);
+                    if (found) {
                         state.setSelectedTherapist(found);
                         state.setPage('therapist-profile');
-                    } else if (found && isNavigatingToHome) {
-                        console.log('🚫 [URL PROCESSING] Blocking therapist auto-selection - user going to home');
                     }
-                } else if (match && !isNavigatingToHome) {
+                } else if (match) {
                     // Store for later when therapists are loaded - but only if not going to home
                     console.log('🔍 [URL PROCESSING] Creating pending deeplink for therapist:', match[1]);
                     sessionStorage.setItem('pending_deeplink', JSON.stringify({
                         provider: `therapist-${match[1]}`,
                         targetPage: 'therapist-profile'
                     }));
-                } else if (match && isNavigatingToHome) {
-                    console.log('🚫 [URL PROCESSING] Blocking pending deeplink creation - user going to home');
                 }
             } else if (path.startsWith('/profile/place/')) {
                 // Handle direct massage place profile URL
@@ -941,12 +852,12 @@ const App = () => {
     useEffect(() => {
         try {
             // 🚨 CRITICAL FIX: Don't process deeplinks if user is explicitly on home page
-            const pageUrlPath = window.location.pathname + window.location.hash;
-            const userIsOnHomePage = pageUrlPath === '/' || pageUrlPath === '/home' || pageUrlPath === '/#/home' || 
-                              pageUrlPath.includes('/home') || state.page === 'home' || state.page === 'landing' ||
-                              pageUrlPath === '' || pageUrlPath === '/#';
+            const currentPath = window.location.pathname + window.location.hash;
+            const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 
+                              currentPath.includes('/home') || state.page === 'home' || state.page === 'landing' ||
+                              currentPath === '' || currentPath === '/#';
                               
-            if (userIsOnHomePage) {
+            if (isHomePage) {
                 console.log('🚫 [DEEPLINK] Skipping deeplink processing - user is on home page');
                 const pending = sessionStorage.getItem('pending_deeplink');
                 if (pending) {
@@ -972,17 +883,6 @@ const App = () => {
             const idStr = (pidRaw || '').toString();
             
             console.log('🔍 [DEEPLINK DEBUG] Parsed data:', { ptype, idStr, targetPage });
-            
-            // 🚨 CRITICAL FIX: Don't auto-navigate if user is on home page
-            const currentUrlPath = window.location.pathname + window.location.hash;
-            const isOnHomePage = currentUrlPath === '/' || currentUrlPath === '/home' || currentUrlPath === '/#/home' || 
-                              currentUrlPath.includes('/home') || currentUrlPath === '' || currentUrlPath === '/#';
-            
-            if (isOnHomePage) {
-                console.log('🚫 [DEEPLINK BLOCK] Preventing auto-navigation to therapist profile - user is on home page');
-                sessionStorage.removeItem('pending_deeplink');
-                return;
-            }
             
             if (ptype === 'therapist' && state.therapists && state.therapists.length) {
                 const found = state.therapists.find((th: any) => ((th.id ?? th.$id ?? '').toString() === idStr));
@@ -1150,7 +1050,7 @@ const App = () => {
         useEffect(() => {
             const loadUser = async () => {
                 try {
-                    const { account } = await import('../lib/appwrite');
+                    const { account } = await import('./lib/appwrite');
                     const user = await account.get();
                     setRealUser(user);
                     console.log('🔐 Real user authenticated:', user.email);
@@ -1224,17 +1124,9 @@ const App = () => {
         console.log('🔥 RENDERING FloatingChatWindow COMPONENT (lazy loaded)');
         console.log('✅ FloatingChatWindow RENDERING NOW');
         
-        // Re-enable FloatingChatWindow with error boundary for chunk load failures
+        // Re-enable FloatingChatWindow to test booking banner functionality
         return (
-            <Suspense fallback={
-                <div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl flex items-center justify-center">
-                    <div className="text-center p-6">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Loading chat...</p>
-                        <p className="text-xs text-gray-400 mt-2">If this takes too long, check your connection</p>
-                    </div>
-                </div>
-            }>
+            <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
                 <FloatingChatWindow
                     userId={activeChat.customerId || 'demo-customer-1'}
                     userName={activeChat.customerName || 'Demo Customer'}
@@ -1287,16 +1179,6 @@ const App = () => {
                 height: 'auto',
                 position: 'relative'
             }}>
-                {/* LOADING STATE DEBUG */}
-                {state.isLoading && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90">
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500 mx-auto mb-4"></div>
-                            <p className="text-gray-700 font-semibold">Loading IndaStreet...</p>
-                            <p className="text-gray-500 text-sm mt-2">Page: {state.page}</p>
-                        </div>
-                    </div>
-                )}
                 {/* PRODUCTION-FREEZE FIX: Temporarily disable Suspense for React 19 compatibility */}
                 {/* <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}> */}
                 <AppRouter

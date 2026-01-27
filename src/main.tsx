@@ -4,17 +4,17 @@ import './utils/reactCompatibility';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import ErrorBoundary from '../components/ErrorBoundary';
-import AppErrorBoundary from '../components/AppErrorBoundary';
-import { ProductionErrorBoundary } from '../components/ProductionErrorBoundary';
-import { logger } from '../utils/logger';
+import ErrorBoundary from './components/ErrorBoundary';
+import AppErrorBoundary from './components/AppErrorBoundary';
+import { ProductionErrorBoundary } from './components/ProductionErrorBoundary';
+import { logger } from './utils/logger';
 import './index.css';
 
 // Initialize DOM error handler to prevent removeChild errors
 import './utils/domErrorHandler';
 
 // Initialize version checking for cache busting
-import { initVersionCheck } from '../lib/versionCheck';
+import { initVersionCheck } from './lib/versionCheck';
 
 // 🔒 PRODUCTION STARTUP GUARD - Detects mount failures
 // TEMPORARILY DISABLED: import { initializeStartupGuard } from './utils/startupGuard';

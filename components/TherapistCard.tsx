@@ -36,47 +36,47 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Therapist, Analytics } from '../src/types';
 import { AvailabilityStatus } from '../src/types';
-import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
-import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
-import { getRandomTherapistImage } from '../utils/therapistImageUtils';
-import { getRandomSharedProfileImage } from '../lib/sharedProfileImages';
-import { devLog, devWarn } from '../utils/devMode';
-import { getDisplayRating, formatRating } from '../utils/ratingUtils';
-import { generateShareableURL } from '../utils/seoSlugGenerator';
-import { getOrCreateShareLink } from '../utils/shareLinkGenerator';
-import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/therapistCardHelpers';
-import { shareLinkService } from '../lib/services/shareLinkService';
-import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
-import { statusStyles } from '../constants/therapistCardConstants';
+import { parsePricing, parseCoordinates } from '../src/utils/appwriteHelpers';
+import { notificationService, reviewService, therapistMenusService, bookingService } from '../src/lib/appwriteService';
+import { getRandomTherapistImage } from '../src/utils/therapistImageUtils';
+import { getRandomSharedProfileImage } from '../src/lib/sharedProfileImages';
+import { devLog, devWarn } from '../src/utils/devMode';
+import { getDisplayRating, formatRating } from '../src/utils/ratingUtils';
+import { generateShareableURL } from '../src/utils/seoSlugGenerator';
+import { getOrCreateShareLink } from '../src/utils/shareLinkGenerator';
+import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../src/utils/therapistCardHelpers';
+import { shareLinkService } from '../src/lib/services/shareLinkService';
+import { WhatsAppIcon, CalendarIcon, StarIcon } from '../src/components/therapist/TherapistIcons';
+import { statusStyles } from '../src/constants/therapistCardConstants';
 
-import BookingPopup from './BookingPopup';
-import ScheduleBookingPopup from './ScheduleBookingPopup';
-import BusyCountdownTimer from './BusyCountdownTimer';
-import AnonymousReviewModal from './AnonymousReviewModal';
-import SocialSharePopup from './SocialSharePopup';
-import TherapistJoinPopup from './TherapistJoinPopup';
-import { useUIConfig } from '../hooks/useUIConfig';
+import BookingPopup from '../src/components/BookingPopup';
+import ScheduleBookingPopup from '../src/components/ScheduleBookingPopup';
+import BusyCountdownTimer from '../src/components/BusyCountdownTimer';
+import AnonymousReviewModal from '../src/components/AnonymousReviewModal';
+import SocialSharePopup from '../src/components/SocialSharePopup';
+import TherapistJoinPopup from '../src/components/TherapistJoinPopup';
+import { useUIConfig } from '../src/hooks/useUIConfig';
 import { MessageCircle, Clock, X, FileText } from 'lucide-react';
-import { chatTranslationService } from '../services/chatTranslationService';
-import { useLanguageContext } from '../context/LanguageContext';
-import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
-import TherapistCardHeader from './therapist/TherapistCardHeader';
-import TherapistPricingGrid from '../modules/therapist/TherapistPricingGrid';
-import TherapistModalsContainer from '../modules/therapist/TherapistModalsContainer';
-import TherapistProfile from '../modules/therapist/TherapistProfile';
-import TherapistSpecialties from '../modules/therapist/TherapistSpecialties';
-import TherapistLanguages from '../modules/therapist/TherapistLanguages';
-import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
-import { getDynamicSpacing, formatPrice, formatCountdownDisplay, getInitialBookingCount } from '../modules/therapist/therapistHelpers';
-import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
+import { chatTranslationService } from '../src/services/chatTranslationService';
+import { useLanguageContext } from '../src/context/LanguageContext';
+import { getClientPreferenceDisplay } from '../src/utils/clientPreferencesUtils';
+import TherapistCardHeader from '../src/components/therapist/TherapistCardHeader';
+import TherapistPricingGrid from '../src/modules/therapist/TherapistPricingGrid';
+import TherapistModalsContainer from '../src/modules/therapist/TherapistModalsContainer';
+import TherapistProfile from '../src/modules/therapist/TherapistProfile';
+import TherapistSpecialties from '../src/modules/therapist/TherapistSpecialties';
+import TherapistLanguages from '../src/modules/therapist/TherapistLanguages';
+import TherapistPriceListModal from '../src/modules/therapist/TherapistPriceListModal';
+import { getDynamicSpacing, formatPrice, formatCountdownDisplay, getInitialBookingCount } from '../src/modules/therapist/therapistHelpers';
+import { INDONESIAN_CITIES_CATEGORIZED } from '../src/constants/indonesianCities';
 
 // Custom hooks for logic extraction
-import { useTherapistCardModals } from '../hooks/useTherapistCardModals';
-import { useTherapistCardState } from '../hooks/useTherapistCardState';
-import { useTherapistCardCalculations } from '../hooks/useTherapistCardCalculations';
+import { useTherapistCardModals } from '../src/hooks/useTherapistCardModals';
+import { useTherapistCardState } from '../src/hooks/useTherapistCardState';
+import { useTherapistCardCalculations } from '../src/hooks/useTherapistCardCalculations';
 
 // 🔒 PERSISTENT CHAT - Facebook Messenger style
-import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
+import { usePersistentChatIntegration } from '../src/hooks/usePersistentChatIntegration';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -587,7 +587,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             // Soft refresh to show updated rating without losing state
             setTimeout(async () => {
                 try {
-                    const { softRecover } = await import('../utils/softNavigation');
+                    const { softRecover } = await import('../src/utils/softNavigation');
                     softRecover();
                 } catch {
                     window.location.reload();

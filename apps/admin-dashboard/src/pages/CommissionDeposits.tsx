@@ -13,7 +13,7 @@ import {
     FileText,
     User
 } from 'lucide-react';
-import { databases, Query, APPWRITE_CONFIG } from '../lib/appwrite';
+import { databases, Query, APPWRITE_CONFIG } from '../../../src/lib/appwrite';
 
 interface CommissionPayment {
     $id: string;

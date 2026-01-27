@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { FloatingChatWindow } from '../../../../chat';
-import { MASSAGE_TYPES_CATEGORIZED } from '../../../../constants';
-import type { Therapist } from '../../../../types';
-import { therapistService, imageUploadService } from '../../../../lib/appwriteService';
-import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '../../../../utils/clientPreferencesUtils';
-import { showToast } from '../../../../utils/showToastPortal';
-import CityLocationDropdown from '../../../../components/CityLocationDropdown';
-import { matchProviderToCity } from '../../../../constants/indonesianCities';
-import { extractLocationId, normalizeLocationForSave, assertValidLocationData } from '../../../../utils/locationNormalizationV2';
-import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoint } from '../../../../utils/geoDistance';
-import { getServiceAreasForCity } from '../../../../constants/serviceAreas';
-import { useCityContext } from '../../../../context/CityContext';
+import { FloatingChatWindow } from '../../../../src/chat';
+import { MASSAGE_TYPES_CATEGORIZED } from '../../../../src/constants';
+import type { Therapist } from '../../../../src/types';
+import { therapistService, imageUploadService } from '../../../../src/lib/appwriteService';
+import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '../../../../src/utils/clientPreferencesUtils';
+import { showToast } from '../../../../src/utils/showToastPortal';
+import CityLocationDropdown from '../../../../src/components/CityLocationDropdown';
+import { matchProviderToCity } from '../../../../src/constants/indonesianCities';
+import { extractLocationId, normalizeLocationForSave, assertValidLocationData } from '../../../../src/utils/locationNormalizationV2';
+import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoint } from '../../../../src/utils/geoDistance';
+import { getServiceAreasForCity } from '../../../../src/constants/serviceAreas';
+import { useCityContext } from '../../../../src/context/CityContext';
 import { locations } from '../../../../locations';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import TherapistLayout from '../components/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar } from 'lucide-react';
-import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../../../utils/browserCompatibility';
+import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../../../src/utils/browserCompatibility';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -576,7 +576,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       // Auto-translate profile data to both Globe
       console.log('🌐 Auto-translating profile data...');
       try {
-        const { adminTranslationService } = await import('../../../../lib/translationService');
+        const { adminTranslationService } = await import('../../../../src/lib/translationService');
         
         // Detect if the user entered data in Indonesian or English
         const sourceLanguage = description.match(/[a-zA-Z]/) ? 'en' : 'id';

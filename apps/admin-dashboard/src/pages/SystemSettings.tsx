@@ -5,7 +5,7 @@ import {
     AlertCircle, CheckCircle, Shield, DollarSign, Percent, Clock,
     Globe, Mail, Bell, Lock, Eye, EyeOff, Copy, Check, Trash2
 } from 'lucide-react';
-import { auditLoggingService, type AuditLogEntry } from '../lib/appwrite';
+import { auditLoggingService, type AuditLogEntry } from '../../../src/lib/appwrite';
 
 interface SystemConfig {
     // Commission & Fees

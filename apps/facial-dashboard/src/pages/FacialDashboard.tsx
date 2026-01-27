@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../types';
-import { BookingStatus, HotelVillaServiceStatus } from '../../../../types';
+import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../src/types';
+import { BookingStatus, HotelVillaServiceStatus } from '../../../../src/types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download } from 'lucide-react';
 
 // PWA Install interface
@@ -9,32 +9,32 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   readonly userChoice: Promise<{outcome: 'accepted' | 'dismissed', platform: string}>;
 }
-import PageContainer from '../../../../components/layout/PageContainer';
-import { loadGoogleMapsScript } from '../../../../constants/appConstants';
-import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
-import Button from '../../../../components/Button';
+import PageContainer from '../../../../src/components/layout/PageContainer';
+import { loadGoogleMapsScript } from '../../../../src/constants/appConstants';
+import { getStoredGoogleMapsApiKey } from '../../../../src/utils/appConfig';
+import Button from '../../../../src/components/Button';
 import MembershipPlansPage from './MembershipPlansPage';
-import ImageUpload from '../../../../components/ImageUpload';
-import MainImageCropper from '../../../../components/MainImageCropper';
-import HotelVillaOptIn from '../../../../components/HotelVillaOptIn';
+import ImageUpload from '../../../../src/components/ImageUpload';
+import MainImageCropper from '../../../../src/components/MainImageCropper';
+import HotelVillaOptIn from '../../../../src/components/HotelVillaOptIn';
 
-import { placeService, imageUploadService } from '../../../../lib/appwriteService';
+import { placeService, imageUploadService } from '../../../../src/lib/appwriteService';
 import { sanitizePlacePayload } from '../../../../schemas/placeSchema';
-import UserSolidIcon from '../../../../components/icons/UserSolidIcon';
-import DocumentTextIcon from '../../../../components/icons/DocumentTextIcon';
-import PhoneIcon from '../../../../components/icons/PhoneIcon';
-import CurrencyRpIcon from '../../../../components/icons/CurrencyRpIcon';
-import MapPinIcon from '../../../../components/icons/MapPinIcon';
-import ClockIcon from '../../../../components/icons/ClockIcon';
-import NotificationBell from '../../../../components/NotificationBell';
-import CustomCheckbox from '../../../../components/CustomCheckbox';
-import ValidationPopup from '../../../../components/ValidationPopup';
-import { FACIAL_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../../../../constants/rootConstants';
-import { notificationService } from '../../../../lib/appwriteService';
-import CityLocationDropdown from '../../../../components/CityLocationDropdown';
-import { matchProviderToCity } from '../../../../constants/indonesianCities';
-import { soundNotificationService } from '../../../../utils/soundNotificationService';
-import PushNotificationSettings from '../../../../components/PushNotificationSettings';
+import UserSolidIcon from '../../../../src/components/icons/UserSolidIcon';
+import DocumentTextIcon from '../../../../src/components/icons/DocumentTextIcon';
+import PhoneIcon from '../../../../src/components/icons/PhoneIcon';
+import CurrencyRpIcon from '../../../../src/components/icons/CurrencyRpIcon';
+import MapPinIcon from '../../../../src/components/icons/MapPinIcon';
+import ClockIcon from '../../../../src/components/icons/ClockIcon';
+import NotificationBell from '../../../../src/components/NotificationBell';
+import CustomCheckbox from '../../../../src/components/CustomCheckbox';
+import ValidationPopup from '../../../../src/components/ValidationPopup';
+import { FACIAL_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../../../../src/constants/rootConstants';
+import { notificationService } from '../../../../src/lib/appwriteService';
+import CityLocationDropdown from '../../../../src/components/CityLocationDropdown';
+import { matchProviderToCity } from '../../../../src/constants/indonesianCities';
+import { soundNotificationService } from '../../../../src/utils/soundNotificationService';
+import PushNotificationSettings from '../../../../src/components/PushNotificationSettings';
 import { 
     ColoredProfileIcon, 
     ColoredCalendarIcon, 
@@ -46,9 +46,9 @@ import {
     ColoredDocumentIcon, 
     ColoredHistoryIcon, 
     ColoredCoinsIcon 
-} from '../../../../components/ColoredIcons';
+} from '../../../../src/components/ColoredIcons';
 // Removed chat import - chat system removed
-// import MemberChatWindow from '../../../../components/MemberChatWindow';
+// import MemberChatWindow from '../../../../src/components/MemberChatWindow';
 
 
 interface FacialPlaceDashboardPageProps {

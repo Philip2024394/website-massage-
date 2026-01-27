@@ -16,7 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, Search } from 'lucide-react';
-import { commissionTrackingService } from '../lib/appwrite';
+import { commissionTrackingService } from '../../../src/lib/appwrite';
 
 interface AdminPaymentVerificationProps {
     adminId: string;

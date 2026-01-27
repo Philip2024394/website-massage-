@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../src/types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
-import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
-import { bookingService, reviewService } from '../lib/appwriteService';
-import DistanceDisplay from './DistanceDisplay';
-import AnonymousReviewModal from './AnonymousReviewModal';
-import SocialSharePopup from './SocialSharePopup';
-import { getAuthAppUrl } from '../utils/therapistCardHelpers';
-import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing } from '../constants/cardConstants.tsx';
+import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../src/utils/appwriteHelpers';
+import { getDisplayRating, getDisplayReviewCount, formatRating } from '../src/utils/ratingUtils';
+import { bookingService, reviewService } from '../src/lib/appwriteService';
+import DistanceDisplay from '../src/components/DistanceDisplay';
+import AnonymousReviewModal from '../src/components/AnonymousReviewModal';
+import SocialSharePopup from '../src/components/SocialSharePopup';
+import { getAuthAppUrl } from '../src/utils/therapistCardHelpers';
+import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing } from '../src/constants/cardConstants.tsx';
 
 interface FacialPlaceCardProps {
     place: Place;
@@ -134,7 +134,7 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
             // Soft refresh to show updated rating without losing state
             setTimeout(async () => {
                 try {
-                    const { softRecover } = await import('../utils/softNavigation');
+                    const { softRecover } = await import('../src/utils/softNavigation');
                     softRecover();
                 } catch {
                     window.location.reload();

@@ -102,7 +102,7 @@ export class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBounda
               <button
                 onClick={async () => {
                   try {
-                    const { softRecover } = await import('../utils/softNavigation');
+                    const { softRecover } = await import('../src/utils/softNavigation');
                     softRecover();
                   } catch {
                     window.location.reload();

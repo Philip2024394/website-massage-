@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { authService } from '../../../lib/appwriteService';
+import { authService } from '../../../src/lib/appwriteService';
 import PlaceDashboard from './pages/PlaceDashboard';
 import PlaceChat from './pages/PlaceChat';
 import PlacePaymentInfo from './pages/PlacePaymentInfo';
-import { LanguageProvider } from '../../../context/LanguageContext';
+import { LanguageProvider } from '../../../src/context/LanguageContext';
 
 
 function App() {

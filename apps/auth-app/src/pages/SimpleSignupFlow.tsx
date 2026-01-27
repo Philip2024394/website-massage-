@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Eye, EyeOff, Building2, User, Sparkles, Hotel, Star, Circle, Mail, Lock } from 'lucide-react';
-import { account, ID } from '../lib/appwrite';
+import { account, ID } from '../../../src/lib/appwrite';
 import { translations, getStoredLanguage } from '../translations';
 
 type PlanType = 'pro' | 'plus';

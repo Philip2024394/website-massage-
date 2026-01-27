@@ -10,14 +10,14 @@
  */
 
 import React, { Suspense } from 'react';
-import { useTranslations } from './lib/useTranslations';
-import { useLanguage } from './hooks/useLanguage';
-import { logger } from './utils/logger';
-import type { Page, Language, LoggedInProvider } from './types/pageTypes';
-import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage } from './types';
-import { BookingStatus } from './types';
-import LoadingSpinner from './components/LoadingSpinner';
-import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from './lib/appwrite';
+import { useTranslations } from './src/lib/useTranslations';
+import { useLanguage } from './src/hooks/useLanguage';
+import { logger } from './src/utils/logger';
+import type { Page, Language, LoggedInProvider } from './src/types/pageTypes';
+import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage } from './src/types';
+import { BookingStatus } from './src/types';
+import LoadingSpinner from './src/components/LoadingSpinner';
+import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from './src/lib/appwrite';
 
 // Error Boundary for lazy loading failures
 class LazyLoadErrorBoundary extends React.Component<
@@ -59,73 +59,73 @@ class LazyLoadErrorBoundary extends React.Component<
 }
 
 // Route configurations
-import { publicRoutes } from './router/routes/publicRoutes';
-import { authRoutes } from './router/routes/authRoutes';
-import { profileRoutes } from './router/routes/profileRoutes';
-import { legalRoutes } from './router/routes/legalRoutes';
-import { blogRoutes } from './router/routes/blogRoutes';
-import { therapistRoutes } from './router/routes/therapistRoutes';
-import { adminRoutes } from './router/routes/adminRoutes';
-import { placeRoutes } from './router/routes/placeRoutes';
-import { facialRoutes } from './router/routes/facialRoutes';
+import { publicRoutes } from './src/router/routes/publicRoutes';
+import { authRoutes } from './src/router/routes/authRoutes';
+import { profileRoutes } from './src/router/routes/profileRoutes';
+import { legalRoutes } from './src/router/routes/legalRoutes';
+import { blogRoutes } from './src/router/routes/blogRoutes';
+import { therapistRoutes } from './src/router/routes/therapistRoutes';
+import { adminRoutes } from './src/router/routes/adminRoutes';
+import { placeRoutes } from './src/router/routes/placeRoutes';
+import { facialRoutes } from './src/router/routes/facialRoutes';
 
 // Specialized pages not in route modules
-const CreateAccountPage = React.lazy(() => import('./pages/auth/CreateAccountPage'));
-const ConfirmTherapistsPage = React.lazy(() => import('./pages/ConfirmTherapistsPage'));
-const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
-const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
-const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
-const GuestProfilePage = React.lazy(() => import('./pages/GuestProfilePage'));
-const QRCodePage = React.lazy(() => import('./pages/QRCodePage'));
-const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
-const BookingPage = React.lazy(() => import('./pages/BookingPage'));
-const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
-const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
-const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
-const LeadAcceptPage = React.lazy(() => import('./pages/LeadAcceptPage'));
-const LeadDeclinePage = React.lazy(() => import('./pages/LeadDeclinePage'));
-const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
-const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
-const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
-const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipApplicationPage'));
-const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
-const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
-const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
-const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
-const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
-const RoleSelectionPage = React.lazy(() => import('./pages/auth/RoleSelectionPage'));
-const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage'));
-const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
-const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePage'));
-const MobileTherapistStandardsPage = React.lazy(() => import('./pages/MobileTherapistStandardsPage'));
-const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
-const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage'));
-const AdminLoginPage = React.lazy(() => import('./pages/AdminLoginPage'));
-const CareerOpportunitiesPage = React.lazy(() => import('./pages/CareerOpportunitiesPage'));
-const TherapistInfoPage = React.lazy(() => import('./pages/TherapistInfoPage'));
-const EmployerInfoPage = React.lazy(() => import('./pages/EmployerInfoPage'));
-const PaymentInfoPage = React.lazy(() => import('./pages/PaymentInfoPage'));
-const MobileTermsAndConditionsPage = React.lazy(() => import('./pages/MobileTermsAndConditionsPage'));
+const CreateAccountPage = React.lazy(() => import('./src/pages/auth/CreateAccountPage'));
+const ConfirmTherapistsPage = React.lazy(() => import('./src/pages/ConfirmTherapistsPage'));
+const EmployerJobPostingPage = React.lazy(() => import('./src/pages/EmployerJobPostingPage'));
+const IndastreetPartnersPage = React.lazy(() => import('./src/pages/IndastreetPartnersPage'));
+const WebsiteManagementPage = React.lazy(() => import('./src/pages/WebsiteManagementPage'));
+const GuestProfilePage = React.lazy(() => import('./src/pages/GuestProfilePage'));
+const QRCodePage = React.lazy(() => import('./src/pages/QRCodePage'));
+const NotificationsPage = React.lazy(() => import('./src/pages/NotificationsPage'));
+const BookingPage = React.lazy(() => import('./src/pages/BookingPage'));
+const MembershipPage = React.lazy(() => import('./src/pages/MembershipPage'));
+const AcceptBookingPage = React.lazy(() => import('./src/pages/AcceptBookingPage'));
+const DeclineBookingPage = React.lazy(() => import('./src/pages/DeclineBookingPage'));
+const LeadAcceptPage = React.lazy(() => import('./src/pages/LeadAcceptPage'));
+const LeadDeclinePage = React.lazy(() => import('./src/pages/LeadDeclinePage'));
+const JobPostingPaymentPage = React.lazy(() => import('./src/pages/JobPostingPaymentPage'));
+const BrowseJobsPage = React.lazy(() => import('./src/pages/BrowseJobsPage'));
+const MassageJobsPage = React.lazy(() => import('./src/pages/MassageJobsPage'));
+const PartnershipApplicationPage = React.lazy(() => import('./src/pages/PartnershipApplicationPage'));
+const TherapistJobRegistrationPage = React.lazy(() => import('./src/pages/TherapistJobRegistrationPage'));
+const ReviewsPage = React.lazy(() => import('./src/pages/ReviewsPage'));
+const JobUnlockPaymentPage = React.lazy(() => import('./src/pages/JobUnlockPaymentPage'));
+const TherapistStatusPage = React.lazy(() => import('./src/pages/TherapistStatusPage'));
+const CustomerReviewsPage = React.lazy(() => import('./src/pages/CustomerReviewsPage'));
+const RoleSelectionPage = React.lazy(() => import('./src/pages/auth/RoleSelectionPage'));
+const CustomerSupportPage = React.lazy(() => import('./src/pages/CustomerSupportPage'));
+const PlaceDiscountBadgePage = React.lazy(() => import('./src/pages/PlaceDiscountBadgePage'));
+const VerifiedProBadgePage = React.lazy(() => import('./src/pages/VerifiedProBadgePage'));
+const MobileTherapistStandardsPage = React.lazy(() => import('./src/pages/MobileTherapistStandardsPage'));
+const GuestAlertsPage = React.lazy(() => import('./src/pages/GuestAlertsPage'));
+const PartnerSettingsPage = React.lazy(() => import('./src/pages/PartnerSettingsPage'));
+const AdminLoginPage = React.lazy(() => import('./src/pages/AdminLoginPage'));
+const CareerOpportunitiesPage = React.lazy(() => import('./src/pages/CareerOpportunitiesPage'));
+const TherapistInfoPage = React.lazy(() => import('./src/pages/TherapistInfoPage'));
+const EmployerInfoPage = React.lazy(() => import('./src/pages/EmployerInfoPage'));
+const PaymentInfoPage = React.lazy(() => import('./src/pages/PaymentInfoPage'));
+const MobileTermsAndConditionsPage = React.lazy(() => import('./src/pages/MobileTermsAndConditionsPage'));
 const TherapistTermsAndConditions = React.lazy(() => import('./src/pages/TherapistTermsAndConditions'));
 
 // Blog posts
-const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));
-const Top10MassageTechniquesPage = React.lazy(() => import('./pages/blog/Top10MassageTechniquesPage'));
-const MassageCareerIndonesiaPage = React.lazy(() => import('./pages/blog/MassageCareerIndonesiaPage'));
-const BenefitsRegularMassageTherapyPage = React.lazy(() => import('./pages/blog/BenefitsRegularMassageTherapyPage'));
-const HiringMassageTherapistsGuidePage = React.lazy(() => import('./pages/blog/HiringMassageTherapistsGuidePage'));
-const TraditionalBalineseMassagePage = React.lazy(() => import('./pages/blog/TraditionalBalineseMassagePage'));
-const SpaTourismIndonesiaPage = React.lazy(() => import('./pages/blog/SpaTourismIndonesiaPage'));
-const AromatherapyMassageOilsPage = React.lazy(() => import('./pages/blog/AromatherapyMassageOilsPage'));
-const PricingGuideMassageTherapistsPage = React.lazy(() => import('./pages/blog/PricingGuideMassageTherapistsPage'));
-const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/DeepTissueVsSwedishMassagePage'));
-const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
-const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
+const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./src/pages/blog/BaliSpaIndustryTrends2025Page'));
+const Top10MassageTechniquesPage = React.lazy(() => import('./src/pages/blog/Top10MassageTechniquesPage'));
+const MassageCareerIndonesiaPage = React.lazy(() => import('./src/pages/blog/MassageCareerIndonesiaPage'));
+const BenefitsRegularMassageTherapyPage = React.lazy(() => import('./src/pages/blog/BenefitsRegularMassageTherapyPage'));
+const HiringMassageTherapistsGuidePage = React.lazy(() => import('./src/pages/blog/HiringMassageTherapistsGuidePage'));
+const TraditionalBalineseMassagePage = React.lazy(() => import('./src/pages/blog/TraditionalBalineseMassagePage'));
+const SpaTourismIndonesiaPage = React.lazy(() => import('./src/pages/blog/SpaTourismIndonesiaPage'));
+const AromatherapyMassageOilsPage = React.lazy(() => import('./src/pages/blog/AromatherapyMassageOilsPage'));
+const PricingGuideMassageTherapistsPage = React.lazy(() => import('./src/pages/blog/PricingGuideMassageTherapistsPage'));
+const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./src/pages/blog/DeepTissueVsSwedishMassagePage'));
+const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./src/pages/blog/OnlinePresenceMassageTherapistPage'));
+const WellnessTourismUbudPage = React.lazy(() => import('./src/pages/blog/WellnessTourismUbudPage'));
 
 // Shared profile components
-const SharedTherapistProfileLazy = React.lazy(() => import('./features/shared-profiles/SharedTherapistProfile'));
+const SharedTherapistProfileLazy = React.lazy(() => import('./src/features/shared-profiles/SharedTherapistProfile'));
 // Import full shared profile directly (non-lazy) to guarantee rendering
-import SharedTherapistProfileDirect from './features/shared-profiles/SharedTherapistProfile';
+import SharedTherapistProfileDirect from './src/features/shared-profiles/SharedTherapistProfile';
 
 interface AppRouterProps {
     page: Page;
@@ -410,7 +410,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     <button
                         onClick={async () => {
                             try {
-                                const { softRecover } = await import('./utils/softNavigation');
+                                const { softRecover } = await import('./src/utils/softNavigation');
                                 softRecover();
                             } catch {
                                 window.location.reload();

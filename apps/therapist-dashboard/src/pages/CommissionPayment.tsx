@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, Upload, Clock, AlertCircle, CheckCircle, Building2, User, Hash, Copy, Check, Calendar, XCircle } from 'lucide-react';
 import TherapistPageHeader from '../components/TherapistPageHeader';
-import { Therapist } from '../../../../types';
-import { therapistService, imageUploadService } from '../../../../lib/appwriteService';
-import { showToast } from '../../../../utils/showToastPortal';
-import { commissionTrackingService } from '../../../../lib/services/commissionTrackingService';
+import { Therapist } from '../../../../src/types';
+import { therapistService, imageUploadService } from '../../../../src/lib/appwriteService';
+import { showToast } from '../../../../src/utils/showToastPortal';
+import { commissionTrackingService } from '../../../../src/lib/services/commissionTrackingService';
 
 interface CommissionPaymentProps {
   therapist: Therapist | null;
@@ -126,7 +126,7 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
   useEffect(() => {
     const fetchAdminSettings = async () => {
       try {
-        const { databases } = await import('../../../../lib/appwrite');
+        const { databases } = await import('../../../../src/lib/appwrite');
         const response = await databases.listDocuments(
           '68f76ee1000e64ca8d05', // Your database ID
           'admin_settings', // Collection ID

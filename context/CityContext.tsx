@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { currencyService } from '../lib/currencyService';
-import { ipGeolocationService, GeolocationResult } from '../lib/ipGeolocationService';
+import { currencyService } from '../src/lib/currencyService';
+import { ipGeolocationService, GeolocationResult } from '../src/lib/ipGeolocationService';
 
 /**
  * CityContext - Smart location management with auto-detection

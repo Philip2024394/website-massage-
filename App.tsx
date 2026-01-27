@@ -4,53 +4,53 @@
  * Do NOT add additional event listeners for chat.
  */
 import { Helmet } from 'react-helmet';
-import { AppLayout } from './components/layout/AppLayout';
-import { AppFooterLayout } from './components/layout/AppFooterLayout';
-import GlobalHeader from './components/GlobalHeader';
+import { AppLayout } from './src/components/layout/AppLayout';
+import { AppFooterLayout } from './src/components/layout/AppFooterLayout';
+import GlobalHeader from './src/components/GlobalHeader';
 import AppRouter from './AppRouter';
-import { useAllHooks } from './hooks/useAllHooks';
-import { useAutoReviews } from './hooks/useAutoReviews';
-import { useMobileLock } from './hooks/useMobileLock';
-import { usePreventScroll } from './hooks/usePreventScroll';
-import { useMobileDetection } from './hooks/useMobileDetection';
-import { useTranslations } from './lib/useTranslations';
-import { DeviceStylesProvider } from './components/DeviceAware';
-import BookingStatusTracker from './components/BookingStatusTracker';
+import { useAllHooks } from './src/hooks/useAllHooks';
+import { useAutoReviews } from './src/hooks/useAutoReviews';
+import { useMobileLock } from './src/hooks/useMobileLock';
+import { usePreventScroll } from './src/hooks/usePreventScroll';
+import { useMobileDetection } from './src/hooks/useMobileDetection';
+import { useTranslations } from './src/lib/useTranslations';
+import { DeviceStylesProvider } from './src/components/DeviceAware';
+import BookingStatusTracker from './src/components/BookingStatusTracker';
 import { useState, useEffect, lazy } from 'react';
 
 // Temporarily disabled lazy loading to fix AsyncMode error
-const FloatingChatWindow = lazy(() => import('./chat').then(m => ({ default: m.FloatingChatWindow })));
+const FloatingChatWindow = lazy(() => import('./src/chat').then(m => ({ default: m.FloatingChatWindow })));
 // const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
-import { bookingExpirationService } from './services/bookingExpirationService';
+import { bookingExpirationService } from './src/services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
 // import './utils/disableLocalStorage';
 // (Former cleanupLocalStorage import removed as localStorage persisted data is no longer used)
-import './lib/globalErrorHandler'; // Initialize global error handling
-import { LanguageProvider } from './context/LanguageContext';
-import { CityProvider, useCityContext } from './context/CityContext';
-import { agentShareAnalyticsService } from './lib/appwriteService';
-import { analyticsService, AnalyticsEventType } from './services/analyticsService';
-import type { Therapist, Place, Analytics } from './types';
-import './lib/notificationSound'; // Initialize notification sound system
-import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
+import './src/lib/globalErrorHandler'; // Initialize global error handling
+import { LanguageProvider } from './src/context/LanguageContext';
+import { CityProvider, useCityContext } from './src/context/CityContext';
+import { agentShareAnalyticsService } from './src/lib/appwriteService';
+import { analyticsService, AnalyticsEventType } from './src/services/analyticsService';
+import type { Therapist, Place, Analytics } from './src/types';
+import './src/lib/notificationSound'; // Initialize notification sound system
+import { pushNotifications } from './src/lib/pushNotifications'; // Initialize Appwrite push notifications
 // REMOVED: chatSessionService import - no longer using global chat sessions
 // REMOVED: ChatErrorBoundary import - no longer using global ChatWindow
-import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapper';
-// Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
-// Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
+import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './src/utils/urlMapper';
+// Temporarily removed: import { useSimpleLanguage } from './src/context/SimpleLanguageContext';
+// Temporarily removed: import SimpleLanguageSelector from './src/components/SimpleLanguageSerializer';
 import { useServiceWorkerListener } from './app/useServiceWorkerListener';
 import { useUrlBookingHandler } from './app/useUrlBookingHandler';
 import { useAnalyticsHandler } from './app/useAnalyticsHandler';
-import { ChatProvider, useChatContext } from './context/ChatProvider';
-import { isPWA, shouldAllowRedirects } from './utils/pwaDetection';
-import { APP_CONFIG } from './config';
+import { ChatProvider, useChatContext } from './src/context/ChatProvider';
+import { isPWA, shouldAllowRedirects } from './src/utils/pwaDetection';
+import { APP_CONFIG } from './src/config';
 
 // 🔒 PERSISTENT CHAT SYSTEM - Facebook Messenger style
-import { PersistentChatProvider } from './context/PersistentChatProvider';
-import { PersistentChatWindow } from './components/PersistentChatWindow';
+import { PersistentChatProvider } from './src/context/PersistentChatProvider';
+import { PersistentChatWindow } from './src/components/PersistentChatWindow';
 
 // 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring
-import { AdminErrorNotification } from './components/AdminErrorNotification';
+import { AdminErrorNotification } from './src/components/AdminErrorNotification';
 
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering');
@@ -346,8 +346,8 @@ const App = () => {
                     console.log('✅ Appwrite SDK already available from CDN');
                 }
 
-                const { account } = await import('./lib/appwrite');
-                const { sessionCache } = await import('./lib/sessionCache');
+                const { account } = await import('./src/lib/appwrite');
+                const { sessionCache } = await import('./src/lib/sessionCache');
 
                 const cached = sessionCache.get();
                 if (cached) {
@@ -412,7 +412,7 @@ const App = () => {
 
             try {
                 console.log('🔌 Testing realtime WebSocket connection...');
-                const { appwriteClient } = await import('./lib/appwrite/client');
+                const { appwriteClient } = await import('./src/lib/appwrite/client');
                 
                 // Simple connection test with shorter timeout
                 let connectionEstablished = false;
@@ -492,7 +492,7 @@ const App = () => {
                 // Clear any cached data if needed
                 if ('sessionCache' in window) {
                     // Refresh session data
-                    const { sessionCache } = await import('./lib/sessionCache');
+                    const { sessionCache } = await import('./src/lib/sessionCache');
                     sessionCache.clear();
                 }
                 
@@ -1050,7 +1050,7 @@ const App = () => {
         useEffect(() => {
             const loadUser = async () => {
                 try {
-                    const { account } = await import('./lib/appwrite');
+                    const { account } = await import('./src/lib/appwrite');
                     const user = await account.get();
                     setRealUser(user);
                     console.log('🔐 Real user authenticated:', user.email);

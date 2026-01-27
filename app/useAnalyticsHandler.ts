@@ -1,5 +1,5 @@
-import { analyticsService, AnalyticsEventType } from '../services/analyticsService';
-import type { Analytics } from '../types';
+import { analyticsService, AnalyticsEventType } from '../src/services/analyticsService';
+import type { Analytics } from '../src/types';
 
 /**
  * Analytics handler function

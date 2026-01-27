@@ -1,99 +1,110 @@
-import React from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, Check, Home } from 'lucide-react';
 
 type Plan = 'pro' | 'plus';
 
-const PackageTermsPage: React.FC = () => {
-  const [params] = useSearchParams();
-  const navigate = useNavigate();
-  const plan = (params.get('plan') as Plan) || 'pro';
+interface PackageTermsPageProps {
+  onBack: () => void;
+  onNavigate?: (page: string) => void;
+  t?: any; // translations
+  language?: 'en' | 'id' | 'gb';
+}
+
+const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate, t, language = 'en' }) => {
+  // Read plan immediately from localStorage to avoid flash of wrong content
+  const getInitialPlan = (): Plan => {
+    if (typeof window !== 'undefined') {
+      const pendingPlan = localStorage.getItem('pendingTermsPlan') as Plan;
+      if (pendingPlan === 'pro' || pendingPlan === 'plus') {
+        return pendingPlan;
+      }
+    }
+    return 'pro';
+  };
+
+  const [plan, setPlan] = useState<Plan>(getInitialPlan);
   const isPro = plan === 'pro';
 
-  const handleAccept = () => {
-    // Store the acceptance in localStorage and navigate back to signup
-    const acceptedTerms = JSON.parse(localStorage.getItem('acceptedTerms') || '{}');
-    acceptedTerms[plan] = true;
-    localStorage.setItem('acceptedTerms', JSON.stringify(acceptedTerms));
-    localStorage.setItem('membership_terms_accepted', 'true');
-    localStorage.setItem('membership_terms_date', new Date().toISOString());
-    
-    // Navigate back to the previous page (likely the signup form)
-    navigate(-1);
+  // Translation helper
+  const getText = (key: string, fallback: string) => {
+    return t?.packageTerms?.[key] || fallback;
+  };
+
+  useEffect(() => {
+    // Re-check plan from localStorage on mount (handles any async updates)
+    const pendingPlan = localStorage.getItem('pendingTermsPlan') as Plan;
+    if (pendingPlan === 'pro' || pendingPlan === 'plus') {
+      setPlan(pendingPlan);
+    }
+  }, []);
+
+  const handleCancel = () => {
+    localStorage.removeItem('pendingTermsPlan');
+    onNavigate?.('joinIndastreet');
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <h1 className="text-2xl font-bold">
-                <span className="text-black">Inda</span>
-                <span className="text-orange-500">Street</span>
-              </h1>
-            </div>
-            <button
-              onClick={() => navigate('/')}
-              className="px-4 py-2 text-black hover:bg-gray-100 rounded-lg transition-colors font-medium"
+    <div className="min-h-screen bg-white">
+      {/* Global Header */}
+      <header className="bg-white shadow-md sticky top-0 z-[9997] w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex justify-between items-center">
+            <button 
+              onClick={handleCancel} 
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Home
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm font-medium hidden sm:inline">Back</span>
+            </button>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+              <span className="text-black">Inda</span>
+              <span className="text-orange-500">Street</span>
+            </h1>
+            <button
+              onClick={() => onNavigate?.('home')}
+              className="hover:bg-orange-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 flex items-center justify-center"
+              title="Go to Home"
+            >
+              <Home className="w-5 h-5" />
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Hero */}
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <p className="text-sm text-gray-500 mb-2">
-            {isPro ? 'Pro Plan' : 'Plus Plan'}
-            <span className="mx-2">•</span>
-            <span className="text-orange-500 font-medium">{isPro ? 'Pay Per Lead' : '0% Commission'}</span>
-          </p>
-          <h1 className="text-4xl font-light text-black mb-3">Terms &amp; Conditions</h1>
-          <p className="text-gray-500 text-lg max-w-md mx-auto">
-            {isPro 
-              ? 'Pro membership connects you to IndaStreet customers. Earn 70% of every confirmed booking.'
-              : 'Plus membership gives you full control. Fixed monthly fee, keep 100% of bookings, premium placement.'
-            }
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm mb-32">
-          {isPro ? <ProTerms /> : <PlusTerms />}
-        </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-8 pb-6 text-center">
+        <p className="text-sm text-gray-500 mb-2">
+          {isPro ? 'Pro Plan' : 'Plus Plan'}
+          <span className="mx-2">•</span>
+          <span className="text-orange-600 font-medium">{isPro ? 'Pay Per Lead' : '0% Commission'}</span>
+        </p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">Terms &amp; Conditions</h1>
+        <p className="text-gray-600 text-sm max-w-md mx-auto">
+          {isPro 
+            ? 'Pro membership connects you to IndaStreet customers. Earn 70% of every confirmed booking.'
+            : 'Plus membership gives you full control. Fixed monthly fee, keep 100% of bookings, premium placement.'
+          }
+        </p>
       </div>
 
+      {/* Content */}
+      <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+        {isPro ? <ProTerms /> : <PlusTerms />}
+      </main>
+
       {/* Fixed Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <p className="text-xs text-gray-500 hidden sm:block">
-            By accepting, you agree to these terms
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-[9998]">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3">
+          <p className="text-xs text-gray-500 text-center sm:text-left mb-2 sm:mb-0">
+            Please read the terms carefully. Use the checkbox on the Create Account page to confirm agreement.
           </p>
-          <div className="flex gap-3 w-full sm:w-auto">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex-1 sm:flex-none px-6 py-3 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAccept}
-              className="flex-1 sm:flex-none px-8 py-3 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-            >
-              <Check className="w-4 h-4" />
-              I Accept
-            </button>
-          </div>
+          <button
+            onClick={() => onNavigate?.('simpleSignup')}
+            className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Create Account
+          </button>
         </div>
       </div>
     </div>
@@ -101,23 +112,28 @@ const PackageTermsPage: React.FC = () => {
 };
 
 const ProTerms: React.FC = () => (
-  <div className="space-y-8">
+  <div className="space-y-6">
     {/* Critical Notice */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <p className="text-red-600 font-semibold text-sm mb-3">⚠ Critical Compliance Notice</p>
       <p className="text-gray-700 text-sm leading-relaxed">
-        Violating platform rules results in immediate termination with no refund. Keep all communications, 
-        bookings, and payments inside the platform.
+        Violating platform rules results in immediate termination with no refund. Keep all communications 
+        and bookings through the platform. Note: Payments are made directly between customer and provider — 
+        IndaStreet does not process payments.
       </p>
     </section>
 
     {/* Commission */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Commission Framework</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
           <span className="text-orange-500 mt-0.5">•</span>
-          <span>30% processing fee per completed booking — pay within 3 hours of receiving each lead</span>
+          <span>30% commission fee per completed booking — pay within 3 hours of receiving each lead</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Customer pays you directly — IndaStreet does not handle or process any payments</span>
         </li>
         <li className="flex items-start gap-3">
           <span className="text-orange-500 mt-0.5">•</span>
@@ -131,7 +147,7 @@ const ProTerms: React.FC = () => (
     </section>
 
     {/* Included Features */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Included Features</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
@@ -146,7 +162,7 @@ const ProTerms: React.FC = () => (
     </section>
 
     {/* Platform Rules */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <p className="text-red-600 font-semibold text-sm mb-4">Platform Exclusivity Rules</p>
       <p className="text-gray-700 text-sm mb-4">The following actions are strictly prohibited:</p>
       <ul className="space-y-3 text-sm text-gray-700">
@@ -156,7 +172,7 @@ const ProTerms: React.FC = () => (
         </li>
         <li className="flex items-start gap-3">
           <span className="text-red-500 mt-0.5 font-bold">✕</span>
-          <span>Accepting cash or direct transfers outside IndaStreet payment flow</span>
+          <span>Accepting bookings from IndaStreet customers outside the platform to avoid commission</span>
         </li>
         <li className="flex items-start gap-3">
           <span className="text-red-500 mt-0.5 font-bold">✕</span>
@@ -169,7 +185,7 @@ const ProTerms: React.FC = () => (
     </section>
 
     {/* Payment Timing */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Payment Timing</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
@@ -188,7 +204,7 @@ const ProTerms: React.FC = () => (
     </section>
 
     {/* Support */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-3">Support</h2>
       <p className="text-gray-700 text-sm">
         Email-based assistance with up to 72-hour response window. Plus members are prioritized.
@@ -196,7 +212,7 @@ const ProTerms: React.FC = () => (
     </section>
 
     {/* Account Changes */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Account &amp; Plan Changes</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
@@ -215,7 +231,7 @@ const ProTerms: React.FC = () => (
     </section>
 
     {/* Summary */}
-    <section className="py-6">
+    <section className="py-5">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Pro Membership Summary</h2>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div className="text-gray-500">Monthly Fee</div>
@@ -232,14 +248,18 @@ const ProTerms: React.FC = () => (
 );
 
 const PlusTerms: React.FC = () => (
-  <div className="space-y-8">
+  <div className="space-y-6">
     {/* Core Inclusions */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Core Inclusions</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
           <span className="text-orange-500 mt-0.5">✓</span>
           <span>Rp 250,000/month with <span className="text-orange-600 font-medium">0% commission</span> on every booking</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">✓</span>
+          <span>Customer pays you directly — IndaStreet does not handle or process any payments</span>
         </li>
         <li className="flex items-start gap-3">
           <span className="text-orange-500 mt-0.5">✓</span>
@@ -265,7 +285,7 @@ const PlusTerms: React.FC = () => (
     </section>
 
     {/* Payment Schedule */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Payment Schedule</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
@@ -284,7 +304,7 @@ const PlusTerms: React.FC = () => (
     </section>
 
     {/* Growth Tools */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-3">Growth Tools</h2>
       <p className="text-gray-700 text-sm">
         Campaign banners, promo codes, featured placements. Track every click, booking, and customer source.
@@ -292,7 +312,7 @@ const PlusTerms: React.FC = () => (
     </section>
 
     {/* Priority Support */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-3">Priority Support</h2>
       <p className="text-gray-700 text-sm">
         Dedicated email support with priority routing and faster response times.
@@ -300,7 +320,7 @@ const PlusTerms: React.FC = () => (
     </section>
 
     {/* Account Readiness */}
-    <section className="py-6 border-b border-gray-100">
+    <section className="py-5 border-b border-gray-100">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Account Readiness</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
@@ -319,7 +339,7 @@ const PlusTerms: React.FC = () => (
     </section>
 
     {/* Summary */}
-    <section className="py-6">
+    <section className="py-5">
       <h2 className="font-semibold text-gray-900 text-base mb-4">Plus Membership Summary</h2>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div className="text-gray-500">Monthly Fee</div>

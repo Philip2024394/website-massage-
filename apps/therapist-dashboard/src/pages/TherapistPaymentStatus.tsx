@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, AlertCircle, Calendar, CreditCard, DollarSign, FileText, RefreshCw } from 'lucide-react';
 import TherapistPageHeader from '../components/TherapistPageHeader';
-import { paymentConfirmationService } from '../../../../lib/appwriteService';
-import type { Therapist } from '../../../../types';
+import { paymentConfirmationService } from '../../../../src/lib/appwriteService';
+import type { Therapist } from '../../../../src/types';
 
 interface TherapistPaymentStatusProps {
     therapist: Therapist;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-// import { authService } from '../../../lib/appwriteService';
+// import { authService } from '../../../src/lib/appwriteService';
 import AdminDashboard from './pages/AdminDashboard';
 
 function App() {

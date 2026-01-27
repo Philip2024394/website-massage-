@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, X, Clock, MapPin, User, Phone, Calendar } from 'lucide-react';
-import { PWANotificationManager } from '../lib/pwaFeatures';
+import { PWANotificationManager } from '../../../src/lib/pwaFeatures';
 
 interface BookingAlert {
   id: string;

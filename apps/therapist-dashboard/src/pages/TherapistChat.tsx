@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, User, CheckCircle, Crown, Lock } from 'lucide-react';
-import { messagingService } from '../../../../lib/appwriteService';
+import { messagingService } from '../../../../src/lib/appwriteService';
 
 interface Message {
   $id: string;

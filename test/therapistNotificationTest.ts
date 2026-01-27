@@ -5,7 +5,7 @@
  * for therapists during development and testing.
  */
 
-import { therapistNotificationService, type BookingNotification } from '../services/therapistNotificationService';
+import { therapistNotificationService, type BookingNotification } from '../src/services/therapistNotificationService';
 
 /**
  * Simulate a new booking notification for testing

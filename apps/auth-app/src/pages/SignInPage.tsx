@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Building2, User, Sparkles, Hotel, Mail, Lock } from 'lucide-react';
-import { account } from '../lib/appwrite';
+import { account } from '../../../src/lib/appwrite';
 import { translations, getStoredLanguage } from '../translations';
 
 type PortalType = 'massage_therapist' | 'massage_place' | 'facial_place' | 'hotel';

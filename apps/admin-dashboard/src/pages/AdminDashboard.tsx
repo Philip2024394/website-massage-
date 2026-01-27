@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { 
     databases, 
     DATABASE_ID, 
-    COLLECTIONS, 
+    COLLECTIONS,
+    Query 
+} from '../../../src/lib/appwrite';
+import { 
     therapistService, 
     placesService, 
-    bookingService,
-    Query 
-} from '../lib/appwrite';
+    bookingService
+} from '../../../src/lib/appwriteService';
 
 // Icon replacements that accept className prop like Lucide icons
 const IconWrapper = ({ emoji, className }: { emoji: string; className?: string }) => (

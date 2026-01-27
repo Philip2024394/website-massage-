@@ -1,9 +1,9 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
-import { FloatingChatWindow } from '../../../../chat';
+import { FloatingChatWindow } from '../../../../src/chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search } from 'lucide-react';
 import TherapistPageHeader from '../components/TherapistPageHeader';
-import { BookingListSkeleton } from '../../../components/LoadingSkeletons';
+import { BookingListSkeleton } from '../../../../src/components/LoadingSkeletons';
 
 interface Booking {
   $id: string;
@@ -55,7 +55,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const { databases, Query, APPWRITE_CONFIG } = await import('../../../../lib/appwriteService');
+      const { databases, Query, APPWRITE_CONFIG } = await import('../../../../src/lib/appwriteService');
       
       // Fetch all bookings for this therapist
       const response = await databases.listDocuments(
@@ -147,7 +147,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
     }
 
     try {
-      const { databases, ID, APPWRITE_CONFIG } = await import('../../../../lib/appwriteService');
+      const { databases, ID, APPWRITE_CONFIG } = await import('../../../../src/lib/appwriteService');
 
       const bookingId = ID.unique();
       await databases.createDocument(

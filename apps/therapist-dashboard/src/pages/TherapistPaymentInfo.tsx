@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import TherapistLayout from '../components/TherapistLayout';
-import { therapistService } from '../../../../lib/appwriteService';
-import { showToast } from '../../../../utils/showToastPortal';
-import PaymentCard from '../../../../components/PaymentCard';
-import type { Therapist } from '../../../../types';
+import { therapistService } from '../../../../src/lib/appwriteService';
+import { showToast } from '../../../../src/utils/showToastPortal';
+import PaymentCard from '../../../../src/components/PaymentCard';
+import type { Therapist } from '../../../../src/types';
 
 interface TherapistPaymentInfoProps {
   therapist: Therapist | null;

@@ -1,352 +1,334 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { membershipPackageService, type MembershipPackage } from '../../lib/appwriteService';
-import { account } from '../../lib/appwrite';
+import React, { useState } from 'react';
+import MembershipTermsModal from '../components/MembershipTermsModal';
+import { FileText, Star } from 'lucide-react';
 
-interface PackageDetails {
-    type: 'bronze' | 'silver' | 'gold';
-    name: string;
-    tagline: string;
-    price: string;
-    billingCycle: string;
-    leadCost: string;
-    features: string[];
-    recommended?: boolean;
+const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24zM6.591 17.419c.404.652.812 1.272 1.242 1.85 1.58 2.116 3.663 3.22 5.953 3.218 5.55-.006 10.038-4.488 10.043-10.038.005-5.55-4.488-10.038-10.038-10.043-5.55.005-10.038 4.488-10.043 10.038.002 2.13.642 4.148 1.822 5.898l-1.03 3.766 3.844-1.025z"/>
+    </svg>
+);
+
+const CheckCircleIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+    </svg>
+);
+
+
+interface MembershipPageProps {
+    onSelectPackage?: (packageName: string, price: string) => void;
+    onPackageSelect: (packageName: string, price: string) => void;
+    onBack: () => void;
+    t: any;
 }
 
-const PACKAGES: PackageDetails[] = [
-    {
-        type: 'silver',
-        name: 'Silver Package',
-        tagline: 'Pay As You Grow',
-        price: 'Rp 0',
-        billingCycle: 'monthly fee',
-        leadCost: '25% admin commission per lead',
-        features: [
-            'Full profile with photos',
-            'Lead generation system',
-            'Pay 25% commission to admin per booking',
-            'Standard support',
-            'No monthly commitment',
-            'DEFAULT for all new members'
-        ],
-        recommended: true
-    },
-    {
-        type: 'gold',
-        name: 'Monthly Package',
-        tagline: 'Fixed Monthly Rate',
-        price: 'Rp 200,000',
-        billingCycle: 'per month',
-        leadCost: 'NO commission - Keep 100%',
-        features: [
-            'Full profile placement',
-            'Unlimited leads included',
-            'NO commission on bookings',
-            'Keep 100% of your earnings',
-            'Priority support',
-            'Fixed predictable cost',
-            'Cancel anytime'
-        ]
-    },
-    {
-        type: 'bronze',
-        name: 'Bronze Package',
-        tagline: 'Best Annual Value',
-        price: 'Rp 2,000,000',
-        billingCycle: 'per year',
-        leadCost: 'NO commission - Keep 100%',
-        features: [
-            'Full profile listing',
-            'Unlimited leads included',
-            'NO commission on bookings',
-            'Keep 100% of your earnings',
-            'Priority support',
-            'Save Rp 400,000 vs monthly',
-            'Annual commitment'
-        ]
-    }
-];
+const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack, t }) => {
+    const [acceptedTerms, setAcceptedTerms] = useState<{ pro: boolean; plus: boolean }>({ pro: false, plus: false });
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [selectedPlanForTerms, setSelectedPlanForTerms] = useState<'pro' | 'plus' | null>(null);
 
-const MembershipPage: React.FC = () => {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [currentMembership, setCurrentMembership] = useState<MembershipPackage | null>(null);
-    const [selectedPackage, setSelectedPackage] = useState<'bronze' | 'silver' | 'gold' | null>(null);
-    const [processing, setProcessing] = useState(false);
-    const [memberType, setMemberType] = useState<'therapist' | 'massage_place' | 'facial_place'>('therapist');
-    const [memberId, setMemberId] = useState<string>('');
-    const [userId, setUserId] = useState<string>('');
-
-    useEffect(() => {
-        loadMembershipData();
-    }, []);
-
-    const loadMembershipData = async () => {
-        try {
-            setLoading(true);
-
-            // Get current user
-            const user = await account.get();
-            setUserId(user.$id);
-
-            // Determine member type and ID from user preferences
-            const prefs = user.prefs as any;
-            const type = prefs?.memberType || 'therapist';
-            const id = prefs?.memberId || user.$id;
-            
-            setMemberType(type);
-            setMemberId(id);
-
-            // Get current membership
-            const membership = await membershipPackageService.getMembership(id, type);
-            setCurrentMembership(membership);
-            setSelectedPackage(membership?.packageType || 'silver');
-
-        } catch (error) {
-            console.error('Error loading membership:', error);
-        } finally {
-            setLoading(false);
+    const planMeta: Record<'pro' | 'plus', { title: string; price: string }> = {
+        pro: {
+            title: 'Pro (Leads) Membership',
+            price: 'Rp 0/month + 30% commission per booking'
+        },
+        plus: {
+            title: 'Plus Membership',
+            price: 'Rp 250,000/month, 0% commission'
         }
     };
 
-    const handlePackageSelect = async (packageType: 'bronze' | 'silver' | 'gold') => {
-        if (processing) return;
-
-        try {
-            setProcessing(true);
-            setSelectedPackage(packageType);
-
-            if (!currentMembership) {
-                // Create new membership
-                await membershipPackageService.createDefaultMembership(userId, memberId, memberType);
-                await loadMembershipData();
-            }
-
-            // Check for outstanding fees before allowing upgrade to Monthly/Bronze
-            if (packageType === 'bronze' || packageType === 'gold') {
-                alert(`To upgrade to ${packageType === 'gold' ? 'Monthly' : 'Bronze'} package:\n\n1. Pay all outstanding commission fees\n2. Contact admin to verify payment\n3. Admin will activate your upgrade\n\nPackage: ${packageType === 'gold' ? 'Rp 200,000/month' : 'Rp 2,000,000/year'}\nBenefit: Keep 100% of earnings, NO commission`);
-            } else {
-                // Downgrade to Silver (instant, but loses no-commission benefit)
-                if (currentMembership) {
-                    await membershipPackageService.updatePackage(currentMembership.$id!, packageType);
-                }
-                alert('Downgraded to Silver package. You will now pay 25% commission per booking.');
-                await loadMembershipData();
-            }
-
-        } catch (error) {
-            console.error('Error selecting package:', error);
-            alert('Failed to update membership. Please try again.');
-        } finally {
-            setProcessing(false);
+    const handleTermsCheckbox = (plan: 'pro' | 'plus', checked: boolean) => {
+        if (checked) {
+            setSelectedPlanForTerms(plan);
+            setShowTermsModal(true);
+        } else {
+            setAcceptedTerms(prev => ({ ...prev, [plan]: false }));
         }
     };
 
-    const getPackagePrice = (pkg: PackageDetails) => {
-        // All packages now have fixed pricing
-        return pkg.price;
+    const handleAcceptTerms = () => {
+        if (selectedPlanForTerms) {
+            setAcceptedTerms(prev => ({ ...prev, [selectedPlanForTerms]: true }));
+        }
+        setShowTermsModal(false);
+        setSelectedPlanForTerms(null);
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                    <p className="mt-4 text-gray-600">Loading membership plans...</p>
-                </div>
-            </div>
-        );
-    }
+    const handleCloseTermsModal = () => {
+        if (selectedPlanForTerms) {
+            setAcceptedTerms(prev => ({ ...prev, [selectedPlanForTerms]: false }));
+        }
+        setShowTermsModal(false);
+        setSelectedPlanForTerms(null);
+    };
+
+    const handleSelectPlan = (plan: 'pro' | 'plus') => {
+        if (!acceptedTerms[plan]) {
+            return;
+        }
+        const meta = planMeta[plan];
+        onPackageSelect(meta.title, meta.price);
+    };
+
+    const renderStars = (filled: number) => (
+        <div className="flex gap-0.5">
+            {[0, 1, 2, 3, 4].map((index) => (
+                <Star
+                    key={index}
+                    className={`w-4 h-4 ${index < filled ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300'}`}
+                />
+            ))}
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
+        <div className="min-h-screen bg-gray-50 py-12 px-4">
+            <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                        Choose Your Membership Package
+                    <CheckCircleIcon className="w-16 h-16 text-brand-green mx-auto mb-4" />
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+                        {t?.title || 'Choose Your Membership Package'}
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Select the perfect plan for your business. Upgrade, downgrade, or switch anytime.
+                    <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
+                        {t?.subtitle || 'Select the plan that fits your business needs'}
                     </p>
-                    
-                    {currentMembership && (
-                        <div className="mt-6 inline-flex items-center bg-white px-6 py-3 rounded-full shadow-md">
-                            <span className="text-sm font-medium text-gray-600 mr-2">Current Plan:</span>
-                            <span className={`text-lg font-bold uppercase ${
-                                currentMembership.packageType === 'bronze' ? 'text-amber-700' :
-                                currentMembership.packageType === 'silver' ? 'text-gray-600' :
-                                'text-yellow-600'
-                            }`}>
-                                {currentMembership.packageType}
-                            </span>
-                            {currentMembership.packageType === 'gold' && currentMembership.goldTier && (
-                                <span className="ml-2 text-sm text-gray-500">
-                                    (Month {currentMembership.goldTier})
-                                </span>
-                            )}
-                        </div>
-                    )}
                 </div>
 
-                {/* Package Cards */}
-                <div className="grid md:grid-cols-3 gap-8 mb-12">
-                    {PACKAGES.map((pkg) => {
-                        const isCurrentPlan = currentMembership?.packageType === pkg.type;
-                        const isRecommended = pkg.recommended;
-
-                        return (
-                            <div
-                                key={pkg.type}
-                                className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
-                                    isCurrentPlan ? 'ring-4 ring-indigo-500' : ''
-                                } ${isRecommended ? 'md:-mt-4 md:mb-4' : ''}`}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Pro Plan */}
+                    <div className="relative rounded-3xl bg-white border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="absolute -top-4 left-8">
+                            <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">
+                                Pay Per Lead
+                            </span>
+                        </div>
+                        <div className="mt-2 mb-6">
+                            <div className="flex items-center gap-2 mb-2">
+                                <h3 className="text-2xl font-bold text-gray-900">Pro</h3>
+                                {renderStars(3)}
+                            </div>
+                            <p className="text-sm text-gray-600">Great for starting out. Only pay when you get bookings.</p>
+                        </div>
+                        <div className="mb-6">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-5xl font-extrabold text-gray-900">Rp 0</span>
+                                <span className="text-lg text-gray-500">/month</span>
+                            </div>
+                            <div className="mt-2 inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-orange-200">
+                                <span>+</span>
+                                <span className="text-xl font-bold">30%</span>
+                                <span>commission per booking</span>
+                            </div>
+                        </div>
+                        <ul className="space-y-3 mb-8">
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span><strong className="font-semibold text-gray-900">Zero upfront cost</strong> - start immediately</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span><strong className="font-semibold text-gray-900">Pay only on success</strong> with 30% commission per booking</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span>Full profile, photos, and services included</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span>Price menu slider displayed on your card</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span>Customer chat and booking system</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span>Lead generation included</span>
+                            </li>
+                        </ul>
+                        <div className="space-y-3">
+                            <div className="p-4 bg-orange-100 border-2 border-orange-400 rounded-xl shadow-sm">
+                                <label className="flex items-start cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={acceptedTerms.pro}
+                                        onChange={(e) => handleTermsCheckbox('pro', e.target.checked)}
+                                        className="mt-1 w-5 h-5 text-orange-600 border-2 border-orange-500 rounded focus:ring-2 focus:ring-orange-500"
+                                    />
+                                    <span className="ml-3 text-sm text-gray-900">
+                                        I agree to the{' '}
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setSelectedPlanForTerms('pro');
+                                                setShowTermsModal(true);
+                                            }}
+                                            className="text-orange-700 font-bold underline inline-flex items-center gap-1 hover:text-orange-800"
+                                            title="View Terms & Conditions"
+                                        >
+                                            <FileText className="w-4 h-4" />
+                                            Terms & Conditions
+                                        </button>
+                                    </span>
+                                </label>
+                                {!acceptedTerms.pro && (
+                                    <p className="mt-2 text-xs text-orange-700 font-semibold flex items-center gap-1">
+                                        <span>⚠️</span>
+                                        Accept the terms before selecting this plan.
+                                    </p>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => handleSelectPlan('pro')}
+                                disabled={!acceptedTerms.pro}
+                                className={`w-full font-bold py-4 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 ${
+                                    !acceptedTerms.pro
+                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
+                                }`}
                             >
-                                {/* Recommended Badge */}
-                                {isRecommended && (
-                                    <div className="absolute top-0 right-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-4 py-2 rounded-bl-lg">
-                                        RECOMMENDED
-                                    </div>
-                                )}
-
-                                {/* Current Plan Badge */}
-                                {isCurrentPlan && (
-                                    <div className="absolute top-0 left-0 bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-br-lg">
-                                        CURRENT PLAN
-                                    </div>
-                                )}
-
-                                {/* Package Header */}
-                                <div className={`p-8 ${
-                                    pkg.type === 'bronze' ? 'bg-gradient-to-br from-amber-50 to-orange-50' :
-                                    pkg.type === 'silver' ? 'bg-gradient-to-br from-gray-50 to-slate-50' :
-                                    'bg-gradient-to-br from-yellow-50 to-amber-50'
-                                }`}>
-                                    <h3 className={`text-2xl font-bold mb-2 ${
-                                        pkg.type === 'bronze' ? 'text-amber-900' :
-                                        pkg.type === 'silver' ? 'text-gray-900' :
-                                        'text-yellow-900'
-                                    }`}>
-                                        {pkg.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 mb-4">{pkg.tagline}</p>
-                                    
-                                    <div className="mb-2">
-                                        <span className="text-4xl font-bold text-gray-900">
-                                            {getPackagePrice(pkg)}
-                                        </span>
-                                        <span className="text-sm text-gray-600 ml-2">
-                                            {pkg.billingCycle}
-                                        </span>
-                                    </div>
-                                    
-                                    <div className={`text-sm font-semibold ${
-                                        pkg.type === 'bronze' ? 'text-amber-700' :
-                                        pkg.type === 'silver' ? 'text-indigo-600' :
-                                        'text-green-600'
-                                    }`}>
-                                        {pkg.leadCost}
-                                    </div>
-                                </div>
-
-                                {/* Features List */}
-                                <div className="p-8">
-                                    <ul className="space-y-4 mb-8">
-                                        {pkg.features.map((feature, idx) => (
-                                            <li key={idx} className="flex items-start">
-                                                <svg
-                                                    className={`w-5 h-5 mt-0.5 mr-3 flex-shrink-0 ${
-                                                        pkg.type === 'gold' ? 'text-yellow-500' : 'text-indigo-500'
-                                                    }`}
-                                                    fill="currentColor"
-                                                    viewBox="0 0 20 20"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                                <span className="text-sm text-gray-700">{feature}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    {/* Action Button */}
-                                    <button
-                                        onClick={() => handlePackageSelect(pkg.type)}
-                                        disabled={processing || isCurrentPlan}
-                                        className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-200 ${
-                                            isCurrentPlan
-                                                ? 'bg-gray-400 cursor-not-allowed'
-                                                : pkg.type === 'gold'
-                                                ? 'bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 shadow-lg hover:shadow-xl'
-                                                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
-                                        } ${processing ? 'opacity-50 cursor-wait' : ''}`}
-                                    >
-                                        {processing && selectedPackage === pkg.type
-                                            ? 'Processing...'
-                                            : isCurrentPlan
-                                            ? 'Current Plan'
-                                            : pkg.type === 'silver'
-                                            ? 'Switch to Silver'
-                                            : pkg.type === 'bronze'
-                                            ? 'Select Bronze'
-                                            : 'Upgrade to Gold'}
-                                    </button>
+                                <WhatsAppIcon className="w-4 h-4" />
+                                {!acceptedTerms.pro ? 'Accept Terms to Continue' : 'Select Pro Plan'}
+                            </button>
+                            <div className="text-center">
+                                <p className="text-xs text-gray-500">Perfect for:</p>
+                                <div className="flex flex-wrap justify-center gap-2 mt-2">
+                                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Independent Therapists</span>
+                                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Just Getting Started</span>
+                                    <span className="px-3 py-1 rounded-full text-xs bg-gray-800 text-orange-400 border border-gray-700 font-medium">Low Risk</span>
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
+                        </div>
+                    </div>
 
-                {/* Additional Info */}
-                <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h3>
-                    
-                    <div className="space-y-6">
-                        <div>
-                            <h4 className="font-semibold text-gray-900 mb-2">Can I switch packages anytime?</h4>
-                            <p className="text-gray-600">Yes! You can upgrade or downgrade at any time. Upgrades take effect immediately, while downgrades take effect at the next billing cycle.</p>
+                    {/* Plus Plan */}
+                    <div className="relative rounded-3xl bg-white border-2 border-gray-200 p-8 shadow-xl hover:shadow-2xl transition-shadow">
+                        <div className="absolute -top-4 left-8">
+                            <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">
+                                Most Popular
+                            </span>
                         </div>
-                        
-                        <div>
-                            <h4 className="font-semibold text-gray-900 mb-2">How does the Gold progressive pricing work?</h4>
-                            <p className="text-gray-600">Gold package starts at Rp 1M in month 1, increases by Rp 1M each month up to Rp 5M, then stays at Rp 5M from month 5 onwards. If you cancel and rejoin, pricing resets to month 1.</p>
+                        <div className="mt-2 mb-6">
+                            <div className="flex items-center gap-2 mb-2">
+                                <h3 className="text-2xl font-bold text-gray-900">Plus</h3>
+                                {renderStars(5)}
+                            </div>
+                            <p className="text-sm text-gray-600">All-in premium membership. Keep 100% of your bookings.</p>
                         </div>
-                        
-                        <div>
-                            <h4 className="font-semibold text-gray-900 mb-2">What happens if my Bronze membership expires?</h4>
-                            <p className="text-gray-600">If you don't renew your Bronze package before expiry, you'll automatically revert to Silver (pay-per-lead) to ensure uninterrupted service.</p>
+                        <div className="mb-6">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-5xl font-extrabold text-gray-900">Rp 250K</span>
+                                <span className="text-lg text-gray-500">/month</span>
+                            </div>
+                            <div className="mt-2 inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-orange-200">
+                                <span>0% Commission</span>
+                                <span>—</span>
+                                <span>Keep Everything</span>
+                            </div>
                         </div>
-
-                        <div>
-                            <h4 className="font-semibold text-gray-900 mb-2">Which package is right for me?</h4>
-                            <p className="text-gray-600">
-                                <strong>Bronze:</strong> Best for established businesses with direct customer base.<br/>
-                                <strong>Silver:</strong> Perfect for getting started with no upfront cost.<br/>
-                                <strong>Gold:</strong> Ideal for high-volume providers who want unlimited leads and no commissions.
-                            </p>
+                        <ul className="space-y-3 mb-8">
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span><strong className="font-semibold text-gray-900">Zero commission</strong> — keep 100% of earnings</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span><strong className="font-semibold text-gray-900">Verified badge</strong> on your profile</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-orange-700">
+                                <span className="text-orange-600 mt-0.5">★</span>
+                                <span><strong className="font-semibold">Priority Hotel, Villa & Private Spa</strong> requests</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-orange-700">
+                                <span className="text-orange-600 mt-0.5">★</span>
+                                <span><strong className="font-semibold">Full price menu slider</strong> displayed on your card</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span><strong className="font-semibold text-gray-900">Live discount</strong> promotions system</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
+                                <span>Unlimited leads & advanced analytics</span>
+                            </li>
+                        </ul>
+                        <div className="space-y-3">
+                            <div className="p-4 bg-orange-100 border-2 border-orange-400 rounded-xl shadow-sm">
+                                <label className="flex items-start cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={acceptedTerms.plus}
+                                        onChange={(e) => handleTermsCheckbox('plus', e.target.checked)}
+                                        className="mt-1 w-5 h-5 text-orange-600 border-2 border-orange-500 rounded focus:ring-2 focus:ring-orange-500"
+                                    />
+                                    <span className="ml-3 text-sm text-gray-900">
+                                        I agree to the{' '}
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setSelectedPlanForTerms('plus');
+                                                setShowTermsModal(true);
+                                            }}
+                                            className="text-orange-700 font-bold underline inline-flex items-center gap-1 hover:text-orange-800"
+                                            title="View Terms & Conditions"
+                                        >
+                                            <FileText className="w-4 h-4" />
+                                            Terms & Conditions
+                                        </button>
+                                    </span>
+                                </label>
+                                {!acceptedTerms.plus && (
+                                    <p className="mt-2 text-xs text-orange-700 font-semibold flex items-center gap-1">
+                                        <span>⚠️</span>
+                                        Accept the terms before selecting this plan.
+                                    </p>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => handleSelectPlan('plus')}
+                                disabled={!acceptedTerms.plus}
+                                className={`w-full font-bold py-4 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 ${
+                                    !acceptedTerms.plus
+                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
+                                }`}
+                            >
+                                <WhatsAppIcon className="w-4 h-4" />
+                                {!acceptedTerms.plus ? 'Accept Terms to Continue' : 'Select Plus Plan'}
+                            </button>
+                            <div className="text-center">
+                                <p className="text-xs text-gray-500">Perfect for:</p>
+                                <div className="flex flex-wrap justify-center gap-2 mt-2">
+                                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Spas & Clinics</span>
+                                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">High Volume Teams</span>
+                                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Maximum Earnings</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Back Button */}
-                <div className="text-center mt-12">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
-                    >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Back to Dashboard
+                <div className="mt-10 text-center">
+                    <button onClick={onBack} className="text-sm font-medium text-gray-500 hover:text-gray-800">
+                        {t?.backToDashboard || '← Back to Home'}
                     </button>
                 </div>
             </div>
+
+            <MembershipTermsModal
+                isOpen={showTermsModal}
+                onClose={handleCloseTermsModal}
+                onAccept={handleAcceptTerms}
+                planType={selectedPlanForTerms || 'pro'}
+            />
         </div>
     );
 };
 
 export default MembershipPage;
+

@@ -1,4 +1,4 @@
-import type { Page } from '../../types/pageTypes';
+import type { Page } from '../types/pageTypes';
 
 /**
  * Authentication Routes Helper

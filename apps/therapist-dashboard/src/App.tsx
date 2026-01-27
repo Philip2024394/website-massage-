@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { authService, therapistService } from '../../../lib/appwriteService';
-import { systemHealthService } from "../../../lib/systemHealthService";
-import { EnhancedNotificationService } from "../../../lib/enhancedNotificationService";
-import { PWAInstallationEnforcer } from "../../../lib/pwaInstallationEnforcer";
+import { authService, therapistService } from '../../../src/lib/appwriteService';
+import { systemHealthService } from "../../../src/lib/systemHealthService";
+import { EnhancedNotificationService } from "../../../src/lib/enhancedNotificationService";
+import { PWAInstallationEnforcer } from "../../../src/lib/pwaInstallationEnforcer";
 import { therapistNotificationManager } from './lib/therapistNotifications';
-import { CardSkeleton } from '../../../components/LoadingSkeletons';
+import { CardSkeleton } from '../../../src/components/LoadingSkeletons';
+import TherapistDashboardGuard from '../../../src/components/TherapistDashboardGuard';
 // import { membershipNotificationService } from './services/membershipNotificationService'; // Unused
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';
@@ -29,9 +30,9 @@ import ToastContainer from './components/ToastContainer';
 import FloatingChat from './components/FloatingChat';
 import PersistentBookingAlerts from './components/PersistentBookingAlerts';
 import BookingNotificationBar from './components/BookingNotificationBar';
-import { LanguageProvider } from '../../../context/LanguageContext';
-import { ChatProvider } from '../../../context/ChatProvider';
-import { useTranslations } from '../../../lib/useTranslations';
+import { LanguageProvider } from '../../../src/context/LanguageContext';
+import { ChatProvider } from '../../../src/context/ChatProvider';
+import { useTranslations } from '../../../src/lib/useTranslations';
 import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pwaFeatures';
 
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount' | 'hotel-villa-safe-pass';
@@ -83,7 +84,7 @@ function App() {
     const initEnhancedNotifications = async () => {
       try {
         // Initialize ultimate notification utilities
-        const { UltimateNotificationUtils } = await import('../../../lib/ultimateNotificationUtils');
+        const { UltimateNotificationUtils } = await import('../../../../src/lib/ultimateNotificationUtils');
         await UltimateNotificationUtils.initialize();
         console.log('🚀 Ultimate notification utilities initialized');
         
@@ -664,44 +665,46 @@ function App() {
   console.log('✅ Skipping onboarding - package selection handled on main site');
 
   return (
-    <ChatProvider>
-      <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
-        {/* Booking Notification System */}
-        {showBookingAlerts && (
-          <PersistentBookingAlerts
-            therapist={user}
-            onAcceptBooking={handleAcceptBooking}
+    <TherapistDashboardGuard>
+      <ChatProvider>
+        <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
+          {/* Booking Notification System */}
+          {showBookingAlerts && (
+            <PersistentBookingAlerts
+              therapist={user}
+              onAcceptBooking={handleAcceptBooking}
+              onViewBooking={handleViewBooking}
+            />
+          )}
+          
+          <BookingNotificationBar
             onViewBooking={handleViewBooking}
+            onNavigateToBookings={handleNavigateToBookings}
           />
-        )}
-        
-        <BookingNotificationBar
-          onViewBooking={handleViewBooking}
-          onNavigateToBookings={handleNavigateToBookings}
-        />
-        
-        <PWAInstallPrompt dashboardName="Therapist Dashboard" />
-        <ToastContainer />
-        <TherapistLayout
-          therapist={user}
-          currentPage={currentPage}
-          onNavigate={(page) => setCurrentPage(page as Page)}
-          language={language}
-          onLanguageChange={handleLanguageChange}
-          onLogout={handleLogout}
-        >
-          {renderPage()}
-        </TherapistLayout>
-        
-        {/* Persistent Floating Chat - Always visible when user data exists */}
-        {user && (
-          <FloatingChat 
-            therapist={user} 
-            isPWA={isPWAMode()} 
-          />
-        )}
-      </LanguageProvider>
-    </ChatProvider>
+          
+          <PWAInstallPrompt dashboardName="Therapist Dashboard" />
+          <ToastContainer />
+          <TherapistLayout
+            therapist={user}
+            currentPage={currentPage}
+            onNavigate={(page) => setCurrentPage(page as Page)}
+            language={language}
+            onLanguageChange={handleLanguageChange}
+            onLogout={handleLogout}
+          >
+            {renderPage()}
+          </TherapistLayout>
+          
+          {/* Persistent Floating Chat - Always visible when user data exists */}
+          {user && (
+            <FloatingChat 
+              therapist={user} 
+              isPWA={isPWAMode()} 
+            />
+          )}
+        </LanguageProvider>
+      </ChatProvider>
+    </TherapistDashboardGuard>
   );
 }
 

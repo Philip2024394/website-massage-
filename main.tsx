@@ -4,20 +4,20 @@ import './utils/reactCompatibility';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import ErrorBoundary from './components/ErrorBoundary';
-import AppErrorBoundary from './components/AppErrorBoundary';
-import { ProductionErrorBoundary } from './components/ProductionErrorBoundary';
-import { logger } from './utils/logger';
+import ErrorBoundary from './src/components/ErrorBoundary';
+import AppErrorBoundary from './src/components/AppErrorBoundary';
+import { ProductionErrorBoundary } from './src/components/ProductionErrorBoundary';
+import { logger } from './src/utils/logger';
 import './index.css';
 
 // Initialize DOM error handler to prevent removeChild errors
 import './utils/domErrorHandler';
 
 // Initialize version checking for cache busting
-import { initVersionCheck } from './lib/versionCheck';
+import { initVersionCheck } from './src/lib/versionCheck';
 
 // 🔒 PRODUCTION STARTUP GUARD - Detects mount failures
-// TEMPORARILY DISABLED: import { initializeStartupGuard } from './utils/startupGuard';
+// TEMPORARILY DISABLED: import { initializeStartupGuard } from './src/utils/startupGuard';
 
 // 🔒 APPWRITE COLLECTION PROTECTION - Validates collection IDs at startup
 import './lib/appwrite-startup-validator';

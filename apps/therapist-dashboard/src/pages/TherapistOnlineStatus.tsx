@@ -1,15 +1,15 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
-import { therapistService } from "../../../../lib/appwriteService";
+import { therapistService } from "../../../../src/lib/appwriteService";
 import { AvailabilityStatus } from "../../../../src/types";
-import { devLog, devWarn } from "../../../../utils/devMode";
+import { devLog, devWarn } from "../../../../src/utils/devMode";
 // Temporarily comment out potentially problematic imports
-// import { EnhancedNotificationService } from "../../../../lib/enhancedNotificationService";
-// import { PWAInstallationEnforcer } from "../../../../lib/pwaInstallationEnforcer";
-// import { useLanguage } from '../../../../hooks/useLanguage';
-// import { useTranslations } from '../../../../lib/useTranslations';
-import { FloatingChatWindow } from '../../../../chat/FloatingChatWindow';
+// import { EnhancedNotificationService } from "../../../../src/lib/enhancedNotificationService";
+// import { PWAInstallationEnforcer } from "../../../../src/lib/pwaInstallationEnforcer";
+// import { useLanguage } from '../../../../src/hooks/useLanguage';
+// import { useTranslations } from '../../../../src/lib/useTranslations';
+import { FloatingChatWindow } from '../../../../src/chat/FloatingChatWindow';
 import TherapistLayout from '../components/TherapistLayout';
 import BookingRequestCard from '../components/BookingRequestCard';
 
@@ -629,7 +629,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       if (hasPermission) {
         // Import and test ULTIMATE notification system
-        // const { UltimateNotificationUtils } = await import('../../../../lib/ultimateNotificationUtils');
+        // const { UltimateNotificationUtils } = await import('../../../../src/lib/ultimateNotificationUtils');
         // await UltimateNotificationUtils.testUltimateNotification();
         console.log('Test notifications temporarily disabled');
         

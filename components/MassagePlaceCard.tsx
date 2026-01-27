@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../src/types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
-import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
-import { bookingService, reviewService } from '../lib/appwriteService';
+import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../src/utils/appwriteHelpers';
+import { getDisplayRating, getDisplayReviewCount, formatRating } from '../src/utils/ratingUtils';
+import { bookingService, reviewService } from '../src/lib/appwriteService';
 // import { placesMenusService } from '../lib/appwrite/services/placesMenus.service'; // TODO: Service doesn't exist yet
-import DistanceDisplay from './DistanceDisplay';
-import AnonymousReviewModal from './AnonymousReviewModal';
-import SocialSharePopup from './SocialSharePopup';
-import MassagePlaceJoinPopup from './MassagePlaceJoinPopup';
-import { getAuthAppUrl } from '../utils/therapistCardHelpers';
-import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing, generatePlaceShareableURL } from '../constants/cardConstants.tsx';
-import { useChatProvider } from '../hooks/useChatProvider';
+import DistanceDisplay from '../src/components/DistanceDisplay';
+import AnonymousReviewModal from '../src/components/AnonymousReviewModal';
+import SocialSharePopup from '../src/components/SocialSharePopup';
+import MassagePlaceJoinPopup from '../src/components/MassagePlaceJoinPopup';
+import { getAuthAppUrl } from '../src/utils/therapistCardHelpers';
+import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing, generatePlaceShareableURL } from '../src/constants/cardConstants.tsx';
+import { useChatProvider } from '../src/hooks/useChatProvider';
 
 // Extracted components
-import PlaceHeader from '../modules/massage-place/PlaceHeader';
-import PlaceProfile from '../modules/massage-place/PlaceProfile';
-import PlaceServices from '../modules/massage-place/PlaceServices';
-import PlacePricing from '../modules/massage-place/PlacePricing';
+import PlaceHeader from '../src/modules/massage-place/PlaceHeader';
+import PlaceProfile from '../src/modules/massage-place/PlaceProfile';
+import PlaceServices from '../src/modules/massage-place/PlaceServices';
+import PlacePricing from '../src/modules/massage-place/PlacePricing';
 
 interface MassagePlaceCardProps {
     place: Place;
@@ -220,7 +220,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             // Soft refresh to show updated rating without losing state
             setTimeout(async () => {
                 try {
-                    const { softRecover } = await import('../utils/softNavigation');
+                    const { softRecover } = await import('../src/utils/softNavigation');
                     softRecover();
                 } catch {
                     window.location.reload();

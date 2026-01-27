@@ -1,13 +1,13 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { FloatingChatWindow } from '../../../../chat';
+import { FloatingChatWindow } from '../../../../src/chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
 import ChatWindow from '../components/ChatWindow';
 import TherapistLayout from '../components/TherapistLayout';
-import { devLog, devWarn } from '../../../../utils/devMode';
+import { devLog, devWarn } from '../../../../src/utils/devMode';
 import TherapistSchedule from './TherapistSchedule';
-import DepositApprovalCard from '../../../../components/booking/DepositApprovalCard';
-import { pushNotificationsService } from '../../../../lib/pushNotificationsService';
+import DepositApprovalCard from '../../../../src/components/booking/DepositApprovalCard';
+import { pushNotificationsService } from '../../../../src/lib/pushNotificationsService';
 
 interface Booking {
   $id: string;
@@ -154,7 +154,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     
     const setupRealtimeBookings = async () => {
       try {
-        const { bookingService } = await import('../../../../lib/appwriteService');
+        const { bookingService } = await import('../../../../src/lib/appwriteService');
         
         unsubscribe = bookingService.subscribeToProviderBookings(
           therapist.$id,
@@ -200,7 +200,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     setLoading(true);
     try {
       // Fetch real bookings from Appwrite
-      const { bookingService } = await import('../../../../lib/appwriteService');
+      const { bookingService } = await import('../../../../src/lib/appwriteService');
       
       // Get bookings for this therapist
       const realBookings = await bookingService.getProviderBookings(therapist.$id);
@@ -260,7 +260,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
    */
   const checkBookingCommunicationSetup = async (bookingId: string) => {
     try {
-      const { databases, APPWRITE_CONFIG, Query } = await import('../../../../lib/appwrite');
+      const { databases, APPWRITE_CONFIG, Query } = await import('../../../../src/lib/appwrite');
       
       // Check if chat room exists
       const chatRooms = await databases.listDocuments(
@@ -370,7 +370,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       }
       
       // Import centralized cancellation function
-      const { bookingService } = await import('../../../../lib/appwriteService');
+      const { bookingService } = await import('../../../../src/lib/appwriteService');
       
       // Call SINGLE cancellation authority
       const result = await bookingService.cancelBookingAndReverseCommission(
@@ -469,7 +469,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       console.log('💼 Marking booking as completed:', bookingId);
 
       // Update booking status in Appwrite
-      const { bookingService } = await import('../../../../lib/appwriteService');
+      const { bookingService } = await import('../../../../src/lib/appwriteService');
       await bookingService.updateStatus(bookingId, 'Completed');
 
       // Note: Commission record is automatically created by bookingService.updateStatus()
