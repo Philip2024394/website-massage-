@@ -1,17 +1,39 @@
+// ------------------ App.tsx ------------------
+
+// React & core
 import React, { useEffect, useState } from 'react';
-// import { authService, therapistService } from '../../../../src/lib/appwriteService';  // REMOVED - using dynamic imports
-import { systemHealthService } from "../../../../src/lib/systemHealthService";
-import { EnhancedNotificationService } from "../../../../src/lib/enhancedNotificationService";
-import { PWAInstallationEnforcer } from "../../../../src/lib/pwaInstallationEnforcer";
+
+// Contexts  
+import { LanguageProvider } from '@context/LanguageContext';
+import { ChatProvider } from '@context/ChatProvider';
+
+// Services (local imports)
+import { systemHealthService } from '@lib/systemHealthService';
+import { appwriteService } from '@lib/appwriteService';
+import { bookingService } from '@lib/services/bookingService';
+import { bookingCalendarService } from '@lib/services/bookingCalendarService';
+import { bookingLifecycleService } from '@lib/services/bookingLifecycleService';
+import { adminCommissionService } from '@lib/services/adminCommissionService';
+import { availabilityEnforcementService } from '@lib/services/availabilityEnforcementService';
+import { commissionTrackingService } from '@lib/services/commissionTrackingService';
+import { serverEnforcedChatService } from '@lib/services/serverEnforcedChatService';
 import { therapistNotificationManager } from './lib/therapistNotifications';
-import { CardSkeleton } from '../../../../src/components/LoadingSkeletons';
-import TherapistDashboardGuard from '../../../../src/components/TherapistDashboardGuard';
+
+// Components
+import { CardSkeleton } from '@components/LoadingSkeletons';
+import TherapistDashboardGuard from '@components/TherapistDashboardGuard';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import PersistentBookingAlerts from './components/PersistentBookingAlerts';
+import BookingNotificationBar from './components/BookingNotificationBar';
+
 // Lazy load WebSocket component to avoid initial load issues
-const TherapistDashboardWebSocket = React.lazy(() => import('../../../../src/components/TherapistDashboardWebSocket'));
-// import { enterpriseScheduledReminderService } from '../../../../src/services/enterpriseScheduledReminderService';
-// import { enterpriseWebSocketService } from '../../../../src/services/enterpriseWebSocketService';
-// import { bookingSoundService } from '../../../../src/services/bookingSound.service';
-// import { membershipNotificationService } from './services/membershipNotificationService'; // Unused
+const TherapistDashboardWebSocket = React.lazy(() => import('@components/TherapistDashboardWebSocket'));
+
+// Optional / missing components (commented out to prevent build errors)
+// import EnterpriseNotificationIntegrationManager from '@components/EnterpriseNotificationIntegrationManager';
+// import EnterpriseTestPanel from '@components/EnterpriseTestPanel';
+
+// Pages
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';
 import TherapistBookings from './pages/TherapistBookings';
@@ -32,15 +54,11 @@ import SendDiscountPage from './pages/SendDiscountPage';
 import HotelVillaSafePass from './pages/HotelVillaSafePass';
 import TherapistLayout from './components/TherapistLayout';
 import ToastContainer from './components/ToastContainer';
-import PersistentBookingAlerts from './components/PersistentBookingAlerts';
-import BookingNotificationBar from './components/BookingNotificationBar';
-import { LanguageProvider } from '../../../../src/context/LanguageContext';
-import { ChatProvider } from '../../../../src/context/ChatProvider';
-import { useTranslations } from '../../../../src/lib/useTranslations';
+
+// Utils & features
 import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pwaFeatures';
-import EnterpriseNotificationIntegrationManager from '../../../../src/components/EnterpriseNotificationIntegrationManager';
-import EnterpriseTestPanel from '../../../../src/components/EnterpriseTestPanel';
-import PWAInstallPrompt from '../../../../src/components/PWAInstallPrompt';
+
+// ------------------ END IMPORTS ------------------
 
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount' | 'hotel-villa-safe-pass';
 
@@ -105,7 +123,7 @@ function App() {
     const initEnhancedNotifications = async () => {
       try {
         // Initialize ultimate notification utilities
-        const { UltimateNotificationUtils } = await import('../../../../src/lib/ultimateNotificationUtils');
+        // const { UltimateNotificationUtils } = await import('@lib/ultimateNotificationUtils');
         await UltimateNotificationUtils.initialize();
         console.log('🚀 Ultimate notification utilities initialized');
         
@@ -115,7 +133,7 @@ function App() {
         
         // 🔊 Initialize enterprise booking sound service (lazy loaded to avoid 500 errors)
         try {
-          const { bookingSoundService } = await import('../../../../src/services/bookingSound.service');
+          const { bookingSoundService } = await import('@lib/services/bookingSound.service');
           await bookingSoundService.initialize();
           console.log('🎵 Enterprise booking sound service initialized');
         } catch (error) {
@@ -124,7 +142,7 @@ function App() {
         
         // 🕐 Initialize scheduled reminder service (lazy loaded)
         try {
-          const { enterpriseScheduledReminderService } = await import('../../../../src/services/enterpriseScheduledReminderService');
+          const { enterpriseScheduledReminderService } = await import('@lib/services/enterpriseScheduledReminderService');
           await enterpriseScheduledReminderService.initialize();
           console.log('⏰ Scheduled reminder service initialized');
         } catch (error) {
@@ -167,7 +185,7 @@ function App() {
       console.log('📧 Session user email:', user.email);
       console.log('👤 Session user name:', user.name);
       
-      const { therapistService } = await import('../../../../src/lib/appwriteService');
+      const { therapistService } = await import('@lib/appwriteService');
       const updatedTherapist = await therapistService.getById(user.$id);
       console.log('✅ Therapist data refreshed from database:', {
         id: updatedTherapist.$id,
@@ -290,7 +308,7 @@ function App() {
     
     const refreshSession = async () => {
       try {
-        const { authService } = await import('../../../../src/lib/appwriteService');
+        const { authService } = await import('@lib/appwriteService');
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
           console.log('✅ Session refreshed successfully');
@@ -400,7 +418,7 @@ function App() {
     try {
       console.log('🔐 Starting auth check... isPWA:', isPWA);
       
-      const { authService } = await import('../../../../src/lib/appwriteService');
+      const { authService } = await import('@lib/appwriteService');
       let currentUser = await authService.getCurrentUser();
       
       // If Appwrite session failed, try localStorage fallback
@@ -416,7 +434,7 @@ function App() {
             if (age < maxAge && backup.userId) {
               console.log('🔄 Restoring session from localStorage backup...');
               // Fetch therapist directly from database
-              const { therapistService } = await import('../../../../src/lib/appwriteService');
+              const { therapistService } = await import('@lib/appwriteService');
               const therapist = await therapistService.getById(backup.userId);
               if (therapist) {
                 console.log('✅ Session restored from localStorage:', therapist.email);
@@ -446,7 +464,7 @@ function App() {
         console.log('🔍 [DEBUG] Auth email exact value:', JSON.stringify(currentUser.email));
         console.log('🔍 [DEBUG] Normalized email for lookup:', normalizedEmail);
         
-        const { therapistService } = await import('../../../../src/lib/appwriteService');
+        const { therapistService } = await import('@lib/appwriteService');
         let therapists = await therapistService.getByEmail(normalizedEmail);
         console.log('🔍 Looking for therapist with email:', normalizedEmail);
         console.log('🔍 Found therapists:', therapists);
@@ -593,7 +611,7 @@ function App() {
       
       // 🔒 CRITICAL: Call booking service to accept the booking
       console.log('🔄 Calling bookingService.acceptBookingAndCreateCommission...');
-      const { bookingService } = await import('../../../../src/lib/bookingService');
+      const { bookingService } = await import('@lib/services/bookingService');
       const result = await bookingService.acceptBookingAndCreateCommission(
         bookingId,
         user.$id,
@@ -645,7 +663,7 @@ function App() {
       localStorage.removeItem('notificationTested');
       console.log('🗑️ All localStorage auth data cleared');
       
-      const { authService } = await import('../../../../src/lib/appwriteService');
+      const { authService } = await import('@lib/appwriteService');
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);

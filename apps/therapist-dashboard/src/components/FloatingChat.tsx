@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, XCircle, Check, Tag, Gift } from 'lucide-react';
-import { messagingService, simpleBookingService } from '../../../../src/lib/appwriteService';
+import { messagingService, simpleBookingService } from '@lib/appwriteService';
 import { generateTherapistDiscount } from '../../../../src/services/therapistDiscountService';
 import { 
     ChatPersistenceManager, 
     PWABadgeManager, 
     PWANotificationManager,
     isPWAMode 
-} from '../../../../src/lib/pwaFeatures';
-import { chatDebouncer, performanceUtils } from '../../../../src/lib/utils/performance';
+} from '@lib/pwaFeatures';
+import { chatDebouncer, performanceUtils } from '@lib/utils/performance';
 
 /**
  * 💬 Enhanced Floating Chat Component with Sound Notifications
@@ -119,7 +119,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
         console.log('[FLOATING CHAT] STEP 7: Setting up realtime listener for therapist:', therapist.$id);
         
         // Import Appwrite client for realtime subscriptions
-        import('../../../../src/lib/appwrite/config').then(({ client, APPWRITE_CONFIG }) => {
+        import('@lib/appwrite/config').then(({ client, APPWRITE_CONFIG }) => {
             // Subscribe to bookings for this therapist
             const channel = `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.bookings}.documents`;
             console.log('[FLOATING CHAT] Subscription channel:', channel);

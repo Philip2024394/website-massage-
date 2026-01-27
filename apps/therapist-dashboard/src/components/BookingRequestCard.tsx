@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
 import { Clock, Check, X, AlertTriangle, Volume2, VolumeX } from 'lucide-react';
-import { bookingAcknowledgmentService } from "../../../../src/lib/services/bookingAcknowledgmentService";
+import { bookingAcknowledgmentService } from '@lib/services/bookingAcknowledgmentService';
 import { bookingSoundService } from "../../../../src/services/bookingSound.service";
 
 interface BookingRequest {

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import TherapistLayout from '../components/TherapistLayout';
-import { therapistService } from '../../../../src/lib/appwriteService';
+import { therapistService } from '@lib/appwriteService';
 import { showToast } from '../../../../src/utils/showToastPortal';
 import PaymentCard from '../../../../src/components/PaymentCard';
 import type { Therapist } from '../../../../src/types';

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FloatingChatWindow } from '../../../../src/chat';
 import { MASSAGE_TYPES_CATEGORIZED } from '../../../../src/constants';
 import type { Therapist } from '../../../../src/types';
-import { therapistService, imageUploadService } from '../../../../src/lib/appwriteService';
+import { therapistService, imageUploadService } from '@lib/appwriteService';
 import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '../../../../src/utils/clientPreferencesUtils';
 import { showToast } from '../../../../src/utils/showToastPortal';
 import CityLocationDropdown from '../../../../src/components/CityLocationDropdown';
@@ -576,7 +576,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       // Auto-translate profile data to both Globe
       console.log('🌐 Auto-translating profile data...');
       try {
-        const { adminTranslationService } = await import('../../../../src/lib/translationService');
+        const { adminTranslationService } = await import('@lib/services/translationService');
         
         // Detect if the user entered data in Indonesian or English
         const sourceLanguage = description.match(/[a-zA-Z]/) ? 'en' : 'id';

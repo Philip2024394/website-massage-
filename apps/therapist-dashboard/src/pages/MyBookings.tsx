@@ -55,7 +55,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const { databases, Query, APPWRITE_CONFIG } = await import('../../../../src/lib/appwriteService');
+      const { databases, Query, APPWRITE_CONFIG } = await import('@lib/appwriteService');
       
       // Fetch all bookings for this therapist
       const response = await databases.listDocuments(
@@ -147,7 +147,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
     }
 
     try {
-      const { databases, ID, APPWRITE_CONFIG } = await import('../../../../src/lib/appwriteService');
+      const { databases, ID, APPWRITE_CONFIG } = await import('@lib/appwriteService');
 
       const bookingId = ID.unique();
       await databases.createDocument(

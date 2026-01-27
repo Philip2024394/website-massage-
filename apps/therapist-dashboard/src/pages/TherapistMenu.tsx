@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FloatingChatWindow } from '../../../../src/chat';
 import { Therapist } from '../../../../src/types';
-import { therapistMenusService } from '../../../../src/lib/appwriteService';
+import { therapistMenusService } from '@lib/appwriteService';
 import { showToast } from '../../../../src/utils/showToastPortal';
 import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2, Clock } from 'lucide-react';
 import TherapistLayout from '../components/TherapistLayout';

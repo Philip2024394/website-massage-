@@ -7,7 +7,7 @@ import BookingBadge from './BookingBadge';
 import { useUnreadBadge } from "../../../../src/chat/hooks/useUnreadBadge";
 import { useGestureSwipe } from "../../../../src/hooks/useGestureSwipe";
 import { FloatingUnreadBadge } from "../../../../src/components/UnreadBadge";
-import { pushNotificationsService } from '../../../../src/lib/pushNotificationsService';
+import { pushNotificationsService } from '@lib/pushNotificationsService';
 import PullToRefresh from '../../../../src/components/PullToRefresh';
 
 interface TherapistLayoutProps {

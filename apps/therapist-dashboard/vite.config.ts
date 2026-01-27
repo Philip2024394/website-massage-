@@ -18,13 +18,17 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, '../../'),
+      '@': resolve(__dirname, 'src'),
+      '@lib': resolve(__dirname, 'src/lib'),
       '@shared': resolve(__dirname, '../../lib'),
-      '@components': resolve(__dirname, '../../components'),
-      '@constants': resolve(__dirname, '../../constants'),
-      '@utils': resolve(__dirname, '../../utils'),
-      '@types': resolve(__dirname, '../../types'),
-      '@services': resolve(__dirname, '../../services')
+      '@components': resolve(__dirname, '../../src/components'),
+      '@constants': resolve(__dirname, '../../src/constants'),
+      '@utils': resolve(__dirname, '../../src/utils'),
+      '@types': resolve(__dirname, '../../src/types'),
+      '@services': resolve(__dirname, '../../src/services'),
+      '@chat': resolve(__dirname, '../../src/chat'),
+      '@context': resolve(__dirname, '../../src/context'),
+      '@hooks': resolve(__dirname, '../../src/hooks')
     }
   },
   server: {

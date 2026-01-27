@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3, X } from 'lucide-react';
 import TherapistLayout from '../components/TherapistLayout';
-import { analyticsService } from '../../../../src/lib/services/analyticsService';
+import { analyticsService } from '@lib/services/analyticsService';
 
 interface Payment {
   $id: string;
@@ -126,7 +126,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
     
     try {
       // Attempt to load analytics data with better error handling
-      const { analyticsService } = await import('../../../../src/lib/services/analyticsService');
+      const { analyticsService } = await import('@lib/services/analyticsService');
       
       const [hours, days] = await Promise.all([
         analyticsService.getPeakBookingHours(therapist.$id).catch(err => {
@@ -172,7 +172,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
     setLoading(true);
     try {
       // Import paymentService
-      const { paymentService } = await import('../../../../src/lib/appwriteService');
+      const { paymentService } = await import('@lib/appwriteService');
       
       // Fetch real payments from Appwrite
       const realPayments = await paymentService.getPaymentsByTherapist(therapist.$id);

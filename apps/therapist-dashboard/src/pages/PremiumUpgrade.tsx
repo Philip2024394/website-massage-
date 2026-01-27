@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Crown, Upload, CheckCircle, AlertCircle, XCircle, CreditCard, Building2, User, Hash, Copy, Check } from 'lucide-react';
 import { Therapist } from '../../../../src/types';
-import { therapistService, imageUploadService, paymentConfirmationService, premiumPaymentsService } from '../../../../src/lib/appwriteService';
+import { therapistService, imageUploadService, paymentConfirmationService, premiumPaymentsService } from '@lib/appwriteService';
 import { showToast } from '../../../../src/utils/showToastPortal';
 
 interface PremiumUpgradeProps {
@@ -55,7 +55,7 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }
   useEffect(() => {
     const fetchAdminSettings = async () => {
       try {
-        const { databases } = await import('../../../../src/lib/appwrite');
+        const { databases } = await import('@lib/appwrite');
         const response = await databases.listDocuments(
           '68f76ee1000e64ca8d05', // Your database ID
           'admin_settings', // Collection ID

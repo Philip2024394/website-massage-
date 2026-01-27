@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Plus, X, CheckCircle, Upload, CreditCard, Building2, AlertCircle } from 'lucide-react';
 import { Therapist, Booking } from '../../../../src/types';
-import { therapistService } from '../../../../src/lib/appwriteService';
+import { therapistService } from '@lib/appwriteService';
 import { showToast } from '../../../../src/utils/showToastPortal';
 import TherapistPageHeader from '../components/TherapistPageHeader';
 

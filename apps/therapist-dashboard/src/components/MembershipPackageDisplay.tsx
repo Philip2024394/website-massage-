@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { databases, APPWRITE_CONFIG, Query, storage, ID } from '../../../../src/lib/services/_shared';
+import { databases, APPWRITE_CONFIG, Query, storage, ID } from '@lib/services/_shared';
 // Payment notification service - to be implemented
 
 interface MembershipPackageDisplayProps {

@@ -57,7 +57,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
     setLoading(true);
     try {
       // Import notification service
-      const { notificationService } = await import('../../../../src/lib/appwriteService');
+      const { notificationService } = await import('@lib/appwriteService');
       
       // Fetch real notifications from Appwrite
       const realNotifications = await notificationService.getByTherapist(therapist.$id);

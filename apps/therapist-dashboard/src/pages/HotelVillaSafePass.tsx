@@ -6,9 +6,9 @@ import {
   DollarSign, Clock, X, Download
 } from 'lucide-react';
 import TherapistPageHeader from '../components/TherapistPageHeader';
-import { therapistService } from '../../../../src/lib/appwriteService';
+import { therapistService } from '@lib/appwriteService';
 import { showToast } from '../../../../src/utils/showToastPortal';
-import { useTranslations } from '../../../../src/lib/useTranslations';
+import { useTranslations } from '@lib/useTranslations';
 import type { Therapist } from '../../../../src/types';
 
 interface HotelVillaSafePassProps {
@@ -473,10 +473,6 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
               </div>
             </div>
           </div>
-        </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Identity Information */}
