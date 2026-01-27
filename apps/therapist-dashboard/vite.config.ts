@@ -1,43 +1,26 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: process.env.NODE_ENV === 'production' ? '/therapist/' : '/',
-  root: '.',
-  publicDir: 'public',
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html')
-      }
-    }
-  },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
-      '@lib': resolve(__dirname, 'src/lib'),
-      '@shared': resolve(__dirname, '../../lib'),
-      '@components': resolve(__dirname, '../../src/components'),
-      '@constants': resolve(__dirname, '../../src/constants'),
-      '@utils': resolve(__dirname, '../../src/utils'),
-      '@types': resolve(__dirname, '../../src/types'),
-      '@services': resolve(__dirname, '../../src/services'),
-      '@chat': resolve(__dirname, '../../src/chat'),
-      '@context': resolve(__dirname, '../../src/context'),
-      '@hooks': resolve(__dirname, '../../src/hooks')
-    }
+      // Root lib folder - PRIMARY APPROACH
+      '@lib': path.resolve(__dirname, 'src/lib'),
+
+      // Subfolders for clarity
+      '@lib/services': path.resolve(__dirname, 'src/lib/services'),
+      '@lib/appwrite': path.resolve(__dirname, 'src/lib/appwrite'),
+      '@lib/components': path.resolve(__dirname, 'src/lib/components'),
+      '@lib/utils': path.resolve(__dirname, 'src/lib/utils'),
+
+      // Essential cross-package imports (minimal set)
+      '@context': path.resolve(__dirname, '../../src/context'),
+      '@components': path.resolve(__dirname, '../../src/components'),
+      '@hooks': path.resolve(__dirname, '../../src/hooks'),
+      '@utils': path.resolve(__dirname, '../../src/utils'),
+      '@types': path.resolve(__dirname, '../../src/types'),
+    },
   },
-  server: {
-    port: 3003,
-    strictPort: true,
-    hmr: {
-      protocol: 'ws',
-      host: 'localhost',
-      port: 3003
-    }
-  }
 });
