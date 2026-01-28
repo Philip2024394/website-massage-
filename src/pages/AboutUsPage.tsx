@@ -67,9 +67,11 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
             
             {/* Hero Section */}
             <div 
-                className="bg-gradient-to-r from-orange-600 to-orange-500 text-white py-20 relative bg-cover bg-center"
+                className="bg-gradient-to-r from-orange-600 to-orange-500 text-white py-20 relative bg-cover bg-center bg-fixed"
                 style={{
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20apps.png?updatedAt=1761568212865)',
+                    backgroundAttachment: 'scroll',
+                    transition: 'none'
                 }}
             >
                 <div className="absolute inset-0 bg-black/20"></div>
