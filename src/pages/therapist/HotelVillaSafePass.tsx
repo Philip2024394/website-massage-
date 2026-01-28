@@ -279,7 +279,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
               Enquire via WhatsApp
             </button>
             <HelpTooltip 
-              {...safePassHelp.uploadLetters}
+              {...safePassHelp.uploadLetter}
               position="left"
               size="md"
             />
