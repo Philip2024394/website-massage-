@@ -121,6 +121,98 @@ calculateScheduledBookingDeposit(totalPrice)
 
 ---
 
+### **6. Routing Configuration**
+
+#### **therapistRoutes.tsx**
+**Location:** `src/router/routes/therapistRoutes.tsx`  
+**Locked Logic:**
+- ✅ All route paths (`/therapist`, `/therapist/bookings`, etc.)
+- ✅ Route names (`therapist-dashboard`, `therapist-bookings`, etc.)
+- ✅ Component mappings (which component serves which route)
+- ✅ `requiresAuth` flags (all therapist routes require authentication)
+- ✅ Route structure and organization
+
+**Impact of Route Changes:**
+- 🚨 Breaks deep links from notifications
+- 🚨 Breaks saved bookmarks and external links
+- 🚨 Breaks navigation from TherapistLayout menu
+- 🚨 Breaks external integrations
+
+**Editable:**
+- ❌ Component implementations (UI, styling)
+- ❌ Lazy loading strategy
+- ❌ Comments and documentation
+
+---
+
+### **7. Layout & Navigation Stability**
+
+#### **TherapistLayout.tsx**
+**Location:** `src/components/therapist/TherapistLayout.tsx`  
+**Locked Logic:**
+- ✅ Layout structure and mounting behavior
+- ✅ Navigation patterns (menu item click → navigate)
+- ✅ Menu item order from `THERAPIST_MENU_ITEMS` constant
+- ✅ NO conditional redirects on mount (prevents flashing)
+- ✅ Push notification request delay (5 seconds)
+
+**Safe useEffects:**
+- ✅ Push notification permission prompt (5-second delay, no redirects)
+- ✅ Unread badge updates (read-only state observation)
+
+**Editable:**
+- ❌ Menu labels, icons, styling
+- ❌ UI elements, animations, transitions
+- ❌ Sidebar design and behavior
+
+#### **TherapistDashboard.tsx**
+**Location:** `src/pages/therapist/TherapistDashboard.tsx`  
+**Locked Logic:**
+- ✅ Form initialization sequence on mount
+- ✅ Location normalization (extractLocationId)
+- ✅ NO conditional redirects on mount
+- ✅ Data loading from database on mount
+
+**Safe useEffects:**
+- ✅ Load latest therapist data from database
+- ✅ Read package selection from localStorage
+- ✅ Reset save state when form changes
+
+**Editable:**
+- ❌ Form UI, layout, styling
+- ❌ Field labels and placeholders
+- ❌ Validation messages
+
+---
+
+### **8. Navigation Constants**
+**Location:** `src/constants/businessLogic.ts`
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `PUSH_NOTIFICATION_REQUEST_DELAY_MS` | 5000 | Delay before showing push permission prompt |
+| `THERAPIST_MENU_ITEMS` | Array of page IDs | Menu order locked for consistent UX |
+| `ALLOW_CONDITIONAL_REDIRECTS_ON_MOUNT` | false | Prevents flashing and redirect loops |
+| `STABLE_MOUNTING_REQUIRED` | true | Enforces stable component mounting |
+
+**Menu Item Order (Locked):**
+```typescript
+[
+  'therapist-how-it-works',
+  'status',
+  'dashboard',
+  'bookings',
+  'chat',
+  'calendar',
+  'earnings',
+  'payment',
+  'notifications',
+  'menu'
+]
+```
+
+---
+
 ## ✅ WHAT REMAINS EDITABLE
 
 ### **UI & Styling**
@@ -197,6 +289,7 @@ calculateScheduledBookingDeposit(totalPrice)
 
 Before deploying changes, verify:
 
+### **Business Logic**
 - [ ] No hard-coded business values outside `businessLogic.ts`
 - [ ] All business constants imported from central file
 - [ ] HARD LOCK comments present on critical logic
@@ -206,6 +299,26 @@ Before deploying changes, verify:
 - [ ] Bank details validation still enforced server-side
 - [ ] Deposit percentage matches constant everywhere
 - [ ] Notification timing matches constant
+
+### **Routing & Navigation**
+- [ ] No route paths changed in `therapistRoutes.tsx`
+- [ ] No route names modified (breaks deep links)
+- [ ] Component mappings unchanged
+- [ ] Menu item order matches `THERAPIST_MENU_ITEMS` constant
+- [ ] No conditional redirects added to layout mounting
+
+### **Layout Stability**
+- [ ] TherapistLayout has no conditional redirects on mount
+- [ ] TherapistDashboard initialization sequence unchanged
+- [ ] No flashing observed during page navigation
+- [ ] No remounting observed when clicking menu items
+- [ ] Push notification prompt still uses 5-second delay
+
+### **Integration Testing**
+- [ ] Deep links from notifications still work
+- [ ] Menu navigation flows correctly
+- [ ] No redirect loops observed
+- [ ] Page remounting prevented
 - [ ] Main site and user flows untouched
 
 ---

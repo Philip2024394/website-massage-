@@ -1,4 +1,24 @@
 /**
+ * 🔒 HARD LOCK: THERAPIST ROUTING CONFIGURATION
+ * 
+ * LOCKED ELEMENTS (require business approval to modify):
+ * - Route paths (/therapist, /therapist/bookings, etc.)
+ * - Route names (therapist-dashboard, therapist-bookings, etc.) 
+ * - Component mappings (which component serves which route)
+ * - requiresAuth flags (all therapist routes require authentication)
+ * - Route structure and organization
+ * 
+ * EDITABLE ELEMENTS (safe to modify):
+ * - Component implementations (UI, styling, layouts)
+ * - Lazy loading strategy (performance optimization)
+ * - Comments and documentation
+ * 
+ * ⚠️ CRITICAL: Changing route paths or names will break:
+ * - Deep links from notifications
+ * - Saved bookmarks
+ * - Navigation from TherapistLayout menu
+ * - External integrations
+ * 
  * Therapist Dashboard Routes Configuration
  * All therapist-related pages and features
  * 

@@ -1,3 +1,30 @@
+/**
+ * ============================================================================
+ * 🔒 HARD LOCK: THERAPIST LAYOUT - STABLE MOUNTING & NAVIGATION
+ * ============================================================================
+ * Last Locked: 2026-01-28
+ * 
+ * LOCKED LOGIC:
+ * - Layout structure and mounting behavior
+ * - Navigation routing patterns
+ * - Sidebar menu structure and item order
+ * - No conditional redirects on mount
+ * - Stable component lifecycle (no flashing/remounting)
+ * 
+ * EDITABLE:
+ * - Menu labels and translations
+ * - Icon components
+ * - Styling, colors, animations
+ * - UI elements (badges, tooltips)
+ * 
+ * DO NOT MODIFY:
+ * - useEffect hooks (push notification only - STABLE)
+ * - Navigation handler logic
+ * - Component mounting sequence
+ * - Menu item IDs and routing paths
+ * 
+ * ============================================================================
+ */
 import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, User, Calendar, DollarSign, 
@@ -45,7 +72,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { threshold: 50, direction: 'horizontal' }
   );
   
-  // Request push notification permission on mount
+  // ============================================================================
+  // 🔒 HARD LOCK: PUSH NOTIFICATION PERMISSION REQUEST
+  // ============================================================================
+  // Business Rule: Request push notification permission after 5 seconds
+  // Impact: Enables booking notifications for therapists
+  // DO NOT MODIFY - Stable mounting behavior, no redirects
+  // ============================================================================
   useEffect(() => {
     if (pushNotificationsService.isSupported() && 
         pushNotificationsService.getPermissionStatus() === 'default') {
@@ -125,6 +158,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'legal', label: labels.legal, icon: FileText, color: 'text-orange-500' },
   ];
 
+  // ============================================================================
+  // 🔒 HARD LOCK: NAVIGATION HANDLER
+  // ============================================================================
+  // Business Rule: Navigate to page and close sidebar
+  // Impact: Controls therapist dashboard navigation flow
+  // DO NOT MODIFY - Stable routing pattern, prevents redirect loops
+  // ============================================================================
   const handleNavigate = (pageId: string) => {
     onNavigate(pageId);
     setIsSidebarOpen(false);

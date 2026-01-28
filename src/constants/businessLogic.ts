@@ -136,6 +136,55 @@ export const BOOKING_NOTIFICATION_SOUND_ENABLED = true;
  */
 export const SHOW_BOOKING_ACCEPTANCE_TIMER = true;
 
+/**
+ * 🔔 PUSH NOTIFICATION REQUEST DELAY (milliseconds)
+ * Delay before requesting push notification permission on therapist dashboard
+ * Used in: TherapistLayout.tsx
+ */
+export const PUSH_NOTIFICATION_REQUEST_DELAY_MS = 5000;
+
+// =============================================================================
+// 🔒 LAYOUT & NAVIGATION CONSTANTS - HARD LOCKED
+// =============================================================================
+
+/**
+ * 🧭 THERAPIST MENU ITEMS
+ * Order and IDs of menu items in therapist sidebar
+ * DO NOT MODIFY - Menu item order is business-critical for UX
+ * Labels and icons are editable, but IDs must remain stable
+ */
+export const THERAPIST_MENU_ITEMS = [
+  'therapist-how-it-works',
+  'status',
+  'dashboard',
+  'bookings',
+  'more-customers',
+  'send-discount',
+  'earnings',
+  'payment',
+  'payment-status',
+  'commission-payment',
+  'custom-menu',
+  'analytics',
+  'hotel-villa-safe-pass',
+  'notifications',
+  'legal',
+] as const;
+
+/**
+ * 🚫 NO CONDITIONAL REDIRECTS ON MOUNT
+ * Therapist pages should NEVER redirect conditionally on mount
+ * This prevents flashing, remounting, and redirect loops
+ */
+export const ALLOW_CONDITIONAL_REDIRECTS_ON_MOUNT = false;
+
+/**
+ * 🔄 STABLE COMPONENT MOUNTING
+ * useEffect dependencies should be stable and not cause remounts
+ * Only allow data loading and initialization effects
+ */
+export const STABLE_MOUNTING_REQUIRED = true;
+
 // =============================================================================
 // 🔒 EARNINGS TRACKING - HARD LOCKED
 // =============================================================================

@@ -1,3 +1,30 @@
+/**
+ * ============================================================================
+ * 🔒 HARD LOCK: THERAPIST DASHBOARD - STABLE PROFILE MANAGEMENT
+ * ============================================================================
+ * Last Locked: 2026-01-28
+ * 
+ * LOCKED LOGIC:
+ * - Form initialization and data loading sequence
+ * - Location normalization (extractLocationId, normalizeLocationForSave)
+ * - Profile save validation
+ * - No conditional redirects on mount
+ * - Stable useEffect dependencies
+ * 
+ * EDITABLE:
+ * - Form UI, layout, styling
+ * - Labels, placeholders, help text
+ * - Button text and icons
+ * - Form validation messages (non-business-rule)
+ * 
+ * DO NOT MODIFY:
+ * - useEffect hooks (data loading, localStorage, form reset)
+ * - Location extraction logic
+ * - Coordinates parsing
+ * - Profile data initialization
+ * 
+ * ============================================================================
+ */
 import React, { useState, useEffect } from 'react';
 import { FloatingChatWindow } from '../../chat';
 import { MASSAGE_TYPES_CATEGORIZED } from '../../constants';
@@ -166,7 +193,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     { code: 'es', label: '🇪🇸 Spanish' },
   ];
 
-  // Refresh therapist data from database when component mounts
+  // ============================================================================
+  // 🔒 HARD LOCK: THERAPIST DATA INITIALIZATION ON MOUNT
+  // ============================================================================
+  // Business Rule: Load latest therapist data from database on mount
+  // Impact: Ensures form fields display current database values
+  // DO NOT MODIFY - Stable mounting behavior, no redirects or conditionals
+  // Dependencies: [therapist?.$id, therapist?.id] - STABLE
+  // ============================================================================
   useEffect(() => {
     const loadLatestTherapistData = async () => {
       if (!therapist?.$id && !therapist?.id) return;
