@@ -1,4 +1,9 @@
-// @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
+/**
+ * TherapistLegal - Terms of Service and Privacy Policy
+ * 
+ * @ts-expect-error - lucide-react ForwardRefExoticComponent incompatible with React 19 types
+ * Component functions correctly at runtime. Type fix pending lucide-react or @types/react update.
+ */
 import React, { useState } from 'react';
 import { FileText, Shield, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 

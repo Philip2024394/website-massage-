@@ -559,7 +559,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
                       <AlertCircle className="w-4 h-4 text-red-500" />
                       <span className="font-medium text-red-700">Traffic Rendah</span>
                     </div>
-                    <p className="text-xs text-red-600 mb-3">{'<'} 50 views per minggu</p>
+                    <p className="text-xs text-red-600 mb-3">&lt; 50 views per minggu</p>
                     <div className="space-y-2 text-xs text-red-700">
                       <p>• Turunkan harga 10-20%</p>
                       <p>• Aktifkan promosi diskon</p>
@@ -587,7 +587,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
                       <TrendingUp className="w-4 h-4 text-green-500" />
                       <span className="font-medium text-green-700">Traffic Tinggi</span>
                     </div>
-                    <p className="text-xs text-green-600 mb-3">{'>'} 150 views per minggu</p>
+                    <p className="text-xs text-green-600 mb-3">&gt; 150 views per minggu</p>
                     <div className="space-y-2 text-xs text-green-700">
                       <p>• Naikkan harga 5-15%</p>
                       <p>• Tambahkan menu premium</p>

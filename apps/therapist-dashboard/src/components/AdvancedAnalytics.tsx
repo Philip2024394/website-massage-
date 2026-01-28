@@ -1,4 +1,9 @@
-// @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
+/**
+ * AdvancedAnalytics - Elite Business Intelligence Dashboard
+ * 
+ * @ts-expect-error - lucide-react ForwardRefExoticComponent incompatible with React 19 types
+ * Component functions correctly at runtime. Type fix pending lucide-react or @types/react update.
+ */
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
