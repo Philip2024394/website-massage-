@@ -238,7 +238,7 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }
       // Reload page to show unlocked features
       setTimeout(async () => {
         try {
-          const { softRecover } = await import('../utils/softNavigation');
+          const { softRecover } = await import('../../utils/softNavigation');
           softRecover();
         } catch {
           window.location.reload();
@@ -444,7 +444,7 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }
                     premiumDeclineReason: null
                   }).then(async () => {
                     try {
-                      const { softRecover } = await import('../utils/softNavigation');
+                      const { softRecover } = await import('../../utils/softNavigation');
                       softRecover();
                     } catch {
                       window.location.reload();
