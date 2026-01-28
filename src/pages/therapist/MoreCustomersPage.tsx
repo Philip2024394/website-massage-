@@ -12,6 +12,8 @@ import {
   Timer, Activity, BarChart3, PieChart, ThumbsUp, BookOpen, Lightbulb, Crown
 } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { moreCustomersHelp } from './constants/helpContent';
 
 interface MoreCustomersPageProps {
   therapist: any;

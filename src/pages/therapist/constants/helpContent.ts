@@ -17,6 +17,24 @@ export interface PageHelpContent {
 }
 
 /**
+ * More Customers Help Content
+ */
+export const moreCustomersHelp: PageHelpContent = {
+  profileOptimization: {
+    title: 'Optimasi Profil untuk Lebih Banyak Pelanggan',
+    content: 'Pelajari strategi lengkap untuk meningkatkan visibilitas profil Anda, menarik lebih banyak booking, dan memaksimalkan pendapatan. Profil yang dioptimasi dapat meningkatkan booking hingga 3x lipat.',
+    benefits: [
+      'Foto profil profesional meningkatkan trust',
+      'Deskripsi menarik menarik perhatian pelanggan',
+      'Menu harga jelas meningkatkan konversi',
+      'Rating tinggi membangun kredibilitas',
+      'Respons cepat meningkatkan kepuasan',
+      'Update status real-time untuk availability'
+    ]
+  }
+};
+
+/**
  * Package Terms Help Content
  */
 export const packageTermsHelp: PageHelpContent = {
