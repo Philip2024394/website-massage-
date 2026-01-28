@@ -297,7 +297,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                     phone: doc.phone || doc.whatsapp || '',
                     verified: doc.verfied || false,
                     rating: 0,
-                    imageUrl: doc.imageUrl || 'https://ik.imagekit.io/7grri5v7d/hotel%20villa.png',
+                    imageUrl: doc.imageUrl || undefined,
                     specialties: doc.amenities ? doc.amenities.split(',') : [],
                     addedDate: doc.addeddate || doc.$createdAt || new Date().toISOString(),
                     websitePreview: doc.websitePreview || ''
@@ -528,7 +528,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                     {filteredPartners.map((partner) => (
                         <div key={partner.id} className="relative mb-12">
                             {/* Join Indastreet and Member Since - Same line level */}
-                            <div className="absolute -top-6 left-0 right-0 flex justify-between items-center">
+                            <div className="absolute -top-6 left-0 right-0 flex justify-between items-center mb-4">
                                 <button
                                     onClick={() => onNavigate?.('join-indastreet-partners')}
                                     className="text-xs text-orange-600 hover:text-orange-700 font-semibold underline transition-colors"
@@ -544,7 +544,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                 </p>
                             </div>
                             
-                            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative">
+                            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative mt-2">
                             {/* Main Image Banner */}
                             <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
                                 <img 
