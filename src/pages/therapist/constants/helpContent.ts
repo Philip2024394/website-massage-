@@ -596,6 +596,40 @@ export const paymentInfoHelp = {
   }
 };
 
+// Legal Help (for terms and conditions page)
+export const legalHelp: PageHelpContent = {
+  terms: {
+    title: 'Syarat dan Ketentuan',
+    content: 'Tinjau syarat dan ketentuan platform IndaStreet untuk memahami hak dan kewajiban Anda sebagai terapis.',
+    benefits: [
+      'Pahami aturan platform',
+      'Ketahui hak dan kewajiban Anda',
+      'Hindari pelanggaran',
+      'Operasional yang aman dan legal'
+    ]
+  },
+  privacy: {
+    title: 'Kebijakan Privasi',
+    content: 'Pelajari bagaimana data pribadi Anda dilindungi dan digunakan oleh platform.',
+    benefits: [
+      'Data Anda terlindungi',
+      'Transparansi penggunaan data',
+      'Keamanan informasi pribadi',
+      'Kontrol atas privasi Anda'
+    ]
+  },
+  commission: {
+    title: 'Kebijakan Komisi',
+    content: 'Komisi platform 30% dari setiap booking membantu pemeliharaan sistem dan dukungan pelanggan.',
+    benefits: [
+      '70% pendapatan untuk Anda',
+      'Platform maintenance',
+      'Customer support 24/7',
+      'Marketing gratis'
+    ]
+  }
+};
+
 // Dashboard Help (for profile editing page)
 export const dashboardHelp: PageHelpContent = {
   overview: {
