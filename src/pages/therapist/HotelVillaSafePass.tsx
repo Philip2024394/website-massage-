@@ -6,9 +6,9 @@ import {
   DollarSign, Clock, X, Download
 } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
-import { therapistService } from '@lib/appwriteService';
+import { therapistService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
-import { useTranslations } from '@lib/useTranslations';
+import { useTranslations } from '../../lib/useTranslations';
 import { logger } from '../../services/enterpriseLogger';
 import type { Therapist } from '../../types';
 import HelpTooltip from '../../components/therapist/HelpTooltip';

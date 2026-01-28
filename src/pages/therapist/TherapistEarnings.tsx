@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3, X, XCircle, DollarSign } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
-import { analyticsService } from '@lib/services/analyticsService';
-import { paymentService, bookingService } from '@lib/appwriteService';
+import { analyticsService } from '../../lib/services/analyticsService';
+import { paymentService, bookingService } from '../../lib/appwriteService';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { earningsHelp } from '../constants/helpContent';
 

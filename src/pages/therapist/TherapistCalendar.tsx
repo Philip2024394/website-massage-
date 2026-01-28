@@ -56,7 +56,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
     setLoading(true);
     try {
       // Fetch real calendar bookings from Appwrite
-      const { bookingService } = await import('@lib/appwriteService');
+      const { bookingService } = await import('../../lib/appwriteService');
       
       // Get confirmed bookings for this therapist's calendar
       const realBookings = await bookingService.getProviderBookings(therapist.$id);

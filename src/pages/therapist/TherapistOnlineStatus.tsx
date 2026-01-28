@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
-import { therapistService } from '@lib/appwriteService';
+import { therapistService } from '../../lib/appwriteService';
 import { AvailabilityStatus } from "../../types";
 import { devLog, devWarn } from "../../utils/devMode";
 // Temporarily comment out potentially problematic imports
