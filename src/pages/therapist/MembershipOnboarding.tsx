@@ -1,7 +1,9 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { Crown, Check, AlertCircle, FileText, DollarSign, Calendar, Zap, TrendingUp } from 'lucide-react';
-import { showErrorToast } from '../lib/toastUtils';
+import { showErrorToast } from '../../lib/toastUtils';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { membershipOnboardingHelp } from './constants/helpContent';
 
 interface MembershipOnboardingProps {
   therapist: any;
@@ -131,11 +133,14 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
                 <p className="text-[11px] text-gray-500">Choose your plan to get started</p>
               </div>
             </div>
-            <div className="hidden sm:block">
-              <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs font-semibold">
-                <AlertCircle className="w-4 h-4" />
-                Required
-              </span>
+            <div className="flex items-center gap-2">
+              <HelpTooltip {...membershipOnboardingHelp.setup} position="left" size="md" />
+              <div className="hidden sm:block">
+                <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs font-semibold">
+                  <AlertCircle className="w-4 h-4" />
+                  Required
+                </span>
+              </div>
             </div>
           </div>
         </header>

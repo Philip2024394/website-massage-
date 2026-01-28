@@ -5,7 +5,7 @@ import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, F
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import { BookingListSkeleton } from '../../components/LoadingSkeletons';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { myBookingsHelp } from '../constants/helpContent';
+import { myBookingsHelp } from './constants/helpContent';
 
 interface Booking {
   $id: string;

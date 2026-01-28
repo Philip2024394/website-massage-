@@ -72,7 +72,7 @@ class ScheduledBookingService {
         userId: string,
         therapistId: string,
         totalPrice: number,
-        depositPercentage: number = 50,
+        depositPercentage: number = 30,
         bookingMetadata: any
     ): Promise<ScheduledBookingDeposit> {
         try {

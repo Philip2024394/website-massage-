@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, User, Phone, Crown, Lock, ChevronLeft, ChevronRight, Bell, CheckCircle, X } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { calendarHelp } from '../constants/helpContent';
+import { calendarHelp } from './constants/helpContent';
 
 interface Booking {
   $id: string;
@@ -101,7 +101,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
       const bookingDateTime = new Date(`${booking.date}T${booking.time}`);
       const hoursUntil = (bookingDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-      // Send reminder 3 hours before booking
+      // Send reminder 5 hours before booking
       if (hoursUntil <= 3 && hoursUntil > 2.9) {
         sendBookingReminder(booking);
       }
@@ -114,7 +114,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
       // TODO: Send in-app notification
       // TODO: Optionally send SMS/WhatsApp reminder
       
-      console.log('🔔 Sending 3-hour reminder for booking:', booking.$id);
+      console.log('🔔 Sending 5-hour reminder for booking:', booking.$id);
       
       // Show browser notification if permission granted
       if ('Notification' in window && Notification.permission === 'granted') {

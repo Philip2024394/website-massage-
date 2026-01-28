@@ -3,10 +3,12 @@
  * 
  * Comprehensive payment system for scheduled bookings with:
  * - 30% deposit collection from customers
- * - Automatic payout to therapist/place bank accounts
  * - Payment verification & non-refundable policy
  * - Dashboard integration & notifications
- * - No-show penalty enforcement
+ * - No-show penalty tracking (policy enforcement)
+ * 
+ * NOTE: Admin approval required for deposit payout to providers.
+ * Remaining balance (70%) collected manually at service completion.
  */
 
 import { databases, ID, Query, storage } from '../appwrite';
@@ -261,7 +263,7 @@ class ScheduledBookingPaymentService {
   }
   
   /**
-   * Approve deposit and trigger automatic payout to therapist
+   * Approve deposit (admin approval required for payout processing)
    */
   async approveDepositAndPayout(
     depositId: string,

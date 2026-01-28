@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { simpleChatService, simpleBookingService } from '../../../lib/appwriteService';
-import { commissionTrackingService } from '../../../lib/services/commissionTrackingService';
-import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../../../utils/piiDetector';
-import { auditLoggingService, AuditContext } from '../../../lib/appwrite/services/auditLogging.service';
-import PaymentCard from '../../../components/PaymentCard';
-import SendDiscountModal from '../../../components/SendDiscountModal';
-import { FlagIcon } from '../../../components/FlagIcon';
+import { simpleChatService, simpleBookingService } from '../../lib/appwriteService';
+import { commissionTrackingService } from '../../lib/services/commissionTrackingService';
+import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../../utils/piiDetector';
+import { auditLoggingService, AuditContext } from '../../lib/appwrite/services/auditLogging.service';
+import PaymentCard from '../../components/PaymentCard';
+import SendDiscountModal from '../../components/SendDiscountModal';
+import { FlagIcon } from '../../components/FlagIcon';
 
 interface Message {
     $id: string;

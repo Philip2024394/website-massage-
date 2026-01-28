@@ -29,7 +29,7 @@ const ScheduledBookingDepositPopup: React.FC<ScheduledBookingDepositPopupProps> 
     onClose,
     onConfirmDeposit,
     bookingDetails,
-    depositPercentage = 50,
+    depositPercentage = 30,
     className = ''
 }) => {
     const [step, setStep] = useState<'terms' | 'payment' | 'confirmation'>('terms');

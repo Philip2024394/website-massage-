@@ -5,6 +5,8 @@ import { therapistMenusService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
 import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2, Clock } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { menuHelp } from './constants/helpContent';
 
 interface MenuService {
   id: string;
@@ -262,14 +264,17 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
 
           {/* Comprehensive Help Section */}
           <div className="bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-6 mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <MenuIcon className="w-5 h-5 text-white" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                  <MenuIcon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-orange-900 text-lg">Panduan Lengkap Menu Harga</h3>
+                  <p className="text-sm text-orange-700">Cara menggunakan sistem menu pricing</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-orange-900 text-lg">Panduan Lengkap Menu Harga</h3>
-                <p className="text-sm text-orange-700">Cara menggunakan sistem menu pricing</p>
-              </div>
+              <HelpTooltip {...menuHelp.overview} position="left" size="md" />
             </div>
 
             <div className="space-y-4">

@@ -508,7 +508,7 @@ export interface Agent {
     activeTherapists?: number; // Active therapist count
     password?: string; // Password (managed by Auth)
     whatsappNumber?: string; // WhatsApp number
-    commissionRate?: number; // Commission rate (max 23)
+    commissionRate?: number; // Platform commission rate (FIXED: 30%)
     createdAt?: string; // Creation timestamp
     totalEarnings?: number; // Total earnings
     clients?: string; // Client list JSON
@@ -597,7 +597,7 @@ export interface Booking {
     reschedulingAllowed?: boolean; // True for scheduled bookings with therapist agreement
     depositRequired?: boolean; // True for scheduled bookings
     depositAmount?: number; // Amount of deposit paid
-    depositPercentage?: number; // Percentage of total price (default 50%)
+    depositPercentage?: number; // Percentage of total price (FIXED: 30%)
     depositStatus?: 'pending' | 'verified' | 'rejected';
     dateChangeAllowed?: boolean; // True for scheduled bookings with advance notice
     flexibleScheduling?: boolean; // True - can book outside calendar window

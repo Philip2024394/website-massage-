@@ -4,11 +4,11 @@ import {
   Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart3
 } from 'lucide-react';
 import BookingBadge from './BookingBadge';
-import { useUnreadBadge } from "../../../chat/hooks/useUnreadBadge";
-import { useGestureSwipe } from "../../../hooks/useGestureSwipe";
-import { FloatingUnreadBadge } from "../../../components/UnreadBadge";
-import { pushNotificationsService } from '../../../lib/pushNotificationsService';
-import PullToRefresh from '../../../components/PullToRefresh';
+import { useUnreadBadge } from "../../chat/hooks/useUnreadBadge";
+import { useGestureSwipe } from "../../hooks/useGestureSwipe";
+import { FloatingUnreadBadge } from "../../components/UnreadBadge";
+import { pushNotificationsService } from '../../lib/pushNotificationsService';
+import PullToRefresh from '../../components/PullToRefresh';
 
 interface TherapistLayoutProps {
   children: React.ReactNode;
@@ -78,6 +78,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       'more-customers': 'More Customers',
       analytics: 'Analytics',
       menu: 'Menu',
+      'how-it-works': 'How It Works',
       logout: 'Logout',
     },
     id: {
@@ -99,6 +100,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       'more-customers': 'Lebih Banyak Pelanggan',
       analytics: 'Analitik',
       menu: 'Menu',
+      'how-it-works': 'Cara Kerja',
       logout: 'Keluar',
     },
   };
@@ -106,6 +108,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   const labels = menuLabels[language] || menuLabels.id;
   
   const menuItems = [
+    { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: FileText, color: 'text-orange-500' },
     { id: 'status', label: labels.status, icon: Clock, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
     { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-orange-500' },
@@ -116,7 +119,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-orange-500' },
     { id: 'commission-payment', label: labels['commission-payment'], icon: Wallet, color: 'text-orange-500' },
     { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-500' },
-    { id: 'analytics', label: labels.analytics, icon: BarChart3, color: 'text-purple-500' },
+    { id: 'analytics', label: labels.analytics, icon: BarChart3, color: 'text-orange-500' },
     { id: 'hotel-villa-safe-pass', label: labels['hotel-villa-safe-pass'], icon: Shield, color: 'text-orange-500' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-orange-500' },
     { id: 'legal', label: labels.legal, icon: FileText, color: 'text-orange-500' },

@@ -1178,6 +1178,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(QRCodePage);
         
         case 'notifications':
+            // Redirect therapists to proper dashboard notifications page
+            if (props.user && (props.user as any).type === 'therapist') {
+                console.log('[ROUTE] notifications → redirecting therapist to therapist-notifications');
+                props.setPage('therapist-notifications');
+                return renderRoute(therapistRoutes.notifications.component, {
+                    therapist: props.user,
+                    onBack: () => props.onNavigate?.('therapist-status'),
+                    onNavigate: props.onNavigate,
+                    language: props.language
+                });
+            }
             return renderRoute(NotificationsPage);
         
         case 'chat-room':
@@ -1466,6 +1477,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'therapist-how-it-works':
+            console.log('[ROUTE RESOLVE] therapist-how-it-works → HowItWorksPage');
+            return renderRoute(therapistRoutes.howItWorks.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-status'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'calendar':
         case 'therapist-calendar':
             console.log('[ROUTE RESOLVE] therapist-calendar → TherapistCalendar');
@@ -1530,6 +1551,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(therapistRoutes.sendDiscount.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'more-customers':
+            console.log('[ROUTE RESOLVE] more-customers → MoreCustomersPage');
+            return renderRoute(therapistRoutes.moreCustomers.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });

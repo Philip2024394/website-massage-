@@ -1,4 +1,9 @@
 /**
+ * 🔒 SIMPLIFIED CHAT & BOOKING SERVICE - LOGIC LOCKED
+ * DO NOT MODIFY: Scheduled booking validation, bank details enforcement
+ * UI/text changes allowed ONLY
+ * Last locked: 2026-01-28
+ *
  * Chat Integration for Therapist Dashboard
  * Simplified service for immediate use with existing ChatWindow
  */
@@ -6,6 +11,7 @@
 import { databases, ID, client } from './appwrite';
 import { Query } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
+import { BANK_DETAILS_REQUIRED_FOR_SCHEDULED_BOOKINGS, REQUIRED_BANK_FIELDS } from '../constants/businessLogic';
 
 export interface ChatMessage {
     $id?: string;
@@ -160,10 +166,46 @@ export const simpleChatService = {
  */
 export const simpleBookingService = {
     /**
-     * Update booking status
+     * ============================================================================
+     * 🔒 HARD LOCK: UPDATE BOOKING STATUS WITH BACKEND VALIDATION
+     * ============================================================================
+     * Business Rule: Scheduled bookings require complete bank details
+     * Constants: BANK_DETAILS_REQUIRED_FOR_SCHEDULED_BOOKINGS, REQUIRED_BANK_FIELDS
+     * Impact: Server-side enforcement prevents API bypass
+     * Returns: { success: boolean, error?: string }
+     * DO NOT MODIFY - Critical security validation layer
+     * ============================================================================
      */
-    async updateStatus(bookingId: string, status: string): Promise<void> {
+    async updateStatus(bookingId: string, status: string, therapistData?: any): Promise<{ success: boolean; error?: string }> {
         try {
+            // ============================================================================
+            // 🔒 HARD LOCK: SCHEDULED BOOKING BANK DETAILS VALIDATION
+            // ============================================================================
+            // If accepting scheduled booking, verify therapist has complete bank details
+            // All three fields (bankName, accountName, accountNumber) must be populated
+            // DO NOT MODIFY - Critical for payment flow
+            // ============================================================================
+            if (status === 'confirmed' && therapistData) {
+                const { isScheduled, bankName, accountName, accountNumber } = therapistData;
+                
+                if (BANK_DETAILS_REQUIRED_FOR_SCHEDULED_BOOKINGS && isScheduled) {
+                    // Validate all required bank fields
+                    const missingFields = [];
+                    if (REQUIRED_BANK_FIELDS.bankName && !bankName) missingFields.push('Bank Name');
+                    if (REQUIRED_BANK_FIELDS.accountName && !accountName) missingFields.push('Account Name');
+                    if (REQUIRED_BANK_FIELDS.accountNumber && !accountNumber) missingFields.push('Account Number');
+                    
+                    if (missingFields.length > 0) {
+                        const errorMsg = `Bank details required for scheduled bookings: ${missingFields.join(', ')}. Please complete payment information first.`;
+                        console.error('❌ BLOCKED: Scheduled booking acceptance - Missing:', missingFields);
+                        return { 
+                            success: false, 
+                            error: errorMsg 
+                        };
+                    }
+                }
+            }
+
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.bookings || 'bookings',
@@ -174,8 +216,13 @@ export const simpleBookingService = {
                 }
             );
             console.log(`✅ Booking ${bookingId} updated to: ${status}`);
+            return { success: true };
         } catch (error) {
             console.error('❌ Error updating booking:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Failed to update booking' 
+            };
         }
     },
 

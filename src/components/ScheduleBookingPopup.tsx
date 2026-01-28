@@ -128,7 +128,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
     profilePicture,
     hotelVillaId,
     isImmediateBooking,
-    { requireDeposit: !isImmediateBooking, depositPercentage: 50 }
+    { requireDeposit: !isImmediateBooking, depositPercentage: 30 }
   );
 
   const ratingValue = typeof providerRating === 'number' && providerRating > 0 ? providerRating.toFixed(1) : null;
@@ -569,7 +569,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
             scheduledTime: pendingBookingData.formData.selectedTime?.time || '',
             location: hotelVillaName || 'Your Location'
           }}
-          depositPercentage={50}
+          depositPercentage={30}
         />
       )}
 

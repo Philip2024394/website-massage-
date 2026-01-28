@@ -11,6 +11,7 @@ import {
   Image, FileText, Phone, MapPin, Calendar, Heart, Award, Shield, Sparkles,
   Timer, Activity, BarChart3, PieChart, ThumbsUp, BookOpen, Lightbulb, Crown
 } from 'lucide-react';
+import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 
 interface MoreCustomersPageProps {
   therapist: any;
@@ -31,8 +32,23 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+      {/* Page Header */}
+      <TherapistPageHeader
+        title="Therapist Dashboard"
+        subtitle="Panduan Mendapat Lebih Banyak Pelanggan - Tips dan strategi komprehensif untuk meningkatkan booking dan pendapatan Anda"
+        onBackToStatus={onBack}
+        icon={<Users className="w-6 h-6 text-orange-600" />}
+        actions={
+          <HelpTooltip
+            {...moreCustomersHelp.profileOptimization}
+            position="left"
+            size="md"
+          />
+        }
+      />
+
+      {/* Legacy Header - Hidden but kept for layout reference */}
+      <div className="hidden bg-gradient-to-r from-orange-500 to-orange-600 text-white">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <button
             onClick={onBack}
@@ -295,11 +311,11 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>Balas pesan dalam 2 jam</span>
+                      <span>Balas pesan dalam 10 menit</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>Terima/tolak booking dalam 6 jam</span>
+                      <span>Terima/tolak booking dalam 5 menit</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -907,8 +923,8 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
                     <h4 className="font-bold text-gray-900">Customer Service</h4>
                   </div>
                   <div className="space-y-2 text-sm text-gray-700">
-                    <p>• Balas chat dalam max 2 jam</p>
-                    <p>• Konfirmasi booking dalam 6 jam</p>
+                    <p>• Balas chat dalam max 10 menit</p>
+                    <p>• Konfirmasi booking dalam 5 menit</p>
                     <p>• Kirim reminder H-1 sebelum session</p>
                     <p>• Follow up setelah treatment</p>
                     <p>• Tanyakan feedback dan rating</p>
@@ -1033,7 +1049,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white/10 rounded-lg p-4">
-              <h4 className="font-bold mb-2">Week 1-2: Foundation</h4>
+              <h4 className="font-bold mb-2">Days 1-2: Foundation</h4>
               <ul className="space-y-1 text-sm text-orange-100">
                 <li>✓ Update foto profil profesional</li>
                 <li>✓ Tulis deskripsi lengkap 200+ kata</li>
@@ -1043,7 +1059,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
             </div>
             
             <div className="bg-white/10 rounded-lg p-4">
-              <h4 className="font-bold mb-2">Week 3-4: Optimization</h4>
+              <h4 className="font-bold mb-2">Days 3-4: Optimization</h4>
               <ul className="space-y-1 text-sm text-orange-100">
                 <li>✓ Monitor traffic dan adjust pricing</li>
                 <li>✓ Setup discount strategy</li>

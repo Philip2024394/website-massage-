@@ -5,7 +5,7 @@ import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { analyticsService } from '../../lib/services/analyticsService';
 import { paymentService, bookingService } from '../../lib/appwriteService';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { earningsHelp } from '../constants/helpContent';
+import { earningsHelp } from './constants/helpContent';
 
 interface Payment {
   $id: string;

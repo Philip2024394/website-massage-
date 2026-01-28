@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, X, Calendar, Clock, MapPin, User as UserIcon } from 'lucide-react';
-import { Booking } from '../../../types';
+import { Booking } from '../../types';
 
 interface CustomerNotificationProps {
   booking: Booking;
@@ -24,7 +24,7 @@ const CustomerNotification: React.FC<CustomerNotificationProps> = ({
     audio.loop = false; // Play once for customer
     audioRef.current = audio;
 
-    // Check if we should show notification (3 hours before booking)
+    // Check if we should show notification (5 hours before booking)
     const checkNotificationTime = () => {
       const bookingTime = new Date(booking.startTime);
       const threeHoursBefore = new Date(bookingTime.getTime() - (3 * 60 * 60 * 1000));

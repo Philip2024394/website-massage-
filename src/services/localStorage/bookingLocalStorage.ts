@@ -417,16 +417,23 @@ class BookingLocalStorageService {
     return `draft_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  /**
-   * Calculate commission (30% admin, 70% provider)
-   * NOTE: This is for UI display only
-   * Backend performs authoritative calculation
-   */
+  // ============================================================================
+  // 🔒 HARD LOCK: COMMISSION CALCULATION (UI DISPLAY ONLY)
+  // ============================================================================
+  // Business Rule: 30% platform commission on all bookings (Indonesia)
+  // Constant: PLATFORM_COMMISSION_PERCENTAGE_INDONESIA = 30
+  // Impact: Determines revenue split between platform and provider
+  // NOTE: This is for UI DISPLAY ONLY - Backend performs authoritative calculation
+  // DO NOT MODIFY - Critical revenue calculation
+  // ============================================================================
   calculateCommission(totalPrice: number): {
     adminCommission: number;
     providerPayout: number;
   } {
-    const adminCommission = Math.round(totalPrice * 0.3);
+    // Use constant from businessLogic.ts
+    // Keeping inline 0.3 for now to avoid circular dependency
+    // Backend uses PLATFORM_COMMISSION_PERCENTAGE_INDONESIA from businessLogic.ts
+    const adminCommission = Math.round(totalPrice * 0.3); // 🔒 30% HARD LOCKED
     const providerPayout = totalPrice - adminCommission;
     
     return { adminCommission, providerPayout };

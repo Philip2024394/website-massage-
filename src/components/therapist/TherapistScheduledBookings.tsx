@@ -3,15 +3,17 @@
  * 
  * Enhanced component for managing scheduled bookings with:
  * - Deposit approval workflow
- * - Automatic payout to bank account
  * - 5-hour reminder notifications
  * - No-show reporting
  * - Dashboard integration
+ * 
+ * NOTE: Payout processed after admin approval.
+ * Remaining balance collected at service completion.
  */
 
 import React, { useState, useEffect } from 'react';
 import { Clock, DollarSign, Calendar, User, MapPin, Phone, CheckCircle, XCircle, AlertTriangle, Bell, CreditCard, Eye } from 'lucide-react';
-import { scheduledBookingPaymentService } from '../../../lib/services/scheduledBookingPaymentService';
+import { scheduledBookingPaymentService } from '../../lib/services/scheduledBookingPaymentService';
 
 interface ScheduledBooking {
   $id: string;

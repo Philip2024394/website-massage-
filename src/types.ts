@@ -315,12 +315,39 @@ export interface Therapist {
     accountName?: string; // Account holder name
     accountNumber?: string; // Bank account number
     
-    // KTP (Indonesian ID Card) Verification
+    // ============================================================================
+    // 🔒 HARD LOCK: KTP (INDONESIAN ID CARD) VERIFICATION - 3-STATE SYSTEM
+    // ============================================================================
+    // Business Rule: Three-state verification badge system for trust building
+    // Constants: KTP_VERIFICATION_STATES in businessLogic.ts
+    // Impact: +60% booking increase for verified profiles
+    // 
+    // STATE 1: SUBMITTED (Orange Badge)
+    //   ktpSubmitted = true, ktpVerified = false, ktpRejected = false
+    //   Display: "Menunggu Verifikasi" orange badge
+    //   Triggers: Immediately upon KTP upload
+    // 
+    // STATE 2: VERIFIED (Green Badge)
+    //   ktpSubmitted = true, ktpVerified = true, ktpRejected = false  
+    //   Display: "Terverifikasi" green badge
+    //   Triggers: Admin approval
+    // 
+    // STATE 3: REJECTED (No Badge)
+    //   ktpSubmitted = true, ktpRejected = true
+    //   Display: Hide badge, show rejection reason
+    //   Triggers: Admin rejection (can re-upload)
+    // 
+    // DO NOT MODIFY - Critical for trust & booking conversion
+    // Last locked: 2026-01-28
+    // ============================================================================
     ktpPhotoUrl?: string; // URL to uploaded KTP ID card photo
     ktpPhotoFileId?: string; // Appwrite Storage file ID for KTP photo
-    ktpVerified?: boolean; // Admin verification status
+    ktpSubmitted?: boolean; // Set to true immediately when KTP uploaded (shows orange badge)
+    ktpVerified?: boolean; // Admin approval status (upgrades orange → green badge)
+    ktpRejected?: boolean; // Admin rejection status (hides badge, shows reason)
     ktpVerifiedAt?: string; // Date when KTP was verified by admin
     ktpVerifiedBy?: string; // Admin ID who verified the KTP
+    ktpRejectionReason?: string; // Reason if admin rejected KTP
     
     // Premium membership upgrade fields
     isPremium?: boolean; // Whether therapist has premium membership
@@ -508,7 +535,7 @@ export interface Agent {
     activeTherapists?: number; // Active therapist count
     password?: string; // Password (managed by Auth)
     whatsappNumber?: string; // WhatsApp number
-    commissionRate?: number; // Commission rate (max 23)
+    commissionRate?: number; // Platform commission rate (FIXED: 30%)
     createdAt?: string; // Creation timestamp
     totalEarnings?: number; // Total earnings
     clients?: string; // Client list JSON
@@ -597,7 +624,7 @@ export interface Booking {
     reschedulingAllowed?: boolean; // True for scheduled bookings with therapist agreement
     depositRequired?: boolean; // True for scheduled bookings
     depositAmount?: number; // Amount of deposit paid
-    depositPercentage?: number; // Percentage of total price (default 50%)
+    depositPercentage?: number; // Percentage of total price (FIXED: 30%)
     depositStatus?: 'pending' | 'verified' | 'rejected';
     dateChangeAllowed?: boolean; // True for scheduled bookings with advance notice
     flexibleScheduling?: boolean; // True - can book outside calendar window

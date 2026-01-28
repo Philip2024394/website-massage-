@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import ChatWindow from '../../components/therapist/ChatWindow';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { notificationsHelp } from './constants/helpContent';
 
 interface Notification {
   $id: string;
@@ -403,68 +405,57 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Enhanced Dashboard Header with Account Health */}
-      <div className="max-w-7xl mx-auto px-4 pt-6 pb-4">
-        <div className="bg-gradient-to-r from-white to-orange-50 rounded-xl border border-gray-200 p-6 mb-6 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Bell className="w-6 h-6 text-white" />
+      {/* Page Header */}
+      <TherapistPageHeader
+        title="Notifications"
+        subtitle="Pantau kesehatan akun, booking, dan performa bisnis Anda"
+        onBackToStatus={onBack}
+        icon={<Bell className="w-6 h-6 text-orange-600" />}
+        actions={
+          <div className="flex items-center gap-3">
+            <HelpTooltip {...notificationsHelp.overview} position="left" size="md" />
+            {/* Unread Count Badge */}
+            {unreadCount > 0 && (
+              <div className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full animate-pulse">
+                {unreadCount > 99 ? '99+' : unreadCount} unread
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  Pusat Notifikasi
-                  {unreadCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">Pantau kesehatan akun, booking, dan performa bisnis Anda</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Account Health Score */}
-              <div className="bg-white rounded-lg px-4 py-2 shadow-md border">
-                <div className="flex items-center gap-2">
-                  <Shield className={`w-4 h-4 ${
-                    accountHealth.score >= 90 ? 'text-green-500' :
-                    accountHealth.score >= 70 ? 'text-yellow-500' : 'text-red-500'
-                  }`} />
-                  <span className="text-sm font-semibold text-gray-700">Kesehatan: {accountHealth.score}%</span>
-                </div>
-              </div>
-              {/* Online Time */}
-              <div className="bg-white rounded-lg px-4 py-2 shadow-md border">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm font-semibold text-gray-700">{accountHealth.onlineHoursThisMonth.toFixed(1)}j</span>
-                  <span className="text-xs text-gray-500">bulan ini</span>
-                </div>
-              </div>
+            )}
+            {/* Online Time */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-700">{accountHealth.onlineHoursThisMonth.toFixed(1)}h</span>
+              <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
             </div>
           </div>
-          
-          {/* Critical Alerts Banner */}
-          {notifications.filter(n => n.priority === 'critical' && !n.read).length > 0 && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-lg">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600" />
-                <div>
-                  <h4 className="text-sm font-bold text-red-800">⚠️ Perhatian Segera Diperlukan!</h4>
-                  <p className="text-xs text-red-700 mt-1">
-                    {notifications.filter(n => n.priority === 'critical' && !n.read).length} masalah kritis yang memerlukan tindakan segera
-                  </p>
-                </div>
-                <button 
-                  onClick={() => setFilter('critical')}
-                  className="ml-auto px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Lihat Sekarang
-                </button>
+        }
+      />
+
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Account Health Score Card */}
+        <div className="bg-gradient-to-r from-white to-orange-50 rounded-xl border border-gray-200 p-6 mb-6 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Shield className={`w-6 h-6 ${
+                  accountHealth.score >= 90 ? 'text-white' :
+                  accountHealth.score >= 70 ? 'text-white' : 'text-white'
+                }`} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Account Health Score</h3>
+                <p className="text-sm text-gray-600">Overall performance rating</p>
               </div>
             </div>
-          )}
+            <div className="text-right">
+              <p className="text-3xl font-bold text-gray-900">{accountHealth.score}%</p>
+              <p className={`text-sm font-semibold ${
+                accountHealth.score >= 90 ? 'text-green-600' :
+                accountHealth.score >= 70 ? 'text-yellow-600' : 'text-red-600'
+              }`}>
+                {accountHealth.score >= 90 ? 'Excellent' : accountHealth.score >= 70 ? 'Good' : 'Needs Attention'}
+              </p>
+            </div>
+          </div>
           
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -474,7 +465,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                 <span className="text-xs text-gray-600">Traffic</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.trafficViews}</p>
-              <p className="text-xs text-green-600">+{accountHealth.trafficIncrease}% minggu ini</p>
+              <p className="text-xs text-green-600">+{accountHealth.trafficIncrease}% this week</p>
             </div>
             <div className="bg-white rounded-lg p-3 border shadow-sm">
               <div className="flex items-center gap-2 mb-1">
@@ -482,15 +473,15 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                 <span className="text-xs text-gray-600">Rating</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.averageRating}</p>
-              <p className="text-xs text-gray-600">dari {accountHealth.monthlyBookings} booking</p>
+              <p className="text-xs text-gray-600">from {accountHealth.monthlyBookings} bookings</p>
             </div>
             <div className="bg-white rounded-lg p-3 border shadow-sm">
               <div className="flex items-center gap-2 mb-1">
                 <Target className="w-4 h-4 text-purple-500" />
-                <span className="text-xs text-gray-600">Profil</span>
+                <span className="text-xs text-gray-600">Profile</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.profileCompleteness}%</p>
-              <p className="text-xs text-gray-600">lengkap</p>
+              <p className="text-xs text-gray-600">complete</p>
             </div>
             <div className="bg-white rounded-lg p-3 border shadow-sm">
               <div className="flex items-center gap-2 mb-1">
@@ -501,42 +492,60 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
               <p className="text-xs text-gray-600">rate</p>
             </div>
           </div>
-          
-          {/* Info Box - What appears here */}
-          <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-4 mb-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-orange-600" />
+        </div>
+        
+        {/* Critical Alerts Banner */}
+        {notifications.filter(n => n.priority === 'critical' && !n.read).length > 0 && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              <div>
+                <h4 className="text-sm font-bold text-red-800">⚠️ Immediate Attention Required!</h4>
+                <p className="text-xs text-red-700 mt-1">
+                  {notifications.filter(n => n.priority === 'critical' && !n.read).length} critical issues need immediate action
+                </p>
               </div>
-              <div className="flex-1">
-                <h4 className="text-sm font-bold text-gray-900 mb-2">Yang Akan Muncul di Halaman Ini:</h4>
-                <ul className="space-y-1.5 text-xs text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <span><strong>Booking Baru:</strong> Notifikasi saat pelanggan membuat booking dengan Anda</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <MessageCircle className="w-3.5 h-3.5 text-purple-500 mt-0.5 flex-shrink-0" />
-                    <span><strong>Pesan Pelanggan:</strong> Chat dari pelanggan tentang booking mereka</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Clock className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span><strong>Reminder:</strong> Pengingat 3 jam sebelum sesi dimulai</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span><strong>Pembayaran:</strong> Konfirmasi pembayaran dari pelanggan</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <AlertCircle className="w-3.5 h-3.5 text-orange-500 mt-0.5 flex-shrink-0" />
-                    <span><strong>Sistem:</strong> Update penting dari admin dan sistem</span>
-                  </li>
-                </ul>
-              </div>
+              <button 
+                onClick={() => setFilter('critical')}
+                className="ml-auto px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors"
+              >
+                View Now
+              </button>
             </div>
           </div>
+        )}
+        
+        {/* Notifications Guide */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+          <div>
+            <h4 className="text-sm font-bold text-gray-900 mb-2">Yang Akan Muncul di Halaman Ini:</h4>
+            <ul className="space-y-1.5 text-xs text-gray-700">
+              <li className="flex items-start gap-2">
+                <Calendar className="w-3.5 h-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
+                <span><strong>Booking Baru:</strong> Notifikasi saat pelanggan membuat booking dengan Anda</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <MessageCircle className="w-3.5 h-3.5 text-purple-500 mt-0.5 flex-shrink-0" />
+                <span><strong>Pesan Pelanggan:</strong> Chat dari pelanggan tentang booking mereka</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Clock className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
+                <span><strong>Reminder:</strong> Pengingat 3 jam sebelum sesi dimulai</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                <span><strong>Pembayaran:</strong> Konfirmasi pembayaran dari pelanggan</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <AlertCircle className="w-3.5 h-3.5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <span><strong>Sistem:</strong> Update penting dari admin dan sistem</span>
+              </li>
+            </ul>
+          </div>
+        </div>
 
-          {/* Status Grid */}
+        {/* Status Grid */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
           <div className="grid grid-cols-3 gap-3">
             <button
               onClick={() => console.log('Status change: available')}
@@ -601,44 +610,17 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
         </div>
       </div>
       
-      {/* Minimalistic Header */}
-      <TherapistPageHeader
-        title=""
-        subtitle={unreadCount > 0 ? `${unreadCount} belum dibaca` : 'Semua sudah dibaca'}
-        onBackToStatus={onBack}
-        icon={
-          <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center relative">
-            <Bell className="w-5 h-5 text-white" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </div>
-        }
-        actions={
-          unreadCount > 0 && (
-            <button 
-              onClick={handleMarkAllAsRead}
-              className="text-xs sm:text-sm text-orange-600 hover:text-orange-700 font-medium px-2 py-1 hover:bg-orange-50 rounded-lg transition-colors"
-            >
-              Tandai Semua Dibaca
-            </button>
-          )
-        }
-      />
-
       {/* Filter Buttons */}
       <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex gap-2 horizontal-scroll-safe pb-1">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {[
-              { value: 'all', label: 'Semua', count: notifications.length, color: 'gray', icon: Bell },
-              { value: 'critical', label: '🚨 Kritis', count: notifications.filter(n => n.priority === 'critical').length, color: 'red', icon: AlertCircle },
-              { value: 'unread', label: 'Belum Dibaca', count: unreadCount, color: 'orange', icon: Flame },
-              { value: 'booking', label: 'Booking', count: notifications.filter(n => ['booking', 'missed_booking', 'reminder'].includes(n.type)).length, color: 'blue', icon: Calendar },
-              { value: 'message', label: 'Pesan', count: notifications.filter(n => n.type === 'message').length, color: 'purple', icon: MessageCircle },
-              { value: 'system', label: 'Bisnis', count: notifications.filter(n => ['system', 'account_health', 'traffic', 'profile_incomplete', 'online_time', 'overdue_payment'].includes(n.type)).length, color: 'green', icon: TrendingUp }
+              { value: 'all', label: 'All', count: notifications.length, color: 'gray', icon: Bell },
+              { value: 'critical', label: 'Critical', count: notifications.filter(n => n.priority === 'critical').length, color: 'red', icon: AlertCircle },
+              { value: 'unread', label: 'Unread', count: unreadCount, color: 'orange', icon: Flame },
+              { value: 'booking', label: 'Bookings', count: notifications.filter(n => ['booking', 'missed_booking', 'reminder'].includes(n.type)).length, color: 'blue', icon: Calendar },
+              { value: 'message', label: 'Messages', count: notifications.filter(n => n.type === 'message').length, color: 'purple', icon: MessageCircle },
+              { value: 'system', label: 'Business', count: notifications.filter(n => ['system', 'account_health', 'traffic', 'profile_incomplete', 'online_time', 'overdue_payment'].includes(n.type)).length, color: 'green', icon: TrendingUp }
             ].map(f => {
               const IconComponent = f.icon;
               const isActive = filter === f.value;
@@ -648,23 +630,39 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                 <button
                   key={f.value}
                   onClick={() => setFilter(f.value as any)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all shadow-sm ${
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-medium whitespace-nowrap transition-all shadow-sm ${
                     isActive
-                      ? `bg-${f.color}-500 text-white shadow-md transform scale-105`
-                      : `bg-white text-gray-700 border border-gray-200 hover:bg-${f.color}-50 hover:border-${f.color}-200`
+                      ? f.value === 'all' ? 'bg-gray-500 text-white shadow-md' :
+                        f.value === 'critical' ? 'bg-red-500 text-white shadow-md' :
+                        f.value === 'unread' ? 'bg-orange-500 text-white shadow-md' :
+                        f.value === 'booking' ? 'bg-blue-500 text-white shadow-md' :
+                        f.value === 'message' ? 'bg-purple-500 text-white shadow-md' :
+                        'bg-green-500 text-white shadow-md'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
                   } ${
                     isUrgent ? 'animate-pulse ring-2 ring-red-400' : ''
                   }`}
                 >
-                  <IconComponent className={`w-3.5 h-3.5 ${
-                    isActive ? 'text-white' : `text-${f.color}-500`
+                  <IconComponent className={`w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0 ${
+                    isActive ? 'text-white' : 
+                      f.value === 'all' ? 'text-gray-500' :
+                      f.value === 'critical' ? 'text-red-500' :
+                      f.value === 'unread' ? 'text-orange-500' :
+                      f.value === 'booking' ? 'text-blue-500' :
+                      f.value === 'message' ? 'text-purple-500' :
+                      'text-green-500'
                   }`} />
-                  {f.label}
-                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                  <span className="hidden xs:inline sm:inline">{f.label}</span>
+                  <span className={`px-1 sm:px-1.5 py-0.5 rounded-full text-[9px] sm:text-xs font-bold ${
                     isActive 
                       ? 'bg-white/20 text-white'
                       : f.count > 0 
-                        ? `bg-${f.color}-100 text-${f.color}-700`
+                        ? f.value === 'critical' ? 'bg-red-100 text-red-700' :
+                          f.value === 'unread' ? 'bg-orange-100 text-orange-700' :
+                          f.value === 'booking' ? 'bg-blue-100 text-blue-700' :
+                          f.value === 'message' ? 'bg-purple-100 text-purple-700' :
+                          f.value === 'system' ? 'bg-green-100 text-green-700' :
+                          'bg-gray-100 text-gray-700'
                         : 'bg-gray-100 text-gray-500'
                   }`}>
                     {f.count}

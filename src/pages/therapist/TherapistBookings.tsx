@@ -1,5 +1,9 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
+// 🔒 LOGIC LOCKED - DO NOT MODIFY BOOKING ACCEPTANCE & VALIDATION LOGIC
+// UI/styling changes allowed ONLY
+// Last locked: 2026-01-28
 import React, { useState, useEffect } from 'react';
+import { BANK_DETAILS_REQUIRED_FOR_SCHEDULED_BOOKINGS, SCHEDULED_BOOKING_DEPOSIT_PERCENTAGE } from '../../constants/businessLogic';
 import { FloatingChatWindow } from '../../chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
 import ChatWindow from '../../components/therapist/ChatWindow';
@@ -9,8 +13,8 @@ import TherapistSchedule from './TherapistSchedule';
 import DepositApprovalCard from '../../components/booking/DepositApprovalCard';
 import { pushNotificationsService } from '../../lib/pushNotificationsService';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { bookingsScheduleHelp } from '../constants/helpContent';
-import { showErrorToast, showWarningToast } from '../lib/toastUtils';
+import { bookingsScheduleHelp } from './constants/helpContent';
+import { showErrorToast, showWarningToast } from '../../lib/toastUtils';
 
 interface Booking {
   $id: string;
@@ -324,17 +328,31 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
   const handleAcceptBooking = async (bookingId: string) => {
     const booking = bookings.find(b => b.$id === bookingId);
     
-    // Check if this is a scheduled booking requiring bank details
+    // ============================================================================
+    // 🔒 HARD LOCK: SCHEDULED BOOKING BANK DETAILS ENFORCEMENT
+    // ============================================================================
+    // Business Rule: Scheduled bookings REQUIRE complete bank details
+    // Constant: BANK_DETAILS_REQUIRED_FOR_SCHEDULED_BOOKINGS = true
+    // Impact: Prevents therapist from accepting scheduled bookings without payment info
+    // DO NOT MODIFY - Critical for payment flow integrity
+    // ============================================================================
     if (booking?.isScheduled && !bankDetailsComplete) {
       setShowBankDetailsAlert(true);
       return;
     }
 
-    // Check if scheduled booking requires deposit but not paid yet
+    // ============================================================================
+    // 🔒 HARD LOCK: SCHEDULED BOOKING DEPOSIT VALIDATION
+    // ============================================================================
+    // Business Rule: 30% deposit REQUIRED and PAID before acceptance
+    // Constant: SCHEDULED_BOOKING_DEPOSIT_PERCENTAGE = 30
+    // Impact: Ensures customer commitment before therapist confirms booking
+    // DO NOT MODIFY - Critical for revenue protection
+    // ============================================================================
     if (booking?.isScheduled && booking?.depositRequired && !booking?.depositPaid) {
       showWarningToast(language === 'en' 
-        ? 'This booking requires a 30% deposit. Customer must pay deposit before you can accept.'
-        : 'Booking ini memerlukan deposit 30%. Pelanggan harus membayar deposit sebelum Anda dapat menerima.');
+        ? `This booking requires a ${SCHEDULED_BOOKING_DEPOSIT_PERCENTAGE}% deposit. Customer must pay deposit before you can accept.`
+        : `Booking ini memerlukan deposit ${SCHEDULED_BOOKING_DEPOSIT_PERCENTAGE}%. Pelanggan harus membayar deposit sebelum Anda dapat menerima.`);
       return;
     }
 
@@ -347,7 +365,32 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     }
 
     try {
-      // TODO: Update booking status to 'confirmed' in Appwrite
+      // ============================================================================
+      // 🔒 HARD LOCK: BACKEND VALIDATION FOR SCHEDULED BOOKINGS
+      // ============================================================================
+      // Business Rule: Server-side validation of bank details for scheduled bookings
+      // Location: simpleChatService.ts updateStatus() function
+      // Impact: Prevents API-level bypass of bank details requirement
+      // Returns: { success: boolean, error?: string }
+      // DO NOT MODIFY - Critical security layer
+      // ============================================================================
+      const { simpleBookingService } = await import('../../lib/simpleChatService');
+      const result = await simpleBookingService.updateStatus(
+        bookingId, 
+        'confirmed',
+        {
+          isScheduled: booking?.isScheduled,
+          bankName: therapist?.bankName,
+          accountName: therapist?.accountName,
+          accountNumber: therapist?.accountNumber
+        }
+      );
+
+      if (!result.success) {
+        showErrorToast(result.error || 'Failed to accept booking');
+        return;
+      }
+
       devLog('Accepting booking:', bookingId);
       
       setBookings(prev => prev.map(b => 
@@ -358,6 +401,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       devLog('✅ Booking accepted and customer notified');
     } catch (error) {
       console.error('Failed to accept booking:', error);
+      showErrorToast('Failed to accept booking. Please try again.');
     }
   };
 

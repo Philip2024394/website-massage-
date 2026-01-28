@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Check, Home } from 'lucide-react';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { packageTermsHelp } from './constants/helpContent';
 
 type Plan = 'pro' | 'plus';
 
@@ -106,9 +108,12 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 mb-4">
             <Check className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            {getText('title', language === 'id' ? 'Syarat & Ketentuan Keanggotaan' : 'Membership Terms & Conditions')}
-          </h2>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+              {getText('title', language === 'id' ? 'Syarat & Ketentuan Keanggotaan' : 'Membership Terms & Conditions')}
+            </h2>
+            <HelpTooltip {...packageTermsHelp.overview} position="bottom" size="md" />
+          </div>
           <p className="text-lg text-gray-600">
             {isPro 
               ? (language === 'id' ? 'Paket Pro - Sistem Komisi' : 'Pro Package - Commission System')

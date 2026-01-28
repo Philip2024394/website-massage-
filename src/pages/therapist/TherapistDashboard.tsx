@@ -17,6 +17,8 @@ import ProPlanWarnings from '../../components/therapist/ProPlanWarnings';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock } from 'lucide-react';
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { dashboardHelp } from './constants/helpContent';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -27,6 +29,7 @@ interface TherapistPortalPageProps {
   onNavigateToMembership?: () => void;
   onNavigateToNotifications?: () => void;
   onNavigateToLegal?: () => void;
+  onNavigateToHowItWorks?: () => void;
   onNavigateToCalendar?: () => void;
   onNavigateToPayment?: () => void;
   onNavigateToPaymentStatus?: () => void;
@@ -51,6 +54,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToMembership,
   onNavigateToNotifications,
   onNavigateToLegal,
+  onNavigateToHowItWorks,
   onNavigateToCalendar,
   onNavigateToMenu,
   onLogout,
@@ -576,7 +580,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       // Auto-translate profile data to both Globe
       console.log('🌐 Auto-translating profile data...');
       try {
-        const { adminTranslationService } = await import('../../lib/services/translationService');
+        const { adminTranslationService } = await import('../../lib/translationService');
         
         // Detect if the user entered data in Indonesian or English
         const sourceLanguage = description.match(/[a-zA-Z]/) ? 'en' : 'id';
@@ -873,6 +877,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         console.log('[NAV CLICK] \u2192 Calling onNavigateToLegal()');
         onNavigateToLegal?.();
         break;
+      case 'how-it-works':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToHowItWorks()');
+        onNavigateToHowItWorks?.();
+        break;
       case 'logout':
         console.log('[NAV CLICK] \u2192 Calling onLogout()');
         onLogout?.();
@@ -935,7 +943,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           {/* Page Header with Status Badge and Stats - EXACT MATCH TO HOME PAGE */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-gray-900">Edit Profil</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-gray-900">Edit Profil</h2>
+                <HelpTooltip {...dashboardHelp.overview} position="bottom" size="sm" />
+              </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
                 <Clock className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>

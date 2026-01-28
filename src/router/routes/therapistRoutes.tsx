@@ -11,11 +11,12 @@ import { lazy } from 'react';
 // Direct imports to fix component load errors
 import TherapistPortalPage from '../../pages/therapist/TherapistDashboard';
 import TherapistOnlineStatus from '../../pages/therapist/TherapistOnlineStatus';
+import TherapistLegal from '../../pages/therapist/TherapistLegal';
+import HowItWorksPage from '../../pages/therapist/HowItWorksPage';
 const TherapistBookings = lazy(() => import('../../pages/therapist/TherapistBookings'));
 const TherapistEarnings = lazy(() => import('../../pages/therapist/TherapistEarnings'));
 const TherapistChat = lazy(() => import('../../pages/therapist/TherapistChat'));
 const TherapistNotifications = lazy(() => import('../../pages/therapist/TherapistNotifications'));
-const TherapistLegal = lazy(() => import('../../pages/therapist/TherapistLegal'));
 const TherapistCalendar = lazy(() => import('../../pages/therapist/TherapistCalendar'));
 const TherapistPaymentInfo = lazy(() => import('../../pages/therapist/TherapistPaymentInfo'));
 const TherapistPaymentStatus = lazy(() => import('../../pages/therapist/TherapistPaymentStatus'));
@@ -25,6 +26,7 @@ const CommissionPayment = lazy(() => import('../../pages/therapist/CommissionPay
 const TherapistSchedule = lazy(() => import('../../pages/therapist/TherapistSchedule'));
 const PackageTermsPage = lazy(() => import('../../pages/therapist/PackageTermsPage'));
 const SendDiscountPage = lazy(() => import('../../pages/therapist/SendDiscountPage'));
+const MoreCustomersPage = lazy(() => import('../../pages/therapist/MoreCustomersPage'));
 
 // Placeholder component for routes under construction
 const TherapistPlaceholderPage = lazy(() => import('../../pages/therapist/TherapistPlaceholderPage'));
@@ -70,6 +72,12 @@ export const therapistRoutes = {
     path: '/therapist/legal',
     component: TherapistLegal,
     name: 'therapist-legal',
+    requiresAuth: true
+  },
+  howItWorks: {
+    path: '/therapist/how-it-works',
+    component: HowItWorksPage,
+    name: 'therapist-how-it-works',
     requiresAuth: true
   },
   calendar: {
@@ -124,6 +132,12 @@ export const therapistRoutes = {
     path: '/therapist/send-discount',
     component: SendDiscountPage,
     name: 'send-discount',
+    requiresAuth: true
+  },
+  moreCustomers: {
+    path: '/therapist/more-customers',
+    component: MoreCustomersPage,
+    name: 'more-customers',
     requiresAuth: true
   },
   placeholder: {

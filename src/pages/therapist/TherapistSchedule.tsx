@@ -4,6 +4,8 @@ import { Therapist, Booking } from '../../types';
 import { therapistService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { scheduleHelp } from './constants/helpContent';
 
 interface TherapistScheduleProps {
   therapist: Therapist | null;
@@ -404,13 +406,16 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
         onBackToStatus={onBack || (() => {})}
         icon={<Calendar className="w-6 h-6 text-orange-500" />}
         actions={
-          <button
-            onClick={() => setShowScheduleSettings(true)}
-            className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
-            aria-label="Schedule settings"
-          >
-            <Clock className="w-5 h-5 text-orange-500" />
-          </button>
+          <div className="flex items-center gap-2">
+            <HelpTooltip {...scheduleHelp.overview} position="left" size="md" />
+            <button
+              onClick={() => setShowScheduleSettings(true)}
+              className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+              aria-label="Schedule settings"
+            >
+              <Clock className="w-5 h-5 text-orange-500" />
+            </button>
+          </div>
         }
       />
 

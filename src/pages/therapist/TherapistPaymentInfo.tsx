@@ -1,12 +1,16 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
+// 🔒 LOGIC LOCKED - DO NOT MODIFY VERIFICATION & BANK DETAILS LOGIC
+// UI/styling changes allowed ONLY
+// Last locked: 2026-01-28
 import React, { useState } from 'react';
 import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2, Clock, HelpCircle } from 'lucide-react';
+import { KTP_VERIFICATION_STATES, VERIFICATION_BADGE_BOOKING_INCREASE_PERCENTAGE } from '../../constants/businessLogic';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { therapistService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
 import PaymentCard from '../../components/PaymentCard';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { therapistDashboardHelp } from '../constants/helpContent';
+import { therapistDashboardHelp } from './constants/helpContent';
 import type { Therapist } from '../../types';
 
 interface TherapistPaymentInfoProps {
@@ -150,13 +154,26 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
         setUploading(false);
       }
 
-      // Update therapist data
+      // ============================================================================
+      // 🔒 HARD LOCK: KTP VERIFICATION 3-STATE BADGE SYSTEM
+      // ============================================================================
+      // Business Rule: Immediate orange badge on upload, green on admin approval
+      // Constants: KTP_VERIFICATION_STATES { SUBMITTED, VERIFIED, REJECTED }
+      // Impact: Builds customer trust, increases bookings by 60%
+      // State Flow:
+      //   1. Upload → ktpSubmitted = true (Orange "Menunggu Verifikasi")
+      //   2. Admin Approve → ktpVerified = true (Green "Terverifikasi")
+      //   3. Admin Reject → ktpRejected = true (Hide badge, show reason)
+      // DO NOT MODIFY - Critical for trust system
+      // ============================================================================
       await therapistService.update(String(therapist.$id || therapist.id), {
         bankName: bankName.trim(),
         accountName: accountName.trim(),
         accountNumber: accountNumber.trim(),
         ktpPhotoUrl: ktpPhotoUrl,
-        ktpVerified: false, // Reset verification when details change
+        ktpSubmitted: true, // ✅ Show ORANGE "Menunggu Verifikasi" badge immediately
+        ktpVerified: false, // Admin approval will set this to true for GREEN badge
+        ktpRejected: false, // Reset rejection status on re-upload
       });
 
       showToast('✅ Payment information saved successfully! Admin will verify your KTP.', 'success');
@@ -394,15 +411,26 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                     className="w-full max-w-md rounded-lg border border-gray-300"
                   />
                   <div className="flex items-center gap-3">
-                    {therapist?.ktpVerified ? (
+                    {/* 🔒 3-STATE BADGE SYSTEM - DO NOT MODIFY */}
+                    {therapist?.ktpRejected ? (
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg border border-red-200">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-sm">Ditolak</span>
+                      </div>
+                    ) : therapist?.ktpVerified ? (
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg border border-green-200">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span className="text-sm">Terverifikasi</span>
+                        <span className="text-sm">✅ Terverifikasi</span>
                       </div>
-                    ) : (
+                    ) : therapist?.ktpSubmitted ? (
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg border border-orange-200">
                         <AlertCircle className="w-4 h-4" />
-                        <span className="text-sm">Menunggu</span>
+                        <span className="text-sm">⏳ Menunggu Verifikasi</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg border border-gray-200">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-sm">Belum Upload</span>
                       </div>
                     )}
                     <label className="cursor-pointer px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm border border-gray-300">

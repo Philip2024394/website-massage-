@@ -5,7 +5,7 @@ import TherapistPageHeader from '../../components/therapist/TherapistPageHeader'
 import { paymentConfirmationService } from '../../lib/appwriteService';
 import type { Therapist } from '../../types';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { paymentStatusHelp } from '../constants/helpContent';
+import { paymentStatusHelp } from './constants/helpContent';
 
 interface TherapistPaymentStatusProps {
     therapist: Therapist;

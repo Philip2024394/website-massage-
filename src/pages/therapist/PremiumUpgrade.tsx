@@ -4,6 +4,8 @@ import { Crown, Upload, CheckCircle, AlertCircle, XCircle, CreditCard, Building2
 import { Therapist } from '../../types';
 import { therapistService, imageUploadService, paymentConfirmationService, premiumPaymentsService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { premiumHelp } from './constants/helpContent';
 
 interface PremiumUpgradeProps {
   therapist: Therapist | null;
@@ -274,12 +276,15 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }
       <div className="max-w-sm mx-auto bg-white min-h-screen">
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <Crown className="w-6 h-6 text-yellow-500" />
-            <div>
-              <h2 className="text-black text-xl font-bold">Premium Upgrade</h2>
-              <p className="text-gray-600 text-sm">Unlock premium features</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Crown className="w-6 h-6 text-yellow-500" />
+              <div>
+                <h2 className="text-black text-xl font-bold">Premium Upgrade</h2>
+                <p className="text-gray-600 text-sm">Unlock premium features</p>
+              </div>
             </div>
+            <HelpTooltip {...premiumHelp.overview} position="left" size="md" />
           </div>
         </div>
 

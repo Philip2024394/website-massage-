@@ -1,8 +1,8 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
 import { Clock, Check, X, AlertTriangle, Volume2, VolumeX } from 'lucide-react';
-import { bookingAcknowledgmentService } from '../../../lib/services/bookingAcknowledgmentService';
-import { bookingSoundService } from "../../../services/bookingSound.service";
+import { bookingAcknowledgmentService } from '../../lib/services/bookingAcknowledgmentService';
+import { bookingSoundService } from "../../services/bookingSound.service";
 
 interface BookingRequest {
     $id: string;
@@ -221,7 +221,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                     className={`relative p-4 rounded-full shadow-2xl transition-all transform hover:scale-110 ${
                         hasBookings 
                             ? 'bg-orange-500 animate-pulse' 
-                            : 'bg-blue-500 hover:bg-blue-600'
+                            : 'bg-orange-500 hover:bg-orange-600'
                     }`}
                 >
                     {/* Bell Icon */}

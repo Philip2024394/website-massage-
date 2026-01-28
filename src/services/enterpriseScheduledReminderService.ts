@@ -4,7 +4,7 @@ import { logger } from './enterpriseLogger';
  * 
  * Automated reminder system for scheduled bookings:
  * - Therapist reminders: 5, 4, 3, 2, 1 hours before booking
- * - Customer reminders: 3 hours before booking
+ * - Customer reminders: 5 hours before booking
  * - MP3 notifications with different urgency levels
  * - Background service worker integration
  * - Persistent reminder scheduling (survives page refreshes)
@@ -181,7 +181,7 @@ class EnterpriseScheduledReminderService {
         { type: 'therapist_1h', hours: 1 }
       ];
       
-      // Customer reminder schedule (3 hours before)
+      // Customer reminder schedule (5 hours before)
       const customerReminders: Array<{ type: ReminderSchedule['reminderType']; hours: number }> = [
         { type: 'customer_3h', hours: 3 }
       ];
@@ -348,7 +348,7 @@ class EnterpriseScheduledReminderService {
         });
       }
       
-      // For customer 3-hour reminders, trigger app download prompt
+      // For customer 5-hour reminders, trigger app download prompt
       if (reminder.reminderType === 'customer_3h') {
         window.dispatchEvent(new CustomEvent('show-app-download-prompt', {
           detail: { 

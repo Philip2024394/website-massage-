@@ -2,13 +2,12 @@
  * 📱 APP DOWNLOAD PROMPT FOR SCHEDULED BOOKINGS
  * 
  * Prompts customers to download the mobile app for:
- * - MP3 notifications for their scheduled bookings
  * - Better experience and offline functionality  
  * - Direct therapist communication
  * - Booking management and history
  * 
  * Features:
- * - Automatic prompt 3 hours before scheduled bookings
+ * - Automatic prompt 5 hours before scheduled bookings
  * - Smart detection of mobile devices
  * - App store deep links (iOS App Store, Google Play)
  * - PWA installation option for web users

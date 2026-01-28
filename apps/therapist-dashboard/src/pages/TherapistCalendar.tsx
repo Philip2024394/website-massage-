@@ -101,7 +101,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
       const bookingDateTime = new Date(`${booking.date}T${booking.time}`);
       const hoursUntil = (bookingDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-      // Send reminder 3 hours before booking
+      // Send reminder 5 hours before booking
       if (hoursUntil <= 3 && hoursUntil > 2.9) {
         sendBookingReminder(booking);
       }
@@ -114,7 +114,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
       // TODO: Send in-app notification
       // TODO: Optionally send SMS/WhatsApp reminder
       
-      console.log('🔔 Sending 3-hour reminder for booking:', booking.$id);
+      console.log('🔔 Sending 5-hour reminder for booking:', booking.$id);
       
       // Show browser notification if permission granted
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -535,7 +535,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
                 <div>
                   <h3 className="font-semibold text-orange-900 mb-1 text-sm">Automatic Reminders</h3>
                   <p className="text-xs text-orange-700 leading-relaxed">
-                    Receive notifications 3 hours before each confirmed booking to help you prepare.
+                    Receive notifications 5 hours before each confirmed booking to help you prepare.
                   </p>
                 </div>
               </div>

@@ -410,7 +410,7 @@ export const safePassHelp: PageHelpContent = {
 export const commissionPaymentHelp: PageHelpContent = {
   commissionRate: {
     title: 'Commission Rate',
-    content: 'Platform takes 15-25% commission per booking depending on your membership tier. Premium members pay lower rates.',
+    content: 'Platform takes 30% commission per booking. This is a fixed rate applied to all bookings in Indonesia.',
     benefits: [
       'Transparent pricing',
       'No hidden fees',

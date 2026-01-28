@@ -6,6 +6,8 @@ import { Therapist } from '../../types';
 import { therapistService, imageUploadService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
 import { commissionTrackingService } from '../../lib/services/commissionTrackingService';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { commissionHelp } from './constants/helpContent';
 
 interface CommissionPaymentProps {
   therapist: Therapist | null;
@@ -277,6 +279,7 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
             <Wallet className="w-5 h-5 text-white" />
           </div>
         }
+        actions={<HelpTooltip {...commissionHelp.overview} position="left" size="md" />}
       />
       
       {/* Standardized Status Header */}

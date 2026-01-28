@@ -270,8 +270,16 @@ class BackendSyncService {
           continue;
         }
 
-        // Calculate commission on backend (authoritative)
-        const adminCommission = Math.round(booking.totalPrice * 0.3);
+        // ============================================================================
+        // 🔒 HARD LOCK: AUTHORITATIVE BACKEND COMMISSION CALCULATION
+        // ============================================================================
+        // Business Rule: 30% platform commission on all bookings (Indonesia)
+        // Constant: PLATFORM_COMMISSION_PERCENTAGE_INDONESIA = 30
+        // Impact: Server-side authoritative calculation, cannot be manipulated
+        // This is the AUTHORITATIVE calculation - overrides any client-side values
+        // DO NOT MODIFY - Critical revenue calculation
+        // ============================================================================
+        const adminCommission = Math.round(booking.totalPrice * 0.3); // 🔒 30% HARD LOCKED
         const providerPayout = booking.totalPrice - adminCommission;
 
         // Create booking in Appwrite

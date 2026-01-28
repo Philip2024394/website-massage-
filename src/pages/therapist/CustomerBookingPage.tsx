@@ -304,7 +304,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
               <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">Audio Notifications</h4>
-                <p className="text-xs text-gray-500">Receive sound alerts 3 hours before your booking</p>
+                <p className="text-xs text-gray-500">Receive sound alerts 5 hours before your booking</p>
               </div>
             </div>
             <div className="flex items-start gap-3 text-left">
@@ -625,7 +625,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
             <div>
               <h4 className="text-sm font-bold text-gray-900">Reminder Notification</h4>
               <p className="text-xs text-gray-600 mt-1">
-                You'll receive a sound notification 3 hours before your appointment. Make sure notifications are enabled!
+                You'll receive a sound notification 5 hours before your appointment. Make sure notifications are enabled!
               </p>
             </div>
           </div>

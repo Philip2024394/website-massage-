@@ -2,7 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, User, CheckCircle, Crown, Lock, Clock } from 'lucide-react';
 import { messagingService } from '../../lib/appwriteService';
-import { showErrorToast } from '../lib/toastUtils';
+import { showErrorToast } from '../../lib/toastUtils';
+import HelpTooltip from '../../components/therapist/HelpTooltip';
+import { chatHelp } from './constants/helpContent';
 
 interface Message {
   $id: string;
@@ -163,7 +165,10 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
       <div className="max-w-sm mx-auto px-4 pt-6 pb-4 w-full">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Chat</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-gray-900">Chat</h2>
+              <HelpTooltip {...chatHelp.overview} position="bottom" size="sm" />
+            </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>

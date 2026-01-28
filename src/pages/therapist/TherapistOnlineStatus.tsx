@@ -13,8 +13,8 @@ import { FloatingChatWindow } from '../../chat/FloatingChatWindow';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { onlineStatusHelp } from '../constants/helpContent';
-import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../lib/toastUtils';
+import { onlineStatusHelp } from './constants/helpContent';
+import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../../lib/toastUtils';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -1254,7 +1254,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           <button
             onClick={async () => {
               try {
-                const { softRecover } = await import('../utils/softNavigation');
+                const { softRecover } = await import('../../utils/softNavigation');
                 softRecover();
               } catch {
                 window.location.reload();
