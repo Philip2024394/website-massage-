@@ -55,7 +55,7 @@ class EnterpriseLogger {
     this.config = {
       minLevel: LogLevel.INFO,
       enableConsole: isDev,
-      enableRemote: isProd,
+      enableRemote: false, // Disabled: No backend logging endpoint available
       remoteEndpoint: import.meta.env.VITE_LOG_ENDPOINT || '/api/logs',
       sensitiveKeys: ['password', 'token', 'apiKey', 'secret', 'credit', 'ssn', 'phone'],
       maxBatchSize: 50,
