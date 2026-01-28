@@ -30,7 +30,7 @@ export const soundNotificationService = {
      * Set sound notification preference
      * @param enabled Ignored - sounds are always enabled for active members
      */
-    setSoundPreference(enabled: boolean): void {
+    setSoundPreference(_enabled: boolean): void {
         // No-op: Sound notifications cannot be disabled for active members
         devLog(`🔊 Sound notifications are always enabled for active members`);
     },

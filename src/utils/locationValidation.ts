@@ -3,7 +3,7 @@
  * Ensures GPS coordinates match selected city and validates location consistency
  */
 
-import { findCityByCoordinates, matchProviderToCity, CityLocation } from '../constants/indonesianCities';
+import { matchProviderToCity } from '../constants/indonesianCities';
 
 interface Coordinates {
     lat: number;

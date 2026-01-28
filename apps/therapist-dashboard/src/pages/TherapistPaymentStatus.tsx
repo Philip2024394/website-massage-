@@ -4,6 +4,8 @@ import { Clock, CheckCircle, XCircle, AlertCircle, Calendar, CreditCard, DollarS
 import TherapistPageHeader from '../components/TherapistPageHeader';
 import { paymentConfirmationService } from '@lib/appwriteService';
 import type { Therapist } from '../../../../src/types';
+import HelpTooltip from '../components/HelpTooltip';
+import { paymentStatusHelp } from '../constants/helpContent';
 
 interface TherapistPaymentStatusProps {
     therapist: Therapist;
@@ -92,52 +94,31 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
         );
     }
 
-    const dict = {
-        therapistDashboard: {
-            thisMonth: 'this month'
-        }
-    };
-
     return (
         <div className="min-h-screen bg-white">
-            {/* Page Header */}
-            <div className="max-w-7xl mx-auto px-3 sm:px-5 pt-6 pb-4">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-bold text-gray-900">Payment Status</h2>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-                        <Clock className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
-                        <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
+            {/* Standardized Page Header */}
+            <TherapistPageHeader
+                title="Payment Status"
+                subtitle="Track your payment submissions and approvals"
+                onBackToStatus={onBack}
+                icon={<CreditCard className="w-6 h-6 text-orange-600" />}
+                actions={
+                    <div className="flex items-center gap-2">
+                        <HelpTooltip 
+                            {...paymentStatusHelp.submitProof}
+                            position="left"
+                            size="md"
+                        />
+                        <button
+                            onClick={loadPayments}
+                            className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+                            title="Refresh payment list"
+                        >
+                            <RefreshCw className="w-5 h-5 text-orange-600" />
+                        </button>
                     </div>
-                </div>
-            </div>
-            
-            {/* Page Header with Online Hours */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                        <CreditCard className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-bold text-gray-900">Payment Status</h2>
-                        <p className="text-sm text-gray-600">Track payment submissions</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={loadPayments}
-                        className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
-                        title="Refresh"
-                    >
-                        <RefreshCw className="w-5 h-5 text-black" />
-                    </button>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-                        <Clock className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
-                        <span className="text-xs text-gray-500">this month</span>
-                    </div>
-                </div>
-            </div>
+                }
+            />
 
             <div className="p-3 sm:p-5 space-y-4 max-w-7xl mx-auto">
                 {/* Info Banner */}

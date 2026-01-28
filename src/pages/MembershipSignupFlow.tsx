@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, ArrowLeft, Upload, Clock, AlertTriangle, User, Building2, Sparkles } from 'lucide-react';
-import { membershipSignupService, type PlanType, type PortalType, type MembershipSignup } from '../../lib/services/membershipSignup.service';
+import { membershipSignupService, type PlanType, type PortalType, type MembershipSignup } from '../lib/services/membershipSignup.service';
 
 type Step = 'plan' | 'terms' | 'portal' | 'account' | 'profile' | 'payment';
 

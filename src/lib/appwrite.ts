@@ -12,6 +12,7 @@ export const storage = new Storage(client);
 export const functions = new Functions(client);
 
 // Export both old and new names for backward compatibility
+// Export both old and new names for backward compatibility
 export { client, ID, Permission, Role, Query };
 export { client as appwriteClient };
 export { databases as appwriteDatabases };
@@ -52,6 +53,24 @@ export const COLLECTIONS = {
     TRANSLATIONS: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
     COMMISSION_RECORDS: '', // ⚠️ DISABLED - Collection doesn't exist
     ATTRIBUTES: '' // ⚠️ DISABLED - Collection doesn't exist
+};
+
+// APPWRITE_CONFIG object for backward compatibility
+export const APPWRITE_CONFIG = {
+    endpoint: 'https://syd.cloud.appwrite.io/v1',
+    projectId: '68f23b11000d25eb3664',
+    databaseId: DATABASE_ID,
+    collections: {
+        therapists: COLLECTIONS.THERAPISTS,
+        places: COLLECTIONS.PLACES,
+        facial_places: COLLECTIONS.FACIAL_PLACES,
+        bookings: COLLECTIONS.BOOKINGS,
+        therapistsCollection: COLLECTIONS.THERAPISTS,
+        usersCollection: COLLECTIONS.USERS,
+        placesCollection: COLLECTIONS.PLACES,
+        commissionRecords: COLLECTIONS.COMMISSION_RECORDS,
+        messages: COLLECTIONS.CHAT_MESSAGES
+    }
 };
 
 // Storage bucket IDs

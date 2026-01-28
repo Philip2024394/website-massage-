@@ -98,7 +98,7 @@ class LocationService {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     logger.info('✅ GPS location obtained:', position);
-                    logger.info('📊 GPS accuracy:', position.coords.accuracy, 'meters');
+                    logger.info(`📊 GPS accuracy: ${position.coords.accuracy} meters`);
                     logger.info('🎯 GPS coordinates:', {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
@@ -137,7 +137,7 @@ class LocationService {
         const { latitude, longitude } = position.coords;
         
         logger.info('📍 Processing GPS coordinates:', { latitude, longitude });
-        logger.info('📍 Position accuracy:', position.coords.accuracy, 'meters');
+        logger.info(`📍 Position accuracy: ${position.coords.accuracy} meters`);
         
         // Try to get address using reverse geocoding
         let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`; // Default to coordinates

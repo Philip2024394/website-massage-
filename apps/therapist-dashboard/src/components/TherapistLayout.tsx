@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, User, Calendar, DollarSign, 
-  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut
+  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart3
 } from 'lucide-react';
 import BookingBadge from './BookingBadge';
 import { useUnreadBadge } from "../../../../src/chat/hooks/useUnreadBadge";
 import { useGestureSwipe } from "../../../../src/hooks/useGestureSwipe";
 import { FloatingUnreadBadge } from "../../../../src/components/UnreadBadge";
-import { pushNotificationsService } from '@lib/pushNotificationsService';
+import { pushNotificationsService } from '../../../../src/lib/pushNotificationsService';
 import PullToRefresh from '../../../../src/components/PullToRefresh';
 
 interface TherapistLayoutProps {
@@ -75,6 +75,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       'commission-payment': 'Payments 30%',
       'send-discount': 'Send Discount',
       'hotel-villa-safe-pass': 'Hotel Safe Pass',
+      'more-customers': 'More Customers',
+      analytics: 'Analytics',
       menu: 'Menu',
       logout: 'Logout',
     },
@@ -94,6 +96,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       'commission-payment': 'Pembayaran 30%',
       'send-discount': 'Kirim Diskon',
       'hotel-villa-safe-pass': 'Hotel Safe Pass',
+      'more-customers': 'Lebih Banyak Pelanggan',
+      analytics: 'Analitik',
       menu: 'Menu',
       logout: 'Keluar',
     },
@@ -105,12 +109,14 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'status', label: labels.status, icon: Clock, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
     { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-orange-500' },
+    { id: 'more-customers', label: labels['more-customers'], icon: Users, color: 'text-orange-500' },
     { id: 'send-discount', label: labels['send-discount'], icon: Gift, color: 'text-orange-500' },
     { id: 'earnings', label: labels.earnings, icon: DollarSign, color: 'text-orange-500' },
     { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-orange-500' },
     { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-orange-500' },
     { id: 'commission-payment', label: labels['commission-payment'], icon: Wallet, color: 'text-orange-500' },
     { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-500' },
+    { id: 'analytics', label: labels.analytics, icon: BarChart3, color: 'text-purple-500' },
     { id: 'hotel-villa-safe-pass', label: labels['hotel-villa-safe-pass'], icon: Shield, color: 'text-orange-500' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-orange-500' },
     { id: 'legal', label: labels.legal, icon: FileText, color: 'text-orange-500' },
@@ -291,11 +297,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           {onLogout && (
             <div className="p-4 border-t border-gray-300">
               <button
-                onClick={() => {
-                  if (confirm(language === 'id' ? 'Yakin ingin keluar?' : 'Are you sure you want to logout?')) {
-                    onLogout();
-                  }
-                }}
+                onClick={onLogout}
                 className="flex items-center gap-3 w-full py-3 px-3 rounded-lg bg-red-50 hover:bg-red-100 transition-colors"
               >
                 <LogOut className="w-5 h-5 text-red-600 flex-shrink-0" />

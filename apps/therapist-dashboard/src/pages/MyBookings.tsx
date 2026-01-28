@@ -4,6 +4,8 @@ import { FloatingChatWindow } from '../../../../src/chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search } from 'lucide-react';
 import TherapistPageHeader from '../components/TherapistPageHeader';
 import { BookingListSkeleton } from '../../../../src/components/LoadingSkeletons';
+import HelpTooltip from '../components/HelpTooltip';
+import { myBookingsHelp } from '../constants/helpContent';
 
 interface Booking {
   $id: string;
@@ -221,6 +223,13 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
         title="Scheduled Orders"
         subtitle="Manage your appointments and schedule"
         onBackToStatus={onBack}
+        headerAction={
+          <HelpTooltip 
+            {...myBookingsHelp.bookingsList}
+            position="left"
+            size="md"
+          />
+        }
       />
 
       <main className="max-w-sm mx-auto px-4 py-6">

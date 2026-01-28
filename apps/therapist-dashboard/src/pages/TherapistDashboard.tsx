@@ -1020,13 +1020,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           {/* Live Status Banner */}
           {therapist.isLive && (
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-8 py-4">
+            <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-8 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
                   <div>
-                    <p className="text-white font-bold text-lg">🟢 Your Profile is LIVE!</p>
-                    <p className="text-green-100 text-sm">Customers can see and book you on the homepage</p>
+                    <p className="text-white font-bold text-lg">🟢 Profil Anda AKTIF!</p>
+                    <p className="text-orange-100 text-sm">Pelanggan dapat melihat dan membooking Anda di halaman utama</p>
                   </div>
                 </div>
                 <button
@@ -1036,10 +1036,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     const previewUrl = `/?previewTherapistId=${therapistId}`;
                     window.open(previewUrl, '_blank');
                   }}
-                  className="px-4 py-2 bg-white text-green-600 rounded-lg font-bold hover:bg-green-50 transition-all shadow-sm text-sm"
-                  title="View your live listing with preview mode (bypasses GPS restrictions)"
+                  className="px-4 py-2 bg-white text-orange-600 rounded-lg font-bold hover:bg-orange-50 transition-all shadow-sm text-sm"
+                  title="Lihat listing langsung Anda dengan mode preview (melewati batasan GPS)"
                 >
-                  👁️ View Listing Live
+                  👁️ Lihat Listing Langsung
                 </button>
               </div>
             </div>

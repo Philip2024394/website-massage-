@@ -140,7 +140,7 @@ export const MembershipPackageDisplay: React.FC<MembershipPackageDisplayProps> =
 
     const uploadPaymentProof = async () => {
         if (!proofFile || !subscription) {
-            alert('Please select a payment proof file');
+            showErrorToast('Please select a payment proof file');
             return;
         }
 
@@ -175,13 +175,13 @@ export const MembershipPackageDisplay: React.FC<MembershipPackageDisplayProps> =
                 }
             );
 
-            alert('✅ Payment proof submitted successfully! Admin will review within 24 hours.');
+            showSuccessToast('✅ Payment proof submitted successfully! Admin will review within 24 hours.');
             setProofFile(null);
             await loadMembershipData();
 
         } catch (error) {
             console.error('Error uploading payment proof:', error);
-            alert('❌ Failed to upload payment proof. Please try again.');
+            showErrorToast('❌ Failed to upload payment proof. Please try again.');
         } finally {
             setUploadingProof(false);
         }

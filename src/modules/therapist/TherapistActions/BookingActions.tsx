@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { MessageCircle, Calendar } from 'lucide-react';
-import type { Therapist } from '../../types';
+import type { Therapist } from '../../../types';
 
 interface BookingActionsProps {
   therapist: Therapist;

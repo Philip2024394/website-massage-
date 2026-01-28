@@ -13,7 +13,7 @@ interface CustomLink {
 
 const DrawerButtonsPage: React.FC = () => {
     const { language } = useLanguage();
-    const { t } = useTranslations(language);
+    const { t } = useTranslations(language as 'en' | 'id');
     const [links, setLinks] = useState<CustomLink[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);

@@ -8,6 +8,9 @@ import { devLog, devWarn } from '../../../../src/utils/devMode';
 import TherapistSchedule from './TherapistSchedule';
 import DepositApprovalCard from '../../../../src/components/booking/DepositApprovalCard';
 import { pushNotificationsService } from '@lib/pushNotificationsService';
+import HelpTooltip from '../components/HelpTooltip';
+import { bookingsScheduleHelp } from '../constants/helpContent';
+import { showErrorToast, showWarningToast } from '../lib/toastUtils';
 
 interface Booking {
   $id: string;
@@ -329,7 +332,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
 
     // Check if scheduled booking requires deposit but not paid yet
     if (booking?.isScheduled && booking?.depositRequired && !booking?.depositPaid) {
-      alert(language === 'en' 
+      showWarningToast(language === 'en' 
         ? 'This booking requires a 30% deposit. Customer must pay deposit before you can accept.'
         : 'Booking ini memerlukan deposit 30%. Pelanggan harus membayar deposit sebelum Anda dapat menerima.');
       return;
@@ -337,7 +340,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
 
     // Check if scheduled booking deposit is paid but not approved yet
     if (booking?.isScheduled && booking?.depositRequired && booking?.depositPaid && booking?.depositStatus === 'pending_approval') {
-      alert(language === 'en' 
+      showWarningToast(language === 'en' 
         ? 'Please review and approve the deposit proof first before accepting this booking.'
         : 'Silakan tinjau dan setujui bukti deposit terlebih dahulu sebelum menerima booking ini.');
       return;
@@ -391,7 +394,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       }
     } catch (error: any) {
       console.error('❌ Failed to cancel booking:', error);
-      alert(error.message || 'Failed to cancel booking. Please try again.');
+      showErrorToast(error.message || 'Failed to cancel booking. Please try again.');
     }
   };
 
@@ -482,7 +485,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       console.log('✅ Booking completed successfully');
     } catch (error) {
       console.error('❌ Failed to complete booking:', error);
-      alert('Failed to complete booking. Please try again.');
+      showErrorToast('Failed to complete booking. Please try again.');
     }
   };
 
@@ -551,7 +554,14 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       <div className="max-w-sm mx-auto px-4 pt-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
+              <HelpTooltip 
+                {...bookingsScheduleHelp.manageBookings}
+                position="bottom"
+                size="md"
+              />
+            </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>

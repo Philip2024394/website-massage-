@@ -42,7 +42,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
     places = []
 }) => {
     const { language } = useLanguage();
-    const { t } = useTranslations(language);
+    const { t } = useTranslations(language as 'en' | 'id');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
@@ -60,7 +60,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     onNavigate={onNavigate}
-                    language={language}
+                    language={language as 'en' | 'id' | 'gb'}
                 />
             </React19SafeWrapper>
             

@@ -52,7 +52,7 @@ export interface ChatSession {
 class ChatLocalStorageService {
   private MESSAGES_KEY = 'chat_messages';
   private SESSION_KEY = 'chat_session';
-  private DRAFT_KEY = 'chat_draft';
+  private _DRAFT_KEY = 'chat_draft';
 
   // ============================================================================
   // MESSAGE OPERATIONS

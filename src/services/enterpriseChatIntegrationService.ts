@@ -64,7 +64,7 @@ class EnterpriseChatIntegrationService {
   private activeChatRooms = new Map<string, ChatRoom>();
   private messageQueue: ChatMessage[] = [];
   private isOnline = navigator.onLine;
-  private realtimeConnections = new Map<string, any>();
+  private _realtimeConnections = new Map<string, any>();
   private audioEnabled = true;
   private isInitialized = false;
   private initializationRetries = 0;
@@ -754,7 +754,7 @@ class EnterpriseChatIntegrationService {
   /**
    * Get sender name
    */
-  private async getSenderName(senderId: string, senderType: string): Promise<string> {
+  private async getSenderName(_senderId: string, senderType: string): Promise<string> {
     // Implementation would fetch from user/therapist/place database
     return senderType === 'system' ? 'System' : 'User';
   }
@@ -1093,15 +1093,15 @@ class EnterpriseChatIntegrationService {
   /**
    * Show detailed error modal for critical issues
    */
-  private showErrorModal(title: string, details: string, actions?: Array<{label: string, callback: () => void}>): void {
+  private _showErrorModal(_title: string, _details: string, _actions?: Array<{label: string, callback: () => void}>): void {
     try {
       // This would integrate with your app's modal system
-      logger.info('🚨 Critical error modal:', { title, details });
+      logger.info('🚨 Critical error modal:', { title: _title, details: _details });
       
       // For now, show console error with recovery actions
-      console.error(`\n🚨 CRITICAL: ${title}\n${details}\n`);
-      if (actions) {
-        console.log('Recovery actions:', actions.map(a => a.label).join(', '));
+      console.error(`\n🚨 CRITICAL: ${_title}\n${_details}\n`);
+      if (_actions) {
+        console.log('Recovery actions:', _actions.map(a => a.label).join(', '));
       }
       
     } catch (error) {

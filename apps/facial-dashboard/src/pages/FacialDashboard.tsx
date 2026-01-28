@@ -19,7 +19,7 @@ import MainImageCropper from '../../../../src/components/MainImageCropper';
 import HotelVillaOptIn from '../../../../src/components/HotelVillaOptIn';
 
 import { placeService, imageUploadService } from '../../../../src/lib/appwriteService';
-import { sanitizePlacePayload } from '../../../../schemas/placeSchema';
+import { sanitizePlacePayload } from '../../../../src/schemas/placeSchema';
 import UserSolidIcon from '../../../../src/components/icons/UserSolidIcon';
 import DocumentTextIcon from '../../../../src/components/icons/DocumentTextIcon';
 import PhoneIcon from '../../../../src/components/icons/PhoneIcon';

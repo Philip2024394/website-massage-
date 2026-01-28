@@ -128,9 +128,9 @@ const LanguageSwitcherComponent: React.FC = () => {
                 <span className="text-sm">🇮🇩</span>
             </button>
             <button
-                onClick={() => setLanguage('gb')}
+                onClick={() => setLanguage('en' as any)} // Use 'en' instead of 'gb'
                 className={`flex items-center px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                    language === 'gb' || language === 'en'
+                    (language as string) === 'gb' || language === 'en'
                         ? 'bg-white shadow-sm text-gray-900' 
                         : 'text-gray-600 hover:bg-white/50'
                 }`}

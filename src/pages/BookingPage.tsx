@@ -83,6 +83,7 @@ function BookingPage({ provider, providerType, onBook, onBack, bookings, t }: Bo
             providerName: provider.name,
             service: selectedService,
             startTime: bookingStartTime.toISOString(),
+            customerName: 'Guest Customer' // Added required field
         });
         
         setShowConfirmDialog(false);

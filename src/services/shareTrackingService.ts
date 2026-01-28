@@ -6,7 +6,7 @@ import { logger } from './enterpriseLogger';
 
 import { analyticsService, AnalyticsEventType } from './analyticsService';
 import { databases, DATABASE_ID } from '../lib/appwrite';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+// Removed unused APPWRITE_CONFIG import
 import { ID, Query } from 'appwrite';
 
 // Collection for share tracking data

@@ -230,7 +230,7 @@ class EnterpriseRateLimiter {
    * Clear all rate limits
    */
   public clearAll(): void {
-    this.rules.forEach((rule, endpoint) => {
+    this.rules.forEach((_rule, endpoint) => {
       this.resetEndpoint(endpoint);
     });
     this.stats = {

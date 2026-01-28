@@ -447,7 +447,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         {...props} 
                         {...componentProps} 
                         t={t}
-                        language={language}
+                        language={language as 'en' | 'id' | 'gb'}
                         onLanguageChange={handleLanguageSelect}
                         onNavigate={props.setPage}
                     />
@@ -959,7 +959,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     loggedInCustomer={props.loggedInCustomer}
                     // handleQuickBookWithChat={props.handleQuickBookWithChat} // ❌ REMOVED: Complex event chain
                     onNavigate={props.onNavigate}
-                    language={props.language}
+                    language={props.language as 'en' | 'id' | 'gb'}
                 />
             );
         
@@ -1375,9 +1375,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('[ROUTE RESOLVE] therapist-dashboard → TherapistDashboard');
             console.log('[ROUTE DEBUG] props.user:', {
                 hasUser: !!props.user,
-                userId: props.user?.$id || props.user?.id,
-                userName: props.user?.name,
-                userType: props.user?.type || props.user?.userType,
+                userId: (props.user as any)?.$id || (props.user as any)?.id,
+                userName: (props.user as any)?.name,
+                userType: (props.user as any)?.type || (props.user as any)?.userType,
                 timestamp: new Date().toISOString()
             });
             return renderRoute(therapistRoutes.dashboard.component, {

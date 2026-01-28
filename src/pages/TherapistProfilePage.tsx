@@ -279,13 +279,13 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
             <TherapistProfileBase
                 therapist={therapist}
                 mode="authenticated"
-                userLocation={userLocation}
+                userLocation={userLocation ? { ...userLocation, address: userLocation.address || 'Unknown' } : null}
                 showHeader={false}
                 showSEOFooter={isSharedView}
                 selectedCity={cityState}
                 onRate={() => console.log('Rate therapist:', therapist)}
                 onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist) : undefined}
-                onChatWithBusyTherapist={onChatWithBusyTherapist}
+                onChatWithBusyTherapist={() => onChatWithBusyTherapist?.(selectedTherapist)}
                 onShowRegisterPrompt={onShowRegisterPrompt}
                 onIncrementAnalytics={(metric) => onIncrementAnalytics?.(therapist.id || therapist.$id, 'therapist', metric)}
                 isCustomerLoggedIn={!!loggedInCustomer}

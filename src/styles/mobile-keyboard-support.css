@@ -114,27 +114,20 @@ textarea,
 select,
 button {
   -webkit-tap-highlight-color: transparent;
-  tap-highlight-color: transparent;
 }
 
 /* ===================================================================
    KEYBOARD TYPE OPTIMIZATION
    =================================================================== */
 
-/* Numeric keyboard for phone numbers */
-input[type="tel"],
-input[inputmode="numeric"] {
-  pattern: "[0-9]*";
-  inputmode: numeric;
-}
+/* Note: pattern, inputmode, and autocapitalize are HTML attributes,
+   not CSS properties. They should be set in HTML markup:
+   - <input type="tel" pattern="[0-9]*" inputmode="numeric">
+   - <input inputmode="text" autocapitalize="sentences">
+   - <input name="discount_code" autocapitalize="characters">
+*/
 
-/* Text keyboard with auto-capitalization */
-input[inputmode="text"] {
-  text-transform: none;
-  auto-capitalize: sentences;
-}
-
-/* Uppercase for discount codes */
+/* Uppercase styling for discount codes */
 input[name="discount_code"] {
   text-transform: uppercase;
 }

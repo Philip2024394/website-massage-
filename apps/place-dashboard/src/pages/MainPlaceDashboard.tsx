@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import PlaceLayout from '../../../../src/components/PlaceLayout';
+import PlaceLayout from '../components/PlaceLayout';
 import PlaceDashboard from './PlaceDashboard';
 import PlaceEarnings from './PlaceEarnings';
 import PlacePaymentHistory from './PlacePaymentHistory';
@@ -7,6 +7,8 @@ import PlaceMembership from './PlaceMembership';
 import PlaceCalendar from './PlaceCalendar';
 import PlaceLegal from './PlaceLegal';
 import PlaceMenuPricing from './PlaceMenuPricing';
+import MoreCustomersPage from './MoreCustomersPage';
+import MoreCustomersPage from './MoreCustomersPage';
 
 interface MainPlaceDashboardProps {
   onSave?: (data: any) => void;
@@ -50,6 +52,9 @@ const MainPlaceDashboard: React.FC<MainPlaceDashboardProps> = ({
 
   const renderPage = () => {
     switch (activePage) {
+      case 'more-customers':
+        return <MoreCustomersPage place={place} onBack={() => setActivePage('dashboard')} language="id" />;
+      
       case 'earnings':
         return <PlaceEarnings placeId={placeId} onBack={() => setActivePage('dashboard')} />;
       

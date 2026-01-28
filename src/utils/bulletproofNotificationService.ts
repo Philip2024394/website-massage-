@@ -21,7 +21,7 @@ export interface NotificationChannel {
 export class BulletproofNotificationService {
     private serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
     private pushSubscription: PushSubscription | null = null;
-    private isInitialized = false;
+    private _isInitialized = false;
     private notificationQueue: any[] = [];
     private retryInterval: NodeJS.Timeout | null = null;
 
@@ -49,7 +49,7 @@ export class BulletproofNotificationService {
             const channels = await this.testNotificationChannels();
             console.log('📊 Notification channels status:', channels);
             
-            this.isInitialized = true;
+            this._isInitialized = true;
             console.log('✅ Bulletproof notification system initialized successfully!');
             
             return true;
@@ -271,7 +271,7 @@ export class BulletproofNotificationService {
      * WhatsApp integration removed - numbers collected for admin purposes only
      * Future SMS integration can be added here
      */
-    private sendWhatsAppNotification(data: any): void {
+    private _sendWhatsAppNotification(_data: any): void {
         console.log('WhatsApp notifications disabled - numbers for admin use only');
         // WhatsApp functionality intentionally disabled
         // Numbers are collected for admin contact purposes only
@@ -469,7 +469,7 @@ Without notifications, you may MISS BOOKINGS and lose business!`);
             clearInterval(this.retryInterval);
         }
         this.notificationQueue = [];
-        this.isInitialized = false;
+        this._isInitialized = false;
     }
 }
 

@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import type { Page } from '../types/pageTypes';
+import type { Page } from '../../types/pageTypes';
 
 export interface RouteNavigator {
     currentPage: Page;

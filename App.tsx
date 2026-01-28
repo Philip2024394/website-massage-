@@ -16,7 +16,7 @@ import { useMobileDetection } from './src/hooks/useMobileDetection';
 import { useTranslations } from './src/lib/useTranslations';
 import { DeviceStylesProvider } from './src/components/DeviceAware';
 import BookingStatusTracker from './src/components/BookingStatusTracker';
-import { useState, useEffect, lazy } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 
 // Temporarily disabled lazy loading to fix AsyncMode error
 const FloatingChatWindow = lazy(() => import('./src/chat').then(m => ({ default: m.FloatingChatWindow })));
@@ -250,12 +250,12 @@ const App = () => {
             // Check if therapist is already authenticated
             if (state.loggedInProvider && state.loggedInProvider.type === 'therapist') {
                 console.log('✅ Therapist authenticated - Routing to Status Dashboard');
-                navigation.setPage('therapist-status');
+                state.setPage('therapist-status');
             } else {
                 console.log('❌ Not authenticated - Routing to Therapist Login');
                 // Store intended destination for post-login redirect
                 sessionStorage.setItem('pwa-redirect-after-login', 'therapist-status');
-                navigation.setPage('signin');
+                state.setPage('signin');
             }
         }
     }, [state.loggedInProvider]); // Also depend on auth state
@@ -288,7 +288,7 @@ const App = () => {
     const { language, setLanguage } = state;
     
     // Get translations using the actual language state - provide to AppRouter
-    const { t: _t, dict } = useTranslations(language);
+    const { t: _t, dict } = useTranslations(language as 'en' | 'id' | 'gb');
 
     // Analytics handler function
     const handleIncrementAnalytics = useAnalyticsHandler();
@@ -485,8 +485,9 @@ const App = () => {
 
     // ✅ GLOBAL REFRESH HANDLER: Handle pull-to-refresh and page refresh events
     useEffect(() => {
-        const handleAppRefresh = async (event: CustomEvent) => {
-            console.log('🔄 App refresh triggered:', event.detail);
+        const handleAppRefresh = async (event: Event) => {
+            const customEvent = event as CustomEvent;
+            console.log('🔄 App refresh triggered:', customEvent.detail);
             
             try {
                 // Clear any cached data if needed
@@ -602,7 +603,7 @@ const App = () => {
                 console.log('🗑️ [HOME_NAV] Clearing pending deeplink on home navigation:', pending);
                 sessionStorage.removeItem('pending_deeplink');
             }
-            navigation?.setPage('landing');
+            state.setPage('landing');
         };
         
         window.addEventListener('navigateToLanding', handleNavigateToLanding);
@@ -1140,7 +1141,7 @@ const App = () => {
         <CityProvider>
         <LanguageProvider value={{ 
             language: language as 'en' | 'id', 
-            setLanguage: handleLanguageSelect
+            setLanguage: (lang: any) => handleLanguageSelect(lang as 'en' | 'id' | 'gb')
         }}>
         <ChatProvider>
             {/* Auto-activate demo chat rooms */}
@@ -1188,10 +1189,10 @@ const App = () => {
                     loggedInProvider={(() => {
                         console.log('🔸 [APP.TSX] Passing loggedInProvider to AppRouter:', {
                             hasProvider: !!state.loggedInProvider,
-                            providerId: state.loggedInProvider?.$id || state.loggedInProvider?.id,
-                            providerType: state.loggedInProvider?.type,
-                            providerName: state.loggedInProvider?.name,
-                            providerEmail: state.loggedInProvider?.email,
+                            providerId: (state.loggedInProvider as any)?.$id || (state.loggedInProvider as any)?.id,
+                            providerType: (state.loggedInProvider as any)?.type,
+                            providerName: (state.loggedInProvider as any)?.name,
+                            providerEmail: (state.loggedInProvider as any)?.email,
                             timestamp: new Date().toISOString()
                         });
                         return state.loggedInProvider;
@@ -1232,7 +1233,7 @@ const App = () => {
                     hotelVillaLogo={null}
                     impersonatedAgent={state.impersonatedAgent}
                     selectedTherapist={state.selectedTherapist}
-                    handleLanguageSelect={handleLanguageSelect}
+                    handleLanguageSelect={(lang: any) => handleLanguageSelect(lang as 'en' | 'id' | 'gb')}
                     handleEnterApp={navigation?.handleEnterApp || (() => Promise.resolve())}
                     handleSetUserLocation={navigation?.handleSetUserLocation || (() => {})}
                     handleSetSelectedPlace={navigation?.handleSetSelectedPlace || (() => {})}
@@ -1274,7 +1275,7 @@ const App = () => {
                         state.setRegisterPromptContext('booking');
                         state.setShowRegisterPrompt(true);
                     }}
-                    handleIncrementAnalytics={handleIncrementAnalytics}
+                    handleIncrementAnalytics={(providerId: any, providerType: any, metric: any) => handleIncrementAnalytics(providerId, providerType, metric as keyof Analytics)}
                     handleShowRegisterPrompt={() => { state.setRegisterPromptContext('booking'); state.setShowRegisterPrompt(true); }}
                     t={(key: string) => key}
                     currentPage={state.page}

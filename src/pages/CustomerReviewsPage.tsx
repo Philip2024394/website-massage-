@@ -55,7 +55,7 @@ const CustomerReviewsPage: React.FC<CustomerReviewsPageProps> = ({ user, onBack 
       await reviewService.create({
         providerId: booking.providerId.toString(),
         providerType: booking.providerType,
-        providerName: booking.providerName,
+        // providerName: booking.providerName, // Removed - not in interface
         rating: state.rating,
         comment: state.text || '',
         whatsapp: '',

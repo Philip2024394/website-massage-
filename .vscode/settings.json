@@ -150,6 +150,12 @@
   "workbench.editor.enablePreviewFromQuickOpen": false,
   "files.autoSave": "off",
   "files.hotExit": "off",
+  
+  // TypeScript Language Server Performance Settings
+  "typescript.tsserver.maxTsServerMemory": 8192,
+  "typescript.tsserver.log": "off",
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  
   "typescript.disableAutomaticTypeAcquisition": true,
   "typescript.preferences.includePackageJsonAutoImports": "off",
   "typescript.suggest.enabled": false,

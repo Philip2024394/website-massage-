@@ -5,7 +5,7 @@ import { deviceService } from '../services/deviceService';
 import PageNumberBadge from '../components/PageNumberBadge';
 import PWAInstallIOSModal from '../components/PWAInstallIOSModal';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { MapPin, Play, Globe, Search, X, ChevronDown } from 'lucide-react';
+import { MapPin, Play, Globe, Search, X, ChevronUp as ChevronDown } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';

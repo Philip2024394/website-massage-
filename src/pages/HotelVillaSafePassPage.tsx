@@ -23,13 +23,13 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-20">
+      <section className="bg-white border-b border-orange-100 py-16">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
               Hotel & Villa Safe Pass Certification
             </h1>
-            <p className="text-xl text-blue-100 font-medium mb-8">
+            <p className="text-xl text-orange-600 font-medium mb-8">
               Official Certification for Professional Massage Therapists
             </p>
           </div>
@@ -37,28 +37,28 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
           {/* Safe Pass Image */}
           <div className="flex justify-center mb-8">
             <img 
-              src="https://ik.imagekit.io/7grri5v7d/scaffolding_indastreetsssssss-removebg-preview.png" 
+              src="https://ik.imagekit.io/7grri5v7d/PLASTERING%205%20TROWEL%20HOLDERz.png" 
               alt="Hotel Villa Safe Pass Certification" 
-              className="w-72 h-72 object-contain drop-shadow-2xl"
+              className="w-full max-w-4xl h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
             />
           </div>
           
           <div className="text-center max-w-3xl mx-auto">
-            <p className="text-lg text-white/90 mb-6">
+            <p className="text-lg text-gray-600 mb-6">
               The Safe Pass is your professional credential for working in premium hospitality environments. 
               Get officially certified to provide spa and massage services at hotels and villas across Indonesia.
             </p>
-            <div className="flex items-center justify-center gap-6 text-blue-100 flex-wrap">
+            <div className="flex items-center justify-center gap-6 text-gray-700 flex-wrap">
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
+                <Shield className="w-5 h-5 text-orange-500" />
                 <span>Official Certification</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" />
+                <CheckCircle2 className="w-5 h-5 text-orange-500" />
                 <span>Admin Verified</span>
               </div>
               <div className="flex items-center gap-2">
-                <Building className="w-5 h-5" />
+                <Building className="w-5 h-5 text-orange-500" />
                 <span>Hotel Authorized</span>
               </div>
             </div>
@@ -118,8 +118,8 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
             {/* Requirements */}
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-orange-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900">Requirements</h3>
               </div>

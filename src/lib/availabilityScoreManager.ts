@@ -16,7 +16,7 @@
  * - 0-39: Very low visibility, "Improve Responsiveness" flag
  */
 
-import { databases, ID, Query } from '../../lib/appwrite';
+import { databases, ID, Query } from './appwrite';
 
 const APPWRITE_CONFIG = {
   databaseId: '68f76ee1000e64ca8d05',

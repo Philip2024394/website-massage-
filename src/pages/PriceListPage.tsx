@@ -14,7 +14,7 @@ const PriceListPage: React.FC<PriceListPageProps> = ({ therapist, onBack }) => {
     const [menuData, setMenuData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const { language } = useLanguageContext();
-    const chatLang = language === 'gb' ? 'en' : language;
+    const chatLang = (language as string) === 'gb' ? 'en' : language;
 
     // Load therapist menu data
     useEffect(() => {

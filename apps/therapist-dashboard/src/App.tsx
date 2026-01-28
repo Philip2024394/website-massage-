@@ -19,6 +19,9 @@ import { commissionTrackingService } from '@lib/services/commissionTrackingServi
 import { serverEnforcedChatService } from '@lib/services/serverEnforcedChatService';
 import { therapistNotificationManager } from './lib/therapistNotifications';
 import { useTranslations } from '@lib/useTranslations';
+import { EnhancedNotificationService } from './lib/enhancedNotificationService';
+import { UltimateNotificationUtils } from './lib/ultimateNotificationUtils';
+import { PWAInstallationEnforcer } from './lib/pwaInstallationEnforcer';
 
 // Components
 import { CardSkeleton } from '@components/LoadingSkeletons';
@@ -53,6 +56,8 @@ import CommissionPayment from './pages/CommissionPayment';
 import TherapistSchedule from './pages/TherapistSchedule';
 import SendDiscountPage from './pages/SendDiscountPage';
 import HotelVillaSafePass from './pages/HotelVillaSafePass';
+import MoreCustomersPage from './pages/MoreCustomersPage';
+import AdvancedAnalytics from './components/AdvancedAnalytics';
 import TherapistLayout from './components/TherapistLayout';
 import ToastContainer from './components/ToastContainer';
 
@@ -61,7 +66,7 @@ import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pw
 
 // ------------------ END IMPORTS ------------------
 
-type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount' | 'hotel-villa-safe-pass';
+type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount' | 'hotel-villa-safe-pass' | 'more-customers' | 'analytics';
 
 function App() {
   // Detect PWA mode
@@ -82,7 +87,7 @@ function App() {
     }
     
     // Support other page parameters for shortcuts
-    const validPages: Page[] = ['dashboard', 'status', 'bookings', 'earnings', 'chat', 'package-terms', 'notifications', 'legal', 'calendar', 'payment', 'payment-status', 'custom-menu', 'premium-upgrade', 'commission-payment', 'schedule', 'send-discount', 'hotel-villa-safe-pass'];
+    const validPages: Page[] = ['dashboard', 'status', 'bookings', 'earnings', 'chat', 'package-terms', 'notifications', 'legal', 'calendar', 'payment', 'payment-status', 'custom-menu', 'premium-upgrade', 'commission-payment', 'schedule', 'send-discount', 'hotel-villa-safe-pass', 'more-customers', 'analytics'];
     if (pageParam && validPages.includes(pageParam as Page)) {
       return pageParam as Page;
     }
@@ -825,6 +830,10 @@ function App() {
         return <SendDiscountPage therapist={user} language={language} />;
       case 'hotel-villa-safe-pass':
         return <HotelVillaSafePass therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
+      case 'more-customers':
+        return <MoreCustomersPage therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
+      case 'analytics':
+        return <AdvancedAnalytics therapist={user} language={language} />;
       case 'dashboard':
       default:
         return (

@@ -14,7 +14,7 @@
     "stop:all": "pwsh -NoProfile -File cleanup-memory.ps1",
     "build:production": "cross-env NODE_ENV=production ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
     "serve:production": "npx serve dist -s -p 3000",
-    "dev:therapist": "cd app/apps/therapist-dashboard && pnpm run dev",
+    "dev:therapist": "cd apps/therapist-dashboard && pnpm run dev",
     "dev:admin": "cd app/apps/admin-dashboard && pnpm run dev",
     "dev:place": "cd app/apps/place-dashboard && pnpm run dev",
     "dev:facial": "cd app/apps/facial-dashboard && pnpm run dev",
@@ -160,7 +160,8 @@
     "tsx": "^4.20.6",
     "typescript": "^5.6.3",
     "vite": "^6.4.1",
-    "vitest": "^2.0.0"
+    "vitest": "^2.0.0",
+    "web-vitals": "^5.1.0"
   },
   "engines": {
     "node": "22.x"

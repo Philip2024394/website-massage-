@@ -4,6 +4,10 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 3001,
+    host: true
+  },
   resolve: {
     alias: {
       // Root lib folder - PRIMARY APPROACH

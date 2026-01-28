@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, User, Phone, Crown, Lock, ChevronLeft, ChevronRight, Bell, CheckCircle, X } from 'lucide-react';
 import TherapistPageHeader from '../components/TherapistPageHeader';
+import HelpTooltip from '../components/HelpTooltip';
+import { calendarHelp } from '../constants/helpContent';
 
 interface Booking {
   $id: string;
@@ -336,9 +338,16 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
           </div>
         }
         actions={
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm">
-            <Bell className="w-4 h-4" />
-            <span className="hidden sm:inline">Reminders ON</span>
+          <div className="flex items-center gap-3">
+            <HelpTooltip 
+              {...calendarHelp.scheduleView}
+              position="left"
+              size="md"
+            />
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm">
+              <Bell className="w-4 h-4" />
+              <span className="hidden sm:inline">Reminders ON</span>
+            </div>
           </div>
         }
       />

@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { Crown, Check, AlertCircle, FileText, DollarSign, Calendar, Zap, TrendingUp } from 'lucide-react';
+import { showErrorToast } from '../lib/toastUtils';
 
 interface MembershipOnboardingProps {
   therapist: any;
@@ -108,7 +109,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
       await onComplete(selectedPackage, membershipData);
     } catch (error) {
       console.error('Failed to set up membership:', error);
-      alert('Failed to set up membership. Please try again.');
+      showErrorToast('Failed to set up membership. Please try again.');
     } finally {
       setLoading(false);
     }

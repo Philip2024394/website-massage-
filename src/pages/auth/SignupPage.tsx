@@ -3,7 +3,7 @@ import { Eye, EyeOff, User, Building2, Sparkles } from 'lucide-react';
 import { membershipSignupService, type PortalType } from '../../lib/services/membershipSignup.service';
 import { useLanguage } from '../../hooks/useLanguage';
 import { translations } from '../../translations';
-import { LEGAL_TERMS } from '../../src/legal/terms';
+// import { LEGAL_TERMS } from '../../src/legal/terms'; // Commented out - module not found
 
 interface SignupPageProps {
   onNavigate?: (page: string) => void;
@@ -12,7 +12,7 @@ interface SignupPageProps {
 const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
   // Normalize 'gb' to 'en' for translations
-  const normalizedLang = language === 'gb' ? 'en' : language;
+  const normalizedLang = (language as string) === 'gb' ? 'en' : language;
   const t = translations[normalizedLang].auth;
   
   const [loading, setLoading] = useState(false);

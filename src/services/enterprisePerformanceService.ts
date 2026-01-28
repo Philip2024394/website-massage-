@@ -58,7 +58,7 @@ class EnterprisePerformanceService {
   private sessionId: string;
   private performanceObserver?: PerformanceObserver;
   private vitalsObserver?: PerformanceObserver;
-  private isMonitoring = false;
+  private _isMonitoring = false;
 
   // Performance budgets (enterprise thresholds)
   private budgets = {
@@ -111,7 +111,7 @@ class EnterprisePerformanceService {
           entryTypes: ['longtask', 'measure', 'navigation'] 
         });
 
-        this.isMonitoring = true;
+        this._isMonitoring = true;
       } catch (error) {
         logger.warn('⚠️ Performance Observer not supported:', error);
       }
@@ -616,7 +616,7 @@ class EnterprisePerformanceService {
     if (this.vitalsObserver) {
       this.vitalsObserver.disconnect();
     }
-    this.isMonitoring = false;
+    this._isMonitoring = false;
     logger.info('🧹 Performance monitoring stopped');
   }
 }

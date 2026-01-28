@@ -391,7 +391,7 @@ class EnterpriseErrorMonitoring {
     }
   }
 
-  private sendToRemoteMonitoring(error: ErrorReport): void {
+  private sendToRemoteMonitoring(_error: ErrorReport): void {
     // In production, send to Sentry/Datadog
     if (this.config.environment === 'production') {
       // TODO: Implement remote sending

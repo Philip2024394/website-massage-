@@ -198,7 +198,7 @@ export class HotelVillaBookingService {
      * Find alternative providers within 10km radius
      * @deprecated - Now handled by appwriteBookingService
      */
-    private static async findAlternativeProviders(
+    private static async _findAlternativeProviders(
         hotelVillaId: string,
         originalProviderId: string,
         providerType: 'therapist' | 'place',
@@ -216,7 +216,7 @@ export class HotelVillaBookingService {
      * Reassign booking to new provider
      * @deprecated - Now handled by appwriteBookingService
      */
-    private static async reassignBooking(bookingId: string, newProvider: any): Promise<void> {
+    private static async _reassignBooking(bookingId: string, newProvider: any): Promise<void> {
         return appwriteBookingService.reassignBooking(
             bookingId,
             newProvider.$id || newProvider.id,

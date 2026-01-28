@@ -260,6 +260,125 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
             </p>
           </div>
 
+          {/* Comprehensive Help Section */}
+          <div className="bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-6 mb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                <MenuIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-orange-900 text-lg">Panduan Lengkap Menu Harga</h3>
+                <p className="text-sm text-orange-700">Cara menggunakan sistem menu pricing</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Service Name Section */}
+              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
+                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
+                  📝 Nama Layanan
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                  <li><strong>Contoh bagus:</strong> "Traditional Massage", "Relaxation Therapy", "Deep Tissue"</li>
+                  <li><strong>Tips:</strong> Gunakan nama yang menarik dan profesional</li>
+                  <li><strong>Variasi:</strong> Student Massage, Couple Massage, Office Massage, Foot Massage</li>
+                  <li><strong>Jangan:</strong> Menggunakan nama yang membingungkan atau terlalu panjang</li>
+                </ul>
+              </div>
+
+              {/* Duration & Min Box Section */}
+              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
+                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
+                  ⏰ Kotak "Min" (Durasi Minimum)
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                  <li><strong>Jika diisi:</strong> Durasi ini akan muncul di slider harga untuk pelanggan</li>
+                  <li><strong>Jika kosong:</strong> Durasi ini TIDAK akan ditampilkan ke pelanggan</li>
+                  <li><strong>Contoh:</strong> Isi "60" untuk menampilkan opsi 60 menit</li>
+                  <li><strong>Fleksibel:</strong> Bisa isi angka custom seperti 45, 75, 105 menit</li>
+                  <li><strong>Strategy:</strong> Kosongkan durasi yang tidak Anda tawarkan</li>
+                </ul>
+              </div>
+
+              {/* Pricing Strategy Section */}
+              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
+                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
+                  💰 Strategi Harga (x1000)
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                  <li><strong>Format:</strong> Masukkan angka tanpa ribu (150 = Rp 150.000)</li>
+                  <li><strong>60 menit:</strong> Biasanya 100-200 (Rp 100k-200k)</li>
+                  <li><strong>90 menit:</strong> Biasanya 150-250 (Rp 150k-250k)</li>
+                  <li><strong>120 menit:</strong> Biasanya 200-300 (Rp 200k-300k)</li>
+                  <li><strong>💡 Tips:</strong> Buat harga progresif (60min {'<'} 90min {'<'} 120min)</li>
+                </ul>
+              </div>
+
+              {/* Customer View Section */}
+              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
+                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
+                  👁️ Yang Dilihat Pelanggan
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                  <li><strong>Slider harga:</strong> Hanya durasi yang diisi kotak "Min"</li>
+                  <li><strong>Nama layanan:</strong> Ditampilkan sebagai opsi pilihan</li>
+                  <li><strong>Harga final:</strong> Otomatis dikalikan 1000 (150 → Rp 150.000)</li>
+                  <li><strong>Booking:</strong> Pelanggan pilih layanan + durasi + konfirmasi harga</li>
+                </ul>
+              </div>
+
+              {/* Best Practices Section */}
+              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
+                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
+                  🎯 Best Practices
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                  <li><strong>Minimal 1 layanan:</strong> Buat setidaknya satu layanan dengan harga</li>
+                  <li><strong>Harga kompetitif:</strong> Riset harga terapis lain di area Anda</li>
+                  <li><strong>Update berkala:</strong> Sesuaikan harga berdasarkan demand</li>
+                  <li><strong>Variasi menarik:</strong> Buat nama layanan yang unik dan profesional</li>
+                  <li><strong>Auto-save:</strong> Sistem menyimpan otomatis setiap 2 detik</li>
+                  <li><strong>Limit data:</strong> Maksimal 50.000 karakter total</li>
+                </ul>
+              </div>
+
+              {/* Example Section */}
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200">
+                <h4 className="font-bold text-green-800 mb-2 flex items-center gap-2">
+                  📚 Contoh Menu Sukses
+                </h4>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <div className="bg-white/70 p-3 rounded border">
+                    <strong>Layanan:</strong> "Traditional Relaxation Massage"<br/>
+                    <strong>60 min:</strong> Min=60, Harga=150 (Rp 150.000)<br/>
+                    <strong>90 min:</strong> Min=90, Harga=200 (Rp 200.000)<br/>
+                    <strong>120 min:</strong> Min=(kosong), Harga=(kosong) ← Tidak ditampilkan
+                  </div>
+                  <div className="bg-white/70 p-3 rounded border">
+                    <strong>Layanan:</strong> "Student Special Massage"<br/>
+                    <strong>60 min:</strong> Min=60, Harga=100 (Rp 100.000)<br/>
+                    <strong>90 min:</strong> Min=(kosong) ← Tidak ditampilkan<br/>
+                    <strong>120 min:</strong> Min=(kosong) ← Tidak ditampilkan
+                  </div>
+                </div>
+              </div>
+
+              {/* Troubleshooting Section */}
+              <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                <h4 className="font-bold text-red-800 mb-2 flex items-center gap-2">
+                  🔧 Troubleshooting
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                  <li><strong>Tidak bisa save:</strong> Pastikan ada minimal 1 layanan dengan nama</li>
+                  <li><strong>Data terlalu besar:</strong> Kurangi jumlah layanan atau perpendek nama</li>
+                  <li><strong>Harga tidak muncul:</strong> Pastikan kotak "Min" terisi angka</li>
+                  <li><strong>Auto-save gagal:</strong> Check koneksi internet dan coba manual save</li>
+                  <li><strong>Pelanggan tidak lihat:</strong> Pastikan sudah klik "Simpan Menu"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           {/* All features available - no premium restriction */}
           <>
               {/* Services List - One Line Per Service */}

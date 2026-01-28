@@ -22,6 +22,10 @@ import { initVersionCheck } from './lib/versionCheck';
 // 🔒 APPWRITE COLLECTION PROTECTION - Validates collection IDs at startup
 import './lib/appwrite-startup-validator';
 
+// 📊 ENTERPRISE MONITORING - Web Vitals & Error Tracking
+import { initWebVitals } from './services/webVitals';
+import { errorMonitoring } from './services/enterpriseErrorMonitoring';
+
 // Check if running in admin mode
 const isAdminMode = import.meta.env.MODE === 'admin';
 
@@ -95,7 +99,19 @@ if (isAdminMode) {
   if (import.meta.env.PROD) {
     initVersionCheck();
   }
+  // 📊 ENTERPRISE MONITORING: Initialize Web Vitals and Error Tracking
+  try {
+    // Initialize Web Vitals monitoring (production and staging)
+    if (import.meta.env.PROD || import.meta.env.MODE === 'staging') {
+      initWebVitals();
+      logger.log('✅ Web Vitals monitoring active');
+    }
 
+    // Error monitoring is auto-initialized in enterpriseErrorMonitoring.ts
+    logger.log('✅ Enterprise error monitoring active');
+  } catch (monitoringError) {
+    logger.error('Failed to initialize monitoring', { error: monitoringError });
+  }
   // Mount React app
   const rootElement = document.getElementById('root');
   if (!rootElement) {

@@ -275,7 +275,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     onNavigate={onNavigate}
-                    language={language}
+                    language={language as 'en' | 'id' | 'gb'}
                 />
             </React19SafeWrapper>
 

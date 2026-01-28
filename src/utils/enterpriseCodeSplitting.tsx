@@ -348,7 +348,7 @@ export const SplitHomePage = withCodeSplitting(
 );
 
 export const SplitTherapistDashboard = withCodeSplitting(
-  () => import('../apps/therapist-dashboard/src/App'),
+  () => import('../../apps/therapist-dashboard/src/App'),
   {
     chunkName: 'therapist-dashboard',
     preload: false,

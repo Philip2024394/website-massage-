@@ -411,12 +411,6 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         // Test if we can query documents (this is what matters for chat)
         console.log(`📋 Document access validation: PASSED - Chat can query messages`);
         console.log(`🔍 Collection ready for realtime messaging and document operations`);
-        
-        // Enhanced schema verification - we know this collection has 25+ attributes
-        const expectedAdvanced = ['senderType', 'recipientType', 'roomId', 'conversationId', 'messageType'];
-        const availableAdvanced = expectedAdvanced.filter(field => availableFields.includes(field));
-        console.log(`✅ Core fields verified: ${coreFields.join(', ')}`);
-        console.log(`✅ Advanced fields available: ${availableAdvanced.length}/${expectedAdvanced.length} (${availableAdvanced.join(', ')})`);
         console.log('📋 Schema validation: PASSED - Collection ready for realtime messaging');
         
         

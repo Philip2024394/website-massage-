@@ -12,7 +12,7 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   const { language } = useLanguage();
   // Normalize 'gb' to 'en' for translations
-  const normalizedLang = language === 'gb' ? 'en' : language;
+  const normalizedLang = (language as string) === 'gb' ? 'en' : language;
   const t = translations[normalizedLang].auth;
   
   const [loading, setLoading] = useState(false);

@@ -69,7 +69,7 @@ class EnterpriseScheduledReminderService {
   private dbVersion = 1;
   private db: IDBDatabase | null = null;
   private checkInterval: NodeJS.Timeout | null = null;
-  private serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
+  private _serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
 
   /**
    * Initialize the reminder service
@@ -144,7 +144,7 @@ class EnterpriseScheduledReminderService {
     }
     
     try {
-      this.serviceWorkerRegistration = await navigator.serviceWorker.register('/sw-reminders.js');
+      this._serviceWorkerRegistration = await navigator.serviceWorker.register('/sw-reminders.js');
       logger.info('✅ [REMINDERS] Service Worker registered');
       
       // Listen for messages from service worker

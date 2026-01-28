@@ -94,8 +94,8 @@ class TherapistNotificationService {
               referrer,
               userAgent,
               location: location ? {
-                lat: location.lat || location.latitude,
-                lng: location.lng || location.longitude,
+                lat: location.lat,
+                lng: location.lng,
                 accuracy: (location as any).accuracy || 'N/A'
               } : 'Permission denied'
             });
@@ -255,7 +255,7 @@ class TherapistNotificationService {
     const booking = this.activeNotifications.get(bookingId);
     if (!booking) return;
 
-    logger.info('❌ Therapist rejected booking:', bookingId, reason);
+    logger.info(`❌ Therapist rejected booking: ${bookingId} - ${reason}`);
     
     // Stop notification sounds
     if (this.audioService) {

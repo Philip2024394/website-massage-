@@ -1,8 +1,11 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3, X } from 'lucide-react';
+import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3, X, XCircle, DollarSign } from 'lucide-react';
 import TherapistLayout from '../components/TherapistLayout';
 import { analyticsService } from '@lib/services/analyticsService';
+import { paymentService, bookingService } from '@lib/appwriteService';
+import HelpTooltip from '../components/HelpTooltip';
+import { earningsHelp } from '../constants/helpContent';
 
 interface Payment {
   $id: string;
@@ -26,6 +29,7 @@ interface TherapistEarningsProps {
 
 const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack, onNavigate, onLogout, language = 'id' }) => {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [peakHours, setPeakHours] = useState<any[]>([]);
@@ -77,9 +81,18 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       totalEarnings: 'Total Pendapatan',
       totalPaid: 'Total Dibayar',
       totalPending: 'Total Pending',
+      lostEarnings: 'Kehilangan Pendapatan',
+      missedBookings: 'Booking Terlewat',
+      completedBookings: 'Booking Selesai',
       thisMonth: 'Bulan ini',
       processed: 'Pembayaran diproses',
       awaitingPayout: 'Menunggu pembayaran',
+      serviceBreakdown: 'Rincian per Durasi',
+      bookNowEarnings: 'Book Now',
+      scheduledEarnings: 'Terjadwal',
+      expired: 'Kedaluwarsa (5 menit)',
+      declined: 'Ditolak',
+      cancelled: 'Dibatalkan',
       bestTimesAnalytics: 'Analitik Waktu Terbaik',
       premiumFeature: 'Fitur Premium',
       peakBookingHours: 'Grafik jam booking puncak',
@@ -112,6 +125,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
 
   useEffect(() => {
     fetchPayments();
+    fetchBookings();
     loadAnalyticsData();
   }, [therapist]);
 
@@ -125,9 +139,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
     if (!therapist?.$id) return;
     
     try {
-      // Attempt to load analytics data with better error handling
-      const { analyticsService } = await import('@lib/services/analyticsService');
-      
+      // Load analytics data with better error handling
       const [hours, days] = await Promise.all([
         analyticsService.getPeakBookingHours(therapist.$id).catch(err => {
           console.log('ℹ️ Peak hours analytics unavailable:', err.message);
@@ -169,11 +181,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
   };
 
   const fetchPayments = async () => {
-    setLoading(true);
     try {
-      // Import paymentService
-      const { paymentService } = await import('@lib/appwriteService');
-      
       // Fetch real payments from Appwrite
       const realPayments = await paymentService.getPaymentsByTherapist(therapist.$id);
       
@@ -196,11 +204,89 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       console.error('Failed to fetch payments:', error);
       // Fallback to empty array on error
       setPayments([]);
+    }
+  };
+
+  const fetchBookings = async () => {
+    setLoading(true);
+    try {
+      // Fetch all bookings from Appwrite bookings collection
+      console.log('📊 [EARNINGS] Fetching bookings from Appwrite for therapist:', therapist.$id);
+      const realBookings = await bookingService.getProviderBookings(therapist.$id);
+      
+      console.log('✅ [EARNINGS] Loaded', realBookings.length, 'bookings from Appwrite');
+      console.log('📊 [EARNINGS] Data source: Appwrite bookings collection (NOT localStorage)');
+      
+      // Store bookings with full details
+      setBookings(realBookings.map((doc: any) => ({
+        $id: doc.$id,
+        customerName: doc.userName || doc.customerName || 'Unknown',
+        service: doc.service || '60',
+        duration: doc.duration || 60,
+        totalAmount: doc.totalAmount || doc.price || 0,
+        status: doc.status || 'pending',
+        date: doc.date || doc.$createdAt,
+        isScheduled: doc.isScheduled || false,
+        depositAmount: doc.depositAmount || 0,
+        expiresAt: doc.expiresAt,
+        createdAt: doc.$createdAt
+      })));
+      
+    } catch (error) {
+      console.error('❌ [EARNINGS] Failed to fetch bookings:', error);
+      setBookings([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Calculate comprehensive earnings from BOOKINGS (Appwrite collection)
+  const completedBookings = bookings.filter(b => b.status === 'completed');
+  const expiredBookings = bookings.filter(b => b.status === 'expired');
+  const declinedBookings = bookings.filter(b => b.status === 'declined' || b.status === 'rejected');
+  const cancelledBookings = bookings.filter(b => b.status === 'cancelled');
+  
+  const bookingStats = {
+    // COMPLETED EARNINGS (actual revenue from finished bookings)
+    totalRevenue: completedBookings.reduce((sum, b) => sum + b.totalAmount, 0),
+    netEarnings: completedBookings.reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    adminCommission: completedBookings.reduce((sum, b) => sum + (b.totalAmount * 0.30), 0),
+    
+    // LOST EARNINGS (missed opportunities)
+    lostFromExpired: expiredBookings.reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    lostFromDeclined: declinedBookings.reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    lostFromCancelled: cancelledBookings.reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    totalLost: [...expiredBookings, ...declinedBookings, ...cancelledBookings].reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    
+    // BOOKING COUNTS
+    completedCount: completedBookings.length,
+    expiredCount: expiredBookings.length,
+    declinedCount: declinedBookings.length,
+    cancelledCount: cancelledBookings.length,
+    
+    // SERVICE BREAKDOWN (60/90/120 minutes)
+    earnings60min: completedBookings.filter(b => b.service === '60').reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    earnings90min: completedBookings.filter(b => b.service === '90').reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    earnings120min: completedBookings.filter(b => b.service === '120').reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    
+    count60min: completedBookings.filter(b => b.service === '60').length,
+    count90min: completedBookings.filter(b => b.service === '90').length,
+    count120min: completedBookings.filter(b => b.service === '120').length,
+    
+    // BOOK NOW vs SCHEDULED
+    bookNowEarnings: completedBookings.filter(b => !b.isScheduled).reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    scheduledEarnings: completedBookings.filter(b => b.isScheduled).reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+    
+    bookNowCount: completedBookings.filter(b => !b.isScheduled).length,
+    scheduledCount: completedBookings.filter(b => b.isScheduled).length,
+    
+    // MONTHLY BREAKDOWN
+    monthlyEarnings: completedBookings
+      .filter(b => new Date(b.date).getMonth() === new Date().getMonth())
+      .reduce((sum, b) => sum + (b.totalAmount * 0.70), 0),
+  };
+
+  // Legacy payment stats (kept for backward compatibility)
   const stats = {
     totalDue: payments
       .filter(p => p.status === 'pending')
@@ -325,47 +411,147 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
           </div>
         </div>
         
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Banknote className="w-5 h-5 text-orange-500" />
-              <span className="text-xs text-gray-500">{currentLabels.pending}</span>
+        {/* Booking-Based Stats Cards */}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              <h3 className="text-sm font-bold text-gray-900">Total Earnings (Completed)</h3>
+              <HelpTooltip {...earningsHelp.completedEarnings} position="bottom" size="sm" />
             </div>
-            <p className="text-lg font-bold text-gray-900">
-              Rp {stats.totalDue.toLocaleString('id-ID')}
-            </p>
+            <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-bold rounded-full">
+              {bookingStats.completedCount} bookings
+            </span>
           </div>
+          <p className="text-2xl font-bold text-green-700 mb-1">
+            Rp {bookingStats.netEarnings.toLocaleString('id-ID')}
+          </p>
+          <p className="text-xs text-green-600">
+            From Rp {bookingStats.totalRevenue.toLocaleString('id-ID')} (70% after commission)
+          </p>
+        </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-5 h-5 text-orange-500" />
-              <span className="text-xs text-gray-500">{currentLabels.paid}</span>
+        {/* Lost Earnings Alert */}
+        {bookingStats.totalLost > 0 && (
+          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl border-2 border-red-200 p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <XCircle className="w-6 h-6 text-red-600" />
+                <h3 className="text-sm font-bold text-gray-900">Lost Earnings</h3>
+                <HelpTooltip {...earningsHelp.lostEarnings} position="bottom" size="sm" />
+              </div>
+              <span className="px-2 py-1 bg-red-200 text-red-800 text-xs font-bold rounded-full">
+                {bookingStats.expiredCount + bookingStats.declinedCount + bookingStats.cancelledCount} missed
+              </span>
             </div>
-            <p className="text-lg font-bold text-gray-900">
-              Rp {stats.totalPaid.toLocaleString('id-ID')}
+            <p className="text-2xl font-bold text-red-700 mb-2">
+              Rp {bookingStats.totalLost.toLocaleString('id-ID')}
             </p>
+            <div className="space-y-1 text-xs">
+              {bookingStats.expiredCount > 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>⏰ Expired (5-min timeout):</span>
+                  <span className="font-semibold">Rp {bookingStats.lostFromExpired.toLocaleString('id-ID')} ({bookingStats.expiredCount})</span>
+                </div>
+              )}
+              {bookingStats.declinedCount > 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>❌ Declined:</span>
+                  <span className="font-semibold">Rp {bookingStats.lostFromDeclined.toLocaleString('id-ID')} ({bookingStats.declinedCount})</span>
+                </div>
+              )}
+              {bookingStats.cancelledCount > 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>🚫 Cancelled:</span>
+                  <span className="font-semibold">Rp {bookingStats.lostFromCancelled.toLocaleString('id-ID')} ({bookingStats.cancelledCount})</span>
+                </div>
+              )}
+            </div>
           </div>
+        )}
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertCircle className="w-5 h-5 text-orange-500" />
-              <span className="text-xs text-gray-500">Admin Fee</span>
-            </div>
-            <p className="text-lg font-bold text-gray-900">
-              Rp {stats.adminDue.toLocaleString('id-ID')}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">30% commission</p>
+        {/* Service Duration Breakdown */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <DollarSign className="w-5 h-5 text-orange-500" />
+            <h3 className="text-sm font-bold text-gray-900">Service Duration Breakdown</h3>
+            <HelpTooltip {...earningsHelp.serviceBreakdown} position="bottom" size="sm" />
           </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Calendar className="w-5 h-5 text-orange-500" />
-              <span className="text-xs text-gray-500">{currentLabels.thisMonth}</span>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+              <span className="text-sm font-medium text-gray-700">60 minutes</span>
+              <div className="text-right">
+                <p className="text-sm font-bold text-gray-900">Rp {bookingStats.earnings60min.toLocaleString('id-ID')}</p>
+                <p className="text-xs text-gray-500">{bookingStats.count60min} bookings</p>
+              </div>
             </div>
-            <p className="text-lg font-bold text-gray-900">
-              Rp {stats.monthlyEarnings.toLocaleString('id-ID')}
+            <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+              <span className="text-sm font-medium text-gray-700">90 minutes</span>
+              <div className="text-right">
+                <p className="text-sm font-bold text-gray-900">Rp {bookingStats.earnings90min.toLocaleString('id-ID')}</p>
+                <p className="text-xs text-gray-500">{bookingStats.count90min} bookings</p>
+              </div>
+            </div>
+            <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+              <span className="text-sm font-medium text-gray-700">120 minutes</span>
+              <div className="text-right">
+                <p className="text-sm font-bold text-gray-900">Rp {bookingStats.earnings120min.toLocaleString('id-ID')}</p>
+                <p className="text-xs text-gray-500">{bookingStats.count120min} bookings</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Book Now vs Scheduled */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-bold text-gray-900">Booking Types</h3>
+            <HelpTooltip {...earningsHelp.bookingTypes} position="bottom" size="sm" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-orange-500" />
+                <span className="text-xs text-gray-600 font-semibold">Book Now</span>
+              </div>
+              <p className="text-base font-bold text-gray-900">
+                Rp {bookingStats.bookNowEarnings.toLocaleString('id-ID')}
+              </p>
+              <p className="text-xs text-gray-500">{bookingStats.bookNowCount} bookings</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-orange-500" />
+                <span className="text-xs text-gray-600 font-semibold">Scheduled</span>
+              </div>
+              <p className="text-base font-bold text-gray-900">
+                Rp {bookingStats.scheduledEarnings.toLocaleString('id-ID')}
+              </p>
+              <p className="text-xs text-gray-500">{bookingStats.scheduledCount} bookings</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Monthly Stats */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-5 h-5 text-orange-500" />
+            <span className="text-xs text-gray-500 font-semibold">{currentLabels.thisMonth}</span>
+            <HelpTooltip {...earningsHelp.monthlyEarnings} position="bottom" size="sm" />
+          </div>
+          <p className="text-xl font-bold text-gray-900">
+            Rp {bookingStats.monthlyEarnings.toLocaleString('id-ID')}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">From completed bookings</p>
+        </div>
+
+        {/* Data Source Badge */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <div className="flex items-start gap-2">
+            <p className="text-xs text-blue-800 flex-1">
+              <span className="font-bold">✅ Connected to Appwrite:</span> All earnings calculated from bookings collection in real-time
             </p>
+            <HelpTooltip {...earningsHelp.dataSource} position="left" size="sm" />
           </div>
         </div>
 
@@ -427,7 +613,10 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
 
             {/* Peak Hours Chart */}
             <div className="mb-5">
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm">Peak Booking Hours</h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="font-semibold text-gray-900 text-sm">Peak Booking Hours</h3>
+                <HelpTooltip {...earningsHelp.peakHours} position="bottom" size="sm" />
+              </div>
               <div className="space-y-2">
                 {(peakHours.length > 0 ? peakHours : [
                   { hour: '9:00 - 11:00 AM', bookings: 12, percentage: 85 },
@@ -453,7 +642,10 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
 
             {/* Busy Days */}
             <div className="mb-5">
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm">Busiest Days</h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="font-semibold text-gray-900 text-sm">Busiest Days</h3>
+                <HelpTooltip {...earningsHelp.busiestDays} position="bottom" size="sm" />
+              </div>
               <div className="grid grid-cols-7 gap-1.5 mb-4">
                 {(busiestDays.length > 0 ? busiestDays : [
                   { day: 'Mon', intensity: 90 },

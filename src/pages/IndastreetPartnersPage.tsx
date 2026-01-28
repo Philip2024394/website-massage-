@@ -426,7 +426,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                     setIsMenuOpen(false);
                 }}
                 t={t}
-                language={language}
+                language={language as 'en' | 'id' | 'gb'}
                 onMassageJobsClick={onMassageJobsClick}
                 onHotelPortalClick={onHotelPortalClick}
                 onVillaPortalClick={onVillaPortalClick}

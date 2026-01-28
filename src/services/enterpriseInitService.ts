@@ -12,10 +12,7 @@ import { logger } from './enterpriseLogger';
 
 import enterprisePerformanceService, { trackCustomMetric } from './enterprisePerformanceService';
 import enterpriseMonitoringService, { trackEvent } from './enterpriseMonitoringService';
-import enterpriseDatabaseService, { trackDatabaseQuery } from './enterpriseDatabaseService';
-import { enterpriseBookingFlowService } from './enterpriseBookingFlowService';
-import { enterpriseChatIntegrationService } from './enterpriseChatIntegrationService';
-import { bookingSoundService } from './bookingSound.service';
+import { trackDatabaseQuery } from './enterpriseDatabaseService';
 
 class EnterpriseInitializationService {
   private initialized = false;

@@ -12,6 +12,9 @@ import { devLog, devWarn } from "../../../../src/utils/devMode";
 import { FloatingChatWindow } from '../../../../src/chat/FloatingChatWindow';
 import TherapistLayout from '../components/TherapistLayout';
 import BookingRequestCard from '../components/BookingRequestCard';
+import HelpTooltip from '../components/HelpTooltip';
+import { onlineStatusHelp } from '../constants/helpContent';
+import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../lib/toastUtils';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -496,7 +499,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       };
       
       devLog('✅ Status saved:', statusMessages[newStatus]);
-      alert(statusMessages[newStatus]);
+      showSuccessToast(statusMessages[newStatus]);
       
     } catch (error) {
       console.error('❌ Failed to update status:', error);
@@ -518,13 +521,13 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                           status === 'busy' ? 'available' : 
                           status === 'offline' ? 'available' : 'offline';
       setStatus(revertStatus);
-      alert(language === 'id' ? '❌ Gagal memperbarui status. Silakan coba lagi.' : '❌ Failed to update status. Please try again.');
+      showErrorToast(language === 'id' ? '❌ Gagal memperbarui status. Silakan coba lagi.' : '❌ Failed to update status. Please try again.');
       console.error('❌ Error details:', {
         message: error?.message,
         code: error?.code,
         type: error?.type
       });
-      alert(`Failed to update status: ${error?.message || 'Unknown error'}`);
+      showErrorToast(`Failed to update status: ${error?.message || 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -541,10 +544,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       });
       
       devLog('✅ Auto-offline time saved:', result.autoOfflineTime);
-      alert('⏰ Auto-offline timer set for ' + time);
+      showSuccessToast('⏰ Auto-offline timer set for ' + time);
     } catch (error) {
       console.error('❌ Failed to save auto-offline time:', error);
-      alert('Failed to save auto-offline time. Please try again.');
+      showErrorToast('Failed to save auto-offline time. Please try again.');
     }
   };
 
@@ -559,10 +562,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       setAutoOfflineTime('');
       devLog('✅ Auto-offline timer cancelled');
-      alert('✅ Auto-offline timer cancelled');
+      showSuccessToast('✅ Auto-offline timer cancelled');
     } catch (error) {
       console.error('❌ Failed to cancel timer:', error);
-      alert('Failed to cancel timer. Please try again.');
+      showErrorToast('Failed to cancel timer. Please try again.');
     }
   };
 
@@ -588,12 +591,12 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       setIsDiscountActive(true);
       devLog('✅ Discount badge activated');
-      alert(`✅ ${discountPercentage}% discount badge activated for ${discountDuration} hours!`);
+      showSuccessToast(`✅ ${discountPercentage}% discount badge activated for ${discountDuration} hours!`);
       
       // Don't refresh here - it causes button jumping when clicking OK on alert
     } catch (error) {
       console.error('❌ Failed to save discount:', error);
-      alert('Failed to save discount. Please try again.');
+      showErrorToast('Failed to save discount. Please try again.');
     }
   };
 
@@ -612,12 +615,12 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       setDiscountDuration(0);
       setIsDiscountActive(false);
       devLog('✅ Discount badge cancelled');
-      alert('✅ Discount badge removed');
+      showSuccessToast('✅ Discount badge removed');
       
       // Don't refresh here - it causes button jumping when clicking OK on alert
     } catch (error) {
       console.error('❌ Failed to cancel discount:', error);
-      alert('Failed to cancel discount. Please try again.');
+      showErrorToast('Failed to cancel discount. Please try again.');
     }
   };
 
@@ -636,7 +639,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         // Also test the escalating notifications
         // await EnhancedNotificationService.testEnhancedNotifications(); // Temporarily disabled
         
-        alert(
+        showToast(
           '🚀 ULTIMATE NOTIFICATION TEST STARTED!\n\n' +
           '✅ Testing:\n' +
           '  • Maximum vibration (7 seconds)\n' +
@@ -648,14 +651,16 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           'If phone is in standby/locked:\n' +
           '  • Notification WILL show on lock screen\n' +
           '  • Phone WILL vibrate strongly\n' +
-          '  • System default sound will play'
+          '  • System default sound will play',
+          'success', 
+          { duration: 8000 }
         );
       } else {
-        alert('⚠️ Notification permission required!\n\nPlease allow notifications in your browser settings and try again.');
+        showErrorToast('⚠️ Notification permission required!\n\nPlease allow notifications in your browser settings and try again.');
       }
     } catch (error) {
       console.error('Error testing notifications:', error);
-      alert('❌ Failed to test notifications. Please ensure the app is properly installed.');
+      showErrorToast('❌ Failed to test notifications. Please ensure the app is properly installed.');
     }
   };
 
@@ -679,7 +684,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       // Fallback: Check if it's iOS and show Add to Home Screen instruction
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
-        alert('📱 To download the app:\n\n1. Tap the Share button (⬆️)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm');
+        showToast('📱 To download the app:\n\n1. Tap the Share button (⬆️)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm', 'info', { duration: 8000 });
       } else {
         // For other browsers, set as downloaded for demo purposes
         setIsAppInstalled(true);
@@ -705,23 +710,25 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     
     if (isAppInstalled && !forceReinstall) {
       // Show force reinstall option
-      const shouldForceReinstall = confirm(
+      showConfirmationToast(
         '📱 APP ALREADY DETECTED\n\n' +
         'If you\'re having notification issues:\n' +
         '• Click OK to FORCE REINSTALL\n' +
         '• This ensures you have the latest notification sounds\n' +
-        '• Cancel if notifications are working fine'
+        '• Cancel if notifications are working fine',
+        {
+          onConfirm: () => {
+            setForceReinstall(true);
+            setIsAppInstalled(false);
+            localStorage.removeItem('pwa-installed');
+            localStorage.removeItem('pwa-install-completed');
+            // PWAInstallationEnforcer.forceRefreshStatus(); // Temporarily disabled
+            showToast('⚙️ Now tap the DOWNLOAD button again to reinstall with enhanced notifications!', 'info');
+          },
+          confirmText: 'Force Reinstall',
+          cancelText: 'Keep Current App'
+        }
       );
-      
-      if (shouldForceReinstall) {
-        setForceReinstall(true);
-        setIsAppInstalled(false);
-        localStorage.removeItem('pwa-installed');
-        localStorage.removeItem('pwa-install-completed');
-        // PWAInstallationEnforcer.forceRefreshStatus(); // Temporarily disabled
-        alert('⚙️ Now tap the DOWNLOAD button again to reinstall with enhanced notifications!');
-        return;
-      }
       return;
     }
     
@@ -796,16 +803,18 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       // FINAL FALLBACK: Show browser-specific instructions only if everything else fails
       if (isIOS) {
         // iOS specific instructions popup
-        alert(
+        showToast(
           '📱 TO INSTALL ON iPhone/iPad:\n\n' +
           '1. Tap the Share button (⬆️) at the bottom of Safari\n' +
           '2. Scroll down and tap "Add to Home Screen"\n' +
           '3. Tap "Add" to confirm\n\n' +
-          '✅ The app will appear on your home screen with full notification support!'
+          '✅ The app will appear on your home screen with full notification support!',
+          'info',
+          { duration: 10000 }
         );
       } else {
         // Show Android/Desktop instructions
-        alert(
+        showToast(
           '📱 TO INSTALL THE APP:\n\n' +
           '🔹 Chrome/Edge:\n' +
           '   • Look for install icon (⬇️) in address bar\n' +
@@ -814,7 +823,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           '   • Menu (⋮) → "Install"\n\n' +
           '🔹 Other browsers:\n' +
           '   • Add to home screen from browser menu\n\n' +
-          '✅ Once installed, you\'ll get enhanced notifications!'
+          '✅ Once installed, you\'ll get enhanced notifications!',
+          'info',
+          { duration: 10000 }
         );
       }
     }, 500);
@@ -870,7 +881,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.currentStatus}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.currentStatus}</h2>
+              <HelpTooltip 
+                {...onlineStatusHelp.availabilityToggle}
+                position="right"
+                size="md"
+              />
+            </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-semibold text-gray-700">{(onlineHoursThisMonth || 0).toFixed(1)}h</span>
@@ -952,7 +970,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 <Clock className={`w-6 h-6 ${isPremium ? 'text-white' : 'text-white'}`} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.autoOfflineTimer}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.autoOfflineTimer}</h2>
+                  <HelpTooltip 
+                    {...onlineStatusHelp.autoOfflineTimer}
+                    position="right"
+                    size="sm"
+                  />
+                </div>
                 <p className="text-xs text-gray-500">{dict.therapistDashboard.autoOfflineTimerDesc}</p>
               </div>
             </div>
@@ -988,7 +1013,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             <button
               onClick={() => {
                 if (!isPremium) {
-                  alert('⭐ Auto-Offline Timer is a Premium feature. Upgrade to unlock!');
+                  showWarningToast('⭐ Auto-Offline Timer is a Premium feature. Upgrade to unlock!');
                   return;
                 }
                 handleAutoOfflineTimeChange(autoOfflineTime);
@@ -1035,7 +1060,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 <Crown className={`w-6 h-6 ${isPremium ? 'text-white' : 'text-white'}`} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.discountBadge}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.discountBadge}</h2>
+                  <HelpTooltip 
+                    {...onlineStatusHelp.discountBadge}
+                    position="right"
+                    size="sm"
+                  />
+                </div>
                 <p className="text-xs text-gray-500">{dict.therapistDashboard.discountBadgeDesc}</p>
               </div>
             </div>
@@ -1130,24 +1162,31 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         {showPWAInstallSection && (
         <div className="rounded-xl p-6 border-2 bg-white border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                isAppInstalled ? 'bg-green-500' : 'bg-blue-500'
+                isAppInstalled ? 'bg-green-500' : 'bg-orange-600'
               }`}>
                 {isAppInstalled ? <Lock className="w-6 h-6 text-white" /> : <Smartphone className="w-6 h-6 text-white" />}
               </div>
-              <div>
-                <h3 className={`text-lg font-bold ${
-                  isAppInstalled ? 'text-green-900' : 'text-gray-900'
-                }`}>
-                  {isAppInstalled ? '✅ App Downloaded' : '📱 Download App'}
-                </h3>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className={`text-lg font-bold ${
+                    isAppInstalled ? 'text-green-900' : 'text-orange-900'
+                  }`}>
+                    {isAppInstalled ? '✅ Aplikasi Terunduh' : '📱 Unduh Aplikasi'}
+                  </h3>
+                  <HelpTooltip 
+                    {...onlineStatusHelp.downloadApp}
+                    position="left"
+                    size="sm"
+                  />
+                </div>
                 <p className={`text-sm ${
-                  isAppInstalled ? 'text-green-700' : 'text-gray-600'
+                  isAppInstalled ? 'text-green-700' : 'text-orange-700'
                 }`}>
                   {isAppInstalled 
-                    ? 'App is ready to use'
-                    : 'Get the mobile app for better experience'
+                    ? 'Aplikasi siap digunakan'
+                    : 'Dapatkan aplikasi mobile untuk pengalaman lebih baik'
                   }
                 </p>
               </div>
@@ -1169,18 +1208,18 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             className={`w-full py-3 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 ${
               isAppInstalled
                 ? 'bg-green-500 text-white cursor-not-allowed'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
+                : 'bg-gradient-to-r from-orange-600 to-orange-700 text-white hover:from-orange-700 hover:to-orange-800'
             }`}
           >
             {isAppInstalled ? (
               <>
                 <Lock className="w-5 h-5" />
-                Downloaded
+                Terunduh
               </>
             ) : (
               <>
                 <Download className="w-5 h-5" />
-                Download Now
+                Unduh Sekarang
               </>
             )}
           </button>

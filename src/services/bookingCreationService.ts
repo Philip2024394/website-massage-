@@ -103,7 +103,7 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       serviceType: String(input.duration),
       duration: input.duration,
       price: input.price,
-      location: input.location || 'Not specified',
+      // location: input.location || 'Not specified', // Property doesn't exist on BookingInput
       date: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[0] : now.toISOString().split('T')[0],
       time: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[1] : now.toISOString().split('T')[1]
     };

@@ -15,8 +15,8 @@
 
 import { databases, ID } from '../../lib/appwrite';
 import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
-import { chatLocalStorage, ChatMessage } from './chatLocalStorage';
-import { bookingLocalStorage, BookingDraft } from './bookingLocalStorage';
+import { chatLocalStorage } from './chatLocalStorage';
+import { bookingLocalStorage } from './bookingLocalStorage';
 import { localStorageManager } from './localStorageManager';
 
 export interface SyncResult {

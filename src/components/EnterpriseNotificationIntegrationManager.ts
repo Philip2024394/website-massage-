@@ -55,9 +55,23 @@ class EnterpriseNotificationIntegrationManager {
   private serviceWorker: ServiceWorkerRegistration | null = null;
   private testResults: TestResult[] = [];
   private isInitialized = false;
+  
+  // Event handler references for proper cleanup
+  private enterpriseBookingEventHandler: (event: Event) => void;
+  private newBookingNotificationHandler: (event: Event) => void;
+  private bookingStatusUpdateHandler: (event: Event) => void;
+  private scheduleReminderHandler: (event: Event) => void;
+  private upcomingBookingAlertHandler: (event: Event) => void;
 
   constructor(config: EnterpriseNotificationConfig) {
     this.config = config;
+    
+    // Initialize event handlers
+    this.enterpriseBookingEventHandler = (event: Event) => this.handleBookingEvent(event as CustomEvent);
+    this.newBookingNotificationHandler = (event: Event) => this.handleBookingEvent(event as CustomEvent);
+    this.bookingStatusUpdateHandler = (event: Event) => this.handleBookingStatusUpdate(event as CustomEvent);
+    this.scheduleReminderHandler = (event: Event) => this.handleScheduleReminder(event as CustomEvent);
+    this.upcomingBookingAlertHandler = (event: Event) => this.handleScheduleReminder(event as CustomEvent);
   }
 
   public static async create(config: EnterpriseNotificationConfig): Promise<EnterpriseNotificationIntegrationManager> {
@@ -147,9 +161,9 @@ class EnterpriseNotificationIntegrationManager {
     this.log('🔗 [ENTERPRISE] Setting up booking flow integration...');
     
     // Listen for booking events from the main app
-    window.addEventListener('enterpriseBookingEvent', this.handleBookingEvent.bind(this));
-    window.addEventListener('newBookingNotification', this.handleBookingEvent.bind(this));
-    window.addEventListener('bookingStatusUpdate', this.handleBookingStatusUpdate.bind(this));
+    window.addEventListener('enterpriseBookingEvent', this.enterpriseBookingEventHandler);
+    window.addEventListener('newBookingNotification', this.newBookingNotificationHandler);
+    window.addEventListener('bookingStatusUpdate', this.bookingStatusUpdateHandler);
     
     // Monitor existing booking subscription systems
     await this.monitorExistingBookingSystems();
@@ -292,8 +306,8 @@ class EnterpriseNotificationIntegrationManager {
     this.log('📅 [ENTERPRISE] Setting up schedule flow integration...');
     
     // Listen for schedule reminder events
-    window.addEventListener('scheduleReminder', this.handleScheduleReminder.bind(this));
-    window.addEventListener('upcomingBookingAlert', this.handleScheduleReminder.bind(this));
+    window.addEventListener('scheduleReminder', this.scheduleReminderHandler);
+    window.addEventListener('upcomingBookingAlert', this.upcomingBookingAlertHandler);
     
     // Setup automatic reminder system
     this.setupAutomaticReminders();
@@ -1253,11 +1267,11 @@ class EnterpriseNotificationIntegrationManager {
     }
 
     // Remove event listeners
-    window.removeEventListener('enterpriseBookingEvent', this.handleBookingEvent);
-    window.removeEventListener('newBookingNotification', this.handleBookingEvent);
-    window.removeEventListener('bookingStatusUpdate', this.handleBookingStatusUpdate);
-    window.removeEventListener('scheduleReminder', this.handleScheduleReminder);
-    window.removeEventListener('upcomingBookingAlert', this.handleScheduleReminder);
+    window.removeEventListener('enterpriseBookingEvent', this.enterpriseBookingEventHandler);
+    window.removeEventListener('newBookingNotification', this.newBookingNotificationHandler);
+    window.removeEventListener('bookingStatusUpdate', this.bookingStatusUpdateHandler);
+    window.removeEventListener('scheduleReminder', this.scheduleReminderHandler);
+    window.removeEventListener('upcomingBookingAlert', this.upcomingBookingAlertHandler);
 
     this.log('✅ [ENTERPRISE] Cleanup completed');
   }

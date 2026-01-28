@@ -36,7 +36,7 @@ export enum StorageType {
 class EnterpriseStorage {
   private config: StorageConfig;
   private memoryStorage = new Map<string, StorageEntry>();
-  private encryptionKey: string;
+  private _encryptionKey: string;
   private storageAvailable: Record<StorageType, boolean>;
 
   constructor(config?: Partial<StorageConfig>) {
@@ -49,7 +49,7 @@ class EnterpriseStorage {
       ...config
     };
 
-    this.encryptionKey = this.generateEncryptionKey();
+    this._encryptionKey = this.generateEncryptionKey();
     this.storageAvailable = this.checkStorageAvailability();
 
     // Setup cross-tab sync

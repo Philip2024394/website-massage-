@@ -77,7 +77,7 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
     places = []
 }) => {
     const { language } = useLanguage();
-    const { t: hookT } = useTranslations(language);
+    const { t: hookT } = useTranslations(language as 'en' | 'id');
     const t = propT || hookT;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
@@ -174,7 +174,7 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     t={t}
-                    language={language}
+                    language={language as 'en' | 'id' | 'gb'}
                     onMassageJobsClick={onMassageJobsClick}
                     onHotelPortalClick={onHotelPortalClick}
                     onVillaPortalClick={onVillaPortalClick}

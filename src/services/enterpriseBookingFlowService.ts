@@ -407,7 +407,7 @@ class EnterpriseBookingFlowService {
    * Get available therapists based on location and preferences
    * Note: This is a placeholder - actual implementation requires therapist service integration
    */
-  private async getAvailableTherapists(request: BookingRequest): Promise<string[]> {
+  private async getAvailableTherapists(_request: BookingRequest): Promise<string[]> {
     try {
       // TODO: Integrate with actual therapist availability service
       // For now, return empty array to allow compilation
@@ -433,7 +433,7 @@ class EnterpriseBookingFlowService {
   /**
    * Sort therapists by priority (rating, distance, response time)
    */
-  private sortTherapistsByPriority(therapistIds: string[], request: BookingRequest): string[] {
+  private _sortTherapistsByPriority(therapistIds: string[], _request: BookingRequest): string[] {
     // Implementation would sort by rating, distance, previous response times
     // For now, return as-is (can be enhanced with actual therapist data)
     return therapistIds;
@@ -719,7 +719,7 @@ class EnterpriseBookingFlowService {
   /**
    * Start cleanup interval
    */
-  private startCleanupInterval(): void {
+  private _startCleanupInterval(): void {
     setInterval(() => {
       this.cleanupExpiredBookings();
     }, 60000); // Clean up every minute

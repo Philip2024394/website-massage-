@@ -38,7 +38,7 @@ const HotelsVillasPage: React.FC<HotelsVillasPageProps> = ({
     places = []
 }) => {
     const { language } = useLanguage();
-    const { t } = useTranslations(language);
+    const { t } = useTranslations(language as 'en' | 'id');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (

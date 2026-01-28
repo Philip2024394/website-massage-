@@ -106,7 +106,7 @@ function handleInputFocus(e: FocusEvent) {
 /**
  * Handle input blur
  */
-function handleInputBlur(e: FocusEvent) {
+function handleInputBlur(_e: FocusEvent) {
   // Small delay to allow keyboard to close
   setTimeout(() => {
     // Check if no other input is focused

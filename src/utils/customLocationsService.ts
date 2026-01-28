@@ -112,8 +112,8 @@ export async function getCustomLocationCenter(customCity: string): Promise<{ lat
     const matchingTherapists = allTherapists.filter(
       (t: Therapist) => 
         t.isCustomLocation && 
-        t.customCity?.toLowerCase().trim() === customCity.toLowerCase().trim() &&
-        t.geopoint
+        t.customCity?.toLowerCase().trim() === customCity.toLowerCase().trim()
+        // t.geopoint // Property doesn't exist on Therapist
     );
     
     if (matchingTherapists.length === 0) {
@@ -126,9 +126,9 @@ export async function getCustomLocationCenter(customCity: string): Promise<{ lat
     let validCount = 0;
     
     matchingTherapists.forEach((t: Therapist) => {
-      if (t.geopoint?.lat && t.geopoint?.lng) {
-        totalLat += t.geopoint.lat;
-        totalLng += t.geopoint.lng;
+      if ((t as any).geopoint?.lat && (t as any).geopoint?.lng) {
+        totalLat += (t as any).geopoint.lat;
+        totalLng += (t as any).geopoint.lng;
         validCount++;
       }
     });

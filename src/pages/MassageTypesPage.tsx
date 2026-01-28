@@ -78,7 +78,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
     places = []
 }) => {
     const { language } = useLanguage();
-    const { t: hookT } = useTranslations(language);
+    const { t: hookT } = useTranslations(language as 'en' | 'id');
     const t = propT || hookT; // Use prop t if provided, otherwise use hook
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
@@ -280,7 +280,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     t={t}
-                    language={language}
+                    language={language as 'en' | 'id' | 'gb'}
                     onMassageJobsClick={onMassageJobsClick}
                     onHotelPortalClick={onHotelPortalClick}
                     onVillaPortalClick={onVillaPortalClick}

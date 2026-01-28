@@ -415,11 +415,11 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                 <button
                     onClick={toggleChat}
                     className={`
-                        relative bg-gradient-to-br from-orange-500 to-orange-600 border-2 border-orange-400/50
+                        relative bg-gradient-to-br from-orange-600 to-orange-700 border-2 border-orange-500/50
                         text-white rounded-2xl shadow-2xl
                         transition-all duration-500 transform 
-                        hover:scale-110 hover:from-orange-600 hover:to-orange-700
-                        active:scale-95 active:from-orange-700 active:to-orange-800
+                        hover:scale-110 hover:from-orange-700 hover:to-orange-800
+                        active:scale-95 active:from-orange-800 active:to-orange-900
                         ${isInPWAMode ? 'w-16 h-16 p-4' : 'w-14 h-14 p-4'}
                         ${unreadCount > 0 ? 'animate-pulse' : ''}
                         flex items-center justify-center
@@ -427,7 +427,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                         before:absolute before:inset-0 before:bg-gradient-to-br 
                         before:from-white/20 before:to-transparent before:rounded-2xl
                         after:absolute after:inset-0 after:bg-gradient-to-t 
-                        after:from-orange-800/20 after:to-transparent after:rounded-2xl
+                        after:from-orange-900/20 after:to-transparent after:rounded-2xl
                     `}
                     style={{
                         boxShadow: `

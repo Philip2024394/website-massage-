@@ -167,7 +167,7 @@ export function logDeviceDebugInfo(label: string = '📱 Device Debug Info'): De
   if (info.enhancedDetection) {
     console.log('🔬 Enhanced Detection:', {
       mobile: info.enhancedDetection.isMobile,
-      mobileUA: info.enhancedDetection.isMobileUA,
+      mobileUA: info.enhancedDetection.isMobile, // Fixed property name
       android: info.enhancedDetection.isAndroid,
       iOS: info.enhancedDetection.isIOS,
       browser: {
@@ -176,11 +176,11 @@ export function logDeviceDebugInfo(label: string = '📱 Device Debug Info'): De
         firefox: info.enhancedDetection.isFirefox
       },
       viewport: {
-        small: info.enhancedDetection.isSmallViewport,
-        medium: info.enhancedDetection.isMediumViewport,
-        large: info.enhancedDetection.isLargeViewport
+        // small: info.enhancedDetection.isSmallViewport, // Property doesn't exist
+        // medium: info.enhancedDetection.isMediumViewport, // Property doesn't exist
+        // large: info.enhancedDetection.isLargeViewport // Property doesn't exist
       },
-      retina: info.enhancedDetection.isRetinaDisplay
+      // retina: info.enhancedDetection.isRetinaDisplay // Property doesn't exist
     });
   }
   

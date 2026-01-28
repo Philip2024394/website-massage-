@@ -4,7 +4,7 @@ import { Therapist, Place, User, Agent, HotelVillaServiceStatus } from '../types
 import { AvailabilityStatus } from '../types';
 import { stringifyPricing, stringifyMassageTypes, stringifyCoordinates, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, placesService as placeService, agentService } from '../lib/appwriteService';
-import { filterTherapistsByCity, filterPlacesByCity } from '../utils/cityFilterUtils';
+import { filterTherapistsByCity } from '../utils/cityFilterUtils';
 
 // Main image URLs from ImageKit for therapists
 const THERAPIST_MAIN_IMAGES = [

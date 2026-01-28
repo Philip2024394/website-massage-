@@ -16,15 +16,15 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
-    "strict": false,
-    "noImplicitAny": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    /* Linting - Incrementally enabling strict mode for enterprise standards */
+    "strict": false, // TODO: Enable once all type errors resolved
+    "noImplicitAny": false, // TODO: Enable incrementally
+    "noUnusedLocals": false, // TODO: Re-enable after comprehensive unused variable cleanup
+    "noUnusedParameters": false, // TODO: Re-enable after comprehensive unused parameter cleanup
     "noFallthroughCasesInSwitch": true,
-    "strictNullChecks": false,
-    "strictFunctionTypes": false,
-    "strictBindCallApply": false
+    "strictNullChecks": false, // TODO: Enable for null safety
+    "strictFunctionTypes": true, // ✅ ENABLED: Type-safe function signatures
+    "strictBindCallApply": true // ✅ ENABLED: Type-safe bind/call/apply
   },
   "include": [
     "src/**/*",
@@ -43,6 +43,11 @@
     "dist",
     "build",
     "**/*.spec.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "app/**",
+    "archived/**",
+    "playwright-report/**",
+    "test-results/**",
+    "e2e-tests/**"
   ]
 }

@@ -85,23 +85,36 @@ class EnterpriseLogger {
   /**
    * Info level logging (general information)
    */
-  info(message: string, context?: Record<string, any>): void {
-    this.log(LogLevel.INFO, message, context);
+  info(message: string, context?: Record<string, any> | string | number): void {
+    // Handle legacy calls with string/number as second param
+    const normalizedContext = (typeof context === 'object' && context !== null) 
+      ? context 
+      : context !== undefined ? { value: context } : undefined;
+    this.log(LogLevel.INFO, message, normalizedContext);
   }
 
   /**
    * Warning level logging (recoverable issues)
    */
-  warn(message: string, context?: Record<string, any>): void {
-    this.log(LogLevel.WARN, message, context);
+  warn(message: string, context?: Record<string, any> | string | number): void {
+    // Handle legacy calls with string/number as second param
+    const normalizedContext = (typeof context === 'object' && context !== null) 
+      ? context 
+      : context !== undefined ? { value: context } : undefined;
+    this.log(LogLevel.WARN, message, normalizedContext);
   }
 
   /**
    * Error level logging (errors that need attention)
    */
-  error(message: string, context?: Record<string, any>, error?: Error): void {
+  error(message: string, context?: Record<string, any> | string | number, error?: Error): void {
+    // Handle legacy calls with string/number as second param
+    const normalizedContext = (typeof context === 'object' && context !== null) 
+      ? context 
+      : context !== undefined ? { value: context } : {};
+    
     const enhancedContext = {
-      ...context,
+      ...normalizedContext,
       stack: error?.stack,
       errorName: error?.name,
       errorMessage: error?.message

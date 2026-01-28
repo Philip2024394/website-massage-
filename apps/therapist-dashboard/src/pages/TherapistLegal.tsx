@@ -27,86 +27,194 @@ const TherapistLegal: React.FC<TherapistLegalProps> = ({ onBack, onNavigate }) =
   const termsContent = [
     {
       id: 'intro',
-      title: '1. Introduction & Acceptance',
-      content: `Welcome to Indastreet Therapist Platform. By creating an account and using our services, you agree to these Terms of Service. Please read them carefully.
+      title: '1. Platform Definition & Independent Operation',
+      content: `WARNING: CRITICAL UNDERSTANDING: INDASTREET IS A TRAFFIC PLATFORM ONLY
 
-These terms govern your use of the Indastreet platform as a massage therapist provider. If you do not agree with any part of these terms, you may not use our services.`
+1.1 Platform Purpose
+INDASTREET operates EXCLUSIVELY as a digital marketplace platform that connects massage therapy providers with potential customers. We are NOT:
+- An employment agency
+- A massage therapy service provider
+- A direct employer of therapists
+- Responsible for the actual delivery of massage services
+
+1.2 Independent Decision Making
+ALL therapists and massage establishments operate under their OWN independent decision-making authority. You maintain COMPLETE autonomy over:
+- Which bookings to accept or decline
+- Your service standards and methods
+- Your business operations and practices
+- Your professional conduct and protocols
+
+1.3 No Obligation to Accept Bookings
+⭐ FUNDAMENTAL RIGHT: You are NEVER obligated to accept any booking if:
+- You feel uneasy or uncomfortable with the client or location
+- You perceive any danger, risk, or safety concerns
+- The booking details seem suspicious or inappropriate
+- You are not available or prefer not to work at the requested time
+- The location seems unsafe or you have concerns about accessibility
+- Any other reason that makes you feel the booking is not suitable
+
+1.4 Safety First Policy
+Your personal safety and comfort is PARAMOUNT. ALWAYS trust your instincts and decline any booking that makes you feel unsafe or uncomfortable. No explanation or justification is required to decline bookings.
+
+By creating an account, you acknowledge and accept these terms governing your use of our traffic facilitation platform.`
+    },
+    {
+      id: 'employment',
+      title: '2. Self-Employment Status & Tax Obligations',
+      content: `WARNING: CRITICAL: INDEPENDENT CONTRACTOR STATUS
+
+2.1 Self-Employment Classification
+ALL therapists using the Indastreet platform are classified as SELF-EMPLOYED INDEPENDENT CONTRACTORS, NOT employees of Indastreet. This means:
+- You are your own business entity
+- You control your own work schedule and methods
+- You are responsible for your own business expenses
+- You maintain complete professional independence
+- Indastreet has NO employer-employee relationship with you
+
+2.2 Tax Responsibilities - YOUR OBLIGATION
+🏛️ MANDATORY TAX COMPLIANCE: You are SOLELY responsible for:
+- ALL income taxes on earnings from the platform
+- Business registration with local authorities (if required)
+- VAT/GST obligations (if applicable in your jurisdiction)
+- Social security contributions (as per local laws)
+- Professional license fees and renewal costs
+- ANY other government fees, taxes, or dues as required by your country/region
+
+2.3 Tax Declaration & Payment
+- You MUST declare ALL platform earnings to your local tax authority
+- Payment of taxes is YOUR responsibility - Indastreet does NOT withhold taxes
+- You should consult with local tax professionals for proper compliance
+- Keep detailed records of all earnings and business expenses
+- Indastreet may provide earning summaries but you are responsible for tax calculations
+
+2.4 Government Compliance
+- You must comply with ALL local business and healthcare regulations
+- Obtain required professional licenses and certifications
+- Follow local health and safety standards
+- Comply with consumer protection laws in your jurisdiction
+
+2.5 No Employment Benefits
+As an independent contractor, you are NOT entitled to:
+- Employee benefits, insurance, or pension contributions
+- Vacation pay, sick leave, or employment protections
+- Minimum wage guarantees or overtime compensation
+- Any employment-related benefits typically provided to employees`
     },
     {
       id: 'account',
-      title: '2. Therapist Account Requirements',
-      content: `2.1 Eligibility
+      title: '3. Account Requirements & Platform Usage',
+      content: `3.1 Eligibility Requirements
 - You must be at least 18 years old
 - You must have valid professional credentials/certification
 - You must provide accurate and complete information
 - You are responsible for maintaining the security of your account
+- You must have legal right to work as a massage therapist in your jurisdiction
 
-2.2 Profile Information
+3.2 Profile Information Standards
 - All profile information must be truthful and accurate
 - Profile photos must comply with our image requirements (professional, clear face)
 - You must keep your contact information (WhatsApp, location) up to date
 - False or misleading information may result in account suspension
+- You are responsible for updating your availability status
 
-2.3 One Account Policy
+3.3 One Account Policy
 - Each therapist may only maintain ONE active account
 - Creating multiple accounts to circumvent restrictions is prohibited
-- Duplicate accounts will be merged or permanently suspended`
+- Duplicate accounts will be merged or permanently suspended
+- Account sharing is strictly forbidden
+
+3.4 Platform Usage Guidelines
+- Use the platform solely for legitimate massage therapy bookings
+- Maintain professional standards in all communications
+- Respect customer privacy and platform policies
+- Do not use the platform for any illegal activities`
     },
     {
       id: 'services',
-      title: '3. Service Provision',
-      content: `3.1 Booking Acceptance
-- You are responsible for accepting or rejecting bookings within 24 hours
-- Repeated failure to respond may affect your search ranking
-- You must honor accepted bookings unless emergency circumstances arise
+      title: '4. Service Provision & Booking Management',
+      content: `4.1 Booking Acceptance Rights
+ABSOLUTE DISCRETION: You have COMPLETE authority to:
+- Accept or decline ANY booking for ANY reason
+- Decline bookings without providing explanation
+- Refuse service if you feel unsafe, uncomfortable, or at risk
+- Cancel accepted bookings if circumstances change (safety concerns, emergency, etc.)
+- Set your own availability and working hours
 
-3.2 Professional Standards
-- You must provide services professionally and safely
-- You are responsible for bringing necessary equipment and supplies
-- You must respect customer privacy and boundaries
-- You agree to follow industry best practices and local regulations
+4.2 Safety-First Booking Policy
+YOUR SAFETY IS PARAMOUNT. You may decline bookings if:
+- The location seems unsafe or high-risk
+- The customer communication seems inappropriate or concerning
+- You have any intuitive concerns about the booking
+- The timing or circumstances don't feel right
+- You detect any red flags in customer behavior or requests
+- The booking conflicts with your personal safety standards
 
-3.3 Pricing
-- You set your own pricing for 60min, 90min, and 120min sessions
-- Commission structure: 
-  * Standard plan: 30% commission to Indastreet, 70% to you
-  * Premium tier (Rp 250k/MONTH): 0% commission - you keep 100%!
-- Prices must be competitive and reasonable
-- You may not charge customers additional fees beyond agreed booking price`
+4.3 Professional Service Standards (When You Choose to Accept)
+When you voluntarily accept a booking:
+- Provide services professionally and safely
+- Bring necessary equipment and supplies
+- Respect customer privacy and boundaries
+- Follow industry best practices and local regulations
+- Honor the agreed service duration and scope
+
+4.4 Response Time Guidelines
+- Aim to respond to bookings within 24 hours when possible
+- Extended non-response may affect your search ranking
+- No penalties for declining bookings for safety reasons
+- Quality is prioritized over quantity of accepted bookings
+
+4.5 Pricing Independence
+- You set your own pricing for all service durations
+- Prices should be competitive and reasonable for your market
+- You may not charge customers additional fees beyond the agreed booking price
+- All pricing changes are at your discretion`
     },
     {
       id: 'payments',
-      title: '4. Payments & Commission',
-      content: `4.1 Commission Structure - IMPORTANT
-⚠️ MANDATORY 30% COMMISSION: You acknowledge and agree that:
-- Standard plan commission: 30% per completed booking (you receive 70%)
-- Premium tier commission: 0% (you receive 100% of booking total)
-- Premium membership: Rp 200,000/month or Rp 2,000,000/year
-- The 30% commission is DUE AND PAYABLE for every completed booking
-- Payments are processed weekly on Mondays
+      title: '5. Commission Structure & Payment Terms',
+      content: `WARNING: MANDATORY PLATFORM COMMISSION - 30%
+
+5.1 Commission Structure - NON-NEGOTIABLE
+STANDARD COMMISSION RATE: 30% per completed booking
+- Standard Plan: 30% commission to Indastreet, 70% to therapist
+- Premium Plan (Rp 250,000/month): 0% commission - keep 100%
+- The 30% commission is MANDATORY and DUE for every completed booking
+- Commission rate applies to the full booking amount (including tips if processed through platform)
+
+5.2 Payment Processing & Timing
+- Commission is automatically calculated and due upon booking completion
+- Therapist payments are processed weekly on Mondays
 - Payment method: Bank transfer to your registered account
+- You must provide valid banking information for payment processing
+- Payments are made ONLY for completed bookings
+- Cancelled or no-show bookings do not generate commission obligations
 
-4.2 Payment Terms & Unpaid Commission Penalties
-⛔ CRITICAL: If commission payments become overdue or unpaid:
-- Your account will be IMMEDIATELY SUSPENDED after 7 days of non-payment
-- Additional penalty fees of 5% per week will be charged on overdue amounts
-- Account reactivation requires FULL payment of commission + penalty fees
-- Repeated non-payment may result in PERMANENT account termination
-- You must provide valid banking information for commission deductions
-- Payments are made for all COMPLETED bookings only
-- Cancelled or no-show bookings are not paid
-- You are responsible for your own tax obligations
+5.3 Commission Payment Enforcement
+CRITICAL PAYMENT OBLIGATIONS:
+- Commission payments are legally binding obligations
+- Payment overdue after 7 days results in immediate account suspension
+- Additional penalty fees of 5% per week charged on overdue amounts
+- Account reactivation requires FULL payment of commission + penalties
+- Repeated non-payment may result in permanent account termination
+- Legal action may be taken for debt collection of unpaid commissions
 
-4.3 Commission Collection & Disputes
-- Commission is automatically deducted from your booking earnings
-- Payment disputes must be raised within 14 days
-- We reserve the right to withhold payment pending investigation
-- Final payment decisions are at our discretion
-- Non-payment of commission may result in legal action for debt collection`
+5.4 Premium Membership Benefits
+- Premium Tier: Rp 200,000/month or Rp 2,000,000/year (save 16%)
+- 0% commission rate - keep 100% of all booking earnings
+- Priority search placement and verified badge
+- Advanced analytics and 24/7 support access
+- Auto-renewal unless cancelled 48 hours before renewal
+
+5.5 Payment Disputes & Resolution
+- Commission disputes must be raised within 14 days of the booking
+- Indastreet reserves the right to investigate and make final payment decisions
+- Payments may be withheld pending dispute resolution
+- Fraudulent dispute claims may result in account termination
+- All commission calculations are final unless proven erroneous`
     },
     {
       id: 'membership',
-      title: '5. Premium Membership',
+      title: '7. Premium Membership Terms',
       content: `5.1 Membership Tiers
 - Free Tier: Basic profile listing and booking management
 - Premium Tier: Rp 200,000/month or Rp 2,000,000/year (save 16%)
@@ -131,7 +239,7 @@ These terms govern your use of the Indastreet platform as a massage therapist pr
     },
     {
       id: 'conduct',
-      title: '6. Code of Conduct',
+      title: '8. Code of Conduct & Platform Usage',
       content: `6.1 Prohibited Activities
 - Harassment, discrimination, or inappropriate behavior
 - Soliciting customers outside the platform to avoid commission
@@ -155,27 +263,60 @@ These terms govern your use of the Indastreet platform as a massage therapist pr
     },
     {
       id: 'liability',
-      title: '7. Liability & Insurance',
-      content: `7.1 Your Responsibility
-- You are an independent contractor, not an employee
-- You are responsible for your own liability insurance
-- You assume all risk related to providing services
-- You are responsible for any injury or damage caused during services
+      title: '6. Liability Limitation & Platform Protection',
+      content: `WARNING: CRITICAL LEGAL PROTECTIONS FOR INDASTREET PLATFORM
 
-7.2 Platform Liability
-- Indastreet is a marketplace platform connecting therapists and customers
-- We do not employ therapists or guarantee service quality
-- We are not liable for disputes between therapists and customers
-- We are not liable for injury, damage, or loss during bookings
+6.1 Platform Role Definition
+INDASTREET OPERATES EXCLUSIVELY AS:
+- A digital marketplace connecting therapists with potential customers
+- A traffic facilitation platform providing booking management tools
+- A payment processing intermediary (commission collection only)
+- An advertising and marketing platform for massage therapy services
 
-7.3 Indemnification
-- You agree to indemnify Indastreet against claims arising from your services
-- You are responsible for resolving customer complaints
-- You will cooperate with any investigations or legal proceedings`
+INDASTREET IS NOT:
+- An employer of massage therapists
+- A provider of massage therapy services
+- Responsible for the quality, safety, or outcomes of massage services
+- Liable for any disputes, injuries, or damages arising from massage sessions
+
+6.2 Complete Liability Disclaimer
+COMPREHENSIVE LIABILITY EXEMPTION:
+Indastreet, its owners, employees, and affiliated entities are NOT liable for:
+- Any injury, damage, or harm occurring during massage sessions
+- Quality or standard of massage services provided by therapists
+- Disputes between therapists and customers
+- Theft, loss, or damage of personal property during bookings
+- Medical complications or adverse reactions during massage
+- Professional misconduct or inappropriate behavior by therapists
+- Accidents, injuries, or safety incidents at booking locations
+- Financial losses or business disputes related to massage services
+
+6.3 Therapist Full Responsibility
+As an independent service provider, YOU are completely responsible for:
+- Your own professional liability insurance coverage
+- All risks associated with providing massage therapy services
+- Ensuring your professional competence and appropriate training
+- Maintaining safe working practices and procedures
+- Resolving any customer complaints or service issues
+- Your personal safety and security during bookings
+- Compliance with all professional and legal standards
+
+6.4 Customer-Therapist Relationship
+- The service relationship exists ONLY between therapist and customer
+- Indastreet is NOT a party to the service agreement
+- All service-related issues must be resolved directly between therapist and customer
+- Indastreet may facilitate communication but bears no responsibility for outcomes
+
+6.5 Indemnification Requirement
+By using this platform, you agree to indemnify and hold harmless Indastreet from:
+- Any claims arising from your massage therapy services
+- Legal action taken against Indastreet related to your services
+- Damages or losses resulting from your professional activities
+- Any breach of these terms or applicable laws by you`
     },
     {
       id: 'termination',
-      title: '8. Account Suspension & Termination',
+      title: '9. Account Suspension & Termination',
       content: `8.1 Suspension Reasons
 - Multiple customer complaints about service quality
 - Repeated no-shows or cancellations
@@ -197,21 +338,27 @@ These terms govern your use of the Indastreet platform as a massage therapist pr
     },
     {
       id: 'changes',
-      title: '9. Changes to Terms',
+      title: '10. Changes to Terms',
       content: `We reserve the right to modify these Terms of Service at any time. Changes will be effective immediately upon posting. Your continued use of the platform after changes constitutes acceptance of the new terms.
 
 We will notify you of significant changes via email or in-app notification.`
     },
     {
       id: 'contact',
-      title: '10. Contact & Support',
+      title: '11. Contact & Support',
       content: `For questions about these Terms of Service, please contact us:
 
 Email: indastreet.id@gmail.com
 Support Chat: Available in app (Premium members get 24/7 support)
 Response Time: Within 48 hours for free users, 2 hours for premium users
 
-Last Updated: December 11, 2024`
+IMPORTANT LEGAL DISCLAIMERS:
+⚖️ These Terms of Service constitute a legally binding agreement
+🏛️ Local laws and regulations take precedence over platform policies
+🔐 By using this platform, you acknowledge understanding and acceptance of all terms
+📋 Regular review of these terms is recommended as they may be updated
+
+Last Updated: January 28, 2026`
     }
   ];
 

@@ -10,7 +10,7 @@ process.env.ROLLUP_NO_NATIVE = '1'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Check if running in admin mode
-const isAdminMode = process.env.VITE_PORT === '3004' || process.argv.includes('--mode=admin');
+const _isAdminMode = process.env.VITE_PORT === '3004' || process.argv.includes('--mode=admin');
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -36,18 +36,18 @@ export default defineConfig({
     {
       name: 'spa-fallback',
       configureServer(server) {
-        server.middlewares.use('/api', (req, res, next) => next());
-        server.middlewares.use((req, res, next) => {
+        server.middlewares.use('/api', (_req, _res, next) => next());
+        server.middlewares.use((_req, _res, next) => {
           // Skip API routes and static files
-          if (req.url?.startsWith('/api') || 
-              req.url?.includes('.') && !req.url?.includes('.html') ||
-              req.url?.startsWith('/@') ||
-              req.url?.startsWith('/node_modules')) {
+          if (_req.url?.startsWith('/api') || 
+              _req.url?.includes('.') && !_req.url?.includes('.html') ||
+              _req.url?.startsWith('/@') ||
+              _req.url?.startsWith('/node_modules')) {
             return next();
           }
           
           // For all other routes, serve index.html (SPA fallback)
-          req.url = '/';
+          _req.url = '/';
           next();
         });
       }
@@ -56,7 +56,7 @@ export default defineConfig({
     {
       name: 'inject-sw-build-hash',
       apply: 'build', // Only run during production builds
-      generateBundle(options, bundle) {
+      generateBundle(_options, bundle) {
         // Generate unique build hash from current timestamp
         const buildHash = Date.now().toString(36);
         console.log(`🔧 Injecting build hash into Service Worker: ${buildHash}`);
@@ -127,11 +127,11 @@ export default defineConfig({
         target: 'https://syd.cloud.appwrite.io',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/appwrite/, ''),
-        configure: (proxy, options) => {
-          proxy.on('error', (err, req, res) => {
-            console.log('Proxy error:', err);
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.error('❌ Proxy error:', err.message);
           });
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+          proxy.on('proxyReq', (proxyReq, _req, _res) => {
             console.log('Sending Request to:', proxyReq.path);
           });
         }

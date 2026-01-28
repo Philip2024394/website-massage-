@@ -9,7 +9,10 @@ import TherapistPageHeader from '../components/TherapistPageHeader';
 import { therapistService } from '@lib/appwriteService';
 import { showToast } from '../../../../src/utils/showToastPortal';
 import { useTranslations } from '@lib/useTranslations';
+import { logger } from '../../../../src/services/enterpriseLogger';
 import type { Therapist } from '../../../../src/types';
+import HelpTooltip from '../components/HelpTooltip';
+import { safePassHelp } from '../constants/helpContent';
 
 interface HotelVillaSafePassProps {
   therapist: Therapist | null;
@@ -47,7 +50,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
         const parsedLetters = JSON.parse(therapist.hotelVillaLetters);
         setLetters(parsedLetters || []);
       } catch (error) {
-        console.error('Error parsing hotel villa letters:', error);
+        logger.error('Failed to parse hotel villa letters', { error, therapistId: therapist?.$id });
         setLetters([]);
       }
     }
@@ -83,7 +86,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
 
     setUploading(true);
     try {
-      console.log('🏨 [SAFE PASS SUBMITTED] Uploading letter for hotel/villa:', hotelVillaName);
+      logger.info('Safe Pass letter upload initiated', { hotelVillaName, therapistId: String(therapist?.$id || therapist?.id) });
       
       // Upload file using existing therapist service pattern
       const uploadResult = await therapistService.uploadHotelVillaLetter(
@@ -116,7 +119,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
       e.target.value = '';
       
     } catch (error) {
-      console.error('❌ Error uploading hotel villa letter:', error);
+      logger.error('Hotel villa letter upload failed', { error, hotelVillaName, therapistId: String(therapist?.$id || therapist?.id) });
       showToast('❌ ' + t('therapistDashboard.fileUploadError'), 'error');
     } finally {
       setUploading(false);
@@ -151,7 +154,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
 
     setSaving(true);
     try {
-      console.log('🔍 [SAFE PASS UNDER REVIEW] Submitting application for therapist:', therapist?.name);
+      logger.info('Safe Pass application submitted for review', { therapistName: therapist?.name, therapistId: String(therapist?.$id || therapist?.id), letterCount: letters.length });
       
       await therapistService.update(String(therapist?.$id || therapist?.id), {
         hotelVillaSafePassStatus: 'pending',
@@ -163,7 +166,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
       showToast('✅ Safe Pass application submitted for review', 'success');
       
     } catch (error) {
-      console.error('❌ Error submitting Safe Pass application:', error);
+      logger.error('Safe Pass application submission failed', { error, therapistId: String(therapist?.$id || therapist?.id) });
       showToast('❌ ' + t('therapistDashboard.submitApplicationError'), 'error');
     } finally {
       setSaving(false);
@@ -178,7 +181,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
 
     setProcessingPayment(true);
     try {
-      console.log('💳 [SAFE PASS PAYMENT COMPLETED] Processing payment for therapist:', therapist?.name);
+      logger.info('Safe Pass payment processing started', { therapistName: therapist?.name, therapistId: String(therapist?.$id || therapist?.id), amount: 500000 });
       
       // Simulate payment processing (integrate with actual payment gateway)
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -196,12 +199,12 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
         safePassCardUrl: generateSafePassCard() // Generate card image URL
       });
 
-      console.log('🪪 [SAFE PASS ACTIVE] Safe Pass activated for therapist:', therapist?.name);
+      logger.info('Safe Pass activated successfully', { therapistName: therapist?.name, therapistId: String(therapist?.$id || therapist?.id), paymentId, expiryDate: expiryDate.toISOString() });
       setCurrentStatus('active');
       showToast('✅ ' + t('therapistDashboard.paymentSuccess'), 'success');
       
     } catch (error) {
-      console.error('❌ Error processing Safe Pass payment:', error);
+      logger.error('Safe Pass payment processing failed', { error, therapistId: String(therapist?.$id || therapist?.id) });
       showToast('❌ ' + t('therapistDashboard.paymentError'), 'error');
     } finally {
       setProcessingPayment(false);
@@ -227,7 +230,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock, label: t('therapistDashboard.pending') },
-      approved: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle2, label: 'Approved - Payment Required' },
+      approved: { color: 'bg-orange-100 text-orange-800', icon: CheckCircle2, label: 'Approved - Payment Required' },
       active: { color: 'bg-green-100 text-green-800', icon: Shield, label: 'Active' },
       rejected: { color: 'bg-red-100 text-red-800', icon: AlertCircle, label: t('therapistDashboard.rejected') }
     };
@@ -252,25 +255,27 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-      {/* Page Header with Online Hours */}
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Hotel & Villa Safe Pass Certification</h2>
-              <p className="text-sm text-gray-600">Official certification for hotel & villa access</p>
+      {/* Page Header */}
+      <TherapistPageHeader
+        title="Hotel & Villa Safe Pass Certification"
+        subtitle="Official Certification for Professional Massage Therapists"
+        onBackToStatus={onBack}
+        icon={<Shield className="w-6 h-6 text-orange-600" />}
+        actions={
+          <div className="flex items-center gap-2">
+            <HelpTooltip 
+              {...safePassHelp.uploadLetters}
+              position="left"
+              size="md"
+            />
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
+              <span className="text-xs text-gray-500">this month</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-            <Clock className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
-            <span className="text-xs text-gray-500">this month</span>
-          </div>
-        </div>
-      </div>
+        }
+      />
       
       {/* Hero Section - Minimalistic & Clean */}
       <section className="bg-white border-b border-orange-100">
@@ -278,7 +283,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
           {/* Enlarged Safe Pass Image */}
           <div className="flex justify-center mb-8">
             <img 
-              src="https://ik.imagekit.io/7grri5v7d/scaffolding_indastreetsssssss-removebg-preview.png" 
+              src="https://ik.imagekit.io/7grri5v7d/PLASTERING%205%20TROWEL%20HOLDERz.png" 
               alt="Hotel Villa Safe Pass Certification" 
               className="w-full max-w-4xl h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
             />
@@ -725,49 +730,13 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
               </div>
             </div>
             
-            {/* Safe Pass Card - Modern Design */}
-            <div className="max-w-md mx-auto bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white p-8 rounded-2xl shadow-2xl mb-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <Shield className="w-8 h-8" />
-                  <div>
-                    <span className="font-bold text-xl">SAFE PASS</span>
-                    <div className="text-xs opacity-90">Certified Professional</div>
-                  </div>
-                </div>
-                <div className="text-right text-xs opacity-75">
-                  <div>Hotel & Villa</div>
-                  <div>Indonesia</div>
-                </div>
-              </div>
-              
-              <div className="space-y-3 text-sm bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="flex justify-between border-b border-white/20 pb-2">
-                  <span className="opacity-75">Name:</span>
-                  <strong>{therapist?.name}</strong>
-                </div>
-                <div className="flex justify-between border-b border-white/20 pb-2">
-                  <span className="opacity-75">ID:</span>
-                  <strong>SP-{therapist?.$id?.slice(-8) || 'XXXXXXXX'}</strong>
-                </div>
-                <div className="flex justify-between border-b border-white/20 pb-2">
-                  <span className="opacity-75">Location:</span>
-                  <strong>{therapist?.location}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span className="opacity-75">Valid Until:</span>
-                  <strong>{therapist?.safePassExpiry ? new Date(therapist.safePassExpiry).toLocaleDateString() : '---'}</strong>
-                </div>
-              </div>
-              
-              <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between text-xs">
-                <div className="opacity-75">
-                  Issued: {therapist?.safePassIssuedAt ? new Date(therapist.safePassIssuedAt).toLocaleDateString() : '---'}
-                </div>
-                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                  <Building className="w-5 h-5" />
-                </div>
-              </div>
+            {/* Safe Pass Card - Image Design */}
+            <div className="max-w-md mx-auto mb-6">
+              <img 
+                src="https://ik.imagekit.io/7grri5v7d/scaffolding_indastreetsssssss-removebg-preview.png?updatedAt=1768624889133" 
+                alt="Professional Safe Pass Card" 
+                className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl"
+              />
             </div>
             
             <div className="flex gap-3 justify-center">

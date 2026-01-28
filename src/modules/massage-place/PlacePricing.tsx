@@ -14,6 +14,7 @@
 
 import React from 'react';
 import { isDiscountActive, getDynamicSpacing } from '../../constants/cardConstants';
+import type { Analytics } from '../../types';
 
 interface PlacePricingProps {
     place: any;
@@ -26,7 +27,7 @@ interface PlacePricingProps {
     formatPrice: (price: number) => string;
     t: any;
     addNotification: (type: string, title: string, message: string, options?: any) => void;
-    onIncrementAnalytics: (metric: string) => void;
+    onIncrementAnalytics: (metric: keyof Analytics) => void;
 }
 
 const PlacePricing: React.FC<PlacePricingProps> = ({

@@ -74,7 +74,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { language } = useLanguage();
-    const { t } = useTranslations(language);
+    const { t } = useTranslations(language as 'en' | 'id');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -130,7 +130,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 onPrivacyClick={onPrivacyClick}
                 therapists={therapists}
                 places={places}
-                language={language}
+                language={language as 'en' | 'id' | 'gb'}
             />
 
             {/* Hero Section - Keep original */}

@@ -1,10 +1,12 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
-import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2, Clock, HelpCircle } from 'lucide-react';
 import TherapistLayout from '../components/TherapistLayout';
 import { therapistService } from '@lib/appwriteService';
 import { showToast } from '../../../../src/utils/showToastPortal';
 import PaymentCard from '../../../../src/components/PaymentCard';
+import HelpTooltip from '../components/HelpTooltip';
+import { therapistDashboardHelp } from '../constants/helpContent';
 import type { Therapist } from '../../../../src/types';
 
 interface TherapistPaymentInfoProps {
@@ -204,9 +206,31 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                 <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
                   <CreditCard className="w-5 h-5 text-white" />
                 </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
-                  <p className="text-sm text-gray-600">Komisi 30% per booking</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
+                    <HelpTooltip
+                      title={therapistDashboardHelp.paymentInfo.directPayment.title}
+                      content={therapistDashboardHelp.paymentInfo.directPayment.content}
+                      benefits={therapistDashboardHelp.paymentInfo.directPayment.benefits}
+                      size="sm"
+                      position="bottom"
+                    >
+                      <HelpCircle className="w-4 h-4 text-gray-400 hover:text-orange-500 transition-colors" />
+                    </HelpTooltip>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-600">Komisi 30% per booking</p>
+                    <HelpTooltip
+                      title={therapistDashboardHelp.paymentInfo.commissionSystem.title}
+                      content={therapistDashboardHelp.paymentInfo.commissionSystem.content}
+                      benefits={therapistDashboardHelp.paymentInfo.commissionSystem.benefits}
+                      size="sm"
+                      position="bottom"
+                    >
+                      <HelpCircle className="w-3 h-3 text-gray-400 hover:text-orange-500 transition-colors" />
+                    </HelpTooltip>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
@@ -321,7 +345,18 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                 <FileCheck className="w-6 h-6 text-orange-600" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">Verifikasi KTP Diperlukan</h2>
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-lg font-semibold text-gray-900">Verifikasi KTP Diperlukan</h2>
+                  <HelpTooltip
+                    title={therapistDashboardHelp.paymentInfo.ktpVerification.title}
+                    content={therapistDashboardHelp.paymentInfo.ktpVerification.content}
+                    benefits={therapistDashboardHelp.paymentInfo.ktpVerification.benefits}
+                    size="sm"
+                    position="bottom"
+                  >
+                    <HelpCircle className="w-4 h-4 text-gray-400 hover:text-orange-500 transition-colors" />
+                  </HelpTooltip>
+                </div>
                 <p className="text-sm text-gray-600 mb-4">
                   Untuk keamanan Anda dan kepercayaan pelanggan, harap upload foto KTP Anda yang jelas.
                 </p>
@@ -411,7 +446,18 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
           {(bankName.trim() || accountName.trim() || accountNumber.trim()) && (
             <div className="border border-gray-200 rounded-lg p-6">
               <div className="text-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Preview Langsung</h3>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Preview Langsung</h3>
+                  <HelpTooltip
+                    title={therapistDashboardHelp.paymentInfo.livePreview.title}
+                    content={therapistDashboardHelp.paymentInfo.livePreview.content}
+                    benefits={therapistDashboardHelp.paymentInfo.livePreview.benefits}
+                    size="sm"
+                    position="bottom"
+                  >
+                    <HelpCircle className="w-4 h-4 text-gray-400 hover:text-orange-500 transition-colors" />
+                  </HelpTooltip>
+                </div>
                 <p className="text-gray-600 text-sm">Begini kartu pembayaran Anda akan terlihat oleh pelanggan</p>
               </div>
               
@@ -457,7 +503,18 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
 
           {/* Bank Details Form */}
           <div className="border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Detail Rekening Bank</h3>
+            <div className="flex items-center gap-2 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Detail Rekening Bank</h3>
+              <HelpTooltip
+                title={therapistDashboardHelp.paymentInfo.bankDetails.title}
+                content={therapistDashboardHelp.paymentInfo.bankDetails.content}
+                benefits={therapistDashboardHelp.paymentInfo.bankDetails.benefits}
+                size="sm"
+                position="bottom"
+              >
+                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-orange-500 transition-colors" />
+              </HelpTooltip>
+            </div>
             
             <div className="space-y-6">
               <div>
@@ -493,10 +550,23 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                 {nameMatchWarning && (
                     <div className="mt-3 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                       <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                      <div className="text-sm text-red-600">
-                      <span className="font-medium">Peringatan:</span> Nama akun harus sesuai dengan nama di KTP Anda ({therapist?.name}).
-                      Nama yang tidak cocok dapat menunda verifikasi.
-                    </div>
+                      <div className="flex-1 text-sm text-red-600">
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">Peringatan:</span>
+                          <HelpTooltip
+                            title={therapistDashboardHelp.paymentInfo.nameMatching.title}
+                            content={therapistDashboardHelp.paymentInfo.nameMatching.content}
+                            benefits={therapistDashboardHelp.paymentInfo.nameMatching.benefits}
+                            size="sm"
+                            position="right"
+                          >
+                            <HelpCircle className="w-3 h-3 text-red-400 hover:text-red-600 transition-colors" />
+                          </HelpTooltip>
+                        </div>
+                        <div className="mt-1">
+                          Nama akun harus sesuai dengan nama di KTP Anda ({therapist?.name}). Nama yang tidak cocok dapat menunda verifikasi.
+                        </div>
+                      </div>
                   </div>
                 )}
               </div>
@@ -523,6 +593,18 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
 
           {/* Save Button */}
           <div className="pt-2">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span className="text-sm text-gray-600">Data Anda disimpan dengan aman</span>
+              <HelpTooltip
+                title={therapistDashboardHelp.paymentInfo.dataSource.title}
+                content={therapistDashboardHelp.paymentInfo.dataSource.content}
+                benefits={therapistDashboardHelp.paymentInfo.dataSource.benefits}
+                size="sm"
+                position="top"
+              >
+                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-orange-500 transition-colors" />
+              </HelpTooltip>
+            </div>
             <button
               onClick={handleSave}
               disabled={saving || !bankName.trim() || !accountName.trim() || !accountNumber.trim()}

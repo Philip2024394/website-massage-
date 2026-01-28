@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { authService } from '../../../../src/lib/appwriteService';
+import { authService } from '../../../src/lib/appwriteService';
 import PlaceDashboard from './pages/PlaceDashboard';
 import PlaceChat from './pages/PlaceChat';
 import PlacePaymentInfo from './pages/PlacePaymentInfo';
-import { LanguageProvider } from '../../../../src/context/LanguageContext';
+import { LanguageProvider } from '../../../src/context/LanguageContext';
 
 
 function App() {
@@ -89,7 +89,7 @@ function App() {
   }
 
   return (
-    <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
+    <LanguageProvider value={{ language: language as any, setLanguage: handleLanguageChange as any }}>
       <PlaceDashboard {...{} as any} onLogout={handleLogout}
         onNavigateToChat={() => setCurrentView('chat')}
         onNavigateToPayment={() => setCurrentView('payment')}

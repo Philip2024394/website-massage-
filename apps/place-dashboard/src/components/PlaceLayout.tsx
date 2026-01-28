@@ -13,7 +13,8 @@ import {
   Settings,
   Clock,
   DollarSign,
-  User
+  User,
+  Users
 } from 'lucide-react';
 
 interface PlaceLayoutProps {
@@ -29,6 +30,7 @@ const PlaceLayout: React.FC<PlaceLayoutProps> = ({ children, activePage, onNavig
     { id: 'dashboard', name: 'Dashboard', icon: Home, color: 'text-blue-600' },
     { id: 'calendar', name: 'Calendar', icon: Calendar, color: 'text-green-600' },
     { id: 'bookings', name: 'Bookings', icon: Calendar, color: 'text-purple-600' },
+    { id: 'more-customers', name: 'Lebih Banyak Pelanggan', icon: Users, color: 'text-green-600' },
     { id: 'earnings', name: 'Earnings', icon: DollarSign, color: 'text-orange-600' },
     { id: 'payment-history', name: 'Payment History', icon: CreditCard, color: 'text-indigo-600' },
     { id: 'analytics', name: 'Analytics', icon: BarChart, color: 'text-cyan-600' },

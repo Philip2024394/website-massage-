@@ -18,6 +18,9 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Type resolution */
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+
     /* Linting */
     "strict": false,
     "noImplicitAny": false,
@@ -50,6 +53,7 @@
   },
   "include": [
     "src",
+    "src/types/**/*",
     "../../lib/**/*",
     "../../components/**/*",
     "../../services/**/*",

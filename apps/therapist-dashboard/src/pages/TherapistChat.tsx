@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, User, CheckCircle, Crown, Lock, Clock } from 'lucide-react';
 import { messagingService } from '@lib/appwriteService';
+import { showErrorToast } from '../lib/toastUtils';
 
 interface Message {
   $id: string;
@@ -128,7 +129,7 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
       
       // Show more specific error message
       const errorMessage = error?.message || 'Failed to send message. Please try again.';
-      alert(`Error: ${errorMessage}\n\nPlease check the console for details.`);
+      showErrorToast(`Error: ${errorMessage}\n\nPlease check the console for details.`);
     } finally {
       setSending(false);
     }

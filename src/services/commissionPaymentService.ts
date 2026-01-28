@@ -21,7 +21,7 @@ class CommissionPaymentService {
      */
     async createCommissionRecord(
         hotelVillaId: number,
-        hotelVillaType: 'hotel' | 'villa',
+        _hotelVillaType: 'hotel' | 'villa',
         bookingId: number,
         providerId: number,
         providerType: 'therapist' | 'place',
