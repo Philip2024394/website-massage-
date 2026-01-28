@@ -1,4 +1,12 @@
+/**
+ * 🛡️ PROFESSIONAL ERROR BOUNDARY
+ * Catches React errors and displays user-friendly fallback
+ * Logs all errors silently to admin dashboard
+ */
+
 import React, { Component, ReactNode } from 'react';
+import { errorLogger } from '../services/errorLoggingService';
+import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {
     children: ReactNode;
@@ -23,7 +31,7 @@ class ErrorBoundary extends Component<Props, State> {
         const errorMessage = error?.message || '';
         const errorStack = error?.stack || '';
         
-        // ULTIMATE DOM error detection - prevent state change for DOM errors
+        // DOM errors are handled silently - don't show UI
         const isDOMError = errorMessage.includes('removeChild') || 
                           errorMessage.includes('The node to be removed is not a child') ||
                           errorMessage.includes('insertBefore') ||
@@ -37,7 +45,6 @@ class ErrorBoundary extends Component<Props, State> {
                           errorStack.includes('commitDeletionEffectsOnFiber') ||
                           errorStack.includes('react-dom');
         
-        // Don't set error state for DOM errors - let them pass silently
         if (isDOMError) {
             return {
                 hasError: false,
@@ -55,7 +62,7 @@ class ErrorBoundary extends Component<Props, State> {
         const errorMessage = error?.message || '';
         const errorStack = error?.stack || '';
         
-        // ULTIMATE DOM error detection
+        // Check if DOM error
         const isDOMError = errorMessage.includes('removeChild') || 
                           errorMessage.includes('The node to be removed is not a child') ||
                           errorMessage.includes('insertBefore') ||
@@ -70,17 +77,27 @@ class ErrorBoundary extends Component<Props, State> {
                           errorStack.includes('react-dom');
         
         if (isDOMError) {
-            console.log('🛡️ ULTIMATE ErrorBoundary: DOM error completely suppressed:', {
-                message: errorMessage.substring(0, 80),
-                name: error?.name
+            // Log DOM errors silently (low severity)
+            errorLogger.logError(error, {
+                errorType: 'runtime',
+                severity: 'low',
+                context: {
+                    type: 'DOM manipulation error',
+                    componentStack: errorInfo.componentStack
+                }
             });
-            return; // Don't process DOM errors further
-        } else {
-            console.error('ErrorBoundary caught non-DOM error:', error, errorInfo);
+            return;
         }
         
-        // You can log to error reporting service here
-        // Example: logErrorToService(error, errorInfo);
+        // Log non-DOM errors to admin dashboard
+        errorLogger.logError(error, {
+            errorType: 'runtime',
+            severity: 'high',
+            context: {
+                componentStack: errorInfo.componentStack,
+                errorInfo: errorInfo
+            }
+        });
     }
 
     handleReset = () => {
@@ -88,7 +105,6 @@ class ErrorBoundary extends Component<Props, State> {
             hasError: false,
             error: null
         });
-        // Optionally reload the page
         window.location.href = '/';
     };
 
@@ -98,59 +114,50 @@ class ErrorBoundary extends Component<Props, State> {
                 return this.props.fallback;
             }
 
+            // Professional user-friendly error display - NEVER show raw errors
             return (
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
+                <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full">
+                        {/* Error Icon */}
+                        <div className="flex justify-center mb-6">
+                            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center">
+                                <AlertCircle className="w-12 h-12 text-orange-600" />
+                            </div>
                         </div>
-                        
-                        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                            Oops! Something went wrong
+
+                        {/* Title */}
+                        <h1 className="text-2xl font-bold text-gray-900 text-center mb-3">
+                            Feature Temporarily Unavailable
                         </h1>
-                        
-                        <p className="text-gray-600 mb-6">
-                            We're sorry for the inconvenience. The application encountered an unexpected error.
+
+                        {/* User-friendly message */}
+                        <p className="text-gray-600 text-center mb-8 leading-relaxed">
+                            We're currently updating this feature to serve you better. 
+                            Please try again in a moment or return to the homepage.
                         </p>
 
-                        {process.env.NODE_ENV === 'development' && this.state.error && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
-                                <p className="text-sm font-mono text-red-800 break-all">
-                                    {this.state.error.toString()}
-                                </p>
-                            </div>
-                        )}
-
+                        {/* Action Buttons */}
                         <div className="space-y-3">
                             <button
-                                onClick={this.handleReset}
-                                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                                onClick={() => window.location.reload()}
+                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
                             >
-                                Return to Home
+                                <RefreshCw className="w-5 h-5" />
+                                Try Again
                             </button>
-                            
+
                             <button
-                                onClick={async () => {
-                                    try {
-                                        const { softRecover } = await import('../utils/softNavigation');
-                                        softRecover();
-                                    } catch {
-                                        window.location.reload();
-                                    }
-                                }}
-                                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors"
+                                onClick={this.handleReset}
+                                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
                             >
-                                Reload Page
+                                <Home className="w-5 h-5" />
+                                Go to Homepage
                             </button>
                         </div>
 
-                        <p className="text-sm text-gray-500 mt-6">
-                            If this problem persists, please contact support at{' '}
-                            <a href="mailto:indastreet.id@gmail.com" className="text-orange-500 hover:underline">
-                                indastreet.id@gmail.com
-                            </a>
+                        {/* Help Text */}
+                        <p className="text-xs text-gray-500 text-center mt-6">
+                            Our technical team has been automatically notified of this issue.
                         </p>
                     </div>
                 </div>
