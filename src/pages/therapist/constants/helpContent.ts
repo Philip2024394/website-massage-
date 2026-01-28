@@ -17,6 +17,24 @@ export interface PageHelpContent {
 }
 
 /**
+ * Package Terms Help Content
+ */
+export const packageTermsHelp: PageHelpContent = {
+  overview: {
+    title: 'Paket Langganan Premium',
+    content: 'Pilih paket langganan yang sesuai dengan kebutuhan bisnis Anda. Paket Premium memberikan visibilitas lebih tinggi, prioritas booking, dan fitur analitik lengkap untuk memaksimalkan pendapatan.',
+    benefits: [
+      'Tampil di urutan teratas hasil pencarian',
+      'Badge Premium yang menarik perhatian pelanggan',
+      'Notifikasi booking real-time tanpa delay',
+      'Analitik dan laporan detail',
+      'Support prioritas 24/7',
+      'ROI terbukti meningkat hingga 3x lipat'
+    ]
+  }
+};
+
+/**
  * Commission Help Content (alias for commissionPaymentHelp)
  */
 export const commissionHelp: PageHelpContent = {
