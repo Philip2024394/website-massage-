@@ -461,9 +461,8 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                     <h1 className="text-2xl font-extrabold sm:text-4xl lg:text-5xl xl:text-6xl drop-shadow-lg">
                         <div>
-                            <span className="text-white">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                            <span className="text-white">INDA</span><span className="text-orange-500">STREET PARTNERS</span>
                         </div>
-                        <div className="text-orange-500 text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold">{language === 'id' ? 'Mitra' : 'Partners'}</div>
                     </h1>
                     <p className="mt-3 sm:mt-4 text-sm sm:text-lg lg:text-xl text-white max-w-3xl mx-auto drop-shadow-md px-4">
                         {language === 'id'
