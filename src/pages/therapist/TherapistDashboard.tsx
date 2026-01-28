@@ -949,11 +949,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         language={language}
         onLogout={onLogout}
       >
-      <div className="bg-white">
+      <div className="bg-white w-full max-w-full overflow-x-hidden">
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
-        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 shadow-lg">
-          <div className="max-w-sm mx-auto flex items-center justify-between">
+        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 py-4 shadow-lg">
+          <div className="max-w-full sm:max-w-sm mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl animate-pulse">⏰</span>
               <div>
