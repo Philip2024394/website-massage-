@@ -126,83 +126,83 @@ export const chatHelp: PageHelpContent = {
  */
 export const earningsHelp: PageHelpContent = {
   completedEarnings: {
-    title: 'Total Completed Earnings',
-    content: 'Your actual earnings from all completed bookings. This shows the amount you receive after the 30% platform commission is deducted.',
+    title: 'Total Pendapatan dari Booking Selesai',
+    content: 'Pendapatan aktual Anda dari semua booking yang telah diselesaikan. Ini menunjukkan jumlah yang Anda terima setelah komisi platform 30% dipotong.',
     benefits: [
-      'See real-time earnings from completed bookings',
-      '70% of total booking value goes to you',
-      'Tracks Book Now and Scheduled bookings',
-      'Connected directly to Appwrite database'
+      'Lihat pendapatan real-time dari booking selesai',
+      '70% dari nilai total booking masuk ke Anda',
+      'Melacak booking Book Now dan Scheduled',
+      'Terhubung langsung ke database Appwrite'
     ]
   },
   lostEarnings: {
-    title: 'Lost Earnings Tracker',
-    content: 'Revenue missed from expired, declined, or cancelled bookings. This helps you understand opportunities lost due to timeouts or rejections.',
+    title: 'Pelacak Pendapatan Hilang',
+    content: 'Pendapatan yang terlewat dari booking yang kadaluarsa, ditolak, atau dibatalkan. Ini membantu Anda memahami peluang yang hilang karena timeout atau penolakan.',
     benefits: [
-      'Identify revenue loss patterns',
-      'See impact of 5-minute timeout expirations',
-      'Track declined booking consequences',
-      'Improve response time to maximize earnings'
+      'Identifikasi pola kehilangan pendapatan',
+      'Lihat dampak kadaluarsa timeout 5 menit',
+      'Lacak konsekuensi booking yang ditolak',
+      'Tingkatkan waktu respons untuk maksimalkan pendapatan'
     ]
   },
   serviceBreakdown: {
-    title: 'Service Duration Breakdown',
-    content: 'Earnings separated by service duration (60, 90, 120 minutes). Shows which service types generate the most income.',
+    title: 'Rincian Durasi Layanan',
+    content: 'Pendapatan dipisahkan berdasarkan durasi layanan (60, 90, 120 menit). Menunjukkan jenis layanan mana yang menghasilkan pendapatan terbanyak.',
     benefits: [
-      'Identify most profitable service duration',
-      'Optimize pricing strategy',
-      'Focus marketing on high-earning services',
-      'Track customer preferences by duration'
+      'Identifikasi durasi layanan paling menguntungkan',
+      'Optimalkan strategi harga',
+      'Fokuskan marketing pada layanan berpenghasilan tinggi',
+      'Lacak preferensi pelanggan berdasarkan durasi'
     ]
   },
   bookingTypes: {
     title: 'Book Now vs Scheduled',
-    content: 'Compare earnings from immediate "Book Now" bookings versus advance "Scheduled" bookings with deposits.',
+    content: 'Bandingkan pendapatan dari booking langsung "Book Now" versus booking terjadwal "Scheduled" dengan deposit.',
     benefits: [
-      'Understand booking type profitability',
-      'Plan availability strategy',
-      'Balance immediate vs scheduled work',
-      'Track deposit-based revenue'
+      'Pahami profitabilitas tipe booking',
+      'Rencanakan strategi ketersediaan',
+      'Seimbangkan pekerjaan langsung vs terjadwal',
+      'Lacak pendapatan berbasis deposit'
     ]
   },
   monthlyEarnings: {
-    title: 'Monthly Earnings',
-    content: 'Your total earnings for the current month from all completed bookings. Resets on the 1st of each month.',
+    title: 'Pendapatan Bulanan',
+    content: 'Total pendapatan Anda untuk bulan berjalan dari semua booking yang diselesaikan. Reset pada tanggal 1 setiap bulan.',
     benefits: [
-      'Track monthly income goals',
-      'Compare month-over-month growth',
-      'Plan personal budget',
-      'Monitor business performance'
+      'Lacak target pendapatan bulanan',
+      'Bandingkan pertumbuhan bulan ke bulan',
+      'Rencanakan anggaran pribadi',
+      'Pantau performa bisnis'
     ]
   },
   peakHours: {
-    title: 'Peak Booking Hours',
-    content: 'Analytics showing your busiest booking times based on the last 30 days of actual booking data from Appwrite.',
+    title: 'Jam Sibuk Booking',
+    content: 'Analitik yang menunjukkan jam tersibuk Anda berdasarkan data booking aktual 30 hari terakhir dari Appwrite.',
     benefits: [
-      'Optimize availability during peak times',
-      'Charge premium rates during high-demand hours',
-      'Plan breaks during low-demand periods',
-      'Data-driven scheduling decisions'
+      'Optimalkan ketersediaan selama jam sibuk',
+      'Kenakan tarif premium selama jam permintaan tinggi',
+      'Rencanakan istirahat selama periode permintaan rendah',
+      'Keputusan penjadwalan berbasis data'
     ]
   },
   busiestDays: {
-    title: 'Busiest Days Heatmap',
-    content: 'Visual representation of which days of the week generate the most bookings. Click any day to see hourly breakdown.',
+    title: 'Peta Panas Hari Tersibuk',
+    content: 'Representasi visual dari hari-hari mana dalam seminggu yang menghasilkan booking terbanyak. Klik hari mana pun untuk melihat rincian per jam.',
     benefits: [
-      'Identify most profitable days',
-      'Schedule rest days strategically',
-      'Maximize earnings on peak days',
-      'Interactive time slot analysis'
+      'Identifikasi hari paling menguntungkan',
+      'Jadwalkan hari istirahat secara strategis',
+      'Maksimalkan pendapatan di hari puncak',
+      'Analisis slot waktu interaktif'
     ]
   },
   dataSource: {
-    title: 'Appwrite Connection',
-    content: 'All earnings data is calculated in real-time from the Appwrite bookings collection. No local storage - always up-to-date.',
+    title: 'Koneksi Appwrite',
+    content: 'Semua data pendapatan dihitung secara real-time dari koleksi booking Appwrite. Tidak ada penyimpanan lokal - selalu terbaru.',
     benefits: [
-      'Real-time accuracy',
-      'Cloud-based reliability',
-      'Cross-device consistency',
-      'Automatic data backup'
+      'Akurasi real-time',
+      'Keandalan berbasis cloud',
+      'Konsistensi lintas perangkat',
+      'Backup data otomatis'
     ]
   }
 };
@@ -212,43 +212,43 @@ export const earningsHelp: PageHelpContent = {
  */
 export const onlineStatusHelp: PageHelpContent = {
   availabilityToggle: {
-    title: 'Availability Status',
-    content: 'Control your booking availability. When "Available", customers can see and book you. When "Busy" or "Offline", you won\'t appear in search results.',
+    title: 'Status Ketersediaan',
+    content: 'Kontrol ketersediaan booking Anda. Ketika "Tersedia", pelanggan dapat melihat dan memesan Anda. Ketika "Sibuk" atau "Offline", Anda tidak akan muncul di hasil pencarian.',
     benefits: [
-      'Instantly control customer visibility',
-      'Prevent bookings during breaks',
-      'Maintain professional boundaries',
-      'Auto-track online hours for earnings'
+      'Kontrol visibilitas pelanggan secara instan',
+      'Cegah booking selama istirahat',
+      'Jaga batasan profesional',
+      'Lacak jam online otomatis untuk pendapatan'
     ]
   },
   discountBadge: {
-    title: 'Discount Badge',
-    content: 'Display a promotional discount badge on your profile to attract more customers. Set your discount percentage and it appears immediately on the homepage.',
+    title: 'Badge Diskon',
+    content: 'Tampilkan badge diskon promosi di profil Anda untuk menarik lebih banyak pelanggan. Atur persentase diskon Anda dan langsung muncul di homepage.',
     benefits: [
-      'Increase booking rate by up to 40%',
-      'Stand out from other therapists',
-      'Flexible discount control',
-      'No approval needed - instant activation'
+      'Tingkatkan tingkat booking hingga 40%',
+      'Menonjol dari terapis lain',
+      'Kontrol diskon fleksibel',
+      'Tidak perlu persetujuan - aktivasi instan'
     ]
   },
   downloadApp: {
-    title: 'Download Mobile App',
-    content: 'Install the PWA (Progressive Web App) for faster access, offline support, and push notifications for new bookings.',
+    title: 'Download Aplikasi Mobile',
+    content: 'Install PWA (Progressive Web App) untuk akses lebih cepat, dukungan offline, dan notifikasi push untuk booking baru.',
     benefits: [
-      'Instant booking notifications',
-      'Works offline - view schedules anytime',
-      'Faster loading than website',
-      'Add to home screen - one tap access'
+      'Notifikasi booking instan',
+      'Bekerja offline - lihat jadwal kapan saja',
+      'Loading lebih cepat dari website',
+      'Tambahkan ke home screen - akses sekali tap'
     ]
   },
   autoOfflineTimer: {
-    title: 'Auto Offline Timer',
-    content: 'Schedule a specific time each day to automatically change your status to Offline. Perfect for maintaining work-life balance without manual updates.',
+    title: 'Timer Auto Offline',
+    content: 'Jadwalkan waktu tertentu setiap hari untuk otomatis mengubah status Anda ke Offline. Sempurna untuk menjaga keseimbangan kerja-hidup tanpa update manual.',
     benefits: [
-      'Never forget to go offline',
-      'Set once, runs automatically daily',
-      'Maintain consistent work hours',
-      'Premium feature - upgrade to unlock'
+      'Tidak pernah lupa untuk offline',
+      'Atur sekali, berjalan otomatis setiap hari',
+      'Jaga konsistensi jam kerja',
+      'Fitur Premium - upgrade untuk membuka'
     ]
   }
 };
@@ -258,53 +258,53 @@ export const onlineStatusHelp: PageHelpContent = {
  */
 export const myBookingsHelp: PageHelpContent = {
   acceptBooking: {
-    title: 'Accept Booking',
-    content: 'Confirm you can fulfill this booking. Once accepted, the customer receives confirmation and expects you to arrive on time.',
+    title: 'Terima Booking',
+    content: 'Konfirmasi Anda dapat memenuhi booking ini. Setelah diterima, pelanggan menerima konfirmasi dan mengharapkan Anda tiba tepat waktu.',
     benefits: [
-      'Build trust with customers',
-      'Secure your booking slot',
-      'Trigger automatic reminders',
-      'Earn online hours toward membership'
+      'Bangun kepercayaan dengan pelanggan',
+      'Amankan slot booking Anda',
+      'Aktifkan pengingat otomatis',
+      'Dapatkan jam online untuk membership'
     ]
   },
   rejectBooking: {
-    title: 'Reject Booking',
-    content: 'Decline bookings you cannot fulfill. Be professional - only reject if absolutely necessary. High rejection rates affect your ranking.',
+    title: 'Tolak Booking',
+    content: 'Tolak booking yang tidak dapat Anda penuhi. Bersikap profesional - tolak hanya jika benar-benar diperlukan. Tingkat penolakan tinggi mempengaruhi peringkat Anda.',
     benefits: [
-      'Maintain realistic schedule',
-      'Avoid penalties for no-shows',
-      'Professional boundary management',
-      'Customer gets refund automatically'
+      'Jaga jadwal yang realistis',
+      'Hindari penalti untuk no-show',
+      'Manajemen batasan profesional',
+      'Pelanggan mendapat refund otomatis'
     ]
   },
   depositApproval: {
-    title: 'Deposit Approval',
-    content: 'For Premium therapists: Review and approve customer deposit payments before confirming bookings. This protects against no-shows.',
+    title: 'Persetujuan Deposit',
+    content: 'Untuk terapis Premium: Tinjau dan setujui pembayaran deposit pelanggan sebelum mengkonfirmasi booking. Ini melindungi dari no-show.',
     benefits: [
-      'Reduce no-show risk',
-      'Verify payment before committing',
-      'Professional payment workflow',
-      'Build customer accountability'
+      'Kurangi risiko no-show',
+      'Verifikasi pembayaran sebelum komitmen',
+      'Alur pembayaran profesional',
+      'Bangun akuntabilitas pelanggan'
     ]
   },
   chatWithCustomer: {
-    title: 'Chat with Customer',
-    content: 'Message customers directly about booking details, location clarifications, or service preferences. Chat history is saved.',
+    title: 'Chat dengan Pelanggan',
+    content: 'Kirim pesan langsung kepada pelanggan tentang detail booking, klarifikasi lokasi, atau preferensi layanan. Riwayat chat disimpan.',
     benefits: [
-      'Clarify booking requirements',
-      'Build customer relationships',
-      'Resolve issues quickly',
-      'Improve service quality'
+      'Klarifikasi persyaratan booking',
+      'Bangun hubungan dengan pelanggan',
+      'Selesaikan masalah dengan cepat',
+      'Tingkatkan kualitas layanan'
     ]
   },
   bookingsList: {
-    title: 'Bookings & Schedule Management',
-    content: 'View and manage all your bookings in one place. Filter by status (All, Received, Scheduled, Completed) to organize your workload. Switch between Bookings and Schedule tabs.',
+    title: 'Manajemen Booking & Jadwal',
+    content: 'Lihat dan kelola semua booking Anda di satu tempat. Filter berdasarkan status (Semua, Diterima, Terjadwal, Selesai) untuk mengatur beban kerja. Beralih antara tab Booking dan Jadwal.',
     benefits: [
-      'Complete booking overview',
-      'Filter by booking status',
-      'Track scheduled vs instant bookings',
-      'Monitor earnings and completion rate'
+      'Ringkasan booking lengkap',
+      'Filter berdasarkan status booking',
+      'Lacak booking terjadwal vs instan',
+      'Pantau pendapatan dan tingkat penyelesaian'
     ]
   }
 };
@@ -314,43 +314,43 @@ export const myBookingsHelp: PageHelpContent = {
  */
 export const bookingsScheduleHelp: PageHelpContent = {
   manageBookings: {
-    title: 'Booking & Jadwal Management',
-    content: 'View all your bookings: instant bookings, scheduled appointments, and completed sessions. Accept or decline bookings, chat with customers, and manage your schedule all in one place.',
+    title: 'Manajemen Booking & Jadwal',
+    content: 'Lihat semua booking Anda: booking instan, janji terjadwal, dan sesi selesai. Terima atau tolak booking, chat dengan pelanggan, dan kelola jadwal Anda di satu tempat.',
     benefits: [
-      'Centralized booking management',
-      'Quick accept/decline actions',
-      'Real-time booking notifications',
-      'Track earnings per booking'
+      'Manajemen booking terpusat',
+      'Aksi terima/tolak cepat',
+      'Notifikasi booking real-time',
+      'Lacak pendapatan per booking'
     ]
   },
   filterBookings: {
-    title: 'Filter Bookings',
-    content: 'Use filters to view specific booking types: All (everything), Received (pending approval), Scheduled (confirmed future bookings), or Completed (finished sessions).',
+    title: 'Filter Booking',
+    content: 'Gunakan filter untuk melihat tipe booking tertentu: Semua (semuanya), Diterima (menunggu persetujuan), Terjadwal (booking masa depan terkonfirmasi), atau Selesai (sesi selesai).',
     benefits: [
-      'Focus on what needs action',
-      'Track completed sessions',
-      'Review pending approvals',
-      'Plan upcoming schedule'
+      'Fokus pada yang memerlukan tindakan',
+      'Lacak sesi selesai',
+      'Tinjau persetujuan tertunda',
+      'Rencanakan jadwal mendatang'
     ]
   },
   depositBookings: {
-    title: 'Scheduled Bookings with Deposit',
-    content: 'Premium therapists can require 30% deposit for scheduled bookings. Review payment proof, approve/reject deposits, and confirm bookings once payment is verified.',
+    title: 'Booking Terjadwal dengan Deposit',
+    content: 'Terapis Premium dapat memerlukan deposit 30% untuk booking terjadwal. Tinjau bukti pembayaran, setujui/tolak deposit, dan konfirmasi booking setelah pembayaran terverifikasi.',
     benefits: [
-      'Reduce no-show risk',
-      'Guaranteed booking commitment',
-      'Professional payment workflow',
-      'Protect your time and income'
+      'Kurangi risiko no-show',
+      'Komitmen booking terjamin',
+      'Alur pembayaran profesional',
+      'Lindungi waktu dan pendapatan Anda'
     ]
   },
   switchScheduleTab: {
-    title: 'Schedule Tab',
-    content: 'Switch to Schedule tab to set your weekly availability, block time slots, and manage working hours. This controls when customers can book you.',
+    title: 'Tab Jadwal',
+    content: 'Beralih ke tab Jadwal untuk mengatur ketersediaan mingguan, blokir slot waktu, dan kelola jam kerja. Ini mengontrol kapan pelanggan dapat memesan Anda.',
     benefits: [
-      'Control your availability',
-      'Set recurring work hours',
-      'Block time for breaks',
-      'Prevent off-hours bookings'
+      'Kontrol ketersediaan Anda',
+      'Atur jam kerja berulang',
+      'Blokir waktu untuk istirahat',
+      'Cegah booking di luar jam kerja'
     ]
   }
 };
@@ -360,33 +360,33 @@ export const bookingsScheduleHelp: PageHelpContent = {
  */
 export const calendarHelp: PageHelpContent = {
   scheduleView: {
-    title: 'Calendar Schedule',
-    content: 'View all confirmed bookings in calendar format. Click dates to see daily schedules. Auto-syncs with booking status changes.',
+    title: 'Jadwal Kalender',
+    content: 'Lihat semua booking terkonfirmasi dalam format kalender. Klik tanggal untuk melihat jadwal harian. Auto-sync dengan perubahan status booking.',
     benefits: [
-      'Visual schedule overview',
-      'Spot scheduling conflicts',
-      'Plan your week efficiently',
-      'Never miss a booking'
+      'Ringkasan jadwal visual',
+      'Temukan konflik penjadwalan',
+      'Rencanakan minggu Anda dengan efisien',
+      'Tidak pernah melewatkan booking'
     ]
   },
   monthNavigation: {
-    title: 'Month Navigation',
-    content: 'Switch between months to view past bookings or plan ahead. Booking counts show on each date.',
+    title: 'Navigasi Bulan',
+    content: 'Beralih antar bulan untuk melihat booking masa lalu atau merencanakan ke depan. Jumlah booking ditampilkan pada setiap tanggal.',
     benefits: [
-      'Review past performance',
-      'Plan future availability',
-      'Track monthly earnings',
-      'Identify busy periods'
+      'Tinjau performa masa lalu',
+      'Rencanakan ketersediaan masa depan',
+      'Lacak pendapatan bulanan',
+      'Identifikasi periode sibuk'
     ]
   },
   bookingDetails: {
-    title: 'Booking Details',
-    content: 'Tap any booking to see full details: customer info, location, service type, duration, and payment status.',
+    title: 'Detail Booking',
+    content: 'Ketuk booking mana pun untuk melihat detail lengkap: info pelanggan, lokasi, jenis layanan, durasi, dan status pembayaran.',
     benefits: [
-      'Quick information access',
-      'Verify booking requirements',
-      'Contact customer if needed',
-      'Prepare service materials'
+      'Akses informasi cepat',
+      'Verifikasi persyaratan booking',
+      'Hubungi pelanggan jika diperlukan',
+      'Persiapkan bahan layanan'
     ]
   }
 };
@@ -396,33 +396,33 @@ export const calendarHelp: PageHelpContent = {
  */
 export const paymentStatusHelp: PageHelpContent = {
   submitProof: {
-    title: 'Submit Payment Proof',
-    content: 'Upload bank transfer receipt or payment confirmation for membership fees, commission payments, or Safe Pass certification.',
+    title: 'Kirim Bukti Pembayaran',
+    content: 'Upload bukti transfer bank atau konfirmasi pembayaran untuk biaya membership, pembayaran komisi, atau sertifikasi Safe Pass.',
     benefits: [
-      'Activate premium features',
-      'Get admin approval faster',
-      'Track payment status',
-      'Secure payment record'
+      'Aktifkan fitur premium',
+      'Dapatkan persetujuan admin lebih cepat',
+      'Lacak status pembayaran',
+      'Rekam pembayaran aman'
     ]
   },
   paymentHistory: {
-    title: 'Payment History',
-    content: 'View all your payment submissions: pending, approved, or declined. Check status and admin notes.',
+    title: 'Riwayat Pembayaran',
+    content: 'Lihat semua pengajuan pembayaran Anda: tertunda, disetujui, atau ditolak. Periksa status dan catatan admin.',
     benefits: [
-      'Track payment progress',
-      'Resolve payment issues',
-      'Reference past transactions',
-      'Plan upcoming payments'
+      'Lacak progres pembayaran',
+      'Selesaikan masalah pembayaran',
+      'Referensi transaksi masa lalu',
+      'Rencanakan pembayaran mendatang'
     ]
   },
   expiryDate: {
-    title: 'Payment Expiry',
-    content: 'Pending payments expire after 7 days if not approved. Resubmit before expiry to avoid delays.',
+    title: 'Kadaluarsa Pembayaran',
+    content: 'Pembayaran tertunda kadaluarsa setelah 7 hari jika tidak disetujui. Kirim ulang sebelum kadaluarsa untuk menghindari keterlambatan.',
     benefits: [
-      'Avoid re-submission hassle',
-      'Keep membership active',
-      'Prevent service interruption',
-      'Stay organized'
+      'Hindari kerumitan pengiriman ulang',
+      'Jaga membership tetap aktif',
+      'Cegah gangguan layanan',
+      'Tetap terorganisir'
     ]
   }
 };
@@ -432,33 +432,33 @@ export const paymentStatusHelp: PageHelpContent = {
  */
 export const sendDiscountHelp: PageHelpContent = {
   selectCustomers: {
-    title: 'Select Past Customers',
-    content: 'Choose customers from your booking history who have messaged you or left reviews. Discount banners are sent directly in their chat window.',
+    title: 'Pilih Pelanggan Masa Lalu',
+    content: 'Pilih pelanggan dari riwayat booking yang telah mengirim pesan atau meninggalkan review. Banner diskon dikirim langsung di jendela chat mereka.',
     benefits: [
-      'Re-engage customers with chat history',
-      'Reward customers who left reviews',
-      'Increase repeat booking rate',
-      'Build loyal customer base'
+      'Libatkan kembali pelanggan dengan riwayat chat',
+      'Beri reward pelanggan yang meninggalkan review',
+      'Tingkatkan tingkat booking berulang',
+      'Bangun basis pelanggan loyal'
     ]
   },
   discountBanner: {
-    title: 'Discount Banner',
-    content: 'Select pre-designed banner with your discount offer. Customers receive it in their chat window and can book directly.',
+    title: 'Banner Diskon',
+    content: 'Pilih banner yang sudah dirancang dengan penawaran diskon Anda. Pelanggan menerimanya di jendela chat dan dapat booking langsung.',
     benefits: [
-      'Professional marketing materials',
-      'Sent via in-app chat',
-      'Instant delivery',
-      'Track banner effectiveness'
+      'Materi marketing profesional',
+      'Dikirim via chat in-app',
+      'Pengiriman instan',
+      'Lacak efektivitas banner'
     ]
   },
   sendBanner: {
-    title: 'Send Banner',
-    content: 'Confirm and send selected banner to chosen customers. They receive the banner in their chat window with booking link.',
+    title: 'Kirim Banner',
+    content: 'Konfirmasi dan kirim banner yang dipilih ke pelanggan terpilih. Mereka menerima banner di jendela chat dengan link booking.',
     benefits: [
-      'One-click marketing campaign',
-      'Direct customer engagement',
-      'Measurable results',
-      'Boost bookings instantly'
+      'Kampanye marketing sekali klik',
+      'Engagement pelanggan langsung',
+      'Hasil terukur',
+      'Tingkatkan booking secara instan'
     ]
   }
 };
@@ -468,43 +468,43 @@ export const sendDiscountHelp: PageHelpContent = {
  */
 export const safePassHelp: PageHelpContent = {
   uploadLetter: {
-    title: 'Upload Recommendation Letter',
-    content: 'Upload official letters from hotels/villas where you\'ve worked. Need 3 letters total for Safe Pass certification.',
+    title: 'Upload Surat Rekomendasi',
+    content: 'Upload surat resmi dari hotel/villa tempat Anda bekerja. Memerlukan 3 surat total untuk sertifikasi Safe Pass.',
     benefits: [
-      'Prove hotel experience',
-      'Qualify for premium venues',
-      'Increase booking rate',
-      'Higher service fees'
+      'Buktikan pengalaman hotel',
+      'Kualifikasi untuk venue premium',
+      'Tingkatkan tingkat booking',
+      'Biaya layanan lebih tinggi'
     ]
   },
   adminApproval: {
-    title: 'Admin Approval Process',
-    content: 'Admin reviews your letters and verifies authenticity. Approval typically takes 2-3 business days.',
+    title: 'Proses Persetujuan Admin',
+    content: 'Admin meninjau surat Anda dan memverifikasi keaslian. Persetujuan biasanya memakan waktu 2-3 hari kerja.',
     benefits: [
-      'Quality assurance',
-      'Industry credibility',
-      'Professional certification',
-      'Trust from premium clients'
+      'Jaminan kualitas',
+      'Kredibilitas industri',
+      'Sertifikasi profesional',
+      'Kepercayaan dari klien premium'
     ]
   },
   paymentFee: {
-    title: 'Safe Pass Fee',
-    content: 'One-time fee of IDR 500,000 for lifetime certification. Pay after admin approval of your letters.',
+    title: 'Biaya Safe Pass',
+    content: 'Biaya satu kali IDR 500.000 untuk sertifikasi seumur hidup. Bayar setelah persetujuan admin atas surat Anda.',
     benefits: [
-      'Lifetime certification',
-      'Access to hotel/villa bookings',
-      'Premium pricing tier',
-      'Professional recognition'
+      'Sertifikasi seumur hidup',
+      'Akses ke booking hotel/villa',
+      'Tier harga premium',
+      'Pengakuan profesional'
     ]
   },
   certificationBenefits: {
-    title: 'Certification Benefits',
-    content: 'Active Safe Pass unlocks hotel/villa bookings, priority search ranking, and premium customer access.',
+    title: 'Manfaat Sertifikasi',
+    content: 'Safe Pass aktif membuka booking hotel/villa, peringkat pencarian prioritas, dan akses pelanggan premium.',
     benefits: [
-      'Hotel/villa authorization',
-      'Higher booking rates',
-      'Premium customer segment',
-      'Competitive advantage'
+      'Otorisasi hotel/villa',
+      'Tingkat booking lebih tinggi',
+      'Segmen pelanggan premium',
+      'Keunggulan kompetitif'
     ]
   }
 };
@@ -514,33 +514,33 @@ export const safePassHelp: PageHelpContent = {
  */
 export const commissionPaymentHelp: PageHelpContent = {
   commissionRate: {
-    title: 'Commission Rate',
-    content: 'Platform takes 30% commission per booking. This is a fixed rate applied to all bookings in Indonesia.',
+    title: 'Tarif Komisi',
+    content: 'Platform mengambil komisi 30% per booking. Ini adalah tarif tetap yang diterapkan untuk semua booking di Indonesia.',
     benefits: [
-      'Transparent pricing',
-      'No hidden fees',
-      'Lower rates for premium',
-      'Pay per booking only'
+      'Harga transparan',
+      'Tidak ada biaya tersembunyi',
+      'Tarif lebih rendah untuk premium',
+      'Bayar per booking saja'
     ]
   },
   paymentSchedule: {
-    title: 'Payment Schedule',
-    content: 'Commission is deducted automatically from each booking payment. You receive net amount after commission.',
+    title: 'Jadwal Pembayaran',
+    content: 'Komisi dipotong otomatis dari setiap pembayaran booking. Anda menerima jumlah bersih setelah komisi.',
     benefits: [
-      'Automatic processing',
-      'No manual calculations',
-      'Instant payment',
-      'Clear earnings breakdown'
+      'Pemrosesan otomatis',
+      'Tidak ada perhitungan manual',
+      'Pembayaran instan',
+      'Rincian pendapatan jelas'
     ]
   },
   submitPayment: {
-    title: 'Submit Commission Payment',
-    content: 'For manual payment plans: Submit bank transfer proof for monthly commission fees.',
+    title: 'Kirim Pembayaran Komisi',
+    content: 'Untuk paket pembayaran manual: Kirim bukti transfer bank untuk biaya komisi bulanan.',
     benefits: [
-      'Flexible payment options',
-      'Track payment history',
-      'Admin verification',
-      'Maintain service access'
+      'Opsi pembayaran fleksibel',
+      'Lacak riwayat pembayaran',
+      'Verifikasi admin',
+      'Jaga akses layanan'
     ]
   }
 };
@@ -550,43 +550,43 @@ export const commissionPaymentHelp: PageHelpContent = {
  */
 export const notificationsHelp: PageHelpContent = {
   bookingNotifications: {
-    title: 'Booking Notifications',
-    content: 'Receive instant alerts for new bookings, customer messages, and booking status changes.',
+    title: 'Notifikasi Booking',
+    content: 'Terima alert instan untuk booking baru, pesan pelanggan, dan perubahan status booking.',
     benefits: [
-      'Never miss a booking',
-      'Respond quickly to customers',
-      'Stay informed 24/7',
-      'Improve response time'
+      'Tidak pernah melewatkan booking',
+      'Respons cepat ke pelanggan',
+      'Tetap terinformasi 24/7',
+      'Tingkatkan waktu respons'
     ]
   },
   messageNotifications: {
-    title: 'Message Notifications',
-    content: 'Get notified when customers send chat messages about bookings or services.',
+    title: 'Notifikasi Pesan',
+    content: 'Dapatkan notifikasi ketika pelanggan mengirim pesan chat tentang booking atau layanan.',
     benefits: [
-      'Quick customer support',
-      'Resolve issues faster',
-      'Build customer trust',
-      'Increase satisfaction'
+      'Dukungan pelanggan cepat',
+      'Selesaikan masalah lebih cepat',
+      'Bangun kepercayaan pelanggan',
+      'Tingkatkan kepuasan'
     ]
   },
   systemNotifications: {
-    title: 'System Notifications',
-    content: 'Important updates about membership, payments, policy changes, and platform features.',
+    title: 'Notifikasi Sistem',
+    content: 'Update penting tentang membership, pembayaran, perubahan kebijakan, dan fitur platform.',
     benefits: [
-      'Stay compliant',
-      'Know new features',
-      'Avoid missed deadlines',
-      'Platform updates'
+      'Tetap patuh',
+      'Ketahui fitur baru',
+      'Hindari deadline terlewat',
+      'Update platform'
     ]
   },
   markAsRead: {
-    title: 'Mark as Read',
-    content: 'Clear notifications once reviewed to keep inbox organized.',
+    title: 'Tandai Sebagai Dibaca',
+    content: 'Hapus notifikasi setelah ditinjau untuk menjaga inbox terorganisir.',
     benefits: [
-      'Organized notification center',
-      'Focus on unread items',
-      'Track what needs action',
-      'Clean interface'
+      'Pusat notifikasi terorganisir',
+      'Fokus pada item belum dibaca',
+      'Lacak apa yang perlu tindakan',
+      'Interface bersih'
     ]
   }
 };
@@ -596,33 +596,33 @@ export const notificationsHelp: PageHelpContent = {
  */
 export const scheduleHelp: PageHelpContent = {
   setAvailability: {
-    title: 'Set Weekly Availability',
-    content: 'Define your working hours for each day of the week. Customers can only book during these times.',
+    title: 'Atur Ketersediaan Mingguan',
+    content: 'Tentukan jam kerja Anda untuk setiap hari dalam seminggu. Pelanggan hanya dapat booking selama waktu ini.',
     benefits: [
-      'Control your schedule',
-      'Work-life balance',
-      'Prevent off-hours bookings',
-      'Professional boundaries'
+      'Kontrol jadwal Anda',
+      'Keseimbangan kerja-hidup',
+      'Cegah booking di luar jam kerja',
+      'Batasan profesional'
     ]
   },
   blockTimeSlots: {
-    title: 'Block Time Slots',
-    content: 'Temporarily block specific dates/times for personal commitments or breaks.',
+    title: 'Blokir Slot Waktu',
+    content: 'Blokir sementara tanggal/waktu tertentu untuk komitmen pribadi atau istirahat.',
     benefits: [
-      'Flexible schedule management',
-      'Emergency time off',
-      'Prevent double bookings',
-      'Maintain service quality'
+      'Manajemen jadwal fleksibel',
+      'Waktu off darurat',
+      'Cegah double booking',
+      'Jaga kualitas layanan'
     ]
   },
   bufferTime: {
-    title: 'Buffer Time',
-    content: 'Add travel time between bookings to ensure you arrive prepared and on time.',
+    title: 'Waktu Buffer',
+    content: 'Tambahkan waktu perjalanan antar booking untuk memastikan Anda tiba dengan siap dan tepat waktu.',
     benefits: [
-      'Realistic scheduling',
-      'Avoid being late',
-      'Reduce stress',
-      'Better customer experience'
+      'Penjadwalan realistis',
+      'Hindari terlambat',
+      'Kurangi stres',
+      'Pengalaman pelanggan lebih baik'
     ]
   }
 };
