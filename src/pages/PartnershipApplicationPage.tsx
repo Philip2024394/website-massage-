@@ -807,4 +807,6 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
     );
 };
 
+PartnershipApplicationPage.displayName = 'PartnershipApplicationPage';
+
 export default PartnershipApplicationPage;
