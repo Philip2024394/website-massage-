@@ -17,6 +17,23 @@ export interface PageHelpContent {
 }
 
 /**
+ * Commission Help Content (alias for commissionPaymentHelp)
+ */
+export const commissionHelp: PageHelpContent = {
+  overview: {
+    title: 'Komisi Platform 30%',
+    content: 'Platform mengambil komisi 30% dari setiap booking yang berhasil diselesaikan. Anda menerima 70% dari total nilai booking sebagai pendapatan bersih Anda.',
+    benefits: [
+      'Transparansi pembagian pendapatan yang jelas',
+      'Perhitungan otomatis dan akurat',
+      'Riwayat komisi tersimpan lengkap',
+      'Laporan detail per periode',
+      'Sistem pembayaran terpercaya dan tepat waktu'
+    ]
+  }
+};
+
+/**
  * Premium Help Content
  */
 export const premiumHelp: PageHelpContent = {
