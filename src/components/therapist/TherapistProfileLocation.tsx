@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, MapPin, Clock, AlertCircle, CheckCircle } from 'lucide-react';
-import LocationSelector from '../components/LocationSelector';
+import LocationSelector from '../therapist/LocationSelector';
 import { LocationOption } from '../../lib/locationService';
 
 interface TherapistProfileLocationProps {

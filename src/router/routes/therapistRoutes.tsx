@@ -1,30 +1,33 @@
 /**
  * Therapist Dashboard Routes Configuration
  * All therapist-related pages and features
+ * 
+ * ✅ CONSOLIDATED: All therapist pages now in src/pages/therapist/
+ * ✅ SINGLE SOURCE: No duplicate dashboard folders
  */
 
 import { lazy } from 'react';
 
 // Direct imports to fix component load errors
-import TherapistPortalPage from '../../../apps/therapist-dashboard/src/pages/TherapistDashboard';
-import TherapistOnlineStatus from '../../../apps/therapist-dashboard/src/pages/TherapistOnlineStatus';
-const TherapistBookings = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistBookings'));
-const TherapistEarnings = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistEarnings'));
-const TherapistChat = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistChat'));
-const TherapistNotifications = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistNotifications'));
-const TherapistLegal = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistLegal'));
-const TherapistCalendar = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistCalendar'));
-const TherapistPaymentInfo = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistPaymentInfo'));
-const TherapistPaymentStatus = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistPaymentStatus'));
-const TherapistMenu = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistMenu'));
-const PremiumUpgrade = lazy(() => import('../../../apps/therapist-dashboard/src/pages/PremiumUpgrade'));
-const CommissionPayment = lazy(() => import('../../../apps/therapist-dashboard/src/pages/CommissionPayment'));
-const TherapistSchedule = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistSchedule'));
-const PackageTermsPage = lazy(() => import('../../../apps/therapist-dashboard/src/pages/PackageTermsPage'));
-const SendDiscountPage = lazy(() => import('../../../apps/therapist-dashboard/src/pages/SendDiscountPage'));
+import TherapistPortalPage from '../../pages/therapist/TherapistDashboard';
+import TherapistOnlineStatus from '../../pages/therapist/TherapistOnlineStatus';
+const TherapistBookings = lazy(() => import('../../pages/therapist/TherapistBookings'));
+const TherapistEarnings = lazy(() => import('../../pages/therapist/TherapistEarnings'));
+const TherapistChat = lazy(() => import('../../pages/therapist/TherapistChat'));
+const TherapistNotifications = lazy(() => import('../../pages/therapist/TherapistNotifications'));
+const TherapistLegal = lazy(() => import('../../pages/therapist/TherapistLegal'));
+const TherapistCalendar = lazy(() => import('../../pages/therapist/TherapistCalendar'));
+const TherapistPaymentInfo = lazy(() => import('../../pages/therapist/TherapistPaymentInfo'));
+const TherapistPaymentStatus = lazy(() => import('../../pages/therapist/TherapistPaymentStatus'));
+const TherapistMenu = lazy(() => import('../../pages/therapist/TherapistMenu'));
+const PremiumUpgrade = lazy(() => import('../../pages/therapist/PremiumUpgrade'));
+const CommissionPayment = lazy(() => import('../../pages/therapist/CommissionPayment'));
+const TherapistSchedule = lazy(() => import('../../pages/therapist/TherapistSchedule'));
+const PackageTermsPage = lazy(() => import('../../pages/therapist/PackageTermsPage'));
+const SendDiscountPage = lazy(() => import('../../pages/therapist/SendDiscountPage'));
 
 // Placeholder component for routes under construction
-const TherapistPlaceholderPage = lazy(() => import('../../../apps/therapist-dashboard/src/pages/TherapistPlaceholderPage'));
+const TherapistPlaceholderPage = lazy(() => import('../../pages/therapist/TherapistPlaceholderPage'));
 
 export const therapistRoutes = {
   dashboard: {
