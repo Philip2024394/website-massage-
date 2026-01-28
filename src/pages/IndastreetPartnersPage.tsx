@@ -543,7 +543,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                 
                                 {/* Verified Badge */}
                                 {partner.verified && (
-                                    <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-2 rounded-full text-xs font-medium flex items-center shadow-lg">
+                                    <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-md text-yellow-400 px-3 py-2 rounded-full text-xs font-bold flex items-center shadow-lg">
                                         <CheckCircleIcon className="w-3 h-3 mr-1" />
                                         {t?.partners?.verifiedPartner || 'Verified'}
                                     </div>
