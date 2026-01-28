@@ -512,21 +512,22 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 <div className="space-y-16">
                     {filteredPartners.map((partner) => (
                         <div key={partner.id} className="relative mb-12">
-                            {/* Join Indastreet Link - Top Left Outside Card */}
-                            <button
-                                onClick={() => onNavigate?.('join-indastreet-partners')}
-                                className="absolute -top-6 left-0 text-xs text-orange-600 hover:text-orange-700 font-semibold underline transition-colors"
-                            >
-                                Join Indastreet
-                            </button>
-                            
-                            {/* Member Since - Top Right Outside Card */}
-                            <p className="absolute -top-6 right-0 text-xs text-gray-500 font-medium">
-                                {t?.partners?.added || 'Member since'} {new Date(partner.addedDate).toLocaleDateString('en-US', { 
-                                    year: 'numeric', 
-                                    month: 'short'
-                                })}
-                            </p>
+                            {/* Join Indastreet and Member Since - Same line level */}
+                            <div className="absolute -top-6 left-0 right-0 flex justify-between items-center">
+                                <button
+                                    onClick={() => onNavigate?.('join-indastreet-partners')}
+                                    className="text-xs text-orange-600 hover:text-orange-700 font-semibold underline transition-colors"
+                                >
+                                    Join Indastreet
+                                </button>
+                                
+                                <p className="text-xs text-gray-500 font-medium">
+                                    {t?.partners?.added || 'Member since'} {new Date(partner.addedDate).toLocaleDateString('en-US', { 
+                                        year: 'numeric', 
+                                        month: 'short'
+                                    })}
+                                </p>
+                            </div>
                             
                             <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative">
                             {/* Main Image Banner */}
