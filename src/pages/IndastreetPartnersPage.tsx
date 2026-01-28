@@ -393,30 +393,16 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
 
     return (
         <div className="min-h-screen bg-white">
+            {/* Universal Header with Home Button */}
             <UniversalHeader
-                onNavigate={onNavigate}
-                onMenuToggle={() => setIsMenuOpen(true)}
-                title="IndaStreet Partners"
+                onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={() => onNavigate && onNavigate('home')}
+                showHomeButton={true}
+                showLanguageSelector={false}
             />
             
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
-            
-            <header className="bg-white p-4 shadow-md sticky top-0 z-20">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
-                    <button 
-                        onClick={() => onNavigate && onNavigate('home')}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                        title="Home"
-                    >
-                        <HomeIcon className="w-6 h-6 text-gray-600" />
-                    </button>
-                </div>
-            </header>
             
             {/* Global App Drawer */}
             <AppDrawer
