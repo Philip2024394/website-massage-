@@ -17,6 +17,24 @@ export interface PageHelpContent {
 }
 
 /**
+ * Premium Help Content
+ */
+export const premiumHelp: PageHelpContent = {
+  overview: {
+    title: 'Upgrade ke Premium',
+    content: 'Tingkatkan akun Anda ke Premium untuk mendapatkan lebih banyak visibilitas, fitur prioritas, dan peningkatan penghasilan. Member Premium muncul di urutan teratas hasil pencarian pelanggan.',
+    benefits: [
+      'Tampil di urutan teratas hasil pencarian',
+      'Badge Premium yang menarik perhatian',
+      'Notifikasi booking lebih cepat',
+      'Dukungan prioritas dari tim support',
+      'Analitik mendalam untuk optimasi bisnis',
+      'Peluang booking meningkat hingga 3x lipat'
+    ]
+  }
+};
+
+/**
  * Menu Help Content
  */
 export const menuHelp: PageHelpContent = {
