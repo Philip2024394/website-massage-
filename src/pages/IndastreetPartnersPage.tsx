@@ -95,6 +95,21 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [partnerToShare, setPartnerToShare] = useState<PartnerWebsite | null>(null);
 
+    // Default partner images for random display
+    const defaultPartnerImages = [
+        'https://ik.imagekit.io/7grri5v7d/indonisea%20place%208.png?updatedAt=1767203858237',
+        'https://ik.imagekit.io/7grri5v7d/indonisea%20place%207.png?updatedAt=1767203840641',
+        'https://ik.imagekit.io/7grri5v7d/indonisea%20place%206.png?updatedAt=1767203820941',
+        'https://ik.imagekit.io/7grri5v7d/indonisea%20place%205.png?updatedAt=1767203802081',
+        'https://ik.imagekit.io/7grri5v7d/indonisea%20place%204.png?updatedAt=1767203785161'
+    ];
+
+    // Get random default image
+    const getRandomDefaultImage = () => {
+        const randomIndex = Math.floor(Math.random() * defaultPartnerImages.length);
+        return defaultPartnerImages[randomIndex];
+    };
+
     // Enhanced mock data with website previews - Only partners with custom images
     const mockPartners: PartnerWebsite[] = [
         {
@@ -533,12 +548,12 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                             {/* Main Image Banner */}
                             <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
                                 <img 
-                                    src={partner.imageUrl || 'https://ik.imagekit.io/7grri5v7d/hotel%20villa.png'} 
+                                    src={partner.imageUrl || getRandomDefaultImage()} 
                                     alt={`${partner.name} cover`} 
                                     className="w-full h-full object-cover"
                                     loading="lazy"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20villa.png';
+                                        (e.target as HTMLImageElement).src = getRandomDefaultImage();
                                     }}
                                 />
                                 
