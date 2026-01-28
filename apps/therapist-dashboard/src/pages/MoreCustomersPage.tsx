@@ -282,7 +282,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
                     </li>
                     <li className="flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-red-600 font-medium">Online {'<'} 6 jam = ranking turun drastis</span>
+                      <span className="text-red-600 font-medium">Online &lt; 6 jam = ranking turun drastis</span>
                     </li>
                   </ul>
                 </div>
@@ -621,7 +621,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
                       <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
                         <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-sm font-medium text-red-700">Traffic Turun {'>'} 30%</p>
+                          <p className="text-sm font-medium text-red-700">Traffic Turun &gt; 30%</p>
                           <p className="text-xs text-red-600">Beri diskon 15-25% untuk menarik kembali customer</p>
                         </div>
                       </div>
@@ -711,7 +711,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
                   <h4 className="font-bold text-red-900">WAJIB: Minimal 8 Jam Online Per Hari</h4>
                 </div>
                 <div className="text-sm text-red-800 space-y-2">
-                  <p>• <strong>Algoritma sistem</strong> akan menurunkan ranking Anda jika online {'<'} 6 jam per hari</p>
+                  <p>• <strong>Algoritma sistem</strong> akan menurunkan ranking Anda jika online &lt; 6 jam per hari</p>
                   <p>• <strong>Customer expectation:</strong> Therapist yang konsisten online dianggap lebih profesional</p>
                   <p>• <strong>Income opportunity:</strong> 8 jam online = 2-4x lebih banyak booking</p>
                   <p>• <strong>Competition advantage:</strong> Therapist online 8+ jam selalu ranking atas</p>
