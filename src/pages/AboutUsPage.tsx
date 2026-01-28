@@ -74,20 +74,9 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
             >
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="max-w-6xl mx-auto px-4 relative z-10">
-                    {/* Back Arrow */}
-                    <button
-                        onClick={() => onNavigate?.('home')}
-                        className="flex items-center gap-2 mb-8 text-white/90 hover:text-white transition-colors group"
-                    >
-                        <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
-                        <span className="font-medium">
-                            {language === 'id' ? 'Kembali ke Beranda' : 'Back to Home'}
-                        </span>
-                    </button>
-                    
                     <div className="text-center">
                         <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                            <span className="text-white">About IndaStreet Massage</span>
+                            <span className="text-white">Inda</span><span className="text-orange-500">street Massage</span>
                         </h1>
                         <p className="text-lg md:text-xl text-white/95 max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] font-light">
                             International wellness platform connecting people with verified massage therapists, professional massage spas, and licensed skin clinics
@@ -304,32 +293,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                     </p>
                 </div>
 
-                {/* CTA Section */}
-                <div className="text-center py-8 border-t border-gray-200">
-                    <div className="flex flex-wrap gap-4 justify-center">
-                        <button 
-                            onClick={() => {
-                                const event = new CustomEvent('toggleDrawer');
-                                window.dispatchEvent(event);
-                            }}
-                            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors shadow-md"
-                        >
-                            {t('about.cta.getStarted') || 'Get Started Today'}
-                        </button>
-                        <button 
-                            onClick={() => onNavigate('company-profile')}
-                            className="px-8 py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold rounded-lg transition-all shadow-md"
-                        >
-                            {t('about.cta.viewCompanyProfile') || 'View Company Profile'}
-                        </button>
-                        <button 
-                            onClick={() => onNavigate('contact')}
-                            className="px-8 py-3 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-semibold rounded-lg transition-colors"
-                        >
-                            {t('about.cta.contactTeam') || 'Contact Our Team'}
-                        </button>
-                    </div>
-                </div>
+
             </div>
         </div>
     );
