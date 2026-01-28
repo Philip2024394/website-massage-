@@ -17,6 +17,23 @@ export interface PageHelpContent {
 }
 
 /**
+ * Menu Help Content
+ */
+export const menuHelp: PageHelpContent = {
+  overview: {
+    title: 'Kelola Menu Layanan Anda',
+    content: 'Atur jenis layanan massage yang Anda tawarkan dan harganya. Menu yang jelas dan kompetitif membantu menarik lebih banyak pelanggan dan meningkatkan booking Anda.',
+    benefits: [
+      'Tampilkan layanan dengan durasi dan harga jelas',
+      'Harga kompetitif menarik lebih banyak pelanggan',
+      'Update harga kapan saja sesuai kebutuhan',
+      'Menu profesional meningkatkan kepercayaan',
+      'Pelanggan dapat memilih layanan sesuai budget'
+    ]
+  }
+};
+
+/**
  * Chat Help Content
  */
 export const chatHelp: PageHelpContent = {
