@@ -1,413 +1,613 @@
 /**
- * Help Content for Therapist Dashboard
- * Comprehensive help tooltips for all dashboard features
+ * Therapist Dashboard Help Content
+ * Elite-level contextual help system
+ * 
+ * Structure: Organized by page → feature
+ * Each help item explains what the feature achieves when completed
  */
 
-export interface HelpTooltipContent {
+export interface HelpContent {
   title: string;
-  description?: string;
-  content?: string;
-  icon?: string;
-  benefits?: string[];
+  content: string;
+  benefits: string[];
 }
 
 export interface PageHelpContent {
-  [key: string]: HelpTooltipContent;
+  [featureKey: string]: HelpContent;
 }
 
-// Online Status Help
-export const onlineStatusHelp: PageHelpContent = {
-  availableStatus: {
-    title: 'Available Status',
-    content: 'Set yourself as available to receive booking requests from customers',
-    benefits: ['Visible to customers searching for therapists', 'Receive instant booking notifications', 'Maximize your earning potential']
-  },
-  busyStatus: {
-    title: 'Busy Status',
-    content: 'Mark yourself as busy when attending to a customer',
-    benefits: ['Prevent double bookings', 'Professional time management', 'Customers know you are currently engaged']
-  },
-  offlineStatus: {
-    title: 'Offline Status',
-    content: 'Set yourself offline when unavailable for bookings',
-    benefits: ['Profile hidden from search results', 'No booking notifications', 'Maintain work-life balance']
-  },
-  onlineHours: {
-    title: 'Online Hours This Month',
-    content: 'Track how many hours you have been available this month. Resets on the 1st of each month',
-    benefits: ['Monitor your availability', 'Understand booking patterns', 'Optimize your schedule']
-  }
-};
-
-// Earnings Help
+/**
+ * TherapistEarnings Page Help Content
+ */
 export const earningsHelp: PageHelpContent = {
   completedEarnings: {
-    title: 'Completed Earnings',
-    content: 'Total earnings from confirmed and completed bookings',
-    benefits: ['Track successful transactions', 'Monitor monthly income', 'Financial planning']
+    title: 'Total Completed Earnings',
+    content: 'Your actual earnings from all completed bookings. This shows the amount you receive after the 30% platform commission is deducted.',
+    benefits: [
+      'See real-time earnings from completed bookings',
+      '70% of total booking value goes to you',
+      'Tracks Book Now and Scheduled bookings',
+      'Connected directly to Appwrite database'
+    ]
   },
   lostEarnings: {
-    title: 'Lost Earnings',
-    content: 'Potential earnings from cancelled or rejected bookings',
-    benefits: ['Identify missed opportunities', 'Improve acceptance rate', 'Optimize availability']
+    title: 'Lost Earnings Tracker',
+    content: 'Revenue missed from expired, declined, or cancelled bookings. This helps you understand opportunities lost due to timeouts or rejections.',
+    benefits: [
+      'Identify revenue loss patterns',
+      'See impact of 5-minute timeout expirations',
+      'Track declined booking consequences',
+      'Improve response time to maximize earnings'
+    ]
   },
   serviceBreakdown: {
-    title: 'Service Breakdown',
-    content: 'Earnings breakdown by massage type and service',
-    benefits: ['Identify popular services', 'Optimize service menu', 'Strategic pricing']
+    title: 'Service Duration Breakdown',
+    content: 'Earnings separated by service duration (60, 90, 120 minutes). Shows which service types generate the most income.',
+    benefits: [
+      'Identify most profitable service duration',
+      'Optimize pricing strategy',
+      'Focus marketing on high-earning services',
+      'Track customer preferences by duration'
+    ]
   },
   bookingTypes: {
-    title: 'Booking Types',
-    content: 'Distribution of home service vs venue bookings',
-    benefits: ['Understand customer preferences', 'Optimize service offerings', 'Location strategy']
+    title: 'Book Now vs Scheduled',
+    content: 'Compare earnings from immediate "Book Now" bookings versus advance "Scheduled" bookings with deposits.',
+    benefits: [
+      'Understand booking type profitability',
+      'Plan availability strategy',
+      'Balance immediate vs scheduled work',
+      'Track deposit-based revenue'
+    ]
   },
   monthlyEarnings: {
-    title: 'Monthly Earnings Trend',
-    content: 'Historical earnings data showing month-over-month performance',
-    benefits: ['Track growth trends', 'Seasonal patterns', 'Set realistic goals']
-  },
-  dataSource: {
-    title: 'Data Source',
-    content: 'All data sourced from confirmed bookings and payment records',
-    benefits: ['Accurate reporting', 'Real-time updates', 'Transparent tracking']
+    title: 'Monthly Earnings',
+    content: 'Your total earnings for the current month from all completed bookings. Resets on the 1st of each month.',
+    benefits: [
+      'Track monthly income goals',
+      'Compare month-over-month growth',
+      'Plan personal budget',
+      'Monitor business performance'
+    ]
   },
   peakHours: {
     title: 'Peak Booking Hours',
-    content: 'Times of day when you receive the most bookings',
-    benefits: ['Optimize availability schedule', 'Maximize earning potential', 'Better work planning']
+    content: 'Analytics showing your busiest booking times based on the last 30 days of actual booking data from Appwrite.',
+    benefits: [
+      'Optimize availability during peak times',
+      'Charge premium rates during high-demand hours',
+      'Plan breaks during low-demand periods',
+      'Data-driven scheduling decisions'
+    ]
   },
   busiestDays: {
-    title: 'Busiest Days',
-    content: 'Days of the week with highest booking volume',
-    benefits: ['Strategic availability planning', 'Optimize rest days', 'Revenue forecasting']
+    title: 'Busiest Days Heatmap',
+    content: 'Visual representation of which days of the week generate the most bookings. Click any day to see hourly breakdown.',
+    benefits: [
+      'Identify most profitable days',
+      'Schedule rest days strategically',
+      'Maximize earnings on peak days',
+      'Interactive time slot analysis'
+    ]
+  },
+  dataSource: {
+    title: 'Appwrite Connection',
+    content: 'All earnings data is calculated in real-time from the Appwrite bookings collection. No local storage - always up-to-date.',
+    benefits: [
+      'Real-time accuracy',
+      'Cloud-based reliability',
+      'Cross-device consistency',
+      'Automatic data backup'
+    ]
   }
 };
 
-// Payment Info Help
-export const paymentInfoHelp: PageHelpContent = {
-  directPayment: {
-    title: 'Direct Payment System',
-    content: 'Customers pay you directly via bank transfer or cash',
-    benefits: ['100% of your earnings', 'No platform fees', 'Immediate payment']
+/**
+ * TherapistOnlineStatus Page Help Content
+ */
+export const onlineStatusHelp: PageHelpContent = {
+  availabilityToggle: {
+    title: 'Availability Status',
+    content: 'Control your booking availability. When "Available", customers can see and book you. When "Busy" or "Offline", you won\'t appear in search results.',
+    benefits: [
+      'Instantly control customer visibility',
+      'Prevent bookings during breaks',
+      'Maintain professional boundaries',
+      'Auto-track online hours for earnings'
+    ]
   },
-  commissionSystem: {
-    title: 'Commission Structure',
-    content: 'IndaStreet charges 30% commission per booking for platform services',
-    benefits: ['Transparent pricing', 'No hidden fees', 'Clear payment terms']
+  discountBadge: {
+    title: 'Discount Badge',
+    content: 'Display a promotional discount badge on your profile to attract more customers. Set your discount percentage and it appears immediately on the homepage.',
+    benefits: [
+      'Increase booking rate by up to 40%',
+      'Stand out from other therapists',
+      'Flexible discount control',
+      'No approval needed - instant activation'
+    ]
+  },
+  downloadApp: {
+    title: 'Download Mobile App',
+    content: 'Install the PWA (Progressive Web App) for faster access, offline support, and push notifications for new bookings.',
+    benefits: [
+      'Instant booking notifications',
+      'Works offline - view schedules anytime',
+      'Faster loading than website',
+      'Add to home screen - one tap access'
+    ]
+  },
+  autoOfflineTimer: {
+    title: 'Auto Offline Timer',
+    content: 'Schedule a specific time each day to automatically change your status to Offline. Perfect for maintaining work-life balance without manual updates.',
+    benefits: [
+      'Never forget to go offline',
+      'Set once, runs automatically daily',
+      'Maintain consistent work hours',
+      'Premium feature - upgrade to unlock'
+    ]
+  }
+};
+
+/**
+ * MyBookings Page Help Content
+ */
+export const myBookingsHelp: PageHelpContent = {
+  acceptBooking: {
+    title: 'Accept Booking',
+    content: 'Confirm you can fulfill this booking. Once accepted, the customer receives confirmation and expects you to arrive on time.',
+    benefits: [
+      'Build trust with customers',
+      'Secure your booking slot',
+      'Trigger automatic reminders',
+      'Earn online hours toward membership'
+    ]
+  },
+  rejectBooking: {
+    title: 'Reject Booking',
+    content: 'Decline bookings you cannot fulfill. Be professional - only reject if absolutely necessary. High rejection rates affect your ranking.',
+    benefits: [
+      'Maintain realistic schedule',
+      'Avoid penalties for no-shows',
+      'Professional boundary management',
+      'Customer gets refund automatically'
+    ]
+  },
+  depositApproval: {
+    title: 'Deposit Approval',
+    content: 'For Premium therapists: Review and approve customer deposit payments before confirming bookings. This protects against no-shows.',
+    benefits: [
+      'Reduce no-show risk',
+      'Verify payment before committing',
+      'Professional payment workflow',
+      'Build customer accountability'
+    ]
+  },
+  chatWithCustomer: {
+    title: 'Chat with Customer',
+    content: 'Message customers directly about booking details, location clarifications, or service preferences. Chat history is saved.',
+    benefits: [
+      'Clarify booking requirements',
+      'Build customer relationships',
+      'Resolve issues quickly',
+      'Improve service quality'
+    ]
+  },
+  bookingsList: {
+    title: 'Bookings & Schedule Management',
+    content: 'View and manage all your bookings in one place. Filter by status (All, Received, Scheduled, Completed) to organize your workload. Switch between Bookings and Schedule tabs.',
+    benefits: [
+      'Complete booking overview',
+      'Filter by booking status',
+      'Track scheduled vs instant bookings',
+      'Monitor earnings and completion rate'
+    ]
+  }
+};
+
+/**
+ * TherapistBookings Page Help Content (Main booking management page)
+ */
+export const bookingsScheduleHelp: PageHelpContent = {
+  manageBookings: {
+    title: 'Booking & Jadwal Management',
+    content: 'View all your bookings: instant bookings, scheduled appointments, and completed sessions. Accept or decline bookings, chat with customers, and manage your schedule all in one place.',
+    benefits: [
+      'Centralized booking management',
+      'Quick accept/decline actions',
+      'Real-time booking notifications',
+      'Track earnings per booking'
+    ]
+  },
+  filterBookings: {
+    title: 'Filter Bookings',
+    content: 'Use filters to view specific booking types: All (everything), Received (pending approval), Scheduled (confirmed future bookings), or Completed (finished sessions).',
+    benefits: [
+      'Focus on what needs action',
+      'Track completed sessions',
+      'Review pending approvals',
+      'Plan upcoming schedule'
+    ]
+  },
+  depositBookings: {
+    title: 'Scheduled Bookings with Deposit',
+    content: 'Premium therapists can require 30% deposit for scheduled bookings. Review payment proof, approve/reject deposits, and confirm bookings once payment is verified.',
+    benefits: [
+      'Reduce no-show risk',
+      'Guaranteed booking commitment',
+      'Professional payment workflow',
+      'Protect your time and income'
+    ]
+  },
+  switchScheduleTab: {
+    title: 'Schedule Tab',
+    content: 'Switch to Schedule tab to set your weekly availability, block time slots, and manage working hours. This controls when customers can book you.',
+    benefits: [
+      'Control your availability',
+      'Set recurring work hours',
+      'Block time for breaks',
+      'Prevent off-hours bookings'
+    ]
+  }
+};
+
+/**
+ * TherapistCalendar Page Help Content
+ */
+export const calendarHelp: PageHelpContent = {
+  scheduleView: {
+    title: 'Calendar Schedule',
+    content: 'View all confirmed bookings in calendar format. Click dates to see daily schedules. Auto-syncs with booking status changes.',
+    benefits: [
+      'Visual schedule overview',
+      'Spot scheduling conflicts',
+      'Plan your week efficiently',
+      'Never miss a booking'
+    ]
+  },
+  monthNavigation: {
+    title: 'Month Navigation',
+    content: 'Switch between months to view past bookings or plan ahead. Booking counts show on each date.',
+    benefits: [
+      'Review past performance',
+      'Plan future availability',
+      'Track monthly earnings',
+      'Identify busy periods'
+    ]
+  },
+  bookingDetails: {
+    title: 'Booking Details',
+    content: 'Tap any booking to see full details: customer info, location, service type, duration, and payment status.',
+    benefits: [
+      'Quick information access',
+      'Verify booking requirements',
+      'Contact customer if needed',
+      'Prepare service materials'
+    ]
+  }
+};
+
+/**
+ * TherapistPaymentStatus Page Help Content
+ */
+export const paymentStatusHelp: PageHelpContent = {
+  submitProof: {
+    title: 'Submit Payment Proof',
+    content: 'Upload bank transfer receipt or payment confirmation for membership fees, commission payments, or Safe Pass certification.',
+    benefits: [
+      'Activate premium features',
+      'Get admin approval faster',
+      'Track payment status',
+      'Secure payment record'
+    ]
+  },
+  paymentHistory: {
+    title: 'Payment History',
+    content: 'View all your payment submissions: pending, approved, or declined. Check status and admin notes.',
+    benefits: [
+      'Track payment progress',
+      'Resolve payment issues',
+      'Reference past transactions',
+      'Plan upcoming payments'
+    ]
+  },
+  expiryDate: {
+    title: 'Payment Expiry',
+    content: 'Pending payments expire after 7 days if not approved. Resubmit before expiry to avoid delays.',
+    benefits: [
+      'Avoid re-submission hassle',
+      'Keep membership active',
+      'Prevent service interruption',
+      'Stay organized'
+    ]
+  }
+};
+
+/**
+ * SendDiscountPage Help Content
+ */
+export const sendDiscountHelp: PageHelpContent = {
+  selectCustomers: {
+    title: 'Select Past Customers',
+    content: 'Choose customers from your booking history who have messaged you or left reviews. Discount banners are sent directly in their chat window.',
+    benefits: [
+      'Re-engage customers with chat history',
+      'Reward customers who left reviews',
+      'Increase repeat booking rate',
+      'Build loyal customer base'
+    ]
+  },
+  discountBanner: {
+    title: 'Discount Banner',
+    content: 'Select pre-designed banner with your discount offer. Customers receive it in their chat window and can book directly.',
+    benefits: [
+      'Professional marketing materials',
+      'Sent via in-app chat',
+      'Instant delivery',
+      'Track banner effectiveness'
+    ]
+  },
+  sendBanner: {
+    title: 'Send Banner',
+    content: 'Confirm and send selected banner to chosen customers. They receive the banner in their chat window with booking link.',
+    benefits: [
+      'One-click marketing campaign',
+      'Direct customer engagement',
+      'Measurable results',
+      'Boost bookings instantly'
+    ]
+  }
+};
+
+/**
+ * HotelVillaSafePass Page Help Content
+ */
+export const safePassHelp: PageHelpContent = {
+  uploadLetter: {
+    title: 'Upload Recommendation Letter',
+    content: 'Upload official letters from hotels/villas where you\'ve worked. Need 3 letters total for Safe Pass certification.',
+    benefits: [
+      'Prove hotel experience',
+      'Qualify for premium venues',
+      'Increase booking rate',
+      'Higher service fees'
+    ]
+  },
+  adminApproval: {
+    title: 'Admin Approval Process',
+    content: 'Admin reviews your letters and verifies authenticity. Approval typically takes 2-3 business days.',
+    benefits: [
+      'Quality assurance',
+      'Industry credibility',
+      'Professional certification',
+      'Trust from premium clients'
+    ]
+  },
+  paymentFee: {
+    title: 'Safe Pass Fee',
+    content: 'One-time fee of IDR 500,000 for lifetime certification. Pay after admin approval of your letters.',
+    benefits: [
+      'Lifetime certification',
+      'Access to hotel/villa bookings',
+      'Premium pricing tier',
+      'Professional recognition'
+    ]
+  },
+  certificationBenefits: {
+    title: 'Certification Benefits',
+    content: 'Active Safe Pass unlocks hotel/villa bookings, priority search ranking, and premium customer access.',
+    benefits: [
+      'Hotel/villa authorization',
+      'Higher booking rates',
+      'Premium customer segment',
+      'Competitive advantage'
+    ]
+  }
+};
+
+/**
+ * CommissionPayment Page Help Content
+ */
+export const commissionPaymentHelp: PageHelpContent = {
+  commissionRate: {
+    title: 'Commission Rate',
+    content: 'Platform takes 30% commission per booking. This is a fixed rate applied to all bookings in Indonesia.',
+    benefits: [
+      'Transparent pricing',
+      'No hidden fees',
+      'Lower rates for premium',
+      'Pay per booking only'
+    ]
+  },
+  paymentSchedule: {
+    title: 'Payment Schedule',
+    content: 'Commission is deducted automatically from each booking payment. You receive net amount after commission.',
+    benefits: [
+      'Automatic processing',
+      'No manual calculations',
+      'Instant payment',
+      'Clear earnings breakdown'
+    ]
+  },
+  submitPayment: {
+    title: 'Submit Commission Payment',
+    content: 'For manual payment plans: Submit bank transfer proof for monthly commission fees.',
+    benefits: [
+      'Flexible payment options',
+      'Track payment history',
+      'Admin verification',
+      'Maintain service access'
+    ]
+  }
+};
+
+/**
+ * TherapistNotifications Page Help Content
+ */
+export const notificationsHelp: PageHelpContent = {
+  bookingNotifications: {
+    title: 'Booking Notifications',
+    content: 'Receive instant alerts for new bookings, customer messages, and booking status changes.',
+    benefits: [
+      'Never miss a booking',
+      'Respond quickly to customers',
+      'Stay informed 24/7',
+      'Improve response time'
+    ]
+  },
+  messageNotifications: {
+    title: 'Message Notifications',
+    content: 'Get notified when customers send chat messages about bookings or services.',
+    benefits: [
+      'Quick customer support',
+      'Resolve issues faster',
+      'Build customer trust',
+      'Increase satisfaction'
+    ]
+  },
+  systemNotifications: {
+    title: 'System Notifications',
+    content: 'Important updates about membership, payments, policy changes, and platform features.',
+    benefits: [
+      'Stay compliant',
+      'Know new features',
+      'Avoid missed deadlines',
+      'Platform updates'
+    ]
+  },
+  markAsRead: {
+    title: 'Mark as Read',
+    content: 'Clear notifications once reviewed to keep inbox organized.',
+    benefits: [
+      'Organized notification center',
+      'Focus on unread items',
+      'Track what needs action',
+      'Clean interface'
+    ]
+  }
+};
+
+/**
+ * TherapistSchedule Page Help Content
+ */
+export const scheduleHelp: PageHelpContent = {
+  setAvailability: {
+    title: 'Set Weekly Availability',
+    content: 'Define your working hours for each day of the week. Customers can only book during these times.',
+    benefits: [
+      'Control your schedule',
+      'Work-life balance',
+      'Prevent off-hours bookings',
+      'Professional boundaries'
+    ]
+  },
+  blockTimeSlots: {
+    title: 'Block Time Slots',
+    content: 'Temporarily block specific dates/times for personal commitments or breaks.',
+    benefits: [
+      'Flexible schedule management',
+      'Emergency time off',
+      'Prevent double bookings',
+      'Maintain service quality'
+    ]
+  },
+  bufferTime: {
+    title: 'Buffer Time',
+    content: 'Add travel time between bookings to ensure you arrive prepared and on time.',
+    benefits: [
+      'Realistic scheduling',
+      'Avoid being late',
+      'Reduce stress',
+      'Better customer experience'
+    ]
+  }
+};
+
+// Payment Information Help Content
+export const paymentInfoHelp = {
+  directPayment: {
+    title: 'Sistem Pembayaran P2P Langsung',
+    content: 'Platform kami memfasilitasi koneksi antara terapis dan klien, tetapi tidak memproses pembayaran. Semua pembayaran dilakukan langsung dari pelanggan kepada Anda setelah layanan selesai.',
+    benefits: [
+      'Info kontak dibagikan setelah layanan selesai',
+      '100% pembayaran langsung kepada Anda',
+      'Tidak ada biaya platform dari pendapatan',
+      'Privasi dan keamanan terjamin'
+    ]
   },
   bankDetails: {
-    title: 'Bank Information',
-    content: 'Your banking details displayed to customers for payment',
-    benefits: ['Secure encrypted storage', 'Easy updates', 'Multiple bank support']
+    title: 'Detail Rekening Bank',
+    content: 'Masukkan informasi rekening bank yang akurat untuk menerima pembayaran langsung dari pelanggan. Semua field harus diisi dengan benar.',
+    benefits: [
+      'Pembayaran langsung ke rekening Anda',
+      'Tampilan profesional pada kartu pembayaran',
+      'Membangun kepercayaan pelanggan',
+      'Diperlukan untuk menerima booking'
+    ]
   },
   ktpVerification: {
-    title: 'ID Verification',
-    content: 'KTP/ID card required for account verification and security',
-    benefits: ['Secure identity verification', 'Faster payment processing', 'Account protection']
+    title: 'Verifikasi KTP Diperlukan',
+    content: 'Upload foto KTP yang jelas untuk verifikasi identitas. Nama di KTP harus sesuai dengan nama akun bank untuk memastikan keamanan transaksi.',
+    benefits: [
+      'Sesuai dengan identitas rekening bank',
+      'Membangun kepercayaan pelanggan',
+      'Melindungi dari penipuan',
+      'Diperlukan untuk verifikasi manual admin'
+    ]
   },
   livePreview: {
-    title: 'Live Preview',
-    content: 'See how your payment card appears to customers in real-time',
-    benefits: ['Verify information accuracy', 'Professional appearance', 'Customer confidence']
+    title: 'Preview Kartu Pembayaran',
+    content: 'Lihat bagaimana kartu pembayaran Anda akan ditampilkan kepada pelanggan. Kartu ini otomatis dibagikan saat booking diterima atau dapat dibagikan manual di chat.',
+    benefits: [
+      'Otomatis dibagikan saat booking diterima',
+      'Dapat dibagikan manual di chat',
+      'Tampilan profesional dan terpercaya',
+      'Real-time preview saat mengetik'
+    ]
   },
   nameMatching: {
-    title: 'Name Matching',
-    content: 'Account name must match your KTP for verification compliance',
-    benefits: ['Security compliance', 'Fraud prevention', 'Faster approvals']
+    title: 'Pencocokan Nama',
+    content: 'Nama akun bank harus sesuai dengan nama di KTP untuk verifikasi. Ketidaksesuaian nama dapat menunda proses verifikasi dan pembayaran.',
+    benefits: [
+      'Verifikasi identitas yang akurat',
+      'Mempercepat proses verifikasi admin',
+      'Menghindari masalah pembayaran',
+      'Meningkatkan kepercayaan sistem'
+    ]
+  },
+  commissionSystem: {
+    title: 'Sistem Komisi 30%',
+    content: 'Platform menggunakan sistem komisi 30% per booking yang berhasil diselesaikan. Komisi ini membantu pemeliharaan platform dan layanan pelanggan.',
+    benefits: [
+      '70% pendapatan langsung ke Anda',
+      'Platform maintenance dan support',
+      'Marketing dan promosi gratis',
+      'Sistem booking dan chat terintegrasi'
+    ]
+  },
+  dataSource: {
+    title: 'Sumber Data Real-time',
+    content: 'Semua informasi pembayaran tersimpan di database Appwrite dengan enkripsi. Data Anda aman dan hanya dapat diakses oleh Anda dan admin untuk verifikasi.',
+    benefits: [
+      'Data tersimpan aman dengan enkripsi',
+      'Akses terbatas untuk keamanan',
+      'Backup otomatis',
+      'Pemulihan data tersedia'
+    ]
   }
 };
 
-// Payment Status Help
-export const paymentStatusHelp: PageHelpContent = {
-  commissionPayments: {
-    title: 'Commission Payments',
-    content: 'Track and manage your commission payments to IndaStreet',
-    benefits: ['Payment history tracking', 'Due date reminders', 'Avoid late fees']
-  },
-  latePaymentWarning: {
-    title: 'Late Payment Consequences',
-    content: 'Overdue payments may result in account suspension or reduced visibility',
-    benefits: ['Maintain good standing', 'Avoid account restrictions', 'Professional reputation']
-  }
-};
-
-// Calendar Help
-export const calendarHelp: PageHelpContent = {
-  bookingCalendar: {
-    title: 'Booking Calendar',
-    content: 'View all your confirmed bookings in calendar format',
-    benefits: ['Visual schedule overview', 'Avoid double bookings', 'Better time management']
-  },
-  availability: {
-    title: 'Availability Management',
-    content: 'Set your available hours and block out unavailable times',
-    benefits: ['Control your schedule', 'Prevent unwanted bookings', 'Work-life balance']
-  }
-};
-
-// Bookings Help
-export const myBookingsHelp: PageHelpContent = {
-  pendingBookings: {
-    title: 'Pending Bookings',
-    content: 'New booking requests waiting for your confirmation. Respond within 5 minutes for best results',
-    benefits: ['Quick response = higher rankings', 'Customer satisfaction', 'More future bookings']
-  },
-  confirmedBookings: {
-    title: 'Confirmed Bookings',
-    content: 'Bookings you have accepted and confirmed with customers',
-    benefits: ['Clear schedule visibility', 'Customer details access', 'Service preparation']
-  },
-  completedBookings: {
-    title: 'Completed Bookings',
-    content: 'Finished sessions ready for customer review and rating',
-    benefits: ['Earnings confirmation', 'Customer feedback', 'Build reputation']
-  },
-  cancelledBookings: {
-    title: 'Cancelled Bookings',
-    content: 'Bookings cancelled by customer or rejected by you',
-    benefits: ['Track cancellation patterns', 'Identify lost opportunities', 'Improve acceptance']
-  }
-};
-
-// Hotel Safe Pass Help
-export const safePassHelp: PageHelpContent = {
-  eligibility: {
-    title: 'Eligibility Requirements',
-    content: 'Hotel & Villa Safe Pass certification requires good standing account and clean record',
-    benefits: ['Access premium venues', 'Higher paying clients', 'Professional credibility']
-  },
-  benefits: {
-    title: 'Safe Pass Benefits',
-    content: 'Certified therapists can accept bookings at hotels and luxury villas',
-    benefits: ['Premium customer base', 'Higher average booking value', 'Enhanced trust']
-  },
-  application: {
-    title: 'Application Process',
-    content: 'Submit application via WhatsApp with required documents for review',
-    benefits: ['Fast approval process', 'Direct communication', 'Personalized support']
-  }
-};
-
-// Schedule Help
-export const bookingsScheduleHelp: PageHelpContent = {
-  weeklySchedule: {
-    title: 'Weekly Schedule',
-    content: 'Set your default availability hours for each day of the week',
-    benefits: ['Consistent schedule', 'Customer expectations', 'Automatic availability']
-  },
-  peakHours: {
-    title: 'Peak Hours Optimization',
-    content: 'Identify and prioritize high-demand time slots',
-    benefits: ['Maximize bookings', 'Higher earnings', 'Better utilization']
-  }
-};
-
-// Send Discount Help
-export const sendDiscountHelp: PageHelpContent = {
-  discountBanners: {
-    title: 'Discount Banners',
-    content: 'Send promotional discount codes to past customers to encourage repeat bookings',
-    benefits: ['Customer retention', 'Increase repeat business', 'Boost slow periods']
-  },
-  customerSelection: {
-    title: 'Customer Selection',
-    content: 'Choose from your past customers who have completed bookings',
-    benefits: ['Targeted marketing', 'Higher conversion rate', 'Personal touch']
-  },
-  discountTracking: {
-    title: 'Discount Tracking',
-    content: 'Monitor which customers received discounts and redemption status',
-    benefits: ['Track campaign success', 'Measure ROI', 'Optimize future offers']
-  }
-};
-
-// Notifications Help
-export const notificationsHelp: PageHelpContent = {
-  overview: {
-    title: 'Notification Center',
-    content: 'Monitor your account health, track bookings, customer messages, payment confirmations, and system updates all in one place.',
-    benefits: ['Never miss bookings', 'Track account health', 'Fast response to customers', 'Critical alerts']
-  },
-  accountHealth: {
-    title: 'Account Health Score',
-    content: 'Overall performance rating based on response time, acceptance rate, and customer ratings',
-    benefits: ['Higher visibility in search', 'More booking requests', 'Platform rewards']
-  },
-  criticalAlerts: {
-    title: 'Critical Alerts',
-    content: 'Urgent notifications requiring immediate attention',
-    benefits: ['Avoid account issues', 'Timely responses', 'Maintain good standing']
-  },
-  trafficStats: {
-    title: 'Traffic Statistics',
-    content: 'Profile views and customer engagement metrics',
-    benefits: ['Understand visibility', 'Optimize profile', 'Track improvements']
-  }
-};
-
-// Chat Help
-export const chatHelp: PageHelpContent = {
-  overview: {
-    title: 'Chat & Messaging',
-    content: 'Direct communication with customers and admin support. Respond quickly to booking inquiries and build better customer relationships.',
-    benefits: ['Fast response', 'Professional communication', 'Better customer service', 'Admin support access']
-  },
-  responseTime: {
-    title: 'Response Time Target',
-    content: 'Respond to customer messages within 10 minutes for best results',
-    benefits: ['Higher search rankings', 'Better conversion rate', 'Customer satisfaction']
-  },
-  chatHistory: {
-    title: 'Chat History',
-    content: 'Access all your conversations with customers',
-    benefits: ['Reference past discussions', 'Follow-up opportunities', 'Service continuity']
-  }
-};
-
-// More Customers Help
-export const moreCustomersHelp: PageHelpContent = {
-  profileOptimization: {
-    title: 'Profile Optimization',
-    content: 'Complete profiles get 80% more views than basic profiles',
-    benefits: ['Higher visibility', 'More booking requests', 'Professional image']
-  },
-  photoGuidelines: {
-    title: 'Professional Photos',
-    content: 'High-quality photos significantly increase booking conversion',
-    benefits: ['First impression matters', 'Build trust', 'Stand out from competition']
-  },
-  menuStrategy: {
-    title: 'Menu Strategy',
-    content: 'Offer multiple service variations to appeal to different customer preferences',
-    benefits: ['Wider appeal', 'Higher booking value', 'Customer choice']
-  }
-};
-
-// Legal Help
-export const legalHelp: PageHelpContent = {
-  terms: {
-    title: 'Terms of Service',
-    content: 'Platform rules and therapist responsibilities',
-    benefits: ['Understand platform rules', 'Avoid violations', 'Know your rights']
-  },
-  privacy: {
-    title: 'Privacy Policy',
-    content: 'How your personal data is collected, used, and protected',
-    benefits: ['Data security', 'Transparency', 'Compliance']
-  }
-};
-
-// Therapist Dashboard Main Help
-export const therapistDashboardHelp: any = {
-  stats: {
-    totalBookings: {
-      title: 'Total Bookings',
-      content: 'Total number of bookings received this month',
-      benefits: ['Track monthly performance', 'Set growth goals', 'Compare periods']
-    },
-    totalEarnings: {
-      title: 'Total Earnings',
-      content: 'Total income earned from completed bookings this month',
-      benefits: ['Financial tracking', 'Revenue insights', 'Budget planning']
-    },
-    averageRating: {
-      title: 'Average Rating',
-      content: 'Your average customer rating from all completed bookings',
-      benefits: ['Quality indicator', 'Customer satisfaction', 'Profile ranking']
-    },
-    responseRate: {
-      title: 'Response Rate',
-      content: 'Percentage of booking requests you respond to within 5 minutes',
-      benefits: ['Higher search visibility', 'More bookings', 'Better conversion']
-    }
-  },
+// Export all help content
+export const therapistDashboardHelp = {
+  onlineStatus: onlineStatusHelp,
+  myBookings: myBookingsHelp,
+  bookingsSchedule: bookingsScheduleHelp,
+  calendar: calendarHelp,
+  paymentStatus: paymentStatusHelp,
+  sendDiscount: sendDiscountHelp,
+  safePass: safePassHelp,
+  commissionPayment: commissionPaymentHelp,
+  notifications: notificationsHelp,
+  schedule: scheduleHelp,
+  earnings: earningsHelp,
   paymentInfo: paymentInfoHelp
-};
-
-// Menu Help
-export const menuHelp: PageHelpContent = {
-  overview: {
-    title: 'Custom Menu Pricing',
-    content: 'Create your own price menu with custom services and durations. Control which durations appear on your customer-facing card by filling or leaving blank the Min fields.',
-    benefits: ['Full pricing control', 'Flexible service offerings', 'Professional presentation to customers']
-  },
-  services: {
-    title: 'Service Menu',
-    content: 'Manage your service offerings, prices, and availability',
-    benefits: ['Flexible pricing', 'Multiple service options', 'Clear customer expectations']
-  }
-};
-
-// Premium Help
-export const premiumHelp: PageHelpContent = {
-  overview: {
-    title: 'Premium Membership',
-    content: 'Upgrade to Premium to keep 100% of your earnings with zero commission. Includes verified badge, priority search placement, and advanced features.',
-    benefits: ['Keep 100% of earnings', 'No commission fees', 'Premium verified badge', 'Priority visibility']
-  },
-  features: {
-    title: 'Premium Features',
-    content: 'Unlock advanced features including priority placement, analytics, and booking tools',
-    benefits: ['More visibility', 'Better tools', 'Higher earnings potential']
-  }
-};
-
-// Commission Payment Help
-export const commissionHelp: PageHelpContent = {
-  overview: {
-    title: 'Commission Payment System',
-    content: 'Pay your 30% booking commission to maintain active status. Upload payment proof after each booking to keep your account in good standing.',
-    benefits: ['Stay compliant', 'Maintain active status', 'Transparent payment tracking']
-  },
-  payment: {
-    title: 'Commission Payments',
-    content: 'Manage and track your commission payments to the platform',
-    benefits: ['Stay compliant', 'Track payment history', 'Avoid service interruptions']
-  }
-};
-
-// Schedule Help
-export const scheduleHelp: PageHelpContent = {
-  overview: {
-    title: 'Schedule & Calendar',
-    content: 'View your monthly calendar, manage today\'s bookings, and set your weekly availability hours. Add manual bookings or block times as needed.',
-    benefits: ['Visual calendar view', 'Prevent overbooking', 'Flexible schedule control']
-  },
-  availability: {
-    title: 'Schedule Management',
-    content: 'Set your working hours and manage your availability calendar',
-    benefits: ['Better time management', 'Prevent overbooking', 'Work-life balance']
-  }
-};
-
-// Dashboard Help
-export const dashboardHelp: PageHelpContent = {
-  overview: {
-    title: 'Dashboard Overview',
-    content: 'Edit your therapist profile, manage your availability, and update your services',
-    benefits: ['Complete profile visibility', 'Attract more customers', 'Professional presentation']
-  }
-};
-
-// Package Terms Help
-export const packageTermsHelp: PageHelpContent = {
-  terms: {
-    title: 'Package Terms',
-    content: 'Review the terms and conditions of your membership package',
-    benefits: ['Understand benefits', 'Know limitations', 'Make informed decisions']
-  },
-  overview: {
-    title: 'Membership Terms',
-    content: 'Understand the terms and conditions of your membership package before accepting',
-    benefits: ['Clear expectations', 'Know your rights', 'Make informed choices']
-  }
-};
-
-// Membership Onboarding Help
-export const membershipOnboardingHelp: PageHelpContent = {
-  setup: {
-    title: 'Membership Setup',
-    content: 'Complete your profile and membership setup to start receiving bookings',
-    benefits: ['Quick activation', 'Professional profile', 'Ready to earn']
-  }
 };
