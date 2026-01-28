@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Building2, Upload, CheckCircle, AlertCircle, Crown } from 'lucide-react';
-import { paymentConfirmationService } from '@lib/appwriteService';
+import { paymentConfirmationService } from '../../../lib/appwriteService';
 
 interface PlusMembershipPaymentProps {
     therapistId: string;

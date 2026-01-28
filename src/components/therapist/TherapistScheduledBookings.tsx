@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Clock, DollarSign, Calendar, User, MapPin, Phone, CheckCircle, XCircle, AlertTriangle, Bell, CreditCard, Eye } from 'lucide-react';
-import { scheduledBookingPaymentService } from '@lib/services/scheduledBookingPaymentService';
+import { scheduledBookingPaymentService } from '../../../lib/services/scheduledBookingPaymentService';
 
 interface ScheduledBooking {
   $id: string;
