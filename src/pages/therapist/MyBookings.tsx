@@ -1,9 +1,9 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
-import { FloatingChatWindow } from '../../../../src/chat';
+import { FloatingChatWindow } from '../../chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
-import { BookingListSkeleton } from '../../../../src/components/LoadingSkeletons';
+import { BookingListSkeleton } from '../../components/LoadingSkeletons';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { myBookingsHelp } from '../constants/helpContent';
 

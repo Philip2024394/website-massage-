@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, Upload, Clock, AlertCircle, CheckCircle, Building2, User, Hash, Copy, Check, Calendar, XCircle } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
-import { Therapist } from '../../../../src/types';
+import { Therapist } from '../../types';
 import { therapistService, imageUploadService } from '@lib/appwriteService';
-import { showToast } from '../../../../src/utils/showToastPortal';
+import { showToast } from '../../utils/showToastPortal';
 import { commissionTrackingService } from '@lib/services/commissionTrackingService';
 
 interface CommissionPaymentProps {

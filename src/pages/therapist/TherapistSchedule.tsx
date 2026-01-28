@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Plus, X, CheckCircle, Upload, CreditCard, Building2, AlertCircle } from 'lucide-react';
-import { Therapist, Booking } from '../../../../src/types';
+import { Therapist, Booking } from '../../types';
 import { therapistService } from '@lib/appwriteService';
-import { showToast } from '../../../../src/utils/showToastPortal';
+import { showToast } from '../../utils/showToastPortal';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 
 interface TherapistScheduleProps {

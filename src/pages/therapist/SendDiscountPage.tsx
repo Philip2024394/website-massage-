@@ -7,14 +7,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Gift, Search, User, MessageCircle, Clock, Plus, TrendingUp, Users, PercentIcon, CheckCircle, Filter, ArrowUpDown } from 'lucide-react';
-import { databases, Query } from '../../../../src/lib/appwrite';
-import { APPWRITE_CONFIG } from '../../../../src/lib/appwrite.config';
-import SendDiscountModal from '../../../../src/components/SendDiscountModal';
+import { databases, Query } from '../../lib/appwrite';
+import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
+import SendDiscountModal from '../../components/SendDiscountModal';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { sendDiscountHelp } from '../constants/helpContent';
 import { showErrorToast } from '../lib/toastUtils';
-import { generateTherapistDiscount } from '../../../../src/services/therapistDiscountService';
+import { generateTherapistDiscount } from '../../services/therapistDiscountService';
 
 interface Customer {
   id: string;

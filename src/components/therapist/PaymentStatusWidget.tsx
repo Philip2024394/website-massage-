@@ -10,8 +10,8 @@
 
 import React, { useState, useEffect } from 'react';
 // Payment services - to be implemented
-// import { paymentNotificationService } from '../../../../src/lib/services/paymentNotification.service';
-// import { paymentConfirmationService } from '../../../../src/lib/services/paymentConfirmation.service';
+// import { paymentNotificationService } from '../../../lib/services/paymentNotification.service';
+// import { paymentConfirmationService } from '../../../lib/services/paymentConfirmation.service';
 
 interface PaymentStatusWidgetProps {
     providerId: string;

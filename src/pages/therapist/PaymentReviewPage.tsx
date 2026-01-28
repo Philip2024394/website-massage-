@@ -1,11 +1,11 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import PaymentReviewProcess from '../../../../src/components/PaymentReviewProcess';
+import PaymentReviewProcess from '../../components/PaymentReviewProcess';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
-import { showToast } from '../../../../src/utils/showToastPortal';
-import { paymentProofService } from '../../../../src/services/paymentProofService';
-import type { Therapist } from '../../../../src/types';
+import { showToast } from '../../utils/showToastPortal';
+import { paymentProofService } from '../../services/paymentProofService';
+import type { Therapist } from '../../types';
 
 interface PaymentReviewPageProps {
   therapist: Therapist | null;

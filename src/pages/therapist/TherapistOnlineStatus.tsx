@@ -2,14 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
 import { therapistService } from '@lib/appwriteService';
-import { AvailabilityStatus } from "../../../../src/types";
-import { devLog, devWarn } from "../../../../src/utils/devMode";
+import { AvailabilityStatus } from "../../types";
+import { devLog, devWarn } from "../../utils/devMode";
 // Temporarily comment out potentially problematic imports
-// import { EnhancedNotificationService } from "../../../../src/lib/enhancedNotificationService";
-// import { PWAInstallationEnforcer } from "../../../../src/lib/pwaInstallationEnforcer";
-// import { useLanguage } from '../../../../src/hooks/useLanguage';
-// import { useTranslations } from '../../../../src/lib/useTranslations';
-import { FloatingChatWindow } from '../../../../src/chat/FloatingChatWindow';
+// import { EnhancedNotificationService } from "../../lib/enhancedNotificationService";
+// import { PWAInstallationEnforcer } from "../../lib/pwaInstallationEnforcer";
+// import { useLanguage } from '../../hooks/useLanguage';
+// import { useTranslations } from '../../lib/useTranslations';
+import { FloatingChatWindow } from '../../chat/FloatingChatWindow';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import HelpTooltip from '../../components/therapist/HelpTooltip';

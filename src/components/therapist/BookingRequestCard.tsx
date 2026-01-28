@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Check, X, AlertTriangle, Volume2, VolumeX } from 'lucide-react';
 import { bookingAcknowledgmentService } from '@lib/services/bookingAcknowledgmentService';
-import { bookingSoundService } from "../../../../src/services/bookingSound.service";
+import { bookingSoundService } from "../../../services/bookingSound.service";
 
 interface BookingRequest {
     $id: string;
