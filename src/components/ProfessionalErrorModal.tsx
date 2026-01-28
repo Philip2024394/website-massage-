@@ -34,7 +34,7 @@ export function ProfessionalErrorModal({
   const errorMessages = {
     network: {
       title: 'Connection Issue',
-      message: 'We're having trouble connecting to our servers. Please check your internet connection and try again.',
+      message: 'We are having trouble connecting to our servers. Please check your internet connection and try again.',
       icon: '🌐',
       color: 'blue'
     },
@@ -46,19 +46,19 @@ export function ProfessionalErrorModal({
     },
     feature: {
       title: 'Feature Temporarily Unavailable',
-      message: 'This feature is currently being updated. We'll have it back up shortly. Thank you for your patience!',
+      message: 'This feature is currently being updated. We will have it back up shortly. Thank you for your patience!',
       icon: '🔧',
       color: 'orange'
     },
     booking: {
       title: 'Booking Issue',
-      message: 'We couldn't process your booking at this time. Your information is safe. Please try again in a moment.',
+      message: 'We could not process your booking at this time. Your information is safe. Please try again in a moment.',
       icon: '📅',
       color: 'red'
     },
     payment: {
       title: 'Payment Processing',
-      message: 'We encountered an issue processing your payment. Don't worry - no charges were made. Please try again.',
+      message: 'We encountered an issue processing your payment. Don\'t worry - no charges were made. Please try again.',
       icon: '💳',
       color: 'red'
     },
