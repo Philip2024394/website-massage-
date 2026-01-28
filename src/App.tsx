@@ -746,6 +746,8 @@ const App = () => {
                 
                 if (isNavigatingToHome) {
                     console.log('🚫 [URL PROCESSING] Skipping therapist deeplink - user navigating to home');
+                    // Clear any existing pending deeplinks to prevent unwanted redirects
+                    sessionStorage.removeItem('pending_deeplink');
                     return;
                 }
                 
@@ -854,20 +856,29 @@ const App = () => {
     // Navigate to deep-linked profile once data is available (requires state)
     useEffect(() => {
         try {
-            // 🚨 CRITICAL FIX: Don't process deeplinks if user is explicitly on home page
+            // 🚨 CRITICAL FIX: FIRST CHECK - Stop immediately if on home/landing page
+            if (state.page === 'home' || state.page === 'landing') {
+                const pending = sessionStorage.getItem('pending_deeplink');
+                if (pending) {
+                    console.log('🚫 [DEEPLINK] Clearing pending deeplink - user on home/landing page');
+                    sessionStorage.removeItem('pending_deeplink');
+                }
+                sessionStorage.removeItem('direct_therapist_id');
+                return;
+            }
+            
+            // 🚨 SECOND CHECK: Check URL path as backup
             const currentPath = window.location.pathname + window.location.hash;
             const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 
-                              currentPath.includes('/home') || state.page === 'home' || state.page === 'landing' ||
-                              currentPath === '' || currentPath === '/#';
+                              currentPath.includes('/home') || currentPath === '' || currentPath === '/#';
                               
             if (isHomePage) {
-                console.log('🚫 [DEEPLINK] Skipping deeplink processing - user is on home page');
+                console.log('🚫 [DEEPLINK] Skipping deeplink processing - URL indicates home page');
                 const pending = sessionStorage.getItem('pending_deeplink');
                 if (pending) {
                     console.log('🗑️ [DEEPLINK] Clearing pending deeplink from home page:', pending);
                     sessionStorage.removeItem('pending_deeplink');
                 }
-                // Also clear direct therapist IDs
                 sessionStorage.removeItem('direct_therapist_id');
                 return;
             }

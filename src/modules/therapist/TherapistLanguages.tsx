@@ -78,7 +78,7 @@ const TherapistLanguages: React.FC<TherapistLanguagesProps> = ({
     }
 
     return (
-        <div className={`px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-2', translatedDescriptionLength)}`}>
+        <div className={`px-4 mb-6 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-2', translatedDescriptionLength)}`}>
             <div className="flex justify-between items-center mb-2">
                 <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
                 {therapist.yearsOfExperience && (

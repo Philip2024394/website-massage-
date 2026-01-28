@@ -271,7 +271,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {/* Verified Badge - Below main image on right side, no container */}
                 {place.isVerified && (
                     <div className="absolute -top-8 right-6 flex items-center gap-1.5 text-blue-600">
-                        <ShieldCheck className="w-5 h-5 fill-blue-600" />
+                        <ShieldCheck className="w-6 h-6 fill-blue-600" />
                         <span className="font-semibold text-sm">Verified</span>
                     </div>
                 )}
@@ -279,12 +279,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {/* Place Name - Positioned higher with left margin to avoid profile image overlap */}
                 <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 ml-16 md:ml-20">{place.name || 'Relax Massage Jogja'}</h2>
                 
-                {/* Location */}
+                {/* Location Display - Matching Home Page Style */}
                 {place.location && place.location.trim() !== '' && place.location !== 'Location pending setup' && (
-                    <div className="mb-4">
-                        <span className="text-sm md:text-base text-gray-600">
-                            {place.location}
-                        </span>
+                    <div className="mb-4 flex flex-col gap-0.5">
+                        <div className="flex items-center gap-2">
+                            <svg 
+                                className="w-4 h-4 text-gray-700" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor" 
+                                strokeWidth={2}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="text-lg font-bold text-gray-900">
+                                {place.location}
+                            </span>
+                        </div>
+                        <p className="text-base font-semibold text-gray-600">Indonesia's Massage Therapist Hub</p>
                     </div>
                 )}
 
@@ -310,7 +323,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     
                     if (Array.isArray(types) && types.length > 0) {
                         return (
-                            <div className="mb-4">
+                            <div className="mb-6">
                                 <div className="mb-2">
                                     <h4 className="text-xs font-semibold text-gray-700">
                                         Areas of Expertise
@@ -400,7 +413,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {place.pricing && (() => {
                     const pricing = typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing;
                     return (
-                        <div className="grid grid-cols-3 gap-2 text-center text-sm max-w-full">
+                        <div className="grid grid-cols-3 gap-2 text-center text-sm max-w-full mt-4">
                             {/* 60 min pricing */}
                             <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-w-0 ${
                                 (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')

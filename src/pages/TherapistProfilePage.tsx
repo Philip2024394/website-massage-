@@ -6,6 +6,7 @@ import CityLocationDropdown from '../components/CityLocationDropdown';
 import { Building, Sparkles } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
+import MusicPlayer from '../components/MusicPlayer';
 
 interface TherapistProfilePageProps {
     therapist: any;
@@ -171,14 +172,15 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
             )}
 
             {/* Hero Section with Location & Controls - Always show for authenticated views */}
-            <div className="bg-white border-b border-gray-100 pt-6">
+            <div className="bg-white border-b border-gray-100 pt-16">
                 <div className="px-3 sm:px-4 pb-3 max-w-6xl mx-auto">
                     {/* Location Display */}
-                    <div className="px-4 py-4 text-center mb-3">
-                        <div className="flex flex-col items-center gap-0.5">
+                    {userLocation && (
+                        <div className="bg-white flex flex-col items-center gap-0.5 pt-4 pb-3">
                             <div className="flex items-center justify-center gap-2">
+                                <MusicPlayer autoPlay={true} />
                                 <svg 
-                                    className="w-4 h-4 text-gray-600" 
+                                    className="w-4 h-4 text-gray-700" 
                                     fill="none" 
                                     viewBox="0 0 24 24" 
                                     stroke="currentColor" 
@@ -187,39 +189,13 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                <span className="text-lg font-bold text-gray-800">
-                                    {(() => {
-                                        // Check if this is a custom location
-                                        if (therapist?.isCustomLocation && therapist?.customCity) {
-                                            const customDisplay = therapist.customCity;
-                                            if (therapist.customArea) {
-                                                return `📍 ${customDisplay} - ${therapist.customArea}`;
-                                            }
-                                            return `📍 ${customDisplay}`;
-                                        }
-                                        
-                                        const baseCity = cityState === 'all' ? 'All Indonesia' : cityState;
-                                        if (cityState !== 'all' && therapist?.serviceAreas) {
-                                            try {
-                                                const areas = JSON.parse(therapist.serviceAreas);
-                                                if (Array.isArray(areas) && areas.length > 0) {
-                                                    const areaNames = areas.map((area: string) => {
-                                                        const parts = area.split('-');
-                                                        return parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
-                                                    }).filter(Boolean);
-                                                    if (areaNames.length > 0) {
-                                                        return `${baseCity} - ${areaNames.join(', ')}`;
-                                                    }
-                                                }
-                                            } catch (e) {}
-                                        }
-                                        return baseCity;
-                                    })()}
+                                <span className="text-lg font-bold text-gray-900">
+                                    {cityState === 'all' ? 'All Indonesia' : cityState}
                                 </span>
                             </div>
-                            <p className="text-base font-semibold text-gray-700">Indonesia's Massage Therapist Hub</p>
+                            <p className="text-base font-semibold text-gray-600">Indonesia's Massage Therapist Hub</p>
                         </div>
-                    </div>
+                    )}
 
                     {/* Toggle Buttons */}
                     <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto">
@@ -364,3 +340,4 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
 
 TherapistProfilePage.displayName = 'TherapistProfilePage';
 
+export default TherapistProfilePage;

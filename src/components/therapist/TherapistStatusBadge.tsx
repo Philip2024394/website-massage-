@@ -35,6 +35,13 @@ const TherapistStatusBadge = ({
               <span className="absolute inset-0 w-3 h-3 -left-0.5 -top-0.5 rounded-full bg-green-400 opacity-30"></span>
             </>
           )}
+          {displayStatus === 'Busy' && (
+            <>
+              {/* Static ring glow effect for Busy status */}
+              <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-yellow-300 opacity-40"></span>
+              <span className="absolute inset-0 w-3 h-3 -left-0.5 -top-0.5 rounded-full bg-yellow-400 opacity-30"></span>
+            </>
+          )}
           <span className={`w-2 h-2 rounded-full block status-indicator relative ${isOvertime ? 'bg-red-500' : style.dot}`}>
             {!isOvertime && (displayStatus === 'Available' || displayStatus === 'Busy') && (
               <span

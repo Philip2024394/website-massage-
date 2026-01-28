@@ -1260,43 +1260,39 @@ const HomePage: React.FC<HomePageProps> = ({
 
             {/* Fixed Hero Section - Always Visible */}
             <div className="bg-white sticky top-[60px] z-10">
-                <PageContainer className="px-3 sm:px-4 pt-3 pb-3">
-                    {/* Hero Section - Optimized Layout */}
-                    <div className="space-y-3 max-w-6xl mx-auto">
-                        {/* Location Display */}
-                        <div className="w-full">
-                            {userLocation ? (
-                                <div className="flex flex-col items-center gap-0.5">
-                                <div className="flex items-center justify-center gap-2">
-                                    <MusicPlayer autoPlay={true} />
-                                    <svg 
-                                        className="w-4 h-4 text-gray-600" 
-                                        fill="none" 
-                                        viewBox="0 0 24 24" 
-                                        stroke="currentColor" 
-                                        strokeWidth={2}
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span className="text-lg font-bold text-gray-800">
-                                        {contextCity || (() => {
-                                            if (!userLocation.address || userLocation.address.trim() === '') {
-                                                return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                            }
-                                            try {
-                                                const parts = String(userLocation.address).split(',').map(p => p.trim());
-                                                return parts.slice(-2).join(', ');
-                                            } catch (e) {
-                                                return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                            }
-                                        })()}
-                                    </span>
-                                </div>
-                                <p className="text-base font-semibold text-gray-700">{country}'s Massage Therapist Hub</p>
+                <PageContainer className="px-0 sm:px-0 pt-0 pb-3">
+                    {/* Location Display */}
+                    {userLocation && (
+                        <div className="bg-white flex flex-col items-center gap-0.5 pt-4 pb-3">
+                            <div className="flex items-center justify-center gap-2">
+                                <MusicPlayer autoPlay={true} />
+                                <svg 
+                                    className="w-4 h-4 text-gray-700" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    stroke="currentColor" 
+                                    strokeWidth={2}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="text-lg font-bold text-gray-900">
+                                    {contextCity || (() => {
+                                        if (!userLocation.address || userLocation.address.trim() === '') {
+                                            return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                        }
+                                        try {
+                                            const parts = String(userLocation.address).split(',').map(p => p.trim());
+                                            return parts.slice(-2).join(', ');
+                                        } catch (e) {
+                                            return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                        }
+                                    })()}
+                                </span>
                             </div>
-                        ) : null}
-                    </div>
+                            <p className="text-base font-semibold text-gray-600">{country}'s Massage Therapist Hub</p>
+                        </div>
+                    )}
 
                     {/* Toggle Buttons - Standard Height */}
                     <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto">
@@ -1336,12 +1332,12 @@ const HomePage: React.FC<HomePageProps> = ({
                         <div className="flex flex-row gap-4 items-center justify-center">
                             {/* Selected City Display */}
                             {contextCity && contextCity !== 'all' && (
-                                <div className="flex items-center gap-2 bg-orange-50 rounded-lg px-4 py-2.5 border border-orange-200 flex-1 max-w-xs">
+                                <div className="flex items-center gap-2 bg-orange-50 rounded-lg px-4 py-2.5 border border-orange-200 flex-1 max-w-xs min-h-[44px]">
                                     <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <span className="font-semibold text-base text-orange-700">
+                                    <span className="font-semibold text-base text-gray-800">
                                         {contextCity}
                                     </span>
                                     <button
@@ -1371,7 +1367,6 @@ const HomePage: React.FC<HomePageProps> = ({
                             </button>
                         </div>
                     </div>
-                </div>
                 </PageContainer>
             </div>
             

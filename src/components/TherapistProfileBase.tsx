@@ -26,7 +26,9 @@ import { getHeroImageForTherapist, HERO_WELCOME_TEXT } from '../config/heroImage
 
 // SEO Hashtag Generator for different business types
 const generateSEOHashtags = (therapist: Therapist, city: string) => {
-  const cityLower = city.toLowerCase();
+  // Safety check: ensure city is a string
+  const cityStr = typeof city === 'string' ? city : (city?.name || city?.city || 'all');
+  const cityLower = cityStr.toLowerCase();
   const businessName = therapist.name.toLowerCase().replace(/\s+/g, '');
   
   // Determine business type from therapist data
@@ -219,7 +221,11 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     const welcomeText = HERO_WELCOME_TEXT[language] || HERO_WELCOME_TEXT.id;
     
     // SEO-optimized image alt text
-    const city = (therapist.location || "a" as string).split(' ')[0];
+    // Ensure location is a string - handle cases where it might be an object
+    const locationStr = typeof therapist.location === 'string' 
+        ? therapist.location 
+        : (therapist.location?.name || therapist.location?.city || 'a');
+    const city = locationStr.split(' ')[0];
     const heroImageAlt = `Professional massage therapy in ${city} - ${therapist.name} - Terapis pijat panggilan ${city}`;
     
     // Replace {city} placeholder with actual location

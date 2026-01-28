@@ -27,6 +27,7 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
   
   // Mock achieved achievement IDs - In production, this would come from Appwrite
   const mockAchievedIds = [
+    'certified-oils', // ✅ ALWAYS ACHIEVED - All therapists get certified oils rare container
     'hygiene-approved',
     'time-keeper',
     'booking-commitment',
@@ -41,7 +42,8 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
   // Check which achievements are achieved
   const achievementsWithStatus = allAchievements.map(achievement => ({
     ...achievement,
-    isAchieved: mockAchievedIds.includes(achievement.$id)
+    // ✅ BUSINESS RULE: Certified oils is always achieved for all therapists
+    isAchieved: achievement.$id === 'certified-oils' ? true : mockAchievedIds.includes(achievement.$id)
   }));
 
   // Group by category
@@ -190,11 +192,11 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600">Achieved: {mockAchievedIds.length}</span>
+              <span className="text-gray-600">Achieved: {achievementsWithStatus.filter(a => a.isAchieved).length}</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <span className="text-gray-600">Pending: {allAchievements.length - mockAchievedIds.length}</span>
+              <span className="text-gray-600">Pending: {achievementsWithStatus.filter(a => !a.isAchieved).length}</span>
             </div>
             <div className="flex items-center gap-1">
               <Shield className="w-3 h-3 text-orange-500" />

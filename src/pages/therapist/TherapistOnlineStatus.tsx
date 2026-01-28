@@ -1,4 +1,4 @@
-// @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
+// @ts-expect-error - React 19 type compatibility issue with lucide-react icons, will be resolved in future version
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
 import { therapistService } from '../../lib/appwriteService';

@@ -1,4 +1,4 @@
-// @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
+// @ts-expect-error - React 19 type compatibility issue with lucide-react icons, will be resolved in future version
 // 🔒 LOGIC LOCKED - DO NOT MODIFY BOOKING ACCEPTANCE & VALIDATION LOGIC
 // UI/styling changes allowed ONLY
 // Last locked: 2026-01-28

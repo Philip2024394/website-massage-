@@ -27,14 +27,14 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
         <>
             {/* Discounted Prices Header */}
             {isDiscountActive(therapist) && (
-                <div className={`text-center mb-[10px] px-4 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1', translatedDescriptionLength)}`}>
+                <div className={`text-center mb-[10px] px-4 ${getDynamicSpacing('mt-5', 'mt-4', 'mt-3', translatedDescriptionLength)}`}>
                     <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
                         🔥 Discounted Price's Displayed
                     </p>
                 </div>
             )}
 
-            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 px-4">
+            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-4 px-4">
                 {/* 60 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'

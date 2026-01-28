@@ -28,28 +28,27 @@
 
 import { lazy } from 'react';
 
-// Direct imports to fix component load errors
+// 🔒 BULLETPROOF IMPORTS - Direct imports prevent component load errors
+// All critical therapist routes use direct imports for maximum reliability
 import TherapistPortalPage from '../../pages/therapist/TherapistDashboard';
 import TherapistOnlineStatus from '../../pages/therapist/TherapistOnlineStatus';
 import TherapistLegal from '../../pages/therapist/TherapistLegal';
 import HowItWorksPage from '../../pages/therapist/HowItWorksPage';
-const TherapistBookings = lazy(() => import('../../pages/therapist/TherapistBookings'));
-const TherapistEarnings = lazy(() => import('../../pages/therapist/TherapistEarnings'));
-const TherapistChat = lazy(() => import('../../pages/therapist/TherapistChat'));
-const TherapistNotifications = lazy(() => import('../../pages/therapist/TherapistNotifications'));
-const TherapistCalendar = lazy(() => import('../../pages/therapist/TherapistCalendar'));
-const TherapistPaymentInfo = lazy(() => import('../../pages/therapist/TherapistPaymentInfo'));
-const TherapistPaymentStatus = lazy(() => import('../../pages/therapist/TherapistPaymentStatus'));
-const TherapistMenu = lazy(() => import('../../pages/therapist/TherapistMenu'));
-const PremiumUpgrade = lazy(() => import('../../pages/therapist/PremiumUpgrade'));
-const CommissionPayment = lazy(() => import('../../pages/therapist/CommissionPayment'));
-const TherapistSchedule = lazy(() => import('../../pages/therapist/TherapistSchedule'));
-const PackageTermsPage = lazy(() => import('../../pages/therapist/PackageTermsPage'));
-const SendDiscountPage = lazy(() => import('../../pages/therapist/SendDiscountPage'));
-const MoreCustomersPage = lazy(() => import('../../pages/therapist/MoreCustomersPage'));
-
-// Placeholder component for routes under construction
-const TherapistPlaceholderPage = lazy(() => import('../../pages/therapist/TherapistPlaceholderPage'));
+import TherapistBookings from '../../pages/therapist/TherapistBookings';
+import TherapistEarnings from '../../pages/therapist/TherapistEarnings';
+import TherapistChat from '../../pages/therapist/TherapistChat';
+import TherapistNotifications from '../../pages/therapist/TherapistNotifications';
+import TherapistCalendar from '../../pages/therapist/TherapistCalendar';
+import TherapistPaymentInfo from '../../pages/therapist/TherapistPaymentInfo';
+import TherapistPaymentStatus from '../../pages/therapist/TherapistPaymentStatus';
+import TherapistMenu from '../../pages/therapist/TherapistMenu';
+import PremiumUpgrade from '../../pages/therapist/PremiumUpgrade';
+import CommissionPayment from '../../pages/therapist/CommissionPayment';
+import TherapistSchedule from '../../pages/therapist/TherapistSchedule';
+import PackageTermsPage from '../../pages/therapist/PackageTermsPage';
+import SendDiscountPage from '../../pages/therapist/SendDiscountPage';
+import MoreCustomersPage from '../../pages/therapist/MoreCustomersPage';
+import TherapistPlaceholderPage from '../../pages/therapist/TherapistPlaceholderPage';
 
 export const therapistRoutes = {
   dashboard: {
