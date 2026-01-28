@@ -435,7 +435,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             
             {/* Hero Section with Background Image */}
             <div 
-                className="relative text-white py-8 sm:py-10 lg:py-14 overflow-hidden bg-cover bg-center"
+                className="relative text-white pt-20 sm:pt-24 pb-8 sm:pb-10 lg:pb-14 overflow-hidden bg-cover bg-center"
                 style={{
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20villa.png)',
                     backgroundSize: 'cover',
@@ -572,8 +572,8 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                 </button>
                             </div>
                             
-                            {/* Logo/Profile Picture */}
-                            <div className="absolute top-40 left-4 z-10">
+                            {/* Logo/Profile Picture - Fixed consistent position */}
+                            <div className="absolute bottom-[-40px] left-4 z-20">
                                 <div className="relative w-20 h-20">
                                     <img 
                                         className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
@@ -582,31 +582,32 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                     />
                                 </div>
                             </div>
-                            
-            {/* Partner Name */}
-            <div className="absolute top-56 left-28 right-4 z-10">
-                <h3 className="text-lg font-bold text-gray-900 truncate">
-                    {partner.name.length > 24 ? partner.name.substring(0, 24) + '...' : partner.name}
-                </h3>
-                {partner.location && (
-                    <div className="flex items-center gap-1 mt-1">
-                        <MapPinIcon className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-                        <span className="text-xs text-gray-600">{partner.location}</span>
-                    </div>
-                )}
-            </div>
+                        </div>
 
-            {/* Description */}
-            <div className="absolute top-72 left-4 right-4 z-10">
-                <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4">
-                    {partner.description && partner.description.length > 500 
-                        ? partner.description.substring(0, 500) + '...' 
-                        : partner.description}
-                </p>
-            </div>
+                        {/* Partner Info Section - Repositioned for better layout */}
+                        <div className="px-4 pt-14 pb-2">
+                            {/* Partner Name and Location */}
+                            <div className="mb-2">
+                                <h3 className="text-lg font-bold text-gray-900 truncate">
+                                    {partner.name.length > 24 ? partner.name.substring(0, 24) + '...' : partner.name}
+                                </h3>
+                                {partner.location && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                        <MapPinIcon className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                                        <span className="text-xs text-gray-600">{partner.location}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Description */}
+                            <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-3 mb-3">
+                                {partner.description && partner.description.length > 200 
+                                    ? partner.description.substring(0, 200) + '...' 
+                                    : partner.description}
+                            </p>
             
             {/* Content */}
-            <div className="p-4 pt-40 flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
                                 {/* Separator Line */}
                                 <div className="border-t border-gray-200 my-2"></div>
 
@@ -742,7 +743,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                     style={{
                         backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/start%20your%20journey.png?updatedAt=1763196282314)',
                         backgroundSize: 'cover',
-                        backgroundPosition: 'center',
+                        backgroundPosition: 'bottom center',
                         backgroundRepeat: 'no-repeat'
                     }}
                 >
