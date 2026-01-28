@@ -362,5 +362,5 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     );
 };
 
-export default TherapistProfilePage;
+TherapistProfilePage.displayName = 'TherapistProfilePage';
 
