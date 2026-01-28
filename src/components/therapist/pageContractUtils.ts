@@ -23,22 +23,27 @@ export function getHelpContent(helpId: string) {
     const helpObject = (helpContent as any)[objectName];
     
     if (!helpObject) {
+      console.error(`[HelpContent] Object "${objectName}" not found. Available objects:`, Object.keys(helpContent));
       throw new Error(`Help object "${objectName}" not found in helpContent`);
     }
 
     const content = helpObject[key];
     
     if (!content) {
+      console.error(`[HelpContent] Key "${key}" not found in "${objectName}". Available keys:`, Object.keys(helpObject));
       throw new Error(`Help content key "${key}" not found in "${objectName}"`);
     }
+
+    // Log successful retrieval for debugging
+    console.log(`[HelpContent] Successfully loaded: ${helpId}`, content);
 
     return content;
   } catch (error) {
     console.error(`[THERAPIST PAGE CONTRACT ERROR] Failed to load help content for "${helpId}":`, error);
     return {
       title: 'Help',
-      content: 'Help information is temporarily unavailable',
-      benefits: []
+      content: 'Help information is temporarily unavailable. Please contact support if this persists.',
+      benefits: ['Contact admin for assistance']
     };
   }
 }

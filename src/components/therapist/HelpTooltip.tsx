@@ -35,6 +35,12 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Safety check: Don't render if no content provided
+  if (!title || !content) {
+    console.warn('[HelpTooltip] Missing required props:', { title, content });
+    return null;
+  }
+
   // Size variants
   const sizeClasses = {
     sm: 'w-4 h-4',
