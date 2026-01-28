@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budi Verification Badge Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .therapist-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+        }
+        .verified-badge {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .name {
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .status {
+            color: #666;
+            margin-top: 5px;
+        }
+        .debug {
+            background: #f0f0f0;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Budi Verification Badge Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        const ENDPOINT = 'https://syd.cloud.appwrite.io/v1';
+        const PROJECT_ID = '68f23b11000d25eb3664';
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        const COLLECTION_ID = 'therapists_collection_id';
+        
+        async function fetchBudiData() {
+            try {
+                const response = await fetch(
+                    `${ENDPOINT}/databases/${DATABASE_ID}/collections/${COLLECTION_ID}/documents?queries[]=${encodeURIComponent('contains("name", "budi")')}`,
+                    {
+                        headers: {
+                            'X-Appwrite-Project': PROJECT_ID
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const budi = data.documents[0];
+
+                if (budi) {
+                    displayBudiCard(budi);
+                } else {
+                    document.getElementById('results').innerHTML = '<p>Budi not found</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        function displayBudiCard(budi) {
+            const shouldShowBadge = budi.isVerified === true || (budi.isVerified && budi.isVerified !== 'false');
+            
+            const html = `
+                <div class="therapist-card">
+                    <div class="name">
+                        ${shouldShowBadge ? `<img 
+                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565" 
+                            alt="Verified" 
+                            class="verified-badge"
+                            title="Verified Therapist"
+                        />` : ''}
+                        ${budi.name}
+                    </div>
+                    <div class="status">Status: ${budi.status}</div>
+                    <div class="debug">
+                        <strong>Debug Info:</strong><br>
+                        isVerified: ${JSON.stringify(budi.isVerified)} (type: ${typeof budi.isVerified})<br>
+                        verifiedAt: ${JSON.stringify(budi.verifiedAt)}<br>
+                        shouldShowBadge: ${shouldShowBadge}<br>
+                        Badge condition: isVerified === true → ${budi.isVerified === true}<br>
+                        isLive: ${budi.isLive}<br>
+                        All properties: ${Object.keys(budi).join(', ')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = html;
+        }
+
+        // Load data on page load
+        fetchBudiData();
+    </script>
+</body>
+</html>

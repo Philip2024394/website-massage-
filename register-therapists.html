@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register 2 Therapists - Share Links</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            max-width: 700px;
+            margin: 60px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        .status-loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .therapist-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        .therapist-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .therapist-info {
+            font-size: 13px;
+            color: #666;
+            margin: 4px 0;
+        }
+        .share-url {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #667eea;
+            margin: 8px 0;
+            word-break: break-all;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>👥 Register 2 Therapists</h1>
+        <p class="subtitle">Creating share links for Budi and Surtiningsih</p>
+        
+        <div id="status" class="status status-loading">
+            <div class="spinner"></div>
+            Checking authentication...
+        </div>
+        
+        <div id="loginPrompt" style="display: none;">
+            <div class="status status-error">
+                ⚠️ You must be logged in to create share links
+            </div>
+            <p style="margin: 20px 0; color: #666;">
+                Please <a href="/therapist-login" style="color: #667eea; font-weight: 600;">log in as a therapist</a> first, then return to this page.
+            </p>
+        </div>
+        
+        <div id="results" style="display: none;"></div>
+    </div>
+    
+    <script type="module">
+        // Therapist data from your database (hardcoded for quick registration)
+        const THERAPISTS = [
+            {
+                id: '692467a3001f6f05aaa1',
+                name: 'Budi',
+                city: 'Ubud'
+            },
+            {
+                id: '693cfadf003d16b9896a',
+                name: 'Surtiningsih',
+                city: 'Canggu'
+            }
+        ];
+        
+        async function registerTherapists() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.innerHTML = '<div class="spinner"></div>Loading Appwrite SDK...';
+                
+                // Load Appwrite SDK from CDN
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/appwrite@16.0.2';
+                document.head.appendChild(script);
+                
+                await new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Failed to load Appwrite SDK'));
+                });
+                
+                // Initialize Appwrite
+                const { Client, Databases, Account } = window.Appwrite;
+                
+                const client = new Client()
+                    .setEndpoint('https://syd.cloud.appwrite.io/v1')
+                    .setProject('68f23b11000d25eb3664');
+                
+                const databases = new Databases(client);
+                const account = new window.Appwrite.Account(client);
+                
+                // Check if user is logged in
+                statusDiv.innerHTML = '<div class="spinner"></div>Checking authentication...';
+                
+                let currentUser;
+                try {
+                    currentUser = await account.get();
+                    console.log('✅ Logged in as:', currentUser.email);
+                } catch (error) {
+                    // Not logged in
+                    statusDiv.style.display = 'none';
+                    document.getElementById('loginPrompt').style.display = 'block';
+                    return;
+                }
+                
+                const DATABASE_ID = '68f76ee1000e64ca8d05';
+                const COLLECTION_ID = 'share_links';
+                
+                statusDiv.innerHTML = '<div class="spinner"></div>Registering therapists...';
+                
+                const results = [];
+                
+                // Register each therapist
+                for (const therapist of THERAPISTS) {
+                    try {
+                        // Generate random short ID (5-6 digits)
+                        const shortId = Math.floor(Math.random() * (999999 - 10000) + 10000).toString();
+                        
+                        // Generate slug
+                        const slug = `${therapist.name.toLowerCase()}-massage-${therapist.city.toLowerCase()}`;
+                        
+                        const linkData = {
+                            linkId: `https://www.indastreetmassage.com/share/${shortId}`,
+                            linkedItemId: therapist.id,
+                            linkedItemType: 'therapist',
+                            shortId: shortId,
+                            slug: slug,
+                            entityType: 'therapist',
+                            entityId: therapist.id,
+                            entityName: therapist.name,
+                            isActive: true,
+                            clickCount: 0,
+                            accessCount: 0,
+                            createdAt: new Date().toISOString()
+                        };
+                        
+                        console.log('Creating document for', therapist.name, linkData);
+                        
+                        const response = await databases.createDocument(
+                            DATABASE_ID,
+                            COLLECTION_ID,
+                            'unique()',
+                            linkData
+                        );
+                        
+                        results.push({
+                            ...therapist,
+                            shortId: response.shortId,
+                            slug: response.slug,
+                            linkId: response.linkId,
+                            success: true
+                        });
+                        
+                        console.log('✅ Created link for', therapist.name);
+                        
+                    } catch (error) {
+                        console.error('Error creating link for', therapist.name, error);
+                        
+                        if (error.message && (error.message.includes('unique') || error.code === 409)) {
+                            // Link already exists - fetch it
+                            try {
+                                const existing = await databases.listDocuments(
+                                    DATABASE_ID,
+                                    COLLECTION_ID,
+                                    [
+                                        `equal("linkedItemId", "${therapist.id}")`
+                                    ]
+                                );
+                                
+                                if (existing.documents.length > 0) {
+                                    const doc = existing.documents[0];
+                                    results.push({
+                                        ...therapist,
+                                        shortId: doc.shortId,
+                                        slug: doc.slug,
+                                        linkId: doc.linkId,
+                                        success: true,
+                                        alreadyExisted: true
+                                    });
+                                    console.log('♻️ Link already exists for', therapist.name);
+                                }
+                            } catch (fetchError) {
+                                results.push({
+                                    ...therapist,
+                                    success: false,
+                                    error: 'Already exists but could not fetch: ' + fetchError.message
+                                });
+                            }
+                        } else {
+                            results.push({
+                                ...therapist,
+                                success: false,
+                                error: error.message
+                            });
+                        }
+                    }
+                }
+                
+                // Display results
+                statusDiv.className = 'status status-success';
+                statusDiv.innerHTML = '✅ Registration Complete!';
+                
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = results.map(r => {
+                    if (!r.success) {
+                        return `
+                            <div class="therapist-card" style="border-left-color: #dc2626;">
+                                <div class="therapist-name">❌ ${r.name}</div>
+                                <div class="therapist-info" style="color: #dc2626;">Error: ${r.error}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    return `
+                        <div class="therapist-card">
+                            <div class="therapist-name">
+                                ${r.alreadyExisted ? '♻️' : '✅'} ${r.name}
+                                ${r.alreadyExisted ? '<span style="font-size: 12px; color: #666; font-weight: normal;"> (Already existed)</span>' : ''}
+                            </div>
+                            <div class="therapist-info">📍 ${r.city}</div>
+                            <div class="therapist-info">🆔 Short ID: <strong>#${r.shortId}</strong></div>
+                            <div class="therapist-info">🔗 Slug: ${r.slug}</div>
+                            <div class="share-url">${r.linkId}</div>
+                            <div class="share-url">http://localhost:3000/share/${r.shortId}</div>
+                            <a href="/share/${r.shortId}" target="_blank" class="btn">
+                                🔍 Test Link
+                            </a>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                statusDiv.className = 'status status-error';
+                statusDiv.innerHTML = `❌ Error: ${error.message}`;
+                console.error('Registration failed:', error);
+            }
+        }
+        
+        // Auto-start when page loads
+        registerTherapists();
+    </script>
+</body>
+</html>

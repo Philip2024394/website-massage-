@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Appwrite Collections</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
+</head>
+<body>
+    <h1>Checking Appwrite Collections...</h1>
+    <div id="status">Loading...</div>
+    
+    <script>
+        const { Client, Databases } = window.Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        
+        async function checkCollections() {
+            const status = document.getElementById('status');
+            
+            try {
+                // Test different possible collection names
+                const collectionTests = [
+                    'Therapists',
+                    'therapists', 
+                    'therapists_collection_id',
+                    'Places',
+                    'places',
+                    'places_collection_id'
+                ];
+                
+                for (const collectionName of collectionTests) {
+                    try {
+                        const response = await databases.listDocuments(DATABASE_ID, collectionName, []);
+                        status.innerHTML += `<p>✅ <strong>${collectionName}</strong>: ${response.documents.length} documents</p>`;
+                    } catch (error) {
+                        status.innerHTML += `<p>❌ <strong>${collectionName}</strong>: ${error.message}</p>`;
+                    }
+                }
+                
+            } catch (error) {
+                status.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        checkCollections();
+    </script>
+</body>
+</html>
