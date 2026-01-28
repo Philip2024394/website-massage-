@@ -483,7 +483,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 </div>
 
                 {/* Hotel/Villa Toggle Button */}
-                <div className="flex justify-center mb-6 sm:mb-8">
+                <div className="flex justify-center mb-6 sm:mb-8" style={{ marginBottom: '20px' }}>
                     <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
                         <button
                             onClick={() => setViewType('hotel')}
