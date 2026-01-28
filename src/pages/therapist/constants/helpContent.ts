@@ -17,6 +17,23 @@ export interface PageHelpContent {
 }
 
 /**
+ * Chat Help Content
+ */
+export const chatHelp: PageHelpContent = {
+  overview: {
+    title: 'Sistem Chat dengan Pelanggan',
+    content: 'Berkomunikasi langsung dengan pelanggan Anda untuk koordinasi booking, konfirmasi lokasi, dan pertanyaan lainnya. Chat membantu membangun kepercayaan dan meningkatkan kepuasan pelanggan.',
+    benefits: [
+      'Komunikasi real-time dengan pelanggan',
+      'Koordinasi detail booking dan lokasi',
+      'Bangun kepercayaan dan profesionalisme',
+      'Tingkatkan rating dengan layanan responsif',
+      'Terima notifikasi pesan baru secara instant'
+    ]
+  }
+};
+
+/**
  * TherapistEarnings Page Help Content
  */
 export const earningsHelp: PageHelpContent = {
