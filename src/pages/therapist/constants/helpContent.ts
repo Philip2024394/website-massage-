@@ -596,6 +596,40 @@ export const paymentInfoHelp = {
   }
 };
 
+// Dashboard Help (for profile editing page)
+export const dashboardHelp: PageHelpContent = {
+  overview: {
+    title: 'Edit Profil Terapis',
+    content: 'Kelola profil Anda, ubah status ketersediaan, dan perbarui informasi layanan Anda. Profil lengkap meningkatkan kepercayaan pelanggan dan booking rate.',
+    benefits: [
+      'Profil lengkap = lebih banyak booking',
+      'Status real-time untuk pelanggan',
+      'Kontrol penuh atas informasi Anda',
+      'Perbarui kapan saja tanpa persetujuan'
+    ]
+  },
+  statusControl: {
+    title: 'Kontrol Status',
+    content: 'Ubah status Anda antara Tersedia, Sibuk, atau Offline untuk mengontrol visibilitas dan booking Anda.',
+    benefits: [
+      'Kontrol waktu kerja Anda',
+      'Cegah double booking',
+      'Kelola work-life balance',
+      'Pelanggan tahu ketersediaan Anda'
+    ]
+  },
+  profilePhoto: {
+    title: 'Foto Profil',
+    content: 'Upload foto profil profesional untuk meningkatkan kepercayaan pelanggan. Foto yang jelas meningkatkan booking rate hingga 3x lipat.',
+    benefits: [
+      'Meningkatkan kepercayaan pelanggan',
+      'Profil lebih menarik',
+      'Booking rate lebih tinggi',
+      'Tampilan profesional'
+    ]
+  }
+};
+
 // Export all help content
 export const therapistDashboardHelp = {
   onlineStatus: onlineStatusHelp,
