@@ -2,11 +2,16 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// ⚠️ STANDALONE THERAPIST DASHBOARD DISABLED
+// Therapist dashboard ONLY accessible through main website integration
+// Use: pnpm dev (main website) then login as therapist
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 3001,
-    host: true
+    host: true,
+    // Disabled - should not run standalone
+    open: false
   },
   resolve: {
     alias: {
