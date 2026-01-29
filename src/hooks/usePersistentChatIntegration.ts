@@ -81,9 +81,26 @@ export function usePersistentChatIntegration() {
    * Open chat for "Book Now" button
    * - Opens chat in booking mode
    * - Starts at duration selection
+   * - Validates therapist status before opening
    */
   const openBookingChat = useCallback((therapist: Therapist) => {
     console.log('🔒 [PersistentChatIntegration] Opening booking chat for:', therapist.name);
+    
+    // Check therapist status - block booking if busy or offline
+    const therapistStatus = (therapist.status || therapist.availability || '').toLowerCase();
+    
+    if (therapistStatus === 'busy') {
+      alert('⚠️ Therapist is not active in service. Please check back later for book now service.');
+      console.log('❌ [PersistentChatIntegration] Booking blocked - therapist is BUSY');
+      return;
+    }
+    
+    if (therapistStatus === 'offline') {
+      alert('⚠️ Therapist has no service at this time. Please choose therapist with available status.');
+      console.log('❌ [PersistentChatIntegration] Booking blocked - therapist is OFFLINE');
+      return;
+    }
+    
     const chatTherapist = convertToChatTherapist(therapist);
     openChat(chatTherapist, 'book');
   }, [openChat, convertToChatTherapist]);
@@ -92,9 +109,26 @@ export function usePersistentChatIntegration() {
    * Open chat for "Schedule" button
    * - Opens chat in schedule mode
    * - Starts at duration selection
+   * - Validates therapist status before opening
    */
   const openScheduleChat = useCallback((therapist: Therapist) => {
     console.log('🔒 [PersistentChatIntegration] Opening schedule chat for:', therapist.name);
+    
+    // Check therapist status - block scheduling if busy or offline
+    const therapistStatus = (therapist.status || therapist.availability || '').toLowerCase();
+    
+    if (therapistStatus === 'busy') {
+      alert('⚠️ Therapist is not active in service. Please check back later for book now service.');
+      console.log('❌ [PersistentChatIntegration] Schedule booking blocked - therapist is BUSY');
+      return;
+    }
+    
+    if (therapistStatus === 'offline') {
+      alert('⚠️ Therapist has no service at this time. Please choose therapist with available status.');
+      console.log('❌ [PersistentChatIntegration] Schedule booking blocked - therapist is OFFLINE');
+      return;
+    }
+    
     const chatTherapist = convertToChatTherapist(therapist);
     openChat(chatTherapist, 'schedule');
   }, [openChat, convertToChatTherapist]);
@@ -103,9 +137,26 @@ export function usePersistentChatIntegration() {
    * Open chat for "View Prices" / Price slider
    * - Opens chat in price mode
    * - Starts at duration selection with prices visible
+   * - Validates therapist status before opening
    */
   const openPriceChat = useCallback((therapist: Therapist) => {
     console.log('🔒 [PersistentChatIntegration] Opening price chat for:', therapist.name);
+    
+    // Check therapist status - block booking if busy or offline
+    const therapistStatus = (therapist.status || therapist.availability || '').toLowerCase();
+    
+    if (therapistStatus === 'busy') {
+      alert('⚠️ Therapist is not active in service. Please check back later for book now service.');
+      console.log('❌ [PersistentChatIntegration] Price chat blocked - therapist is BUSY');
+      return;
+    }
+    
+    if (therapistStatus === 'offline') {
+      alert('⚠️ Therapist has no service at this time. Please choose therapist with available status.');
+      console.log('❌ [PersistentChatIntegration] Price chat blocked - therapist is OFFLINE');
+      return;
+    }
+    
     const chatTherapist = convertToChatTherapist(therapist);
     openChat(chatTherapist, 'price');
   }, [openChat, convertToChatTherapist]);
@@ -115,6 +166,7 @@ export function usePersistentChatIntegration() {
    * - Enhanced to support both immediate and scheduled bookings with deposits
    * - Skips duration selection for immediate bookings
    * - Triggers deposit modal for scheduled bookings
+   * - Validates therapist status before opening
    */
   const openBookingWithService = useCallback((
     therapist: Therapist, 
@@ -126,6 +178,21 @@ export function usePersistentChatIntegration() {
       service,
       options
     });
+
+    // Check therapist status - block booking if busy or offline
+    const therapistStatus = (therapist.status || therapist.availability || '').toLowerCase();
+    
+    if (therapistStatus === 'busy') {
+      alert('⚠️ Therapist is not active in service. Please check back later for book now service.');
+      console.log('❌ [PersistentChatIntegration] Service booking blocked - therapist is BUSY');
+      return;
+    }
+    
+    if (therapistStatus === 'offline') {
+      alert('⚠️ Therapist has no service at this time. Please choose therapist with available status.');
+      console.log('❌ [PersistentChatIntegration] Service booking blocked - therapist is OFFLINE');
+      return;
+    }
 
     const bookingType = options?.bookingType || 'immediate';
     const chatTherapist = convertToChatTherapist(therapist);

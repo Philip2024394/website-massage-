@@ -1146,28 +1146,42 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       return false;
     }
     
-    // 🔒 CRITICAL: Validate customerWhatsApp is present
-    if (!chatState.customerWhatsApp) {
-      console.warn('⚠️ WARNING: customerWhatsApp is empty in chatState');
-      console.warn('⚠️ This may be a timing issue - checking if customer form has WhatsApp...');
-      // Don't block booking creation - WhatsApp may be in the form but not yet in state
-      // The WhatsApp will be captured from the booking message itself
+    // 📱 ADMIN-ONLY: WhatsApp is optional and for admin purposes only
+    // Save to localStorage but NOT required for booking creation
+    const customerWhatsApp = bookingData.customerWhatsApp || chatState.customerWhatsApp || '';
+    
+    // 💾 Save WhatsApp to localStorage for admin tracking (if provided)
+    if (customerWhatsApp) {
+      try {
+        localStorage.setItem('customer_whatsapp_admin', customerWhatsApp);
+        console.log('💾 [ADMIN] WhatsApp saved to localStorage:', customerWhatsApp);
+      } catch (e) {
+        console.warn('⚠️ Failed to save WhatsApp to localStorage:', e);
+      }
+    }
+    
+    // 📞 Use phone number for booking (required field)
+    // WhatsApp is optional and only used for admin tracking
+    const customerPhone = bookingData.customerPhone || chatState.customerPhone || '';
+    
+    if (!customerPhone) {
+      console.error('❌ ERROR: customerPhone is missing');
+      addSystemNotification('❌ Phone number is required. Please enter your phone number.');
+      return false;
     }
     
     console.log('✅ VALIDATION PASSED: customerName =', customerName);
-    console.log('✅ Customer WhatsApp from state:', chatState.customerWhatsApp);
-    
-    // ✅ Use WhatsApp from state (should be set by setCustomerDetails)
-    const customerWhatsApp = chatState.customerWhatsApp || '';
-    console.log('✅ Using customerWhatsApp:', customerWhatsApp);
+    console.log('✅ VALIDATION PASSED: customerPhone =', customerPhone);
+    console.log('📱 [ADMIN-ONLY] customerWhatsApp =', customerWhatsApp || 'Not provided');
     
     // Prepare booking data for Appwrite
+    // 📱 NOTE: WhatsApp is NOT sent to therapist (admin-only, stored in localStorage)
     const appwriteBooking = {
       customerId: currentUserId || 'guest',
       customerName: customerName, // ✅ GUARANTEED non-empty
-      customerPhone: customerWhatsApp,
-      customerWhatsApp: customerWhatsApp,
-      therapistId: therapist?.id || '',
+      customerPhone: customerPhone, // 📞 Required: sent to therapist for booking
+      customerWhatsApp: '', // 🚫 NOT sent to therapist (admin-only)
+      therapistId: String(therapist?.id || therapist?.$id || ''), // 🔒 Always string for consistency
       therapistName: therapist?.name || '',
       therapistType: 'therapist' as const,
       serviceType: bookingData.serviceType || 'Traditional Massage',

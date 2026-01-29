@@ -697,6 +697,13 @@ export function PersistentChatWindow() {
                 coordinates: customerForm.coordinates || undefined,
                 scheduledDate: selectedDate,
                 scheduledTime: selectedTime,
+                customerPhone: fullWhatsApp, // 📞 Phone number sent to therapist
+                customerWhatsApp: fullWhatsApp, // 📱 Admin-only (saved to localStorage)
+                customerName: customerForm.name,
+                massageFor: customerForm.massageFor,
+                locationType: customerForm.locationType,
+                address: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
+                roomNumber: customerForm.roomNumber || undefined,
               });
               console.log('✅ Scheduled booking created');
               
@@ -736,6 +743,13 @@ export function PersistentChatWindow() {
                 serviceType: 'Professional Treatment',
                 locationZone: customerForm.location,
                 coordinates: customerForm.coordinates || undefined,
+                customerPhone: fullWhatsApp, // 📞 Phone number sent to therapist
+                customerWhatsApp: fullWhatsApp, // 📱 Admin-only (saved to localStorage)
+                customerName: customerForm.name,
+                massageFor: customerForm.massageFor,
+                locationType: customerForm.locationType,
+                address: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
+                roomNumber: customerForm.roomNumber || undefined,
               });
               
               console.log('📝 createBooking returned:', bookingCreated);
@@ -791,6 +805,13 @@ export function PersistentChatWindow() {
                 serviceType: 'Professional Treatment',
                 locationZone: customerForm.location,
                 coordinates: customerForm.coordinates || undefined,
+                customerPhone: fullWhatsApp, // 📞 Phone number sent to therapist
+                customerWhatsApp: fullWhatsApp, // 📱 Admin-only (saved to localStorage)
+                customerName: customerForm.name,
+                massageFor: customerForm.massageFor,
+                locationType: customerForm.locationType,
+                address: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
+                roomNumber: customerForm.roomNumber || undefined,
               });
               
               console.log('✅ [FALLBACK] Booking created despite message failure:', bookingCreated);
