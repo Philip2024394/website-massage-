@@ -161,7 +161,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false, // Disable for production builds
+    sourcemap: true, // Enable for debugging TDZ issues
     minify: 'esbuild',
     // ✅ BROWSER COMPATIBILITY: ES2019 supports 95%+ of browsers (2026)
     // Includes: Chrome 73+, Firefox 63+, Safari 12.1+, Edge 79+
