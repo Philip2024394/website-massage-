@@ -1180,7 +1180,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       customerId: currentUserId || 'guest',
       customerName: customerName, // ✅ GUARANTEED non-empty
       customerPhone: customerPhone, // 📞 Required: sent to therapist for booking
-      customerWhatsApp: '', // 🚫 NOT sent to therapist (admin-only)
+      customerWhatsApp: customerPhone, // ✅ Use phone number for validation (required field)
       therapistId: String(therapist?.id || therapist?.$id || ''), // 🔒 Always string for consistency
       therapistName: therapist?.name || '',
       therapistType: 'therapist' as const,
@@ -1189,7 +1189,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       price,
       location: bookingData.locationZone || chatState.customerLocation || 'Unknown',
       locationType: (bookingData.locationType as 'home' | 'hotel' | 'villa') || 'home',
-      address: bookingData.address || null,
+      address: bookingData.address || chatState.customerLocation || 'Unknown Address',
       roomNumber: bookingData.roomNumber || null,
       massageFor: (bookingData.massageFor as 'male' | 'female' | 'children') || 'male',
       date: bookingData.scheduledDate || chatState.selectedDate || new Date().toISOString().split('T')[0],
