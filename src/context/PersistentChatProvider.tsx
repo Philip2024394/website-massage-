@@ -504,8 +504,11 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       console.log('🔌 Initializing connection stability service...');
       
       try {
-        // Initialize connection stability service
-        await connectionStabilityService.initialize();
+        // Initialize connection stability service (non-blocking)
+        connectionStabilityService.initialize().catch(err => {
+          console.warn('⚠️ Connection stability service failed to initialize:', err);
+          // Continue anyway - the app should work without real-time features
+        });
         
         // Listen for connection status changes
         connectionStabilityService.addConnectionListener((status: ConnectionStatus) => {

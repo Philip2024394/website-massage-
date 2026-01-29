@@ -53,14 +53,14 @@ class ConnectionStabilityService {
 
   constructor(config: Partial<ConnectionStabilityConfig> = {}) {
     this.config = {
-      maxReconnectAttempts: 10,
-      baseReconnectDelay: 1000,
-      maxReconnectDelay: 30000,
-      heartbeatInterval: 15000,
-      connectionTimeout: 10000,
-      qualityCheckInterval: 5000,
+      maxReconnectAttempts: 3,
+      baseReconnectDelay: 2000,
+      maxReconnectDelay: 10000,
+      heartbeatInterval: 30000,
+      connectionTimeout: 5000,
+      qualityCheckInterval: 10000,
       enableFallbackPolling: true,
-      enableNetworkDetection: true,
+      enableNetworkDetection: false,
       ...config
     };
 
@@ -331,7 +331,7 @@ class ConnectionStabilityService {
     console.log(`🔄 ConnectionStability: Reconnect attempt ${this.status.reconnectAttempts}/${this.config.maxReconnectAttempts}`);
 
     if (this.status.reconnectAttempts > this.config.maxReconnectAttempts) {
-      console.error('❌ ConnectionStability: Max reconnection attempts exceeded');
+      console.warn('⚠️ ConnectionStability: Max reconnection attempts exceeded - will continue in degraded mode');
       
       if (this.config.enableFallbackPolling) {
         this.startPollingFallback();
@@ -339,7 +339,7 @@ class ConnectionStabilityService {
       
       this.updateStatus({
         isConnected: false,
-        quality: 'disconnected',
+        quality: 'poor',
         connectionType: this.config.enableFallbackPolling ? 'polling' : 'offline'
       });
       return;
