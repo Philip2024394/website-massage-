@@ -52,11 +52,28 @@ import { PersistentChatWindow } from './components/PersistentChatWindow';
 // 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring
 import { AdminErrorNotification } from './components/AdminErrorNotification';
 
-// 🏢 ENTERPRISE SERVICES - Auto-initialized on import
-import './services/enterpriseInitService';
+// 🏢 ENTERPRISE SERVICES - Lazy-initialized after first render to improve loading time
+// Moved to useEffect to prevent blocking initial page display
 
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering');
+    
+    // 🚀 PERFORMANCE: Initialize heavy enterprise services after first render
+    useEffect(() => {
+        // Lazy load enterprise services after UI is interactive
+        const initializeEnterpriseServices = async () => {
+            try {
+                await import('./services/enterpriseInitService');
+                console.log('✅ Enterprise services initialized (lazy)');
+            } catch (error) {
+                console.error('❌ Failed to lazy-load enterprise services:', error);
+            }
+        };
+        
+        // Delay initialization until after first paint
+        const timer = setTimeout(initializeEnterpriseServices, 100);
+        return () => clearTimeout(timer);
+    }, []);
     
     // Mobile viewport lock for stable mobile experience
     useMobileLock();

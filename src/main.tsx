@@ -19,8 +19,10 @@ import { initVersionCheck } from './lib/versionCheck';
 // 🔒 PRODUCTION STARTUP GUARD - Detects mount failures
 // TEMPORARILY DISABLED: import { initializeStartupGuard } from './utils/startupGuard';
 
-// 🔒 APPWRITE COLLECTION PROTECTION - Validates collection IDs at startup
-import './lib/appwrite-startup-validator';
+// 🔒 APPWRITE COLLECTION PROTECTION - Non-blocking validation (runs async)
+import('./lib/appwrite-startup-validator').catch(err => 
+  console.error('❌ Collection validation failed:', err)
+);
 
 // 📊 ENTERPRISE MONITORING - Web Vitals & Error Tracking
 import { initWebVitals } from './services/webVitals';

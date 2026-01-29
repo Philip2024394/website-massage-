@@ -594,11 +594,11 @@
           }
         }, 100);
         
-        // Emergency fallback: max 5 seconds (increased from 2)
+        // Emergency fallback: max 3 seconds (reduced from 5s after optimization)
         setTimeout(function() {
           clearInterval(checkInterval);
           hideSplash();
-        }, 5000);
+        }, 3000);
       })();
     </script>
     
