@@ -48,6 +48,7 @@ import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/ther
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
+import { enterpriseBookingFlowService } from '../services/enterpriseBookingFlowService';
 
 import BookingPopup from './BookingPopup';
 import ScheduleBookingPopup from './ScheduleBookingPopup';
