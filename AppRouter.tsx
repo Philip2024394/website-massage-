@@ -1451,6 +1451,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
+                onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
+                onNavigateToChat: () => props.onNavigate?.('therapist-chat'),
+                onNavigateToProfile: () => props.onNavigate?.('therapist-profile'),
+                onNavigateToSchedule: () => props.onNavigate?.('therapist-calendar'),
+                onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),
                 language: props.language
             });
         

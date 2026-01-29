@@ -48,13 +48,19 @@ interface TherapistNotificationsProps {
   onBack: () => void;
   onNavigateToBookings?: () => void;
   onNavigateToChat?: () => void;
+  onNavigateToProfile?: () => void;
+  onNavigateToSchedule?: () => void;
+  onNavigateToEarnings?: () => void;
 }
 
 const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({ 
   therapist, 
   onBack,
   onNavigateToBookings,
-  onNavigateToChat
+  onNavigateToChat,
+  onNavigateToProfile,
+  onNavigateToSchedule,
+  onNavigateToEarnings
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -316,20 +322,71 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
     // Mark as read
     handleMarkAsRead(notification.$id);
 
-    // Navigate based on type
-    if (notification.type === 'booking' && onNavigateToBookings) {
+    // Route to appropriate page based on actionUrl or notification type
+    if (notification.actionUrl) {
+      switch (notification.actionUrl) {
+        case '/bookings':
+          if (onNavigateToBookings) {
+            onNavigateToBookings();
+          } else {
+            console.warn('Navigation to bookings not available');
+          }
+          break;
+        case '/chat':
+          if (notification.type === 'message') {
+            // Open chat window with customer details
+            setSelectedChat({
+              customerId: notification.relatedId || 'customer-001',
+              customerName: notification.message.split(' ')[0] || 'Customer',
+              bookingId: notification.relatedId
+            });
+            setShowChatWindow(true);
+          } else if (onNavigateToChat) {
+            onNavigateToChat();
+          } else {
+            console.warn('Navigation to chat not available');
+          }
+          break;
+        case '/profile':
+          if (onNavigateToProfile) {
+            onNavigateToProfile();
+          } else {
+            console.warn('Navigation to profile not available - showing alert instead');
+            alert('Fitur lengkapi profil sedang dalam pengembangan. Silakan gunakan menu Profil di sidebar.');
+          }
+          break;
+        case '/schedule':
+          if (onNavigateToSchedule) {
+            onNavigateToSchedule();
+          } else {
+            console.warn('Navigation to schedule not available - showing alert instead');
+            alert('Fitur pengaturan jadwal sedang dalam pengembangan. Silakan gunakan menu Kalender di sidebar.');
+          }
+          break;
+        case '/earnings':
+        case '/payment':
+          if (onNavigateToEarnings) {
+            onNavigateToEarnings();
+          } else {
+            console.warn('Navigation to earnings not available - showing alert instead');
+            alert('Fitur pendapatan sedang dalam pengembangan. Silakan gunakan menu Pendapatan di sidebar.');
+          }
+          break;
+        default:
+          console.warn('Unknown action URL:', notification.actionUrl);
+          alert(`Fitur ini sedang dalam pengembangan: ${notification.actionLabel || 'Action'}`);
+      }
+    } else if (notification.type === 'booking' && onNavigateToBookings) {
       onNavigateToBookings();
     } else if (notification.type === 'message') {
-      // Open chat window with customer details
-      // TODO: Fetch actual customer ID from notification/booking
       setSelectedChat({
         customerId: notification.relatedId || 'customer-001',
-        customerName: notification.message.split(' ')[0] || 'Customer', // Extract name from message
+        customerName: notification.message.split(' ')[0] || 'Customer',
         bookingId: notification.relatedId
       });
       setShowChatWindow(true);
-    } else if (notification.actionUrl) {
-      window.open(notification.actionUrl, '_blank');
+    } else {
+      console.warn('No action handler configured for notification:', notification);
     }
   };
 
