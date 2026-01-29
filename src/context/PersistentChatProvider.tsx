@@ -211,6 +211,7 @@ export interface ChatWindowState {
   customerLocation: string;
   coordinates: { lat: number; lng: number } | null;
   selectedService: SelectedService | null; // Pre-selected from Menu Harga
+  chatRoomId: string | null; // Chat room ID for messaging
   // Connection status for stability monitoring
   connectionStatus: ConnectionStatus;
   // Booking workflow state
@@ -486,16 +487,18 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     const setupStableConnection = async () => {
       const isValid = await validateInfrastructure();
       if (!isValid) {
-        console.error('❌ Infrastructure validation failed - aborting connection setup');
+        console.warn('⚠️ Infrastructure validation failed - continuing with limited functionality');
+        console.warn('💡 Chat will work but realtime messaging may be limited');
+        // Don't abort - continue with limited functionality
         setChatState(prev => ({ 
           ...prev, 
           connectionStatus: { 
             ...prev.connectionStatus, 
             isConnected: false, 
-            quality: 'disconnected' 
+            quality: 'poor' 
           } 
         }));
-        return;
+        // Continue setup even if validation fails
       }
 
       console.log('🔌 Initializing connection stability service...');
@@ -685,7 +688,11 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     const draftBookingId = generateDraftBookingId();
     console.log('🆔 Auto-created booking ID:', draftBookingId);
     
-    // Set initial state with booking ID
+    // Generate chatRoomId
+    const chatRoomId = currentUserId ? `${currentUserId}_${therapist.id}` : `guest_${Date.now()}_${therapist.id}`;
+    console.log('💬 Chat room ID:', chatRoomId);
+    
+    // Set initial state with booking ID and chatRoomId
     setChatState(prev => ({
       ...prev,
       isOpen: true,
@@ -696,6 +703,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       selectedDate: null,
       selectedTime: null,
       selectedService: null, // Reset pre-selected service
+      chatRoomId,
       messages: prev.therapist?.id === therapist.id ? prev.messages : [],
       bookingData: {
         ...prev.bookingData,
