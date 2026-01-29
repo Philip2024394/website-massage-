@@ -15,7 +15,7 @@ interface ChatTranslation {
 // Default chat translations
 const defaultChatTranslations: Omit<ChatTranslation, '$id' | 'createdAt' | 'updatedAt'>[] = [
     // Button translations
-    { key: 'book_now', en: 'Book Therapist', id: 'Pesan Terapis', category: 'buttons' },
+    { key: 'book_now', en: 'Book Now', id: 'Pesan Sekarang', category: 'buttons' },
     { key: 'schedule', en: 'Schedule', id: 'Jadwalkan', category: 'buttons' },
     { key: 'activate_chat', en: 'Activate Chat', id: 'Aktifkan Chat', category: 'buttons' },
     { key: 'send_message', en: 'Send Message', id: 'Kirim Pesan', category: 'buttons' },

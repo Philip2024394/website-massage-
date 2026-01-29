@@ -2053,7 +2053,7 @@ export function PersistentChatWindow() {
                 ) : (
                   <>
                     <Send className="w-5 h-5" />
-                    Order Now
+                    Book Now
                   </>
                 )}
               </button>
