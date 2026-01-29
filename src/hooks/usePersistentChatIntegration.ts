@@ -32,8 +32,9 @@ export function usePersistentChatIntegration() {
    * Convert Therapist type to ChatTherapist type
    */
   const convertToChatTherapist = useCallback((therapist: Therapist): ChatTherapist => {
-    // Safety check for therapist ID
-    if (!therapist?.id) {
+    // Safety check for therapist ID - handle both Appwrite ($id) and legacy (id) formats
+    const therapistId = therapist.$id || therapist.id;
+    if (!therapistId) {
       console.error('❌ ERROR: Therapist missing ID', therapist);
       throw new Error('Cannot open chat - therapist has no ID');
     }
@@ -55,7 +56,7 @@ export function usePersistentChatIntegration() {
       };
       console.warn('⚠️ Using fallback pricing - should fix therapist profile data!');
       return {
-        id: therapist.id.toString(),
+        id: String(therapistId),
         name: therapist.name,
         image: (therapist as any).mainImage || (therapist as any).profilePicture,
         status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
@@ -67,7 +68,7 @@ export function usePersistentChatIntegration() {
     console.log('✅ Therapist pricing loaded:', therapist.name, pricing);
     
     return {
-      id: therapist.id.toString(),
+      id: String(therapistId),
       name: therapist.name,
       image: (therapist as any).mainImage || (therapist as any).profilePicture,
       status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
