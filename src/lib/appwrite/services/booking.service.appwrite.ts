@@ -12,8 +12,9 @@ import { databases, APPWRITE_CONFIG } from '../config';
 import { ID, Query } from 'appwrite';
 import type { Booking, BookingStatus } from '../../../types';
 
-const DATABASE_ID = APPWRITE_CONFIG.databaseId;
-const BOOKINGS_COLLECTION_ID = APPWRITE_CONFIG.collections.bookings;
+// Lazy getters to avoid TDZ errors during module initialization
+const getDatabaseId = () => APPWRITE_CONFIG.databaseId;
+const getBookingsCollectionId = () => APPWRITE_CONFIG.collections.bookings;
 
 /**
  * Generate unique booking ID
@@ -107,8 +108,8 @@ export const appwriteBookingService = {
 
       // Query all recent bookings for this therapist
       const recentBookings = await databases.listDocuments(
-        DATABASE_ID,
-        BOOKINGS_COLLECTION_ID,
+        getDatabaseId(),
+        getBookingsCollectionId(),
         [
           Query.equal('therapistId', bookingData.therapistId),
           Query.limit(20)
@@ -197,13 +198,13 @@ export const appwriteBookingService = {
       };
 
       console.log('📤 [APPWRITE] Sending to Appwrite databases.createDocument()...');
-      console.log('📤 [APPWRITE] Database:', DATABASE_ID);
-      console.log('📤 [APPWRITE] Collection:', BOOKINGS_COLLECTION_ID);
+      console.log('📤 [APPWRITE] Database:', getDatabaseId());
+      console.log('📤 [APPWRITE] Collection:', getBookingsCollectionId());
 
       // 🔒 Step 5: Create document in Appwrite (single source of truth)
       const createdDoc = await databases.createDocument(
-        DATABASE_ID,
-        BOOKINGS_COLLECTION_ID,
+        getDatabaseId(),
+        getBookingsCollectionId(),
         ID.unique(), // Let Appwrite generate document ID
         appwriteDoc
       );
@@ -237,8 +238,8 @@ export const appwriteBookingService = {
       console.log('🔍 [APPWRITE] Fetching booking:', bookingId);
       
       const response = await databases.listDocuments(
-        DATABASE_ID,
-        BOOKINGS_COLLECTION_ID,
+        getDatabaseId(),
+        getBookingsCollectionId(),
         [
           Query.equal('bookingId', bookingId),
           Query.limit(1)
@@ -268,8 +269,8 @@ export const appwriteBookingService = {
       console.log('🔍 [APPWRITE] Listing bookings for therapist:', therapistId);
       
       const response = await databases.listDocuments(
-        DATABASE_ID,
-        BOOKINGS_COLLECTION_ID,
+        getDatabaseId(),
+        getBookingsCollectionId(),
         [
           Query.equal('therapistId', therapistId),
           Query.equal('status', 'Pending'),
@@ -389,8 +390,8 @@ export const appwriteBookingService = {
 
       // 🔒 Step 4: Update booking status in Appwrite
       const updatedDoc = await databases.updateDocument(
-        DATABASE_ID,
-        BOOKINGS_COLLECTION_ID,
+        getDatabaseId(),
+        getBookingsCollectionId(),
         booking.$id,
         {
           status: 'Confirmed',
@@ -423,8 +424,8 @@ export const appwriteBookingService = {
       }
 
       const updatedDoc = await databases.updateDocument(
-        DATABASE_ID,
-        BOOKINGS_COLLECTION_ID,
+        getDatabaseId(),
+        getBookingsCollectionId(),
         booking.$id,
         {
           status: 'Cancelled',
@@ -455,7 +456,7 @@ export const appwriteBookingService = {
 
       // Subscribe to bookings collection with filters
       const unsubscribe = client.subscribe(
-        `databases.${DATABASE_ID}.collections.${BOOKINGS_COLLECTION_ID}.documents`,
+        `databases.${getDatabaseId()}.collections.${getBookingsCollectionId()}.documents`,
         (response) => {
           console.log('🔔 [APPWRITE REALTIME] Event received:', response.events[0]);
           
