@@ -180,6 +180,7 @@ export const appwriteBookingService = {
         
         // Booking metadata
         massageFor: bookingData.massageFor,
+        bookingDate: bookingData.date || nowISO, // ✅ FIXED: Use bookingDate instead of date (full ISO datetime)
         date: bookingData.date || nowISO.split('T')[0],
         time: bookingData.time || new Date().toLocaleTimeString('en-US', { hour12: false }),
         
