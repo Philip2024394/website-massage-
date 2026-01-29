@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Star, Shield, Zap, Users, Plus, Clock, Target, Sparkles, Activity, TrendingUp } from 'lucide-react';
+import { Award, Star, Shield, Zap, Users, Plus, Clock, Target, Sparkles, Gauge, TrendingUp } from 'lucide-react';
 import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES, SAMPLE_ACHIEVEMENTS } from '../types/achievements';
 
 interface IndastreetAchievementsProps {
@@ -64,7 +64,7 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
       case 'professional_standards': return <Shield className="w-4 h-4" />;
       case 'reliability_discipline': return <Clock className="w-4 h-4" />;
       case 'quality_experience': return <Star className="w-4 h-4" />;
-      case 'platform_engagement': return <Activity className="w-4 h-4" />;
+      case 'platform_engagement': return <Gauge className="w-4 h-4" />;
       case 'premium_growth': return <TrendingUp className="w-4 h-4" />;
       case 'specialty_badges': return <Star className="w-4 h-4" />;
       default: return <Award className="w-4 h-4" />;

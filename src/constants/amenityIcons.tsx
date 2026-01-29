@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Droplet, Package, Scissors, User, Hand, Flower2, Waves, Activity, Dumbbell, Flame, Heart, Thermometer, Wind } from 'lucide-react';
+import { Sparkles, Droplet, Package, Scissors, User, Hand, Flower2, Waves, Target, Dumbbell, Flame, Heart, Thermometer, Wind } from 'lucide-react';
 
 /**
  * Map of additional services to their corresponding icons
@@ -11,7 +11,7 @@ export const AMENITY_ICON_MAP: Record<string, React.ReactNode> = {
     'Hair Salon': <Scissors className="w-5 h-5 text-orange-500" />,
     'Beautician': <User className="w-5 h-5 text-orange-500" />,
     'Acupressure': <Hand className="w-5 h-5 text-orange-500" />,
-    'Reflexology': <Activity className="w-5 h-5 text-orange-500" />,
+    'Reflexology': <Target className="w-5 h-5 text-orange-500" />,
     'Aromatherapy': <Flower2 className="w-5 h-5 text-orange-500" />,
     'Yoga & Pilates': <Dumbbell className="w-5 h-5 text-orange-500" />,
     'Cupping Therapy': <Waves className="w-5 h-5 text-orange-500" />,

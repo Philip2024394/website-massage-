@@ -46,7 +46,7 @@ declare module 'lucide-react' {
   const ArrowLeft: any;
   const Award: any;
   const Menu: any;
-  const Activity: any;
+  const Target: any;
   const Zap: any;
   const RefreshCw: any;
   const Shield: any;
@@ -117,7 +117,7 @@ declare module 'lucide-react' {
     CheckCircle, Crown, Building2, Search, XCircle, AlertCircle, Ban, ShieldAlert,
     DollarSign, X, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle,
     Users, Building, MessageCircle, ShieldCheck, CheckCircle2, Sparkles, User,
-    Droplet, Shirt, Package, ThumbsUp, Star, ArrowLeft, Award, Menu, Activity, Zap,
+    Droplet, Shirt, Package, ThumbsUp, Star, ArrowLeft, Award, Menu, Target, Zap,
     RefreshCw, Shield, Play, Square, Trash2, TestTube, WifiOff, Wifi, Timer, Loader,
     Share2, Grid3x3, QrCode, Navigation, LogOut, MessageSquare, Tag, Bell, Settings,
     LinkIcon, Scissors, Hand, Flower2, Waves, Dumbbell, Flame, Thermometer, Wind,

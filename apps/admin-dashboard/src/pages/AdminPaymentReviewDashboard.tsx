@@ -16,7 +16,7 @@ import {
   Download,
   Star,
   TrendingUp,
-  Activity
+  BarChart3 as Activity
 } from 'lucide-react';
 import { paymentProofService } from '../../../src/services/paymentProofService';
 import { showToast } from '../../../src/utils/showToastPortal';

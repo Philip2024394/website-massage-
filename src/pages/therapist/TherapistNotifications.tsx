@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Bell, Calendar, MessageCircle, AlertCircle, CheckCircle, Clock, X, ExternalLink, 
   TrendingUp, User, DollarSign, Eye, Star, Settings, Zap, Target, BarChart3,
-  CreditCard, Heart, Shield, Award, Flame, Activity, Users, MapPin, Camera,
+  CreditCard, Heart, Shield, Award, Flame, Gauge, Users, MapPin, Camera,
   Edit3, Globe, Phone, Mail, FileText, Image, Sparkles, Timer, Home, Briefcase
 } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
@@ -485,7 +485,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
             </div>
             <div className="bg-white rounded-lg p-3 border shadow-sm">
               <div className="flex items-center gap-2 mb-1">
-                <Activity className="w-4 h-4 text-green-500" />
+                <Gauge className="w-4 h-4 text-green-500" />
                 <span className="text-xs text-gray-600">Response</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.responseRate}%</p>
