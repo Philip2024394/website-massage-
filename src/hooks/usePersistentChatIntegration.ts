@@ -32,6 +32,12 @@ export function usePersistentChatIntegration() {
    * Convert Therapist type to ChatTherapist type
    */
   const convertToChatTherapist = useCallback((therapist: Therapist): ChatTherapist => {
+    // Safety check for therapist ID
+    if (!therapist?.id) {
+      console.error('❌ ERROR: Therapist missing ID', therapist);
+      throw new Error('Cannot open chat - therapist has no ID');
+    }
+    
     // Parse pricing using existing helper - MUST match therapist profile prices exactly
     const pricing = parsePricing(therapist.pricing);
     
