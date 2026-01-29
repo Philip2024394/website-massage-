@@ -4,7 +4,7 @@ import {
   Users, Star, TrendingUp, Clock, Eye, DollarSign, Camera, Edit3, MessageCircle,
   ChevronRight, ChevronDown, CheckCircle, AlertCircle, Gift, Zap, Target, 
   Image, FileText, Phone, MapPin, Calendar, Heart, Award, Shield, Sparkles,
-  Timer, BarChart3, BarChart3 as ActivityIcon, PieChart, ThumbsUp, BookOpen, Lightbulb, Crown
+  Timer, BarChart3, PieChart, ThumbsUp, BookOpen, Lightbulb, Crown
 } from 'lucide-react';
 
 interface MoreCustomersPageProps {

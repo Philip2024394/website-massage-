@@ -9,7 +9,7 @@ import {
   Users, Star, TrendingUp, Clock, Eye, DollarSign, Camera, Edit3, MessageCircle,
   ChevronRight, ChevronDown, CheckCircle, AlertCircle, Gift, Zap, Target, 
   Image, FileText, Phone, MapPin, Calendar, Heart, Award, Shield, Sparkles,
-  Timer, BarChart3, BarChart3 as ActivityIcon, PieChart, ThumbsUp, BookOpen, Lightbulb, Crown
+  Timer, BarChart3, PieChart, ThumbsUp, BookOpen, Lightbulb, Crown
 } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
@@ -740,7 +740,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white rounded-xl p-5 border border-gray-200">
                   <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <ActivityIcon className="w-5 h-5 text-green-500" />
+                    <BarChart3 className="w-5 h-5 text-green-500" />
                     Peak Hours (Jam Sibuk)
                   </h4>
                   
