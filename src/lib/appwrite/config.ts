@@ -111,22 +111,62 @@ export const APPWRITE_CONFIG = {
   }
 };
 
-// Initialize Appwrite client
-export const client = new Client()
-  .setEndpoint(APPWRITE_CONFIG.endpoint)
-  .setProject(APPWRITE_CONFIG.projectId);
+// Lazy-initialize Appwrite client to avoid TDZ errors
+let _client: Client | null = null;
+let _databases: Databases | null = null;
+let _account: Account | null = null;
+let _storage: Storage | null = null;
+let _functions: Functions | null = null;
 
-// STEP 2: APPWRITE CLIENT AUTH CHECK - Log client initialization
-console.log('[APPWRITE CONFIG] ✅ Appwrite Client initialized');
-console.log('[APPWRITE CONFIG] Endpoint:', APPWRITE_CONFIG.endpoint);
-console.log('[APPWRITE CONFIG] Project ID:', APPWRITE_CONFIG.projectId);
-console.log('[APPWRITE CONFIG] Database ID:', APPWRITE_CONFIG.databaseId);
+function initializeClient(): Client {
+  if (!_client) {
+    _client = new Client()
+      .setEndpoint(APPWRITE_CONFIG.endpoint)
+      .setProject(APPWRITE_CONFIG.projectId);
+    
+    // STEP 2: APPWRITE CLIENT AUTH CHECK - Log client initialization
+    console.log('[APPWRITE CONFIG] ✅ Appwrite Client initialized');
+    console.log('[APPWRITE CONFIG] Endpoint:', APPWRITE_CONFIG.endpoint);
+    console.log('[APPWRITE CONFIG] Project ID:', APPWRITE_CONFIG.projectId);
+    console.log('[APPWRITE CONFIG] Database ID:', APPWRITE_CONFIG.databaseId);
+  }
+  return _client;
+}
 
-// Initialize services
-export const databases = new Databases(client);
-export const account = new Account(client);
-export const storage = new Storage(client);
-export const functions = new Functions(client);
+// Initialize services lazily
+export const client = new Proxy({} as Client, {
+  get(_, prop) {
+    return (initializeClient() as any)[prop];
+  }
+});
+
+export const databases = new Proxy({} as Databases, {
+  get(_, prop) {
+    if (!_databases) _databases = new Databases(initializeClient());
+    return (_databases as any)[prop];
+  }
+});
+
+export const account = new Proxy({} as Account, {
+  get(_, prop) {
+    if (!_account) _account = new Account(initializeClient());
+    return (_account as any)[prop];
+  }
+});
+
+export const storage = new Proxy({} as Storage, {
+  get(_, prop) {
+    if (!_storage) _storage = new Storage(initializeClient());
+    return (_storage as any)[prop];
+  }
+});
+
+export const functions = new Proxy({} as Functions, {
+  get(_, prop) {
+    if (!_functions) _functions = new Functions(initializeClient());
+    return (_functions as any)[prop];
+  }
+});
 
 // Verify user session before any database operations
 async function validateSession() {
@@ -146,7 +186,7 @@ export { validateSession };
 // Rate-limited database instance (alias for databases)
 export const rateLimitedDb = databases;
 
-// Export configured instances
+// Export configured instances (aliases for compatibility)
 export const appwriteClient = client;
 export const appwriteDatabases = databases;
 export const appwriteAccount = account;
