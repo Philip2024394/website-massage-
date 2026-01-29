@@ -40,7 +40,23 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
             setLoading(true);
             const userId = String(therapist.$id || therapist.id);
             const data = await paymentConfirmationService.getUserPayments(userId);
-            setPayments(data);
+            
+            // Deduplicate payments based on transactionId and submittedAt
+            const uniquePayments = data.reduce((acc: PaymentConfirmation[], current: PaymentConfirmation) => {
+                const isDuplicate = acc.some(payment => 
+                    payment.transactionId === current.transactionId &&
+                    payment.submittedAt === current.submittedAt &&
+                    payment.amount === current.amount &&
+                    payment.packageType === current.packageType
+                );
+                
+                if (!isDuplicate) {
+                    acc.push(current);
+                }
+                return acc;
+            }, []);
+            
+            setPayments(uniquePayments);
         } catch (error) {
             console.error('Failed to load payments:', error);
         } finally {
