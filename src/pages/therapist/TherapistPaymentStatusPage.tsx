@@ -52,7 +52,9 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
         const now = new Date();
         const expiry = new Date(expiresAt);
         const diff = expiry.getTime() - now.getTime();
-        return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+        const daysRemaining = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        // If expiry date is not set or already expired, default to 2 days
+        return daysRemaining > 0 ? daysRemaining : 2;
     };
 
     const getStatusBadge = (status: string) => {
