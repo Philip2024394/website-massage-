@@ -37,7 +37,7 @@ jobs:
           version: 8
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🎭 Install Playwright Browsers
         run: pnpm exec playwright install --with-deps chromium
@@ -122,7 +122,7 @@ jobs:
           version: 8
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🎭 Install Playwright
         run: pnpm exec playwright install --with-deps chromium
