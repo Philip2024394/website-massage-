@@ -25,28 +25,28 @@ export function ErrorFallbackPage({
   const errorConfigs = {
     critical: {
       title: 'Service Temporarily Unavailable',
-      defaultMessage: 'We're experiencing technical difficulties. Our team has been notified and is working to resolve this quickly.',
+      defaultMessage: 'We are experiencing technical difficulties. Our team has been notified and is working to resolve this quickly.',
       icon: AlertCircle,
       iconColor: 'text-red-600',
       bgColor: 'bg-red-100'
     },
     maintenance: {
       title: 'Scheduled Maintenance',
-      defaultMessage: 'We're currently performing scheduled maintenance to improve your experience. We'll be back shortly!',
+      defaultMessage: 'We are currently performing scheduled maintenance to improve your experience. We will be back shortly!',
       icon: AlertCircle,
       iconColor: 'text-orange-600',
       bgColor: 'bg-orange-100'
     },
     notfound: {
       title: 'Page Not Found',
-      defaultMessage: 'The page you're looking for doesn't exist or has been moved.',
+      defaultMessage: 'The page you are looking for does not exist or has been moved.',
       icon: AlertCircle,
       iconColor: 'text-blue-600',
       bgColor: 'bg-blue-100'
     },
     unauthorized: {
       title: 'Access Denied',
-      defaultMessage: 'You don't have permission to access this page. Please log in or contact support.',
+      defaultMessage: 'You do not have permission to access this page. Please log in or contact support.',
       icon: AlertCircle,
       iconColor: 'text-yellow-600',
       bgColor: 'bg-yellow-100'

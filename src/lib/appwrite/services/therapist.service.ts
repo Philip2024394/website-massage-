@@ -774,8 +774,12 @@ export const therapistService = {
             if (data.bankName !== undefined) mappedData.bankName = data.bankName;
             if (data.accountName !== undefined) mappedData.accountName = data.accountName;
             if (data.accountNumber !== undefined) mappedData.accountNumber = data.accountNumber;
-            if (data.ktpPhotoUrl !== undefined) mappedData.ktpPhotoUrl = data.ktpPhotoUrl;
+            if (data.ktpPhotoFileId !== undefined) mappedData.ktpPhotoFileId = data.ktpPhotoFileId;
+            
+            // Handle KTP verification status fields  
+            if (data.ktpSubmitted !== undefined) mappedData.ktpSubmitted = data.ktpSubmitted;
             if (data.ktpVerified !== undefined) mappedData.ktpVerified = data.ktpVerified;
+            if (data.ktpRejected !== undefined) mappedData.ktpRejected = data.ktpRejected;
             
             // Handle discount fields - preserve from current document if not provided
             if (data.discountPercentage !== undefined) {
@@ -980,9 +984,29 @@ export const therapistService = {
         try {
             console.log('📤 Uploading KTP ID card for therapist:', therapistId);
             
-            // Upload file to Appwrite Storage
-            const bucketId = 'therapist-images';
+            // Validate authentication first
+            try {
+                await account.get();
+            } catch (authError) {
+                throw new Error('Authentication required. Please log in again.');
+            }
+            
+            // Validate file constraints
+            const maxSize = 15 * 1024 * 1024; // 15MB max for KTP images
+            if (file.size > maxSize) {
+                throw new Error('File size too large. Maximum 15MB allowed.');
+            }
+            
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                throw new Error('Invalid file type. Only JPG and PNG are allowed.');
+            }
+            
+            // Upload file to correct Appwrite Storage bucket
+            const bucketId = '697b3ca50023d08ec335'; // Correct production bucket ID
             const fileId = `ktp-${therapistId}-${Date.now()}`;
+            
+            console.log('📤 Uploading to bucket:', bucketId);
             
             const uploadedFile = await storage.createFile(
                 bucketId,
@@ -990,7 +1014,7 @@ export const therapistService = {
                 file
             );
             
-            console.log('✅ KTP file uploaded:', (uploadedFile as any).$id);
+            console.log('✅ KTP file uploaded successfully:', (uploadedFile as any).$id);
             
             // Get file URL
             const fileUrl = storage.getFileView(bucketId, (uploadedFile as any).$id);
@@ -1000,9 +1024,29 @@ export const therapistService = {
                 fileId: (uploadedFile as any).$id
             };
         } catch (error: unknown) {
-            const err = error as Error; console.error('❌ Error uploading KTP ID:', err);
-            throw error as Error;
-        
+            const err = error as Error;
+            
+            // Enhanced error logging with Appwrite error details
+            console.error('❌ KTP UPLOAD FAILED:', {
+                message: err.message,
+                code: (err as any).code,
+                type: (err as any).type,
+                requestId: (err as any).requestId,
+                therapistId
+            });
+            
+            // Throw user-friendly error
+            if (err.message.includes('401')) {
+                throw new Error('Authentication failed. Please log in again.');
+            } else if (err.message.includes('403')) {
+                throw new Error('Upload permission denied. Please contact support.');
+            } else if (err.message.includes('404')) {
+                throw new Error('Storage configuration error. Please contact support.');
+            } else if (err.message.includes('413')) {
+                throw new Error('File too large. Maximum 15MB allowed.');
+            } else {
+                throw new Error('Upload failed: ' + err.message);
+            }
         }
     },
     async uploadHotelVillaLetter(therapistId: string, file: File, hotelVillaName: string): Promise<{ url: string; fileId: string }> {

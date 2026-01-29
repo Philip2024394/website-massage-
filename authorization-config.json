@@ -1,0 +1,22 @@
+{
+  "authorized_users": [],
+  "authorization_tokens": {
+    "mkz0exei5h5mm9v30r": {
+      "userId": "developer",
+      "reason": "Testing system",
+      "granted": "2026-01-29T05:24:29.467Z",
+      "expires": 1769667869467,
+      "active": true
+    }
+  },
+  "audit_log": [
+    {
+      "action": "AUTHORIZATION_GRANTED",
+      "userId": "developer",
+      "reason": "Testing system",
+      "token": "mkz0exei...",
+      "timestamp": "2026-01-29T05:24:29.467Z"
+    }
+  ],
+  "created": "2026-01-29T05:24:29.456Z"
+}

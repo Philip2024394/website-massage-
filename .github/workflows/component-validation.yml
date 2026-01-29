@@ -1,0 +1,69 @@
+# Prevent Component Load Errors - GitHub Actions Workflow
+name: Component Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-components:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Validate Icon Imports
+      run: npm run validate-icons
+    
+    - name: TypeScript Type Check
+      run: npm run type-check
+    
+    - name: Test Build
+      run: npm run build:production
+      
+    - name: Component Import Test
+      run: |
+        # Test critical component imports
+        node -e "
+        const testComponents = [
+          '../src/pages/HotelVillaSafePassPage',
+          '../src/pages/LandingPage',
+          '../src/pages/HomePage'
+        ];
+        
+        testComponents.forEach(comp => {
+          try {
+            require(comp);
+            console.log('✅ ' + comp + ' - OK');
+          } catch(e) {
+            console.error('❌ ' + comp + ' - FAILED:', e.message);
+            process.exit(1);
+          }
+        });
+        "
+    
+    - name: Lint Check
+      run: npm run lint || true  # Don't fail build on lint warnings
+      
+    - name: Report Results
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '⚠️ **Component validation failed!** Please check the logs and fix icon imports or TypeScript errors before merging.'
+          })

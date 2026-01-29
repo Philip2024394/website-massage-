@@ -12,6 +12,10 @@ class BookingSoundService {
   private audioCache: Map<string, AudioBuffer> = new Map();
   private activeSounds: Map<string, AudioBufferSourceNode> = new Map();
   private masterVolume: number = 0.7;
+  
+  // Active booking alerts tracking (for continuous notification integration)
+  private activeAlerts: Map<string, { status: string; intervalId: NodeJS.Timeout | null }> = new Map();
+  private autoplayEnabled: boolean = false;
 
   constructor() {
     this.initializeAudioContext();
@@ -209,6 +213,86 @@ class BookingSoundService {
    */
   setMasterVolume(volume: number): void {
     this.masterVolume = Math.max(0, Math.min(1, volume));
+  }
+
+  // ============================================================================
+  // CONTINUOUS BOOKING ALERT METHODS
+  // Used by continuousNotificationService for persistent booking notifications
+  // ============================================================================
+
+  /**
+   * Enable autoplay for sounds (call after user interaction)
+   */
+  enableAutoplay(): void {
+    this.autoplayEnabled = true;
+    // Resume audio context if suspended
+    if (this.audioContext?.state === 'suspended') {
+      this.audioContext.resume().catch(err => logger.warn('Failed to resume audio context:', err));
+    }
+    logger.info('🔊 Autoplay enabled for booking sounds');
+  }
+
+  /**
+   * Start a continuous booking alert for a specific booking
+   * @param bookingId The booking ID to track
+   * @param status The booking status (e.g., 'pending', 'confirmed')
+   */
+  startBookingAlert(bookingId: string, status: string): void {
+    // Don't start if already active
+    if (this.activeAlerts.has(bookingId)) {
+      logger.info(`🔔 Booking alert already active for: ${bookingId}`);
+      return;
+    }
+
+    // Store alert info (no interval needed - continuous service handles timing)
+    this.activeAlerts.set(bookingId, { status, intervalId: null });
+    logger.info(`🔔 Started booking alert for: ${bookingId} (status: ${status})`);
+    
+    // Play initial alert sound
+    this.playBookingRequest().catch(err => logger.warn('Failed to play booking alert:', err));
+  }
+
+  /**
+   * Stop a continuous booking alert for a specific booking
+   * @param bookingId The booking ID to stop tracking
+   */
+  stopBookingAlert(bookingId: string): void {
+    const alert = this.activeAlerts.get(bookingId);
+    if (alert) {
+      if (alert.intervalId) {
+        clearInterval(alert.intervalId);
+      }
+      this.activeAlerts.delete(bookingId);
+      logger.info(`🔕 Stopped booking alert for: ${bookingId}`);
+    }
+  }
+
+  /**
+   * Stop all active booking alerts
+   */
+  stopAllAlerts(): void {
+    this.activeAlerts.forEach((alert, bookingId) => {
+      if (alert.intervalId) {
+        clearInterval(alert.intervalId);
+      }
+    });
+    this.activeAlerts.clear();
+    logger.info('🔕 Stopped all booking alerts');
+  }
+
+  /**
+   * Check if a booking alert is currently active
+   * @param bookingId The booking ID to check
+   */
+  isAlertActive(bookingId: string): boolean {
+    return this.activeAlerts.has(bookingId);
+  }
+
+  /**
+   * Get the count of currently active booking alerts
+   */
+  getActiveAlertCount(): number {
+    return this.activeAlerts.size;
   }
 
   // Booking-specific sound methods

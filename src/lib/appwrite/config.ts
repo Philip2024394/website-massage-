@@ -99,6 +99,9 @@ export const APPWRITE_CONFIG = {
     therapistJobListings: 'Therapist Job Listings',
     therapistMenus: 'therapist_menus',
     
+    // Therapist Dashboard Data - KTP, Bank Details, Payment Proofs
+    therapistDashboard: 'therapist_dashboard_',
+    
     // Other - OPTIONAL
     verifications: 'Verifications',
     pushSubscriptions: 'Push Subscriptions',

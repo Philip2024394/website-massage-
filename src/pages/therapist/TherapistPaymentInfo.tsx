@@ -145,13 +145,30 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
       
       // Upload KTP if new file is selected
       if (ktpIdCard) {
-        setUploading(true);
-        const uploadResult = await therapistService.uploadKtpId(
-          String(therapist.$id || therapist.id),
-          ktpIdCard
-        );
-        ktpPhotoUrl = uploadResult.url;
-        setUploading(false);
+        try {
+          setUploading(true);
+          console.log('🔄 Uploading KTP file...');
+          
+          const uploadResult = await therapistService.uploadKtpId(
+            String(therapist.$id || therapist.id),
+            ktpIdCard
+          );
+          ktpPhotoUrl = uploadResult.url;
+          
+          console.log('✅ KTP upload successful:', uploadResult.fileId);
+          showToast('✅ KTP uploaded successfully!', 'success');
+          
+          setUploading(false);
+        } catch (uploadError: unknown) {
+          const err = uploadError as Error;
+          console.error('❌ KTP UPLOAD FAILED:', err);
+          
+          // Show specific error to user  
+          showToast('❌ KTP upload failed: ' + err.message, 'error');
+          setUploading(false);
+          setIsLoading(false);
+          return; // Stop execution if upload fails
+        }
       }
 
       // ============================================================================
@@ -437,7 +454,7 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                       Ganti Foto
                       <input
                         type="file"
-                        accept="image/*"
+                        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                         onChange={handleKtpUpload}
                         className="hidden"
                       />
@@ -448,10 +465,10 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                 <label className="block w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-colors">
                   <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
                   <p className="text-sm font-medium text-gray-700 mb-1">Klik untuk upload foto KTP</p>
-                  <p className="text-xs text-gray-500">PNG, JPG maksimal 5MB</p>
+                  <p className="text-xs text-gray-500">JPG, PNG maksimal 15MB</p>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                     onChange={handleKtpUpload}
                     className="hidden"
                   />

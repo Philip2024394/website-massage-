@@ -1,13 +1,378 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
-import React, { useState, useEffect } from 'react';
-import { Wallet, Upload, Clock, AlertCircle, CheckCircle, Building2, User, Hash, Copy, Check, Calendar, XCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Wallet, Upload, Clock, AlertCircle, CheckCircle, Building2, User, Hash, Copy, Check, Calendar, XCircle, Timer, Sparkles, AlertTriangle, ArrowRight } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import { Therapist } from '../../types';
 import { therapistService, imageUploadService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
-import { commissionTrackingService } from '../../lib/services/commissionTrackingService';
+import { commissionTrackingService, CommissionPayment as CommissionPaymentType } from '../../lib/services/commissionTrackingService';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { commissionHelp } from './constants/helpContent';
+
+interface CommissionPaymentProps {
+  therapist: Therapist | null;
+  onBack?: () => void;
+  language?: 'en' | 'id';
+}
+
+// Admin payment details for commission
+interface AdminPaymentDetails {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  swiftCode: string;
+}
+
+// Countdown timer hook with animation
+const useCountdown = (deadline: string, isPaused: boolean = false) => {
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, total: 0, expired: false });
+  
+  useEffect(() => {
+    if (isPaused) return;
+    
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const target = new Date(deadline).getTime();
+      const diff = target - now;
+      
+      if (diff <= 0) {
+        return { hours: 0, minutes: 0, seconds: 0, total: 0, expired: true };
+      }
+      
+      return {
+        hours: Math.floor(diff / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+        total: diff,
+        expired: false
+      };
+    };
+    
+    setTimeLeft(calculateTimeLeft());
+    const interval = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
+    return () => clearInterval(interval);
+  }, [deadline, isPaused]);
+  
+  return timeLeft;
+};
+
+// Animated countdown digit component
+const CountdownDigit: React.FC<{ value: number; label: string; isUrgent: boolean }> = ({ value, label, isUrgent }) => (
+  <div className={`flex flex-col items-center ${isUrgent ? 'animate-pulse' : ''}`}>
+    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold text-lg sm:text-xl shadow-inner ${
+      isUrgent ? 'bg-red-500 text-white' : 'bg-gray-800 text-white'
+    }`}>
+      {String(value).padStart(2, '0')}
+    </div>
+    <span className={`text-xs mt-1 font-medium ${isUrgent ? 'text-red-600' : 'text-gray-500'}`}>{label}</span>
+  </div>
+);
+
+// Elite Payment Card Component with Countdown Timer
+interface PaymentCardProps {
+  payment: any;
+  index: number;
+  paymentProofs: { [key: string]: { file: File | null, preview: string } };
+  uploadingFor: string | null;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>, paymentId: string) => void;
+  onRemoveProof: (paymentId: string) => void;
+  onSubmit: (payment: any) => void;
+  language: 'en' | 'id';
+}
+
+const PaymentCard: React.FC<PaymentCardProps> = ({
+  payment,
+  index,
+  paymentProofs,
+  uploadingFor,
+  onUpload,
+  onRemoveProof,
+  onSubmit,
+  language
+}) => {
+  // 🔒 LATE PAYMENT PENALTY - 50,000 IDR for overdue accounts
+  const LATE_PAYMENT_FEE = 50000;
+  
+  const proofData = paymentProofs[payment.$id];
+  const isUploading = uploadingFor === payment.$id;
+  const hasProof = proofData && proofData.preview;
+  const isAwaitingVerification = payment.status === 'awaiting_verification';
+  const isVerified = payment.status === 'verified';
+  const isOverdue = payment.status === 'overdue';
+  
+  // Countdown timer - pauses when proof is uploaded
+  const countdown = useCountdown(payment.paymentDeadline, isAwaitingVerification || hasProof);
+  const isUrgent = countdown.hours === 0 && countdown.minutes < 30 && !countdown.expired;
+  
+  // Format duration
+  const formatDuration = (mins: number) => {
+    if (mins >= 60) {
+      const hours = Math.floor(mins / 60);
+      const remaining = mins % 60;
+      return remaining > 0 ? `${hours}h ${remaining}min` : `${hours} hour${hours > 1 ? 's' : ''}`;
+    }
+    return `${mins} min`;
+  };
+
+  return (
+    <div className={`bg-white rounded-xl overflow-hidden shadow-lg border-2 transition-all ${
+      isOverdue ? 'border-red-400 shadow-red-100' :
+      isAwaitingVerification ? 'border-green-400 shadow-green-100' :
+      isUrgent ? 'border-amber-400 shadow-amber-100' :
+      'border-gray-200'
+    }`}>
+      {/* Header with Status */}
+      <div className={`px-4 py-3 ${
+        isOverdue ? 'bg-red-500' :
+        isAwaitingVerification ? 'bg-green-500' :
+        isUrgent ? 'bg-amber-500' :
+        'bg-gradient-to-r from-orange-500 to-amber-500'
+      }`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isAwaitingVerification ? (
+              <CheckCircle className="w-5 h-5 text-white" />
+            ) : isOverdue ? (
+              <AlertTriangle className="w-5 h-5 text-white" />
+            ) : (
+              <Timer className="w-5 h-5 text-white" />
+            )}
+            <span className="text-white font-bold text-sm">
+              {isAwaitingVerification ? '✓ Proof Submitted - Awaiting Admin' :
+               isOverdue ? '⚠️ OVERDUE - Account Locked' :
+               `Payment #${index + 1} Due`}
+            </span>
+          </div>
+          <span className="text-white/80 text-xs font-mono">{payment.bookingId?.slice(-8) || 'N/A'}</span>
+        </div>
+      </div>
+
+      {/* Countdown Timer Section - Only show if pending */}
+      {!isAwaitingVerification && !isOverdue && !countdown.expired && (
+        <div className="bg-gray-900 py-4">
+          <p className="text-center text-gray-400 text-xs mb-2 uppercase tracking-wider">
+            {language === 'id' ? 'Waktu Tersisa Sebelum Akun Terkunci' : 'Time Remaining Before Account Lock'}
+          </p>
+          <div className="flex justify-center gap-2">
+            <CountdownDigit value={countdown.hours} label={language === 'id' ? 'Jam' : 'Hours'} isUrgent={isUrgent} />
+            <div className="flex items-center text-2xl text-gray-500 font-bold">:</div>
+            <CountdownDigit value={countdown.minutes} label={language === 'id' ? 'Menit' : 'Min'} isUrgent={isUrgent} />
+            <div className="flex items-center text-2xl text-gray-500 font-bold">:</div>
+            <CountdownDigit value={countdown.seconds} label={language === 'id' ? 'Detik' : 'Sec'} isUrgent={isUrgent} />
+          </div>
+          {isUrgent && (
+            <p className="text-center text-red-400 text-xs mt-2 animate-pulse">
+              ⚠️ {language === 'id' ? 'Segera upload bukti pembayaran!' : 'Upload payment proof now!'}
+            </p>
+          )}
+          {/* Late Fee Warning */}
+          <div className="mt-3 mx-4 bg-red-900/50 border border-red-500 rounded-lg p-3">
+            <p className="text-center text-red-300 text-xs font-bold">
+              ⚠️ {language === 'id' 
+                ? 'PERINGATAN: Jika waktu habis, biaya keterlambatan IDR 50.000 akan ditambahkan!' 
+                : 'WARNING: If timer expires, late fee of IDR 50,000 will be added!'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Account Active Banner - Shows when proof uploaded */}
+      {isAwaitingVerification && (
+        <div className="bg-green-50 border-b-2 border-green-200 py-4 px-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-green-800 font-bold text-lg">
+                {language === 'id' ? 'Akun Sekarang Aktif!' : 'Account Now Active!'}
+              </p>
+              <p className="text-green-600 text-sm">
+                {language === 'id' ? 'Admin akan konfirmasi dalam 48 jam' : 'Admin will confirm within 48 hours'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Overdue Banner with Late Fee Warning */}
+      {isOverdue && (
+        <div className="bg-red-50 border-b-2 border-red-200 py-4 px-4">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <AlertTriangle className="w-10 h-10 text-red-500" />
+            <div>
+              <p className="text-red-800 font-bold">
+                {language === 'id' ? 'Akun Status: SIBUK' : 'Account Status: BUSY'}
+              </p>
+              <p className="text-red-600 text-sm">
+                {language === 'id' ? 'Upload bukti pembayaran untuk mengaktifkan kembali' : 'Upload payment proof to reactivate'}
+              </p>
+            </div>
+          </div>
+          {/* Late Fee Warning Box */}
+          <div className="bg-red-100 border-2 border-red-400 rounded-lg p-3 mt-2">
+            <p className="text-center text-red-800 font-bold text-sm">
+              ⚠️ {language === 'id' 
+                ? 'BIAYA KETERLAMBATAN: IDR 50.000 ditambahkan ke total pembayaran' 
+                : 'LATE FEE: IDR 50,000 added to total payment'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Details Card */}
+      <div className="p-4 space-y-4">
+        {/* Customer & Service Info */}
+        <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider">
+                {language === 'id' ? 'Nama Pelanggan' : 'Customer Name'}
+              </p>
+              <p className="font-bold text-gray-900">{payment.customerName || 'Customer'}</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider">
+                {language === 'id' ? 'Jenis Pijat' : 'Massage Type'}
+              </p>
+              <p className="font-semibold text-gray-900 text-sm">{payment.massageType || 'Massage'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider">
+                {language === 'id' ? 'Durasi' : 'Duration'}
+              </p>
+              <p className="font-semibold text-gray-900 text-sm">{formatDuration(payment.duration || 60)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Breakdown */}
+        <div className={`rounded-xl p-4 ${isOverdue ? 'bg-red-50' : 'bg-orange-50'}`}>
+          <div className="flex justify-between items-center mb-3 pb-3 border-b border-orange-200">
+            <span className="text-gray-600 text-sm">
+              {language === 'id' ? 'Harga Layanan' : 'Service Price'}
+            </span>
+            <span className="font-semibold text-gray-900">IDR {(payment.serviceAmount || 0).toLocaleString()}</span>
+          </div>
+          
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <p className="text-orange-700 font-bold">30% {language === 'id' ? 'Komisi Admin' : 'Admin Commission'}</p>
+            </div>
+            <span className="font-semibold text-orange-600">IDR {(payment.commissionAmount || 0).toLocaleString()}</span>
+          </div>
+          
+          {/* Late Fee - Only show if overdue */}
+          {isOverdue && (
+            <div className="flex justify-between items-center mb-2 pb-2 border-b border-red-300">
+              <div>
+                <p className="text-red-700 font-bold">⚠️ {language === 'id' ? 'Biaya Keterlambatan' : 'Late Payment Fee'}</p>
+                <p className="text-xs text-red-500">{language === 'id' ? 'Denda karena melewati batas waktu' : 'Penalty for exceeding deadline'}</p>
+              </div>
+              <span className="font-bold text-red-600">+ IDR {LATE_PAYMENT_FEE.toLocaleString()}</span>
+            </div>
+          )}
+          
+          {/* Total Due */}
+          <div className="flex justify-between items-center pt-2">
+            <div>
+              <p className={`font-bold text-lg ${isOverdue ? 'text-red-800' : 'text-orange-700'}`}>
+                {language === 'id' ? 'TOTAL YANG HARUS DIBAYAR' : 'TOTAL DUE'}
+              </p>
+              {!isOverdue && (
+                <p className="text-xs text-orange-600">
+                  {language === 'id' ? 'Bayar dalam 5 jam' : 'Pay within 5 hours'}
+                </p>
+              )}
+            </div>
+            <div className="text-right">
+              <p className={`text-3xl font-black ${isOverdue ? 'text-red-600' : 'text-orange-600'}`}>
+                IDR {((payment.commissionAmount || 0) + (isOverdue ? LATE_PAYMENT_FEE : 0)).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Upload Section - Only show if not awaiting verification */}
+        {!isAwaitingVerification && (
+          <div className="border-t border-gray-200 pt-4">
+            <label className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <Upload className="w-4 h-4 text-orange-500" />
+              {language === 'id' ? 'Upload Bukti Pembayaran' : 'Upload Payment Proof'} *
+            </label>
+            
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => onUpload(e, payment.$id)}
+              className="hidden"
+              id={`proof-upload-${payment.$id}`}
+              disabled={isUploading}
+            />
+            
+            {hasProof ? (
+              <div className="relative mt-3">
+                <img src={proofData.preview} alt="Payment Proof" className="w-full rounded-lg border-2 border-green-400" />
+                <button
+                  onClick={() => onRemoveProof(payment.$id)}
+                  disabled={isUploading}
+                  className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+                <div className="absolute bottom-2 left-2 right-2 bg-green-500 text-white text-center py-2 rounded-lg font-semibold text-sm">
+                  ✓ {language === 'id' ? 'Bukti Siap Dikirim' : 'Proof Ready to Submit'}
+                </div>
+              </div>
+            ) : (
+              <label 
+                htmlFor={`proof-upload-${payment.$id}`}
+                className="flex flex-col items-center justify-center py-8 cursor-pointer bg-gray-50 hover:bg-orange-50 rounded-lg transition-colors border-2 border-dashed border-gray-300 mt-3"
+              >
+                <Upload className="w-10 h-10 text-gray-400 mb-2" />
+                <p className="text-sm text-gray-900 font-medium">
+                  {language === 'id' ? 'Klik untuk upload' : 'Click to upload'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">PNG, JPG max 5MB</p>
+              </label>
+            )}
+          </div>
+        )}
+
+        {/* Submit Button */}
+        {!isAwaitingVerification && (
+          <button
+            onClick={() => onSubmit(payment)}
+            disabled={!hasProof || isUploading}
+            className={`w-full py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${
+              !hasProof || isUploading
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-98 shadow-lg'
+            }`}
+          >
+            {isUploading ? (
+              <>
+                <Clock className="w-5 h-5 animate-spin" />
+                {language === 'id' ? 'Mengirim...' : 'Submitting...'}
+              </>
+            ) : (
+              <>
+                {language === 'id' ? 'Kirim Bukti Pembayaran' : 'Submit Payment Proof'}
+                <ArrowRight className="w-5 h-5" />
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 interface CommissionPaymentProps {
   therapist: Therapist | null;
@@ -268,7 +633,7 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Page Header with Back Navigation */}
       <TherapistPageHeader
         title=""
@@ -397,129 +762,20 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
               </div>
             </div>
 
-            {/* Payment List - Each booking separate */}
-            {pendingPayments.map((payment, index) => {
-              const proofData = paymentProofs[payment.$id];
-              const isUploading = uploadingFor === payment.$id;
-              const hasProof = proofData && proofData.preview;
-
-              return (
-                <div key={payment.$id} className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden">
-                  {/* Payment Header */}
-                  <div className="bg-gray-50 border-b-2 border-gray-200 px-4 py-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900">Payment #{index + 1}</h3>
-                        <p className="text-sm text-gray-600">Booking ID: {payment.bookingId}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">Due Amount</p>
-                        <p className="text-xl font-bold text-orange-600">IDR {payment.commissionAmount.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 space-y-4">
-                    {/* Booking Details */}
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className="text-gray-500">Booking Date:</span>
-                        <p className="font-semibold text-gray-900">{new Date(payment.bookingDate).toLocaleDateString()}</p>
-                      </div>
-                      {payment.scheduledDate && (
-                        <div>
-                          <span className="text-gray-500">Service Date:</span>
-                          <p className="font-semibold text-gray-900">{new Date(payment.scheduledDate).toLocaleDateString()}</p>
-                        </div>
-                      )}
-                      <div>
-                        <span className="text-gray-500">Service Amount:</span>
-                        <p className="font-semibold text-gray-900">IDR {payment.serviceAmount.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Commission (30%):</span>
-                        <p className="font-semibold text-orange-600">IDR {payment.commissionAmount.toLocaleString()}</p>
-                      </div>
-                    </div>
-
-                    {/* Status Badge */}
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-orange-500" />
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        payment.status === 'overdue' 
-                          ? 'bg-red-100 text-red-800'
-                          : payment.status === 'awaiting_verification'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {payment.status === 'overdue' ? '⚠️ Overdue' : 
-                         payment.status === 'awaiting_verification' ? '🔍 Verifying' : 
-                         '⏳ Pending Payment'}
-                      </span>
-                    </div>
-
-                    {/* Upload Section */}
-                    <div className="border-t border-gray-200 pt-4">
-                      <label className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                        <Upload className="w-4 h-4 text-orange-500" />
-                        Upload Payment Proof *
-                      </label>
-                      
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handlePaymentProofUpload(e, payment.$id)}
-                        className="hidden"
-                        id={`proof-upload-${payment.$id}`}
-                        disabled={isUploading}
-                      />
-                      
-                      {hasProof ? (
-                        <div className="relative">
-                          <img src={proofData.preview} alt="Payment Proof" className="w-full rounded-lg border-2 border-gray-300" />
-                          <button
-                            onClick={() => handleRemoveProof(payment.$id)}
-                            disabled={isUploading}
-                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
-                          >
-                            <XCircle className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <label 
-                          htmlFor={`proof-upload-${payment.$id}`}
-                          className="flex flex-col items-center justify-center py-8 cursor-pointer bg-gray-50 hover:bg-orange-50 rounded-lg transition-colors border-2 border-dashed border-gray-300"
-                        >
-                          <Upload className="w-10 h-10 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-900 font-medium">Click to upload</p>
-                          <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
-                        </label>
-                      )}
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                      onClick={() => handleSubmit(payment)}
-                      disabled={!hasProof || isUploading}
-                      className={`w-full py-3 rounded-lg font-semibold text-white transition-all ${
-                        !hasProof || isUploading
-                          ? 'bg-gray-300 cursor-not-allowed'
-                          : 'bg-orange-500 hover:bg-orange-600 active:scale-95'
-                      }`}
-                    >
-                      {isUploading ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Clock className="w-5 h-5 animate-spin" />
-                          Submitting...
-                        </span>
-                      ) : (
-                        `Submit Payment #${index + 1}`
-                      )}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            {/* Payment List - Each booking with countdown timer */}
+            {pendingPayments.map((payment, index) => (
+              <PaymentCard
+                key={payment.$id}
+                payment={payment}
+                index={index}
+                paymentProofs={paymentProofs}
+                uploadingFor={uploadingFor}
+                onUpload={handlePaymentProofUpload}
+                onRemoveProof={handleRemoveProof}
+                onSubmit={handleSubmit}
+                language={language}
+              />
+            ))}
           </>
         )}
 
@@ -532,7 +788,7 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
           {/* BNI Card Image */}
           <div className="relative w-full h-48 rounded-lg overflow-hidden mb-4">
             <img 
-              src="https://ik.imagekit.io/7grri5v7d/bni_card-removebg-preview.png" 
+              src="https://ik.imagekit.io/7grri5v7d/bni_card-removebg-preview.png?updatedAt=1766127885485" 
               alt="BNI Card" 
               className="w-full h-full object-contain"
             />

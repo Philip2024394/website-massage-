@@ -1,0 +1,353 @@
+/* ============================================================================
+ * 🏆 ELITE THERAPIST DASHBOARD CSS - STABILITY & PERFORMANCE OPTIMIZED
+ * ============================================================================
+ * Purpose: CSS variables and classes for elite-level stability
+ * Features: CLS prevention, smooth animations, responsive design
+ * Standards: Core Web Vitals compliant (CLS < 0.1, FID < 100ms)
+ * ============================================================================ */
+
+:root {
+  /* Elite viewport units */
+  --vh: 1vh;
+  --stable-header-height: 72px;
+  --stable-sidebar-width: 280px;
+  --elite-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --elite-fast: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* Elite color system */
+  --elite-primary: #f97316;
+  --elite-surface: #ffffff;
+  --elite-background: #f9fafb;
+  --elite-text: #111827;
+  --elite-border: #e5e7eb;
+}
+
+/* ============================================================================
+ * ELITE LAYOUT STABILITY
+ * ============================================================================ */
+
+.therapist-page-container {
+  /* CLS Prevention */
+  contain: layout style paint;
+  content-visibility: auto;
+  
+  /* Performance optimization */
+  will-change: auto;
+  transform: translateZ(0); /* Create compositing layer */
+  
+  /* Stable scrolling */
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  
+  /* Safe area support */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.therapist-layout-header {
+  /* Stable positioning */
+  contain: strict;
+  will-change: transform;
+  transform: translateZ(0);
+  
+  /* Prevent layout shifts */
+  min-height: var(--stable-header-height);
+  max-height: var(--stable-header-height);
+  
+  /* Elite shadow */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.therapist-layout-content {
+  /* Stable content area */
+  contain: layout style;
+  min-height: calc(100 * var(--vh) - var(--stable-header-height));
+  
+  /* Elite scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y proximity;
+}
+
+/* ============================================================================
+ * ELITE SIDEBAR STABILITY
+ * ============================================================================ */
+
+.therapist-sidebar {
+  /* Stable dimensions */
+  width: var(--stable-sidebar-width);
+  max-width: var(--stable-sidebar-width);
+  min-width: var(--stable-sidebar-width);
+  
+  /* Performance optimization */
+  contain: strict;
+  transform: translateZ(0);
+  will-change: transform;
+  
+  /* Elite transitions */
+  transition: transform 300ms var(--elite-timing);
+}
+
+.therapist-sidebar-overlay {
+  /* Stable overlay */
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+  
+  /* Performance */
+  contain: strict;
+  will-change: opacity;
+  
+  /* Elite fade */
+  transition: opacity 250ms var(--elite-fast);
+}
+
+/* ============================================================================
+ * ELITE BUTTON STABILITY
+ * ============================================================================ */
+
+.elite-button {
+  /* Stable button base */
+  contain: layout style;
+  transform: translateZ(0);
+  
+  /* Touch optimization */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Prevent double-tap zoom */
+  user-select: none;
+  -webkit-user-select: none;
+  
+  /* Elite transitions */
+  transition: all 150ms var(--elite-fast);
+}
+
+.elite-button:active {
+  /* Stable active state */
+  transform: translateZ(0) scale(0.98);
+}
+
+.elite-button:disabled {
+  /* Stable disabled state */
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================================================
+ * ELITE LOADING STATES
+ * ============================================================================ */
+
+.elite-skeleton {
+  /* Stable skeleton dimensions */
+  contain: strict;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: elite-shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes elite-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.elite-loading-container {
+  /* Stable loading container */
+  contain: layout style paint;
+  min-height: 200px; /* Prevent layout shift */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================================================
+ * ELITE RESPONSIVE DESIGN
+ * ============================================================================ */
+
+/* Elite mobile optimizations */
+@media (max-width: 768px) {
+  .therapist-page-container {
+    /* Mobile-specific optimizations */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    
+    /* Prevent zoom on input focus */
+    -webkit-touch-callout: none;
+  }
+  
+  .therapist-layout-header {
+    /* Stable mobile header */
+    min-height: 64px;
+    max-height: 64px;
+  }
+  
+  .therapist-layout-content {
+    /* Mobile content optimization */
+    min-height: calc(100 * var(--vh) - 64px);
+    overscroll-behavior: none;
+  }
+  
+  .therapist-sidebar {
+    /* Mobile sidebar optimization */
+    width: min(280px, calc(100vw - 40px));
+    max-width: calc(100vw - 40px);
+  }
+}
+
+/* Elite tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .therapist-sidebar {
+    width: 320px;
+    max-width: 320px;
+    min-width: 320px;
+  }
+}
+
+/* Elite desktop optimizations */
+@media (min-width: 1025px) {
+  .therapist-sidebar {
+    position: relative;
+    transform: none;
+  }
+  
+  .therapist-sidebar-overlay {
+    display: none;
+  }
+}
+
+/* ============================================================================
+ * ELITE ACCESSIBILITY
+ * ============================================================================ */
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .elite-button,
+  .therapist-sidebar,
+  .therapist-sidebar-overlay,
+  .elite-skeleton {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .therapist-layout-header {
+    border-bottom: 2px solid var(--elite-border);
+  }
+  
+  .elite-button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --elite-surface: #1f2937;
+    --elite-background: #111827;
+    --elite-text: #f9fafb;
+    --elite-border: #374151;
+  }
+}
+
+/* ============================================================================
+ * ELITE ERROR STATES
+ * ============================================================================ */
+
+.elite-stability-fallback {
+  /* Stable error container */
+  contain: layout style paint;
+  min-height: 200px;
+  
+  /* Center content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Elite styling */
+  background: var(--elite-background);
+  color: var(--elite-text);
+}
+
+/* ============================================================================
+ * ELITE PERFORMANCE HELPERS
+ * ============================================================================ */
+
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-auto {
+  will-change: auto;
+}
+
+.contain-layout {
+  contain: layout;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* ============================================================================
+ * ELITE UTILITIES
+ * ============================================================================ */
+
+.elite-fade-in {
+  animation: eliteFadeIn 300ms var(--elite-timing) forwards;
+}
+
+@keyframes eliteFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.elite-slide-in-right {
+  animation: eliteSlideInRight 300ms var(--elite-timing) forwards;
+}
+
+@keyframes eliteSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.elite-scale-in {
+  animation: eliteScaleIn 200ms var(--elite-fast) forwards;
+}
+
+@keyframes eliteScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

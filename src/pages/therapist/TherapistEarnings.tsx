@@ -1,4 +1,13 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
+/**
+ * 🔒 PRODUCTION UI – COMPLETE (FROZEN PRE-LAUNCH)
+ * This page is visually complete and approved.
+ * ❌ Do NOT change layout, structure, or render order
+ * ✅ Text, styling, and logic fixes allowed
+ * 🛑 UI changes require explicit qw: instruction
+ * ⚠️ PAYMENT/EARNINGS FUNCTIONALITY FROZEN until booking system confirmed
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3, X, XCircle, DollarSign } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';

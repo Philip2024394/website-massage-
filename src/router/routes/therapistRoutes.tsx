@@ -31,24 +31,25 @@ import { lazy } from 'react';
 // 🔒 BULLETPROOF IMPORTS - Direct imports prevent component load errors
 // All critical therapist routes use direct imports for maximum reliability
 import TherapistPortalPage from '../../pages/therapist/TherapistDashboard';
-import TherapistOnlineStatus from '../../pages/therapist/TherapistOnlineStatus';
-import TherapistLegal from '../../pages/therapist/TherapistLegal';
+import TherapistOnlineStatusPage from '../../pages/therapist/TherapistOnlineStatusPage';
+import TherapistLegalPage from '../../pages/therapist/TherapistLegalPage';
 import HowItWorksPage from '../../pages/therapist/HowItWorksPage';
-import TherapistBookings from '../../pages/therapist/TherapistBookings';
-import TherapistEarnings from '../../pages/therapist/TherapistEarnings';
-import TherapistChat from '../../pages/therapist/TherapistChat';
-import TherapistNotifications from '../../pages/therapist/TherapistNotifications';
-import TherapistCalendar from '../../pages/therapist/TherapistCalendar';
-import TherapistPaymentInfo from '../../pages/therapist/TherapistPaymentInfo';
-import TherapistPaymentStatus from '../../pages/therapist/TherapistPaymentStatus';
-import TherapistMenu from '../../pages/therapist/TherapistMenu';
+import TherapistBookingsPage from '../../pages/therapist/TherapistBookingsPage';
+import TherapistEarningsPage from '../../pages/therapist/TherapistEarningsPage';
+import TherapistChatPage from '../../pages/therapist/TherapistChatPage';
+import TherapistNotificationsPage from '../../pages/therapist/TherapistNotificationsPage';
+import TherapistCalendarPage from '../../pages/therapist/TherapistCalendarPage';
+import TherapistPaymentInfoPage from '../../pages/therapist/TherapistPaymentInfoPage';
+import TherapistPaymentStatusPage from '../../pages/therapist/TherapistPaymentStatusPage';
+import TherapistMenuPage from '../../pages/therapist/TherapistMenuPage';
 import PremiumUpgrade from '../../pages/therapist/PremiumUpgrade';
 import CommissionPayment from '../../pages/therapist/CommissionPayment';
-import TherapistSchedule from '../../pages/therapist/TherapistSchedule';
+import TherapistSchedulePage from '../../pages/therapist/TherapistSchedulePage';
 import PackageTermsPage from '../../pages/therapist/PackageTermsPage';
 import SendDiscountPage from '../../pages/therapist/SendDiscountPage';
 import MoreCustomersPage from '../../pages/therapist/MoreCustomersPage';
 import TherapistPlaceholderPage from '../../pages/therapist/TherapistPlaceholderPage';
+import TherapistHotelVillaSafePassPage from '../../pages/therapist/TherapistHotelVillaSafePassPage';
 
 export const therapistRoutes = {
   dashboard: {
@@ -59,37 +60,37 @@ export const therapistRoutes = {
   },
   status: {
     path: '/therapist/status',
-    component: TherapistOnlineStatus,
+    component: TherapistOnlineStatusPage,
     name: 'therapist-status',
     requiresAuth: true
   },
   bookings: {
     path: '/therapist/bookings',
-    component: TherapistBookings,
+    component: TherapistBookingsPage,
     name: 'therapist-bookings',
     requiresAuth: true
   },
   earnings: {
     path: '/therapist/earnings',
-    component: TherapistEarnings,
+    component: TherapistEarningsPage,
     name: 'therapist-earnings',
     requiresAuth: true
   },
   chat: {
     path: '/therapist/chat',
-    component: TherapistChat,
+    component: TherapistChatPage,
     name: 'therapist-chat',
     requiresAuth: true
   },
   notifications: {
     path: '/therapist/notifications',
-    component: TherapistNotifications,
+    component: TherapistNotificationsPage,
     name: 'therapist-notifications',
     requiresAuth: true
   },
   legal: {
     path: '/therapist/legal',
-    component: TherapistLegal,
+    component: TherapistLegalPage,
     name: 'therapist-legal',
     requiresAuth: true
   },
@@ -101,25 +102,25 @@ export const therapistRoutes = {
   },
   calendar: {
     path: '/therapist/calendar',
-    component: TherapistCalendar,
+    component: TherapistCalendarPage,
     name: 'therapist-calendar',
     requiresAuth: true
   },
   payment: {
     path: '/therapist/payment',
-    component: TherapistPaymentInfo,
+    component: TherapistPaymentInfoPage,
     name: 'therapist-payment',
     requiresAuth: true
   },
   paymentStatus: {
     path: '/therapist/payment-status',
-    component: TherapistPaymentStatus,
+    component: TherapistPaymentStatusPage,
     name: 'therapist-payment-status',
     requiresAuth: true
   },
   menu: {
     path: '/therapist/menu',
-    component: TherapistMenu,
+    component: TherapistMenuPage,
     name: 'therapist-menu',
     requiresAuth: true
   },
@@ -137,7 +138,7 @@ export const therapistRoutes = {
   },
   schedule: {
     path: '/therapist/schedule',
-    component: TherapistSchedule,
+    component: TherapistSchedulePage,
     name: 'therapist-schedule',
     requiresAuth: true
   },
@@ -164,5 +165,11 @@ export const therapistRoutes = {
     component: TherapistPlaceholderPage,
     name: 'therapist-placeholder',
     requiresAuth: false
+  },
+  hotelVillaSafePass: {
+    path: '/therapist/hotel-villa-safe-pass',
+    component: TherapistHotelVillaSafePassPage,
+    name: 'therapist-hotel-villa-safe-pass',
+    requiresAuth: true
   }
 };

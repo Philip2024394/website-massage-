@@ -1,3 +1,12 @@
+/**
+ * 🔒 PRODUCTION UI – COMPLETE (FROZEN PRE-LAUNCH)
+ * This page is visually complete and approved.
+ * ❌ Do NOT change layout, structure, or render order
+ * ✅ Text, styling, and logic fixes allowed
+ * 🛑 UI changes require explicit qw: instruction
+ * ⚠️ CHAT FUNCTIONALITY FROZEN until booking system confirmed
+ */
+
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, User, CheckCircle, Crown, Lock, Clock } from 'lucide-react';
@@ -160,7 +169,7 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
       <div className="max-w-sm mx-auto px-4 pt-6 pb-4 w-full">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

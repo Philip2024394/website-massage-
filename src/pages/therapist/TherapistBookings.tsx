@@ -1,3 +1,12 @@
+/**
+ * 🔒 PRODUCTION UI – COMPLETE (FROZEN PRE-LAUNCH)
+ * This page is visually complete and approved.
+ * ❌ Do NOT change layout, structure, or render order
+ * ✅ Text, styling, and logic fixes allowed
+ * 🛑 UI changes require explicit qw: instruction
+ * ⚠️ BOOKING FUNCTIONALITY FROZEN until system confirmed
+ */
+
 // @ts-expect-error - React 19 type compatibility issue with lucide-react icons, will be resolved in future version
 // 🔒 LOGIC LOCKED - DO NOT MODIFY BOOKING ACCEPTANCE & VALIDATION LOGIC
 // UI/styling changes allowed ONLY
@@ -593,7 +602,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
       <div className="max-w-sm mx-auto px-4 pt-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

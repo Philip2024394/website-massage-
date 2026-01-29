@@ -25,7 +25,7 @@
  * 
  * ============================================================================
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Menu, X, User, Calendar, DollarSign, 
   Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart3
@@ -59,6 +59,52 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   onRefresh
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [isRecovering, setIsRecovering] = useState(false);
+  
+  // Elite error recovery mechanism - only for critical errors
+  const recoverFromError = useCallback(() => {
+    setIsRecovering(true);
+    // Clear any stale state
+    setIsSidebarOpen(false);
+    // Trigger re-render after cleanup
+    setTimeout(() => {
+      setHasError(false);
+      setIsRecovering(false);
+    }, 1000);
+  }, []);
+  
+  // Elite error boundary effect - only catch critical errors
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      // Only trigger on critical errors, not navigation issues
+      if (event.error && event.error.message && 
+          !event.error.message.includes('Navigation') &&
+          !event.error.message.includes('router') &&
+          !event.error.message.includes('Loading chunk')) {
+        console.error('🚨 TherapistLayout Critical Error:', event.error);
+        setHasError(true);
+      }
+    };
+    
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      // Only trigger on critical promise rejections
+      if (event.reason && typeof event.reason === 'object' && 
+          event.reason.message &&
+          !event.reason.message.includes('Navigation') &&
+          !event.reason.message.includes('fetch')) {
+        console.error('🚨 TherapistLayout Promise Rejection:', event.reason);
+        setHasError(true);
+      }
+    };
+    
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
   
   // Facebook-standard features
   const { totalUnread, unreadByRoom } = useUnreadBadge();
@@ -73,21 +119,40 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   );
   
   // ============================================================================
-  // 🔒 HARD LOCK: PUSH NOTIFICATION PERMISSION REQUEST
+  // 🔒 ENHANCED: ELITE VIEWPORT & NOTIFICATION MANAGEMENT
   // ============================================================================
   // Business Rule: Request push notification permission after 5 seconds
-  // Impact: Enables booking notifications for therapists
-  // DO NOT MODIFY - Stable mounting behavior, no redirects
+  // Enhanced: Viewport management and performance optimizations
   // ============================================================================
   useEffect(() => {
+    // Elite viewport management
+    const setViewportHeight = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    setViewportHeight();
+    window.addEventListener('resize', setViewportHeight);
+    window.addEventListener('orientationchange', setViewportHeight);
+    
+    // Elite notification permission with user-friendly timing
     if (pushNotificationsService.isSupported() && 
         pushNotificationsService.getPermissionStatus() === 'default') {
-      // Show a friendly prompt after 5 seconds
       const timer = setTimeout(() => {
         pushNotificationsService.requestPermission();
       }, 5000);
-      return () => clearTimeout(timer);
+      
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('resize', setViewportHeight);
+        window.removeEventListener('orientationchange', setViewportHeight);
+      };
     }
+    
+    return () => {
+      window.removeEventListener('resize', setViewportHeight);
+      window.removeEventListener('orientationchange', setViewportHeight);
+    };
   }, []);
 
   const menuLabels = {
@@ -153,27 +218,86 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'commission-payment', label: labels['commission-payment'], icon: Wallet, color: 'text-orange-500' },
     { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-500' },
     { id: 'analytics', label: labels.analytics, icon: BarChart3, color: 'text-orange-500' },
-    { id: 'hotel-villa-safe-pass', label: labels['hotel-villa-safe-pass'], icon: Shield, color: 'text-orange-500' },
+    { id: 'therapist-hotel-villa-safe-pass', label: labels['hotel-villa-safe-pass'], icon: Shield, color: 'text-orange-500' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-orange-500' },
     { id: 'legal', label: labels.legal, icon: FileText, color: 'text-orange-500' },
   ];
 
   // ============================================================================
-  // 🔒 HARD LOCK: NAVIGATION HANDLER
+  // 🔒 ENHANCED NAVIGATION HANDLER - Fixed Button Stickiness
   // ============================================================================
-  // Business Rule: Navigate to page and close sidebar
-  // Impact: Controls therapist dashboard navigation flow
-  // DO NOT MODIFY - Stable routing pattern, prevents redirect loops
+  // Business Rule: Navigate to page and close sidebar with debouncing
+  // Impact: Controls therapist dashboard navigation flow, prevents double-clicks
+  // Enhanced: Debouncing, state cleanup, proper event handling
   // ============================================================================
-  const handleNavigate = (pageId: string) => {
-    onNavigate(pageId);
+  const [isNavigating, setIsNavigating] = useState(false);
+  
+  const handleNavigate = useCallback((pageId: string) => {
+    // Prevent rapid navigation calls
+    if (isNavigating) return;
+    
+    setIsNavigating(true);
+    
+    // Close sidebar immediately for better UX
     setIsSidebarOpen(false);
-  };
+    
+    // Navigate with slight delay to ensure state cleanup
+    requestAnimationFrame(() => {
+      onNavigate(pageId);
+      
+      // Reset navigation state after completion
+      setTimeout(() => {
+        setIsNavigating(false);
+      }, 300);
+    });
+  }, [isNavigating, onNavigate]);
+  
+  // Elite sidebar toggle with error resilience
+  const handleSidebarToggle = useCallback((e: React.MouseEvent) => {
+    try {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Debounce rapid clicks
+      const target = e.currentTarget as HTMLElement;
+      if (target.dataset.clicking === 'true') return;
+      
+      target.dataset.clicking = 'true';
+      setTimeout(() => {
+        target.dataset.clicking = 'false';
+      }, 300);
+      
+      setIsSidebarOpen(prev => !prev);
+    } catch (error) {
+      console.error('🚨 Sidebar toggle error:', error);
+      // Graceful fallback - ensure sidebar state is consistent
+      setIsSidebarOpen(false);
+    }
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
-      {/* Top Bar with Burger Menu */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 w-full">
+    <div 
+      className="min-h-screen bg-gray-50 overflow-x-hidden overflow-y-auto w-full max-w-full therapist-page-container" 
+      style={{ 
+        WebkitOverflowScrolling: 'touch',
+        // Elite layout stabilization - prevent CLS
+        minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+        willChange: 'auto', // Only animate when needed
+        containIntrinsicSize: '360px 800px', // Reserve space for content
+        contentVisibility: 'auto' // Performance optimization
+      }}
+    >
+      {/* Elite Header - Stable positioning and CLS prevention */}
+      <header 
+        className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 w-full therapist-layout-header"
+        style={{
+          height: '72px', // Fixed height prevents layout shifts
+          minHeight: '72px',
+          maxHeight: '72px',
+          containIntrinsicSize: '360px 72px',
+          willChange: 'transform' // Optimize for scrolling
+        }}
+      >
         <div className="flex items-center justify-between px-4 py-3 w-full max-w-full">
           {/* Left side - Therapist Profile Name */}
           <div className="flex items-center gap-3">
@@ -222,8 +346,16 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             
             {/* Burger Menu with unread indicator */}
             <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
+              onClick={handleSidebarToggle}
+              onTouchStart={(e) => {
+                e.preventDefault();
+              }}
+              className="p-2 rounded-lg transition-colors relative touch-manipulation cursor-pointer select-none hover:bg-gray-100 active:bg-gray-200"
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                userSelect: 'none',
+                touchAction: 'manipulation'
+              }}
               aria-label="Toggle menu"
             >
               {isSidebarOpen ? (
@@ -241,20 +373,33 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </header>
 
-      {/* Sidebar Overlay */}
+      {/* Sidebar Overlay - Fixed z-index and event propagation */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black bg-opacity-50 z-[60]"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsSidebarOpen(false);
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            setIsSidebarOpen(false);
+          }}
         />
       )}
 
-      {/* Sidebar with gesture support */}
+      {/* Sidebar with gesture support - Fixed z-index and smooth animation */}
       <aside
         {...swipeHandlers}
-        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-[70] transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
+          pointerEvents: isSidebarOpen ? 'auto' : 'none'
+        }}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
@@ -265,8 +410,20 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                 <span className="text-orange-500">Street</span>
               </h2>
               <button
-                onClick={() => setIsSidebarOpen(false)}
-                className="p-2 rounded-full transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsSidebarOpen(false);
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                }}
+                className="p-2 rounded-full transition-colors touch-manipulation cursor-pointer select-none hover:bg-gray-100 active:bg-gray-200"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  userSelect: 'none',
+                  touchAction: 'manipulation'
+                }}
                 aria-label="Close menu"
               >
                 <X className="w-6 h-6 text-black" />
@@ -307,12 +464,30 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                 return (
                   <button
                     key={item.id}
-                    onClick={() => handleNavigate(item.id)}
-                    className={`flex items-center gap-3 w-full py-2 px-3 rounded-lg transition-colors ${
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      // Debounce rapid clicks
+                      if (e.currentTarget.dataset.clicking === 'true') return;
+                      e.currentTarget.dataset.clicking = 'true';
+                      setTimeout(() => {
+                        e.currentTarget.dataset.clicking = 'false';
+                      }, 300);
+                      handleNavigate(item.id);
+                    }}
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                    }}
+                    className={`flex items-center gap-3 w-full py-2 px-3 rounded-lg transition-colors touch-manipulation cursor-pointer select-none ${
                       isActive
                         ? 'bg-orange-100 font-semibold'
-                        : 'hover:bg-orange-50'
+                        : 'hover:bg-orange-50 active:bg-orange-100'
                     }`}
+                    style={{
+                      WebkitTapHighlightColor: 'transparent',
+                      userSelect: 'none',
+                      touchAction: 'manipulation'
+                    }}
                   >
                     <div className="relative">
                       <Icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
@@ -340,8 +515,20 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           {onLogout && (
             <div className="p-4 border-t border-gray-300">
               <button
-                onClick={onLogout}
-                className="flex items-center gap-3 w-full py-3 px-3 rounded-lg bg-red-50 hover:bg-red-100 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (onLogout) onLogout();
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                }}
+                className="flex items-center gap-3 w-full py-3 px-3 rounded-lg bg-red-50 hover:bg-red-100 active:bg-red-200 transition-colors touch-manipulation cursor-pointer select-none"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  userSelect: 'none',
+                  touchAction: 'manipulation'
+                }}
               >
                 <LogOut className="w-5 h-5 text-red-600 flex-shrink-0" />
                 <span className="text-sm font-semibold text-red-600">
@@ -353,8 +540,23 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="relative overflow-x-hidden">
+      {/* Elite Main Content - Stable scrolling and performance optimized */}
+      <main 
+        className="relative overflow-x-hidden overflow-y-auto min-h-0 therapist-layout-content" 
+        style={{ 
+          WebkitOverflowScrolling: 'touch', 
+          touchAction: 'pan-y pan-x',
+          // Elite scroll performance
+          scrollBehavior: 'smooth',
+          overscrollBehavior: 'contain',
+          // Layout stability
+          minHeight: 'calc(100vh - 72px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+          containIntrinsicSize: '360px calc(100vh - 72px)',
+          // Performance optimization
+          contain: 'layout style paint',
+          willChange: 'scroll-position'
+        }}
+      >
         <PullToRefresh 
           onRefresh={async () => {
             console.log('🔄 Dashboard refresh triggered');

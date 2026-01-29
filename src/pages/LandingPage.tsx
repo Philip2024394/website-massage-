@@ -1,3 +1,11 @@
+/**
+ * 🔒 PRODUCTION UI – COMPLETE
+ * This page is visually complete and approved.
+ * ❌ Do NOT change layout, structure, or render order
+ * ✅ Text, styling, and logic fixes allowed
+ * 🛑 UI changes require explicit qw: instruction
+ */
+
 import React, { useState, useEffect, useMemo } from 'react';
 import Button from '../components/Button';
 import { locationService } from '../services/locationService';

@@ -131,13 +131,16 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
 
   const labels = t[language] || t.id;
 
+  // Get therapist ID (Appwrite uses $id)
+  const therapistId = therapist?.$id || therapist?.id;
+
   useEffect(() => {
     loadCustomers();
     loadDiscountStats();
-  }, [therapist?.id]);
+  }, [therapistId]);
 
   const loadDiscountStats = async () => {
-    if (!therapist?.id) return;
+    if (!therapistId) return;
     
     try {
       // Fetch all discount codes sent by this therapist
@@ -145,7 +148,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
         APPWRITE_CONFIG.databaseId,
         'discount_codes',
         [
-          Query.equal('providerId', therapist.id),
+          Query.equal('providerId', therapistId),
           Query.limit(1000)
         ]
       );
@@ -169,7 +172,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
   };
 
   const loadCustomers = async () => {
-    if (!therapist?.id) return;
+    if (!therapistId) return;
     
     setLoading(true);
     try {
@@ -184,7 +187,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
         APPWRITE_CONFIG.databaseId,
         bookingsCollection,
         [
-          Query.equal('therapistId', therapist.id),
+          Query.equal('therapistId', therapistId),
           Query.equal('status', 'completed'), // Only completed bookings
           Query.orderDesc('$createdAt'),
           Query.limit(100)
@@ -227,7 +230,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
           APPWRITE_CONFIG.databaseId,
           'discount_codes',
           [
-            Query.equal('providerId', therapist.id),
+            Query.equal('providerId', therapistId),
             Query.equal('isUsed', false),
             Query.greaterThan('expiresAt', new Date().toISOString())
           ]
@@ -287,8 +290,8 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
     try {
       // Generate unique discount code (7 days validity)
       const discountResult = await generateTherapistDiscount({
-        therapistId: therapist.id,
-        therapistName: therapist.name,
+        therapistId: therapistId || '',
+        therapistName: therapist?.name || '',
         customerId,
         customerName,
         discountPercentage: percentage as 5 | 10 | 15 | 20,
@@ -338,7 +341,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Page Header */}
       <TherapistPageHeader
         title={labels.title}

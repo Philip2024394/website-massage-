@@ -3,7 +3,7 @@ import { FloatingChatWindow } from '../../chat';
 import { Therapist } from '../../types';
 import { therapistMenusService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
-import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2, Clock } from 'lucide-react';
+import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2, Clock, ChevronDown, ChevronRight, FileText, DollarSign, Eye, Target, BookOpen, Wrench } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { menuHelp } from './constants/helpContent';
@@ -31,7 +31,12 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [expandedGuide, setExpandedGuide] = useState<string | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const toggleGuideSection = (section: string) => {
+    setExpandedGuide(expandedGuide === section ? null : section);
+  };
 
   useEffect(() => {
     const loadMenu = async () => {
@@ -254,134 +259,252 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
         </div>
 
         {/* Content */}
-        <div className="p-8 space-y-6">
-          {/* Info Text about Min Box */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="p-4 sm:p-6 space-y-4">
+          {/* Page Header */}
+          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <MenuIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Panduan Lengkap Menu Harga</h2>
+                <p className="text-sm text-gray-500">Cara menggunakan sistem menu pricing</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Collapsible Guide Sections */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            
+            {/* Section 1: Nama Layanan */}
+            <div className="border-b border-gray-100">
+              <button
+                onClick={() => toggleGuideSection('nama-layanan')}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <span className="font-semibold text-gray-800">Nama Layanan</span>
+                </div>
+                {expandedGuide === 'nama-layanan' ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedGuide === 'nama-layanan' && (
+                <div className="px-4 pb-4 bg-gray-50">
+                  <ul className="text-sm text-gray-700 space-y-2 ml-11">
+                    <li><span className="font-semibold text-gray-900">Contoh bagus:</span> "Traditional Massage", "Relaxation Therapy", "Deep Tissue"</li>
+                    <li><span className="font-semibold text-gray-900">Tips:</span> Gunakan nama yang menarik dan profesional</li>
+                    <li><span className="font-semibold text-gray-900">Variasi:</span> Student Massage, Couple Massage, Office Massage, Foot Massage</li>
+                    <li><span className="font-semibold text-gray-900">Jangan:</span> Menggunakan nama yang membingungkan atau terlalu panjang</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Section 2: Kotak Min */}
+            <div className="border-b border-gray-100">
+              <button
+                onClick={() => toggleGuideSection('kotak-min')}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <span className="font-semibold text-gray-800">Kotak "Min" (Durasi Minimum)</span>
+                </div>
+                {expandedGuide === 'kotak-min' ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedGuide === 'kotak-min' && (
+                <div className="px-4 pb-4 bg-gray-50">
+                  <ul className="text-sm text-gray-700 space-y-2 ml-11">
+                    <li><span className="font-semibold text-gray-900">Jika diisi:</span> Durasi ini akan muncul di slider harga untuk pelanggan</li>
+                    <li><span className="font-semibold text-gray-900">Jika kosong:</span> Durasi ini TIDAK akan ditampilkan ke pelanggan</li>
+                    <li><span className="font-semibold text-gray-900">Contoh:</span> Isi "60" untuk menampilkan opsi 60 menit</li>
+                    <li><span className="font-semibold text-gray-900">Fleksibel:</span> Bisa isi angka custom seperti 45, 75, 105 menit</li>
+                    <li><span className="font-semibold text-gray-900">Strategy:</span> Kosongkan durasi yang tidak Anda tawarkan</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Section 3: Strategi Harga */}
+            <div className="border-b border-gray-100">
+              <button
+                onClick={() => toggleGuideSection('strategi-harga')}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <span className="font-semibold text-gray-800">Strategi Harga (x1000)</span>
+                </div>
+                {expandedGuide === 'strategi-harga' ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedGuide === 'strategi-harga' && (
+                <div className="px-4 pb-4 bg-gray-50">
+                  <ul className="text-sm text-gray-700 space-y-2 ml-11">
+                    <li><span className="font-semibold text-gray-900">Format:</span> Masukkan angka tanpa ribu (150 = Rp 150.000)</li>
+                    <li><span className="font-semibold text-gray-900">60 menit:</span> Biasanya 100-200 (Rp 100k-200k)</li>
+                    <li><span className="font-semibold text-gray-900">90 menit:</span> Biasanya 150-250 (Rp 150k-250k)</li>
+                    <li><span className="font-semibold text-gray-900">120 menit:</span> Biasanya 200-300 (Rp 200k-300k)</li>
+                    <li className="text-orange-600 font-medium">💡 Tips: Buat harga progresif (60min {'<'} 90min {'<'} 120min)</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Section 4: Yang Dilihat Pelanggan */}
+            <div className="border-b border-gray-100">
+              <button
+                onClick={() => toggleGuideSection('customer-view')}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Eye className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <span className="font-semibold text-gray-800">Yang Dilihat Pelanggan</span>
+                </div>
+                {expandedGuide === 'customer-view' ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedGuide === 'customer-view' && (
+                <div className="px-4 pb-4 bg-gray-50">
+                  <ul className="text-sm text-gray-700 space-y-2 ml-11">
+                    <li><span className="font-semibold text-gray-900">Slider harga:</span> Hanya durasi yang diisi kotak "Min"</li>
+                    <li><span className="font-semibold text-gray-900">Nama layanan:</span> Ditampilkan sebagai opsi pilihan</li>
+                    <li><span className="font-semibold text-gray-900">Harga final:</span> Otomatis dikalikan 1000 (150 → Rp 150.000)</li>
+                    <li><span className="font-semibold text-gray-900">Booking:</span> Pelanggan pilih layanan + durasi + konfirmasi harga</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Section 5: Best Practices */}
+            <div className="border-b border-gray-100">
+              <button
+                onClick={() => toggleGuideSection('best-practices')}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Target className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <span className="font-semibold text-gray-800">Best Practices</span>
+                </div>
+                {expandedGuide === 'best-practices' ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedGuide === 'best-practices' && (
+                <div className="px-4 pb-4 bg-gray-50">
+                  <ul className="text-sm text-gray-700 space-y-2 ml-11">
+                    <li><span className="font-semibold text-gray-900">Minimal 1 layanan:</span> Buat setidaknya satu layanan dengan harga</li>
+                    <li><span className="font-semibold text-gray-900">Harga kompetitif:</span> Riset harga terapis lain di area Anda</li>
+                    <li><span className="font-semibold text-gray-900">Update berkala:</span> Sesuaikan harga berdasarkan demand</li>
+                    <li><span className="font-semibold text-gray-900">Variasi menarik:</span> Buat nama layanan yang unik dan profesional</li>
+                    <li><span className="font-semibold text-gray-900">Auto-save:</span> Sistem menyimpan otomatis setiap 2 detik</li>
+                    <li><span className="font-semibold text-gray-900">Limit data:</span> Maksimal 50.000 karakter total</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Section 6: Contoh Menu Sukses */}
+            <div className="border-b border-gray-100">
+              <button
+                onClick={() => toggleGuideSection('contoh-menu')}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <span className="font-semibold text-gray-800">Contoh Menu Sukses</span>
+                </div>
+                {expandedGuide === 'contoh-menu' ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedGuide === 'contoh-menu' && (
+                <div className="px-4 pb-4 bg-gray-50">
+                  <div className="space-y-3 ml-11">
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 text-sm">
+                      <p className="font-semibold text-gray-900 mb-1">"Traditional Relaxation Massage"</p>
+                      <p className="text-gray-600">60 min: Min=60, Harga=150 (Rp 150.000)</p>
+                      <p className="text-gray-600">90 min: Min=90, Harga=200 (Rp 200.000)</p>
+                      <p className="text-gray-400 italic">120 min: Min=(kosong) ← Tidak ditampilkan</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 text-sm">
+                      <p className="font-semibold text-gray-900 mb-1">"Student Special Massage"</p>
+                      <p className="text-gray-600">60 min: Min=60, Harga=100 (Rp 100.000)</p>
+                      <p className="text-gray-400 italic">90 min: Min=(kosong) ← Tidak ditampilkan</p>
+                      <p className="text-gray-400 italic">120 min: Min=(kosong) ← Tidak ditampilkan</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Section 7: Troubleshooting */}
+            <div>
+              <button
+                onClick={() => toggleGuideSection('troubleshooting')}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Wrench className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <span className="font-semibold text-gray-800">Troubleshooting</span>
+                </div>
+                {expandedGuide === 'troubleshooting' ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedGuide === 'troubleshooting' && (
+                <div className="px-4 pb-4 bg-gray-50">
+                  <ul className="text-sm text-gray-700 space-y-2 ml-11">
+                    <li><span className="font-semibold text-gray-900">Tidak bisa save:</span> Pastikan ada minimal 1 layanan dengan nama</li>
+                    <li><span className="font-semibold text-gray-900">Data terlalu besar:</span> Kurangi jumlah layanan atau perpendek nama</li>
+                    <li><span className="font-semibold text-gray-900">Harga tidak muncul:</span> Pastikan kotak "Min" terisi angka</li>
+                    <li><span className="font-semibold text-gray-900">Auto-save gagal:</span> Check koneksi internet dan coba manual save</li>
+                    <li><span className="font-semibold text-gray-900">Pelanggan tidak lihat:</span> Pastikan sudah klik "Simpan Menu"</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Tips Box */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
               <strong>💡 Tips:</strong> Kosongkan kotak "Min" jika Anda tidak ingin durasi tersebut muncul pada slider harga menu untuk pelanggan.
             </p>
-          </div>
-
-          {/* Comprehensive Help Section */}
-          <div className="bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                  <MenuIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-orange-900 text-lg">Panduan Lengkap Menu Harga</h3>
-                  <p className="text-sm text-orange-700">Cara menggunakan sistem menu pricing</p>
-                </div>
-              </div>
-              <HelpTooltip {...menuHelp.overview} position="left" size="md" />
-            </div>
-
-            <div className="space-y-4">
-              {/* Service Name Section */}
-              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
-                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
-                  📝 Nama Layanan
-                </h4>
-                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
-                  <li><strong>Contoh bagus:</strong> "Traditional Massage", "Relaxation Therapy", "Deep Tissue"</li>
-                  <li><strong>Tips:</strong> Gunakan nama yang menarik dan profesional</li>
-                  <li><strong>Variasi:</strong> Student Massage, Couple Massage, Office Massage, Foot Massage</li>
-                  <li><strong>Jangan:</strong> Menggunakan nama yang membingungkan atau terlalu panjang</li>
-                </ul>
-              </div>
-
-              {/* Duration & Min Box Section */}
-              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
-                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
-                  ⏰ Kotak "Min" (Durasi Minimum)
-                </h4>
-                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
-                  <li><strong>Jika diisi:</strong> Durasi ini akan muncul di slider harga untuk pelanggan</li>
-                  <li><strong>Jika kosong:</strong> Durasi ini TIDAK akan ditampilkan ke pelanggan</li>
-                  <li><strong>Contoh:</strong> Isi "60" untuk menampilkan opsi 60 menit</li>
-                  <li><strong>Fleksibel:</strong> Bisa isi angka custom seperti 45, 75, 105 menit</li>
-                  <li><strong>Strategy:</strong> Kosongkan durasi yang tidak Anda tawarkan</li>
-                </ul>
-              </div>
-
-              {/* Pricing Strategy Section */}
-              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
-                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
-                  💰 Strategi Harga (x1000)
-                </h4>
-                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
-                  <li><strong>Format:</strong> Masukkan angka tanpa ribu (150 = Rp 150.000)</li>
-                  <li><strong>60 menit:</strong> Biasanya 100-200 (Rp 100k-200k)</li>
-                  <li><strong>90 menit:</strong> Biasanya 150-250 (Rp 150k-250k)</li>
-                  <li><strong>120 menit:</strong> Biasanya 200-300 (Rp 200k-300k)</li>
-                  <li><strong>💡 Tips:</strong> Buat harga progresif (60min {'<'} 90min {'<'} 120min)</li>
-                </ul>
-              </div>
-
-              {/* Customer View Section */}
-              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
-                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
-                  👁️ Yang Dilihat Pelanggan
-                </h4>
-                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
-                  <li><strong>Slider harga:</strong> Hanya durasi yang diisi kotak "Min"</li>
-                  <li><strong>Nama layanan:</strong> Ditampilkan sebagai opsi pilihan</li>
-                  <li><strong>Harga final:</strong> Otomatis dikalikan 1000 (150 → Rp 150.000)</li>
-                  <li><strong>Booking:</strong> Pelanggan pilih layanan + durasi + konfirmasi harga</li>
-                </ul>
-              </div>
-
-              {/* Best Practices Section */}
-              <div className="bg-white/70 rounded-lg p-4 border border-orange-200">
-                <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
-                  🎯 Best Practices
-                </h4>
-                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
-                  <li><strong>Minimal 1 layanan:</strong> Buat setidaknya satu layanan dengan harga</li>
-                  <li><strong>Harga kompetitif:</strong> Riset harga terapis lain di area Anda</li>
-                  <li><strong>Update berkala:</strong> Sesuaikan harga berdasarkan demand</li>
-                  <li><strong>Variasi menarik:</strong> Buat nama layanan yang unik dan profesional</li>
-                  <li><strong>Auto-save:</strong> Sistem menyimpan otomatis setiap 2 detik</li>
-                  <li><strong>Limit data:</strong> Maksimal 50.000 karakter total</li>
-                </ul>
-              </div>
-
-              {/* Example Section */}
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200">
-                <h4 className="font-bold text-green-800 mb-2 flex items-center gap-2">
-                  📚 Contoh Menu Sukses
-                </h4>
-                <div className="text-sm text-gray-700 space-y-2">
-                  <div className="bg-white/70 p-3 rounded border">
-                    <strong>Layanan:</strong> "Traditional Relaxation Massage"<br/>
-                    <strong>60 min:</strong> Min=60, Harga=150 (Rp 150.000)<br/>
-                    <strong>90 min:</strong> Min=90, Harga=200 (Rp 200.000)<br/>
-                    <strong>120 min:</strong> Min=(kosong), Harga=(kosong) ← Tidak ditampilkan
-                  </div>
-                  <div className="bg-white/70 p-3 rounded border">
-                    <strong>Layanan:</strong> "Student Special Massage"<br/>
-                    <strong>60 min:</strong> Min=60, Harga=100 (Rp 100.000)<br/>
-                    <strong>90 min:</strong> Min=(kosong) ← Tidak ditampilkan<br/>
-                    <strong>120 min:</strong> Min=(kosong) ← Tidak ditampilkan
-                  </div>
-                </div>
-              </div>
-
-              {/* Troubleshooting Section */}
-              <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-                <h4 className="font-bold text-red-800 mb-2 flex items-center gap-2">
-                  🔧 Troubleshooting
-                </h4>
-                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
-                  <li><strong>Tidak bisa save:</strong> Pastikan ada minimal 1 layanan dengan nama</li>
-                  <li><strong>Data terlalu besar:</strong> Kurangi jumlah layanan atau perpendek nama</li>
-                  <li><strong>Harga tidak muncul:</strong> Pastikan kotak "Min" terisi angka</li>
-                  <li><strong>Auto-save gagal:</strong> Check koneksi internet dan coba manual save</li>
-                  <li><strong>Pelanggan tidak lihat:</strong> Pastikan sudah klik "Simpan Menu"</li>
-                </ul>
-              </div>
-            </div>
           </div>
 
           {/* All features available - no premium restriction */}

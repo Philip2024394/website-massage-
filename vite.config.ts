@@ -180,80 +180,58 @@ export default defineConfig({
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks: (id) => {
-          // Split vendor chunks for better caching (Facebook/Amazon style)
+          // Critical path optimization - separate core from everything else
+          
+          // Priority 1: Critical React core (loads first)
           if (id.includes('node_modules')) {
-            // Critical: React core (< 150KB)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+            if (id.includes('react/') || id.includes('react-dom/') || id.includes('scheduler')) {
               return 'vendor-react';
             }
-            // Routing (< 50KB)
-            if (id.includes('react-router')) {
-              return 'vendor-router';
-            }
-            // UI Libraries (< 200KB)
-            if (id.includes('framer-motion') || id.includes('react-icons') || id.includes('lucide-react')) {
-              return 'vendor-ui';
-            }
-            // Appwrite SDK (< 100KB)
+            
+            // Priority 2: Core utilities needed for initial render
             if (id.includes('appwrite')) {
               return 'vendor-appwrite';
             }
-            // Form libraries (< 50KB)
-            if (id.includes('react-hook-form') || id.includes('react-hot-toast')) {
-              return 'vendor-forms';
+            
+            // Priority 3: UI essentials
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
             }
-            // QR Code (< 30KB)
-            if (id.includes('qrcode')) {
-              return 'vendor-qr';
-            }
-            // Date utilities (< 50KB)
-            if (id.includes('date-fns')) {
-              return 'vendor-dates';
-            }
-            // All other node_modules
+            
+            // Priority 4: All other vendor code (deferred)
             return 'vendor-misc';
           }
           
-          // Business Logic Services (Industry Standard: < 30KB per chunk)
-          if (id.includes('lib/appwriteService') || id.includes('lib/services')) {
+          // Priority 1: Core services needed for app bootstrap
+          if (id.includes('lib/appwriteService') || 
+              id.includes('services/') && (id.includes('authService') || id.includes('analyticsService'))) {
             return 'services-core';
           }
           
-          // Split large pages into separate chunks
-          if (id.includes('pages/PlaceDashboardPage')) {
-            return 'page-place-dashboard';
-          }
-          if (id.includes('pages/EmployerJobPostingPage')) {
-            return 'page-job-posting';
-          }
-          if (id.includes('pages/ConfirmTherapistsPage')) {
-            return 'page-confirm-therapists';
-          }
-          if (id.includes('pages/LiveAdminDashboardEnhanced')) {
-            return 'page-admin-dashboard';
+          // Priority 2: Home page components (critical path)
+          if (id.includes('pages/HomePage') || 
+              id.includes('components/TherapistHomeCard') ||
+              id.includes('components/MassagePlaceHomeCard')) {
+            return 'pages-home';
           }
           
-          // Grouping smaller dashboards
+          // Priority 3: Auth and profile pages (needed early)
+          if (id.includes('pages/auth/') || id.includes('AuthPage')) {
+            return 'pages-auth';
+          }
+          
+          // Priority 4: Dashboard pages (deferred until needed)
           if (id.includes('pages/') && id.includes('Dashboard')) {
             return 'pages-dashboards';
           }
           
-          // Public marketing pages
-          if (id.includes('pages/HomePage') || 
-              id.includes('pages/LandingPage') ||
-              id.includes('pages/AboutUsPage')) {
-            return 'pages-public';
-          }
-          
-          // Job/employment related pages
-          if (id.includes('pages/') && (id.includes('Job') || id.includes('Jobs'))) {
+          // Priority 5: Job and admin pages (rarely accessed)
+          if (id.includes('pages/') && (id.includes('Job') || id.includes('Admin'))) {
             return 'pages-jobs';
           }
           
-          // Authentication pages
-          if (id.includes('pages/') && (id.includes('Login') || id.includes('Auth') || id.includes('Register'))) {
-            return 'pages-auth';
-          }
+          // Default: Everything else
+          return undefined;
         },
       },
     },

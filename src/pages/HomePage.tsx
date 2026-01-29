@@ -1,3 +1,11 @@
+/**
+ * 🔒 PRODUCTION UI – COMPLETE
+ * This page is visually complete and approved.
+ * ❌ Do NOT change layout, structure, or render order
+ * ✅ Text, styling, and logic fixes allowed
+ * 🛑 UI changes require explicit qw: instruction
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 // Direct imports to avoid lazy loading issues on home page

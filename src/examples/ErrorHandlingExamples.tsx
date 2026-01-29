@@ -44,7 +44,7 @@ export function BookingExample() {
       });
       
       // Show user-friendly error
-      showError('booking', 'We couldn't process your booking at this time. Please try again in a moment.');
+      showError('booking', 'We could not process your booking at this time. Please try again in a moment.');
       
     } finally {
       setIsLoading(false);
@@ -72,7 +72,7 @@ export function BookingExample() {
 // =============================================================================
 
 export function PaymentExample() {
-  const { showError, ...modalProps } = useErrorModal();
+  const { isOpen, errorType, customMessage, showError, hideError } = useErrorModal();
 
   const processPayment = async (amount: number, method: string) => {
     try {
@@ -103,7 +103,7 @@ export function PaymentExample() {
       // Show professional error - reassure user
       showError(
         'payment',
-        'We encountered an issue processing your payment. Don't worry - no charges were made. Please try again or contact support.'
+        'We encountered an issue processing your payment. Do not worry - no charges were made. Please try again or contact support.'
       );
 
       return null;
@@ -115,7 +115,12 @@ export function PaymentExample() {
       <button onClick={() => processPayment(500000, 'transfer')}>
         Pay Now
       </button>
-      <ProfessionalErrorModal {...modalProps} />
+      <ProfessionalErrorModal
+        isOpen={isOpen}
+        onClose={hideError}
+        errorType={errorType}
+        customMessage={customMessage}
+      />
     </>
   );
 }
@@ -125,7 +130,7 @@ export function PaymentExample() {
 // =============================================================================
 
 export function AuthExample() {
-  const { showError, ...modalProps } = useErrorModal();
+  const { isOpen, errorType, customMessage, showError, hideError } = useErrorModal();
 
   const handleLogin = async (email: string, password: string) => {
     try {
@@ -173,7 +178,12 @@ export function AuthExample() {
         <input name="password" type="password" placeholder="Password" />
         <button type="submit">Login</button>
       </form>
-      <ProfessionalErrorModal {...modalProps} />
+      <ProfessionalErrorModal
+        isOpen={isOpen}
+        onClose={hideError}
+        errorType={errorType}
+        customMessage={customMessage}
+      />
     </>
   );
 }
@@ -183,7 +193,7 @@ export function AuthExample() {
 // =============================================================================
 
 export function NetworkExample() {
-  const { showError, ...modalProps } = useErrorModal();
+  const { isOpen, errorType, customMessage, showError, hideError } = useErrorModal();
   const [retryCount, setRetryCount] = useState(0);
 
   const fetchData = async () => {
@@ -210,7 +220,7 @@ export function NetworkExample() {
       // Show network error with retry option
       showError(
         'network',
-        'We're having trouble connecting to our servers. Please check your internet connection.'
+        'We are having trouble connecting to our servers. Please check your internet connection.'
       );
     }
   };
@@ -224,7 +234,10 @@ export function NetworkExample() {
     <>
       <button onClick={fetchData}>Load Data</button>
       <ProfessionalErrorModal 
-        {...modalProps}
+        isOpen={isOpen}
+        onClose={hideError}
+        errorType={errorType}
+        customMessage={customMessage}
         onRetry={handleRetry}
         showRefreshButton={true}
       />
@@ -237,7 +250,7 @@ export function NetworkExample() {
 // =============================================================================
 
 export function FeatureExample() {
-  const { showError, ...modalProps } = useErrorModal();
+  const { isOpen, errorType, customMessage, showError, hideError } = useErrorModal();
 
   const handleFeatureClick = () => {
     // Log that user attempted to access unavailable feature
@@ -253,14 +266,19 @@ export function FeatureExample() {
     // Show friendly message
     showError(
       'feature',
-      'This feature is currently being updated. We'll have it back up shortly!'
+      'This feature is currently being updated. We will have it back up shortly!'
     );
   };
 
   return (
     <>
       <button onClick={handleFeatureClick}>Advanced Analytics</button>
-      <ProfessionalErrorModal {...modalProps} />
+      <ProfessionalErrorModal
+        isOpen={isOpen}
+        onClose={hideError}
+        errorType={errorType}
+        customMessage={customMessage}
+      />
     </>
   );
 }
@@ -270,7 +288,7 @@ export function FeatureExample() {
 // =============================================================================
 
 export function ValidationExample() {
-  const { showError, ...modalProps } = useErrorModal();
+  const { isOpen, errorType, customMessage, showError, hideError } = useErrorModal();
 
   const handleSubmit = async (formData: any) => {
     // Validation check
@@ -306,7 +324,12 @@ export function ValidationExample() {
         <input name="phone" placeholder="Phone Number" />
         <button type="submit">Submit</button>
       </form>
-      <ProfessionalErrorModal {...modalProps} />
+      <ProfessionalErrorModal
+        isOpen={isOpen}
+        onClose={hideError}
+        errorType={errorType}
+        customMessage={customMessage}
+      />
     </>
   );
 }

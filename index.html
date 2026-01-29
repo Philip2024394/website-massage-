@@ -9,33 +9,154 @@
     <!-- ✅ MOBILE-FIRST: Critical CSS for first paint loading state -->
     <!-- Prevents 5-10 second blank white screen on slow 3G/4G connections -->
     <style>
-        /* Loading spinner for initial app bootstrap */
-        #root:empty::before {
-            content: '';
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 40px;
-            height: 40px;
-            margin: -20px 0 0 -20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            z-index: 9999;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        /* Elite Loading System - Skeleton UI for instant perceived performance */
+        
         /* Prevent layout shift */
         body {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #ffffff;
         }
         #root {
             min-height: 100vh;
+        }
+        
+        /* Elite Skeleton Loading - Renders instantly while React loads */
+        #root:empty {
+            display: block;
+            background: #ffffff;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Header Skeleton */
+        #root:empty::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            z-index: 1;
+        }
+        
+        /* Logo Skeleton */
+        #root:empty::after {
+            content: 'IndaStreet';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 2;
+        }
+        
+        /* Content Area Skeleton */
+        .skeleton-content {
+            position: absolute;
+            top: 100px;
+            left: 0;
+            right: 0;
+            padding: 20px;
+        }
+        
+        /* Card Skeletons */
+        .skeleton-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skeleton-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        
+        .skeleton-line {
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .skeleton-line.title {
+            height: 20px;
+            width: 70%;
+            background: #dee2e6;
+        }
+        
+        .skeleton-line.subtitle {
+            width: 50%;
+        }
+        
+        .skeleton-line.content {
+            width: 90%;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* Loading indicator */
+        .elite-loading {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(249, 115, 22, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(249, 115, 22, 0.3);
+        }
+        
+        .elite-loading .dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .elite-loading .dot {
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            animation: dotPulse 1.4s infinite ease-in-out;
+        }
+        
+        .elite-loading .dot:nth-child(1) { animation-delay: 0s; }
+        .elite-loading .dot:nth-child(2) { animation-delay: 0.2s; }
+        .elite-loading .dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes dotPulse {
+            0%, 60%, 100% { opacity: 0.3; transform: scale(1); }
+            30% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        /* Hide skeleton when React loads */
+        #root:not(:empty) .skeleton-content,
+        #root:not(:empty) .elite-loading {
+            display: none;
         }
     </style>
     
@@ -275,14 +396,14 @@
             scrollbar-width: none;  /* Firefox */
         }
         
-        /* PWA Splash Screen - Elegant Black & White Design */
+        /* PWA Splash Screen - Orange IndaStreet Brand Design */
         #pwa-splash {
           position: fixed;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+          background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -297,44 +418,45 @@
           pointer-events: none;
         }
         
-        #pwa-splash img {
-          width: 120px;
-          height: 120px;
-          object-fit: contain;
-          margin-bottom: 20px;
-          border-radius: 50%;
-          padding: 10px;
-          background: transparent;
+        #pwa-splash .brand-title {
+          font-size: 42px;
+          font-weight: 700;
+          margin: 0 0 10px 0;
+          letter-spacing: -0.5px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
           animation: fadeIn 0.8s ease-out;
         }
         
-        #pwa-splash h1 {
+        #pwa-splash .brand-title .inda {
           color: #000000;
-          font-size: 32px;
-          font-weight: 700;
-          margin: 0;
-          letter-spacing: -0.5px;
+        }
+        
+        #pwa-splash .brand-title .street {
+          color: #ffffff;
+        }
+        
+        #pwa-splash .loading-label {
+          color: #ffffff;
+          font-size: 20px;
+          font-weight: 600;
+          margin: 0 0 16px 0;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
           animation: fadeIn 0.8s ease-out 0.2s both;
         }
         
-        #pwa-splash p {
-          color: transparent;
-          font-size: 12px;
-          margin: 16px 0 0 0;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        #pwa-splash .dots-container {
           display: flex;
-          gap: 4px;
+          gap: 8px;
           align-items: center;
         }
         
-        /* Dancing dots animation */
+        /* Dancing dots animation - white color */
         .loading-dot {
-          width: 8px;
-          height: 8px;
+          width: 12px;
+          height: 12px;
           border-radius: 50%;
-          background: #000000;
-          animation: dotPulse 1.4s ease-in-out infinite;
+          background: #ffffff;
+          animation: dotBounce 1.4s ease-in-out infinite;
         }
         
         .loading-dot:nth-child(1) {
@@ -349,14 +471,12 @@
           animation-delay: 0.4s;
         }
         
-        @keyframes dotPulse {
+        @keyframes dotBounce {
           0%, 80%, 100% {
-            transform: scale(0.8);
-            opacity: 0.5;
+            transform: translateY(0);
           }
           40% {
-            transform: scale(1.2);
-            opacity: 1;
+            transform: translateY(-12px);
           }
         }
         
@@ -377,18 +497,56 @@
     
 </head>
 <body class="bg-gray-100">
-    <!-- PWA Splash Screen - Elegant Black & White Design -->
+    <!-- PWA Splash Screen - Indastreet Loading -->
     <div id="pwa-splash">
-      <img src="https://ik.imagekit.io/7grri5v7d/indastreet_massage_button-removebg-preview.png" alt="IndaStreet" />
-      <h1>Indastreet</h1>
-      <p>
+      <div class="brand-title"><span class="inda">Inda</span><span class="street">street</span></div>
+      <div class="loading-label">Loading</div>
+      <div class="dots-container">
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
-      </p>
+      </div>
     </div>
     
-    <div id="root"></div>
+    <div id="root">
+        <!-- Elite Skeleton Loading - Shows instantly while React loads -->
+        <div class="skeleton-content">
+            <!-- Search Bar Skeleton -->
+            <div class="skeleton-card">
+                <div class="skeleton-line title"></div>
+                <div class="skeleton-line subtitle"></div>
+            </div>
+            
+            <!-- Provider Cards Skeleton -->
+            <div class="skeleton-card">
+                <div class="skeleton-line title"></div>
+                <div class="skeleton-line content"></div>
+                <div class="skeleton-line" style="width: 60%;"></div>
+            </div>
+            
+            <div class="skeleton-card">
+                <div class="skeleton-line title"></div>
+                <div class="skeleton-line content"></div>
+                <div class="skeleton-line" style="width: 40%;"></div>
+            </div>
+            
+            <div class="skeleton-card">
+                <div class="skeleton-line title"></div>
+                <div class="skeleton-line content"></div>
+                <div class="skeleton-line" style="width: 70%;"></div>
+            </div>
+        </div>
+        
+        <!-- Elite Loading Indicator -->
+        <div class="elite-loading">
+            <span>Loading IndaStreet</span>
+            <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+    </div>
   <!-- Dedicated overlay root for portals (toasts, modals, etc.) -->
   <div id="overlay-root"></div>
     
@@ -414,51 +572,33 @@
           }
         }
         
-        // Preload background image BEFORE React loads
-        var bgImg = new Image();
-        var imageLoaded = false;
-        bgImg.onload = function() {
-          imageLoaded = true;
-          if (contentReady) {
-            setTimeout(hideSplash, 100);
-          }
-        };
-        bgImg.onerror = function() {
-          imageLoaded = true;
-        };
-        bgImg.src = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
-        
-        // Wait for React content
-        var observer = new MutationObserver(function(mutations) {
+        // Check if landing page is fully loaded (has meaningful content)
+        function isLandingPageReady() {
           var root = document.getElementById('root');
-          if (root && root.children.length > 0 && !contentReady) {
-            contentReady = true;
-            
-            // If image already loaded, hide immediately
-            if (imageLoaded) {
-              setTimeout(hideSplash, 100);
-            } else {
-              // Wait for image or timeout
-              setTimeout(hideSplash, 500);
-            }
-            
-            observer.disconnect();
+          if (!root || root.children.length === 0) return false;
+          
+          // Check for actual landing page content (not just loading spinners)
+          var hasText = root.textContent && root.textContent.trim().length > 50;
+          var hasImages = root.querySelectorAll('img').length > 0;
+          var hasButtons = root.querySelectorAll('button').length > 0;
+          
+          return hasText || hasImages || hasButtons;
+        }
+        
+        // Wait for React content with proper landing page detection
+        var checkInterval = setInterval(function() {
+          if (isLandingPageReady()) {
+            clearInterval(checkInterval);
+            // Small delay for smooth transition
+            setTimeout(hideSplash, 200);
           }
-        });
-        observer.observe(document.getElementById('root'), { childList: true });
+        }, 100);
         
-        // Fallback: hide on window load
-        window.addEventListener('load', function() {
-          setTimeout(hideSplash, 200);
-        });
-        
-        // Fallback: hide on first touch (user interaction)
-        document.addEventListener('touchstart', function() {
-          setTimeout(hideSplash, 50);
-        }, { once: true });
-        
-        // Emergency fallback: max 2 seconds
-        setTimeout(hideSplash, 2000);
+        // Emergency fallback: max 5 seconds (increased from 2)
+        setTimeout(function() {
+          clearInterval(checkInterval);
+          hideSplash();
+        }, 5000);
       })();
     </script>
     

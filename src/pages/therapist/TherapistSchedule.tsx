@@ -322,7 +322,7 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
   };
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="min-h-screen bg-white pb-20 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
       <div className="max-w-md mx-auto px-4 pt-6 pb-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

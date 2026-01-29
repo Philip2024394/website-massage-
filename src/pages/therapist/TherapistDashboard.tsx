@@ -25,7 +25,16 @@
  * 
  * ============================================================================
  */
+/**
+ * 🔒 PRODUCTION UI – COMPLETE
+ * This page is visually complete and approved.
+ * ❌ Do NOT change layout, structure, or render order
+ * ✅ Text, styling, and logic fixes allowed
+ * 🛑 UI changes require explicit qw: instruction
+ */
+
 import React, { useState, useEffect } from 'react';
+import { EliteTherapistDashboardWrapper } from '../../components/therapist/EliteTherapistDashboardWrapper';
 import { FloatingChatWindow } from '../../chat';
 import { MASSAGE_TYPES_CATEGORIZED } from '../../constants';
 import type { Therapist } from '../../types';
@@ -949,7 +958,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         language={language}
         onLogout={onLogout}
       >
-      <div className="bg-white w-full max-w-full overflow-x-hidden">
+      <div className="bg-white w-full max-w-full overflow-x-hidden overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 py-4 shadow-lg">
@@ -1803,7 +1812,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       </div>
       </TherapistLayout>
     {/* Floating Chat Window */}
-    <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
+    <EliteTherapistDashboardWrapper 
+      title="Therapist Profile Dashboard" 
+      subtitle="Elite Professional Interface"
+    >
+      <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
+    </EliteTherapistDashboardWrapper>
       </>
 
   );

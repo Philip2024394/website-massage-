@@ -11,6 +11,8 @@ interface TherapistLoginPageProps {
     onSuccess: (therapistId: string) => void;
     onBack: () => void;
     t?: any;
+    // Session restore - REQUIRED for populating loggedInProvider after Appwrite auth
+    restoreUserSession?: () => Promise<void>;
     // Navigation handlers
     onMassageJobsClick?: () => void;
     onHotelPortalClick?: () => void;
@@ -29,6 +31,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
     onSuccess, 
     onBack: _onBack, 
     t,
+    restoreUserSession,
     onMassageJobsClick,
     onHotelPortalClick,
     onVillaPortalClick,
@@ -87,10 +90,19 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                 localStorage.removeItem('therapist-cache');
                 
                 const therapistId = response.documentId || response.userId;
-                console.log('✅ [Login Success] Redirecting to therapist dashboard with ID:', therapistId);
+                console.log('✅ [Login Success] Therapist ID:', therapistId);
+                
+                // CRITICAL: Restore session to populate loggedInProvider state
+                // Without this, the dashboard receives therapist=null and shows loading forever
+                if (restoreUserSession) {
+                    console.log('🔄 [Login] Restoring user session to populate loggedInProvider...');
+                    await restoreUserSession();
+                    console.log('✅ [Login] Session restored - loggedInProvider should now be set');
+                }
                 
                 // Redirect to therapist dashboard using page state navigation
                 if (onNavigate) {
+                    console.log('🚀 [Login] Navigating to therapist dashboard');
                     onNavigate('therapist');
                 } else {
                     console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
@@ -119,8 +131,17 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
             
             if (response.success && response.userId) {
                 console.log('✅ Registration successful, account created!');
+                
+                // CRITICAL: Restore session to populate loggedInProvider state
+                if (restoreUserSession) {
+                    console.log('🔄 [Register] Restoring user session to populate loggedInProvider...');
+                    await restoreUserSession();
+                    console.log('✅ [Register] Session restored - loggedInProvider should now be set');
+                }
+                
                 // Redirect to therapist dashboard after successful registration
                 if (onNavigate) {
+                    console.log('🚀 [Register] Navigating to therapist dashboard');
                     onNavigate('therapist');
                 } else {
                     console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');

@@ -457,12 +457,282 @@ const RevenueDashboard = () => (
     </div>
 );
 
-const CommissionManagement = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">📈 Commission Management</h2>
-        <p className="text-gray-600">Verify commission payments and deposits...</p>
-    </div>
-);
+const CommissionManagement = () => {
+    const [payments, setPayments] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState<'all' | 'pending' | 'awaiting_verification' | 'verified' | 'rejected'>('awaiting_verification');
+
+    useEffect(() => {
+        loadPayments();
+    }, [filter]);
+
+    const loadPayments = async () => {
+        setLoading(true);
+        try {
+            const { databases, APPWRITE_CONFIG, Query } = await import('../../lib/appwrite');
+            const collectionId = APPWRITE_CONFIG.collections.commissionRecords || 'commission_records';
+            
+            const queries = filter === 'all' 
+                ? [Query.orderDesc('$createdAt'), Query.limit(100)]
+                : [Query.equal('status', filter), Query.orderDesc('$createdAt'), Query.limit(100)];
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                queries
+            );
+            
+            setPayments(response.documents);
+        } catch (error) {
+            console.error('Failed to load commission payments:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerify = async (paymentId: string, approved: boolean, reason?: string) => {
+        try {
+            const { databases, APPWRITE_CONFIG } = await import('../../lib/appwrite');
+            const collectionId = APPWRITE_CONFIG.collections.commissionRecords || 'commission_records';
+            
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                paymentId,
+                {
+                    status: approved ? 'verified' : 'rejected',
+                    verifiedAt: new Date().toISOString(),
+                    verifiedBy: 'admin',
+                    rejectionReason: reason || null,
+                    updatedAt: new Date().toISOString()
+                }
+            );
+            
+            // If approved, reactivate therapist account
+            if (approved) {
+                const payment = payments.find(p => p.$id === paymentId);
+                if (payment?.therapistId) {
+                    await databases.updateDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.therapists || 'therapists',
+                        payment.therapistId,
+                        {
+                            status: 'available',
+                            bookingEnabled: true,
+                            scheduleEnabled: true,
+                            deactivationReason: null,
+                            updatedAt: new Date().toISOString()
+                        }
+                    );
+                }
+            }
+            
+            loadPayments();
+        } catch (error) {
+            console.error('Failed to verify payment:', error);
+        }
+    };
+
+    const formatDate = (dateStr: string) => {
+        return new Date(dateStr).toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="bg-white rounded-lg shadow p-4">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold">📈 Commission Payment Verification</h2>
+                    <button 
+                        onClick={loadPayments}
+                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    >
+                        🔄 Refresh
+                    </button>
+                </div>
+                
+                {/* Filter Tabs */}
+                <div className="flex gap-2 mb-4 flex-wrap">
+                    {[
+                        { key: 'awaiting_verification', label: '🔍 Awaiting Review', color: 'blue' },
+                        { key: 'pending', label: '⏳ Pending', color: 'amber' },
+                        { key: 'verified', label: '✅ Verified', color: 'green' },
+                        { key: 'rejected', label: '❌ Rejected', color: 'red' },
+                        { key: 'all', label: '📋 All', color: 'gray' }
+                    ].map(tab => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setFilter(tab.key as any)}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                filter === tab.key
+                                    ? `bg-${tab.color}-500 text-white`
+                                    : `bg-${tab.color}-50 text-${tab.color}-700 hover:bg-${tab.color}-100`
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                    <div className="animate-spin text-4xl mb-2">🔄</div>
+                    <p className="text-gray-600">Loading payments...</p>
+                </div>
+            ) : payments.length === 0 ? (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                    <div className="text-4xl mb-2">📭</div>
+                    <p className="text-gray-600">No payments found for this filter</p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {payments.map((payment) => {
+                        const LATE_PAYMENT_FEE = 50000;
+                        const isOverdue = payment.status === 'overdue';
+                        const totalDue = (payment.commissionAmount || 0) + (isOverdue ? LATE_PAYMENT_FEE : 0);
+                        
+                        return (
+                        <div key={payment.$id} className="bg-white rounded-lg shadow overflow-hidden">
+                            {/* Header */}
+                            <div className={`px-4 py-3 ${
+                                payment.status === 'awaiting_verification' ? 'bg-blue-500' :
+                                payment.status === 'verified' ? 'bg-green-500' :
+                                payment.status === 'rejected' ? 'bg-red-500' :
+                                payment.status === 'overdue' ? 'bg-red-600' :
+                                'bg-amber-500'
+                            }`}>
+                                <div className="flex items-center justify-between">
+                                    <div className="text-white">
+                                        <p className="font-bold">{payment.therapistName || 'Therapist'}</p>
+                                        <p className="text-sm opacity-80">ID: {payment.$id?.slice(-8)}</p>
+                                    </div>
+                                    <div className="text-right text-white">
+                                        <p className="text-2xl font-bold">IDR {totalDue.toLocaleString()}</p>
+                                        <p className="text-sm opacity-80">
+                                            {isOverdue ? '30% + Late Fee' : '30% Commission'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Late Fee Warning Banner */}
+                            {isOverdue && (
+                                <div className="bg-red-100 border-b-2 border-red-300 px-4 py-2">
+                                    <p className="text-red-800 font-bold text-sm text-center">
+                                        ⚠️ LATE FEE APPLIED: IDR {LATE_PAYMENT_FEE.toLocaleString()} added (Total: IDR {totalDue.toLocaleString()})
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="p-4 space-y-4">
+                                {/* Booking Details */}
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-gray-500">Customer</p>
+                                        <p className="font-semibold">{payment.customerName || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Massage Type</p>
+                                        <p className="font-semibold">{payment.massageType || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Duration</p>
+                                        <p className="font-semibold">{payment.duration || 60} min</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Service Price</p>
+                                        <p className="font-semibold">IDR {(payment.serviceAmount || 0).toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Booking Date</p>
+                                        <p className="font-semibold">{formatDate(payment.bookingDate)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Payment Deadline</p>
+                                        <p className="font-semibold">{formatDate(payment.paymentDeadline)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Proof Uploaded</p>
+                                        <p className="font-semibold">{payment.paymentProofUploadedAt ? formatDate(payment.paymentProofUploadedAt) : 'Not yet'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Status</p>
+                                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                            payment.status === 'awaiting_verification' ? 'bg-blue-100 text-blue-800' :
+                                            payment.status === 'verified' ? 'bg-green-100 text-green-800' :
+                                            payment.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                            'bg-amber-100 text-amber-800'
+                                        }`}>
+                                            {payment.status?.toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Payment Proof Image */}
+                                {(payment.paymentProofImage || payment.paymentProofUrl) && (
+                                    <div className="border-t pt-4">
+                                        <p className="text-sm font-bold text-gray-700 mb-2">📷 Payment Proof:</p>
+                                        <img 
+                                            src={payment.paymentProofImage || payment.paymentProofUrl} 
+                                            alt="Payment Proof" 
+                                            className="w-full max-w-md rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-90"
+                                            onClick={() => window.open(payment.paymentProofImage || payment.paymentProofUrl, '_blank')}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Admin Actions - Only for awaiting_verification */}
+                                {payment.status === 'awaiting_verification' && (
+                                    <div className="border-t pt-4 flex gap-3">
+                                        <button
+                                            onClick={() => handleVerify(payment.$id, true)}
+                                            className="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold transition-colors"
+                                        >
+                                            ✅ Approve Payment
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const reason = prompt('Rejection reason:');
+                                                if (reason) handleVerify(payment.$id, false, reason);
+                                            }}
+                                            className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition-colors"
+                                        >
+                                            ❌ Reject
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Rejection Reason */}
+                                {payment.status === 'rejected' && payment.rejectionReason && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                        <p className="text-sm font-bold text-red-800">Rejection Reason:</p>
+                                        <p className="text-red-700">{payment.rejectionReason}</p>
+                                    </div>
+                                )}
+
+                                {/* Verified Info */}
+                                {payment.status === 'verified' && (
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm">
+                                        <p className="text-green-800">
+                                            ✅ Verified by {payment.verifiedBy || 'Admin'} on {formatDate(payment.verifiedAt)}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const KtpVerification = () => (
     <div className="bg-white rounded-lg shadow p-6">

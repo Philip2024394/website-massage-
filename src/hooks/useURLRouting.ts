@@ -39,6 +39,15 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapist-calendar': '/dashboard/therapist/calendar',
         'therapist-legal': '/dashboard/therapist/legal',
         
+        // Short aliases for therapist dashboard pages (used by navigation)
+        'payment': '/dashboard/therapist/payment',
+        'payment-status': '/dashboard/therapist/payment-status',
+        'bookings': '/dashboard/therapist/bookings',
+        'earnings': '/dashboard/therapist/earnings',
+        'calendar': '/dashboard/therapist/calendar',
+        'schedule': '/dashboard/therapist/schedule',
+        'custom-menu': '/dashboard/therapist/menu',
+        
         'massagePlaceLogin': '/place-login',
         'placeDashboard': '/dashboard/massage-place',
         'massagePlacePortal': '/dashboard/massage-place',

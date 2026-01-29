@@ -584,7 +584,7 @@ For data access, correction, or deletion requests, please include:
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Page Header */}
       <TherapistPageHeader
         title="Legal & Privacy"

@@ -23,8 +23,16 @@ export interface CommissionPayment {
     serviceAmount: number;
     commissionRate: number; // 30%
     commissionAmount: number;
-    paymentDeadline: string; // 4 hours after booking
+    paymentDeadline: string; // 5 hours after booking
+    // Enhanced: Booking details for display
+    customerName?: string;
+    massageType?: string;
+    duration?: number; // minutes
+    // Late fee fields (applied when overdue)
+    lateFee?: number; // 50,000 IDR penalty
+    totalDue?: number; // commissionAmount + lateFee
     paymentProofUrl?: string;
+    paymentProofImage?: string; // Alias for paymentProofUrl
     paymentProofUploadedAt?: string;
     paymentMethod?: string;
     status: 'pending' | 'awaiting_verification' | 'verified' | 'rejected' | 'overdue';
@@ -92,6 +100,7 @@ class CommissionTrackingService {
 
     /**
      * Create commission record after booking (Book Now or Schedule)
+     * Includes full booking details for admin dashboard
      */
     async createCommissionRecord(
         therapistId: string,
@@ -99,14 +108,19 @@ class CommissionTrackingService {
         bookingId: string,
         bookingDate: string,
         scheduledDate: string | undefined,
-        serviceAmount: number
+        serviceAmount: number,
+        // Enhanced: Additional booking details for display
+        customerName?: string,
+        massageType?: string,
+        duration?: number // in minutes
     ): Promise<CommissionPayment> {
         const commissionRate = 30; // Pro membership: 30%
         const commissionAmount = Math.round(serviceAmount * 0.30);
         
-        // EXACTLY 3-hour deadline from booking completion (SERVER TIME)
+        // EXACTLY 5-hour deadline from booking completion (SERVER TIME)
+        // 🔒 BUSINESS RULE: Therapist must pay 30% within 5 hours or account goes BUSY
         const deadline = new Date(bookingDate);
-        deadline.setHours(deadline.getHours() + 3);
+        deadline.setHours(deadline.getHours() + 5);
 
         try {
             const record = await databases.createDocument(
@@ -123,6 +137,10 @@ class CommissionTrackingService {
                     commissionRate,
                     commissionAmount,
                     paymentDeadline: deadline.toISOString(),
+                    // Enhanced: Booking details for admin dashboard display
+                    customerName: customerName || 'Customer',
+                    massageType: massageType || 'Massage Service',
+                    duration: duration || 60,
                     status: 'pending',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
@@ -243,8 +261,12 @@ class CommissionTrackingService {
         }
     }
 
+    // 🔒 LATE PAYMENT PENALTY - 50,000 IDR for overdue accounts
+    private readonly LATE_PAYMENT_FEE = 50000;
+
     /**
      * Check for overdue payments and deactivate accounts
+     * Adds 50,000 IDR late fee to overdue payments
      */
     async checkOverduePayments(): Promise<void> {
         try {
@@ -262,13 +284,18 @@ class CommissionTrackingService {
             for (const record of overdueRecords.documents) {
                 const payment = record as unknown as unknown as CommissionPayment;
                 
-                // Mark as overdue
+                // Calculate total with late fee
+                const totalWithLateFee = (payment.commissionAmount || 0) + this.LATE_PAYMENT_FEE;
+                
+                // Mark as overdue with late fee applied
                 await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     this.collectionId,
                     payment.$id,
                     {
                         status: 'overdue',
+                        lateFee: this.LATE_PAYMENT_FEE,
+                        totalDue: totalWithLateFee,
                         updatedAt: new Date().toISOString()
                     }
                 );
@@ -276,7 +303,7 @@ class CommissionTrackingService {
                 // Deactivate account (set to busy)
                 await this.deactivateAccount(payment.therapistId);
                 
-                console.log(`❌ Payment overdue for ${payment.therapistName}, account deactivated`);
+                console.log(`❌ Payment overdue for ${payment.therapistName}, account deactivated. Late fee applied: IDR ${this.LATE_PAYMENT_FEE.toLocaleString()}`);
             }
         } catch (error) {
             console.error('Error checking overdue payments:', error);

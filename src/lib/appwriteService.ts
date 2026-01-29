@@ -95,6 +95,9 @@ export { premiumPaymentsService } from './appwriteService.LEGACY';
 // Therapist Menus Service - Extract to services/therapist-menus.service.ts
 export { therapistMenusService } from './appwriteService.LEGACY';
 
+// Therapist Dashboard Service - KTP, Bank Details, Payment Proofs
+export { therapistDashboardService } from './appwrite/services/therapistDashboard.service';
+
 // Simple Chat Service - Lightweight chat implementation
 export { default as simpleChatService } from './simpleChatService';
 

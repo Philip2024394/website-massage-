@@ -76,5 +76,6 @@ export const APPWRITE_CONFIG = {
 // Storage bucket IDs
 // Storage bucket IDs
 export const STORAGE_BUCKETS = {
-    PARTNER_IMAGES: 'partner_images_bucket'
+    PARTNER_IMAGES: 'partner_images_bucket',
+    THERAPIST_DOCUMENTS: '697b3ca50023d08ec335' // KTP, certificates, documents
 };

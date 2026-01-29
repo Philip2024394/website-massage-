@@ -357,8 +357,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         return match || (props.loggedInProvider as any);
     };
 
-    // Loading state
-    if (props.isLoading) {
+    // Loading state - NEVER show loading spinner on landing page to prevent splash screen
+    if (props.isLoading && page !== 'landing') {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <LoadingSpinner />
@@ -441,8 +441,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         return (
             <LazyLoadErrorBoundary fallback={<ErrorFallback />}>
-                {/* PRODUCTION-FREEZE FIX: Temporarily disable Suspense to fix React 19 AsyncMode errors */}
-                {/* <Suspense fallback={<LoadingSpinner />}> */}
+                <Suspense fallback={<LoadingSpinner />}>
                     <Component 
                         {...props} 
                         {...componentProps} 
@@ -451,7 +450,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onLanguageChange={handleLanguageSelect}
                         onNavigate={props.setPage}
                     />
-                {/* </Suspense> */}
+                </Suspense>
             </LazyLoadErrorBoundary>
         );
     };
@@ -1315,8 +1314,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'dashboard':
             // Redirect to appropriate dashboard based on logged-in user type
             if (props.user) {
-                const userType = props.user.userType || props.user.role;
-                if (userType === 'therapist' || props.user.therapistId) {
+                const userType = props.user.userType || props.user.role || props.user.type;
+                if (userType === 'therapist' || props.user.therapistId || props.user.type === 'therapist') {
                     // Redirect to therapist dashboard
                     return renderRoute(therapistRoutes.dashboard.component, {
                         therapist: props.user,
@@ -1562,6 +1561,26 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'analytics':
+        case 'therapist-analytics':
+            console.log('[ROUTE RESOLVE] analytics → TherapistEarningsPage (analytics view)');
+            return renderRoute(therapistRoutes.earnings.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Therapist-specific)
+        case 'therapist-hotel-villa-safe-pass':
+            console.log('[ROUTE RESOLVE] therapist-hotel-villa-safe-pass → TherapistHotelVillaSafePassPage');
+            return renderRoute(therapistRoutes.hotelVillaSafePass.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
                 language: props.language
             });
         

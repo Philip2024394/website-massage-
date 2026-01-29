@@ -4,7 +4,7 @@
  * Never shows raw errors to users
  */
 
-import { databases } from '../config/appwrite';
+import { databases } from '../lib/appwrite';
 import { ID } from 'appwrite';
 
 // Database IDs
