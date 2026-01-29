@@ -97,21 +97,7 @@ export function useBookingSubmit(
             // Continue with booking creation even if check fails
         }
 
-        // Also check sessionStorage for local pending bookings (backup check)
-        const pendingBooking = sessionStorage.getItem('pending_booking');
-        if (pendingBooking) {
-            const parsed = JSON.parse(pendingBooking);
-            const deadline = new Date(parsed.deadline);
-            if (deadline > new Date()) {
-                hasPendingBooking = true;
-                pendingProviderName = parsed.therapistName;
-                console.log('⚠️ Found local pending booking:', parsed);
-                // Continue with chat creation - do NOT block
-            } else {
-                // Expired, clear it
-                sessionStorage.removeItem('pending_booking');
-            }
-        }
+        // SessionStorage check removed - using Appwrite as single source of truth
 
         try {
             setIsCreating(true);

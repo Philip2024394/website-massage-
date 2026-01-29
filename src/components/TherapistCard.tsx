@@ -708,20 +708,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const openWhatsApp = () => {
         devLog('📱 Book Now clicked - showing booking form');
         
-        // Check if there's already a pending booking
-        const pendingBooking = sessionStorage.getItem('pending_booking');
-        if (pendingBooking) {
-            const parsed = JSON.parse(pendingBooking);
-            const deadline = new Date(parsed.deadline);
-            if (deadline > new Date()) {
-                const minutesLeft = Math.ceil((deadline.getTime() - new Date().getTime()) / 60000);
-                alert(`⚠️ You have a pending ${parsed.type} booking with ${parsed.therapistName}.\n\nPlease wait for their response (${minutesLeft} min remaining) before booking with another therapist.`);
-                return;
-            } else {
-                // Expired, clear it
-                sessionStorage.removeItem('pending_booking');
-            }
-        }
+        // Pending booking check moved to Appwrite - sessionStorage removed
+        // The BookingPopup component handles duplicate booking prevention via Appwrite queries
         
         // OBSOLETE: This function is no longer used
         // BookingPopup component handles all booking flows now

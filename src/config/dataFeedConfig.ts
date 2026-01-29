@@ -2,21 +2,21 @@
  * Data Feed Configuration
  * Secure configuration for therapist and places data feed operations
  * 
+ * 🔒 SECURITY WARNING: This file should NOT be used in client-side code
+ * API keys should only be accessed in server-side/backend scripts
+ * 
  * This configuration centralizes API key management for:
- * - Therapist data feeds
- * - Places data feeds
- * - Server-side data synchronization
- * - Admin dashboard backend operations
+ * - Server-side data synchronization (Node.js scripts only)
+ * - Admin dashboard backend operations (server-side only)
  */
 
-// Get API key from environment
-const APPWRITE_API_KEY = import.meta.env.VITE_APPWRITE_API_KEY || 
-                         import.meta.env.APPWRITE_API_KEY || 
-                         process.env.APPWRITE_API_KEY;
+// 🔒 SECURITY: API key should only be accessed in Node.js/backend environment
+// Removed VITE_ prefix to prevent client exposure
+const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
 
-// Validate API key presence
+// Validate API key presence (server-side only)
 if (!APPWRITE_API_KEY && typeof process !== 'undefined' && process.env.NODE_ENV !== 'development') {
-    console.warn('⚠️ APPWRITE_API_KEY not set in environment variables');
+    console.warn('⚠️ APPWRITE_API_KEY not set in environment variables (server-side only)');
 }
 
 export const DATA_FEED_CONFIG = {

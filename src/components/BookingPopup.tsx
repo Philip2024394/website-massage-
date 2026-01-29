@@ -331,19 +331,9 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       
       console.log('📤 STEP 1: Creating immediate booking with validated data');
 
-      // Create the document using the generated bookingId  
+      // Enforce Appwrite as single source of truth
       if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
-        console.warn('⚠️ Bookings collection disabled - simulating booking creation');
-        const mockBooking = {
-          $id: bookingId,
-          ...bookingData,
-          $createdAt: new Date().toISOString(),
-          $updatedAt: new Date().toISOString()
-        };
-        console.log('✅ Mock booking created:', mockBooking);
-        // Still show success to user, but booking won't persist
-        onClose();
-        return;
+        throw new Error('Bookings collection not configured - cannot create booking');
       }
       
       console.log('🔥 STEP 2: Calling Appwrite databases.createDocument...');

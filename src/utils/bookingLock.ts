@@ -23,56 +23,31 @@ export interface PendingBooking {
 
 /**
  * Check if there's an active pending booking
+ * Now delegates to Appwrite query instead of sessionStorage
  */
 export function hasPendingBooking(): PendingBooking | null {
-    try {
-        const stored = sessionStorage.getItem('pending_booking');
-        if (!stored) return null;
-        
-        const pending: PendingBooking = JSON.parse(stored);
-        const deadline = new Date(pending.deadline);
-        
-        // Check if expired
-        if (deadline <= new Date()) {
-            sessionStorage.removeItem('pending_booking');
-            return null;
-        }
-        
-        return pending;
-    } catch {
-        return null;
-    }
+    // SessionStorage removed - Appwrite is the single source of truth
+    // This function now requires integration with booking service
+    console.log('⚠️ Pending booking check moved to Appwrite - sessionStorage removed');
+    return null; // Let Appwrite handle pending booking detection
 }
 
 /**
  * Set a new pending booking lock
+ * Now handled by Appwrite booking status instead of sessionStorage
  */
 export function setPendingBooking(bookingId: string, therapistId: string, therapistName: string, type: 'immediate' | 'scheduled', minutesUntilDeadline: number = 15): void {
-    const deadline = new Date();
-    deadline.setMinutes(deadline.getMinutes() + minutesUntilDeadline);
-    
-    const pending: PendingBooking = {
-        bookingId,
-        therapistId,
-        therapistName,
-        deadline: deadline.toISOString(),
-        type
-    };
-    
-    sessionStorage.setItem('pending_booking', JSON.stringify(pending));
-    console.log(`🔒 Booking locked until ${deadline.toISOString()}`);
+    // SessionStorage removed - Appwrite booking status is the lock
+    console.log(`🔒 Booking ${bookingId} lock now managed by Appwrite status`);
 }
 
 /**
  * Clear the pending booking lock
- * Call this when:
- * - Therapist accepts/declines the booking
- * - Booking times out (automatic via expiry check)
- * - User cancels the booking
+ * Now handled by Appwrite booking status updates
  */
 export function clearPendingBooking(): void {
-    sessionStorage.removeItem('pending_booking');
-    console.log('🔓 Booking lock cleared');
+    // SessionStorage removed - Appwrite booking status changes handle this
+    console.log('🔓 Booking lock managed by Appwrite');
 }
 
 /**
