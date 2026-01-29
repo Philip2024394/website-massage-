@@ -33,83 +33,97 @@ function optionalEnv(key: string): string {
   return import.meta.env[key] || '';
 }
 
-// Appwrite configuration
-export const APPWRITE_CONFIG = {
-  endpoint: requireEnv('VITE_APPWRITE_ENDPOINT', 'https://syd.cloud.appwrite.io/v1'),
-  projectId: requireEnv('VITE_APPWRITE_PROJECT_ID', '68f23b11000d25eb3664'),
-  databaseId: requireEnv('VITE_APPWRITE_DATABASE_ID', '68f76ee1000e64ca8d05'),
-  bucketId: requireEnv('VITE_APPWRITE_BUCKET_ID', '68f76bdd002387590584'),
-  collections: {
-    // Core collections - REQUIRED
-    therapists: requireEnv('VITE_THERAPISTS_COLLECTION_ID', 'therapists_collection_id'),
-    places: requireEnv('VITE_PLACES_COLLECTION_ID', 'places_collection_id'),
-    facial_places: requireEnv('VITE_FACIAL_PLACES_COLLECTION_ID', 'facial_places_collection'),
-    bookings: requireEnv('VITE_BOOKINGS_COLLECTION_ID', 'bookings_collection_id'),
-    reviews: requireEnv('VITE_REVIEWS_COLLECTION_ID', 'reviews_collection_id'),
-    locations: requireEnv('VITE_LOCATIONS_COLLECTION_ID', 'locations'),
-    
-    // Communication - REQUIRED
-    messages: requireEnv('VITE_MESSAGES_COLLECTION_ID', 'chat_messages'),
-    chatMessages: requireEnv('VITE_CHAT_MESSAGES_COLLECTION_ID', 'chat_messages'),
-    chatRooms: requireEnv('VITE_CHAT_ROOMS_COLLECTION_ID', 'chat_rooms'),
-    chatAuditLogs: requireEnv('VITE_CHAT_AUDIT_LOGS_COLLECTION_ID', 'chat_audit_logs'),
-    chatSessions: requireEnv('VITE_CHAT_SESSIONS_COLLECTION_ID', 'chat_sessions'),
-    
-    // Analytics - REQUIRED
-    analytics: 'Analytics',
-    analyticsEvents: 'Analytics Events',
-    agentVisits: 'Agent Visits',
-    
-    // Communication - OPTIONAL
-    chatTranslations: 'Chat Translations',
-    
-    // Core collections - DISABLED (return empty string, force-fail will catch usage)
-    users: optionalEnv('VITE_USERS_COLLECTION_ID'),
-    agents: optionalEnv('VITE_AGENTS_COLLECTION_ID'),
-    admins: optionalEnv('VITE_ADMINS_COLLECTION_ID'),
-    notifications: optionalEnv('VITE_NOTIFICATIONS_COLLECTION_ID'),
-    
-    // Business - OPTIONAL
-    hotels: requireEnv('VITE_HOTELS_COLLECTION_ID', 'hotels_collection_id'),
-    hotelBookings: requireEnv('VITE_HOTEL_BOOKINGS_COLLECTION_ID', 'hotel_bookings'),
-    partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
-    
-    // Content - OPTIONAL
-    massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'Massage Types',
-    customLinks: optionalEnv('VITE_CUSTOM_LINKS_COLLECTION_ID'),
-    imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'Image Assets',
-    loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'Login Backgrounds',
-    translations: optionalEnv('VITE_TRANSLATIONS_COLLECTION_ID'),
-    
-    // Pricing & Payments - OPTIONAL
-    membershipPricing: 'Membership Pricing',
-    pricing: 'Pricing',
-    commissionRecords: 'Commission Records',
-    payments: 'Payments',
-    
-    // Membership & Leads - OPTIONAL
-    leadGenerations: import.meta.env.VITE_LEAD_GENERATIONS_COLLECTION_ID || 'Lead Generations',
-    membershipAgreements: import.meta.env.VITE_MEMBERSHIP_AGREEMENTS_COLLECTION_ID || 'Membership Agreements',
-    membershipUpgrades: import.meta.env.VITE_MEMBERSHIP_UPGRADES_COLLECTION_ID || 'Membership Upgrades',
-    deactivationRequests: import.meta.env.VITE_DEACTIVATION_REQUESTS_COLLECTION_ID || 'Deactivation Requests',
-    leads: optionalEnv('VITE_LEADS_COLLECTION_ID'),
-    
-    // Jobs - OPTIONAL
-    employerJobPostings: 'Employer Job Postings',
-    therapistJobListings: 'Therapist Job Listings',
-    therapistMenus: 'therapist_menus',
-    
-    // Therapist Dashboard Data - KTP, Bank Details, Payment Proofs
-    therapistDashboard: 'therapist_dashboard_',
-    
-    // Other - OPTIONAL
-    verifications: 'Verifications',
-    pushSubscriptions: 'Push Subscriptions',
-    appConfig: 'App Config',
-    uiConfig: 'UI Config',
-    attributes: 'ATTRIBUTES'
+// Lazy-loaded configuration to avoid TDZ errors during module initialization
+let _config: any = null;
+
+function getConfig() {
+  if (!_config) {
+    _config = {
+      endpoint: requireEnv('VITE_APPWRITE_ENDPOINT', 'https://syd.cloud.appwrite.io/v1'),
+      projectId: requireEnv('VITE_APPWRITE_PROJECT_ID', '68f23b11000d25eb3664'),
+      databaseId: requireEnv('VITE_APPWRITE_DATABASE_ID', '68f76ee1000e64ca8d05'),
+      bucketId: requireEnv('VITE_APPWRITE_BUCKET_ID', '68f76bdd002387590584'),
+      collections: {
+        // Core collections - REQUIRED
+        therapists: requireEnv('VITE_THERAPISTS_COLLECTION_ID', 'therapists_collection_id'),
+        places: requireEnv('VITE_PLACES_COLLECTION_ID', 'places_collection_id'),
+        facial_places: requireEnv('VITE_FACIAL_PLACES_COLLECTION_ID', 'facial_places_collection'),
+        bookings: requireEnv('VITE_BOOKINGS_COLLECTION_ID', 'bookings_collection_id'),
+        reviews: requireEnv('VITE_REVIEWS_COLLECTION_ID', 'reviews_collection_id'),
+        locations: requireEnv('VITE_LOCATIONS_COLLECTION_ID', 'locations'),
+        
+        // Communication - REQUIRED
+        messages: requireEnv('VITE_MESSAGES_COLLECTION_ID', 'chat_messages'),
+        chatMessages: requireEnv('VITE_CHAT_MESSAGES_COLLECTION_ID', 'chat_messages'),
+        chatRooms: requireEnv('VITE_CHAT_ROOMS_COLLECTION_ID', 'chat_rooms'),
+        chatAuditLogs: requireEnv('VITE_CHAT_AUDIT_LOGS_COLLECTION_ID', 'chat_audit_logs'),
+        chatSessions: requireEnv('VITE_CHAT_SESSIONS_COLLECTION_ID', 'chat_sessions'),
+        
+        // Analytics - REQUIRED
+        analytics: 'Analytics',
+        analyticsEvents: 'Analytics Events',
+        agentVisits: 'Agent Visits',
+        
+        // Communication - OPTIONAL
+        chatTranslations: 'Chat Translations',
+        
+        // Core collections - DISABLED (return empty string, force-fail will catch usage)
+        users: optionalEnv('VITE_USERS_COLLECTION_ID'),
+        agents: optionalEnv('VITE_AGENTS_COLLECTION_ID'),
+        admins: optionalEnv('VITE_ADMINS_COLLECTION_ID'),
+        notifications: optionalEnv('VITE_NOTIFICATIONS_COLLECTION_ID'),
+        
+        // Business - OPTIONAL
+        hotels: requireEnv('VITE_HOTELS_COLLECTION_ID', 'hotels_collection_id'),
+        hotelBookings: requireEnv('VITE_HOTEL_BOOKINGS_COLLECTION_ID', 'hotel_bookings'),
+        partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
+        
+        // Content - OPTIONAL
+        massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'Massage Types',
+        customLinks: optionalEnv('VITE_CUSTOM_LINKS_COLLECTION_ID'),
+        imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'Image Assets',
+        loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'Login Backgrounds',
+        translations: optionalEnv('VITE_TRANSLATIONS_COLLECTION_ID'),
+        
+        // Pricing & Payments - OPTIONAL
+        membershipPricing: 'Membership Pricing',
+        pricing: 'Pricing',
+        commissionRecords: 'Commission Records',
+        payments: 'Payments',
+        
+        // Membership & Leads - OPTIONAL
+        leadGenerations: import.meta.env.VITE_LEAD_GENERATIONS_COLLECTION_ID || 'Lead Generations',
+        membershipAgreements: import.meta.env.VITE_MEMBERSHIP_AGREEMENTS_COLLECTION_ID || 'Membership Agreements',
+        membershipUpgrades: import.meta.env.VITE_MEMBERSHIP_UPGRADES_COLLECTION_ID || 'Membership Upgrades',
+        deactivationRequests: import.meta.env.VITE_DEACTIVATION_REQUESTS_COLLECTION_ID || 'Deactivation Requests',
+        leads: optionalEnv('VITE_LEADS_COLLECTION_ID'),
+        
+        // Jobs - OPTIONAL
+        employerJobPostings: 'Employer Job Postings',
+        therapistJobListings: 'Therapist Job Listings',
+        therapistMenus: 'therapist_menus',
+        
+        // Therapist Dashboard Data - KTP, Bank Details, Payment Proofs
+        therapistDashboard: 'therapist_dashboard_',
+        
+        // Other - OPTIONAL
+        verifications: 'Verifications',
+        pushSubscriptions: 'Push Subscriptions',
+        appConfig: 'App Config',
+        uiConfig: 'UI Config',
+        attributes: 'ATTRIBUTES'
+      }
+    };
   }
-};
+  return _config;
+}
+
+// Export config via Proxy for backward compatibility
+export const APPWRITE_CONFIG = new Proxy({} as any, {
+  get(_, prop) {
+    return getConfig()[prop];
+  }
+});
 
 // Lazy-initialize Appwrite client to avoid TDZ errors
 let _client: Client | null = null;
@@ -120,15 +134,16 @@ let _functions: Functions | null = null;
 
 export function getClient(): Client {
   if (!_client) {
+    const config = getConfig();
     _client = new Client()
-      .setEndpoint(APPWRITE_CONFIG.endpoint)
-      .setProject(APPWRITE_CONFIG.projectId);
+      .setEndpoint(config.endpoint)
+      .setProject(config.projectId);
     
     // STEP 2: APPWRITE CLIENT AUTH CHECK - Log client initialization
     console.log('[APPWRITE CONFIG] ✅ Appwrite Client initialized');
-    console.log('[APPWRITE CONFIG] Endpoint:', APPWRITE_CONFIG.endpoint);
-    console.log('[APPWRITE CONFIG] Project ID:', APPWRITE_CONFIG.projectId);
-    console.log('[APPWRITE CONFIG] Database ID:', APPWRITE_CONFIG.databaseId);
+    console.log('[APPWRITE CONFIG] Endpoint:', config.endpoint);
+    console.log('[APPWRITE CONFIG] Project ID:', config.projectId);
+    console.log('[APPWRITE CONFIG] Database ID:', config.databaseId);
   }
   return _client;
 }
