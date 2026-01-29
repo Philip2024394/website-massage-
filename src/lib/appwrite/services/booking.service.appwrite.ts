@@ -455,7 +455,7 @@ export const appwriteBookingService = {
       console.log('🔔 [APPWRITE REALTIME] Setting up subscription for therapist:', therapistId);
 
       // Subscribe to bookings collection with filters
-      const unsubscribe = client.subscribe(
+      const unsubscribe = getClient().subscribe(
         `databases.${getDatabaseId()}.collections.${getBookingsCollectionId()}.documents`,
         (response) => {
           console.log('🔔 [APPWRITE REALTIME] Event received:', response.events[0]);
@@ -485,10 +485,16 @@ export const appwriteBookingService = {
   },
 };
 
-// Import client for realtime
+// Import client for realtime - Lazy initialization to avoid TDZ
 import { Client } from 'appwrite';
-const client = new Client()
-  .setEndpoint(APPWRITE_CONFIG.endpoint)
-  .setProject(APPWRITE_CONFIG.projectId);
+let client: Client | null = null;
+const getClient = () => {
+  if (!client) {
+    client = new Client()
+      .setEndpoint(APPWRITE_CONFIG.endpoint)
+      .setProject(APPWRITE_CONFIG.projectId);
+  }
+  return client;
+};
 
 export default appwriteBookingService;
