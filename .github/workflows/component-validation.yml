@@ -57,7 +57,7 @@ jobs:
       run: npm run lint || true  # Don't fail build on lint warnings
       
     - name: Report Results
-      if: failure()
+      if: failure() && github.event_name == 'pull_request'
       uses: actions/github-script@v6
       with:
         script: |
