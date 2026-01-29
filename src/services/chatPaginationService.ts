@@ -366,5 +366,4 @@ export const usePaginatedMessages = (conversationId: string, pageSize: number = 
   };
 };
 
-// Re-export React for the hook
-import * as React from 'react';
+// No React import needed - file only exports utility functions

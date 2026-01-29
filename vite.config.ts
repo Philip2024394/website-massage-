@@ -76,6 +76,7 @@ export default defineConfig({
     }
   ],
   resolve: {
+    dedupe: ['react', 'react-dom'], // 🔒 CRITICAL: Prevent "R is undefined" errors
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@/shared': path.resolve(__dirname, './src/shared'),

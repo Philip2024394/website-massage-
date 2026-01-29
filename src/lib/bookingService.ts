@@ -10,6 +10,8 @@
 import { MessageSenderType } from '../types';
 import { trackDatabaseQuery } from '../services/enterpriseDatabaseService';
 import { appwriteBookingService } from './appwrite/services/booking.service.appwrite';
+import { databases, ID, Query } from './appwrite';
+import { APPWRITE_CONFIG } from './appwrite.config';
 
 export interface Booking {
     $id?: string;
@@ -103,20 +105,64 @@ export const bookingService = {
         console.log('✅ [BOOKING SERVICE] Accepting booking:', bookingId);
         
         try {
+            // 🔒 Step 1: Accept booking (with authorization + state machine validation)
             const booking = await appwriteBookingService.acceptBooking(bookingId, therapistId, therapistName);
 
-            // Create commission record (30% of booking price)
-            const commission = {
-                $id: `comm_${Date.now()}`,
-                bookingId: booking.bookingId,
-                therapistId,
-                amount: Math.round(booking.price * 0.30),
-                status: 'pending',
-                createdAt: new Date().toISOString()
-            };
+            // 🔒 RULE #5: IDEMPOTENT COMMISSION TRIGGER
+            // Check if commission already exists for this booking
+            // Prevents duplicate commission creation from retries or UI bugs
+            console.log('🔒 [COMMISSION] Checking for existing commission...');
+            
+            const existingCommissions = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.commission_records,
+                [
+                    Query.equal('bookingId', booking.bookingId),
+                    Query.limit(1)
+                ]
+            );
 
-            console.log('✅ [BOOKING SERVICE] Booking accepted with 30% commission');
-            return { booking, commission };
+            if (existingCommissions.documents.length > 0) {
+                console.log('✅ [COMMISSION] Commission already exists - skipping creation');
+                console.log('   - Commission ID:', existingCommissions.documents[0].$id);
+                console.log('   - Created at:', existingCommissions.documents[0].$createdAt);
+                console.log('   - Status:', existingCommissions.documents[0].status);
+                
+                return { 
+                    booking, 
+                    commission: existingCommissions.documents[0] 
+                };
+            }
+
+            console.log('🔒 [COMMISSION] No existing commission - creating new one');
+            
+            // Create commission record (30% of booking price)
+            const commissionAmount = Math.round(booking.price * 0.30);
+            const commissionDoc = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.commission_records,
+                ID.unique(),
+                {
+                    bookingId: booking.bookingId,
+                    therapistId,
+                    therapistName,
+                    bookingAmount: booking.price,
+                    commissionRate: 0.30,
+                    commissionAmount,
+                    status: 'PENDING',
+                    completedAt: new Date().toISOString(),
+                    paymentDeadline: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(), // +3 hours
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                }
+            );
+
+            console.log('✅ [COMMISSION] Commission created successfully');
+            console.log('   - Commission ID:', commissionDoc.$id);
+            console.log('   - Amount:', commissionAmount, '(30% of', booking.price + ')');
+            console.log('   - Payment deadline:', commissionDoc.paymentDeadline);
+            
+            return { booking, commission: commissionDoc };
             
         } catch (error) {
             console.error('❌ [BOOKING SERVICE] Failed to accept booking:', error);

@@ -94,31 +94,50 @@ export const appwriteBookingService = {
       validateBookingData(bookingData);
       console.log('✅ [APPWRITE] Validation passed');
 
-      // 🔒 Step 2: Check for existing pending bookings for this therapist (prevent duplicates)
-      const existingBookings = await databases.listDocuments(
+      // 🔒 RULE #1: IDEMPOTENT BOOKING CREATION
+      // Prevent double bookings from clicks, retries, UI bugs
+      // Check: Same customer + same time slot + same therapist within 10 minutes
+      const now = new Date();
+      const lookbackTime = new Date(now.getTime() - 10 * 60 * 1000); // 10 minutes ago
+
+      console.log('🔒 [IDEMPOTENCY CHECK] Searching for duplicates:');
+      console.log('   - Customer:', bookingData.customerWhatsApp);
+      console.log('   - Therapist:', bookingData.therapistId);
+      console.log('   - Time window: Last 10 minutes');
+
+      // Query all recent bookings for this therapist
+      const recentBookings = await databases.listDocuments(
         DATABASE_ID,
         BOOKINGS_COLLECTION_ID,
         [
           Query.equal('therapistId', bookingData.therapistId),
-          Query.equal('status', 'Pending'),
-          Query.limit(5)
+          Query.limit(20)
         ]
       );
 
-      // Filter out expired bookings
-      const now = new Date();
-      const activePendingBookings = existingBookings.documents.filter((doc: any) => {
-        const expiresAt = new Date(doc.expiresAt);
-        return expiresAt > now;
+      // Filter for duplicates: same customer + same time slot
+      const duplicates = recentBookings.documents.filter((doc: any) => {
+        const docCreatedAt = new Date(doc.$createdAt);
+        const isRecent = docCreatedAt > lookbackTime;
+        const sameCustomer = doc.customerWhatsApp === bookingData.customerWhatsApp;
+        const sameTime = doc.time === bookingData.time && doc.date === bookingData.date;
+        const notExpired = doc.status === 'Pending' || doc.status === 'Confirmed';
+        
+        return isRecent && sameCustomer && sameTime && notExpired;
       });
 
-      if (activePendingBookings.length > 0) {
-        console.warn('⚠️ [APPWRITE] Active pending booking exists:', activePendingBookings[0].bookingId);
-        console.warn('⚠️ [APPWRITE] Preventing duplicate booking creation');
-        throw new Error('A pending booking already exists for this therapist. Please wait for it to expire or be processed.');
+      if (duplicates.length > 0) {
+        console.error('❌ [IDEMPOTENCY VIOLATION] Duplicate booking detected!');
+        console.error('   - Existing booking:', duplicates[0].bookingId);
+        console.error('   - Created:', new Date(duplicates[0].$createdAt).toISOString());
+        console.error('   - Status:', duplicates[0].status);
+        throw new Error(
+          `Duplicate booking detected. A booking for this customer with the same therapist and time already exists (${duplicates[0].bookingId}). ` +
+          `This prevents accidental double bookings from UI bugs or retries.`
+        );
       }
 
-      console.log('✅ [APPWRITE] No duplicate bookings found');
+      console.log('✅ [IDEMPOTENCY CHECK] No duplicates found - proceeding with creation');
 
       // 🔒 Step 3: Generate booking ID (only once)
       const bookingId = generateBookingId();
@@ -293,18 +312,80 @@ export const appwriteBookingService = {
         throw new Error('Booking not found');
       }
 
-      // 🔒 Step 2: Validate booking state
-      if (booking.status !== 'Pending') {
-        console.warn('⚠️ [APPWRITE] Booking already processed:', booking.status);
-        return booking;
+      // 🔒 RULE #3: THERAPIST AUTHORIZATION CHECK
+      // Verify the therapist making the request matches the booking's assigned therapist
+      // This prevents unauthorized therapists from accepting other therapists' bookings
+      console.log('🔒 [AUTHORIZATION] Verifying therapist identity:');
+      console.log('   - Requesting therapist:', therapistId);
+      console.log('   - Booking assigned to:', booking.therapistId);
+      
+      if (booking.therapistId !== therapistId) {
+        console.error('❌ [AUTHORIZATION] Therapist mismatch detected!');
+        console.error('   - Requesting therapist:', therapistId, '(' + therapistName + ')');
+        console.error('   - Booking assigned to:', booking.therapistId, '(' + booking.therapistName + ')');
+        console.error('   - Booking ID:', bookingId);
+        throw new Error(
+          `Authorization failed: This booking is assigned to therapist '${booking.therapistName}' (${booking.therapistId}). ` +
+          `You cannot accept bookings assigned to other therapists.`
+        );
+      }
+      
+      console.log('✅ [AUTHORIZATION] Therapist identity verified');
+
+      // 🔒 RULE #2: BOOKING STATE MACHINE VALIDATION
+      // Only allow valid state transitions to prevent illegal operations
+      // Allowed: PENDING → ACCEPTED, PENDING → REJECTED, PENDING → EXPIRED
+      // NOT allowed: ACCEPTED → PENDING, COMPLETED → PENDING, etc.
+      
+      console.log('🔒 [STATE MACHINE] Current status:', booking.status);
+      console.log('🔒 [STATE MACHINE] Requested transition: → Confirmed');
+      
+      const validTransitionsFromStatus: Record<string, string[]> = {
+        'Pending': ['Confirmed', 'Cancelled', 'Expired'],
+        'Confirmed': ['Completed', 'Cancelled'],
+        'Completed': [], // Terminal state
+        'Cancelled': [], // Terminal state
+        'Expired': []    // Terminal state
+      };
+
+      const allowedNextStates = validTransitionsFromStatus[booking.status] || [];
+      
+      if (!allowedNextStates.includes('Confirmed')) {
+        console.error('❌ [STATE MACHINE] Illegal transition rejected!');
+        console.error('   - Current state:', booking.status);
+        console.error('   - Attempted transition: → Confirmed');
+        console.error('   - Allowed transitions:', allowedNextStates);
+        throw new Error(
+          `Illegal state transition: Cannot move from '${booking.status}' to 'Confirmed'. ` +
+          `Allowed transitions: ${allowedNextStates.join(', ') || 'none (terminal state)'}`
+        );
       }
 
-      // 🔒 Step 3: Check if expired
+      console.log('✅ [STATE MACHINE] Valid transition confirmed');
+
+      // 🔒 RULE #4: TIME VALIDITY CHECK (with logging)
+      // Check if booking has expired (soft enforcement for now)
       const now = new Date();
       const expiresAt = new Date(booking.expiresAt);
+      
       if (expiresAt < now) {
-        throw new Error('Cannot accept expired booking');
+        const expiredMinutes = Math.floor((now.getTime() - expiresAt.getTime()) / 60000);
+        console.error('❌ [TIME VALIDITY] Booking has expired!');
+        console.error('   - Expired at:', expiresAt.toISOString());
+        console.error('   - Current time:', now.toISOString());
+        console.error('   - Expired by:', expiredMinutes, 'minutes');
+        console.error('   - Booking ID:', bookingId);
+        
+        // Hard enforcement: reject expired bookings
+        throw new Error(
+          `Cannot accept expired booking. Expired ${expiredMinutes} minutes ago at ${expiresAt.toISOString()}`
+        );
       }
+      
+      const remainingMinutes = Math.floor((expiresAt.getTime() - now.getTime()) / 60000);
+      console.log('✅ [TIME VALIDITY] Booking is still valid');
+      console.log('   - Time remaining:', remainingMinutes, 'minutes');
+      console.log('   - Expires at:', expiresAt.toISOString());
 
       // 🔒 Step 4: Update booking status in Appwrite
       const updatedDoc = await databases.updateDocument(
