@@ -118,7 +118,7 @@ let _account: Account | null = null;
 let _storage: Storage | null = null;
 let _functions: Functions | null = null;
 
-function initializeClient(): Client {
+export function getClient(): Client {
   if (!_client) {
     _client = new Client()
       .setEndpoint(APPWRITE_CONFIG.endpoint)
@@ -133,45 +133,70 @@ function initializeClient(): Client {
   return _client;
 }
 
-// Initialize services lazily
+// Initialize services lazily - export getter functions
+export function getDatabases(): Databases {
+  if (!_databases) {
+    _databases = new Databases(getClient());
+  }
+  return _databases;
+}
+
+export function getAccount(): Account {
+  if (!_account) {
+    _account = new Account(getClient());
+  }
+  return _account;
+}
+
+export function getStorage(): Storage {
+  if (!_storage) {
+    _storage = new Storage(getClient());
+  }
+  return _storage;
+}
+
+export function getFunctions(): Functions {
+  if (!_functions) {
+    _functions = new Functions(getClient());
+  }
+  return _functions;
+}
+
+// Legacy exports for backward compatibility - these call the getters
 export const client = new Proxy({} as Client, {
   get(_, prop) {
-    return (initializeClient() as any)[prop];
+    return (getClient() as any)[prop];
   }
 });
 
 export const databases = new Proxy({} as Databases, {
   get(_, prop) {
-    if (!_databases) _databases = new Databases(initializeClient());
-    return (_databases as any)[prop];
+    return (getDatabases() as any)[prop];
   }
 });
 
 export const account = new Proxy({} as Account, {
   get(_, prop) {
-    if (!_account) _account = new Account(initializeClient());
-    return (_account as any)[prop];
+    return (getAccount() as any)[prop];
   }
 });
 
 export const storage = new Proxy({} as Storage, {
   get(_, prop) {
-    if (!_storage) _storage = new Storage(initializeClient());
-    return (_storage as any)[prop];
+    return (getStorage() as any)[prop];
   }
 });
 
 export const functions = new Proxy({} as Functions, {
   get(_, prop) {
-    if (!_functions) _functions = new Functions(initializeClient());
-    return (_functions as any)[prop];
+    return (getFunctions() as any)[prop];
   }
 });
 
 // Verify user session before any database operations
 async function validateSession() {
   try {
-    const session = await account.get();
+    const session = await getAccount().get();
     console.log('[APPWRITE CONFIG] ✅ User session active - User ID:', session.$id);
     return session;
   } catch (error) {
