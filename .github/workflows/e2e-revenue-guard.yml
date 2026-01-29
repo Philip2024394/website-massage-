@@ -104,8 +104,6 @@ jobs:
     name: 💰 Revenue Guard - Commission Verification
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # TEMPORARILY DISABLED - TDZ fix deployment urgent
-    if: false
     
     steps:
       - name: 📥 Checkout code
