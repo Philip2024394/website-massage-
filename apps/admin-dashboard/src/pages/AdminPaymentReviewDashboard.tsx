@@ -16,7 +16,7 @@ import {
   Download,
   Star,
   TrendingUp,
-  BarChart3 as Activity
+  BarChart3
 } from 'lucide-react';
 import { paymentProofService } from '../../../src/services/paymentProofService';
 import { showToast } from '../../../src/utils/showToastPortal';
@@ -326,7 +326,7 @@ const AdminPaymentReviewDashboard: React.FC = () => {
           {loading ? (
             <div className="p-8 text-center">
               <div className="flex items-center justify-center gap-2">
-                <Activity className="w-5 h-5 text-orange-500 animate-pulse" />
+                <BarChart3 className="w-5 h-5 text-orange-500 animate-pulse" />
                 <span className="text-gray-600">Loading payment proofs...</span>
               </div>
             </div>
