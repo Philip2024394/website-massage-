@@ -18,8 +18,8 @@ export type MessageSenderType = 'system' | 'user' | 'therapist'
 // Service duration enum for validation
 export type ServiceDuration = '60' | '90' | '120'
 
-// Core booking data model
-export interface Booking {
+// Core booking data model for chat-driven booking flow
+export interface ChatBooking {
   readonly id: string
   readonly userId: string
   readonly therapistId?: string // Optional until matched
@@ -53,7 +53,7 @@ export interface ChatMessage {
   readonly timestamp: string
   readonly messageType?: 'text' | 'system_card' | 'therapist_card'
   readonly metadata?: {
-    booking?: Partial<Booking>
+    booking?: Partial<ChatBooking>
     therapist?: TherapistMatch
     systemAction?: SystemMessageAction
   }
