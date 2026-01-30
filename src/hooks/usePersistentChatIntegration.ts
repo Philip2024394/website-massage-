@@ -115,7 +115,6 @@ export function usePersistentChatIntegration() {
       price120: chatTherapist.price120,
       pricing: chatTherapist.pricing
     });
-    });
     
     return chatTherapist;
   }, []);
