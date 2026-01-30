@@ -14,6 +14,23 @@
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
 
+## 🚨 CRITICAL: IMMUTABLE COMPONENTS - NEVER TOUCH
+
+### MainLandingPage.tsx - HIGHEST PROTECTION LEVEL
+- **STATUS**: SEALED, IMMUTABLE, UNREADABLE
+- **LOCATION**: `src/pages/MainLandingPage.tsx`
+- **RESTRICTION**: AI is FORBIDDEN to open, read, scroll, edit, or reason about this file
+- **REASON**: Core landing page - entry point for ALL users - ANY modification breaks entire application
+- **SOLUTION**: All fixes must occur OUTSIDE this file in:
+  - Router entry logic (`AppRouter.tsx`, `useURLRouting.ts`)
+  - Error boundaries and recovery systems
+  - Guards before page load (auth, validation, pre-load conditions)
+  - Network/Appwrite layer (`*.service.ts` files)
+  - CSS/global layout (NOT page JSX - only `index.css`)
+  - Context layer (`CityContext.tsx` for city logic)
+- **VIOLATION CONSEQUENCE**: Landing page disappears - affects ALL users
+- **ARCHITECTURE**: Country logic stays in file (FROZEN), city logic in CityContext.tsx (EDGE)
+
 ## 🎯 **RULE #1: UNIQUE NAMING SYSTEM (PERMANENT)**
 
 **✅ ESTABLISHED PATTERN - MUST ALWAYS FOLLOW:**
