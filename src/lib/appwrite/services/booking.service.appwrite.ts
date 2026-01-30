@@ -50,10 +50,8 @@ function validateBookingData(data: any): void {
     }
   });
 
-  // 🔒 Special validation: customerName cannot be 'Guest'
-  if (data.customerName === 'Guest') {
-    throw new Error('customerName cannot be "Guest". Real name required.');
-  }
+  // ✅ GUEST BOOKING ENABLED: "Guest" is now accepted as valid customerName
+  // Removed restriction to allow anonymous guest bookings
 
   if (missing.length > 0) {
     throw new Error(`Missing required fields: ${missing.join(', ')}`);
@@ -155,6 +153,9 @@ export const appwriteBookingService = {
         therapistId: bookingData.therapistId,
         therapistName: bookingData.therapistName,
         therapistType: 'therapist',
+        providerId: bookingData.therapistId, // ✅ REQUIRED: For Appwrite schema compatibility
+        providerType: 'therapist', // ✅ REQUIRED: For Appwrite schema - indicates this is a therapist booking
+        providerName: bookingData.therapistName, // ✅ REQUIRED: For Appwrite schema - therapist's name
         
         // Customer info (REQUIRED)
         customerId: bookingData.customerId || null,

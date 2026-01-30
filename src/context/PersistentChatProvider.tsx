@@ -724,12 +724,15 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         setChatState(prev => ({
           ...prev,
           messages,
-          bookingStep: 'chat', // Go directly to chat if there's history
+          // ✅ FIX: Only go to 'chat' step if there's an actual booking
+          // Otherwise stay in 'duration' step to allow new booking creation
+          bookingStep: prev.currentBooking ? 'chat' : prev.bookingStep,
         }));
         
         // 🔓 UNLOCK CHAT when there's existing conversation
         setIsLocked(false);
         console.log('🔓 Chat unlocked - existing conversation loaded');
+        console.log('📋 BookingStep:', prev.currentBooking ? 'chat (has booking)' : 'duration (no booking)');
       }
     }
   }, [currentUserId, loadMessages]);
@@ -1148,9 +1151,10 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     }
     
     // 🔒 CRITICAL: Validate customerName is present (REQUIRED field)
+    // ✅ GUEST BOOKING ENABLED: Allow "Guest" as valid name for anonymous users
     const customerName = currentUserName || chatState.customerName;
-    if (!customerName || customerName === 'Guest') {
-      console.error('❌ CRITICAL: customerName is missing or invalid');
+    if (!customerName) {
+      console.error('❌ CRITICAL: customerName is missing');
       console.error('❌ currentUserName:', currentUserName);
       console.error('❌ chatState.customerName:', chatState.customerName);
       addSystemNotification('❌ Customer name is required. Please enter your name in the form.');
@@ -1159,13 +1163,17 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     
     // 📱 ADMIN-ONLY: WhatsApp is optional and for admin purposes only
     // Save to localStorage but NOT required for booking creation
-    const customerWhatsApp = bookingData.customerWhatsApp || chatState.customerWhatsApp || '';
+    let customerWhatsApp = bookingData.customerWhatsApp || chatState.customerWhatsApp || '';
+    
+    // ✅ CRITICAL: Strip + prefix from phone numbers for Appwrite compatibility
+    // Appwrite may have issues with + in string fields
+    customerWhatsApp = customerWhatsApp.replace(/^\+/, '');
     
     // 💾 Save WhatsApp to localStorage for admin tracking (if provided)
     if (customerWhatsApp) {
       try {
         localStorage.setItem('customer_whatsapp_admin', customerWhatsApp);
-        console.log('💾 [ADMIN] WhatsApp saved to localStorage:', customerWhatsApp);
+        console.log('💾 [ADMIN] WhatsApp saved to localStorage (without +):', customerWhatsApp);
       } catch (e) {
         console.warn('⚠️ Failed to save WhatsApp to localStorage:', e);
       }
@@ -1173,7 +1181,8 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     
     // 📞 Use phone number for booking (required field)
     // WhatsApp is optional and only used for admin tracking
-    const customerPhone = bookingData.customerPhone || chatState.customerPhone || '';
+    let customerPhone = bookingData.customerPhone || chatState.customerPhone || '';
+    customerPhone = customerPhone.replace(/^\+/, ''); // Strip + prefix
     
     if (!customerPhone) {
       console.error('❌ ERROR: customerPhone is missing');
@@ -1198,11 +1207,13 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       serviceType: bookingData.serviceType || 'Traditional Massage',
       duration,
       price,
-      location: bookingData.locationZone || chatState.customerLocation || 'Unknown',
+      location: bookingData.locationZone || chatState.customerLocation || bookingData.address || 'Address provided in chat',
       locationType: (bookingData.locationType as 'home' | 'hotel' | 'villa') || 'home',
-      address: bookingData.address || chatState.customerLocation || 'Unknown Address',
+      address: bookingData.address || chatState.customerLocation || 'Address provided in chat',
       roomNumber: bookingData.roomNumber || null,
       massageFor: (bookingData.massageFor as 'male' | 'female' | 'children') || 'male',
+      // 📍 GPS coordinates are OPTIONAL - don't send if not available
+      coordinates: bookingData.coordinates || undefined,
       date: bookingData.scheduledDate || chatState.selectedDate || new Date().toISOString().split('T')[0],
       time: bookingData.scheduledTime || chatState.selectedTime || new Date().toLocaleTimeString('en-US', { hour12: false }),
       status: 'pending' as const,
@@ -1278,9 +1289,38 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
       };
       
-      // Update chat state for UI display
-      setChatState(prev => ({ ...prev, currentBooking: chatBooking }));
-      setChatState(prev => ({ ...prev, bookingStep: 'chat' }));
+      console.log('📋 [BOOKING] Chat booking object created:', chatBooking);
+      console.log('📋 [BOOKING] Starting countdown and updating UI state...');
+      
+      // ✅ FIX: Update state in ONE batch to avoid race conditions
+      // Set both booking and countdown together, then switch to chat step
+      setChatState(prev => { 
+        const newState = {
+          ...prev, 
+          currentBooking: chatBooking,
+          bookingCountdown: 300, // Initialize countdown immediately
+          bookingStep: 'chat'
+        };
+        console.log('📋 [STATE UPDATE] New chat state:', {
+          hasBooking: !!newState.currentBooking,
+          bookingId: newState.currentBooking?.bookingId,
+          countdown: newState.bookingCountdown,
+          step: newState.bookingStep
+        });
+        return newState;
+      });
+      
+      // Wait a tick for React to process state update
+      setTimeout(() => {
+        console.log('📋 [STATE VERIFY] Current state after update:', {
+          hasBooking: !!chatState.currentBooking,
+          bookingId: chatState.currentBooking?.bookingId,
+          countdown: chatState.bookingCountdown,
+          step: chatState.bookingStep
+        });
+      }, 100);
+      
+      console.log('✅ [BOOKING] State updated - booking should now be visible in UI');
       
       // 🔥 LOCALSTORAGE: Skip chat room creation for now (using in-memory chat)
       console.log('📦 [LOCALSTORAGE] Skipping Appwrite chat room creation - using in-memory chat');
@@ -1293,6 +1333,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       }
       
       // Start 5 minute countdown for therapist response
+      // Note: Initial value already set in state above
       startCountdown(300, async () => {
         console.log('⏰ [ENGINE] 5-minute timer expired for booking:', engineBooking.bookingId);
         // Engine handles expiration automatically

@@ -200,10 +200,41 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
               {/* Message bubble */}
               <div className={`${style.bubble} rounded-2xl px-4 py-3`}>
-                <p className="text-sm whitespace-pre-wrap break-words">
-                  {message.content}
-                </p>
-                
+                {/* Special rendering for discount/voucher messages */}
+                {message.content && /discount code|voucher code|discount/i.test(message.content) && /code[:\s]/i.test(message.content) ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-lg font-bold text-orange-600">🎁 Voucher Code</span>
+                    <span className="text-2xl font-mono font-bold text-green-700 bg-green-50 px-4 py-2 rounded-lg border border-green-200 mb-2 shadow-sm">
+                      {(() => {
+                        // Extract code from message.content
+                        const match = message.content.match(/code[:\s]*([A-Z0-9\-]+)/i);
+                        return match ? match[1] : '—';
+                      })()}
+                    </span>
+                    <button
+                      className="mt-2 px-6 py-2 bg-gradient-to-r from-orange-400 via-orange-500 to-amber-400 text-white font-bold rounded-full shadow-lg animate-pulse focus:outline-none focus:ring-2 focus:ring-orange-300 transition-all text-lg"
+                      onClick={() => {
+                        // Custom event to open order page and activate discount
+                        const code = (() => {
+                          const match = message.content.match(/code[:\s]*([A-Z0-9\-]+)/i);
+                          return match ? match[1] : '';
+                        })();
+                        window.dispatchEvent(new CustomEvent('openOrderPageWithDiscount', {
+                          detail: {
+                            therapistId: message.therapistId || '',
+                            discountCode: code
+                          }
+                        }));
+                      }}
+                    >
+                      Book Now & Use Discount
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap break-words">
+                    {message.content}
+                  </p>
+                )}
                 {/* Timestamp and read receipt */}
                 <div className={`flex items-center gap-1 mt-2 text-xs opacity-70 ${style.alignment}`}>
                   <span>{formatTime(message.timestamp)}</span>

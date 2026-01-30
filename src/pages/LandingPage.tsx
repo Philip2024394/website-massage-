@@ -599,7 +599,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     window.location.href = '/home';
                 }
             }
-        }, 300);
+        }, 100);
     };
     
     // Handle manual country change via modal
@@ -731,7 +731,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         window.location.href = '/home';
                     }
                 }
-            }, 500);
+            }, 100);
             
         } catch (error) {
             console.error('❌ GPS detection failed:', error);

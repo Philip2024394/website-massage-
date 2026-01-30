@@ -54,7 +54,9 @@ export const useAllHooks = () => {
             }
         };
 
-        initializeData();
+        // ⚡ PERFORMANCE: Delay data fetch until after first paint
+        const timer = setTimeout(initializeData, 300);
+        return () => clearTimeout(timer);
     }, []); // Empty dependency array - only run once on mount
     
     // 🔄 Listen for discount activation events and refresh data

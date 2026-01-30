@@ -10,6 +10,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
+// Import error boundaries directly (not lazy) to avoid Suspense issues
+import ErrorBoundary from './src/components/ErrorBoundary';
+import AppErrorBoundary from './src/components/AppErrorBoundary';
+
 // Progressive loading stages
 let loadingProgress = 0;
 let currentStage: 'initializing' | 'loading' | 'authenticating' | 'finalizing' = 'initializing';
@@ -18,34 +22,19 @@ function updateLoadingProgress(progress: number, stage?: typeof currentStage) {
   loadingProgress = Math.min(progress, 100);
   if (stage) currentStage = stage;
   
-  // Update any visible loading indicators
-  const eliteLoading = document.querySelector('.elite-loading span');
-  if (eliteLoading) {
-    const messages = {
-      initializing: 'Initializing IndaStreet',
-      loading: 'Loading Services',
-      authenticating: 'Securing Connection',
-      finalizing: 'Almost Ready'
-    };
-    eliteLoading.textContent = messages[currentStage];
-  }
-  
   console.log(`⚡ Loading: ${progress}% - ${currentStage}`);
 }
 
 // Stage 1: Core React initialization
 updateLoadingProgress(15, 'initializing');
 
-// Lazy load heavy components to improve initial bundle size
+// Lazy load only the main App component
 const App = React.lazy(() => 
   import('./App').then(module => {
-    updateLoadingProgress(40, 'loading');
+    updateLoadingProgress(60, 'loading');
     return module;
   })
 );
-
-const ErrorBoundary = React.lazy(() => import('./src/components/ErrorBoundary'));
-const AppErrorBoundary = React.lazy(() => import('./src/components/AppErrorBoundary'));
 
 // Stage 2: Service initialization
 updateLoadingProgress(25, 'loading');
@@ -75,39 +64,31 @@ async function initializeApp() {
     
     // Elite loading wrapper with progress tracking
     const AppWithLoading = () => (
-      <React.Suspense 
-        fallback={
-          <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-white mb-4 animate-pulse">IndaStreet</h1>
-              <div className="flex gap-2 justify-center">
-                {[0, 1, 2].map(i => (
-                  <div 
-                    key={i}
-                    className="w-3 h-3 bg-white rounded-full animate-bounce" 
-                    style={{ animationDelay: `${i * 150}ms` }}
-                  />
-                ))}
+      <ErrorBoundary>
+        <AppErrorBoundary>
+          <React.Suspense 
+            fallback={
+              <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600">
+                <div className="text-center">
+                  <h1 className="text-4xl font-bold text-white mb-4 animate-pulse">IndaStreet</h1>
+                  <div className="flex gap-2 justify-center">
+                    {[0, 1, 2].map(i => (
+                      <div 
+                        key={i}
+                        className="w-3 h-3 bg-white rounded-full animate-bounce" 
+                        style={{ animationDelay: `${i * 150}ms` }}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-white/90 mt-4 font-medium">{currentStage}...</p>
+                </div>
               </div>
-              <p className="text-white/90 mt-4 font-medium">{currentStage}...</p>
-              <div className="w-48 bg-white/20 rounded-full h-1 mt-4 mx-auto">
-                <div 
-                  className="h-1 rounded-full bg-white transition-all duration-300"
-                  style={{ width: `${loadingProgress}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        }
-      >
-        <React.Suspense fallback={<div>Loading error handlers...</div>}>
-          <ErrorBoundary>
-            <AppErrorBoundary>
-              <App />
-            </AppErrorBoundary>
-          </ErrorBoundary>
-        </React.Suspense>
-      </React.Suspense>
+            }
+          >
+            <App />
+          </React.Suspense>
+        </AppErrorBoundary>
+      </ErrorBoundary>
     );
 
     updateLoadingProgress(85, 'finalizing');

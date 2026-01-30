@@ -75,6 +75,7 @@ import {
   RealTimeNotificationEnhancer
 } from './chat';
 import { BookingProgress } from './BookingProgress';
+import { SimpleBookingWelcome } from '../modules/chat/SimpleBookingWelcome';
 
 export function PersistentChatWindow() {
   const {
@@ -112,7 +113,8 @@ export function PersistentChatWindow() {
     if (
       chatState.isOpen &&
       chatState.bookingStep === 'chat' &&
-      chatState.currentBooking !== undefined
+      chatState.currentBooking !== undefined &&
+      chatState.currentBooking !== null
     ) {
       try {
         // Validate booking data schema
@@ -143,15 +145,13 @@ export function PersistentChatWindow() {
   
   // RULE 2: Guard against opening chat without booking (ONLY for existing chat step)
   // ✅ CRITICAL: Allow Order Now flow - don't guard against initial booking creation
-  if (chatState.isOpen && !chatState.currentBooking && chatState.bookingStep === 'chat') {
-    console.log('🔒 [GUARD] Chat step requires existing booking - this is for existing chats only');
-    console.log('🔒 [GUARD] Order Now flow bypasses this guard as it CREATES the booking');
-    // Only show warning for unexpected chat-step-without-booking scenarios
-    // Don't throw error that blocks Order Now flow
-    console.warn('⚠️ Chat opened in chat step without booking - may need booking recovery');
-  } else if (chatState.bookingStep === 'details') {
-    console.log('📝 [ORDER NOW] Details step - ready for Order Now booking creation');
-  }
+  // Note: This warning appears when loading old messages without an active booking
+  React.useEffect(() => {
+    if (chatState.isOpen && !chatState.currentBooking && chatState.bookingStep === 'chat') {
+      console.log('🔒 [GUARD] Chat in "chat" step without active booking - likely old messages');
+      console.log('💡 [INFO] This is normal when viewing message history. Order Now flow will create new booking.');
+    }
+  }, [chatState.isOpen, chatState.currentBooking, chatState.bookingStep]);
   
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -547,13 +547,16 @@ export function PersistentChatWindow() {
       }
     }, 8000);
     
-    // Monitor for URL changes
+    // Monitor for URL changes and RESTORE if changed
     const originalURL = window.location.href;
     const urlCheckInterval = setInterval(() => {
       if (window.location.href !== originalURL) {
         console.error('🚨 URL CHANGED UNEXPECTEDLY!');
         console.error('Original URL:', originalURL);
         console.error('New URL:', window.location.href);
+        console.log('🔧 RESTORING original URL to prevent booking flow interruption...');
+        window.history.replaceState({}, '', originalURL);
+        console.log('✅ URL restored to:', window.location.href);
         clearInterval(urlCheckInterval);
       }
     }, 100);
@@ -1075,7 +1078,7 @@ export function PersistentChatWindow() {
         }}
       >
       {/* CSS for hiding webkit scrollbars */}
-      <style jsx>{`
+      <style>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none; /* Safari and Chrome */
         }
@@ -1217,36 +1220,63 @@ export function PersistentChatWindow() {
       )}
 
       {/* Regular booking flow for customers */}
-      {chatState.currentBooking && (() => {
-        try {
-          // Validate booking data before render
-          const validatedBooking = BookingChatLockIn.validateBookingData(
-            chatState.currentBooking
-          );
-          const validatedCountdown = BookingChatLockIn.validateCountdownTimer(
-            chatState.bookingCountdown
-          );
-          
-          // RULE: Only BookingWelcomeBanner can render booking info
-          // No inline booking banners allowed
-          return (
-            <BookingWelcomeBanner
-              currentBooking={validatedBooking}
-              bookingCountdown={validatedCountdown}
-              onCancelBooking={() => cancelBooking()}
-            />
-          );
-        } catch (error) {
-          console.error('🚨 CRITICAL: Failed to render BookingWelcomeBanner:', error);
-          console.error('📋 BOOKING STATE:', chatState.currentBooking);
-          console.error('📋 BOOKING STEP:', bookingStep);
-          // DON'T CLOSE CHAT - Just show a temporary error message
-          // This error often occurs during Order Now submission process
-          return (
-            <div style={{display: 'none'}}></div>
-          );
-        }
-      })()}
+      {chatState.currentBooking && (
+        <>
+          {(() => {
+            try {
+              return (
+                <SimpleBookingWelcome
+                  therapistName={chatState.therapist?.name || 'Therapist'}
+                  therapistImage={chatState.therapist?.mainImage || chatState.therapist?.profileImage}
+                  bookingCountdown={chatState.bookingCountdown}
+                  bookingId={chatState.currentBooking.bookingId}
+                  onCancelBooking={() => cancelBooking()}
+                />
+              );
+            } catch (error) {
+              // Fallback to simple text format
+              return (
+                <div style={{ 
+                  padding: '12px', 
+                  backgroundColor: '#f0f9ff', 
+                  borderBottom: '1px solid #ddd',
+                  fontSize: '14px',
+                  fontFamily: 'system-ui, -apple-system, sans-serif'
+                }}>
+                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                    📋 Booking Request Sent to {chatState.therapist?.name || 'Therapist'}
+                  </div>
+                  {chatState.currentBooking.bookingId && (
+                    <div style={{ fontSize: '12px', color: '#666', fontFamily: 'monospace' }}>
+                      ID: {chatState.currentBooking.bookingId}
+                    </div>
+                  )}
+                  {chatState.bookingCountdown && (
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                      ⏳ Waiting for response... ({Math.floor(chatState.bookingCountdown / 60)}:{String(chatState.bookingCountdown % 60).padStart(2, '0')})
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => cancelBooking()}
+                    style={{
+                      marginTop: '8px',
+                      padding: '4px 12px',
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    Cancel Booking
+                  </button>
+                </div>
+              );
+            }
+          })()}
+        </>
+      )}
       </>
 
       {/* Content area */}

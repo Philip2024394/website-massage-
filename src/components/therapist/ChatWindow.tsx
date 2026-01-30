@@ -128,8 +128,8 @@ export default function ChatWindow({
     const [bookingStatus, setBookingStatus] = useState<'pending' | 'accepted' | 'rejected' | null>(null);
     const [processingAction, setProcessingAction] = useState(false);
     const [showPaymentCard, setShowPaymentCard] = useState(false);
-    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-    const [showDiscountModal, setShowDiscountModal] = useState(false);
+    // Therapist role check
+    const isTherapist = providerRole === 'therapist';
     const [enlargedPaymentCard, setEnlargedPaymentCard] = useState<any>(null);
     const alertAudioRef = useRef<HTMLAudioElement | null>(null);
     // Language is now managed globally - therapist dashboard uses Indonesian by default
@@ -138,98 +138,19 @@ export default function ChatWindow({
     const messageHistoryBufferRef = useRef<string[]>([]);
     // const therapistLanguage = 'id'; // Therapist dashboard uses Indonesian (unused)
 
-    // Load initial messages
-    useEffect(() => {
-        if (isOpen) {
-            loadMessages();
-        }
-    }, [isOpen, bookingId]);
-
-    // Loud looping alert while booking is pending
-    useEffect(() => {
-        if (!alertAudioRef.current) {
-            const audio = new Audio('/sounds/booking-notification.mp3');
-            audio.loop = true;
-            audio.volume = 1;
-            alertAudioRef.current = audio;
-        }
-
-        if (isOpen && bookingStatus === 'pending') {
-            alertAudioRef.current?.play().catch(() => {});
-        } else {
-            alertAudioRef.current?.pause();
-            if (alertAudioRef.current) alertAudioRef.current.currentTime = 0;
-        }
-
-        return () => {
-            alertAudioRef.current?.pause();
-        };
-    }, [isOpen, bookingStatus]);
-
-    // Auto-scroll to bottom
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
-
-    const pushToMessageHistory = (text: string) => {
-        const normalized = text.trim();
-        if (!normalized) return;
-        messageHistoryBufferRef.current = [...messageHistoryBufferRef.current, normalized].slice(-8);
-    };
-
-    const logBlockedContent = (detection: PiiDetectionResult, context: AuditContext, content: string) => {
-        const payload = {
-            userId: providerId,
-            role: 'therapist' as const,
-            bookingId,
-            conversationId: `customer_${customerId}_therapist_${providerId}`,
-            detectedType: detection.type || 'phone',
-            detectedPattern: detection.detectedPattern,
-            reason: detection.reason,
-            excerpt: detection.excerpt || content.slice(0, 140),
-            fullContent: content,
-            context
-        };
-        void auditLoggingService.logBlockedAttempt(payload);
-    };
-
-    const blockAndAlert = (detection: PiiDetectionResult, context: AuditContext, content: string) => {
-        logBlockedContent(detection, context, content);
-        alert(getBlockedMessage('id'));
-    };
-
-    const handleTextareaPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
-        const payload = event.clipboardData.getData('text/plain');
-        const detection = detectPIIContent(payload);
-        if (detection.isBlocked) {
-            event.preventDefault();
-            blockAndAlert(detection, 'paste', payload);
-        }
-    };
-
-    useEffect(() => {
-        const recentMessages = messages
-            .map((msg) => (msg.message || '').trim())
-            .filter(Boolean)
-            .slice(-8);
-        messageHistoryBufferRef.current = recentMessages;
-    }, [messages]);
-
+    // Load messages function
     const loadMessages = async () => {
         try {
-            const conversationId = `customer_${customerId}_therapist_${providerId}`;
-            
-            // Try to fetch from database first
+            const conversationId = `${providerId}_${customerId}`;
             const dbMessages = await simpleChatService.getMessages(conversationId);
-            
-            if (dbMessages.length > 0) {
-                // Use database messages
+
+            if (dbMessages && dbMessages.length > 0) {
                 const formatted = dbMessages.map(msg => ({
                     $id: msg.$id || Date.now().toString(),
                     $createdAt: msg.$createdAt || new Date().toISOString(),
                     senderId: msg.senderId,
                     senderName: msg.senderName,
-                    senderAvatar: (msg as any).senderAvatar || (msg as any).receiverAvatar, // Get avatar from message
+                    senderAvatar: (msg as any).senderAvatar || (msg as any).receiverAvatar,
                     message: msg.message,
                     messageType: msg.messageType as any,
                     isRead: msg.isRead,
@@ -237,18 +158,29 @@ export default function ChatWindow({
                     statusType: JSON.parse(msg.metadata || '{}').statusType,
                     showActions: JSON.parse(msg.metadata || '{}').showActions
                 }));
-                
-                // Extract customer avatar from messages (look for first non-system message with avatar)
-                const customerMsg = dbMessages.find(msg => 
+
+                const customerMsg = dbMessages.find(msg =>
                     msg.senderId === customerId && ((msg as any).senderAvatar || (msg as any).receiverAvatar)
                 );
                 if (customerMsg) {
                     setCustomerAvatar((customerMsg as any).senderAvatar || (customerMsg as any).receiverAvatar);
                 }
-                
+
                 setMessages(formatted);
             } else {
                 // First time - create booking messages
+                const date = bookingDetails?.date || new Date().toLocaleString();
+                const duration = bookingDetails?.duration || 60;
+                const priceValue = bookingDetails?.price || 0;
+                const price = priceValue.toLocaleString();
+                const location = providerRole === 'therapist' ? 'Home/Hotel Service' : 'Visit Location';
+
+                const bookingMessage = 'Booking request created:\n' +
+                    '📅 ' + date + '\n' +
+                    '⏱️ Duration: ' + duration + ' minutes\n' +
+                    '💰 Price: Rp ' + price + '\n' +
+                    '📍 ' + location;
+                
                 await simpleChatService.sendMessage({
                     conversationId,
                     senderId: 'system',
@@ -257,7 +189,7 @@ export default function ChatWindow({
                     receiverId: customerId,
                     receiverName: customerName,
                     receiverRole: 'customer',
-                    message: `Booking request created:\n📅 ${bookingDetails?.date || new Date().toLocaleString()}\n⏱️ Duration: ${bookingDetails?.duration || 60} minutes\n💰 Price: Rp ${bookingDetails?.price?.toLocaleString() || '0'}\n📍 ${providerRole === 'therapist' ? 'Home/Hotel Service' : 'Visit Location'}`,
+                    message: bookingMessage,
                     messageType: 'booking',
                     bookingId
                 });
@@ -335,6 +267,13 @@ export default function ChatWindow({
             console.error('Error loading messages:', error);
         }
     };
+
+    // Load initial messages when chat opens
+    useEffect(() => {
+        if (isOpen) {
+            loadMessages();
+        }
+    }, [isOpen]);
 
     // Unused function - kept for future countdown feature
     // const handleCountdownExpiry = async () => {

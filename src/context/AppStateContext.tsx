@@ -179,6 +179,14 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     const setPage = useCallback((newPage: string) => {
         console.log('📍 setPage called:', newPage, 'Current page:', page);
         
+        // 🔒 CRITICAL: Allow page state changes during active booking flow
+        // Don't block navigation when user is submitting booking form
+        if (isChatWindowVisible) {
+            console.log('📋 Chat window active - allowing page state changes during booking');
+            _setPage(newPage);
+            return;
+        }
+        
         // Prevent going back to landing if user has entered app
         const hasEntered = sessionStorage.getItem('has_entered_app');
         if (newPage === 'landing' && hasEntered === 'true') {
@@ -205,7 +213,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
                 window.location.hash = '';
             }
         }, 0);
-    }, [page]);
+    }, [page, isChatWindowVisible]);
 
     // Check on mount if we should redirect from landing to home
     useEffect(() => {
@@ -220,6 +228,12 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     // Listen for hash changes to handle browser back/forward buttons
     useEffect(() => {
         const handleHashChange = () => {
+            // 🔒 CRITICAL: Block hash changes during active booking to prevent redirect
+            if (isChatWindowVisible) {
+                console.log('🔒 Booking active - ignoring hash change to prevent interruption');
+                return;
+            }
+            
             const hash = window.location.hash.replace('#', '');
             let newPage = hash || 'landing';
             
@@ -266,7 +280,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
 
         window.addEventListener('hashchange', handleHashChange);
         return () => window.removeEventListener('hashchange', handleHashChange);
-    }, [page]);
+    }, [page, isChatWindowVisible]);
 
     const value: AppStateContextType = {
         page,

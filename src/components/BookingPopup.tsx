@@ -66,6 +66,7 @@ interface BookingPopupProps {
   discountActive?: boolean;
   initialDuration?: number; // Prefill duration from price slider
   bookingSource?: string; // Track booking origin (e.g., 'price-slider', 'quick-book')
+  discountCode?: string | null; // Discount code from chat
 }
 
 const BookingPopup: React.FC<BookingPopupProps> = ({
@@ -83,7 +84,8 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   discountPercentage = 0,
   discountActive = false,
   initialDuration, // Prefill from price slider
-  bookingSource = 'quick-book' // Default source
+  bookingSource = 'quick-book', // Default source
+  discountCode = null
 }) => {
   const { language } = useLanguage();
   
@@ -138,7 +140,35 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   const createBookingRecord = async () => {
     if (!selectedDuration) {
       console.warn('⚠️ No duration selected');
+      showToast('Please select a service duration', 'error');
       return;
+    }
+    
+    // Enhanced validation for required fields
+    if (!customerName || customerName.trim().length === 0) {
+      showToast('Please enter your name', 'error');
+      return;
+    }
+    
+    if (!customerWhatsApp || customerWhatsApp.trim().length === 0) {
+      showToast('Please enter your WhatsApp number', 'error');
+      return;
+    }
+    
+    if (locationType === 'home' && (!homeAddress || homeAddress.trim().length === 0)) {
+      showToast('Please enter your home address', 'error');
+      return;
+    }
+    
+    if (locationType !== 'home') {
+      if (!hotelVillaNameInput || hotelVillaNameInput.trim().length === 0) {
+        showToast(`Please enter the ${locationType === 'hotel' ? 'hotel' : 'villa'} name`, 'error');
+        return;
+      }
+      if (!roomNumber || roomNumber.trim().length === 0) {
+        showToast('Please enter your room number', 'error');
+        return;
+      }
     }
 
     console.log('🚀 Starting booking creation process...');
@@ -244,8 +274,12 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         totalCost: selectedOption.price,
         paymentMethod: 'Unpaid',
         customerName: customerName.trim(),
-        customerWhatsApp: normalizedWhatsApp
+        customerWhatsApp: normalizedWhatsApp,
+        ...(discountCode ? { discountCode } : {})
       };
+  // Show discount code in UI if present
+  // (Add this to the booking form UI, e.g. above the Confirm button)
+
 
       // Add optional location fields if present
       if (locationType !== 'home' && hotelVillaNameInput) {
@@ -551,9 +585,27 @@ ${
         message: error.message,
         code: error.code,
         type: error.type,
-        response: error.response
+        response: error.response,
+        stack: error.stack
       });
-      alert(`Failed to create booking: ${error.message || 'Please try again.'}`);
+      
+      // Enhanced error messaging
+      let errorMessage = 'Failed to create booking. ';
+      
+      if (error.message?.includes('authentication') || error.message?.includes('session')) {
+        errorMessage += 'Please refresh the page and try again.';
+      } else if (error.message?.includes('validation')) {
+        errorMessage += 'Please check all required fields are filled correctly.';
+      } else if (error.message?.includes('network') || error.code === 'network_error') {
+        errorMessage += 'Network error. Please check your connection.';
+      } else if (error.message) {
+        errorMessage += error.message;
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      alert(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setIsCreating(false);
     }

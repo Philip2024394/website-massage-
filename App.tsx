@@ -4,6 +4,7 @@
  * Do NOT add additional event listeners for chat.
  */
 import { Helmet } from 'react-helmet';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import { AppLayout } from './src/components/layout/AppLayout';
 import { AppFooterLayout } from './src/components/layout/AppFooterLayout';
 import GlobalHeader from './src/components/GlobalHeader';
@@ -1433,4 +1434,10 @@ const App = () => {
     );
 };
 
-export default App;
+const WrappedApp = () => (
+    <ErrorBoundary>
+        <App />
+    </ErrorBoundary>
+);
+
+export default WrappedApp;

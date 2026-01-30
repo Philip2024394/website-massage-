@@ -128,8 +128,8 @@ class EnterprisePerformanceService {
    * Monitor Core Web Vitals
    */
   private monitorWebVitals(): void {
-    // First Contentful Paint
-    this.observeVital('first-contentful-paint', 'FCP');
+    // First Contentful Paint - use 'paint' entry type
+    this.observeVital('paint', 'FCP');
     
     // Largest Contentful Paint
     this.observeVital('largest-contentful-paint', 'LCP');

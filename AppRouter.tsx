@@ -17,6 +17,7 @@ import type { Page, Language, LoggedInProvider } from './src/types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage } from './src/types';
 import { BookingStatus } from './src/types';
 import LoadingSpinner from './src/components/LoadingSpinner';
+import { SkeletonLoader } from './src/components/SkeletonLoader';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from './src/lib/appwrite';
 
 // Error Boundary for lazy loading failures
@@ -304,7 +305,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
     const TherapistProfilePage = profileRoutes.therapistProfile.component;
     
     return (
-        <React.Suspense fallback={<LoadingSpinner />}>
+        <React.Suspense fallback={<SkeletonLoader height={320} width="100%" className="my-8" />}> 
             <TherapistProfilePage
                 therapist={therapist}
                 onBack={() => props.onNavigate?.('home')}

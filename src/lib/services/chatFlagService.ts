@@ -249,6 +249,15 @@ class ChatFlagService {
     } catch (error: any) {
       console.error('❌ [ChatFlag] Submission failed:', error);
       
+      // Handle missing collection
+      if (error?.code === 404 || error?.message?.includes('could not be found')) {
+        return {
+          success: false,
+          error: 'FEATURE_UNAVAILABLE',
+          message: 'Chat reporting feature is not available at this time.'
+        };
+      }
+      
       // Handle Appwrite-specific errors
       if (error.code === 409) {
         return {
@@ -282,7 +291,12 @@ class ChatFlagService {
       );
       
       return existing.total > 0;
-    } catch (error) {
+    } catch (error: any) {
+      // Gracefully handle missing collection - it's not created yet
+      if (error?.code === 404 || error?.message?.includes('could not be found')) {
+        // Collection doesn't exist - this is expected if chat flags feature not set up
+        return false;
+      }
       console.error('❌ [ChatFlag] Failed to check existing flag:', error);
       return false; // Fail open - allow flagging if check fails
     }
@@ -309,7 +323,11 @@ class ChatFlagService {
       );
       
       return response.documents as ChatFlag[];
-    } catch (error) {
+    } catch (error: any) {
+      // Gracefully handle missing collection
+      if (error?.code === 404 || error?.message?.includes('could not be found')) {
+        return [];
+      }
       console.error('❌ [ChatFlag] Failed to fetch flags:', error);
       return [];
     }
@@ -336,7 +354,11 @@ class ChatFlagService {
       
       console.log('✅ [ChatFlag] Status updated:', flagId, '→', status);
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      // Gracefully handle missing collection
+      if (error?.code === 404 || error?.message?.includes('could not be found')) {
+        return false;
+      }
       console.error('❌ [ChatFlag] Failed to update status:', error);
       return false;
     }

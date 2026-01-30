@@ -78,8 +78,9 @@ body {
 }
 
 /* iOS: Prevent viewport from resizing when keyboard opens */
+/* ⚠️ CRITICAL FIX: Only apply scroll lock to chat-specific pages, NOT therapist dashboard */
 @supports (-webkit-touch-callout: none) {
-  body {
+  body.chat-open {
     position: fixed;
     overflow: hidden;
     width: 100%;

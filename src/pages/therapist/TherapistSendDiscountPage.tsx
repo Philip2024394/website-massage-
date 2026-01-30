@@ -305,29 +305,62 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
       }
 
       const discountCode = discountResult.code.code;
-      
-      // TODO: Send to chat window with banner + discount code
-      // Backend API: POST /api/chat/send-discount-banner
-      // Should:
-      // 1. Send banner image to customer's chat window
-      // 2. Send message with discount code
-      // 3. Trigger push notification with MP3 audio
-      
-      const message = language === 'id' 
-        ? `🎁 Terima kasih sudah booking massage dengan kami! Silakan gunakan diskon ${percentage}% ini untuk booking selanjutnya dalam 7 hari.\n\n✨ Kode Diskon: *${discountCode}*\n⏰ Berlaku sampai: ${new Date(discountResult.code.expiresAt).toLocaleDateString('id-ID')}\n\n👉 Masukkan kode ini saat booking untuk mendapatkan diskon otomatis. Kode hanya bisa digunakan 1x dengan saya.`
-        : `🎁 Thank you for your past massage booking! Please accept this ${percentage}% discount for your next booking within 7 days.\n\n✨ Discount Code: *${discountCode}*\n⏰ Valid until: ${new Date(discountResult.code.expiresAt).toLocaleDateString('en-US')}\n\n👉 Enter this code during booking to get automatic discount. Code can only be used once with me.`;
-      
+      const expiresAt = discountResult.code.expiresAt;
+
+      // Find or create chat room for therapist and customer
+      // We'll use a synthetic bookingId for discount-only chats if needed
+      let chatRoomId = null;
+      if (typeof enterpriseChatIntegrationService !== 'undefined') {
+        // Try to find an existing chat room
+        const therapistChatRooms = enterpriseChatIntegrationService.activeChatRooms;
+        chatRoomId = Array.from(therapistChatRooms.values()).find(
+          (room: any) => room.participants.some((p: any) => p.id === customerId) && room.participants.some((p: any) => p.id === therapistId)
+        )?.id;
+        if (!chatRoomId) {
+          // Create a new chat room (synthetic bookingId for discount)
+          chatRoomId = await enterpriseChatIntegrationService.createBookingChatRoom(
+            `discount_${therapistId}_${customerId}_${Date.now()}`,
+            customerId,
+            therapistId
+          );
+        }
+      }
+
+      // Compose the message
+      const message = language === 'id'
+        ? `🎁 Terima kasih sudah booking massage dengan kami! Silakan gunakan diskon ${percentage}% ini untuk booking selanjutnya dalam 7 hari.\n\n✨ Kode Diskon: *${discountCode}*\n⏰ Berlaku sampai: ${new Date(expiresAt).toLocaleDateString('id-ID')}\n\n👉 Masukkan kode ini saat booking untuk mendapatkan diskon otomatis. Kode hanya bisa digunakan 1x dengan saya.`
+        : `🎁 Thank you for your past massage booking! Please accept this ${percentage}% discount for your next booking within 7 days.\n\n✨ Discount Code: *${discountCode}*\n⏰ Valid until: ${new Date(expiresAt).toLocaleDateString('en-US')}\n\n👉 Enter this code during booking to get automatic discount. Code can only be used once with me.`;
+
+      // Send the message to chat
+      if (chatRoomId && typeof enterpriseChatIntegrationService !== 'undefined') {
+        await enterpriseChatIntegrationService.sendMessage(
+          chatRoomId,
+          therapistId,
+          'therapist',
+          message,
+          'text',
+          {
+            discountCode,
+            percentage,
+            bannerImageUrl: imageUrl,
+            expiresAt
+          }
+        );
+      }
+
+      // Optionally: trigger push notification/audio (handled by chat service if configured)
+
       console.log('✅ Discount banner sent:', {
         customer: customerName,
         percentage,
         code: discountCode,
-        expiresAt: discountResult.code.expiresAt,
+        expiresAt,
         message
       });
-      
+
       // Reload stats to show updated counts
       await loadDiscountStats();
-      
+
       return { success: true, code: discountCode };
     } catch (error) {
       console.error('Failed to send discount banner:', error);

@@ -25,7 +25,8 @@
  * 
  * ============================================================================
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { FloatingChatWindow } from '../../chat';
 import { MASSAGE_TYPES_CATEGORIZED } from '../../constants';
 import type { Therapist } from '../../types';
@@ -68,7 +69,7 @@ interface TherapistPortalPageProps {
   language?: 'en' | 'id';
 }
 
-const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
+const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
   therapist,
   onNavigateToStatus,
   onNavigateToBookings,
@@ -1809,5 +1810,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   );
 };
 
-export default TherapistPortalPage;
+const TherapistDashboardPage = React.lazy(() => import('./TherapistDashboardPageImpl'));
+
+const TherapistDashboardPageWrapper = (props: TherapistPortalPageProps) => (
+  <Suspense fallback={<SkeletonLoader height={480} width="100%" className="my-8" />}>
+    <TherapistDashboardPage {...props} />
+  </Suspense>
+);
+
+export default TherapistDashboardPageWrapper;
 

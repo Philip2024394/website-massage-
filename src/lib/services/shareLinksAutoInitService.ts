@@ -22,6 +22,7 @@ class ShareLinksAutoInitService {
     /**
      * 🚀 Initialize share links system
      * Called on app startup to ensure all entities have share links
+     * OPTIMIZATION: Skips expensive checks on normal page loads
      */
     async initialize(): Promise<void> {
         if (this.initialized || this.runningCheck) {
@@ -33,7 +34,17 @@ class ShareLinksAutoInitService {
         console.log('🚀 [Share Links Auto-Init] Starting initialization...');
 
         try {
-            // Quick health check first
+            // OPTIMIZATION: Skip the health check entirely on normal loads
+            // Only run full validation in admin mode or on demand
+            const isAdminMode = import.meta?.env?.MODE === 'admin';
+            
+            if (!isAdminMode) {
+                console.log('✅ [Share Links] Skipping auto-init on user page load (performance optimization)');
+                this.initialized = true;
+                return;
+            }
+
+            // Quick health check first (admin only)
             const health = await shareLinksValidationService.healthCheck();
             console.log(`🩺 [Share Links] Health: ${health.status} - ${health.message}`);
 

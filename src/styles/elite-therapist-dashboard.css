@@ -1,4 +1,44 @@
 /* ============================================================================
+ * ELITE INTERACTIVE ELEMENTS - ACCESSIBILITY & TOUCH OPTIMIZATION
+ * ============================================================================ */
+
+button, .elite-button, [role="button"], input[type="button"], input[type="submit"], .therapist-page-container button, .therapist-page-container .elite-button {
+  min-width: 48px;
+  min-height: 48px;
+  font-size: 1rem;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+button:focus-visible, .elite-button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--elite-primary, #f97316);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+button:active, .elite-button:active, [role="button"]:active {
+  background-color: #f3f4f6;
+  filter: brightness(0.97);
+}
+
+input, textarea, select {
+  font-size: 1rem;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  button, .elite-button, [role="button"], input[type="button"], input[type="submit"], .therapist-page-container button, .therapist-page-container .elite-button {
+    font-size: 1.05rem;
+    min-width: 48px;
+    min-height: 48px;
+  }
+  input, textarea, select {
+    font-size: 1.05rem;
+    min-height: 48px;
+  }
+}
+/* ============================================================================
  * 🏆 ELITE THERAPIST DASHBOARD CSS - STABILITY & PERFORMANCE OPTIMIZED
  * ============================================================================
  * Purpose: CSS variables and classes for elite-level stability
