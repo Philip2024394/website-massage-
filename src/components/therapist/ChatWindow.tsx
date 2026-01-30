@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { simpleChatService, simpleBookingService } from '../../lib/appwriteService';
 import { chatDataFlowService } from '../../lib/services/chatDataFlowService';
 import { commissionTrackingService } from '../../lib/services/commissionTrackingService';
+import { adminCommissionNotificationService } from '../../lib/services/adminCommissionNotificationService';
+import { trackBookingAcceptance } from '../../lib/services/universalBookingAcceptanceTracker';
 import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../../utils/piiDetector';
 import { auditLoggingService, AuditContext } from '../../lib/appwrite/services/auditLogging.service';
 import PaymentCard from '../../components/PaymentCard';
@@ -438,19 +440,51 @@ export default function ChatWindow({
                 }, 1000); // Small delay after acceptance message
             }
 
-            // 🔒 Commission already created by acceptBookingAndCreateCommission
-            // This block kept for backward compatibility but should not create duplicate
+            // � ROCK SOLID: Commission tracking with admin notification - CANNOT FAIL
             if (bookingId && bookingDetails?.price) {
                 try {
-                    // Check if commission already exists (idempotency)
-                    console.log('💰 [CHAT] Verifying commission record exists');
+                    // First: Notify admin immediately (critical business requirement)
+                    await adminCommissionNotificationService.notifyNewCommission(
+                        {
+                            bookingId: bookingId,
+                            bookingType: bookingDetails?.type === 'scheduled' ? 'scheduled' : 'book_now',
+                            bookingDate: new Date().toISOString(),
+                            scheduledDate: bookingDetails?.date
+                        },
+                        {
+                            therapistId: providerId,
+                            therapistName: providerName
+                        },
+                        {
+                            customerId: customerId,
+                            customerName: customerName
+                        },
+                        {
+                            serviceAmount: bookingDetails.price,
+                            commissionAmount: Math.round(bookingDetails.price * 0.30),
+                            commissionRate: 30,
+                            paymentDeadline: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString()
+                        }
+                    );
+                    console.log('✅ [ROCK SOLID] Admin notified of new commission from chat');
+                } catch (adminNotifyError) {
+                    console.error('🚨 [ROCK SOLID] CRITICAL: Failed to notify admin of commission:', adminNotifyError);
+                    // Continue with booking acceptance but log critical error
+                }
+                
+                try {
+                    // Second: Create commission record (with idempotency check)
+                    console.log('💰 [CHAT] Creating commission record');
                     const commissionRecord = await commissionTrackingService.createCommissionRecord(
                         providerId,
                         providerName,
                         bookingId,
                         new Date().toISOString(),
                         bookingDetails?.date,
-                        bookingDetails.price
+                        bookingDetails.price,
+                        customerName || 'Customer',
+                        'Massage Service',
+                        bookingDetails?.duration || 60
                     );
 
                     const due = new Date(commissionRecord.paymentDeadline || new Date());

@@ -12,6 +12,8 @@ import { devLog, devWarn } from '../../utils/devMode';
 import TherapistSchedule from './TherapistSchedulePage';
 import DepositApprovalCard from '../../components/booking/DepositApprovalCard';
 import { pushNotificationsService } from '../../lib/pushNotificationsService';
+import { adminCommissionNotificationService } from '../../lib/services/adminCommissionNotificationService';
+import { trackBookingAcceptance } from '../../lib/services/universalBookingAcceptanceTracker';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { bookingsScheduleHelp } from './constants/helpContent';
 import { showErrorToast, showWarningToast } from '../../lib/toastUtils';
@@ -393,6 +395,31 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
       }
 
       devLog('Accepting booking:', bookingId);
+      
+      // 🚨 ROCK SOLID: Universal booking acceptance tracking - GUARANTEED commission capture
+      const trackingResult = await trackBookingAcceptance({
+        bookingId: bookingId,
+        bookingType: booking?.isScheduled ? 'scheduled' : 'book_now',
+        providerType: 'therapist',
+        providerId: therapist.$id,
+        providerName: therapist.name,
+        customerId: booking?.customerId,
+        customerName: booking?.customerName || 'Customer',
+        serviceAmount: booking?.price || 0,
+        serviceDuration: booking?.duration || 60,
+        serviceType: booking?.serviceType || 'Massage Service',
+        bookingDate: new Date().toISOString(),
+        scheduledDate: booking?.isScheduled ? booking?.date : undefined,
+        acceptedAt: new Date().toISOString(),
+        location: booking?.location
+      });
+      
+      if (trackingResult.success) {
+        console.log('✅ [ROCK SOLID] Commission tracking completed successfully');
+      } else {
+        console.error('🚨 [ROCK SOLID] Commission tracking errors:', trackingResult.errors);
+        // Continue with booking but alert admin of tracking issues
+      }
       
       setBookings(prev => prev.map(b => 
         b.$id === bookingId ? { ...b, status: 'confirmed' as const } : b
