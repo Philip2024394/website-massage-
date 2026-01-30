@@ -44,7 +44,7 @@ export const COLLECTIONS = {
     ADMINS: '', // ⚠️ DISABLED - Collection doesn't exist
     HOTELS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
     VILLAS: '', // ⚠️ DISABLED - Collection doesn't exist
-    PARTNERS: '', // ⚠️ DISABLED - Collection doesn't exist
+    PARTNERS: 'indastreet_partners', // ✅ ENABLED - Indastreet Partners Collection
     NOTIFICATIONS: '', // ⚠️ DISABLED - Collection doesn't exist
     MASSAGE_TYPES: '', // ⚠️ DISABLED - Collection doesn't exist
     MEMBERSHIP_PRICING: '', // ⚠️ DISABLED - Collection doesn't exist

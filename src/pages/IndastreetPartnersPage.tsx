@@ -22,24 +22,13 @@ import FlyingButterfly from "../components/FlyingButterfly";
 import AnonymousReviewModal from "../components/AnonymousReviewModal";
 import SocialSharePopup from '../components/modals/SocialSharePopup';
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
+import { indastreetPartnersService, PartnerData } from '../services/indastreetPartnersService';
+import PartnersAdminPanel from '../components/PartnersAdminPanel';
 import { Query } from 'appwrite';
 import { useLanguage } from '../hooks/useLanguage';
 
-interface PartnerWebsite {
-    id: string;
-    name: string;
-    websiteUrl: string;
-    websiteTitle?: string;
-    description?: string;
-    category: 'therapist' | 'massage-place' | 'hotel' | 'villa';
-    location?: string;
-    phone?: string;
-    verified: boolean;
-    rating?: number;
-    imageUrl?: string;
-    specialties?: string[];
+interface PartnerWebsite extends PartnerData {
     distance?: number; // Distance in km
-    addedDate: string;
     websitePreview?: string; // URL for website screenshot/preview
 }
 
@@ -94,6 +83,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     const [userReferralCode, setUserReferralCode] = useState<string>('');
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [partnerToShare, setPartnerToShare] = useState<PartnerWebsite | null>(null);
+    const [showAdminPanel, setShowAdminPanel] = useState(false);
 
     // Default partner images for random display
     const defaultPartnerImages = [
@@ -273,40 +263,40 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             }
         }
 
-        // Fetch partners from Appwrite database
+        // Fetch partners from Appwrite database using new service
         const fetchPartners = async () => {
             setLoading(true);
             try {
-                const response = await databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.PARTNERS,
-                    [
-                        Query.equal('verfied', true), // Only show verified partners (note: typo in collection)
-                        Query.orderDesc('addeddate')
-                    ]
-                );
-
-                const fetchedPartners: PartnerWebsite[] = response.documents.map((doc: any) => ({
-                    id: doc.$id,
-                    name: doc.name,
-                    websiteUrl: doc.websiteUrl || '',
-                    websiteTitle: doc.websiteTitle || '',
-                    description: doc.description || '',
-                    category: doc.category,
-                    location: doc.location || '',
-                    phone: doc.phone || doc.whatsapp || '',
-                    verified: doc.verfied || false,
-                    rating: 0,
-                    imageUrl: doc.imageUrl || undefined,
-                    specialties: doc.amenities ? doc.amenities.split(',') : [],
-                    addedDate: doc.addeddate || doc.$createdAt || new Date().toISOString(),
-                    websitePreview: doc.websitePreview || ''
-                }));
-
-                setPartners(fetchedPartners);
+                // Initialize the partners service first
+                const initialized = await indastreetPartnersService.initializePartnersSystem();
+                
+                if (initialized) {
+                    // Fetch partners using the new service
+                    const fetchedPartners = await indastreetPartnersService.getPartners({
+                        active: true,
+                        verified: true,
+                        limit: 100
+                    });
+                    
+                    // Convert to PartnerWebsite format
+                    const partnerWebsites: PartnerWebsite[] = fetchedPartners.map((partner) => ({
+                        ...partner,
+                        id: partner.id || '',
+                        websiteUrl: partner.websiteUrl || '',
+                        addedDate: partner.joinedDate || new Date().toISOString(),
+                        distance: 0, // Will be calculated if user location available
+                        websitePreview: partner.websitePreview || ''
+                    }));
+                    
+                    setPartners(partnerWebsites);
+                    console.log(`✅ Loaded ${partnerWebsites.length} partners from Appwrite`);
+                } else {
+                    console.warn('⚠️ Partners service not initialized, using mock data');
+                    setPartners(mockPartners);
+                }
             } catch (error) {
                 console.error('Error fetching partners:', error);
-                // Fallback to mock data if database fails
+                // Fallback to mock data if service fails
                 setPartners(mockPartners);
             } finally {
                 setLoading(false);
@@ -460,7 +450,19 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                     <h1 className="text-2xl font-extrabold sm:text-4xl lg:text-5xl xl:text-6xl drop-shadow-lg">
-                        <div>
+                        <div
+                            onClick={() => {
+                                // Triple-click to open admin panel (for testing)
+                                const now = Date.now();
+                                const clicks = (window as any).adminClicks || [];
+                                clicks.push(now);
+                                (window as any).adminClicks = clicks.filter((t: number) => now - t < 1000);
+                                if ((window as any).adminClicks.length >= 3) {
+                                    setShowAdminPanel(true);
+                                    (window as any).adminClicks = [];
+                                }
+                            }}
+                        >
                             <span className="text-white">INDA</span><span className="text-orange-500">STREET PARTNERS</span>
                         </div>
                     </h1>
@@ -963,6 +965,13 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                     animation: float 2s ease-in-out infinite;
                 }
             `}</style>
+            
+            {/* Admin Panel (Triple-click header to open) */}
+            {showAdminPanel && (
+                <PartnersAdminPanel 
+                    onClose={() => setShowAdminPanel(false)}
+                />
+            )}
         </div>
     );
 };

@@ -223,7 +223,7 @@ Please try booking with another provider or select a different time. We apologiz
         
         const messages = await simpleChatService.getMessages(conversationId);
         return messages.map(msg => this.formatChatMessage(msg));
-    },
+    }
 
     /**
      * Format raw chat message to standardized BookingChatMessage
