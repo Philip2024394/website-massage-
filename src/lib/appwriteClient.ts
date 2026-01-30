@@ -62,7 +62,7 @@ export const COLLECTIONS = {
     FACIAL_PLACES: 'facial_places_collection',
     
     // Booking system
-    BOOKINGS: 'bookings',
+    BOOKINGS: 'bookings_collection_id',
     THERAPIST_MATCHES: 'therapist_matches',
     
     // Chat system

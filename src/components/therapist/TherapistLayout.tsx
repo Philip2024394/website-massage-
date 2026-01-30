@@ -277,26 +277,15 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
   return (
     <div 
-      className="min-h-screen bg-gray-50 overflow-x-hidden overflow-y-auto w-full max-w-full therapist-page-container" 
+      className="min-h-screen bg-gray-50 w-full max-w-full therapist-page-container" 
       style={{ 
         WebkitOverflowScrolling: 'touch',
-        // Elite layout stabilization - prevent CLS
-        minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-        willChange: 'auto', // Only animate when needed
-        containIntrinsicSize: '360px 800px', // Reserve space for content
-        contentVisibility: 'auto' // Performance optimization
+        touchAction: 'pan-y pan-x'
       }}
     >
       {/* Elite Header - Stable positioning and CLS prevention */}
       <header 
         className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 w-full therapist-layout-header"
-        style={{
-          height: '72px', // Fixed height prevents layout shifts
-          minHeight: '72px',
-          maxHeight: '72px',
-          containIntrinsicSize: '360px 72px',
-          willChange: 'transform' // Optimize for scrolling
-        }}
       >
         <div className="flex items-center justify-between px-4 py-3 w-full max-w-full">
           {/* Left side - Therapist Profile Name */}
@@ -542,19 +531,10 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
       {/* Elite Main Content - Stable scrolling and performance optimized */}
       <main 
-        className="relative overflow-x-hidden overflow-y-auto min-h-0 therapist-layout-content" 
+        className="relative w-full" 
         style={{ 
           WebkitOverflowScrolling: 'touch', 
-          touchAction: 'pan-y pan-x',
-          // Elite scroll performance
-          scrollBehavior: 'smooth',
-          overscrollBehavior: 'contain',
-          // Layout stability
-          minHeight: 'calc(100vh - 72px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-          containIntrinsicSize: '360px calc(100vh - 72px)',
-          // Performance optimization
-          contain: 'layout style paint',
-          willChange: 'scroll-position'
+          touchAction: 'pan-y pan-x'
         }}
       >
         <PullToRefresh 

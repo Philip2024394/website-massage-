@@ -15,7 +15,7 @@ import PWAInstallIOSModal from '../components/PWAInstallIOSModal';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { MapPin, Play, Globe, Search, X, ChevronUp as ChevronDown } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
-import UniversalHeader from '../components/shared/UniversalHeader';
+
 import { AppDrawer } from '../components/AppDrawerClean';
 import { loadLanguageResources } from '../lib/i18n';
 import { ipGeolocationService } from '../lib/ipGeolocationService';
@@ -821,7 +821,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 <div className="w-full max-w-lg px-2 sm:px-4">
                     <div className="bg-gray-900 rounded-xl p-2.5 sm:p-6 border border-gray-700 shadow-xl" style={{ backgroundColor: 'rgba(17, 24, 39, 0.95)' }}>
                         {/* Auto-detected Country Header */}
-                        <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
+                        <div className="mb-4 p-3 sm:p-4 bg-gray-800 border border-gray-600 rounded-lg">
                             <div className="flex items-center justify-between flex-wrap gap-2">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <span className="text-xl sm:text-2xl">{currentCountryData?.flag}</span>
@@ -834,7 +834,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-xs text-orange-100 mt-1">Select your city to continue</p>
+                                        <p className="text-xs text-gray-300 mt-1">Select your city to continue</p>
                                     </div>
                                 </div>
                                 <button

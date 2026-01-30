@@ -1,0 +1,97 @@
+/* MOBILE SCROLLING FIX - Critical overrides for therapist dashboard */
+
+/* Force body and html to allow scrolling */
+html, body {
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y pan-x !important;
+  overscroll-behavior-y: auto !important;
+}
+
+/* Fix therapist layout containers */
+.therapist-page-container {
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.therapist-layout-content {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  contain: none !important;
+}
+
+.therapist-layout-header {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* Fix PullToRefresh component */
+.pull-to-refresh-container {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+  touch-action: pan-y pan-x !important;
+}
+
+/* Fix any fixed/absolute containers that block scroll */
+.fixed-container, .absolute-container {
+  position: relative !important;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 768px) {
+  /* Ensure all containers allow scrolling */
+  div[class*="h-screen"], div[class*="min-h-screen"] {
+    height: auto !important;
+    min-height: auto !important;
+  }
+  
+  /* Override any height: 100vh constraints */
+  div[style*="height: 100vh"] {
+    height: auto !important;
+  }
+  
+  div[style*="min-height: calc(100vh"] {
+    min-height: auto !important;
+  }
+  
+  /* Fix overflow constraints */
+  div[style*="overflow: hidden"] {
+    overflow: visible !important;
+  }
+  
+  /* Ensure main content can scroll */
+  main {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  
+  /* Fix any container that blocks scrolling */
+  .container, .max-w-sm, .max-w-md, .max-w-lg {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  
+  /* Critical: Force scroll on any problematic containers */
+  div[class*="overflow-hidden"] {
+    overflow: visible !important;
+  }
+  
+  div[class*="overflow-y-hidden"] {
+    overflow-y: visible !important;
+  }
+}

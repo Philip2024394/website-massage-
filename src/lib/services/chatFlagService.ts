@@ -12,6 +12,7 @@
  */
 
 import { Client, Databases, Query, ID } from 'appwrite';
+import { APPWRITE_DATABASE_ID, COLLECTIONS } from '../appwrite.js';
 
 // ============================================================================
 // CONFIGURATION
@@ -19,8 +20,7 @@ import { Client, Databases, Query, ID } from 'appwrite';
 
 const APPWRITE_ENDPOINT = 'https://syd.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID = '68f23b11000d25eb3664';
-const APPWRITE_DATABASE_ID = '68f76ee1000e64ca8d05';
-const CHAT_FLAGS_COLLECTION_ID = 'chat_flags';
+const CHAT_FLAGS_COLLECTION_ID = COLLECTIONS.CHAT_FLAGS; // Uses centralized config
 
 // Rate limiting: max reports per day per user
 const MAX_REPORTS_PER_DAY = 5;
@@ -151,9 +151,29 @@ class ChatFlagService {
   }
 
   /**
+   * Check if chat flags feature is available
+   */
+  private isFeatureEnabled(): boolean {
+    if (!CHAT_FLAGS_COLLECTION_ID || CHAT_FLAGS_COLLECTION_ID === '') {
+      console.log('ℹ️ [ChatFlag] Chat flags feature disabled - no collection configured');
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Submit a chat flag report with anti-abuse checks
    */
   async submitFlag(data: FlagSubmission): Promise<FlagResult> {
+    // Early exit if feature is disabled
+    if (!this.isFeatureEnabled()) {
+      return {
+        success: false,
+        error: 'FEATURE_DISABLED',
+        message: 'Chat reporting feature is currently disabled.'
+      };
+    }
+
     console.log('🚩 [ChatFlag] Submitting report:', { 
       chatRoomId: data.chatRoomId, 
       reason: data.reason,
@@ -279,6 +299,11 @@ class ChatFlagService {
    * Check if user has already flagged this chat
    */
   async hasUserFlagged(chatRoomId: string, reporterId: string): Promise<boolean> {
+    // Early exit if feature is disabled
+    if (!this.isFeatureEnabled()) {
+      return false;
+    }
+
     try {
       const existing = await this.databases.listDocuments(
         APPWRITE_DATABASE_ID,
@@ -307,6 +332,11 @@ class ChatFlagService {
    * Get all flags for admin review (admin only)
    */
   async getAllFlags(status?: FlagStatus, limit = 50): Promise<ChatFlag[]> {
+    // Early exit if feature is disabled
+    if (!this.isFeatureEnabled()) {
+      return [];
+    }
+
     try {
       const queries = [
         Query.orderDesc('$createdAt'),
@@ -342,6 +372,12 @@ class ChatFlagService {
     status: FlagStatus, 
     adminNotes?: string
   ): Promise<boolean> {
+    // Early exit if feature is disabled
+    if (!this.isFeatureEnabled()) {
+      console.warn('⚠️ [ChatFlag] Cannot update flag - feature disabled');
+      return false;
+    }
+
     try {
       await this.databases.updateDocument(
         APPWRITE_DATABASE_ID,

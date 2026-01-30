@@ -1,4 +1,3 @@
-# Prevent Component Load Errors - GitHub Actions Workflow
 name: Component Validation
 
 on:
@@ -12,63 +11,64 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: 10.21.0
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'pnpm'
-    
-    - name: Install dependencies
-      run: pnpm install --no-frozen-lockfile
-    
-    - name: Validate Icon Imports
-      run: pnpm run validate-icons || echo "Validate icons script not found, skipping..."
-    
-    - name: TypeScript Type Check
-      run: pnpm run type-check
-    
-    - name: Test Build
-      run: pnpm run build:production
+      - name: Checkout code
+        uses: actions/checkout@v3
       
-    - name: Component Import Test
-      run: |
-        # Test critical component imports
-        node -e "
-        const testComponents = [
-          '../src/pages/HotelVillaSafePassPage',
-          '../src/pages/LandingPage',
-          '../src/pages/HomePage'
-        ];
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.21.0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      
+      - name: Validate Icon Imports
+        run: pnpm run validate-icons || echo "Validate icons script not found, skipping..."
+      
+      - name: TypeScript Type Check
+        run: pnpm run type-check
+      
+      - name: Test Build
+        run: pnpm run build:production
         
-        testComponents.forEach(comp => {
-          try {
-            require(comp);
-            console.log('✅ ' + comp + ' - OK');
-          } catch(e) {
-            console.error('❌ ' + comp + ' - FAILED:', e.message);
-            process.exit(1);
-          }
-        });
-        "
-    
-    - name: Lint Check
-      run: pnpm run lint || true  # Don't fail build on lint warnings
+      - name: Component Import Test
+        run: |
+          # Test critical component imports
+          node -e "
+          const testComponents = [
+            '../src/pages/HotelVillaSafePassPage',
+            '../src/pages/LandingPage',
+            '../src/pages/HomePage'
+          ];
+          
+          testComponents.forEach(comp => {
+            try {
+              require(comp);
+              console.log('✅ ' + comp + ' - OK');
+            } catch(e) {
+              console.error('❌ ' + comp + ' - FAILED:', e.message);
+              process.exit(1);
+            }
+          });
+          "
       
-    - name: Report Results
-      if: failure() && github.event_name == 'pull_request'
-      uses: actions/github-script@v6
-      with:
-        script: |
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: '⚠️ **Component validation failed!** Please check the logs and fix icon imports or TypeScript errors before merging.'
-          })
+      - name: Lint Check
+        run: pnpm run lint || true  # Don't fail build on lint warnings
+        
+      - name: Report Results
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Component validation failed!** Please check the logs and fix icon imports or TypeScript errors before merging.'
+            })

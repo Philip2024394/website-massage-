@@ -29,7 +29,7 @@ export const COLLECTIONS = {
     FACIAL_PLACES: 'facial_places_collection', // ✅ Text-based collection ID
     USERS: '', // ⚠️ DISABLED - Collection doesn't exist
     AGENTS: '', // ⚠️ DISABLED - Collection doesn't exist
-    BOOKINGS: 'bookings', // ✅ Production booking collection
+    BOOKINGS: 'bookings_collection_id', // ✅ FIXED: Production booking collection
     REVIEWS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
     // Achievement System
     ACHIEVEMENTS: 'achievements_collection_id', // ✅ Achievement badges and standards
@@ -38,6 +38,7 @@ export const COLLECTIONS = {
     THERAPIST_MATCHES: 'therapist_matches', // ✅ Therapist search results  
     CHAT_SESSIONS: 'chat_sessions', // ✅ Active chat sessions
     CHAT_MESSAGES: 'chat_messages', // ✅ Chat messages
+    CHAT_FLAGS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
     ANALYTICS: '', // ⚠️ DISABLED - Collection doesn't exist
     ANALYTICS_EVENTS: '', // ⚠️ DISABLED - Collection doesn't exist
     ADMINS: '', // ⚠️ DISABLED - Collection doesn't exist

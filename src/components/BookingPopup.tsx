@@ -254,7 +254,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         // REQUIRED FIELDS
         bookingId,
         bookingDate: now.toISOString(),
-        userId: authResult.userId,
+        userId: authResult.userId || 'anonymous', // ✅ REQUIRED: Ensure userId is never null for Appwrite
         status: 'Pending',
         duration: selectedOption.duration,
         providerId: therapistId,
@@ -370,13 +370,33 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         throw new Error('Bookings collection not configured - cannot create booking');
       }
       
-      console.log('🔥 STEP 2: Calling Appwrite databases.createDocument...');
-      const booking = await databases.createDocument(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.bookings,
-        bookingId,
-        bookingData
-      );
+      console.log('🔥 STEP 2: Creating booking via appwriteBookingService...');
+      
+      // Prepare booking data for the service (map rawBookingData to service expected format)
+      const serviceBookingData = {
+        ...rawBookingData,
+        customerId: authResult.userId || 'anonymous',
+        userId: authResult.userId || 'anonymous', // ✅ REQUIRED: Ensure userId is provided
+        // Map fields to match the service expectations
+        therapistId: therapistId,
+        therapistName: therapistName,
+        customerName: customerName.trim(), // ✅ REQUIRED: Customer name
+        customerWhatsApp: normalizedWhatsApp, // ✅ REQUIRED: Customer WhatsApp
+        duration: selectedOption.duration,
+        price: selectedOption.price, // Use full price, service will convert
+        locationType: locationType,
+        address: locationType === 'home' 
+          ? homeAddress 
+          : `${hotelVillaNameInput}, Room ${roomNumber}`,
+        massageFor: 'adults', // Default value
+        serviceType: 'Traditional Massage', // Default service type
+        date: now.toISOString().split('T')[0], // Date part only
+        time: now.toLocaleTimeString('en-US', { hour12: false }), // Time part only
+      };
+      
+      // Use the proper booking service instead of direct database call
+      const { appwriteBookingService } = await import('../lib/appwrite/services/booking.service.appwrite');
+      const booking = await appwriteBookingService.createBooking(serviceBookingData);
 
       console.log('✅ STEP 2 COMPLETE: Booking created successfully:', booking.$id);
 

@@ -158,7 +158,7 @@ jobs:
     
     steps:
       - name: 📧 Send Slack Notification
-        if: (vars.SLACK_ENABLED || 'false') == 'true'
+        if: vars.SLACK_ENABLED == 'true'
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
@@ -191,7 +191,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: 📧 Send Email Notification
-        if: (vars.EMAIL_ENABLED || 'false') == 'true'
+        if: vars.EMAIL_ENABLED == 'true'
         uses: dawidd6/action-send-mail@v3.12.0
         with:
           server_address: ${{ secrets.SMTP_HOST }}

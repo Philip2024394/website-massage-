@@ -167,7 +167,7 @@ export function validateAllCollections(): { valid: boolean; errors: string[] } {
  */
 export const VALIDATED_COLLECTIONS = {
   // Core Collections
-  get bookings() { return 'bookings'; }, // ✅ Fixed: Use correct bookings collection ID
+  get bookings() { return 'bookings_collection_id'; }, // ✅ Fixed: Use correct bookings collection ID
   get therapists() { return getValidatedCollectionId('THERAPISTS' as any); },
   get places() { return getValidatedCollectionId('PLACES' as any); },
   get users() { return getValidatedCollectionId('USERS' as any); },

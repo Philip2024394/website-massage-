@@ -278,7 +278,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <SkeletonLoader height={320} width="100%" className="my-8" />
+                <div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
             </div>
         );
     }
@@ -305,7 +305,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
     const TherapistProfilePage = profileRoutes.therapistProfile.component;
     
     return (
-        <React.Suspense fallback={<SkeletonLoader height={320} width="100%" className="my-8" />}> 
+        <React.Suspense fallback={<div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto my-8"></div>}> 
             <TherapistProfilePage
                 therapist={therapist}
                 onBack={() => props.onNavigate?.('home')}
@@ -362,7 +362,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     if (props.isLoading && page !== 'landing') {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <LoadingSpinner />
+                <div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
             </div>
         );
     }

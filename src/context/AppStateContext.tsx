@@ -177,21 +177,29 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
 
     // Wrapper to log all page changes and sync with URL hash
     const setPage = useCallback((newPage: string) => {
-        console.log('📍 setPage called:', newPage, 'Current page:', page);
+        console.log('📍 setPage called:', newPage, 'Current page:', page, 'Chat visible:', isChatWindowVisible);
         
-        // 🔒 CRITICAL: Allow page state changes during active booking flow
-        // Don't block navigation when user is submitting booking form
+        // 🔒 CRITICAL: Allow ALL page state changes during active booking flow
+        // Don't block ANY navigation when user is in booking chat
         if (isChatWindowVisible) {
-            console.log('📋 Chat window active - allowing page state changes during booking');
+            console.log('📋 Chat window active - ALLOWING ALL navigation during booking (including landing)');
             _setPage(newPage);
+            // Don't change URL hash during active booking
             return;
         }
         
-        // Prevent going back to landing if user has entered app
+        // ✅ FIXED: Allow landing page when explicitly requested (page refresh, direct URL)
+        // Only prevent landing navigation from within the app after user entered
         const hasEntered = sessionStorage.getItem('has_entered_app');
-        if (newPage === 'landing' && hasEntered === 'true') {
-            console.log('🚫 Blocked navigation to landing - user already in app');
+        const isComingFromApp = page && page !== 'landing'; // User is navigating FROM another page
+        
+        if (newPage === 'landing' && hasEntered === 'true' && isComingFromApp) {
+            console.log('🚫 Blocked navigation to landing - user navigating from within app');
             return;
+        }
+        
+        if (newPage === 'landing') {
+            console.log('🏠 Landing page allowed - direct access or explicit navigation');
         }
         
         // Prevent infinite loops by checking if we're already on that page
@@ -218,10 +226,16 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     // Check on mount if we should redirect from landing to home
     useEffect(() => {
         const hasEntered = sessionStorage.getItem('has_entered_app');
-        if (page === 'landing' && hasEntered === 'true') {
+        const hash = window.location.hash.replace('#', '');
+        
+        // ✅ FIXED: Only auto-redirect if user navigated to landing AFTER entering app
+        // Allow direct landing page access (empty hash or explicit #landing)
+        if (page === 'landing' && hasEntered === 'true' && hash && hash !== 'landing') {
             console.log('🔄 Initial check: User already entered app, redirecting to home');
             window.location.hash = '#home';
             _setPage('home');
+        } else {
+            console.log('🏠 Landing page access allowed - direct navigation or first visit');
         }
     }, []); // Run only once on mount
 
@@ -262,14 +276,20 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
                 currentPage: page
             });
             
-            // Prevent going back to landing if user has already entered app
+            // ✅ FIXED: Allow landing page access when explicitly requested (hash empty or #landing)
+            // Only prevent landing when navigating from within the app
             const hasEntered = sessionStorage.getItem('has_entered_app');
-            if (newPage === 'landing' && hasEntered === 'true') {
-                console.log('🚫 Prevented return to landing - user already entered app, forcing home');
-                // Force navigate to home instead
+            const isExplicitLandingRequest = hash === '' || hash === 'landing';
+            
+            if (newPage === 'landing' && hasEntered === 'true' && !isExplicitLandingRequest && page !== 'landing') {
+                console.log('🚫 Prevented return to landing from internal navigation - forcing home');
                 window.location.hash = '#home';
                 _setPage('home');
                 return;
+            }
+            
+            if (isExplicitLandingRequest) {
+                console.log('🏠 Landing page explicitly requested - allowing access');
             }
             
             if (newPage !== page) {

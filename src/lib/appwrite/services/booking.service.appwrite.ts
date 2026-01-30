@@ -53,6 +53,11 @@ function validateBookingData(data: any): void {
   // ✅ GUEST BOOKING ENABLED: "Guest" is now accepted as valid customerName
   // Removed restriction to allow anonymous guest bookings
 
+  // ✅ ENSURE userId is available (fallback to 'anonymous' if not provided)
+  if (!data.customerId && !data.userId) {
+    console.warn('⚠️ [BOOKING] No userId provided - will use "anonymous" as fallback');
+  }
+
   if (missing.length > 0) {
     throw new Error(`Missing required fields: ${missing.join(', ')}`);
   }
@@ -159,6 +164,7 @@ export const appwriteBookingService = {
         
         // Customer info (REQUIRED)
         customerId: bookingData.customerId || null,
+        userId: bookingData.customerId || bookingData.userId || 'anonymous', // ✅ REQUIRED: userId field for Appwrite schema
         customerName: bookingData.customerName, // ✅ VALIDATED: Not empty, not 'Guest'
         
         // 🔒 PRIVACY RULE: Customer WhatsApp/Phone stored in database
@@ -169,7 +175,8 @@ export const appwriteBookingService = {
         customerWhatsApp: bookingData.customerWhatsApp,
         
         // Service details
-        serviceType: bookingData.serviceType || 'Traditional Massage',
+        service: bookingData.serviceType || 'Traditional Massage', // ✅ REQUIRED: Appwrite schema expects 'service'
+        serviceType: bookingData.serviceType || 'Traditional Massage', // ✅ BACKWARD COMPATIBILITY
         duration: bookingData.duration,
         price: bookingData.price,
         
@@ -184,6 +191,15 @@ export const appwriteBookingService = {
         bookingDate: bookingData.date || nowISO, // ✅ FIXED: Use bookingDate instead of date (full ISO datetime)
         date: bookingData.date || nowISO.split('T')[0],
         time: bookingData.time || new Date().toLocaleTimeString('en-US', { hour12: false }),
+        
+        // ✅ REQUIRED: startTime field for dashboard compatibility  
+        // Combine date and time into ISO datetime string that dashboards expect
+        startTime: (() => {
+          const bookingDate = bookingData.date || nowISO.split('T')[0];
+          const bookingTime = bookingData.time || new Date().toLocaleTimeString('en-US', { hour12: false });
+          // Create ISO datetime: "2024-01-30T14:30:00.000Z"
+          return `${bookingDate}T${bookingTime}.000Z`;
+        })(),
         
         // Status & Timing
         status: 'Pending',

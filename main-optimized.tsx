@@ -3,7 +3,7 @@ console.time('⚡ Elite App Boot Time');
 console.log('🚀 Starting IndaStreet Elite Loading System...');
 
 // CRITICAL: React 19 AsyncMode fix must be imported FIRST
-import './utils/reactCompatibility';
+import './src/utils/reactCompatibility';
 
 // Priority imports for faster bundle loading
 import React from 'react';

@@ -380,7 +380,7 @@ const App = () => {
                 try {
                     const currentUser = await Promise.race([
                         account.get(),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 500)) // Reduced from 3000ms to 500ms for Facebook-standard performance
                     ]) as any;
 
                     sessionCache.set(true, currentUser);
@@ -1176,7 +1176,7 @@ const App = () => {
         <ChatProvider>
             {/* Auto-activate demo chat rooms */}
             <ChatRoomActivator />
-        <PersistentChatProvider>
+        <PersistentChatProvider setIsChatWindowVisible={state.setIsChatWindowVisible}>
         <DeviceStylesProvider>
             <Helmet>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
@@ -1196,7 +1196,7 @@ const App = () => {
                 }
             >
             {/* Global Header only in PWA standalone and when page lacks its own header */}
-            <GlobalHeader page={state.page} />
+            {state.page !== 'landing' && <GlobalHeader page={state.page} />}
             <div className={`${state.isFullScreen ? "flex-grow" : "flex-1"} ${
                 mobileDetection.isMobileScreen ? 'mobile-layout' : 'desktop-layout'
             } ${

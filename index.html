@@ -4,6 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
     
+    <!-- 🚀 DNS PREFETCH: Pre-resolve domains for instant resource loading -->
+    <link rel="dns-prefetch" href="//syd.cloud.appwrite.io">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//unpkg.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    
+    <!-- 🚀 CRITICAL PERFORMANCE: Preload essential resources for instant landing page -->
+    <link rel="preload" href="/src/index.tsx" as="script">
+    <link rel="preload" href="/src/App.tsx" as="script">
+    <link rel="preload" href="/src/pages/MainLandingPage.tsx" as="script">
+    <link rel="preload" href="/src/context/AppStateContext.tsx" as="script">
+    <link rel="preconnect" href="https://syd.cloud.appwrite.io" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    
     <!-- ✅ Cache control managed by Netlify headers, not meta tags -->
     
     <!-- ✅ MOBILE-FIRST: Critical CSS for first paint loading state -->
@@ -577,28 +593,32 @@
           var root = document.getElementById('root');
           if (!root || root.children.length === 0) return false;
           
-          // Check for actual landing page content (not just loading spinners)
-          var hasText = root.textContent && root.textContent.trim().length > 50;
+          // Enhanced detection for actual content (not just loading states)
+          var hasText = root.textContent && root.textContent.trim().length > 100;
           var hasImages = root.querySelectorAll('img').length > 0;
-          var hasButtons = root.querySelectorAll('button').length > 0;
+          var hasButtons = root.querySelectorAll('button, .btn, [role="button"]').length > 0;
+          var hasCards = root.querySelectorAll('.card, .therapist-card, [class*="card"]').length > 0;
+          var hasNavigation = root.querySelectorAll('nav, .nav, .navigation, .menu').length > 0;
           
-          return hasText || hasImages || hasButtons;
+          // Must have at least 2 indicators of real content
+          var contentScore = (hasText ? 1 : 0) + (hasImages ? 1 : 0) + (hasButtons ? 1 : 0) + (hasCards ? 1 : 0) + (hasNavigation ? 1 : 0);
+          return contentScore >= 2;
         }
         
-        // Wait for React content with proper landing page detection
+        // Wait for React content with aggressive landing page detection
         var checkInterval = setInterval(function() {
           if (isLandingPageReady()) {
             clearInterval(checkInterval);
-            // Small delay for smooth transition
-            setTimeout(hideSplash, 200);
+            // Immediate transition for perceived performance
+            setTimeout(hideSplash, 50);
           }
-        }, 100);
+        }, 25);
         
-        // Emergency fallback: max 3 seconds (reduced from 5s after optimization)
+        // EXTENDED: Allow more time for React to load properly (was 300ms, now 2000ms)
         setTimeout(function() {
           clearInterval(checkInterval);
           hideSplash();
-        }, 3000);
+        }, 2000);
       })();
     </script>
     

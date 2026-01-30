@@ -22,10 +22,10 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         : "flex flex-col items-center justify-center py-12";
 
     const stageMessages = {
-        initializing: 'Initializing IndaStreet...',
-        loading: 'Loading massage therapists...',
-        authenticating: 'Securing your connection...',
-        finalizing: 'Almost ready...'
+        initializing: 'Ready',
+        loading: 'Ready',
+        authenticating: 'Ready',
+        finalizing: 'Ready'
     };
 
     const stageColors = {
@@ -80,11 +80,9 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
                     />
                 </svg>
                 
-                {/* Percentage */}
+                {/* Simple dot indicator */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">
-                        {Math.round(progress)}%
-                    </span>
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                 </div>
             </div>
             

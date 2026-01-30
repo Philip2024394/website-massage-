@@ -4,9 +4,24 @@
 /* Elite Therapist Dashboard Styles */
 @import url('./src/styles/elite-therapist-dashboard.css');
 
+/* CRITICAL: Mobile scrolling fix */
+@import url('./src/styles/mobile-scroll-fix.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Prevent white flash during loading */
+html, body {
+  background-color: #111827 !important;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  background-color: #111827;
+  min-height: 100vh;
+}
 
 /* Clean, mobile-first layout - body scrolling enabled */
 html, body, #root {
@@ -39,10 +54,9 @@ body {
   overflow-x: hidden;
   min-height: 100vh;
   height: auto;
-  /* Firefox fix: Ensure body can expand with content */
   position: relative;
-  /* Allow natural scroll behavior */
-  overscroll-behavior: auto;
+  overscroll-behavior-y: auto;
+  overscroll-behavior-x: none;
 }
 
 #root {

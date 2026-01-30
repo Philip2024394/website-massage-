@@ -320,7 +320,10 @@ const initialState: ChatWindowState = {
   isTherapistView: false,
 };
 
-export function PersistentChatProvider({ children }: { children: ReactNode }) {
+export function PersistentChatProvider({ children, setIsChatWindowVisible }: { 
+  children: ReactNode;
+  setIsChatWindowVisible: (visible: boolean) => void; // REQUIRED - no optional behavior
+}) {
   const [chatState, _setChatState] = useState<ChatWindowState>(initialState);
   
   // DEBUG: Wrapper to track all state changes
@@ -673,6 +676,11 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     console.log('💬 Opening chat with:', therapist.name, 'mode:', mode);
     console.log('🔒 Locking chat to prevent accidental closure during booking');
     
+    // 🔒 CRITICAL: Notify AppStateContext that chat window is visible
+    // This prevents landing page redirects during booking flow
+    setIsChatWindowVisible(true);
+    console.log('📋 AppStateContext notified: chat window is now visible');
+    
     // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during booking
     setIsLocked(true);
     
@@ -768,6 +776,10 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     options?: { isScheduled?: boolean; depositRequired?: boolean; depositPercentage?: number }
   ) => {
     console.log('💬 Opening chat with pre-selected service:', therapist.name, service, options);
+    
+    // 🔒 CRITICAL: Notify AppStateContext that chat window is visible
+    setIsChatWindowVisible(true);
+    console.log('📋 AppStateContext notified: chat window opening with service');
     
     const isScheduled = options?.isScheduled || false;
     
@@ -865,7 +877,11 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     
     // 🔓 UNLOCK CHAT when minimizing (reset to normal state)
     setIsLocked(false);
+    
+    // 🔒 Notify AppStateContext that chat window is no longer blocking navigation
+    setIsChatWindowVisible(false);
     console.log('🔓 Chat unlocked - minimized and reset');
+    console.log('📋 AppStateContext notified: chat window is now hidden');
   }, []);
 
   // Maximize chat
@@ -888,17 +904,27 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       console.log('🔒 Chat has active booking or critical booking step, minimizing instead of closing');
       console.log('🔒 Critical steps that prevent closure: details, datetime, confirmation');
       setChatState(prev => ({ ...prev, isMinimized: true }));
+      // Still notify AppStateContext that chat is minimized
+      setIsChatWindowVisible(false);
+      console.log('📋 AppStateContext notified: chat minimized but not closed');
       return;
     }
     
     if (isLocked) {
       console.log('🔒 Chat is locked, minimizing instead');
       setChatState(prev => ({ ...prev, isMinimized: true }));
+      // Still notify AppStateContext that chat is minimized
+      setIsChatWindowVisible(false);
+      console.log('📋 AppStateContext notified: locked chat minimized');
       return;
     }
+    
     console.log('❌ CRITICAL: Closing chat - THIS SHOULD NOT HAPPEN DURING BOOKING');
     setChatState(initialState);
     setIsLocked(false);
+    // Notify AppStateContext that chat is fully closed
+    setIsChatWindowVisible(false);
+    console.log('📋 AppStateContext notified: chat fully closed');
   }, [isLocked, chatState.currentBooking, chatState.bookingStep]);
 
   // Lock chat
@@ -1353,7 +1379,50 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       
     } catch (error: any) {
       console.error('❌ [ENGINE REDIRECT] Unexpected error:', error);
-      addSystemNotification('❌ Failed to create booking. Please try again.');
+      
+      // Enhanced error reporting with detailed debugging
+      const errorDetails = {
+        errorName: error?.name || 'Unknown Error',
+        errorMessage: error?.message || 'No error message provided',
+        errorCode: error?.code || error?.status || 'No error code',
+        errorType: error?.type || 'booking_creation_error',
+        appwriteError: error?.response?.data || error?.response || null,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.error('📊 [ERROR DETAILS]:', errorDetails);
+      console.error('🔍 [ERROR ANALYSIS]:');
+      console.error('  - Error Name:', errorDetails.errorName);
+      console.error('  - Error Message:', errorDetails.errorMessage);
+      console.error('  - Error Code:', errorDetails.errorCode);
+      console.error('  - Error Type:', errorDetails.errorType);
+      console.error('  - Appwrite Response:', errorDetails.appwriteError);
+      console.error('  - Stack Trace:', error?.stack?.split('\n').slice(0, 5).join('\n'));
+      
+      // Create detailed error message for user
+      let userErrorMessage = '❌ Failed to create booking. ';
+      
+      if (error?.code === 400) {
+        userErrorMessage += 'Invalid booking data provided. Please check all fields.';
+      } else if (error?.code === 401) {
+        userErrorMessage += 'Authentication failed. Please refresh and try again.';
+      } else if (error?.code === 404) {
+        userErrorMessage += 'Booking collection not found in database.';
+      } else if (error?.code === 500) {
+        userErrorMessage += 'Server error occurred. Please try again in a few minutes.';
+      } else if (error?.message?.includes('address')) {
+        userErrorMessage += 'Address field validation failed. Please provide a complete address.';
+      } else if (error?.message?.includes('therapist')) {
+        userErrorMessage += 'Therapist information is missing or invalid.';
+      } else if (error?.message?.includes('customer')) {
+        userErrorMessage += 'Customer information is incomplete.';
+      } else if (error?.message?.includes('network')) {
+        userErrorMessage += 'Network connection issue. Please check your internet.';
+      } else {
+        userErrorMessage += `Detailed error: ${errorDetails.errorMessage}`;
+      }
+      
+      addSystemNotification(userErrorMessage);
       return false;
     }
   }, [chatState.therapist, chatState.selectedDuration, chatState.customerLocation, chatState.coordinates, chatState.selectedDate, chatState.selectedTime, chatState.customerName, chatState.customerWhatsApp, currentUserId, currentUserName, addSystemNotification, startCountdown]);

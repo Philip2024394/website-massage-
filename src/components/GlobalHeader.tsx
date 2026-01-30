@@ -55,8 +55,12 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
   // Never show on landing/home page - they have their own headers
   if (page === 'landing' || page === 'home') return null;
   
-  if (!isStandalone) return null;
-  if (hasPageHeader) return null;
+  // DISABLED: GlobalHeader causing issues on landing page - let components handle their own headers
+  return null;
+  
+  // Original logic disabled to prevent header conflicts
+  // if (!isStandalone) return null;
+  // if (hasPageHeader) return null;
 
   const resolvedTitle = title || 'Indastreet';
 

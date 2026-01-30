@@ -950,7 +950,16 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         language={language}
         onLogout={onLogout}
       >
-      <div className="bg-white w-full max-w-full overflow-x-hidden">
+      <div className="bg-white w-full">
+      
+      {/* MOBILE SCROLL TEST - Force content taller than viewport */}
+      <div className="bg-gradient-to-b from-green-50 to-blue-50 p-4 border-b border-gray-200">
+        <div className="text-center">
+          <p className="text-sm font-bold text-green-700">✅ MOBILE SCROLLING TEST</p>
+          <p className="text-xs text-gray-600">If you can scroll past this message, mobile scrolling is FIXED!</p>
+        </div>
+      </div>
+      
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 py-4 shadow-lg">
@@ -1801,6 +1810,32 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
           </div>
         </div>
       )}
+      
+      {/* MOBILE SCROLL TEST - Add tall content to force scrolling */}
+      <div className="p-4">
+        <div className="space-y-4">
+          {Array.from({length: 20}, (_, i) => (
+            <div key={i} className="bg-gray-100 p-4 rounded-lg">
+              <p className="text-sm font-semibold">Test Content Block {i + 1}</p>
+              <p className="text-xs text-gray-600">
+                This is test content to force vertical scrolling on mobile. 
+                The page should scroll naturally without any constraints.
+                Content height: {(i + 1) * 80}px from top.
+              </p>
+              {i === 19 && (
+                <div className="mt-4 p-3 bg-green-100 border border-green-300 rounded">
+                  <p className="text-sm font-bold text-green-800">🎉 SUCCESS!</p>
+                  <p className="text-xs text-green-700">
+                    If you can see this message, mobile scrolling is working correctly!
+                    The page scrolls naturally without height constraints.
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+      
       </div>
       </TherapistLayout>
     {/* Floating Chat Window */}

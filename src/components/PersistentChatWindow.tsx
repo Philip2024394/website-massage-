@@ -181,6 +181,14 @@ export function PersistentChatWindow() {
   const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
   const [therapistResponseCountdown, setTherapistResponseCountdown] = useState(300); // 5 minutes for therapist to respond
   const [bookingNotifications, setBookingNotifications] = useState<BookingNotification[]>([]);
+  
+  // 🚨 ERROR TRACKING STATE - Tracks booking flow errors with detailed information
+  const [bookingError, setBookingError] = useState<{
+    errorPoint: string;
+    errorReason: string;
+    errorDetails?: any;
+    timestamp: string;
+  } | null>(null);
 
   // 🔔 Initialize therapist notification system
   useEffect(() => {
@@ -444,6 +452,10 @@ export function PersistentChatWindow() {
   // Handle customer form submission
   const handleCustomerSubmit = async (e: React.FormEvent) => {
     console.log('🎯 [HANDLE CUSTOMER SUBMIT] Function called');
+    
+    // Clear any previous errors when starting new submission
+    setBookingError(null);
+    
     // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during Order Now booking
     lockChat();
     console.log('🔒 Chat locked for Order Now form submission');
@@ -500,6 +512,23 @@ export function PersistentChatWindow() {
       console.error('- Treatment For:', !customerForm.massageFor ? 'MISSING' : 'OK');
       console.error('- Location Type:', !customerForm.locationType ? 'MISSING' : 'OK');
       console.error('- Client Mismatch:', !!clientMismatchError ? 'ERROR' : 'OK');
+      
+      // 🚨 Set error state for display
+      setBookingError({
+        errorPoint: 'Form Validation',
+        errorReason: 'Required fields are missing or invalid. Please check: ' + 
+          [!isNameValid && 'Name', !isWhatsAppValid && 'WhatsApp (8-15 digits)', 
+           !customerForm.massageFor && 'Treatment For', !customerForm.locationType && 'Location Type',
+           clientMismatchError && 'Client Information Mismatch'].filter(Boolean).join(', '),
+        errorDetails: {
+          name: isNameValid ? '✅' : '❌',
+          whatsApp: isWhatsAppValid ? '✅' : '❌',
+          massageFor: customerForm.massageFor ? '✅' : '❌',
+          locationType: customerForm.locationType ? '✅' : '❌',
+          clientMismatch: clientMismatchError || 'none'
+        },
+        timestamp: new Date().toLocaleString()
+      });
       
       // Show user-friendly error notification
       addSystemNotification('❌ Please fill in all required fields: Name, WhatsApp, Treatment For, and Location Type');
@@ -738,6 +767,18 @@ export function PersistentChatWindow() {
               console.log('Current step after setBookingStep:', chatState.bookingStep);
             } catch (schedError) {
               console.error('❌ Scheduled booking failed:', schedError);
+              
+              // 🚨 Set error state for display
+              setBookingError({
+                errorPoint: 'Scheduled Booking Creation',
+                errorReason: (schedError as Error).message || 'Failed to create scheduled booking',
+                errorDetails: {
+                  errorName: (schedError as Error).name,
+                  errorStack: (schedError as Error).stack?.split('\n').slice(0, 3).join('\n')
+                },
+                timestamp: new Date().toLocaleString()
+              });
+              
               // Still switch to chat even if booking fails
               console.log('🔄 [FALLBACK] Switching to chat despite scheduled booking error...');
               setBookingStep('chat');
@@ -794,6 +835,18 @@ export function PersistentChatWindow() {
               }
             } catch (bookingError) {
               console.error('❌ createBooking threw error:', bookingError);
+              
+              // 🚨 Set error state for display
+              setBookingError({
+                errorPoint: 'Immediate Booking Creation',
+                errorReason: (bookingError as Error).message || 'Failed to create immediate booking',
+                errorDetails: {
+                  errorName: (bookingError as Error).name,
+                  errorStack: (bookingError as Error).stack?.split('\n').slice(0, 3).join('\n')
+                },
+                timestamp: new Date().toLocaleString()
+              });
+              
               // Still switch to chat even if booking fails
               console.log('🔄 [FALLBACK] Switching to chat despite booking error...');
               setBookingStep('chat');
@@ -836,6 +889,18 @@ export function PersistentChatWindow() {
               console.log('✅ [FALLBACK] Booking created despite message failure:', bookingCreated);
             } catch (bookingError) {
               console.error('❌ [FALLBACK] Booking creation also failed:', bookingError);
+              
+              // 🚨 Set error state for display
+              setBookingError({
+                errorPoint: 'Fallback Booking Creation',
+                errorReason: 'Both message sending and booking creation failed',
+                errorDetails: {
+                  errorName: (bookingError as Error).name,
+                  errorMessage: (bookingError as Error).message,
+                  errorStack: (bookingError as Error).stack?.split('\n').slice(0, 3).join('\n')
+                },
+                timestamp: new Date().toLocaleString()
+              });
             }
           }
           
@@ -859,7 +924,25 @@ export function PersistentChatWindow() {
       console.error('❌ [OUTER CATCH] Error message:', err.message);
       console.error('❌ [OUTER CATCH] Error stack:', err.stack);
       
-      // 🔄 [FIXED FLOW] Keep user in details step on error so they can retry
+      // � Set comprehensive error state for display
+      setBookingError({
+        errorPoint: 'Booking Flow - Final Catch',
+        errorReason: err.message || 'An unexpected error occurred during booking submission',
+        errorDetails: {
+          errorName: err.name,
+          errorMessage: err.message,
+          errorStack: err.stack?.split('\n').slice(0, 5).join('\n'),
+          formData: {
+            name: customerForm.name ? '✅ Provided' : '❌ Missing',
+            whatsApp: customerForm.whatsApp ? '✅ Provided' : '❌ Missing',
+            massageFor: customerForm.massageFor || '❌ Missing',
+            locationType: customerForm.locationType || '❌ Missing'
+          }
+        },
+        timestamp: new Date().toLocaleString()
+      });
+      
+      // �🔄 [FIXED FLOW] Keep user in details step on error so they can retry
       console.log('🔄 [ERROR RECOVERY] Staying in details step for user to retry booking...');
       addSystemNotification('❌ Booking failed. Please check your details and try again.');
       
@@ -1114,6 +1197,16 @@ export function PersistentChatWindow() {
         .animate-slide-up {
           animation: slideUp 0.3s ease-out forwards;
         }
+        
+        /* Shake animation for error container */
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
       `}</style>
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
@@ -1152,26 +1245,94 @@ export function PersistentChatWindow() {
         
         {/* Language Selector - Right Side */}
         <button 
-          className="p-2 bg-white/20 text-white rounded-full hover:bg-white/30 transition-colors"
+          className={`p-2 rounded-full transition-colors ${
+            chatState.currentBooking 
+              ? 'bg-gray-500/50 text-gray-300 cursor-not-allowed opacity-50'
+              : 'bg-white/20 text-white hover:bg-white/30'
+          }`}
           onClick={() => {
+            // 🔒 SAFETY: Disable language switching during active booking
+            if (chatState.currentBooking) {
+              console.warn('🔒 [TRANSLATION SAFETY] Language switching disabled during active booking');
+              alert('⚠️ Language switching is temporarily disabled during booking to prevent data loss.');
+              return;
+            }
+            
             const newLang = currentLanguage === 'id' ? 'en' : 'id';
             setCurrentLanguage(newLang);
             document.documentElement.setAttribute('data-lang', newLang);
             
-            // Update all translation elements
+            // 🚨 CRITICAL FIX: SAFE TRANSLATION - Only update STATIC text elements
+            // This prevents breaking the booking flow by overriding dynamic content
             document.querySelectorAll('[data-gb]').forEach(el => {
+              // SKIP all interactive, form, or dynamic content elements
+              const skipTranslation = (
+                // Form elements
+                el.tagName === 'INPUT' || 
+                el.tagName === 'BUTTON' || 
+                el.tagName === 'TEXTAREA' ||
+                el.tagName === 'SELECT' ||
+                el.hasAttribute('value') ||
+                el.hasAttribute('onChange') ||
+                
+                // Dynamic content containers (booking data)
+                el.id?.includes('booking') ||
+                el.id?.includes('countdown') ||
+                el.id?.includes('customer') ||
+                el.id?.includes('therapist') ||
+                el.textContent?.match(/\d+:\d+/) || // Time format
+                el.textContent?.match(/ID:\s*\w+/) || // Booking ID format
+                
+                // React-controlled elements
+                el.classList.contains('react-component') ||
+                el.closest('.booking-form') ||
+                el.closest('[data-react]') ||
+                el.closest('.error-container') ||
+                
+                // Elements with dynamic content
+                el.querySelector('input, button, textarea') ||
+                
+                // Skip if element has actual dynamic content (not just translation placeholders)
+                (el.textContent && el.textContent.length > 50 && !el.getAttribute('data-gb')?.includes('|'))
+              );
+              
+              if (skipTranslation) {
+                console.log('🔒 [TRANSLATION SAFETY] Skipping dynamic element:', {
+                  tag: el.tagName,
+                  id: el.id,
+                  class: el.className,
+                  content: el.textContent?.slice(0, 50) + '...'
+                });
+                return; // Skip this element
+              }
+              
+              // Only translate STATIC labels and text
               const translations = el.getAttribute('data-gb')?.split('|');
               if (translations && translations.length === 2) {
-                el.textContent = newLang === 'id' ? translations[0] : translations[1];
+                // Verify it's a static label by checking if content matches translation
+                const currentText = el.textContent?.trim();
+                const isStaticLabel = translations.some(t => t === currentText);
+                
+                if (isStaticLabel || !currentText || currentText.length < 3) {
+                  el.textContent = newLang === 'id' ? translations[0] : translations[1];
+                  console.log('✅ [TRANSLATION] Updated static label:', el.id || el.tagName);
+                } else {
+                  console.log('🔒 [TRANSLATION SAFETY] Skipping dynamic content:', currentText?.slice(0, 30));
+                }
               }
             });
           }}
           id="language-selector" 
           data-gb="Bahasa|Language"
-          title={currentLanguage === 'id' ? 'Switch to English' : 'Beralih ke Bahasa Indonesia'}
+          title={chatState.currentBooking 
+            ? 'Language switching disabled during booking' 
+            : (currentLanguage === 'id' ? 'Switch to English' : 'Beralih ke Bahasa Indonesia')
+          }
+          disabled={!!chatState.currentBooking}
         >
-          <span className="text-lg">
+          <span className="text-lg flex items-center gap-1">
             {currentLanguage === 'id' ? '🇮🇩' : '🇬🇧'}
+            {chatState.currentBooking && <span className="text-xs">🔒</span>}
           </span>
         </button>
         
@@ -1188,6 +1349,155 @@ export function PersistentChatWindow() {
           </svg>
         </button>
       </div>
+
+      {/* 🚨 ERROR DISPLAY CONTAINER - Shows booking flow errors with detailed information */}
+      {bookingError && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 m-4 rounded-lg shadow-lg animate-shake relative z-50" 
+             role="alert" 
+             style={{position: 'sticky', top: '10px', border: '2px solid #ef4444'}}>
+          <div className="animate-pulse bg-red-100 absolute -top-1 -left-1 -right-1 h-2 rounded-t opacity-50"></div>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-red-800 font-bold text-lg">⚠️ Booking Error</h3>
+                <button
+                  onClick={() => setBookingError(null)}
+                  className="text-red-600 hover:text-red-800 transition-colors p-1 rounded hover:bg-red-100"
+                  title="Clear error"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-2 text-sm">
+                <div className="bg-white rounded p-2 border border-red-200">
+                  <p className="text-gray-700 font-semibold mb-1">📍 Error Point:</p>
+                  <p className="text-red-700 font-mono text-xs bg-red-50 p-2 rounded">
+                    {bookingError.errorPoint}
+                  </p>
+                </div>
+                
+                <div className="bg-white rounded p-2 border border-red-200">
+                  <p className="text-gray-700 font-semibold mb-1">❌ Reason:</p>
+                  <p className="text-red-600">
+                    {bookingError.errorReason}
+                  </p>
+                </div>
+                
+                {bookingError.errorDetails && (
+                  <div className="bg-white rounded p-2 border border-red-200">
+                    <p className="text-gray-700 font-semibold mb-2">🔍 Detailed Error Information:</p>
+                    
+                    {bookingError.errorDetails.appwriteDetails && (
+                      <div className="mb-3 p-3 bg-orange-50 rounded border border-orange-200">
+                        <p className="font-semibold text-orange-800 mb-1">📊 Appwrite Service Details:</p>
+                        <div className="text-sm text-orange-700 space-y-1">
+                          <p><strong>Issue:</strong> {bookingError.errorDetails.appwriteDetails.issue}</p>
+                          <p><strong>Solution:</strong> {bookingError.errorDetails.appwriteDetails.solution}</p>
+                          {bookingError.errorDetails.appwriteDetails.currentConfig && (
+                            <p><strong>Config:</strong> {bookingError.errorDetails.appwriteDetails.currentConfig}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <details className="cursor-pointer mb-2">
+                      <summary className="text-sm text-gray-600 hover:text-gray-800 py-1">📋 Form Data Status</summary>
+                      <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+                        {Object.entries(bookingError.errorDetails.formData || {}).map(([key, value]) => (
+                          <div key={key} className="flex justify-between py-1">
+                            <span className="capitalize font-medium">{key}:</span>
+                            <span className={value?.toString().includes('✅') ? 'text-green-600' : 'text-red-600'}>
+                              {value?.toString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                    
+                    <details className="cursor-pointer mb-2">
+                      <summary className="text-sm text-gray-600 hover:text-gray-800 py-1">🔧 System Information</summary>
+                      <div className="mt-2 p-2 bg-gray-50 rounded text-xs font-mono">
+                        <p><strong>Time:</strong> {bookingError.errorDetails.systemInfo?.timestamp}</p>
+                        <p><strong>URL:</strong> {bookingError.errorDetails.systemInfo?.url}</p>
+                        <p><strong>Browser:</strong> {bookingError.errorDetails.systemInfo?.userAgent}</p>
+                      </div>
+                    </details>
+                    
+                    <details className="cursor-pointer">
+                      <summary className="text-sm text-gray-600 hover:text-gray-800 py-1">⚠️ Full Error Details</summary>
+                      <pre className="text-xs text-gray-600 font-mono bg-gray-50 p-2 rounded overflow-x-auto mt-2">
+                        {JSON.stringify(bookingError.errorDetails, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
+                )}
+                
+                <div className="text-xs text-gray-500 pt-2 border-t border-red-200">
+                  ⏰ {bookingError.timestamp}
+                </div>
+              </div>
+              
+              <div className="mt-3 pt-3 border-t border-red-200">
+                <p className="text-sm text-gray-600 mb-2">💡 What to do:</p>
+                <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
+                  <li>Check your internet connection</li>
+                  <li>Verify all form fields are filled correctly</li>
+                  <li>Try again in a few moments</li>
+                  <li>Contact support if error persists</li>
+                </ul>
+                
+                <div className="mt-3 p-2 bg-blue-50 rounded border border-blue-200">
+                  <p className="text-xs text-blue-700 mb-2">🔧 Debug Actions:</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={() => {
+                        console.log('🔍 Current Form State:', customerForm);
+                        console.log('🔍 Current Chat State:', chatState);
+                        console.log('🔍 Full Error Object:', bookingError);
+                      }}
+                      className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+                    >
+                      Log All States
+                    </button>
+                    <button
+                      onClick={() => {
+                        const errorReport = {
+                          error: bookingError,
+                          form: customerForm,
+                          timestamp: new Date().toISOString(),
+                          url: window.location.href
+                        };
+                        navigator.clipboard.writeText(JSON.stringify(errorReport, null, 2)).then(() => {
+                          alert('Complete error report copied to clipboard! 📋');
+                        }).catch(() => {
+                          alert('Error details logged to console');
+                          console.log('📋 Complete Error Report:', errorReport);
+                        });
+                      }}
+                      className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200"
+                    >
+                      Copy Error Report
+                    </button>
+                    <button
+                      onClick={() => {
+                        setBookingError(null);
+                        console.log('🧹 Error cleared from UI');
+                      }}
+                      className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200"
+                    >
+                      Clear Error
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <>
       {/* Therapist Booking Notifications */}

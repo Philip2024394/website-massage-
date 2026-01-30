@@ -19,7 +19,7 @@ export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
     therapists: 'therapists_collection_id',
     places: 'places_collection_id',
-    bookings: 'bookings',
+    bookings: 'bookings_collection_id',
     reviews: 'reviews',
     commissionRecords: 'commission_records',
     chatSessions: 'chat_sessions',
