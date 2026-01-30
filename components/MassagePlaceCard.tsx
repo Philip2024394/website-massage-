@@ -280,9 +280,9 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         : ['Traditional Balinese', 'Deep Tissue', 'Swedish', 'Aromatherapy', 'Hot Stone']; // Mock data
 
     const parsedLanguages = parseLanguages((place as any).languages) || [];
-    const languagesDisplay = Array.isArray(parsedLanguages) && parsedLanguages.length > 0 
-        ? parsedLanguages.slice(0, 5) 
-        : ['English', 'Indonesian', 'Mandarin']; // Mock data
+    // Always include Indonesian as standard, only show other languages if explicitly set
+    const baseLanguages = parsedLanguages.length > 0 ? parsedLanguages : ['Indonesian'];
+    const languagesDisplay = Array.isArray(baseLanguages) ? baseLanguages.slice(0, 5) : ['Indonesian'];
 
     // Gallery photos - parse from place data with mock data for demonstration
     const galleryPhotos = (() => {

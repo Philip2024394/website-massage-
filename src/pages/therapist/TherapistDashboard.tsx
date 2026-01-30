@@ -189,6 +189,46 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     return [];
   });
 
+  // Fixed Indonesian language - therapists can add additional languages
+  
+  // Language options for therapist selection
+  const languageOptions = [
+    { code: 'id', label: '🇮🇩 Indonesian' }, // Indonesian always available as default
+    { code: 'en', label: '🇬🇧 English' },
+    { code: 'zh', label: '🇨🇳 Chinese' },
+    { code: 'ja', label: '🇯🇵 Japanese' },
+    { code: 'ko', label: '🇰🇷 Korean' },
+    { code: 'ar', label: '🇸🇦 Arabic' },
+    { code: 'ru', label: '🇷🇺 Russian' },
+    { code: 'fr', label: '🇫🇷 French' },
+    { code: 'de', label: '🇩🇪 German' },
+    { code: 'es', label: '🇪🇸 Spanish' },
+  ];
+
+  // Language toggle handler
+  const handleToggleLanguage = (code: string) => {
+    setSelectedGlobe(prev => {
+      if (code === 'id') {
+        // Indonesian cannot be removed - it's always included
+        if (!prev.includes('id')) {
+          return ['id', ...prev].slice(0, 3); // Add Indonesian and keep max 3
+        }
+        return prev; // Indonesian already included, do nothing
+      }
+      
+      return prev.includes(code) 
+        ? prev.filter(c => c !== code) 
+        : (prev.length < 3 ? [...prev, code] : prev);
+    });
+  };
+  
+  // Ensure Indonesian is always included as base language
+  React.useEffect(() => {
+    if (!selectedGlobe.includes('id')) {
+      setSelectedGlobe(prev => ['id', ...prev.filter(c => c !== 'id')].slice(0, 3));
+    }
+  }, []);
+
   // Fixed Indonesian language - no language selection for therapist dashboard
 
   // ============================================================================
@@ -978,8 +1018,40 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
                 <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
-                <span className="text-xs text-gray-500">bulan ini</span>
+                {(() => {
+                  const status = therapist?.status || therapist?.availability;
+                  const statusStr = String(status).toLowerCase();
+                  
+                  if (statusStr === 'available' && therapist?.availableStartTime) {
+                    const now = new Date();
+                    const startTime = new Date(therapist.availableStartTime);
+                    const hoursElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+                    const hoursRemaining = Math.max(0, 12 - hoursElapsed);
+                    
+                    return (
+                      <>
+                        <span className="text-sm font-semibold text-gray-700">
+                          {hoursRemaining > 0 ? `${Math.floor(hoursRemaining)}h ${Math.floor((hoursRemaining % 1) * 60)}m` : '0h 0m'}
+                        </span>
+                        <span className="text-xs text-gray-500">remaining</span>
+                      </>
+                    );
+                  } else if (statusStr === 'busy') {
+                    return (
+                      <>
+                        <span className="text-sm font-semibold text-red-700">Timer Expired</span>
+                        <span className="text-xs text-gray-500">set available</span>
+                      </>
+                    );
+                  } else {
+                    return (
+                      <>
+                        <span className="text-sm font-semibold text-gray-700">12h 0m</span>
+                        <span className="text-xs text-gray-500">when available</span>
+                      </>
+                    );
+                  }
+                })()}
               </div>
             </div>
 
@@ -1460,16 +1532,42 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </p>
             </div>
 
-            {/* Globe - Fixed Indonesian Language */}
+            {/* Languages */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Language - Indonesian (Bahasa Indonesia)
+                Languages (max 3) - {selectedGlobe.length}/3 selected
+                <span className="text-xs text-orange-600 ml-2">Indonesian always included</span>
               </label>
               <div className="flex flex-wrap gap-2">
-                <div className="px-3 py-1.5 rounded-md text-xs font-medium bg-orange-500 text-white">
-                  🇮🇩 Indonesian
-                </div>
+                {languageOptions.map(opt => {
+                  const isSelected = selectedGlobe.includes(opt.code);
+                  const isIndonesian = opt.code === 'id';
+                  const isDisabled = !isSelected && selectedGlobe.length >= 3 && !isIndonesian;
+                  
+                  return (
+                    <button
+                      key={opt.code}
+                      onClick={() => handleToggleLanguage(opt.code)}
+                      disabled={isDisabled}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        isIndonesian && isSelected
+                          ? 'bg-orange-500 text-white cursor-default' // Indonesian always selected
+                          : isSelected
+                          ? 'bg-blue-500 text-white hover:bg-blue-600'
+                          : isDisabled
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      title={isIndonesian ? 'Indonesian is always included as standard language' : `${isSelected ? 'Remove' : 'Add'} ${opt.label.split(' ')[1]}`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Indonesian is your primary language. Add up to 2 additional languages to attract more international clients.
+              </p>
             </div>
 
             {/* Massage Types */}

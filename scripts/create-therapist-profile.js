@@ -28,7 +28,7 @@ const THERAPIST_DATA = {
   coordinates: JSON.stringify({ lat: -6.2088, lng: 106.8456 }),
   specialization: 'Swedish Massage',
   massageTypes: JSON.stringify(['Swedish', 'Deep Tissue']),
-  languages: JSON.stringify(['English', 'Indonesian']),
+  languages: JSON.stringify(['Indonesian']), // Only Indonesian as default - therapist can add English/other languages via dashboard
   yearsOfExperience: 5,
   isLicensed: true,
   hourlyRate: 150,

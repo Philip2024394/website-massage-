@@ -180,8 +180,40 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
-              <span className="text-xs text-gray-500">bulan ini</span>
+              {(() => {
+                const status = therapist?.status || therapist?.availability;
+                const statusStr = String(status).toLowerCase();
+                
+                if (statusStr === 'available' && therapist?.availableStartTime) {
+                  const now = new Date();
+                  const startTime = new Date(therapist.availableStartTime);
+                  const hoursElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+                  const hoursRemaining = Math.max(0, 12 - hoursElapsed);
+                  
+                  return (
+                    <>
+                      <span className="text-sm font-semibold text-gray-700">
+                        {hoursRemaining > 0 ? `${Math.floor(hoursRemaining)}h ${Math.floor((hoursRemaining % 1) * 60)}m` : '0h 0m'}
+                      </span>
+                      <span className="text-xs text-gray-500">remaining</span>
+                    </>
+                  );
+                } else if (statusStr === 'busy') {
+                  return (
+                    <>
+                      <span className="text-sm font-semibold text-red-700">Timer Expired</span>
+                      <span className="text-xs text-gray-500">set available</span>
+                    </>
+                  );
+                } else {
+                  return (
+                    <>
+                      <span className="text-sm font-semibold text-gray-700">12h 0m</span>
+                      <span className="text-xs text-gray-500">when available</span>
+                    </>
+                  );
+                }
+              })()}
             </div>
           </div>
 

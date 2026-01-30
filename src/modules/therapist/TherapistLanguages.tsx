@@ -26,11 +26,14 @@ const TherapistLanguages: React.FC<TherapistLanguagesProps> = ({
     getDynamicSpacing, 
     translatedDescriptionLength 
 }) => {
-    const languages = therapist.languages 
+    const rawLanguages = therapist.languages 
         ? (typeof therapist.languages === 'string' 
             ? parseLanguages(therapist.languages) 
             : therapist.languages)
         : [];
+    
+    // Always include Indonesian as standard, add other languages only if therapist selected them
+    const languages = rawLanguages.length > 0 ? rawLanguages : ['Indonesian'];
     
     // Debug in development mode (reduced verbosity)
     if (process.env.NODE_ENV === 'development' && therapist.name?.toLowerCase().includes('budi')) {
@@ -72,9 +75,9 @@ const TherapistLanguages: React.FC<TherapistLanguagesProps> = ({
         'hi': {flag: '🇮🇳', name: 'HI'}
     };
 
-    // Only render if languages exist
+    // Languages should always exist now (Indonesian as minimum)
     if (!languages || !Array.isArray(languages) || languages.length === 0) {
-        return null;
+        return null; // This should rarely happen now
     }
 
     return (

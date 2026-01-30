@@ -126,7 +126,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [saving, setSaving] = useState(false);
   // All therapists have access to all features - no premium restrictions
   const isPremium = true;
-  const [onlineHoursThisMonth, setOnlineHoursThisMonth] = useState<number>(0);
+  const [countdownHoursRemaining, setCountdownHoursRemaining] = useState<number>(12);
+  const [availableStartTime, setAvailableStartTime] = useState<string | null>(null);
   const [busyStartTime, setBusyStartTime] = useState<string | null>(therapist?.busyStartTime || null);
   const [busyTimeRemaining, setBusyTimeRemaining] = useState<number | null>(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState(false);
@@ -161,6 +162,24 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     
     // Initialize Enhanced Notification System
     // EnhancedNotificationService.initialize(); // Temporarily disabled
+    
+    // Initialize 12-hour countdown timer from therapist data
+    if (therapist.availableStartTime && status === 'available') {
+      const now = new Date();
+      const startTime = new Date(therapist.availableStartTime);
+      const hoursElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+      const hoursRemaining = Math.max(0, 12 - hoursElapsed);
+      
+      setAvailableStartTime(therapist.availableStartTime);
+      setCountdownHoursRemaining(hoursRemaining);
+      
+      // If timer expired, auto-change to busy
+      if (hoursRemaining <= 0) {
+        handleStatusChange('busy');
+      }
+    } else if (therapist.countdownHoursRemaining !== undefined) {
+      setCountdownHoursRemaining(therapist.countdownHoursRemaining);
+    }
     
     // Initialize PWA Installation Enforcement
     // const pwaStatus = PWAInstallationEnforcer.checkInstallationStatus();
@@ -309,74 +328,71 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     };
   }, []);
 
-  // Track online hours - update every minute when online
+  // 12-hour countdown timer - update every minute when available
   useEffect(() => {
     if (!therapist?.$id) return;
     
-    const updateOnlineHours = async () => {
-      // Only count time when status is available or busy
-      if (status !== 'available' && status !== 'busy') return;
+    const updateCountdownTimer = async () => {
+      // Only count down when status is available
+      if (status !== 'available' || !availableStartTime) return;
       
       const now = new Date();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
+      const startTime = new Date(availableStartTime);
       
-      // Get last update time from localStorage
-      const lastUpdateKey = `onlineHours_${therapist.$id}_${currentYear}_${currentMonth}`;
-      const lastUpdateStr = localStorage.getItem(lastUpdateKey);
-      const lastUpdate = lastUpdateStr ? new Date(lastUpdateStr) : now;
+      // Calculate hours elapsed since becoming available
+      const hoursElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+      const hoursRemaining = Math.max(0, 12 - hoursElapsed);
       
-      // Calculate hours since last update (in fractions of an hour)
-      const hoursSinceLastUpdate = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
+      setCountdownHoursRemaining(hoursRemaining);
       
-      // Only update if we're in the same month
-      if (lastUpdate.getMonth() === currentMonth && lastUpdate.getFullYear() === currentYear) {
-        const newTotalHours = onlineHoursThisMonth + hoursSinceLastUpdate;
-        setOnlineHoursThisMonth(newTotalHours);
-        
-        // Update in database every 5 minutes to reduce writes
-        const minutesSinceUpdate = (now.getTime() - lastUpdate.getTime()) / (1000 * 60);
-        if (minutesSinceUpdate >= 5) {
-          try {
-            await therapistService.update(therapist.$id, {
-              onlineHoursThisMonth: newTotalHours,
-              lastOnlineHoursUpdate: now.toISOString()
-            });
-            localStorage.setItem(lastUpdateKey, now.toISOString());
-            devLog('⏱️ Updated online hours:', newTotalHours.toFixed(2));
-          } catch (error) {
-            console.error('Failed to update online hours:', error);
-          }
-        }
-      } else {
-        // New month - reset counter
-        setOnlineHoursThisMonth(0);
-        localStorage.setItem(lastUpdateKey, now.toISOString());
+      // Auto-change to busy when timer reaches 0
+      if (hoursRemaining <= 0 && status === 'available') {
+        console.log('⏰ 12-hour timer expired - changing status to busy');
         try {
           await therapistService.update(therapist.$id, {
-            onlineHoursThisMonth: 0,
-            lastOnlineHoursUpdate: now.toISOString()
+            status: 'busy',
+            availability: 'busy',
+            availableStartTime: null,
+            countdownHoursRemaining: 0
           });
+          setStatus('busy');
+          setAvailableStartTime(null);
+          setBusyStartTime(now.toISOString());
         } catch (error) {
-          console.error('Failed to reset online hours:', error);
+          console.error('Failed to auto-change status to busy:', error);
+        }
+        return;
+      }
+      
+      // Update database every 5 minutes to reduce writes
+      const minutesElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60);
+      if (Math.floor(minutesElapsed) % 5 === 0) {
+        try {
+          await therapistService.update(therapist.$id, {
+            countdownHoursRemaining: hoursRemaining,
+            lastTimerUpdate: now.toISOString()
+          });
+          devLog('⏱️ Updated countdown timer:', hoursRemaining.toFixed(2), 'hours remaining');
+        } catch (error) {
+          console.error('Failed to update countdown timer:', error);
         }
       }
     };
     
-    // Update immediately on mount if online
-    if (status === 'available' || status === 'busy') {
-      updateOnlineHours();
+    // Update immediately on mount if available
+    if (status === 'available' && availableStartTime) {
+      updateCountdownTimer();
     }
     
-    // Then update every minute while online
+    // Then update every minute while available
     const interval = setInterval(() => {
-      if (status === 'available' || status === 'busy') {
-        updateOnlineHours();
+      if (status === 'available' && availableStartTime) {
+        updateCountdownTimer();
       }
     }, 60000); // Every 1 minute
     
     return () => clearInterval(interval);
-  }, [therapist?.$id, status, onlineHoursThisMonth]);
+  }, [therapist?.$id, status, availableStartTime]);
 
   // Monitor busy time limit for non-premium accounts (3 hours max)
   useEffect(() => {
@@ -438,11 +454,29 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       const now = new Date().toISOString();
       const busyStartTimeValue = newStatus === 'busy' && !isPremium ? now : null;
       
+      // Handle 12-hour countdown timer
+      let availableStartTimeValue = null;
+      let countdownHoursRemainingValue = 12;
+      
+      if (newStatus === 'available') {
+        // Reset 12-hour countdown timer when becoming available
+        availableStartTimeValue = now;
+        countdownHoursRemainingValue = 12;
+        setAvailableStartTime(now);
+        setCountdownHoursRemaining(12);
+      } else {
+        // Clear available start time for other statuses
+        setAvailableStartTime(null);
+      }
+      
       const updateData = {
         status: properStatusValue,
         availability: properStatusValue, // Use same proper enum value
         isLive: newStatus !== 'offline', // Show Available and Busy on home page, hide only Offline
         isOnline: newStatus !== 'offline',
+        // 12-hour countdown timer fields
+        availableStartTime: availableStartTimeValue,
+        countdownHoursRemaining: countdownHoursRemainingValue,
         // Track busy start time for 3-hour limit on Pro accounts
         busyStartTime: busyStartTimeValue,
         // Clear conflicting timestamp fields based on new status
@@ -891,8 +925,24 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{(onlineHoursThisMonth || 0).toFixed(1)}h</span>
-              <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
+              {status === 'available' ? (
+                <>
+                  <span className="text-sm font-semibold text-gray-700">
+                    {countdownHoursRemaining > 0 ? `${Math.floor(countdownHoursRemaining)}h ${Math.floor((countdownHoursRemaining % 1) * 60)}m` : '0h 0m'}
+                  </span>
+                  <span className="text-xs text-gray-500">remaining</span>
+                </>
+              ) : status === 'busy' ? (
+                <>
+                  <span className="text-sm font-semibold text-red-700">Timer Expired</span>
+                  <span className="text-xs text-gray-500">set available</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-semibold text-gray-700">12h 0m</span>
+                  <span className="text-xs text-gray-500">when available</span>
+                </>
+              )}
             </div>
           </div>
 

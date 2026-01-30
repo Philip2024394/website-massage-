@@ -83,7 +83,7 @@ const PageNumberBadge: React.FC<PageNumberBadgeProps> = ({
                 {/* Lock Status - static text, conditional styling only */}
                 <span className={`text-xs font-bold px-2 py-1 rounded ${
                     actualIsLocked 
-                        ? 'bg-white bg-opacity-90 text-red-600' 
+                        ? 'bg-red-900 bg-opacity-90 text-red-300 border border-red-600' 
                         : 'bg-black bg-opacity-50 text-white'
                 }`}>
                     <span className={actualIsLocked ? '' : 'hidden'}>🔒 LOCKED</span>

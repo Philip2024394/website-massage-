@@ -8,11 +8,14 @@ interface TherapistSpecializationsProps {
 }
 
 const TherapistSpecializations = ({ massageTypes, therapist, t }: TherapistSpecializationsProps): JSX.Element => {
-  const languages = therapist.languages
+  const rawLanguages = therapist.languages
     ? typeof therapist.languages === 'string'
       ? parseLanguages(therapist.languages)
       : therapist.languages
     : [];
+
+  // Always include Indonesian as standard, add other languages only if therapist selected them
+  const languages = rawLanguages.length > 0 ? rawLanguages : ['Indonesian'];
 
   const langMap: Record<string, { flag: string; name: string }> = {
     english: { flag: '🇬🇧', name: 'EN' },

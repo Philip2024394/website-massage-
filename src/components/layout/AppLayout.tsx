@@ -1,6 +1,5 @@
 import React from 'react';
-// Disabled custom PullToRefresh - using native browser pull-to-refresh instead
-// import PullToRefresh from '../PullToRefresh';
+import PullToRefresh from '../PullToRefresh';
 
 interface AppLayoutProps {
     isFullScreen: boolean;
@@ -15,8 +14,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     onRefresh,
     enablePullToRefresh = true 
 }) => {
-    // Native browser pull-to-refresh is now enabled via CSS (overscroll-behavior: auto)
-    // No custom component needed - mobile browsers handle this natively
+    const handleRefresh = async () => {
+        if (onRefresh) {
+            await onRefresh();
+        } else {
+            // Default refresh behavior - reload current page data
+            window.location.reload();
+        }
+    };
     
     const content = (
         <div className={isFullScreen ? "min-h-screen flex flex-col mobile-optimized" : "max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col mobile-optimized container-mobile"}>
@@ -26,6 +31,23 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         </div>
     );
 
-    // Return content directly - native pull-to-refresh is handled by browser
+    // Elite pull-to-refresh wrapper for mobile experience
+    if (enablePullToRefresh && 'ontouchstart' in window) {
+        return (
+            <PullToRefresh 
+                onRefresh={handleRefresh}
+                eliteMode={true}
+                errorBoundary={true}
+                threshold={90}
+                className="min-h-screen"
+                loadingText="🔄 Refreshing..."
+                releaseText="↑ Release to refresh"
+                pullText="↓ Pull to refresh"
+            >
+                {content}
+            </PullToRefresh>
+        );
+    }
+
     return content;
 };

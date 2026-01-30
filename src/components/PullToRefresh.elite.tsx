@@ -13,7 +13,7 @@ interface PullToRefreshProps {
   pullText?: string;
 }
 
-const PullToRefresh: React.FC<PullToRefreshProps> = ({
+const ElitePullToRefresh: React.FC<PullToRefreshProps> = ({
   children,
   onRefresh,
   disabled = false,
@@ -35,6 +35,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
   const isAtTop = useRef<boolean>(true);
   const lastTouchTime = useRef<number>(0);
   const rafId = useRef<number | null>(null);
+  const pullStartTime = useRef<number>(0);
 
   // Elite error boundary and recovery system
   const safeExecute = useCallback(async (fn: () => Promise<void>) => {
@@ -46,11 +47,13 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
       setHasError(false);
       await fn();
     } catch (error) {
-      console.error('PullToRefresh: Error occurred:', error);
+      console.error('ElitePullToRefresh: Error occurred:', error);
       setHasError(true);
       // Auto-recovery after 2 seconds in elite mode
       if (eliteMode) {
-        setTimeout(() => setHasError(false), 2000);
+        setTimeout(() => {
+          setHasError(false);
+        }, 2000);
       }
     }
   }, [errorBoundary, eliteMode]);
@@ -75,28 +78,17 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
       
       if (prevent) {
         body.style.overflow = 'hidden';
+        body.style.position = 'fixed';
+        body.style.width = '100%';
         body.style.touchAction = 'none';
-        body.classList.add('elite-pulling');
-        html.classList.add('elite-refresh-mode');
+        html.style.overflow = 'hidden';
       } else {
         body.style.overflow = '';
+        body.style.position = '';
+        body.style.width = '';
         body.style.touchAction = '';
-        body.classList.remove('elite-pulling');
-        html.classList.remove('elite-refresh-mode');
+        html.style.overflow = '';
       }
-    }
-  }, [eliteMode]);
-
-  // Set elite mode on mount
-  useEffect(() => {
-    if (eliteMode) {
-      document.documentElement.classList.add('elite-refresh-mode');
-      document.body.classList.add('elite-refresh-mode');
-      
-      return () => {
-        document.documentElement.classList.remove('elite-refresh-mode');
-        document.body.classList.remove('elite-refresh-mode');
-      };
     }
   }, [eliteMode]);
 
@@ -116,6 +108,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
       
       // Store touch identifier for consistency
       setTouchId(touch.identifier);
+      pullStartTime.current = now;
       lastTouchTime.current = now;
       startY.current = touch.clientY;
       setIsPulling(true);
@@ -149,6 +142,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
       if (deltaY > 0) {
         checkScrollPosition();
         if (!isAtTop.current) {
+          // If we've scrolled away from top, cancel pull
           handleTouchEnd();
           return;
         }
@@ -184,7 +178,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
 
   // Elite touch end handler with haptic feedback simulation
   const handleTouchEnd = useCallback(async () => {
-    if (disabled || isRefreshing || !isPulling) return;
+    if (disabled || isRefreshing || !isPulling || hasError) return;
 
     setIsPulling(false);
     setTouchId(null);
@@ -219,7 +213,70 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
 
     // Smooth reset animation
     setPullDistance(0);
-  }, [disabled, isRefreshing, isPulling, pullDistance, threshold, onRefresh, safeExecute, eliteMode, preventMomentumScrolling]);
+  }, [disabled, isRefreshing, isPulling, hasError, eliteMode, pullDistance, threshold, onRefresh, safeExecute, preventMomentumScrolling]);
+
+  // Handle mouse events for desktop testing (elite mode only)
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!eliteMode || disabled || isRefreshing) return;
+    
+    checkScrollPosition();
+    if (isAtTop.current) {
+      startY.current = e.clientY;
+      setIsPulling(true);
+      pullStartTime.current = Date.now();
+    }
+  }, [eliteMode, disabled, isRefreshing, checkScrollPosition]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!eliteMode || disabled || isRefreshing || !isPulling) return;
+    
+    const deltaY = e.clientY - startY.current;
+    if (deltaY > 0) {
+      const distance = Math.min(deltaY * 0.25, threshold * 1.5);
+      setPullDistance(distance);
+    }
+  }, [eliteMode, disabled, isRefreshing, isPulling, threshold]);
+
+  const handleMouseUp = useCallback(async () => {
+    if (!eliteMode || disabled || isRefreshing || !isPulling) return;
+
+    setIsPulling(false);
+
+    if (pullDistance >= threshold) {
+      setIsRefreshing(true);
+      await safeExecute(onRefresh);
+      setIsRefreshing(false);
+    }
+
+    setPullDistance(0);
+  }, [eliteMode, disabled, isRefreshing, isPulling, pullDistance, threshold, onRefresh, safeExecute]);
+
+  // Global mouse event handlers
+  useEffect(() => {
+    if (!eliteMode) return;
+
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isPulling) {
+        handleMouseMove(e as any);
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isPulling) {
+        handleMouseUp();
+      }
+    };
+
+    if (isPulling) {
+      document.addEventListener('mousemove', handleGlobalMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [eliteMode, isPulling, handleMouseMove, handleMouseUp]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -266,6 +323,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onMouseDown={eliteMode ? handleMouseDown : undefined}
       style={{
         transform: containerTransform,
         transition: isPulling ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -283,9 +341,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
             opacity: refreshOpacity,
             transform: `scale(${refreshScale}) translateY(-${threshold - pullDistance}px)`,
             transition: isPulling ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            background: eliteMode ? 
-              'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%)' : 
-              'linear-gradient(180deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)'
+            background: eliteMode ? 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%)' : 'linear-gradient(180deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)'
           }}
         >
           <div className={`flex items-center gap-3 px-6 py-3 rounded-full shadow-lg border backdrop-blur-sm ${getIndicatorColor()}`}>
@@ -338,4 +394,4 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
   );
 };
 
-export default PullToRefresh;
+export default ElitePullToRefresh;
