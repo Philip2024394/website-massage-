@@ -969,6 +969,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                   <span className="text-xs text-gray-500">when available</span>
                 </>
               )}
+              <HelpTooltip 
+                {...onlineStatusHelp.countdownTimer}
+                position="left"
+                size="sm"
+              />
             </div>
           </div>
 

@@ -212,13 +212,25 @@ export const earningsHelp: PageHelpContent = {
  */
 export const onlineStatusHelp: PageHelpContent = {
   availabilityToggle: {
-    title: 'Status Ketersediaan',
-    content: 'Kontrol ketersediaan booking Anda. Ketika "Tersedia", pelanggan dapat melihat dan memesan Anda. Ketika "Sibuk" atau "Offline", Anda tidak akan muncul di hasil pencarian.',
+    title: '12-Hour Availability Timer',
+    content: 'Sistem timer 12 jam otomatis mengatur ketersediaan Anda. Ketika "Tersedia", timer mulai hitung mundur 12 jam. Setelah habis, status berubah ke "Sibuk" secara otomatis. Timer selalu reset ke 12 jam penuh setiap kali Anda pilih "Tersedia".',
     benefits: [
-      'Kontrol visibilitas pelanggan secara instan',
-      'Cegah booking selama istirahat',
-      'Jaga batasan profesional',
-      'Lacak jam online otomatis untuk pendapatan'
+      'Timer selalu reset ke 12 jam saat pilih "Tersedia"',
+      'Auto-berubah ke "Sibuk" setelah 12 jam',
+      'Cegah ketersediaan tanpa batas waktu',
+      'Dorongan manajemen sesi yang aktif',
+      'Timer pause saat "Sibuk" atau "Offline"'
+    ]
+  },
+  countdownTimer: {
+    title: 'Timer Countdown 12 Jam',
+    content: 'Timer menampilkan sisa waktu dalam format "Xh Ym" saat "Tersedia". Setelah mencapai 0, status otomatis berubah ke "Sibuk". Setiap kali Anda pilih "Tersedia" dari status apapun, timer selalu reset ke 12 jam penuh.',
+    benefits: [
+      'Visual feedback waktu tersisa yang jelas',
+      'Format "8h 45m remaining" mudah dibaca', 
+      'Reset otomatis ke 12h saat available',
+      'Status "Timer Expired" saat habis',
+      '"12h 0m when available" saat offline/busy'
     ]
   },
   discountBadge: {
@@ -264,7 +276,7 @@ export const myBookingsHelp: PageHelpContent = {
       'Bangun kepercayaan dengan pelanggan',
       'Amankan slot booking Anda',
       'Aktifkan pengingat otomatis',
-      'Dapatkan jam online untuk membership'
+      'Manfaatkan sistem timer 12 jam'
     ]
   },
   rejectBooking: {
