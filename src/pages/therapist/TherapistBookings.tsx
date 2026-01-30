@@ -600,6 +600,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       therapist={therapist}
       currentPage="bookings"
       onNavigate={handleNavigate}
+      language={language}
       onLogout={onLogout}
     >
     <div className="min-h-screen bg-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>

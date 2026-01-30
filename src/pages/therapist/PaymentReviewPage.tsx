@@ -92,6 +92,7 @@ const PaymentReviewPage: React.FC<PaymentReviewPageProps> = ({
       therapist={therapist}
       currentPage="payment-review"
       onNavigate={handleNavigate}
+      language={language}
       onLogout={onLogout}
     >
       <div className="min-h-screen overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>

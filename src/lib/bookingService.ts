@@ -284,6 +284,15 @@ export const bookingService = {
     },
 
     /**
+     * Get bookings for a specific provider/therapist
+     * 🔒 CRITICAL: Used by therapist dashboard
+     */
+    async getProviderBookings(providerId: string): Promise<Booking[]> {
+        console.log('📋 [BOOKING SERVICE] Getting bookings for provider:', providerId);
+        return await appwriteBookingService.listBookingsForTherapist(providerId);
+    },
+
+    /**
      * Subscribe to provider bookings using Appwrite Realtime
      * 🔒 CRITICAL: Used by therapist dashboard for instant notifications
      */

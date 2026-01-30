@@ -227,7 +227,7 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
       therapist={therapist}
       currentPage="payment"
       onNavigate={handleNavigate}
-
+      language={language}
       onLogout={onLogout}
     >
     <div className="min-h-screen bg-white">

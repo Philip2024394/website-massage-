@@ -43,6 +43,7 @@ interface TherapistLayoutProps {
   onNavigate: (page: string) => void;
   onLogout?: () => void;
   onRefresh?: () => Promise<void> | void;
+  language?: string;
 }
 
 const TherapistLayout: React.FC<TherapistLayoutProps> = ({
@@ -51,7 +52,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   currentPage,
   onNavigate,
   onLogout,
-  onRefresh
+  onRefresh,
+  language = 'id' // Default to Indonesian
 }) => {  // Safety check for required props
   if (!therapist) {
     console.warn('⚠️ TherapistLayout: therapist prop is missing');
@@ -207,7 +209,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   const labels = menuLabels[language] || menuLabels.id;
   
   const menuItems = [
-    { id: 'status', label: language === 'id' ? '🏠 Beranda' : '🏠 Home', icon: Home, color: 'text-orange-500' },
+    { id: 'home', label: language === 'id' ? '🏠 Beranda' : '🏠 Home', icon: Home, color: 'text-orange-500' },
     { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: FileText, color: 'text-orange-500' },
     { id: 'status', label: labels.status, icon: Clock, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
@@ -366,7 +368,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
               onClick={handleSidebarToggle}
               style={{
                 padding: '8px',
-                borderRadius: '8px',
                 border: 'none',
                 backgroundColor: 'transparent',
                 cursor: 'pointer',
@@ -489,11 +490,15 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                       e.preventDefault();
                       e.stopPropagation();
                       // Debounce rapid clicks
-                      if (e.currentTarget.dataset.clicking === 'true') return;
-                      e.currentTarget.dataset.clicking = 'true';
-                      setTimeout(() => {
-                        e.currentTarget.dataset.clicking = 'false';
-                      }, 300);
+                      if (e.currentTarget?.dataset?.clicking === 'true') return;
+                      if (e.currentTarget?.dataset) {
+                        e.currentTarget.dataset.clicking = 'true';
+                        setTimeout(() => {
+                          if (e.currentTarget?.dataset) {
+                            e.currentTarget.dataset.clicking = 'false';
+                          }
+                        }, 300);
+                      }
                       handleNavigate(item.id);
                     }}
                     onTouchStart={(e) => {

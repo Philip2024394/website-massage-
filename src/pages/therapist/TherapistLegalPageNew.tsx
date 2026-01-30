@@ -18,7 +18,7 @@ interface TherapistLegalProps {
 const TherapistLegalPage: React.FC<TherapistLegalProps> = ({ therapist, onBack, onNavigate, onLogout, language: propLanguage = 'id' }) => {
   const language = propLanguage || 'id';
   
-  // Simple dictionary object instead of importing getDictionary
+  // Simple dictionary object
   const dict = {
     therapistDashboard: {
       thisMonth: 'bulan ini'

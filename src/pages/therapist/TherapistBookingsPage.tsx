@@ -162,7 +162,7 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
     
     const setupRealtimeBookings = async () => {
       try {
-        const { bookingService } = await import('../../lib/appwriteService');
+        const bookingService = (await import('../../lib/bookingService')).default;
         
         unsubscribe = bookingService.subscribeToProviderBookings(
           therapist.$id,
@@ -208,7 +208,7 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
     setLoading(true);
     try {
       // Fetch real bookings from Appwrite
-      const { bookingService } = await import('../../lib/appwriteService');
+      const bookingService = (await import('../../lib/bookingService')).default;
       
       // Get bookings for this therapist
       const realBookings = await bookingService.getProviderBookings(therapist.$id);

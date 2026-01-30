@@ -616,7 +616,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         console.error('Unknown user type:', userType);
                     }
                 },
-                onBack: () => props.onNavigate('home')
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
             });
             
         case 'signin':
@@ -656,7 +657,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         props.onNavigate('home');
                     }
                 },
-                onBack: () => props.onNavigate('home')
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
             });
             
         case 'sign-in':
@@ -675,7 +677,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     const dashboardPage = dashboardPageMap[userType] || 'home';
                     props.onNavigate(dashboardPage as Page);
                 },
-                onBack: () => props.onNavigate('home')
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
             });
             
         case 'login':
@@ -693,7 +696,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     const dashboardPage = dashboardPageMap[userType] || 'home';
                     props.onNavigate(dashboardPage as Page);
                 },
-                onBack: () => props.onNavigate('home')
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
             });
             
         case 'signup':
@@ -726,7 +730,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         props.onNavigate('home');
                     }
                 },
-                onBack: () => props.onNavigate('home')
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
             });
             
         case 'therapist-signup':
@@ -740,7 +745,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     }
                     props.onNavigate('therapist-status');
                 },
-                onBack: () => props.onNavigate('home')
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
             });
             
         case 'massage-place-signup':
@@ -755,7 +761,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     }
                     props.onNavigate('massage-place-dashboard');
                 },
-                onBack: () => props.onNavigate('home')
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
             });
             
         case 'facial-place-signup':
@@ -769,28 +776,41 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     }
                     props.onNavigate('facial-place-dashboard' as Page);
                 },
-                onBack: () => props.onNavigate('home')
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
             });
             
         case 'role-selection':
-            return renderRoute(RoleSelectionPage);
+            return renderRoute(RoleSelectionPage, {
+                language: props.language || 'id'
+            });
             
         case 'onboarding-package':
-            return renderRoute(authRoutes.onboardingPackage.component);
+            return renderRoute(authRoutes.onboardingPackage.component, {
+                language: props.language || 'id'
+            });
             
         case 'therapist-login':
         case 'therapistLogin':
-            return renderRoute(authRoutes.therapistLogin.component);
+            return renderRoute(authRoutes.therapistLogin.component, {
+                language: props.language || 'id'
+            });
         
         case 'place-login':
         case 'massagePlaceLogin':
-            return renderRoute(authRoutes.placeLogin.component);
+            return renderRoute(authRoutes.placeLogin.component, {
+                language: props.language || 'id'
+            });
         
         case 'facial-portal':
-            return renderRoute(authRoutes.facialPortal.component);
+            return renderRoute(authRoutes.facialPortal.component, {
+                language: props.language || 'id'
+            });
         
         case 'simple-signup':
-            return renderRoute(authRoutes.simpleSignup.component);
+            return renderRoute(authRoutes.simpleSignup.component, {
+                language: props.language || 'id'
+            });
 
         // ===== PROFILE ROUTES =====
         case 'therapist-profile':
@@ -1390,7 +1410,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1402,7 +1422,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1414,7 +1434,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             }, 'therapist-bookings');
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1425,7 +1445,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1436,7 +1456,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1446,7 +1466,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1457,7 +1477,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1467,7 +1487,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1478,7 +1498,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1489,7 +1509,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1500,7 +1520,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
             console.log('[ROUTER OK] ✅ payment-status component bound successfully');
             return paymentStatusComponent;
@@ -1513,7 +1533,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
             console.log('[ROUTER OK] ✅ therapist-menu component bound successfully');
             return menuComponent;
@@ -1526,7 +1546,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1536,7 +1556,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1546,7 +1566,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1557,7 +1577,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Therapist-specific)
@@ -1566,7 +1586,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(therapistRoutes.hotelVillaSafePass.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
-                language: props.language
+                language: props.language || 'id'
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
@@ -1578,13 +1598,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
-                language: props.language
+                language: props.language || 'id'
             }, 'therapist-schedule');
         
         case 'therapist-package-terms':
             return renderRoute(therapistRoutes.packageTerms.component, {
                 therapist: props.user,
-                language: props.language
+                language: props.language || 'id'
             });
 
         // ===== OTHER DASHBOARD ROUTES =====

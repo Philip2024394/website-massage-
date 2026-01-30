@@ -340,6 +340,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       therapist={therapist}
       currentPage="earnings"
       onNavigate={handleNavigate}
+      language={language}
       onLogout={onLogout}
     >
     <div className="min-h-screen bg-gray-50">

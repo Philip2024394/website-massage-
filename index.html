@@ -593,32 +593,55 @@
           var root = document.getElementById('root');
           if (!root || root.children.length === 0) return false;
           
-          // Enhanced detection for actual content (not just loading states)
-          var hasText = root.textContent && root.textContent.trim().length > 100;
-          var hasImages = root.querySelectorAll('img').length > 0;
-          var hasButtons = root.querySelectorAll('button, .btn, [role="button"]').length > 0;
-          var hasCards = root.querySelectorAll('.card, .therapist-card, [class*="card"]').length > 0;
-          var hasNavigation = root.querySelectorAll('nav, .nav, .navigation, .menu').length > 0;
+          // IGNORE React loading states - they are not the final landing page
+          if (root.querySelector('#react-loading-spinner, .loading-spinner, [data-loading-state]')) {
+            console.log('[SPLASH] React still loading - keeping splash visible');
+            return false;
+          }
           
-          // Must have at least 2 indicators of real content
-          var contentScore = (hasText ? 1 : 0) + (hasImages ? 1 : 0) + (hasButtons ? 1 : 0) + (hasCards ? 1 : 0) + (hasNavigation ? 1 : 0);
-          return contentScore >= 2;
+          // Check for actual landing page content - more specific detection
+          var hasMainContent = root.querySelector('.main-content, .landing-page, .home-page, .search-section') !== null;
+          var hasProviderCards = root.querySelectorAll('.therapist-card, .provider-card, .service-card, [class*="card"]').length > 0;
+          var hasSearchSection = root.querySelector('input[type="text"], .search-input, .search-section') !== null;
+          var hasNavigationMenu = root.querySelectorAll('nav, .nav, .navigation, .menu, .header').length > 0;
+          var hasTherapistProfiles = root.textContent && (root.textContent.includes('massage') || root.textContent.includes('therapist') || root.textContent.includes('service'));
+          
+          // Enhanced text content check - must have substantial content
+          var hasRichText = root.textContent && root.textContent.trim().length > 200;
+          var hasImages = root.querySelectorAll('img').length > 0;
+          var hasButtons = root.querySelectorAll('button, .btn, [role="button"], .cta-button').length > 2;
+          
+          // Must have at least 3 strong indicators of real landing page content
+          var contentScore = 0;
+          if (hasMainContent) contentScore += 2;
+          if (hasProviderCards) contentScore += 2; 
+          if (hasSearchSection) contentScore += 1;
+          if (hasNavigationMenu) contentScore += 1;
+          if (hasTherapistProfiles) contentScore += 1;
+          if (hasRichText) contentScore += 1;
+          if (hasImages) contentScore += 1;
+          if (hasButtons) contentScore += 1;
+          
+          console.log('[SPLASH] Content detection - Score:', contentScore, 'Required: 4');
+          return contentScore >= 4;
         }
         
-        // Wait for React content with aggressive landing page detection
+        // Wait for React content with enhanced landing page detection
         var checkInterval = setInterval(function() {
           if (isLandingPageReady()) {
+            console.log('[SPLASH] Landing page ready - hiding splash screen');
             clearInterval(checkInterval);
-            // Immediate transition for perceived performance
-            setTimeout(hideSplash, 50);
+            // Smooth transition for better UX
+            setTimeout(hideSplash, 100);
           }
-        }, 25);
+        }, 50); // Check more frequently
         
-        // EXTENDED: Allow more time for React to load properly (was 300ms, now 2000ms)
+        // EXTENDED TIMEOUT: Give more time for complex landing page to load (5 seconds)
         setTimeout(function() {
+          console.log('[SPLASH] Timeout reached - hiding splash screen');
           clearInterval(checkInterval);
           hideSplash();
-        }, 2000);
+        }, 5000); // Allow up to 5 seconds for landing page to load completely
       })();
     </script>
     
