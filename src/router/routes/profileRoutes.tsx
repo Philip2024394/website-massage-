@@ -18,7 +18,8 @@
 
 import { lazy } from 'react';
 
-const TherapistProfilePage = lazy(() => import('../../pages/TherapistProfilePage'));
+// Direct import to prevent dynamic loading errors
+import TherapistProfilePage from '../../pages/TherapistProfilePage';
 const MassagePlaceProfilePage = lazy(() => import('../../pages/MassagePlaceProfilePage'));
 const FacialPlaceProfilePage = lazy(() => import('../../pages/FacialPlaceProfilePageNew'));
 const PlaceDetailPage = lazy(() => import('../../pages/PlaceDetailPage'));
