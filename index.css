@@ -660,3 +660,50 @@ button[data-clicking="true"] {
   flex-shrink: 0;
 }
 
+/* MOBILE WHITE CONTAINER FIX */
+/* Prevent white container appearing at bottom of mobile screens */
+@media (max-width: 768px) {
+  /* Fix AppLayout mobile container sizing */
+  .container-mobile {
+    max-height: 100vh !important;
+    height: 100vh !important;
+    min-height: auto !important;
+    overflow: hidden !important;
+  }
+  
+  /* Ensure content fits within viewport */
+  .content-landscape {
+    max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+  
+  /* Prevent extra white space at bottom */
+  .mobile-optimized {
+    max-height: 100vh !important;
+    height: 100vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Landing page mobile container fix */
+  .landing-page-container {
+    max-height: 100vh !important;
+    overflow-y: auto !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    .container-mobile,
+    .mobile-optimized,
+    .landing-page-container {
+      height: 100vh !important;
+      min-height: 100vh !important;
+      max-height: 100vh !important;
+    }
+  }
+}
