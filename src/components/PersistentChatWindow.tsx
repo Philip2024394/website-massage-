@@ -501,6 +501,9 @@ export function PersistentChatWindow() {
       console.error('- Location Type:', !customerForm.locationType ? 'MISSING' : 'OK');
       console.error('- Client Mismatch:', !!clientMismatchError ? 'ERROR' : 'OK');
       
+      // Show user-friendly error notification
+      addSystemNotification('❌ Please fill in all required fields: Name, WhatsApp, Treatment For, and Location Type');
+      
       // Additional validation for hotel/villa specific fields
       if (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') {
         console.error('- Hotel/Villa Name:', !customerForm.hotelVillaName ? 'MISSING' : 'OK');
@@ -508,7 +511,9 @@ export function PersistentChatWindow() {
         
         if (!customerForm.hotelVillaName || !customerForm.roomNumber) {
           console.error('❌ Hotel/Villa booking requires name and room number');
-          return false;
+          addSystemNotification('❌ Hotel/Villa bookings require facility name and room number');
+          unlockChat(); // Unlock chat so user can fix the form
+          return;
         }
       }
       
@@ -521,7 +526,8 @@ export function PersistentChatWindow() {
           severity: 'high'
         });
       }
-      return false;
+      unlockChat(); // Unlock chat so user can fix the form
+      return;
     }
     
     // ✅ CORRECT ORDER NOW SUCCESS MONITORING

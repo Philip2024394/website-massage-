@@ -293,8 +293,9 @@ class ChatFlagService {
       return existing.total > 0;
     } catch (error: any) {
       // Gracefully handle missing collection - it's not created yet
-      if (error?.code === 404 || error?.message?.includes('could not be found')) {
+      if (error?.code === 404 || error?.status === 404 || error?.message?.includes('could not be found')) {
         // Collection doesn't exist - this is expected if chat flags feature not set up
+        console.log('ℹ️ [ChatFlag] chat_flags collection not found - feature disabled');
         return false;
       }
       console.error('❌ [ChatFlag] Failed to check existing flag:', error);
