@@ -15,6 +15,8 @@ export interface CustomerForm {
   hotelVillaName: string;
   roomNumber: string;
   massageFor: string;
+  address1?: string; // ✅ Street address, building name
+  address2?: string; // ✅ Area/District (Seminyak, Kuta, etc.)
 }
 
 export interface DiscountValidation {
@@ -35,6 +37,8 @@ export const useBookingForm = (isMinimized: boolean, bookingStep: string, therap
     hotelVillaName: '',
     roomNumber: '',
     massageFor: '',
+    address1: '',
+    address2: '',
   });
 
   const [selectedDate, setSelectedDate] = useState('');
@@ -57,6 +61,8 @@ export const useBookingForm = (isMinimized: boolean, bookingStep: string, therap
         hotelVillaName: '',
         roomNumber: '',
         massageFor: '',
+        address1: '',
+        address2: '',
       });
       setClientMismatchError(null);
       setSelectedDate('');
@@ -76,6 +82,8 @@ export const useBookingForm = (isMinimized: boolean, bookingStep: string, therap
       hotelVillaName: '',
       roomNumber: '',
       massageFor: '',
+      address1: '',
+      address2: '',
     });
     setClientMismatchError(null);
     setSelectedDate('');
@@ -95,6 +103,8 @@ export const useBookingForm = (isMinimized: boolean, bookingStep: string, therap
       hotelVillaName: '',
       roomNumber: '',
       massageFor: '',
+      address1: '',
+      address2: '',
     });
     setSelectedDate('');
     setSelectedTime('');

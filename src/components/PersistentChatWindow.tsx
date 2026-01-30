@@ -711,7 +711,12 @@ export function PersistentChatWindow() {
                 customerName: customerForm.name,
                 massageFor: customerForm.massageFor,
                 locationType: customerForm.locationType,
-                address: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
+                // ✅ CRITICAL FIX: address must NEVER be undefined - Appwrite requires it
+                address: (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') 
+                  ? customerForm.hotelVillaName 
+                  : (customerForm.address1 && customerForm.address2) 
+                    ? `${customerForm.address1}, ${customerForm.address2}`
+                    : customerForm.location || 'Address provided in chat',
                 roomNumber: customerForm.roomNumber || undefined,
               });
               console.log('✅ Scheduled booking created');
@@ -819,7 +824,12 @@ export function PersistentChatWindow() {
                 customerName: customerForm.name,
                 massageFor: customerForm.massageFor,
                 locationType: customerForm.locationType,
-                address: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
+                // ✅ CRITICAL FIX: address must NEVER be undefined - Appwrite requires it
+                address: (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') 
+                  ? customerForm.hotelVillaName 
+                  : (customerForm.address1 && customerForm.address2) 
+                    ? `${customerForm.address1}, ${customerForm.address2}`
+                    : customerForm.location || 'Address provided in chat',
                 roomNumber: customerForm.roomNumber || undefined,
               });
               
