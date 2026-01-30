@@ -145,7 +145,7 @@ export interface BookingData {
 
 // Therapist info for chat
 export interface ChatTherapist {
-  id: string;
+  id: string; // Now uses therapist name for easy debugging
   name: string;
   image?: string;
   pricing?: Record<string, number>;
@@ -155,6 +155,7 @@ export interface ChatTherapist {
   duration?: number;
   bankCardDetails?: string; // Bank card info for payment
   clientPreferences?: string;
+  appwriteId?: string; // Keep Appwrite ID for database operations
 }
 
 // Message structure matching Appwrite schema
@@ -674,7 +675,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   // Open chat with therapist
   const openChat = useCallback(async (therapist: ChatTherapist, mode: 'book' | 'schedule' | 'price' = 'book') => {
     console.log('💬 Opening chat with:', therapist.name, 'mode:', mode);
-    console.log('🔒 Locking chat to prevent accidental closure during booking');
+    console.log('� DEBUGGING: Previous therapist:', chatState.therapist?.name, chatState.therapist?.id);
+    console.log('🔍 DEBUGGING: New therapist:', therapist.name, therapist.id);
+    console.log('�🔒 Locking chat to prevent accidental closure during booking');
     
     // 🔒 CRITICAL: Notify AppStateContext that chat window is visible
     // This prevents landing page redirects during booking flow
@@ -704,30 +707,43 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     console.log('💬 Chat room ID:', chatRoomId);
     
     // Set initial state with booking ID and chatRoomId
-    setChatState(prev => ({
-      ...prev,
-      isOpen: true,
-      isMinimized: false,
-      therapist,
-      bookingMode: mode,
-      bookingStep: 'duration',
-      selectedDate: null,
-      selectedTime: null,
-      selectedService: null, // Reset pre-selected service
-      chatRoomId,
-      messages: prev.therapist?.id === therapist.id ? prev.messages : [],
-      bookingData: {
-        ...prev.bookingData,
-        bookingId: draftBookingId,
-        status: 'pending',
-        therapistId: therapist.id,
-        therapistName: therapist.name,
-      } as BookingData,
-    }));
+    setChatState(prev => {
+      console.log('🔍 DEBUGGING: Setting chat state');
+      console.log('🔍 DEBUGGING: Previous therapist in state:', prev.therapist?.name, prev.therapist?.id);
+      console.log('🔍 DEBUGGING: New therapist being set:', therapist.name, therapist.id);
+      
+      const newState = {
+        ...prev,
+        isOpen: true,
+        isMinimized: false,
+        therapist,
+        bookingMode: mode,
+        bookingStep: 'duration',
+        selectedDate: null,
+        selectedTime: null,
+        selectedService: null, // Reset pre-selected service
+        chatRoomId,
+        messages: prev.therapist?.id === therapist.id ? prev.messages : [],
+        bookingData: {
+          ...prev.bookingData,
+          bookingId: draftBookingId,
+          status: 'pending',
+          therapistId: therapist.id,
+          therapistName: therapist.name,
+        } as BookingData,
+      };
+      
+      console.log('🔍 DEBUGGING: New state therapist:', newState.therapist?.name, newState.therapist?.id);
+      return newState;
+    });
 
     // Load existing messages
     if (currentUserId) {
-      const messages = await loadMessages(therapist.id);
+      // ✅ FIX: Use appwriteId for database queries, not the name-based id
+      const therapistIdForQuery = therapist.appwriteId || therapist.id;
+      console.log('🔍 DEBUGGING: Loading messages with therapistId:', therapistIdForQuery);
+      
+      const messages = await loadMessages(therapistIdForQuery);
       if (messages.length > 0) {
         setChatState(prev => ({
           ...prev,
@@ -828,7 +844,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
     // Load existing messages
     if (currentUserId) {
-      const messages = await loadMessages(therapist.id);
+      // ✅ FIX: Use appwriteId for database queries, not the name-based id
+      const therapistIdForQuery = therapist.appwriteId || therapist.id;
+      console.log('🔍 DEBUGGING: Loading messages (service) with therapistId:', therapistIdForQuery);
+      
+      const messages = await loadMessages(therapistIdForQuery);
       if (messages.length > 0) {
         setChatState(prev => ({
           ...prev,
@@ -1031,8 +1051,15 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     };
 
     try {
+      console.log('🔍 [DIAGNOSTIC] About to send message through server-enforced chat service');
+      console.log('🔍 [DIAGNOSTIC] Server request:', JSON.stringify(serverRequest, null, 2));
+      console.log('🔍 [DIAGNOSTIC] serverEnforcedChatService available:', !!serverEnforcedChatService);
+      console.log('🔍 [DIAGNOSTIC] serverEnforcedChatService.sendMessage function:', typeof serverEnforcedChatService.sendMessage);
+      
       // 🔒 Send through SERVER-ENFORCED endpoint
       const response: SendMessageResponse = await serverEnforcedChatService.sendMessage(serverRequest);
+      
+      console.log('🔍 [DIAGNOSTIC] Server response received:', JSON.stringify(response, null, 2));
 
       // Handle server response
       if (response.isRestricted) {
@@ -1091,7 +1118,34 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
     } catch (error) {
       console.error('❌ [SERVER] Failed to send message:', error);
-      return { sent: false, warning: 'Failed to send message. Please try again.' };
+      console.error('🔍 [DIAGNOSTIC] Error details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack?.split('\n').slice(0, 5),
+        cause: (error as any).cause,
+        code: (error as any).code,
+        status: (error as any).status
+      });
+      
+      // Check if it's a network/connection issue
+      if ((error as Error).message?.includes('fetch') || (error as Error).message?.includes('network')) {
+        console.error('🌐 [DIAGNOSTIC] Network/fetch error detected');
+        return { sent: false, warning: 'Network connection failed. Check your internet connection.' };
+      }
+      
+      // Check if it's an Appwrite authentication issue
+      if ((error as any).code === 401 || (error as Error).message?.includes('authentication')) {
+        console.error('🔐 [DIAGNOSTIC] Authentication error detected');
+        return { sent: false, warning: 'Authentication failed. Please refresh the page.' };
+      }
+      
+      // Check if it's a service availability issue
+      if ((error as Error).message?.includes('service') || (error as Error).message?.includes('unavailable')) {
+        console.error('🚫 [DIAGNOSTIC] Service unavailable error detected');
+        return { sent: false, warning: 'Chat service temporarily unavailable. Please try again.' };
+      }
+      
+      return { sent: false, warning: `Message sending failed: ${(error as Error).message}` };
     }
   }, [currentUserId, currentUserName, chatState.therapist, chatState.customerName]);
 
@@ -1250,11 +1304,20 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     console.log('📦 [APPWRITE] Creating booking with params:', appwriteBooking);
     
     try {
+      console.log('🔍 [DIAGNOSTIC] About to create booking through bookingService');
+      console.log('🔍 [DIAGNOSTIC] bookingService available:', !!bookingService);
+      console.log('🔍 [DIAGNOSTIC] bookingService.createBooking function:', typeof bookingService.createBooking);
+      console.log('🔍 [DIAGNOSTIC] Appwrite booking data:', JSON.stringify(appwriteBooking, null, 2));
+      
       // Call the Appwrite booking service
       const createdBooking = await bookingService.createBooking(appwriteBooking);
       
+      console.log('🔍 [DIAGNOSTIC] Booking service response:', JSON.stringify(createdBooking, null, 2));
+      
       if (!createdBooking || !createdBooking.bookingId) {
         console.error('❌ [APPWRITE] Booking creation failed - no booking returned');
+        console.error('🔍 [DIAGNOSTIC] createdBooking is:', createdBooking);
+        console.error('🔍 [DIAGNOSTIC] createdBooking type:', typeof createdBooking);
         addSystemNotification('❌ Failed to create booking. Please try again.');
         return false;
       }
@@ -1379,6 +1442,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       
     } catch (error: any) {
       console.error('❌ [ENGINE REDIRECT] Unexpected error:', error);
+      console.error('🔍 [DIAGNOSTIC] Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
       
       // Enhanced error reporting with detailed debugging
       const errorDetails = {
@@ -1387,6 +1451,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         errorCode: error?.code || error?.status || 'No error code',
         errorType: error?.type || 'booking_creation_error',
         appwriteError: error?.response?.data || error?.response || null,
+        networkError: error?.name === 'TypeError' && error?.message?.includes('fetch'),
+        authError: error?.code === 401 || error?.message?.includes('authentication'),
+        validationError: error?.code === 400 || error?.message?.includes('validation'),
+        serviceError: error?.code >= 500 || error?.message?.includes('service'),
         timestamp: new Date().toISOString()
       };
       

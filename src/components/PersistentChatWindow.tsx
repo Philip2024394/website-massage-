@@ -453,13 +453,6 @@ export function PersistentChatWindow() {
   const handleCustomerSubmit = async (e: React.FormEvent) => {
     console.log('🎯 [HANDLE CUSTOMER SUBMIT] Function called');
     
-    // Clear any previous errors when starting new submission
-    setBookingError(null);
-    
-    // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during Order Now booking
-    lockChat();
-    console.log('🔒 Chat locked for Order Now form submission');
-    
     // 🔒 CRITICAL: Prevent default IMMEDIATELY before any async operations
     e.preventDefault();
     e.stopPropagation();
@@ -468,6 +461,22 @@ export function PersistentChatWindow() {
     if (e && e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
+    
+    // ✅ DEFENSIVE GUARD: Initialize booking system protection  
+    // const { BookingIsolation } = await import('../booking/BookingIsolation');
+    
+    // Verify Appwrite configuration before proceeding
+    // const { bookingGuard } = await import('../booking/BookingSystemGuard');
+    // if (!bookingGuard.verifyAppwriteConfig()) {
+    //   throw new Error('Appwrite configuration invalid - booking cannot proceed');
+    // }
+    
+    // Clear any previous errors when starting new submission
+    setBookingError(null);
+    
+    // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during Order Now booking
+    lockChat();
+    console.log('🔒 Chat locked for Order Now form submission');
     
     console.log('═══════════════════════════════════════════');
     console.log('🚀 [ORDER NOW] Form submission started');
@@ -723,6 +732,16 @@ export function PersistentChatWindow() {
           if (isScheduledBooking) {
             // Create scheduled booking with deposit requirement
             console.log('📅 Creating scheduled booking...');
+            
+            // ✅ SIMPLIFIED: Use the location text field directly
+            const scheduledLocationText = customerForm.location?.trim() || 'Location provided in chat';
+            
+            console.log('🔍 Scheduled Simple Location Debug:', {
+              locationType: customerForm.locationType,
+              locationText: scheduledLocationText,
+              originalLocation: customerForm.location
+            });
+            
             try {
               await handleScheduledBookingWithDeposit({
                 duration: selectedDuration || 60,
@@ -731,21 +750,17 @@ export function PersistentChatWindow() {
                 discountCode: hasDiscount ? discountCode : undefined,
                 discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
                 serviceType: 'Professional Treatment',
-                locationZone: customerForm.location,
+                locationZone: customerForm.location || 'Bali',
+                location: scheduledLocationText, // ✅ Simple location text from user input
                 coordinates: customerForm.coordinates || undefined,
                 scheduledDate: selectedDate,
                 scheduledTime: selectedTime,
-                customerPhone: fullWhatsApp, // 📞 Phone number sent to therapist
-                customerWhatsApp: fullWhatsApp, // 📱 Admin-only (saved to localStorage)
+                customerPhone: fullWhatsApp,
+                customerWhatsApp: fullWhatsApp,
                 customerName: customerForm.name,
                 massageFor: customerForm.massageFor,
                 locationType: customerForm.locationType,
-                // ✅ CRITICAL FIX: address must NEVER be undefined - Appwrite requires it
-                address: (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') 
-                  ? customerForm.hotelVillaName 
-                  : (customerForm.address1 && customerForm.address2) 
-                    ? `${customerForm.address1}, ${customerForm.address2}`
-                    : customerForm.location || 'Address provided in chat',
+                address: scheduledLocationText, // ✅ Same as location
                 roomNumber: customerForm.roomNumber || undefined,
               });
               console.log('✅ Scheduled booking created');
@@ -788,23 +803,43 @@ export function PersistentChatWindow() {
             // Regular immediate booking
             console.log('📝 Creating immediate booking...');
             try {
+              // 🔒 CREATE BOOKING WITH SIMPLE LOCATION FIELD
+              console.log('📝 Creating immediate booking...');
+              
+              // ✅ SIMPLIFIED: Use the location text field directly
+              const locationText = customerForm.location?.trim() || 'Location provided in chat';
+              
+              console.log('🔍 Simple Location Debug:', {
+                locationType: customerForm.locationType,
+                locationText: locationText,
+                originalLocation: customerForm.location
+              });
+              
               const bookingCreated = await createBooking({
+                // Customer info
+                customerName: customerForm.name,
+                customerPhone: fullWhatsApp,
+                customerWhatsApp: fullWhatsApp,
+                massageFor: customerForm.massageFor,
+                
+                // Service details
                 duration: selectedDuration || 60,
+                serviceType: 'Professional Treatment',
                 price: discountedPrice,
                 totalPrice: discountedPrice,
-                originalPrice: hasDiscount ? originalPrice : undefined,
-                discountCode: hasDiscount ? discountCode : undefined,
-                discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
-                serviceType: 'Professional Treatment',
-                locationZone: customerForm.location,
-                coordinates: customerForm.coordinates || undefined,
-                customerPhone: fullWhatsApp, // 📞 Phone number sent to therapist
-                customerWhatsApp: fullWhatsApp, // 📱 Admin-only (saved to localStorage)
-                customerName: customerForm.name,
-                massageFor: customerForm.massageFor,
+                
+                // ✅ SIMPLIFIED: Location details using simple text field
+                locationZone: customerForm.location || 'Bali',
+                location: locationText, // ✅ Simple location text from user input
                 locationType: customerForm.locationType,
-                address: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
-                roomNumber: customerForm.roomNumber || undefined,
+                address: locationText, // ✅ Same as location
+                hotelVillaName: customerForm.hotelVillaName,
+                roomNumber: customerForm.roomNumber,
+                
+                // Optional fields
+                coordinates: customerForm.coordinates,
+                discountCode: hasDiscount ? discountCode : undefined,
+                discountPercentage: hasDiscount ? discountValidation.percentage : undefined
               });
               
               console.log('📝 createBooking returned:', bookingCreated);
@@ -830,7 +865,7 @@ export function PersistentChatWindow() {
               console.log('Booking created successfully:', bookingCreated);
               
               if (!bookingCreated) {
-                console.warn('⚠️ Note: Booking creation returned false, but chat is now open');
+                console.warn('⚠️ Note: Booking creation failed, but chat is now open');
                 // User will see error notification from createBooking in chat window
               }
             } catch (bookingError) {
@@ -862,31 +897,35 @@ export function PersistentChatWindow() {
           if (!isScheduleMode) {
             console.log('📝 [FALLBACK] Creating immediate booking despite message failure...');
             try {
-              const bookingCreated = await createBooking({
+              // 🔒 USE ISOLATED BOOKING SERVICE (Fallback)
+              const { createBooking } = await import('../services/bookingCreationService');
+              const fallbackResult = await createBooking({
+                // User Info
+                customerName: customerForm.name,
+                customerWhatsApp: fullWhatsApp,
+                userId: chatState.currentUserId || 'anonymous',
+                
+                // Provider Info
+                providerId: chatState.therapist?.id || 'fallback-therapist',
+                providerName: chatState.therapist?.name || 'Professional Therapist',
+                providerType: 'therapist' as const,
+                
+                // Booking Details
                 duration: selectedDuration || 60,
                 price: discountedPrice,
-                totalPrice: discountedPrice,
-                originalPrice: hasDiscount ? originalPrice : undefined,
-                discountCode: hasDiscount ? discountCode : undefined,
-                discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
-                serviceType: 'Professional Treatment',
-                locationZone: customerForm.location,
-                coordinates: customerForm.coordinates || undefined,
-                customerPhone: fullWhatsApp, // 📞 Phone number sent to therapist
-                customerWhatsApp: fullWhatsApp, // 📱 Admin-only (saved to localStorage)
-                customerName: customerForm.name,
-                massageFor: customerForm.massageFor,
-                locationType: customerForm.locationType,
-                // ✅ CRITICAL FIX: address must NEVER be undefined - Appwrite requires it
-                address: (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') 
-                  ? customerForm.hotelVillaName 
-                  : (customerForm.address1 && customerForm.address2) 
-                    ? `${customerForm.address1}, ${customerForm.address2}`
-                    : customerForm.location || 'Address provided in chat',
-                roomNumber: customerForm.roomNumber || undefined,
+                bookingType: 'immediate' as const,
+                
+                // Optional Location Info
+                hotelId: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
+                hotelGuestName: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.name : undefined,
+                hotelRoomNumber: customerForm.roomNumber
               });
               
-              console.log('✅ [FALLBACK] Booking created despite message failure:', bookingCreated);
+              if (fallbackResult.success) {
+                console.log('✅ [FALLBACK] Isolated booking created despite message failure:', fallbackResult.bookingId);
+              } else {
+                throw new Error(fallbackResult.error || 'Fallback booking failed');
+              }
             } catch (bookingError) {
               console.error('❌ [FALLBACK] Booking creation also failed:', bookingError);
               
@@ -957,6 +996,10 @@ export function PersistentChatWindow() {
     } finally {
       console.log('🏁 Finishing submission, setting isSending to false');
       setIsSending(false);
+      
+      // ✅ DEFENSIVE CLEANUP: Navigation is cleaned up by isolated booking service
+      console.log('✅ [BOOKING ISOLATION] Cleanup handled by isolation layer');
+      setIsSubmittingBooking(false);
     }
     
     // 🔒 FINAL SAFEGUARD: Return false to prevent any form submission
@@ -987,7 +1030,7 @@ export function PersistentChatWindow() {
         totalPrice: totalPrice,
         scheduledDate: bookingData.scheduledDate,
         scheduledTime: bookingData.scheduledTime,
-        location: bookingData.locationZone || 'Location TBD',
+        location: bookingData.location || 'Location TBD', // ✅ Use simple location field
         coordinates: bookingData.coordinates
       });
       
@@ -1147,6 +1190,10 @@ export function PersistentChatWindow() {
   if (!chatState.isOpen) {
     return null;
   }
+
+  // 🔍 DEBUGGING: Log therapist data being displayed
+  console.log('🔍 PersistentChatWindow RENDER: therapist being displayed:', therapist?.name, therapist?.id);
+  console.log('🔍 PersistentChatWindow RENDER: chatState.therapist:', chatState.therapist?.name, chatState.therapist?.id);
 
   // Full chat window
   return (
@@ -1490,6 +1537,23 @@ export function PersistentChatWindow() {
                       className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200"
                     >
                       Clear Error
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const { runSystemDiagnostics, displayDiagnostics } = await import('../utils/chatDiagnostics');
+                          console.log('🔍 Running system diagnostics...');
+                          const diagnostics = await runSystemDiagnostics();
+                          displayDiagnostics(diagnostics);
+                          alert(`Diagnostics complete! Check console for details.\nOverall status: ${diagnostics.overall}`);
+                        } catch (error) {
+                          console.error('❌ Diagnostics failed:', error);
+                          alert('Failed to run diagnostics. Check console for details.');
+                        }
+                      }}
+                      className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200"
+                    >
+                      🔍 Run Diagnostics
                     </button>
                   </div>
                 </div>

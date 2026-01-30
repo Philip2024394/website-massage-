@@ -32,12 +32,19 @@ export function usePersistentChatIntegration() {
    * Convert Therapist type to ChatTherapist type
    */
   const convertToChatTherapist = useCallback((therapist: Therapist): ChatTherapist => {
-    // Safety check for therapist ID - handle both Appwrite ($id) and legacy (id) formats
-    const therapistId = therapist.$id || therapist.id;
-    if (!therapistId) {
-      console.error('❌ ERROR: Therapist missing ID', therapist);
-      throw new Error('Cannot open chat - therapist has no ID');
+    // ✅ FIX: Use therapist NAME as primary identifier instead of complex Appwrite IDs
+    // This prevents ID mismatches and makes debugging much easier
+    const therapistName = therapist.name;
+    if (!therapistName) {
+      console.error('❌ ERROR: Therapist missing name', therapist);
+      throw new Error('Cannot open chat - therapist has no name');
     }
+    
+    console.log('🔍 CONVERT: Converting therapist to ChatTherapist:', {
+      name: therapistName,
+      appwriteId: therapist.$id || therapist.id,
+      source: 'convertToChatTherapist'
+    });
     
     // Parse pricing using existing helper - MUST match therapist profile prices exactly
     const pricing = parsePricing(therapist.pricing);
@@ -55,26 +62,45 @@ export function usePersistentChatIntegration() {
         '120': 550000,
       };
       console.warn('⚠️ Using fallback pricing - should fix therapist profile data!');
-      return {
-        id: String(therapistId),
-        name: therapist.name,
+      const fallbackChatTherapist = {
+        id: therapistName, // ✅ Use NAME as ID
+        name: therapistName,
         image: (therapist as any).mainImage || (therapist as any).profilePicture,
         status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
         pricing: fallbackPricing,
-        duration: 60, // Default duration
+        duration: 60,
+        appwriteId: therapist.$id || therapist.id,
       };
+      
+      console.log('⚠️ CONVERT: Using fallback ChatTherapist:', {
+        id: fallbackChatTherapist.id,
+        name: fallbackChatTherapist.name,
+        appwriteId: fallbackChatTherapist.appwriteId
+      });
+      
+      return fallbackChatTherapist;
     }
     
     console.log('✅ Therapist pricing loaded:', therapist.name, pricing);
     
-    return {
-      id: String(therapistId),
-      name: therapist.name,
+    const chatTherapist = {
+      id: therapistName, // ✅ Use NAME as ID for easy debugging
+      name: therapistName,
       image: (therapist as any).mainImage || (therapist as any).profilePicture,
       status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
       pricing, // Use therapist's exact profile prices
-      duration: 60, // Default duration
+      duration: 60,
+      // Keep Appwrite ID for database operations
+      appwriteId: therapist.$id || therapist.id,
     };
+    
+    console.log('✅ CONVERT: ChatTherapist created:', {
+      id: chatTherapist.id,
+      name: chatTherapist.name,
+      appwriteId: chatTherapist.appwriteId
+    });
+    
+    return chatTherapist;
   }, []);
   
   /**

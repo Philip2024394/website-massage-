@@ -69,7 +69,11 @@ export interface BookingResult {
  * @returns BookingResult with success status and booking data or errors
  */
 export async function createBooking(input: BookingInput): Promise<BookingResult> {
+  console.log('🔍 [FALLBACK DIAGNOSTIC] createBooking called with input:', JSON.stringify(input, null, 2));
+  
   try {
+    console.log('🔍 [FALLBACK DIAGNOSTIC] Starting validation step...');
+    
     // ===== STEP 1: PRE-FLIGHT VALIDATION =====
     const userInputValidation = validateUserInput({
       customerName: input.customerName,
@@ -78,13 +82,18 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       price: input.price
     });
 
+    console.log('🔍 [FALLBACK DIAGNOSTIC] Validation result:', userInputValidation);
+
     if (!userInputValidation.valid) {
+      console.error('❌ [FALLBACK DIAGNOSTIC] Validation failed:', userInputValidation.errors);
       logValidation('User Input Validation Failed', userInputValidation.errors);
       return {
         success: false,
         errors: userInputValidation.errors
       };
     }
+
+    console.log('✅ [FALLBACK DIAGNOSTIC] Validation passed, preparing booking data...');
 
     // ===== STEP 2: CREATE BOOKING WITH LOCALSTORAGE =====
     const now = new Date();
@@ -108,9 +117,16 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       time: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[1] : now.toISOString().split('T')[1]
     };
 
+    console.log('🔍 [FALLBACK DIAGNOSTIC] Final booking data:', JSON.stringify(bookingData, null, 2));
+
     logger.info('📤 Creating booking in localStorage...');
+    console.log('🔍 [FALLBACK DIAGNOSTIC] About to call bookingService.createBooking...');
+    console.log('🔍 [FALLBACK DIAGNOSTIC] bookingService available:', !!bookingService);
+    console.log('🔍 [FALLBACK DIAGNOSTIC] bookingService.createBooking type:', typeof bookingService.createBooking);
     
     const booking = await bookingService.createBooking(bookingData);
+    
+    console.log('🔍 [FALLBACK DIAGNOSTIC] bookingService returned:', JSON.stringify(booking, null, 2));
     
     logger.info(`✅ Booking created successfully:`, {
       bookingId: booking.bookingId,
@@ -124,6 +140,15 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
     };
 
   } catch (error: any) {
+    console.error('❌ [FALLBACK DIAGNOSTIC] Booking creation failed:', error);
+    console.error('🔍 [FALLBACK DIAGNOSTIC] Error details:', {
+      name: error?.name,
+      message: error?.message,
+      code: error?.code,
+      status: error?.status,
+      stack: error?.stack?.split('\n').slice(0, 5)
+    });
+    
     logger.error('❌ Booking creation failed:', error);
     
     // ⚡ Enhanced error logging for monitoring

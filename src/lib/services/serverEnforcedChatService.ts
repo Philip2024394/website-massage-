@@ -79,9 +79,18 @@ const functions = new Functions(client);
 
 class ServerEnforcedChatService {
   private functionId: string;
+  private client: Client;
+  private functions: Functions;
 
   constructor() {
     this.functionId = SEND_MESSAGE_FUNCTION_ID;
+    this.client = client;
+    this.functions = functions;
+    
+    console.log('🔍 [SERVER DIAGNOSTIC] ServerEnforcedChatService initialized');
+    console.log('🔍 [SERVER DIAGNOSTIC] Function ID:', this.functionId);
+    console.log('🔍 [SERVER DIAGNOSTIC] Appwrite endpoint:', APPWRITE_ENDPOINT);
+    console.log('🔍 [SERVER DIAGNOSTIC] Project ID:', APPWRITE_PROJECT_ID);
   }
 
   /**
@@ -94,9 +103,25 @@ class ServerEnforcedChatService {
   async sendMessage(request: SendMessageRequest): Promise<SendMessageResponse> {
     try {
       console.log('📤 [SERVER] Sending message through secure endpoint...');
+      console.log('🔍 [SERVER DIAGNOSTIC] Function ID:', this.functionId);
+      console.log('🔍 [SERVER DIAGNOSTIC] Client configured:', !!this.client);
+      console.log('🔍 [SERVER DIAGNOSTIC] Functions service:', !!this.functions);
+      console.log('🔍 [SERVER DIAGNOSTIC] Request data:', JSON.stringify(request, null, 2));
+      
+      // Check if functions service is available
+      if (!this.functions) {
+        console.error('❌ [SERVER DIAGNOSTIC] Functions service not available');
+        return {
+          success: false,
+          error: 'SERVICE_UNAVAILABLE',
+          message: 'Chat service not initialized properly'
+        };
+      }
+      
+      console.log('🔍 [SERVER DIAGNOSTIC] About to call functions.createExecution...');
       
       // Execute the Appwrite Function
-      const execution = await functions.createExecution(
+      const execution = await this.functions.createExecution(
         this.functionId,
         JSON.stringify(request),
         false, // async = false (wait for response)
@@ -105,6 +130,7 @@ class ServerEnforcedChatService {
         { 'Content-Type': 'application/json' } // headers
       );
 
+      console.log('🔍 [SERVER DIAGNOSTIC] Function execution completed');
       // Parse the response
       let response: SendMessageResponse;
       
@@ -140,13 +166,43 @@ class ServerEnforcedChatService {
 
     } catch (error) {
       console.error('❌ [SERVER] Function execution failed:', error);
+      console.error('🔍 [SERVER DIAGNOSTIC] Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      console.error('🔍 [SERVER DIAGNOSTIC] Error details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        code: (error as any).code,
+        status: (error as any).status,
+        type: (error as any).type,
+        stack: (error as Error).stack?.split('\n').slice(0, 3)
+      });
+      
+      // Check if it's an Appwrite function not found error
+      if ((error as any).code === 404 || (error as Error).message?.includes('not found')) {
+        console.error('🔍 [SERVER DIAGNOSTIC] Function not found error detected');
+        return {
+          success: false,
+          error: 'FUNCTION_NOT_FOUND',
+          message: 'Chat function not deployed. Please contact support.',
+        };
+      }
       
       // Check if it's a network error
       if (error instanceof Error && error.message.includes('network')) {
+        console.error('🔍 [SERVER DIAGNOSTIC] Network error detected');
         return {
           success: false,
           error: 'NETWORK_ERROR',
           message: 'Unable to connect to server. Please check your internet connection.',
+        };
+      }
+
+      // Check if it's an authentication error
+      if ((error as any).code === 401 || (error as Error).message?.includes('authentication')) {
+        console.error('🔍 [SERVER DIAGNOSTIC] Authentication error detected');
+        return {
+          success: false,
+          error: 'AUTH_ERROR',
+          message: 'Authentication failed. Please refresh the page.',
         };
       }
 

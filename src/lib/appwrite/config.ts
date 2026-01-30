@@ -48,7 +48,7 @@ function getConfig() {
         therapists: requireEnv('VITE_THERAPISTS_COLLECTION_ID', 'therapists_collection_id'),
         places: requireEnv('VITE_PLACES_COLLECTION_ID', 'places_collection_id'),
         facial_places: requireEnv('VITE_FACIAL_PLACES_COLLECTION_ID', 'facial_places_collection'),
-        bookings: requireEnv('VITE_BOOKINGS_COLLECTION_ID', 'bookings_collection_id'),
+        bookings: requireEnv('VITE_BOOKINGS_COLLECTION_ID', 'bookings'), // ✅ VERIFIED: Actual collection ID is 'bookings'
         reviews: requireEnv('VITE_REVIEWS_COLLECTION_ID', 'reviews_collection_id'),
         locations: requireEnv('VITE_LOCATIONS_COLLECTION_ID', 'locations'),
         

@@ -65,9 +65,14 @@ export const bookingService = {
         const startTime = performance.now();
         
         console.log('📦 [BOOKING SERVICE] Creating booking via Appwrite...');
+        console.log('🔍 [BOOKING DIAGNOSTIC] Input data:', JSON.stringify(bookingData, null, 2));
+        console.log('🔍 [BOOKING DIAGNOSTIC] appwriteBookingService available:', !!appwriteBookingService);
+        console.log('🔍 [BOOKING DIAGNOSTIC] appwriteBookingService.createBooking type:', typeof appwriteBookingService.createBooking);
         
         try {
+            console.log('🔍 [BOOKING DIAGNOSTIC] About to call appwriteBookingService.createBooking...');
             const booking = await appwriteBookingService.createBooking(bookingData);
+            console.log('🔍 [BOOKING DIAGNOSTIC] appwriteBookingService returned:', JSON.stringify(booking, null, 2));
             
             // Track successful creation
             const duration = performance.now() - startTime;
@@ -81,6 +86,15 @@ export const bookingService = {
             return booking;
             
         } catch (error: any) {
+            console.error('❌ [BOOKING SERVICE] Failed to create booking:', error);
+            console.error('🔍 [BOOKING DIAGNOSTIC] Error details:', {
+                name: error?.name,
+                message: error?.message,
+                code: error?.code,
+                status: error?.status,
+                stack: error?.stack?.split('\n').slice(0, 5)
+            });
+            
             const duration = performance.now() - startTime;
             trackDatabaseQuery('bookings', 'create', duration, { 
                 error: true,
@@ -88,7 +102,6 @@ export const bookingService = {
                 message: error.message
             }, 0);
             
-            console.error('❌ [BOOKING SERVICE] Failed to create booking:', error);
             throw error;
         }
     },

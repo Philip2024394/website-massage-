@@ -901,13 +901,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('  - selectedTherapist:', props.selectedTherapist);
             console.log('  - URL path:', window.location.pathname);
             console.log('  - URL hash:', window.location.hash);
+            console.log('  - Route issue: No therapist ID in URL or selectedTherapist missing');
             
             return (
                 <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                     <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-                        <div className="text-6xl mb-4">❌</div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">Profile Not Found</h2>
-                        <p className="text-gray-600 mb-4">Unable to load therapist profile. The therapist may not exist or the link may be invalid.</p>
+                        <div className="text-6xl mb-4">⚠️</div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Component Load Error (patched)</h2>
+                        <p className="text-gray-600 mb-2"><strong>Route:</strong> therapist-profile</p>
+                        <p className="text-gray-600 mb-4">The component file may be missing or have a syntax error. Check the console for details.</p>
+                        <div className="text-xs text-gray-500 mb-4 text-left bg-gray-50 p-3 rounded">
+                            <strong>Debug Info:</strong><br/>
+                            URL: {window.location.href}<br/>
+                            Issue: Missing therapist ID in URL or no selected therapist
+                        </div>
                         <button
                             onClick={() => props.onNavigate?.('home')}
                             className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
