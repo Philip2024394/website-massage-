@@ -1,7 +1,13 @@
 // @ts-nocheck - Temporary fix for React 19 type compatibility
-// 🔒 LOGIC LOCKED - DO NOT MODIFY BOOKING ACCEPTANCE & VALIDATION LOGIC
-// UI/styling changes allowed ONLY
-// Last locked: 2026-01-28
+/**
+ * 🛡️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
+ * This dashboard is a sealed operational surface; do not modify unless explicitly instructed by the owner.
+ * 
+ * 🔒 LOGIC LOCKED - DO NOT MODIFY BOOKING ACCEPTANCE & VALIDATION LOGIC
+ * UI/styling changes allowed ONLY
+ * Last locked: 2026-01-28
+ * Protection Level: TIER 1 - Owner-Sealed Operational Interface
+ */
 import React, { useState, useEffect } from 'react';
 import { BANK_DETAILS_REQUIRED_FOR_SCHEDULED_BOOKINGS, SCHEDULED_BOOKING_DEPOSIT_PERCENTAGE } from '../../constants/businessLogic';
 import { FloatingChatWindow } from '../../chat';

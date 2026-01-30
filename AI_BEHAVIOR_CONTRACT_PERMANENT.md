@@ -16,7 +16,7 @@
 
 ## 🚨 CRITICAL: IMMUTABLE COMPONENTS - NEVER TOUCH
 
-### MainLandingPage.tsx - HIGHEST PROTECTION LEVEL
+### MainLandingPage.tsx - TIER 0 PROTECTION (HIGHEST)
 - **STATUS**: SEALED, IMMUTABLE, UNREADABLE
 - **LOCATION**: `src/pages/MainLandingPage.tsx`
 - **RESTRICTION**: AI is FORBIDDEN to open, read, scroll, edit, or reason about this file
@@ -30,6 +30,25 @@
   - Context layer (`CityContext.tsx` for city logic)
 - **VIOLATION CONSEQUENCE**: Landing page disappears - affects ALL users
 - **ARCHITECTURE**: Country logic stays in file (FROZEN), city logic in CityContext.tsx (EDGE)
+
+### Sealed Therapist Operational Dashboard (STOD) - TIER 1 PROTECTION
+- **STATUS**: Owner-Sealed Operational Interface
+- **PROTECTION PHRASE**: "This dashboard is a sealed operational surface; do not modify unless explicitly instructed by the owner."
+- **SCOPE**: All therapist dashboard files and components
+- **RESTRICTION**: NO changes without explicit owner authorization
+- **PROTECTED FILES**: 
+  - `apps/therapist-dashboard/src/` (entire folder)
+  - `src/components/therapist/` (entire folder)
+  - `src/pages/therapist/` (entire folder)
+  - `TherapistLayout.tsx`, `ChatWindow.tsx`, `FloatingChat.tsx`
+- **ALLOWED**: Only surgical bug fixes restoring documented behavior
+- **VIOLATION CONSEQUENCE**: Breaks business-critical operational workflows
+- **REFERENCE**: See `AI_BEHAVIOR_CONTRACT_STOD_PROTECTION.md`
+
+### Marketing/Landing Pages - TIER 2 PROTECTION (FLEXIBLE)
+- **STATUS**: Standard development - changes allowed
+- **SCOPE**: Public-facing marketing content
+- **RESTRICTION**: None - normal development practices apply
 
 ## 🎯 **RULE #1: UNIQUE NAMING SYSTEM (PERMANENT)**
 

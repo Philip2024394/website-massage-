@@ -1,3 +1,10 @@
+/**
+ * 🛡️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
+ * This dashboard is a sealed operational surface; do not modify unless explicitly instructed by the owner.
+ * 
+ * SEALED CHAT SYSTEM - Business-Critical Floating Communication Interface
+ * Protection Level: TIER 1 - Owner-Sealed Operational Interface
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, XCircle, Check, Tag, Gift } from 'lucide-react';
 import { messagingService, simpleBookingService } from '../../lib/appwriteService';

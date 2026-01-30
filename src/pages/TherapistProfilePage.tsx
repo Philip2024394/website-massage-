@@ -1,3 +1,10 @@
+/**
+ * 🛡️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
+ * This dashboard is a sealed operational surface; do not modify unless explicitly instructed by the owner.
+ * 
+ * SEALED PROFILE MANAGEMENT - Business-Critical Profile Interface
+ * Protection Level: TIER 1 - Owner-Sealed Operational Interface
+ */
 import React, { useState } from 'react';
 import TherapistProfileBase from '../components/TherapistProfileBase';
 import { FloatingChatWindow } from '../chat';
