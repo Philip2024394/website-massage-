@@ -26,7 +26,8 @@ interface TherapistMenuProps {
   language?: 'en' | 'id';
 }
 
-const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, onLogout, language = 'id' }) => {
+const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, onLogout }) => {
+  const language = 'id'; // Fixed Indonesian language
   const [services, setServices] = useState<MenuService[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);

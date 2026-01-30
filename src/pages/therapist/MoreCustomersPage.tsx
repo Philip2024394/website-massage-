@@ -18,14 +18,13 @@ import { moreCustomersHelp } from './constants/helpContent';
 interface MoreCustomersPageProps {
   therapist: any;
   onBack: () => void;
-  language?: 'en' | 'id';
 }
 
 const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({ 
   therapist, 
-  onBack,
-  language = 'id' 
+  onBack
 }) => {
+  const language = 'id'; // Fixed Indonesian language
   const [expandedSection, setExpandedSection] = useState<string | null>('dashboard-features');
 
   const toggleSection = (section: string) => {

@@ -873,7 +873,6 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       therapist={therapist}
       currentPage="status"
       onNavigate={handleNavigate}
-      language={language}
       onLogout={onLogout}
     >
     <div className="min-h-screen bg-white">

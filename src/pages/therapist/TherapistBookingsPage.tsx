@@ -48,7 +48,8 @@ interface TherapistBookingsProps {
   language?: 'en' | 'id';
 }
 
-const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate, onLogout, language = 'id' }) => {
+const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate, onLogout }) => {
+  const language = 'id'; // Fixed Indonesian language
   const isPremium = true; // All features available for standard 30% commission plan
   const [activeTab, setActiveTab] = useState<'bookings' | 'schedule'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>([]);

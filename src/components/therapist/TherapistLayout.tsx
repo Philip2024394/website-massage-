@@ -41,8 +41,6 @@ interface TherapistLayoutProps {
   therapist: any;
   currentPage: string;
   onNavigate: (page: string) => void;
-  language?: 'en' | 'id';
-  onLanguageChange?: (lang: 'en' | 'id') => void;
   onLogout?: () => void;
   onRefresh?: () => Promise<void> | void;
 }
@@ -52,8 +50,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   therapist,
   currentPage,
   onNavigate,
-  language = 'id',
-  onLanguageChange,
   onLogout,
   onRefresh
 }) => {  // Safety check for required props
@@ -365,22 +361,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           
           {/* Right side - Menu buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>            
-            {/* Language Toggle */}
-            <button
-              onClick={() => onLanguageChange?.(language === 'id' ? 'en' : 'id')}
-              style={{
-                padding: '8px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
-                fontSize: '20px'
-              }}
-              title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-            >
-              {language === 'id' ? '🇮🇩' : '🇬🇧'}
-            </button>
-            
             {/* Burger Menu */}
             <button
               onClick={handleSidebarToggle}

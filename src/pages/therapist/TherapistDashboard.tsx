@@ -95,7 +95,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToMenu,
   onLogout,
   onNavigateHome,
-  language = 'id'
+  language = 'id' // Fixed Indonesian language for therapist dashboard
 }) => {
   console.log('🎨 TherapistPortalPage rendering with therapist:', therapist);
   
@@ -189,18 +189,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     return [];
   });
 
-  const languageOptions = [
-    { code: 'en', label: '🇬🇧 English' },
-    { code: 'id', label: '🇮🇩 Indonesian' },
-    { code: 'zh', label: '🇨🇳 Chinese' },
-    { code: 'ja', label: '🇯🇵 Japanese' },
-    { code: 'ko', label: '🇰🇷 Korean' },
-    { code: 'ar', label: '🇸🇦 Arabic' },
-    { code: 'ru', label: '🇷🇺 Russian' },
-    { code: 'fr', label: '🇫🇷 French' },
-    { code: 'de', label: '🇩🇪 German' },
-    { code: 'es', label: '🇪🇸 Spanish' },
-  ];
+  // Fixed Indonesian language - no language selection for therapist dashboard
 
   // ============================================================================
   // 🔒 HARD LOCK: THERAPIST DATA INITIALIZATION ON MOUNT
@@ -418,13 +407,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     reader.readAsDataURL(file);
   };
 
-  const handleToggleLanguage = (code: string) => {
-    setSelectedGlobe(prev => 
-      prev.includes(code) 
-        ? prev.filter(c => c !== code) 
-        : (prev.length < 3 ? [...prev, code] : prev)
-    );
-  };
+  // Language is fixed to Indonesian for therapist dashboard
 
   const handleToggleMassageType = (type: string) => {
     setSelectedMassageTypes(prev => 
@@ -1477,25 +1460,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </p>
             </div>
 
-            {/* Globe */}
+            {/* Globe - Fixed Indonesian Language */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Globe (max 3) - {selectedGlobe.length}/3 selected
+                Language - Indonesian (Bahasa Indonesia)
               </label>
               <div className="flex flex-wrap gap-2">
-                {languageOptions.map(opt => (
-                  <button
-                    key={opt.code}
-                    onClick={() => handleToggleLanguage(opt.code)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      selectedGlobe.includes(opt.code)
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+                <div className="px-3 py-1.5 rounded-md text-xs font-medium bg-orange-500 text-white">
+                  🇮🇩 Indonesian
+                </div>
               </div>
             </div>
 

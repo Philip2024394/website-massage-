@@ -21,7 +21,8 @@ interface TherapistPaymentInfoProps {
   language?: 'en' | 'id';
 }
 
-const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapist, onBack, onNavigate, onLogout, language = 'id' }) => {
+const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapist, onBack, onNavigate, onLogout }) => {
+  const language = 'id'; // Fixed Indonesian language
   const [bankName, setBankName] = useState('');
   const [accountName, setAccountName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');

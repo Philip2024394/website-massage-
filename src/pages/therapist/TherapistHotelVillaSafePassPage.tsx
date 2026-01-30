@@ -17,7 +17,7 @@ import { safePassHelp } from './constants/helpContent';
 interface HotelVillaSafePassProps {
   therapist: Therapist | null;
   onBack: () => void;
-  language?: 'en' | 'id';
+
 }
 
 interface HotelVillaLetter {
@@ -31,9 +31,9 @@ interface HotelVillaLetter {
 
 const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({ 
   therapist, 
-  onBack, 
-  language = 'id' 
+  onBack
 }) => {
+  const language = 'id'; // Fixed Indonesian language
   const { t } = useTranslations(language);
   const [letters, setLetters] = useState<HotelVillaLetter[]>([]);
   const [uploading, setUploading] = useState(false);

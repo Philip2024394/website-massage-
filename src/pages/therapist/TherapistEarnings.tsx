@@ -36,7 +36,8 @@ interface TherapistEarningsProps {
   language?: 'en' | 'id';
 }
 
-const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack, onNavigate, onLogout, language = 'id' }) => {
+const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack, onNavigate, onLogout }) => {
+  const language = 'id'; // Fixed Indonesian language
   const [payments, setPayments] = useState<Payment[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -339,7 +340,6 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       therapist={therapist}
       currentPage="earnings"
       onNavigate={handleNavigate}
-      language={language}
       onLogout={onLogout}
     >
     <div className="min-h-screen bg-gray-50">
