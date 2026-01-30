@@ -31,7 +31,7 @@ import { lazy } from 'react';
 // 🔒 BULLETPROOF IMPORTS - Direct imports prevent component load errors
 // All critical therapist routes use direct imports for maximum reliability
 import TherapistPortalPage from '../../pages/therapist/TherapistDashboard';
-import TherapistOnlineStatusPage from '../../pages/therapist/TherapistOnlineStatusPage';
+import TherapistOnlineStatusPageFixed from '../../pages/therapist/TherapistOnlineStatusPageFixed';
 import TherapistLegalPage from '../../pages/therapist/TherapistLegalPage';
 import HowItWorksPage from '../../pages/therapist/HowItWorksPage';
 import TherapistBookingsPage from '../../pages/therapist/TherapistBookingsPage';
@@ -60,7 +60,7 @@ export const therapistRoutes = {
   },
   status: {
     path: '/therapist/status',
-    component: TherapistOnlineStatusPage,
+    component: TherapistOnlineStatusPageFixed,
     name: 'therapist-status',
     requiresAuth: true
   },

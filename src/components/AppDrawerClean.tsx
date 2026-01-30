@@ -206,7 +206,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 <div className="space-y-3">
                   {/* Create Account Button */}
                   <button 
-                    onClick={() => handleItemClick(undefined, 'signup')} 
+                    onClick={() => handleItemClick(undefined, 'createAccount')} 
                     className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
                   >
                     <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
@@ -215,7 +215,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   
                   {/* Sign In Button */}
                   <button 
-                    onClick={() => handleItemClick(onLoginClick, 'landing')} 
+                    onClick={() => handleItemClick(undefined, 'login')} 
                     className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl border-2 border-orange-500 bg-white hover:bg-orange-50 shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
                   >
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
