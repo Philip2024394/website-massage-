@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Diagnostic</title>
+</head>
+<body>
+    <h1>Opening Console...</h1>
+    <p>Check the browser DevTools Console for errors.</p>
+    <iframe id="app-frame" src="http://127.0.0.1:3002/" style="width:100%; height:600px; border:1px solid #ccc;"></iframe>
+    
+    <script>
+        // Log iframe console errors
+        window.addEventListener('error', function(e) {
+            console.error('ERROR:', e.error);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('UNHANDLED REJECTION:', e.reason);
+        });
+        
+        // Listen for iframe errors
+        const iframe = document.getElementById('app-frame');
+        iframe.onload = function() {
+            console.log('Iframe loaded successfully');
+            try {
+                const iframeWindow = iframe.contentWindow;
+                iframeWindow.addEventListener('error', function(e) {
+                    console.error('IFRAME ERROR:', e.error);
+                });
+                iframeWindow.addEventListener('unhandledrejection', function(e) {
+                    console.error('IFRAME UNHANDLED REJECTION:', e.reason);
+                });
+            } catch (err) {
+                console.warn('Cannot access iframe (CORS):', err);
+            }
+        };
+    </script>
+</body>
+</html>

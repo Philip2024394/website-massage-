@@ -99,15 +99,19 @@ const TherapistPageWrapper: React.FC<TherapistPageWrapperProps> = ({
 
   // LOCKED: Help icon must always be present
   const helpContentData = getHelpContent(helpId);
-  const helpTooltip = <HelpTooltip {...helpContentData} position="left" size="md" />;
+  const helpTooltip = <HelpTooltip {...helpContentData} position="bottom" size="md" />;
   
   // Combine help icon with any additional actions
   const combinedActions = actions ? (
-    <div className="flex items-center gap-2">
-      {helpTooltip}
+    <div className="help-actions-container">
       {actions}
+      {helpTooltip}
     </div>
-  ) : helpTooltip;
+  ) : (
+    <div className="help-actions-container">
+      {helpTooltip}
+    </div>
+  );
 
   // LOCKED: Header must always be rendered (unless explicitly disabled for custom layouts)
   const header = useHeader ? (

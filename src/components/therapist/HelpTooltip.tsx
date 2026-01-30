@@ -123,11 +123,13 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
         ref={buttonRef}
         onClick={toggleTooltip}
         className={`
+          help-button
           ${sizeClasses[size]} 
           text-orange-500 hover:text-orange-600 
-          transition-colors duration-200
-          focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 rounded-full
+          transition-all duration-200
+          focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 rounded-lg
           flex items-center justify-center
+          p-2
         `}
         aria-label={`Help: ${title}`}
         aria-expanded={isOpen}
@@ -141,13 +143,14 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
       {isOpen && (
         <>
           {/* Mobile: Fixed center overlay */}
-          <div className="md:hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="md:hidden fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
             <div
               ref={tooltipRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby="help-tooltip-title"
-              className="bg-white rounded-lg shadow-2xl border-2 border-orange-200 overflow-hidden w-full max-w-sm animate-scale-in"
+              className="help-popup-mobile bg-white rounded-lg shadow-2xl border-2 border-orange-200 overflow-hidden animate-scale-in"
+            >
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex items-center justify-between">
@@ -207,10 +210,11 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
           <div
             className={`
               hidden md:block
-              absolute z-50
+              absolute z-[9999]
               ${positionClasses[position]}
               ${popoverWidths[size]}
             `}
+            style={{ zIndex: 9999 }}
           >
             {/* Arrow */}
             <div 

@@ -41,15 +41,8 @@ const TherapistPageHeader: React.FC<TherapistPageHeaderProps> = ({
           </div>
 
           {/* Actions and Home Icon on Right */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Optional Actions */}
-            {actions && (
-              <div className="flex-shrink-0">
-                {actions}
-              </div>
-            )}
-            
-            {/* Home Icon - Always on Right */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Home Icon - Always on Left of actions */}
             <button
               onClick={onBackToStatus}
               className="p-2 hover:bg-orange-50 rounded-lg transition-colors flex-shrink-0"
@@ -58,6 +51,13 @@ const TherapistPageHeader: React.FC<TherapistPageHeaderProps> = ({
             >
               <Home className="w-5 h-5 text-orange-600" />
             </button>
+            
+            {/* Optional Actions (Help icons etc) - Always positioned far right */}
+            {actions && (
+              <div className="flex-shrink-0">
+                {actions}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Therapist Header Debug Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        h1 { color: #f97316; }
+        .test { margin: 20px 0; padding: 15px; border: 2px solid #ccc; }
+        .pass { border-color: #22c55e; background: #f0fdf4; }
+        .fail { border-color: #ef4444; background: #fef2f2; }
+        .pending { border-color: #eab308; background: #fefce8; }
+        pre { background: #f3f4f6; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔴 THERAPIST HEADER DEBUG TEST</h1>
+    <p>Open DevTools Console (F12) and navigate to: <strong>http://127.0.0.1:3002/#/therapist-status</strong></p>
+    
+    <div class="test pending">
+        <h3>Test 1: TherapistLayout Mount Detection</h3>
+        <p>Expected in console: <code>🔴 TherapistLayout MOUNTED</code></p>
+        <p>Result: Check console</p>
+    </div>
+    
+    <div class="test pending">
+        <h3>Test 2: Header JSX Rendering</h3>
+        <p>Expected in console: <code>🔴 TherapistHeader JSX RENDERING</code></p>
+        <p>Result: Check console</p>
+    </div>
+    
+    <div class="test pending">
+        <h3>Test 3: Visual Red Banner</h3>
+        <p>Expected: Red banner at top saying "HEADER DEBUG"</p>
+        <p>Result: Look at page</p>
+    </div>
+    
+    <div class="test pending">
+        <h3>Test 4: DOM Inspection</h3>
+        <p>Open DevTools → Elements → Search for: <code>therapist-layout-header</code></p>
+        <pre id="domResult">Waiting for manual check...</pre>
+    </div>
+    
+    <h2>📋 DIAGNOSIS CHECKLIST</h2>
+    <ol>
+        <li>If red banner appears: Layout IS mounting ✅</li>
+        <li>If console logs appear: Components ARE rendering ✅</li>
+        <li>If header element exists in DOM but not visible: CSS issue 🎨</li>
+        <li>If NO red banner: Layout NOT mounting ❌</li>
+        <li>If NO console logs: Components NOT rendering ❌</li>
+    </ol>
+    
+    <h2>🔍 MANUAL STEPS</h2>
+    <ol>
+        <li>Open http://127.0.0.1:3002/ in browser</li>
+        <li>Open DevTools (F12) → Console tab</li>
+        <li>Navigate to therapist-status page (or add #/therapist-status to URL)</li>
+        <li>Check for console logs above</li>
+        <li>Check for red banner at top of page</li>
+        <li>Inspect DOM for <code>&lt;header class="...therapist-layout-header"&gt;</code></li>
+    </ol>
+    
+    <h2>📊 EXPECTED OUTCOMES</h2>
+    <h3>Scenario A: Layout IS rendering (most likely)</h3>
+    <ul>
+        <li>✅ Red banner visible</li>
+        <li>✅ Console logs present</li>
+        <li>✅ Header element in DOM</li>
+        <li>🔴 But header content not visible</li>
+        <li><strong>Root cause: CSS z-index, overflow, height, or positioning issue</strong></li>
+    </ul>
+    
+    <h3>Scenario B: Layout NOT rendering (unlikely)</h3>
+    <ul>
+        <li>❌ No red banner</li>
+        <li>❌ No console logs</li>
+        <li>❌ No header element in DOM</li>
+        <li><strong>Root cause: Router not passing layout, auth guard bypassing, or component crash</strong></li>
+    </ul>
+</body>
+</html>
