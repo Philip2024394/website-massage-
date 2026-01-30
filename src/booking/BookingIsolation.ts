@@ -13,6 +13,7 @@
  */
 
 import { bookingGuard } from './BookingSystemGuard';
+import { DEFAULT_BOOKING_STATUS } from '../constants/bookingStatus';
 import { APPWRITE_CONFIG } from '../lib/appwrite/config';
 
 // ===== ISOLATION LAYER 1: SCHEMA VALIDATION =====
@@ -31,7 +32,7 @@ export class BookingSchemaIsolation {
     // Required field validation with multiple fallback sources
     const requiredMappings = {
       userId: data.userId || data.customerId || 'anonymous',
-      status: data.status || 'pending_accept',
+      status: data.status || DEFAULT_BOOKING_STATUS,
       therapistId: data.therapistId,
       serviceDuration: (data.serviceDuration || data.duration?.toString() || '60'),
       location: data.location || data.address || data.locationZone || data.hotelVillaName,

@@ -11,6 +11,7 @@
 import { databases, APPWRITE_CONFIG } from '../config';
 import { ID, Query } from 'appwrite';
 import type { Booking, BookingStatus } from '../../../types';
+import { BOOKING_STATUS } from '../../../constants/bookingStatus';
 
 // Lazy getters to avoid TDZ errors during module initialization
 const getDatabaseId = () => APPWRITE_CONFIG.databaseId;
@@ -142,7 +143,7 @@ export const appwriteBookingService = {
       const appwriteDoc = {
         // ✅ REQUIRED FIELDS - VERIFIED AGAINST LIVE APPWRITE
         userId: bookingData.customerId || bookingData.userId || 'anonymous',
-        status: 'pending_accept', // ✅ VERIFIED: Valid status from enum
+        status: BOOKING_STATUS.PENDING_ACCEPT, // ✅ VERIFIED: Valid status from enum
         therapistId: bookingData.therapistId,
         serviceDuration: bookingData.duration?.toString() || '60', // ✅ VERIFIED: Must be string
         location: bookingData.location || bookingData.address || bookingData.locationZone || 'Unknown Location',

@@ -1,4 +1,5 @@
 import { logger } from './enterpriseLogger';
+import { DEFAULT_BOOKING_STATUS } from '../constants/bookingStatus';
 /**
  * UNIFIED BOOKING CREATION SERVICE - FACEBOOK STANDARDS ⚡
  * 
@@ -121,7 +122,7 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       locationType: input.locationType,
       address: input.address,
       roomNumber: input.hotelRoomNumber,
-      status: 'pending' as const, // ✅ FIXED: Booking service expects 'pending'
+      status: DEFAULT_BOOKING_STATUS, // ✅ FIXED: Use valid Appwrite enum value 'pending_accept'
       date: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[0] : now.toISOString().split('T')[0],
       time: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[1] : now.toISOString().split('T')[1]
     };
