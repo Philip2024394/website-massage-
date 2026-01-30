@@ -44,7 +44,12 @@ export interface BookingInput {
   // Auth
   userId: string;
   
-  // Optional Location
+  // Location Info (REQUIRED for Appwrite)
+  location?: string;
+  locationType?: 'home' | 'hotel' | 'villa';
+  address?: string;
+  
+  // Optional Location Details
   hotelId?: string;
   hotelGuestName?: string;
   hotelRoomNumber?: string;
@@ -112,7 +117,11 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       serviceType: String(input.duration),
       duration: input.duration,
       price: input.price,
-      // location: input.location || 'Not specified', // Property doesn't exist on BookingInput
+      location: input.location || input.address || 'Customer Location', // ✅ FIXED: Required field
+      locationType: input.locationType,
+      address: input.address,
+      roomNumber: input.hotelRoomNumber,
+      status: 'pending' as const, // ✅ FIXED: Booking service expects 'pending'
       date: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[0] : now.toISOString().split('T')[0],
       time: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[1] : now.toISOString().split('T')[1]
     };

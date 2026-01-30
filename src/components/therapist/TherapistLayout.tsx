@@ -293,7 +293,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             <div className="flex items-center gap-2">
               {therapist?.profilePicture ? (
                 <img 
-                  src={therapist.profilePicture} 
+                  src={therapist?.profilePicture} 
                   alt={therapist?.name || 'Therapist'} 
                   className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                   onError={(e) => {
@@ -315,7 +315,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                 </span>
                 {therapist?.location && (
                   <span className="text-xs text-gray-500">
-                    {therapist.location}
+                    {therapist?.location}
                   </span>
                 )}
               </div>
@@ -423,7 +423,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
               {therapist?.profilePicture ? (
                 <img 
-                  src={therapist.profilePicture} 
+                  src={therapist?.profilePicture} 
                   alt={therapist?.name || 'Therapist'} 
                   className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                 />

@@ -915,7 +915,12 @@ export function PersistentChatWindow() {
                 price: discountedPrice,
                 bookingType: 'immediate' as const,
                 
-                // Optional Location Info
+                // Location Info (REQUIRED for Appwrite)
+                location: customerForm.location || 'Customer Location',
+                locationType: customerForm.locationType,
+                address: customerForm.location,
+                
+                // Optional Location Details
                 hotelId: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
                 hotelGuestName: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.name : undefined,
                 hotelRoomNumber: customerForm.roomNumber

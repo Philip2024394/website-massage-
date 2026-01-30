@@ -929,15 +929,23 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
   if (!therapist) {
     return (
       <>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Loading therapist data...</p>
+      <TherapistLayout
+        therapist={null}
+        currentPage="dashboard"
+        onNavigate={handleNavigate}
+        language={language}
+        onLogout={onLogout}
+      >
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading therapist data...</p>
+          </div>
         </div>
-      </div>
-    {/* Floating Chat Window */}
-    <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
+      </TherapistLayout>
+      {/* Floating Chat Window */}
+      <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
       </>
-
     );
   }
 
