@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { simpleChatService, simpleBookingService } from '../../lib/appwriteService';
+import { chatDataFlowService } from '../../lib/services/chatDataFlowService';
 import { commissionTrackingService } from '../../lib/services/commissionTrackingService';
 import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../../utils/piiDetector';
 import { auditLoggingService, AuditContext } from '../../lib/appwrite/services/auditLogging.service';
@@ -141,7 +142,8 @@ export default function ChatWindow({
     // Load messages function
     const loadMessages = async () => {
         try {
-            const conversationId = `${providerId}_${customerId}`;
+            // CRITICAL: Use standardized conversation ID service for consistency
+            const conversationId = chatDataFlowService.generateConversationId(customerId, providerId);
             const dbMessages = await simpleChatService.getMessages(conversationId);
 
             if (dbMessages && dbMessages.length > 0) {
@@ -321,7 +323,8 @@ export default function ChatWindow({
         setShowConfirmDialog(false);
         
         try {
-            const conversationId = `customer_${customerId}_therapist_${providerId}`;
+            // Use standardized conversation ID service
+            const conversationId = chatDataFlowService.generateConversationId(customerId, providerId);
             
             // Send payment card message that both can see
             await simpleChatService.sendMessage({
@@ -362,7 +365,8 @@ export default function ChatWindow({
         }
 
         try {
-            const conversationId = `customer_${customerId}_therapist_${providerId}`;
+            // CRITICAL: Use consistent conversation ID format
+            const conversationId = `${customerId}_${providerId}`;
             
             await simpleChatService.sendMessage({
                 conversationId,
@@ -402,7 +406,8 @@ export default function ChatWindow({
         setProcessingAction(true);
         
         try {
-            const conversationId = `customer_${customerId}_therapist_${providerId}`;
+            // Use standardized conversation ID service
+            const conversationId = chatDataFlowService.generateConversationId(customerId, providerId);
             
             // Update booking status in database
             if (bookingId) {
@@ -523,7 +528,8 @@ export default function ChatWindow({
         setProcessingAction(true);
         
         try {
-            const conversationId = `customer_${customerId}_therapist_${providerId}`;
+            // Use standardized conversation ID service
+            const conversationId = chatDataFlowService.generateConversationId(customerId, providerId);
             
             // Update booking status
             if (bookingId) {
@@ -572,7 +578,8 @@ export default function ChatWindow({
 
     const handleCancelBooking = async () => {
         try {
-            const conversationId = `customer_${customerId}_therapist_${providerId}`;
+            // Use standardized conversation ID service
+            const conversationId = chatDataFlowService.generateConversationId(customerId, providerId);
             
             // Send cancel message to database
             await simpleChatService.sendMessage({
@@ -670,7 +677,8 @@ export default function ChatWindow({
                 return;
             }
             
-            const conversationId = `customer_${customerId}_therapist_${providerId}`;
+            // Use standardized conversation ID service
+            const conversationId = chatDataFlowService.generateConversationId(customerId, providerId);
             
             // Show translation notice on first non-Indonesian message
             if (false) { // Translation notice disabled - using global language

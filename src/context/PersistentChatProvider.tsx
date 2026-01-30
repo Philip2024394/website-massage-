@@ -60,6 +60,7 @@ import {
   connectionStabilityService,
   ConnectionStatus 
 } from '../lib/services/connectionStabilityService';
+import { chatDataFlowService } from '../lib/services/chatDataFlowService';
 
 // Collection IDs from config
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
@@ -530,7 +531,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
         // Setup stable message subscription using the service
         if (currentUserId && chatState.therapist?.id) {
-          const chatRoomId = `${currentUserId}_${chatState.therapist.id}`;
+          // Use standardized conversation ID format
+          const chatRoomId = chatDataFlowService.generateConversationId(currentUserId, chatState.therapist.id);
           
           subscriptionRef.current = connectionStabilityService.subscribeToMessages(
             chatRoomId,
@@ -706,8 +708,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const draftBookingId = generateDraftBookingId();
     console.log('🆔 Auto-created booking ID:', draftBookingId);
     
-    // Generate chatRoomId
-    const chatRoomId = currentUserId ? `${currentUserId}_${therapist.id}` : `guest_${Date.now()}_${therapist.id}`;
+    // Generate chatRoomId using standardized service
+    const chatRoomId = currentUserId ? 
+      chatDataFlowService.generateConversationId(currentUserId, therapist.id) : 
+      `guest_${Date.now()}_${therapist.id}`;
     console.log('💬 Chat room ID:', chatRoomId);
     
     // Set initial state with booking ID and chatRoomId
@@ -1024,7 +1028,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     }
 
     const therapist = chatState.therapist;
-    const roomId = `${currentUserId}_${therapist.id}`;
+    // Generate conversation room ID using standardized service
+    const roomId = chatDataFlowService.generateConversationId(currentUserId, therapist.id);
     
     // ============================================================================
     // 🔒 SERVER-ENFORCED MESSAGE VALIDATION (TAMPER RESISTANT)
