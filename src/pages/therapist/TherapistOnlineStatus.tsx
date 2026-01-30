@@ -173,10 +173,18 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       setAvailableStartTime(therapist.availableStartTime);
       setCountdownHoursRemaining(hoursRemaining);
       
+      devLog('⏰ Initializing countdown timer with', hoursRemaining.toFixed(2), 'hours remaining');
+      
       // If timer expired, auto-change to busy
       if (hoursRemaining <= 0) {
+        devLog('⏰ Timer expired on page load - auto-changing to busy');
         handleStatusChange('busy');
       }
+    } else if (status !== 'available') {
+      // For busy/offline status, show timer as ready to reset when they go available
+      setAvailableStartTime(null);
+      setCountdownHoursRemaining(12);
+      devLog('⏰ Status not available - timer ready to start fresh 12h when available');
     } else if (therapist.countdownHoursRemaining !== undefined) {
       setCountdownHoursRemaining(therapist.countdownHoursRemaining);
     }
@@ -459,14 +467,24 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       let countdownHoursRemainingValue = 12;
       
       if (newStatus === 'available') {
-        // Reset 12-hour countdown timer when becoming available
+        // ALWAYS reset 12-hour countdown timer to full 12 hours when becoming available
+        // This applies whether coming from busy, offline, or any other status
         availableStartTimeValue = now;
         countdownHoursRemainingValue = 12;
         setAvailableStartTime(now);
         setCountdownHoursRemaining(12);
+        
+        devLog('⏰ 12-hour countdown timer RESET to full 12 hours - therapist now available');
+        devLog('📅 Timer start time:', now);
       } else {
-        // Clear available start time for other statuses
+        // Clear available start time for other statuses (busy/offline)
         setAvailableStartTime(null);
+        
+        if (newStatus === 'busy') {
+          devLog('🟡 Status changed to BUSY - timer paused until available again');
+        } else if (newStatus === 'offline') {
+          devLog('⚫ Status changed to OFFLINE - timer paused until available again');
+        }
       }
       
       const updateData = {
@@ -524,12 +542,20 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       // The status is already saved to Appwrite and displayed correctly
       // Parent will refresh on next page load if needed
       
-      // Show toast notification
+      // Show toast notification with timer information
       const statusMessages = {
-        available: language === 'id' ? '✅ Anda sekarang TERSEDIA untuk booking' : '✅ You are now AVAILABLE for bookings',
-        active: language === 'id' ? '✅ Anda sekarang AKTIF dan siap untuk booking' : '✅ You are now ACTIVE and ready for bookings',
-        busy: language === 'id' ? '🟡 Status diset ke SIBUK - pelanggan masih bisa melihat profil Anda' : '🟡 Status set to BUSY - customers can still view your profile',
-        offline: language === 'id' ? '⚫ Anda sekarang OFFLINE - profil tersembunyi dari pencarian' : '⚫ You are now OFFLINE - profile hidden from search'
+        available: language === 'id' 
+          ? '✅ Anda sekarang TERSEDIA untuk booking • Timer dimulai: 12 jam' 
+          : '✅ You are now AVAILABLE for bookings • Timer started: 12 hours',
+        active: language === 'id' 
+          ? '✅ Anda sekarang AKTIF dan siap untuk booking • Timer dimulai: 12 jam' 
+          : '✅ You are now ACTIVE and ready for bookings • Timer started: 12 hours',
+        busy: language === 'id' 
+          ? '🟡 Status diset ke SIBUK - pelanggan masih bisa melihat profil Anda' 
+          : '🟡 Status set to BUSY - customers can still view your profile',
+        offline: language === 'id' 
+          ? '⚫ Anda sekarang OFFLINE - profil tersembunyi dari pencarian' 
+          : '⚫ You are now OFFLINE - profile hidden from search'
       };
       
       devLog('✅ Status saved:', statusMessages[newStatus]);
