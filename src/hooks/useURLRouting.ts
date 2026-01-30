@@ -185,6 +185,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 // Handle dashboard routes
                 // 🚫 ENTERPRISE ROUTING — Therapist Dashboard Sub-Routes
                 if (path === '/dashboard/therapist/status') {
+                    console.log('🟢 URL ROUTING: /dashboard/therapist/status matched → setting page to therapist-status');
                     setPage('therapist-status');
                     return;
                 }
@@ -315,10 +316,30 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         
         // Set initial page based on URL on mount
         const initialPath = window.location.pathname;
+        const initialHash = window.location.hash;
         console.log('🔍 URL Routing Debug - Initial path detection:');
         console.log('   📍 window.location.pathname:', initialPath);
+        console.log('   📍 window.location.hash:', initialHash);
         console.log('   📍 window.location.href:', window.location.href);
         console.log('   📍 window.location.search:', window.location.search);
+        
+        // PRIORITY: Handle hash routing first (for therapist dashboard)
+        if (initialHash) {
+            const hashPath = initialHash.substring(1); // Remove the '#'
+            console.log('🔗 Hash detected:', hashPath);
+            
+            // Map hash routes to pages
+            if (hashPath === '/therapist-status' || hashPath === '/status') {
+                console.log('✅ Hash route matched: therapist-status');
+                setPage('therapist-status');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            if (hashPath === '/therapist' || hashPath === '/therapist-dashboard') {
+                console.log('✅ Hash route matched: therapist-dashboard');
+                setPage('therapist-dashboard');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+        }
         
         // Handle new share URLs (with SEO keywords or simple format)
         if (initialPath.startsWith('/share/')) {

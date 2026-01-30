@@ -11,8 +11,56 @@ interface GeolocationResult {
   method: 'saved' | 'ip' | 'manual' | 'default';
 }
 
-const SUPPORTED_COUNTRIES = ['ID', 'MY', 'SG', 'TH', 'PH', 'VN'];
+const SUPPORTED_COUNTRIES = ['ID', 'MY', 'SG', 'TH', 'PH', 'VN', 'GB', 'US', 'AU', 'DE'];
 const DEFAULT_COUNTRY = 'ID';
+
+// Regional fallback mapping for unsupported countries
+const REGIONAL_FALLBACK: { [key: string]: string } = {
+  // Southeast Asia
+  'BN': 'MY', // Brunei → Malaysia
+  'KH': 'TH', // Cambodia → Thailand
+  'LA': 'TH', // Laos → Thailand
+  'MM': 'TH', // Myanmar → Thailand
+  'TL': 'ID', // Timor-Leste → Indonesia
+  
+  // East Asia
+  'CN': 'SG', // China → Singapore
+  'HK': 'SG', // Hong Kong → Singapore
+  'MO': 'SG', // Macau → Singapore
+  'TW': 'SG', // Taiwan → Singapore
+  'JP': 'SG', // Japan → Singapore
+  'KR': 'SG', // Korea → Singapore
+  
+  // South Asia
+  'IN': 'SG', // India → Singapore
+  'PK': 'SG', // Pakistan → Singapore
+  'BD': 'SG', // Bangladesh → Singapore
+  'LK': 'SG', // Sri Lanka → Singapore
+  'NP': 'SG', // Nepal → Singapore
+  
+  // Oceania
+  'NZ': 'AU', // New Zealand → Australia
+  'FJ': 'AU', // Fiji → Australia
+  'PG': 'AU', // Papua New Guinea → Australia
+  
+  // Europe
+  'FR': 'GB', // France → UK
+  'ES': 'GB', // Spain → UK
+  'IT': 'GB', // Italy → UK
+  'NL': 'GB', // Netherlands → UK
+  'BE': 'GB', // Belgium → UK
+  'AT': 'DE', // Austria → Germany
+  'CH': 'DE', // Switzerland → Germany
+  'PL': 'DE', // Poland → Germany
+  'CZ': 'DE', // Czech Republic → Germany
+  
+  // Americas
+  'CA': 'US', // Canada → USA
+  'MX': 'US', // Mexico → USA
+  'BR': 'US', // Brazil → USA
+  'AR': 'US', // Argentina → USA
+  'CL': 'US', // Chile → USA
+};
 
 class IPGeolocationService {
   private cachedLocation: GeolocationResult | null = null;
@@ -129,7 +177,19 @@ class IPGeolocationService {
         };
       }
 
-      // If detected country not supported, default to Indonesia
+      // Check if detected country has a regional fallback
+      if (countryCode && REGIONAL_FALLBACK[countryCode]) {
+        const fallbackCountry = REGIONAL_FALLBACK[countryCode];
+        console.log(`📍 Detected ${countryCode} (${data.country_name}), using nearest supported: ${fallbackCountry}`);
+        return {
+          countryCode: fallbackCountry,
+          countryName: this.getCountryName(fallbackCountry),
+          detected: true,
+          method: 'ip'
+        };
+      }
+
+      // If no fallback, default to Indonesia
       if (countryCode) {
         console.log(`📍 Detected ${countryCode} but not supported, using default`);
         return {
@@ -166,7 +226,19 @@ class IPGeolocationService {
         };
       }
 
-      // If detected country not supported, default to Indonesia
+      // Check if detected country has a regional fallback
+      if (countryCode && REGIONAL_FALLBACK[countryCode]) {
+        const fallbackCountry = REGIONAL_FALLBACK[countryCode];
+        console.log(`📍 Detected ${countryCode}, using nearest supported: ${fallbackCountry}`);
+        return {
+          countryCode: fallbackCountry,
+          countryName: this.getCountryName(fallbackCountry),
+          detected: true,
+          method: 'ip'
+        };
+      }
+
+      // If no fallback, default to Indonesia
       if (countryCode) {
         console.log(`📍 Detected ${countryCode} but not supported, using default`);
         return {
@@ -243,7 +315,11 @@ class IPGeolocationService {
       SG: 'Singapore',
       TH: 'Thailand',
       PH: 'Philippines',
-      VN: 'Vietnam'
+      VN: 'Vietnam',
+      GB: 'United Kingdom',
+      US: 'United States',
+      AU: 'Australia',
+      DE: 'Germany'
     };
     return names[code] || code;
   }
@@ -258,7 +334,11 @@ class IPGeolocationService {
       SG: '🇸🇬',
       TH: '🇹🇭',
       PH: '🇵🇭',
-      VN: '🇻🇳'
+      VN: '🇻🇳',
+      GB: '🇬🇧',
+      US: '🇺🇸',
+      AU: '🇦🇺',
+      DE: '🇩🇪'
     };
     return flags[code] || '🌍';
   }

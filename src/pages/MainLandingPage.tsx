@@ -850,60 +850,66 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                             />
                         </div>
 
-                        {/* Cities List - Scrollable container (max-height 40vh on mobile) */}
-                        <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '40vh' }}>
+                        {/* GPS Location Option - Prominently at top */}
+                        <button
+                            onClick={handleCityNotListed}
+                            disabled={isDetectingLocation}
+                            className="w-full mb-3 rounded-lg border-2 border-orange-500 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        >
+                            <div className="flex items-center gap-3 pl-4 pr-3 py-4">
+                                <div className="w-6 h-6 flex-shrink-0">
+                                    <MapPin className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <div className="text-base font-bold leading-tight">
+                                        {isDetectingLocation && cityNotListed 
+                                            ? 'Detecting your location...' 
+                                            : 'Use My GPS Location'}
+                                    </div>
+                                    <div className="text-xs text-orange-100 leading-tight mt-1">
+                                        {isDetectingLocation && cityNotListed
+                                            ? 'Please allow location access'
+                                            : 'Find therapists & places closest to you'}
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+
+                        {/* Divider */}
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="flex-1 h-px bg-gray-700"></div>
+                            <span className="text-xs text-gray-400 font-medium">OR SELECT A CITY</span>
+                            <div className="flex-1 h-px bg-gray-700"></div>
+                        </div>
+
+                        {/* Cities List - Scrollable container */}
+                        <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '35vh' }}>
                             {filteredCities.length > 0 ? (
                                 <>
                                     {filteredCities.map((city, index) => (
                                         <button
                                             key={`${city.name}-${index}`}
                                             onClick={() => handleCitySelectNew(city)}
-                                            className={`w-full p-3 rounded-lg border-2 text-left transition-all flex-shrink-0 ${
+                                            className={`w-full rounded-lg border-2 transition-all flex-shrink-0 relative ${
                                                 selectedCity === city.name
                                                     ? "border-orange-500 bg-orange-500 text-white shadow-lg"
                                                     : "border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-white"
                                             }`}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-5 h-5 flex-shrink-0">
-                                                    <MapPin className={`w-5 h-5 ${
-                                                        selectedCity === city.name ? "text-white" : "text-orange-400"
-                                                    }`} />
-                                                </div>
-                                                <div className="flex-1 min-w-0 text-left">
+                                            <div className="py-3 pr-3">
+                                                <MapPin className={`absolute left-[86px] top-1/2 -translate-y-1/2 w-5 h-5 ${
+                                                    selectedCity === city.name ? "text-white" : "text-orange-400"
+                                                }`} />
+                                                <div className="absolute left-[120px] right-3 top-1/2 -translate-y-1/2 text-left">
                                                     <div className="font-medium text-sm leading-tight">{city.name}</div>
                                                     <div className={`text-xs leading-tight mt-0.5 ${
                                                         selectedCity === city.name ? "text-orange-100" : "text-gray-400"
                                                     }`}>{city.region} • {city.description}</div>
                                                 </div>
+                                                <div className="h-12"></div>
                                             </div>
                                         </button>
                                     ))}
-                                    
-                                    {/* "My city is not listed" option */}
-                                    <button
-                                        onClick={handleCityNotListed}
-                                        disabled={isDetectingLocation}
-                                        className="w-full p-3 mt-2 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-gray-300 hover:text-white transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-5 h-5 flex-shrink-0">
-                                                <MapPin className="w-5 h-5 text-gray-400" />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="text-sm font-medium leading-tight">
-                                                    {isDetectingLocation && cityNotListed 
-                                                        ? 'Detecting your location...' 
-                                                        : 'Use my GPS location'}
-                                                </div>
-                                                <div className="text-xs text-gray-400 leading-tight mt-0.5">
-                                                    {isDetectingLocation && cityNotListed
-                                                        ? 'Please allow location access'
-                                                        : 'Automatically detect your precise city'}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </button>
                                 </>
                             ) : (
                                 <div className="text-center py-8 text-gray-400">

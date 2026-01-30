@@ -1068,6 +1068,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(profileRoutes.placeDetail.component);
 
         case 'therapistStatus': {
+            console.log('🔴 [ROUTE DEBUG] therapistStatus case matched - THIS SHOULD NOT HAPPEN FOR therapist-status');
             const therapistProfile = resolveTherapistProfile();
             return renderRoute(TherapistStatusPage, {
                 therapist: therapistProfile,
@@ -1383,43 +1384,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist':
         case 'therapistDashboard':
         case 'therapist-dashboard':
-            console.log('🔷 [SWITCH CASE] therapist-dashboard MATCHED');
-            console.log('🔷 [ROUTE DEBUG] Component reference:', {
-                component: therapistRoutes.dashboard.component,
-                componentName: therapistRoutes.dashboard.component?.name,
-                componentType: typeof therapistRoutes.dashboard.component,
-                isFunction: typeof therapistRoutes.dashboard.component === 'function'
-            });
-            console.log('[ROUTE RESOLVE] therapist-dashboard → TherapistDashboard');
-            console.log('[ROUTE DEBUG] props.user:', {
-                hasUser: !!props.user,
-                userId: props.user?.$id || props.user?.id,
-                userName: props.user?.name,
-                userType: props.user?.type || props.user?.userType,
-                timestamp: new Date().toISOString()
-            });
-            return renderRoute(therapistRoutes.dashboard.component, {
+            console.log('🔷 [SWITCH CASE] therapist-dashboard MATCHED - REDIRECTING TO STATUS');
+            // Redirect to status page instead of dashboard
+            return renderRoute(therapistRoutes.status.component, {
                 therapist: props.user,
-                onLogout: props.handleLogout,
-                onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
-                onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
-                onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),
-                onNavigateToChat: () => props.onNavigate?.('therapist-chat'),
-                onNavigateToNotifications: () => props.onNavigate?.('therapist-notifications'),
-                onNavigateToLegal: () => props.onNavigate?.('therapist-legal'),
-                onNavigateToCalendar: () => props.onNavigate?.('therapist-calendar'),
-                onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
-                onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
-                onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
-                onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
-                onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
-                onNavigateHome: () => props.onNavigate?.('home'),
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
                 language: props.language
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'status':
         case 'therapist-status':
+            console.log('🔵 [ROUTE DEBUG] therapist-status case matched!');
             console.log('[ROUTE RESOLVE] therapist-status → TherapistOnlineStatus');
             return renderRoute(therapistRoutes.status.component, {
                 therapist: props.user,

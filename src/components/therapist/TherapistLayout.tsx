@@ -28,14 +28,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Menu, X, User, Calendar, DollarSign, 
-  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart3
+  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart3, Home
 } from 'lucide-react';
 import BookingBadge from './BookingBadge';
 import { useUnreadBadge } from "../../chat/hooks/useUnreadBadge";
 import { useGestureSwipe } from "../../hooks/useGestureSwipe";
 import { FloatingUnreadBadge } from "../../components/UnreadBadge";
 import { pushNotificationsService } from '../../lib/pushNotificationsService';
-import PullToRefresh from '../../components/PullToRefresh';
 
 interface TherapistLayoutProps {
   children: React.ReactNode;
@@ -57,8 +56,14 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   onLanguageChange,
   onLogout,
   onRefresh
-}) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+}) => {  // Safety check for required props
+  if (!therapist) {
+    console.warn('⚠️ TherapistLayout: therapist prop is missing');
+  }
+  if (!onNavigate) {
+    console.warn('⚠️ TherapistLayout: onNavigate prop is missing');
+  }
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isRecovering, setIsRecovering] = useState(false);
   
@@ -206,6 +211,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   const labels = menuLabels[language] || menuLabels.id;
   
   const menuItems = [
+    { id: 'status', label: language === 'id' ? '🏠 Beranda' : '🏠 Home', icon: Home, color: 'text-orange-500' },
     { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: FileText, color: 'text-orange-500' },
     { id: 'status', label: labels.status, icon: Clock, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
@@ -277,81 +283,124 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
   return (
     <div 
-      className="min-h-screen bg-gray-50 w-full max-w-full therapist-page-container" 
+      className="min-h-screen bg-white w-full max-w-full therapist-page-container flex flex-col" 
       style={{ 
         WebkitOverflowScrolling: 'touch',
         touchAction: 'pan-y pan-x'
       }}
     >
-      {/* Elite Header - Stable positioning and CLS prevention */}
+      {/* Elite Header - Now working with forced visibility */}
       <header 
-        className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 w-full therapist-layout-header"
+        style={{
+          position: 'fixed',
+          top: '0',
+          left: '0', 
+          right: '0',
+          height: '70px',
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          zIndex: '50',
+          display: 'flex',
+          alignItems: 'center',
+          width: '100vw'
+        }}
       >
-        <div className="flex items-center justify-between px-4 py-3 w-full max-w-full">
-          {/* Left side - Therapist Profile Name */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+        <div style={{ 
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          padding: '0 16px',
+          height: '100%',
+          overflow: 'visible',
+          minWidth: '100%'
+        }}>
+          {/* Left side - Therapist Profile */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px',
+            flex: '1 1 auto',
+            minWidth: '0'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {therapist?.profilePicture ? (
                 <img 
                   src={therapist?.profilePicture} 
                   alt={therapist?.name || 'Therapist'} 
-                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                    const parent = (e.target as HTMLImageElement).parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center"><svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div>`;
-                    }
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    objectFit: 'cover'
                   }}
                 />
               ) : (
-                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  backgroundColor: '#f97316',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white'
+                }}>
+                  <User style={{ width: '20px', height: '20px' }} />
                 </div>
               )}
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-gray-900">
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>
                   {therapist?.name || 'Therapist'}
-                </span>
+                </div>
                 {therapist?.location && (
-                  <span className="text-xs text-gray-500">
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>
                     {therapist?.location}
-                  </span>
+                  </div>
                 )}
               </div>
             </div>
           </div>
           
-          {/* Right side - Language and Burger Menu */}
-          <div className="flex items-center gap-3">
+          {/* Right side - Menu buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>            
             {/* Language Toggle */}
             <button
               onClick={() => onLanguageChange?.(language === 'id' ? 'en' : 'id')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontSize: '20px'
+              }}
               title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
             >
-              <span className="text-xl">{language === 'id' ? '🇮🇩' : '🇬🇧'}</span>
+              {language === 'id' ? '🇮🇩' : '🇬🇧'}
             </button>
             
-            {/* Burger Menu with unread indicator */}
+            {/* Burger Menu */}
             <button
               onClick={handleSidebarToggle}
-              onTouchStart={(e) => {
-                e.preventDefault();
-              }}
-              className="p-2 rounded-lg transition-colors relative touch-manipulation cursor-pointer select-none hover:bg-gray-100 active:bg-gray-200"
               style={{
-                WebkitTapHighlightColor: 'transparent',
-                userSelect: 'none',
-                touchAction: 'manipulation'
+                padding: '8px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
-              aria-label="Toggle menu"
             >
               {isSidebarOpen ? (
-                <X className="w-6 h-6 text-gray-700" />
+                <X style={{ width: '24px', height: '24px', color: 'black' }} />
               ) : (
                 <>
-                  <Menu className="w-6 h-6 text-gray-700" />
+                  <Menu style={{ width: '24px', height: '24px', color: 'black' }} />
                   {totalUnread > 0 && (
                     <FloatingUnreadBadge count={totalUnread} size="sm" />
                   )}
@@ -361,6 +410,9 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Space pusher for fixed header */}
+      <div style={{ height: '70px' }}></div>
 
       {/* Sidebar Overlay - Fixed z-index and event propagation */}
       {isSidebarOpen && (
@@ -531,41 +583,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
       {/* Elite Main Content - Stable scrolling and performance optimized */}
       <main 
-        className="relative w-full" 
+        className="relative w-full overflow-y-auto overflow-x-hidden flex-1" 
         style={{ 
           WebkitOverflowScrolling: 'touch', 
           touchAction: 'pan-y pan-x'
         }}
       >
-        <PullToRefresh 
-          onRefresh={async () => {
-            console.log('🔄 Dashboard refresh triggered');
-            
-            if (onRefresh) {
-              await onRefresh();
-            } else {
-              // Default dashboard refresh
-              window.dispatchEvent(new CustomEvent('refresh-dashboard', {
-                detail: { 
-                  page: currentPage,
-                  therapistId: therapist?.$id,
-                  timestamp: Date.now()
-                }
-              }));
-              
-              // Provide haptic feedback
-              if ('navigator' in window && 'vibrate' in navigator) {
-                navigator.vibrate(50);
-              }
-              
-              // Wait for visual feedback
-              await new Promise(resolve => setTimeout(resolve, 800));
-            }
-          }}
-          className=""
-        >
-          {children}
-        </PullToRefresh>
+        {children}
       </main>
     </div>
   );

@@ -84,12 +84,20 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
     // Safety check for translations loading
     if (loading) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-          <div className="text-center">
-            <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
-            <p className="text-gray-600">Loading dashboard...</p>
+        <TherapistLayout
+          therapist={therapist || { name: 'Loading...', id: 'loading' }}
+          currentPage="status"
+          onNavigate={(pageId) => onNavigate?.(pageId)}
+          language={propLanguage}
+          onLogout={onLogout}
+        >
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+            <div className="text-center">
+              <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
+              <p className="text-gray-600">Loading dashboard...</p>
+            </div>
           </div>
-        </div>
+        </TherapistLayout>
       );
     }
   
@@ -97,17 +105,25 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
   if (!therapist) {
     console.error('❌ No therapist data provided to TherapistOnlineStatus');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">{dict?.therapistDashboard?.loading || 'Loading therapist data...'}</p>
-          <button
-            onClick={onBack}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            {dict?.therapistDashboard?.back || 'Go Back'}
-          </button>
+      <TherapistLayout
+        therapist={therapist || { name: 'Therapist', id: 'unknown' }}
+        currentPage="status"
+        onNavigate={(pageId) => onNavigate?.(pageId)}
+        language={propLanguage}
+        onLogout={onLogout}
+      >
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">{dict?.therapistDashboard?.loading || 'Loading therapist data...'}</p>
+            <button
+              onClick={onBack}
+              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+            >
+              {dict?.therapistDashboard?.back || 'Go Back'}
+            </button>
+          </div>
         </div>
-      </div>
+      </TherapistLayout>
     );
   }
   
@@ -876,7 +892,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-white">
+    <div className="bg-gray-50">
       <div className="max-w-sm mx-auto px-4 py-6 space-y-6">
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -1246,34 +1262,42 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
   } catch (error) {
     console.error('TherapistOnlineStatus render error:', error);
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-        <div className="text-center p-6 max-w-md mx-auto">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Dashboard Error</h2>
-          <p className="text-gray-600 mb-4">Unable to load therapist dashboard. Please try refreshing the page.</p>
-          <button
-            onClick={async () => {
-              try {
-                const { softRecover } = await import('../../utils/softNavigation');
-                softRecover();
-              } catch {
-                window.location.reload();
-              }
-            }}
-            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
-          >
-            Refresh Page
-          </button>
-          <div className="mt-4">
+      <TherapistLayout
+        therapist={therapist || { name: 'Therapist', id: 'error' }}
+        currentPage="status"
+        onNavigate={(pageId) => onNavigate?.(pageId)}
+        language={propLanguage}
+        onLogout={onLogout}
+      >
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+          <div className="text-center p-6 max-w-md mx-auto">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Dashboard Error</h2>
+            <p className="text-gray-600 mb-4">Unable to load therapist dashboard. Please try refreshing the page.</p>
             <button
-              onClick={onBack}
-              className="text-orange-500 hover:text-orange-600 underline"
+              onClick={async () => {
+                try {
+                  const { softRecover } = await import('../../utils/softNavigation');
+                  softRecover();
+                } catch {
+                  window.location.reload();
+                }
+              }}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
             >
-              Go Back
+              Refresh Page
             </button>
+            <div className="mt-4">
+              <button
+                onClick={onBack}
+                className="text-orange-500 hover:text-orange-600 underline"
+              >
+                Go Back
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </TherapistLayout>
     );
   }
 };

@@ -207,17 +207,16 @@ export const therapistService = {
             const therapistsWithImages = response.documents.map((therapist: any, index: number) => {
                 // ⚠️ DISABLED: Persistence logic causes mass 400 errors and rate limiting
                 // Images are now set directly in SharedTherapistProfile.tsx with official URLs
-                let assignedHeroImageUrl = therapist.heroImageUrl;
                 
-                if (!assignedHeroImageUrl || assignedHeroImageUrl === '') {
-                    // Compute for display only (not persisted)
-                    assignedHeroImageUrl = getNonRepeatingMainImage(index);
-                } else {
-                    console.log(`✅ [HERO IMAGE EXISTS] ${therapist.name} → ${assignedHeroImageUrl}`);
+                // Priority: use existing mainImage, fallback to heroImageUrl, then placeholder
+                let assignedMainImage = therapist.mainImage || therapist.heroImageUrl;
+                
+                if (!assignedMainImage || assignedMainImage === '') {
+                    // Compute placeholder for display only (not persisted)
+                    assignedMainImage = getNonRepeatingMainImage(index);
+                } else if (assignedMainImage.includes('appwrite.io')) {
+                    console.log(`✅ [REAL IMAGE EXISTS] ${therapist.name} → ${assignedMainImage}`);
                 }
-                
-                // Use heroImageUrl as mainImage for backward compatibility
-                const assignedMainImage = assignedHeroImageUrl;
                 
                 // Normalize status from database (lowercase) to enum format (capitalized)
                 const normalizeStatus = (status: string) => {

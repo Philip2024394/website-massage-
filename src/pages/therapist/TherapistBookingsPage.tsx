@@ -593,9 +593,9 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-screen bg-white" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
-      <div className="max-w-sm mx-auto px-4 pt-6">
+      <div className="w-full px-4 pt-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -706,7 +706,7 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
       {activeTab === 'schedule' ? (
         <TherapistSchedule therapist={therapist} onBack={() => setActiveTab('bookings')} />
       ) : (
-      <main className="max-w-sm mx-auto px-4 py-6">
+      <main className="w-full px-4 py-6">
         <div className="space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-4">

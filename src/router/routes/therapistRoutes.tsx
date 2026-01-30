@@ -53,7 +53,7 @@ import TherapistHotelVillaSafePassPage from '../../pages/therapist/TherapistHote
 
 export const therapistRoutes = {
   dashboard: {
-    path: '/therapist',
+    path: '/therapist/dashboard',
     component: TherapistPortalPage,
     name: 'therapist-dashboard',
     requiresAuth: true

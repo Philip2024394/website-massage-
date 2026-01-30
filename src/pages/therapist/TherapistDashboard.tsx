@@ -959,21 +959,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         onLogout={onLogout}
       >
       <div
-        className="bg-white w-full max-w-full overflow-x-hidden overflow-y-auto"
+        className="bg-white w-full max-w-full"
         style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}
-        tabIndex={0}
-        onPointerDown={e => {
-          // Focus the div to ensure keyboard/scroll events are captured
-          (e.currentTarget as HTMLDivElement).focus();
-        }}
-        onMouseDown={e => {
-          // Focus for desktop mouse users
-          (e.currentTarget as HTMLDivElement).focus();
-        }}
-        onTouchStart={e => {
-          // Focus for mobile/touch users
-          (e.currentTarget as HTMLDivElement).focus();
-        }}
       >
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
@@ -997,7 +984,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       )}
 
       {/* Main Content */}
-      <main className="max-w-sm mx-auto px-4 py-6">
+      <main className="w-full px-4 py-6">
           
           {/* Page Header with Status Badge and Stats - EXACT MATCH TO HOME PAGE */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
