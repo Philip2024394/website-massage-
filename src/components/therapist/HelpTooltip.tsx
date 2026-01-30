@@ -151,7 +151,6 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
               aria-labelledby="help-tooltip-title"
               className="help-popup-mobile bg-white rounded-lg shadow-2xl border-2 border-orange-200 overflow-hidden animate-scale-in"
             >
-            >
               {/* Header */}
               <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex items-center justify-between">
                 <h3 
