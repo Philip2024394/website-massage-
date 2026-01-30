@@ -43,6 +43,10 @@ export function usePersistentChatIntegration() {
     console.log('🔍 CONVERT: Converting therapist to ChatTherapist:', {
       name: therapistName,
       appwriteId: therapist.$id || therapist.id,
+      price60: therapist.price60,
+      price90: therapist.price90,
+      price120: therapist.price120,
+      rawPricing: therapist.pricing,
       source: 'convertToChatTherapist'
     });
     
@@ -68,6 +72,10 @@ export function usePersistentChatIntegration() {
         image: (therapist as any).mainImage || (therapist as any).profilePicture,
         status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
         pricing: fallbackPricing,
+        // ✅ CRITICAL: Include separate price fields for fallback too
+        price60: therapist.price60 || '350',
+        price90: therapist.price90 || '450', 
+        price120: therapist.price120 || '550',
         duration: 60,
         appwriteId: therapist.$id || therapist.id,
       };
@@ -89,6 +97,10 @@ export function usePersistentChatIntegration() {
       image: (therapist as any).mainImage || (therapist as any).profilePicture,
       status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
       pricing, // Use therapist's exact profile prices
+      // ✅ CRITICAL: Include separate price fields for chat window pricing
+      price60: therapist.price60,
+      price90: therapist.price90,
+      price120: therapist.price120,
       duration: 60,
       // Keep Appwrite ID for database operations
       appwriteId: therapist.$id || therapist.id,
@@ -97,7 +109,12 @@ export function usePersistentChatIntegration() {
     console.log('✅ CONVERT: ChatTherapist created:', {
       id: chatTherapist.id,
       name: chatTherapist.name,
-      appwriteId: chatTherapist.appwriteId
+      appwriteId: chatTherapist.appwriteId,
+      price60: chatTherapist.price60,
+      price90: chatTherapist.price90,
+      price120: chatTherapist.price120,
+      pricing: chatTherapist.pricing
+    });
     });
     
     return chatTherapist;

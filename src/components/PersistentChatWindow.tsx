@@ -392,6 +392,15 @@ export function PersistentChatWindow() {
 
   // Get price for duration - consistent with TherapistCard pricing logic
   const getPrice = (minutes: number) => {
+    console.log('🔍 [PRICING DEBUG] Getting price for', minutes, 'minutes');
+    console.log('🔍 [PRICING DEBUG] Therapist object:', {
+      name: therapist.name,
+      price60: therapist.price60,
+      price90: therapist.price90,
+      price120: therapist.price120,
+      pricing: therapist.pricing
+    });
+    
     // Check for separate price fields first (price60, price90, price120)
     const hasValidSeparateFields = Boolean(
       (therapist.price60 && parseInt(therapist.price60) > 0) ||
@@ -399,16 +408,22 @@ export function PersistentChatWindow() {
       (therapist.price120 && parseInt(therapist.price120) > 0)
     );
 
+    console.log('🔍 [PRICING DEBUG] Has valid separate fields:', hasValidSeparateFields);
+
     if (hasValidSeparateFields) {
       const priceField = `price${minutes}` as keyof typeof therapist;
       const price = therapist[priceField];
-      return price ? parseInt(price as string) * 1000 : 0;
+      const finalPrice = price ? parseInt(price as string) * 1000 : 0;
+      console.log('✅ [PRICING DEBUG] Using separate field:', priceField, '=', price, '→', finalPrice);
+      return finalPrice;
     }
 
     // Fallback to JSON pricing format
     const pricing = therapist.pricing || {};
     const basePrice = pricing[minutes.toString()] || pricing['60'] || 0;
-    return basePrice * 1000; // Multiply by 1000 to match TherapistCard format
+    const finalPrice = basePrice * 1000; // Multiply by 1000 to match TherapistCard format
+    console.log('✅ [PRICING DEBUG] Using pricing object:', pricing, '→', basePrice, '→', finalPrice);
+    return finalPrice;
   };
 
   // Handle duration selection

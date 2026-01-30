@@ -149,6 +149,10 @@ export interface ChatTherapist {
   name: string;
   image?: string;
   pricing?: Record<string, number>;
+  // Add separate price fields to match Therapist interface
+  price60?: string;
+  price90?: string;
+  price120?: string;
   whatsapp?: string;
   status?: string;
   availabilityStatus?: TherapistAvailabilityStatus | string; // AVAILABLE, BUSY, CLOSED, RESTRICTED
