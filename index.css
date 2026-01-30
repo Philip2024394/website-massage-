@@ -11,15 +11,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent white flash during loading */
+/* Prevent white flash during loading - Orange background for seamless transition */
 html, body {
-  background-color: #111827 !important;
+  background-color: #f97316 !important; /* Orange background matching loading screen */
   margin: 0;
   padding: 0;
 }
 
 #root {
-  background-color: #111827;
+  background-color: #f97316; /* Orange background matching loading screen */
   min-height: 100vh;
 }
 

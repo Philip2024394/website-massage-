@@ -26,7 +26,7 @@ const DeferredApp: React.FC = () => {
         console.error('❌ DeferredApp: Failed to load full app:', error);
         // Show error instead of reloading to prevent infinite reload loop
         setFullApp(() => () => (
-          <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
+          <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#f97316' }}>
             <div className="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
               <h2 className="text-xl font-semibold text-red-600 mb-2">Loading Error</h2>
               <p className="text-gray-600 mb-4">Unable to load the application. Please refresh the page.</p>
@@ -52,7 +52,7 @@ const DeferredApp: React.FC = () => {
 
   // MINIMAL LOADING STATE - No intermediate content
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
       <Helmet>
         <title>IndaStreet - Loading...</title>
       </Helmet>
@@ -61,11 +61,11 @@ const DeferredApp: React.FC = () => {
       <div className="text-center">
         <div className="mb-4">
           <div className="text-3xl font-bold">
-            <span className="text-black">Inda</span>
-            <span className="text-orange-500">Street</span>
+            <span className="text-white">Inda</span>
+            <span className="text-white">Street</span>
           </div>
         </div>
-        <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
       </div>
     </div>
   );

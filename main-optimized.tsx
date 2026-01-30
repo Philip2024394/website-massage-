@@ -68,7 +68,7 @@ async function initializeApp() {
         <AppErrorBoundary>
           <React.Suspense 
             fallback={
-              <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600">
+              <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
                 <div className="text-center">
                   <h1 className="text-4xl font-bold text-white mb-4 animate-pulse">IndaStreet</h1>
                   <div className="flex gap-2 justify-center">
