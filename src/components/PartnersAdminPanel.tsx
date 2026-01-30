@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { indastreetPartnersService, PartnerData } from '../services/indastreetPartnersService';
 import { migratePartnersData, verifyMigration } from '../scripts/migratePartnersData';
-import { Upload, Download, Database, CheckCircle, AlertCircle, Refresh, Settings } from 'lucide-react';
+import { Upload, Download, Database, CheckCircle, AlertCircle, RefreshCw, Settings } from 'lucide-react';
 
 interface PartnersAdminPanelProps {
     onClose?: () => void;
@@ -237,7 +237,7 @@ const PartnersAdminPanel: React.FC<PartnersAdminPanelProps> = ({ onClose }) => {
                             disabled={isLoading}
                             className="flex items-center gap-2 p-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors disabled:opacity-50"
                         >
-                            <Refresh className="w-5 h-5 text-blue-600" />
+                            <RefreshCw className="w-5 h-5 text-blue-600" />
                             <span className="font-medium text-blue-700">Test Connection</span>
                         </button>
 
