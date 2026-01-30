@@ -304,7 +304,6 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
         };
 
         fetchPartners();
-        fetchPartners();
     }, []);
 
     const categories = [
