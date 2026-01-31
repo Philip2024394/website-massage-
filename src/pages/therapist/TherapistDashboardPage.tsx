@@ -43,7 +43,8 @@ import { locations } from '../../../locations';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import ProPlanWarnings from '../../components/therapist/ProPlanWarnings';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
-import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock } from 'lucide-react';
+import EnhancedNotificationSystem from '../../components/therapist/EnhancedNotificationSystem';
+import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock, Bell, AlertTriangle, TrendingUp, Power, Banknote } from 'lucide-react';
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { dashboardHelp } from './constants/helpContent';
@@ -982,10 +983,19 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                 <h2 className="text-lg font-bold text-gray-900">Edit Profil</h2>
                 <HelpTooltip {...dashboardHelp.overview} position="bottom" size="sm" />
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
-                <span className="text-xs text-gray-500">bulan ini</span>
+              <div className="flex items-center gap-3">
+                <EnhancedNotificationSystem 
+                  therapistId={therapist.$id} 
+                  onNotificationAction={(notification, actionId) => {
+                    console.log('Notification action:', actionId, notification);
+                    // Handle notification actions here
+                  }}
+                />
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+                  <Clock className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
+                  <span className="text-xs text-gray-500">bulan ini</span>
+                </div>
               </div>
             </div>
 
@@ -1046,6 +1056,164 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                     <h3 className={`text-sm font-bold ${therapist?.status === 'Offline' || therapist?.availability === 'Offline' ? 'text-white' : 'text-gray-800'}`}>Offline</h3>
                   </div>
                 </div>
+              </button>
+            </div>
+          </div>
+          
+          {/* ============================================================================
+           * 🎯 PRIORITY 1: DASHBOARD OVERVIEW ENHANCEMENT - QUICK STATS CARDS
+           * ============================================================================
+           * Elite dashboard overview with key metrics, status timeline, and quick actions
+           * Implementation: Visual hierarchy, color psychology, mobile-optimized cards
+           */}
+          
+          {/* Elite Quick Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* Today's Bookings */}
+            <div className="shadow-md bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-medium text-gray-700">Hari Ini</span>
+                </div>
+                <span className="text-2xl font-bold text-blue-600">3</span>
+              </div>
+              <p className="text-sm text-gray-600">Booking terjadwal</p>
+              <div className="mt-2 flex items-center gap-1">
+                <Clock className="w-3 h-3 text-gray-400" />
+                <span className="text-xs text-gray-500">Selanjutnya: 14:30</span>
+              </div>
+            </div>
+            
+            {/* Pending Requests */}
+            <div className="shadow-md bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-orange-600" />
+                  <span className="text-sm font-medium text-gray-700">Permintaan</span>
+                </div>
+                <span className="text-2xl font-bold text-orange-600">2</span>
+              </div>
+              <p className="text-sm text-gray-600">Menunggu respons</p>
+              <div className="mt-2 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3 text-orange-400" />
+                <span className="text-xs text-orange-600">Balas dalam 1 jam</span>
+              </div>
+            </div>
+            
+            {/* Week Earnings */}
+            <div className="shadow-md bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                  <span className="text-sm font-medium text-gray-700">Minggu Ini</span>
+                </div>
+                <span className="text-2xl font-bold text-green-600">850K</span>
+              </div>
+              <p className="text-sm text-gray-600">Total pendapatan</p>
+              <div className="mt-2 flex items-center gap-1">
+                <TrendingUp className="w-3 h-3 text-green-400" />
+                <span className="text-xs text-green-600">+15% dari minggu lalu</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Elite Quick Actions Panel */}
+          <div className="shadow-md bg-white rounded-xl p-5 mb-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-medium text-gray-900">Aksi Cepat</h3>
+              <span className="text-xs text-gray-500">Fungsi yang sering digunakan</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* Quick Action: Update Status */}
+              <button
+                onClick={() => onNavigateToStatus?.()}
+                className="flex flex-col items-center gap-2 p-3 rounded-lg bg-gradient-to-b from-green-50 to-green-100 border border-green-200 hover:from-green-100 hover:to-green-200 transition-all transform active:scale-95"
+              >
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-gray-700">Update Status</span>
+              </button>
+              
+              {/* Quick Action: View Bookings */}
+              <button
+                onClick={() => onNavigateToBookings?.()}
+                className="flex flex-col items-center gap-2 p-3 rounded-lg bg-gradient-to-b from-blue-50 to-blue-100 border border-blue-200 hover:from-blue-100 hover:to-blue-200 transition-all transform active:scale-95"
+              >
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-gray-700">Lihat Booking</span>
+              </button>
+              
+              {/* Quick Action: Check Earnings */}
+              <button
+                onClick={() => onNavigateToEarnings?.()}
+                className="flex flex-col items-center gap-2 p-3 rounded-lg bg-gradient-to-b from-purple-50 to-purple-100 border border-purple-200 hover:from-purple-100 hover:to-purple-200 transition-all transform active:scale-95"
+              >
+                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                  <Banknote className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-gray-700">Cek Pendapatan</span>
+              </button>
+              
+              {/* Quick Action: Customer Chat */}
+              <button
+                onClick={() => onNavigateToChat?.()}
+                className="flex flex-col items-center gap-2 p-3 rounded-lg bg-gradient-to-b from-amber-50 to-amber-100 border border-amber-200 hover:from-amber-100 hover:to-amber-200 transition-all transform active:scale-95"
+              >
+                <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-gray-700">Chat Pelanggan</span>
+              </button>
+            </div>
+          </div>
+          
+          {/* Elite Today's Timeline */}
+          <div className="shadow-md bg-white rounded-xl p-5 mb-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-medium text-gray-900">Jadwal Hari Ini</h3>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">3 booking</span>
+            </div>
+            <div className="space-y-3">
+              {/* Timeline Item 1 */}
+              <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-grow">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium text-gray-900">14:30 - 15:30</span>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Confirmed</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Traditional Massage • Jl. Sunset Road</p>
+                  <p className="text-xs text-gray-500">Rp 200,000 • 1 jam</p>
+                </div>
+              </div>
+              
+              {/* Timeline Item 2 */}
+              <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-lg flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-grow">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium text-gray-900">17:00 - 18:30</span>
+                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">Pending</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Deep Tissue • Hotel Mulia Resort</p>
+                  <p className="text-xs text-gray-500">Rp 300,000 • 1.5 jam</p>
+                </div>
+              </div>
+              
+              {/* View More */}
+              <button
+                onClick={() => onNavigateToBookings?.()}
+                className="w-full text-center py-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              >
+                Lihat semua jadwal →
               </button>
             </div>
           </div>

@@ -27,6 +27,7 @@ import { matchProviderToCity } from '../constants/indonesianCities';
 import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
+import UniversalPWAInstall from '../components/UniversalPWAInstall';
 import { useCityContext } from '../context/CityContext';
 
 // Custom hooks for logic extraction
@@ -2671,8 +2672,21 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 userRole="customer"
             />
 
-            {/* PWA Install Banner */}
-            <PWAInstallBanner />
+            {/* Enhanced PWA Install Banner */}
+            <div className="mx-4 mb-4">
+              <UniversalPWAInstall
+                variant="banner"
+                size="md"
+                onInstallSuccess={() => {
+                  console.log('🎉 PWA installed successfully from home page');
+                }}
+                onInstallError={(error) => {
+                  console.error('PWA installation failed:', error);
+                }}
+                showInstructions={true}
+                autoHideWhenInstalled={true}
+              />
+            </div>
         </div>
     );
 };

@@ -376,6 +376,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const defaultLanguage: Language = 'id';
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     const { requestInstall, isInstalled, isIOS, showIOSInstructions, setShowIOSInstructions } = usePWAInstall();
+    
+    // Enhanced PWA install handling
+    useEffect(() => {
+        const handlePWAInstallReady = () => {
+            console.log('🚀 PWA install capability detected on landing page');
+        };
+        
+        window.addEventListener('pwa-install-available', handlePWAInstallReady);
+        
+        return () => window.removeEventListener('pwa-install-available', handlePWAInstallReady);
+    }, []);
     const isMountedRef = React.useRef(true);
     const ipDetectionRan = React.useRef(false);
     
@@ -763,7 +774,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
-        <div className="landing-page-container scrollable relative w-full h-screen bg-gray-900 overflow-y-auto" style={{ maxHeight: '100vh' }}>
+        <div className="landing-page-container scrollable relative w-full bg-gray-900 overflow-y-auto" style={{ 
+            height: '100vh',
+            maxHeight: '100vh',
+            minHeight: '100vh',
+            minHeight: '100dvh', // Dynamic viewport height for mobile
+            position: 'relative'
+        }}>
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             
             {/* Fixed background image - stays in place while scrolling - optimized for performance */}
@@ -777,7 +794,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     backgroundRepeat: 'no-repeat',
                     willChange: 'contents', // Hint browser to optimize layer
                     minHeight: '100vh',
+                    minHeight: '100dvh', // Dynamic viewport height for mobile
                     minWidth: '100vw',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0
                 }}
             />
             
@@ -788,7 +811,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             />
             
             {/* Scrollable content */}
-            <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-3 sm:px-6 text-center w-full min-h-screen">
+            <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-3 sm:px-6 text-center w-full" style={{ 
+                minHeight: '100vh',
+                minHeight: '100dvh', // Dynamic viewport height for mobile
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)' // Respect mobile safe area
+            }}>
                 <div className="flex-1 flex flex-col justify-center w-full max-w-lg">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>

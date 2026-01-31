@@ -24,12 +24,22 @@ export const usePWAInstall = () => {
   useEffect(() => {
     const handler = (e: Event) => {
       // Only handle once
+      console.log('🚀 [PWA] beforeinstallprompt event fired');
       e.preventDefault();
       setDeferredPrompt(e as any);
+      // Store globally for other components
+      (window as any).deferredPrompt = e;
       // Dispatch custom event for global listeners if needed
       window.dispatchEvent(new CustomEvent('pwa-install-available'));
     };
+    
+    // Listen for service worker ready event
+    const handleSWReady = () => {
+      console.log('🔧 [PWA] Service worker ready, listening for install prompt');
+    };
+    
     window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('sw-registered', handleSWReady);
 
     const onAppInstalled = () => {
       setIsInstalled(true);
@@ -49,6 +59,7 @@ export const usePWAInstall = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
       window.removeEventListener('appinstalled', onAppInstalled);
+      window.removeEventListener('sw-registered', handleSWReady);
     };
   }, [isIOS, standaloneMatch]);
 

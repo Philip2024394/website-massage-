@@ -15,6 +15,7 @@ import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { onlineStatusHelp } from './constants/helpContent';
 import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../../lib/toastUtils';
+import UniversalPWAInstall from '../../components/UniversalPWAInstall';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {

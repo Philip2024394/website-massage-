@@ -49,7 +49,7 @@ input, textarea, select {
 :root {
   /* Elite viewport units */
   --vh: 1vh;
-  --stable-header-height: 72px;
+  --stable-header-height: 60px;
   --stable-sidebar-width: 280px;
   --elite-timing: cubic-bezier(0.4, 0, 0.2, 1);
   --elite-fast: cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -103,13 +103,66 @@ input, textarea, select {
 
 .therapist-layout-content {
   /* Stable content area */
-  contain: layout style;
-  min-height: calc(100 * var(--vh) - var(--stable-header-height));
+  contain: none;
+  min-height: calc(100vh - var(--stable-header-height));
+  max-height: calc(100vh - var(--stable-header-height));
+  overflow-y: auto;
   
   /* Elite scrolling */
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  scroll-snap-type: y proximity;
+  overscroll-behavior-y: auto;
+  scroll-snap-type: none;
+  touch-action: pan-y pan-x;
+}
+
+/* ============================================================================
+ * THERAPIST DASHBOARD PAGE SCROLLING ENHANCEMENTS
+ * ============================================================================ */
+
+/* Enhance scrolling for therapist dashboard page containers */
+.therapist-dashboard-page {
+  height: auto !important;
+  min-height: calc(100vh - var(--stable-header-height));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pan-x;
+  scroll-behavior: smooth;
+}
+
+/* Therapist page main content areas */
+.therapist-page-main {
+  max-height: calc(100vh - var(--stable-header-height));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
+}
+
+/* Therapist dashboard containers */
+.max-w-sm.mx-auto {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+/* Utility classes for therapist dashboard pages */
+.therapist-scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pan-x;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: auto;
+}
+
+.therapist-content-wrapper {
+  min-height: auto;
+  height: auto;
+  max-height: none;
+}
+
+.therapist-mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  overscroll-behavior: auto;
 }
 
 /* ============================================================================
@@ -225,13 +278,13 @@ input, textarea, select {
   
   .therapist-layout-header {
     /* Stable mobile header */
-    min-height: 64px;
-    max-height: 64px;
+    min-height: 60px;
+    max-height: 60px;
   }
   
   .therapist-layout-content {
     /* Mobile content optimization */
-    min-height: calc(100 * var(--vh) - 64px);
+    min-height: calc(100 * var(--vh) - 60px);
     overscroll-behavior: none;
   }
   

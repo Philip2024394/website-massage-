@@ -84,12 +84,14 @@ if (isAdminMode) {
     }
   }
   
-  // 🚀 PWA MODE: Register Service Worker in both preview and production for PWA features
-  if ('serviceWorker' in navigator && (import.meta.env.PROD || import.meta.env.MODE === 'production')) {
+  // 🚀 PWA MODE: Register Service Worker in development and production for PWA features
+  if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
           logger.log('✅ Service Worker registered:', registration.scope);
+          // Dispatch event to notify PWA components that SW is ready
+          window.dispatchEvent(new CustomEvent('sw-registered', { detail: registration }));
         })
         .catch((error) => {
           logger.error('Service Worker registration failed:', error);

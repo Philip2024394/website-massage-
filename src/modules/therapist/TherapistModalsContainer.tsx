@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Therapist } from '../../types';
 import AnonymousReviewModal from '../../components/AnonymousReviewModal';
-import BookingPopup from '../../components/BookingPopup';
+import OptimizedBookingFlow from '../../components/therapist/OptimizedBookingFlow';
 import ScheduleBookingPopup from '../../components/ScheduleBookingPopup';
 import SocialSharePopup from '../../components/SocialSharePopup';
 import TherapistJoinPopup from '../../components/TherapistJoinPopup';
@@ -259,26 +259,32 @@ const TherapistModalsContainer: React.FC<TherapistModalsContainerProps> = ({
             )}
 
             {showBookingPopup && (
-                <BookingPopup
-                    isOpen={showBookingPopup}
-                    onClose={() => {
-                        setShowBookingPopup(false);
-                        setPriceSliderBookingSource('quick-book'); // Reset source
-                    }}
-                    therapistId={String(therapist.id)}
-                    therapistName={therapist.name}
-                    profilePicture={therapist.profilePicture || therapist.mainImage}
-                    providerType="therapist"
-                    pricing={{
-                        "60": pricing["60"],
-                        "90": pricing["90"],
-                        "120": pricing["120"]
-                    }}
-                    discountPercentage={therapist.discountPercentage || 0}
-                    discountActive={isDiscountActive(therapist)}
-                    initialDuration={selectedDuration ? parseInt(selectedDuration) : undefined}
-                    bookingSource={priceSliderBookingSource}
-                />
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <OptimizedBookingFlow
+                        therapistId={String(therapist.id)}
+                        therapistName={therapist.name}
+                        profilePicture={therapist.profilePicture || therapist.mainImage}
+                        pricing={{
+                            60: pricing["60"],
+                            90: pricing["90"],
+                            120: pricing["120"]
+                        }}
+                        discountPercentage={therapist.discountPercentage || 0}
+                        discountActive={isDiscountActive(therapist)}
+                        initialDuration={selectedDuration ? parseInt(selectedDuration) : undefined}
+                        onBookingComplete={(bookingData) => {
+                            console.log('Booking completed:', bookingData);
+                            setShowBookingPopup(false);
+                            setPriceSliderBookingSource('quick-book'); // Reset source
+                            // You can add success navigation here
+                        }}
+                        onClose={() => {
+                            setShowBookingPopup(false);
+                            setPriceSliderBookingSource('quick-book'); // Reset source
+                        }}
+                        quickProfile={null} // TODO: Implement quick profile loading
+                    />
+                </div>
             )}
 
             {showScheduleBookingPopup && (

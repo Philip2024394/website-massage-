@@ -126,12 +126,16 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
       return;
     }
     
-    if (!deferredPrompt) {
+    // Check for stored deferred prompt
+    const storedPrompt = deferredPrompt || (window as any).deferredPrompt;
+    
+    if (!storedPrompt) {
       console.log('PWA Install: ⚠️ No install prompt available');
       
       // Detect platform - MOBILE ONLY
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isAndroid = /Android/i.test(navigator.userAgent);
+      const isMobile = isIOS || isAndroid;
       
       if (isIOS) {
         // iOS SIMPLE instructions

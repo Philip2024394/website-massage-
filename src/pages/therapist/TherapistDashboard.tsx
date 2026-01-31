@@ -982,8 +982,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         onLogout={onLogout}
       >
       <div
-        className="bg-white w-full max-w-full"
-        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}
+        className="bg-white w-full max-w-full therapist-page-container"
+        style={{ 
+          WebkitOverflowScrolling: 'touch', 
+          touchAction: 'pan-y pan-x',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 30px), 80px)',
+          marginBottom: 'max(env(safe-area-inset-bottom, 20px), 60px)'
+        }}
       >
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
@@ -1752,7 +1757,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4" style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 24px), 48px)' }}>
               {/* Package Info */}
               <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">

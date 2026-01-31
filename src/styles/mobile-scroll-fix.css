@@ -14,26 +14,27 @@ html, body {
 
 /* Fix therapist layout containers */
 .therapist-page-container {
-  height: auto !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
   min-height: 100vh !important;
-  max-height: none !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  overflow: hidden !important;
 }
 
 .therapist-layout-content {
   height: auto !important;
-  min-height: auto !important;
+  min-height: calc(100vh - 60px) !important;
   max-height: none !important;
-  overflow-y: visible !important;
+  overflow-y: auto !important;
   overflow-x: hidden !important;
   contain: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y pan-x !important;
 }
 
 .therapist-layout-header {
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
+  height: 60px !important;
+  min-height: 60px !important;
+  max-height: 60px !important;
 }
 
 /* Fix PullToRefresh component */
@@ -52,8 +53,8 @@ html, body {
 
 /* Mobile-specific fixes */
 @media (max-width: 768px) {
-  /* Ensure all containers allow scrolling */
-  div[class*="h-screen"], div[class*="min-h-screen"] {
+  /* Ensure specific containers allow proper content scrolling */
+  div[class*="h-screen"]:not(.therapist-page-container), div[class*="min-h-screen"]:not(.therapist-page-container) {
     height: auto !important;
     min-height: auto !important;
   }
@@ -77,13 +78,15 @@ html, body {
     height: auto !important;
     min-height: auto !important;
     max-height: none !important;
-    overflow-y: visible !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
   /* Fix any container that blocks scrolling */
   .container, .max-w-sm, .max-w-md, .max-w-lg {
     max-height: none !important;
-    overflow-y: visible !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
   /* Critical: Force scroll on any problematic containers */

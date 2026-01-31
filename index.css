@@ -517,6 +517,183 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
   }
 }
 
+/* ======================================================== */
+/* THERAPIST DASHBOARD - MOBILE SAFE AREA & FOOTER FIXES */
+/* ======================================================== */
+
+/* Fixed header protection from device headers (notch, dynamic island) */
+.therapist-layout-header {
+  padding-top: max(env(safe-area-inset-top, 0px), 12px) !important;
+  top: 0 !important;
+  z-index: 100 !important;
+}
+
+/* Main content area - proper spacing for header and footer */
+.therapist-page-container {
+  /* Full viewport height for contained scrolling */
+  height: 100vh !important;
+  max-height: 100vh !important;
+  /* Top padding for fixed header + safe area */
+  padding-top: calc(60px + max(env(safe-area-inset-top, 0px), 12px)) !important;
+  /* Bottom padding for footer area + safe area */
+  padding-bottom: max(env(safe-area-inset-bottom, 20px), 80px) !important;
+  overflow: hidden !important;
+}
+
+/* Ensure content doesn't get cut off by footer */
+.therapist-layout-content {
+  padding-bottom: max(env(safe-area-inset-bottom, 20px), 80px) !important;
+  margin-bottom: max(env(safe-area-inset-bottom, 20px), 60px) !important;
+  min-height: calc(100vh - 60px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Universal fix for therapist pages with pb-20 pattern */
+.pb-20 {
+  padding-bottom: max(env(safe-area-inset-bottom, 5rem), 6rem) !important;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .therapist-page-container {
+    /* Increase bottom padding on mobile for better footer button visibility */
+    padding-bottom: max(env(safe-area-inset-bottom, 30px), 100px) !important;
+  }
+  
+  .therapist-layout-content {
+    /* Additional margin for buttons in footer area */
+    margin-bottom: max(env(safe-area-inset-bottom, 30px), 80px) !important;
+  }
+  
+  /* Fix for buttons at bottom of page */
+  .therapist-dashboard-buttons {
+    margin-bottom: max(env(safe-area-inset-bottom, 20px), 60px) !important;
+  }
+  
+  /* Enhanced pb-20 for mobile */
+  .pb-20 {
+    padding-bottom: max(env(safe-area-inset-bottom, 6rem), 7rem) !important;
+  }
+  
+  /* Fix for min-height pages with bottom buttons */
+  .min-h-screen {
+    padding-bottom: max(env(safe-area-inset-bottom, 1.25rem), 2rem);
+  }
+}
+
+/* ======================================================== */
+/* ELITE TOUCH BUTTON STANDARDS - THERAPIST DASHBOARD */
+/* ======================================================== */
+
+/* Universal button touch standards */
+button, .btn, .clickable, [role="button"] {
+  /* Minimum touch target size - Apple HIG & Material Design */
+  min-height: 44px !important;
+  min-width: 44px !important;
+  
+  /* Touch optimization */
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  
+  /* Enhanced transitions for touch feedback */
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Elite touch feedback for therapist dashboard buttons */
+.therapist-page-container button:active,
+.therapist-layout button:active {
+  transform: scale(0.98) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* Status buttons enhancement */
+.therapist-status-button {
+  min-height: 80px !important;
+  padding: 16px !important;
+  border-radius: 12px !important;
+  transition: all 0.2s ease !important;
+  transform-origin: center !important;
+  will-change: transform !important;
+}
+
+.therapist-status-button:active {
+  transform: scale(0.96) !important;
+}
+
+.therapist-status-button:disabled {
+  pointer-events: none !important;
+  opacity: 0.6 !important;
+}
+
+/* Navigation sidebar button enhancements */
+.therapist-sidebar-button {
+  min-height: 48px !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  transition: all 0.15s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.therapist-sidebar-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.therapist-sidebar-button:active::before {
+  left: 100%;
+}
+
+/* Ring indicators for active states */
+.ring-green-300 {
+  --tw-ring-color: rgb(134 239 172 / 0.5) !important;
+}
+
+.ring-amber-300 {
+  --tw-ring-color: rgb(252 211 77 / 0.5) !important;
+}
+
+.ring-red-300 {
+  --tw-ring-color: rgb(252 165 165 / 0.5) !important;
+}
+
+.ring-orange-300 {
+  --tw-ring-color: rgb(253 186 116 / 0.5) !important;
+}
+
+/* Active state animations */
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .7;
+  }
+}
+
+/* Scale animation utility */
+.active\:scale-98:active {
+  transform: scale(0.98) !important;
+}
+
+.active\:scale-96:active {
+  transform: scale(0.96) !important;
+}
+
 /* ========================================== */
 /* ELITE SIDE DRAWER - ENHANCED TOUCH FIXES */
 /* ========================================== */
@@ -572,8 +749,10 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
 
 /* Fix z-index stacking context */
 .therapist-layout-header {
-  z-index: 100;
-  position: relative;
+  z-index: 100 !important;
+  position: fixed !important;
+  display: flex !important;
+  visibility: visible !important;
 }
 
 .therapist-layout-content {
@@ -1149,5 +1328,40 @@ div#main-background-image.fixed.bg-gray-900 {
   right: 0;
   height: 1px;
   background: transparent;
-  z-index: -1;
+}
+
+/* ELITE MOBILE FIX: Eliminate any white containers in footer area */
+@media (max-width: 768px) {
+  body .landing-page-container {
+    height: 100vh !important;
+    height: 100dvh !important; /* Dynamic viewport height for mobile */
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Force all potential white containers to be transparent in mobile footer area */
+  .landing-page-container * {
+    position: relative;
+  }
+  
+  .landing-page-container *:not([class*="bg-gray"]):not([class*="bg-orange"]):not([class*="gradient"]):not([style*="backgroundImage"]) {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  /* Absolute positioning fix for any floating elements */
+  .landing-page-container .fixed:not(#main-background-image):not([class*="bg-gradient"]) {
+    display: none !important;
+  }
+}
+
+/* ULTRA-SPECIFIC MOBILE FIX: Target any remaining white elements */
+@media (max-width: 768px) {
+  body > #root > * > .landing-page-container *[style*="background"],
+  body > #root > * > .landing-page-container *[class*="white"],
+  body > #root > * > .landing-page-container *[style*="white"] {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
 }

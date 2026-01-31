@@ -287,24 +287,25 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
   return (
     <div 
-      className="min-h-screen bg-white w-full max-w-full therapist-page-container flex flex-col" 
+      className="h-screen bg-white w-full max-w-full therapist-page-container flex flex-col overflow-hidden" 
       style={{ 
         WebkitOverflowScrolling: 'touch',
         touchAction: 'pan-y pan-x'
       }}
     >
-      {/* Elite Header - Now working with forced visibility */}
+      {/* Elite Header - Now working with forced visibility and safe area support */}
       <header 
+        className="therapist-layout-header"
         style={{
           position: 'fixed',
           top: '0',
           left: '0', 
           right: '0',
-          height: '70px',
+          height: '60px',
           backgroundColor: 'white',
           borderBottom: '1px solid #e5e7eb',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          zIndex: '50',
+          zIndex: '100',
           display: 'flex',
           alignItems: 'center',
           width: '100vw'
@@ -364,6 +365,26 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                   </div>
                 )}
               </div>
+              
+              {/* Page Title Container for Visual Presence */}
+              <div style={{ 
+                marginLeft: '16px',
+                padding: '4px 12px',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '16px',
+                fontSize: '12px',
+                fontWeight: '500',
+                color: '#374151',
+                textTransform: 'capitalize'
+              }}>
+                {currentPage === 'dashboard' ? 'Dashboard' : 
+                 currentPage === 'status' ? 'Status' :
+                 currentPage === 'bookings' ? 'Bookings' :
+                 currentPage === 'calendar' ? 'Calendar' :
+                 currentPage === 'chat' ? 'Messages' :
+                 currentPage === 'analytics' ? 'Analytics' :
+                 currentPage === 'settings' ? 'Settings' :
+                 currentPage}</div>
             </div>
           </div>
           
@@ -399,12 +420,12 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       </header>
 
       {/* Space pusher for fixed header */}
-      <div style={{ height: '70px' }}></div>
+      <div style={{ height: '60px' }}></div>
 
       {/* Sidebar Overlay - Fixed z-index and event propagation */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-[60]"
+          className="fixed inset-0 bg-black bg-opacity-50 z-[110]"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -420,7 +441,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       {/* Sidebar with gesture support - Fixed z-index and smooth animation */}
       <aside
         {...swipeHandlers}
-        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-[70] transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-[120] transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
@@ -495,41 +516,68 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      // Debounce rapid clicks
-                      if (e.currentTarget?.dataset?.clicking === 'true') return;
+                      
+                      // Enhanced debounce with visual feedback
+                      if (e.currentTarget?.dataset?.clicking === 'true') {
+                        console.log('🚫 Click debounced for:', item.id);
+                        return;
+                      }
+                      
                       if (e.currentTarget?.dataset) {
                         e.currentTarget.dataset.clicking = 'true';
+                        
+                        // Visual feedback
+                        e.currentTarget.style.transform = 'scale(0.98)';
+                        e.currentTarget.style.backgroundColor = isActive ? '#fed7aa' : '#fff7ed';
+                        
                         setTimeout(() => {
                           if (e.currentTarget?.dataset) {
                             e.currentTarget.dataset.clicking = 'false';
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.backgroundColor = '';
                           }
-                        }, 300);
+                        }, 200);
                       }
+                      
+                      console.log('📱 Sidebar navigation click:', item.id);
                       handleNavigate(item.id);
                     }}
                     onTouchStart={(e) => {
                       e.preventDefault();
+                      e.currentTarget.style.transform = 'scale(0.98)';
                     }}
-                    className={`flex items-center gap-3 w-full py-2 px-3 rounded-lg transition-colors touch-manipulation cursor-pointer select-none ${
+                    onTouchEnd={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    className={`flex items-center gap-3 w-full min-h-[48px] py-3 px-4 rounded-lg transition-all transform active:scale-98 touch-manipulation cursor-pointer select-none ${
                       isActive
-                        ? 'bg-orange-100 font-semibold'
-                        : 'hover:bg-orange-50 active:bg-orange-100'
+                        ? 'bg-orange-500 text-white font-semibold shadow-md ring-2 ring-orange-300'
+                        : 'hover:bg-orange-50 active:bg-orange-100 text-gray-700 hover:text-orange-600'
                     }`}
                     style={{
-                      WebkitTapHighlightColor: 'transparent',
+                      WebkitTapHighlightColor: 'rgba(249, 115, 22, 0.3)',
                       userSelect: 'none',
                       touchAction: 'manipulation'
                     }}
                   >
                     <div className="relative">
-                      <Icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
+                      <Icon className={`w-6 h-6 flex-shrink-0 transition-colors ${
+                        isActive ? 'text-white' : item.color
+                      }`} />
                       
                       {/* Unread badge for chat */}
                       {item.id === 'chat' && totalUnread > 0 && (
                         <FloatingUnreadBadge count={totalUnread} size="sm" />
                       )}
+                      
+                      {/* Active indicator dot */}
+                      {isActive && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-300 rounded-full animate-pulse"></div>
+                      )}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className={`text-sm font-medium flex-1 transition-colors ${
+                      isActive ? 'text-white' : 'text-gray-700'
+                    }`}>
                       {item.label}
                     </span>
                     
@@ -574,10 +622,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
       {/* Elite Main Content - Stable scrolling and performance optimized */}
       <main 
-        className="relative w-full overflow-y-auto overflow-x-hidden flex-1" 
+        className="relative w-full overflow-y-auto overflow-x-hidden flex-1 therapist-layout-content" 
         style={{ 
           WebkitOverflowScrolling: 'touch', 
-          touchAction: 'pan-y pan-x'
+          touchAction: 'pan-y pan-x',
+          height: 'calc(100vh - 60px)',
+          maxHeight: 'calc(100vh - 60px)',
+          minHeight: 'calc(100vh - 60px)'
         }}
       >
         {children}

@@ -14,7 +14,7 @@ import TherapistLayout from '../../components/therapist/TherapistLayout';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { onlineStatusHelp } from './constants/helpContent';
-import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../../lib/toastUtils';
+import { showToast, showErrorToast, showWarningToast, showConfirmationToast, showSuccessToast } from '../../lib/toastUtils';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -431,10 +431,19 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
   }, [therapist?.$id, isPremium, status, busyStartTime]);
 
   const handleStatusChange = async (newStatus: OnlineStatus) => {
-    // Prevent multiple rapid clicks
-    if (saving || isLoadingStatus) return;
+    // Prevent multiple rapid clicks and provide immediate feedback
+    if (saving || isLoadingStatus) {
+      console.log('🚫 Status change blocked - already in progress');
+      return;
+    }
     
+    console.log('🎯 Status change initiated:', { from: status, to: newStatus });
     setSaving(true);
+    
+    // Immediate UI feedback - update status optimistically
+    const previousStatus = status;
+    setStatus(newStatus);
+    
     try {
       devLog('💾 Saving status to Appwrite:', {
         newStatus,
@@ -442,9 +451,6 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         therapistEmail: therapist.email,
         therapistName: therapist.name
       });
-      
-      // Update local state immediately for instant UI feedback
-      setStatus(newStatus);
       
       // Update status in Appwrite (using proper AvailabilityStatus enum values)
       const properStatusValue = newStatus === 'available' ? AvailabilityStatus.Available :
@@ -504,10 +510,6 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         }
       }));
       
-      // DON'T refresh parent - it causes button jumping when clicking OK
-      // The status is already saved to Appwrite and displayed correctly
-      // Parent will refresh on next page load if needed
-      
       // Show toast notification
       const statusMessages = {
         available: language === 'id' ? '✅ Anda sekarang TERSEDIA untuk booking' : '✅ You are now AVAILABLE for bookings',
@@ -516,38 +518,43 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         offline: language === 'id' ? '⚫ Anda sekarang OFFLINE - profil tersembunyi dari pencarian' : '⚫ You are now OFFLINE - profile hidden from search'
       };
       
-      devLog('✅ Status saved:', statusMessages[newStatus]);
+      devLog('✅ Status saved successfully:', statusMessages[newStatus]);
       showSuccessToast(statusMessages[newStatus]);
       
     } catch (error) {
       console.error('❌ Failed to update status:', error);
       
-      // Revert to database status on error
+      // Revert UI status on error
+      console.log('🔄 Reverting status from', newStatus, 'to', previousStatus);
+      setStatus(previousStatus);
+      
+      // Try to get fresh status from database
       try {
         const freshData = await therapistService.getById(therapist.$id);
-        const revertStatus = String(freshData?.status || 'Offline').toLowerCase();
-        if (revertStatus === 'available' || revertStatus === 'busy' || revertStatus === 'offline') {
-          setStatus(revertStatus as OnlineStatus);
-          devLog('🔄 Status reverted to database value:', revertStatus);
+        const dbStatus = String(freshData?.status || 'Offline').toLowerCase();
+        if (dbStatus === 'available' || dbStatus === 'busy' || dbStatus === 'offline') {
+          setStatus(dbStatus as OnlineStatus);
+          devLog('🔄 Status synced with database:', dbStatus);
         }
       } catch (revertError) {
-        console.error('❌ Failed to revert status:', revertError);
+        console.error('❌ Failed to sync with database status:', revertError);
       }
       
-      // Revert UI status on error
-      const revertStatus = status === 'available' ? 'offline' : 
-                          status === 'busy' ? 'available' : 
-                          status === 'offline' ? 'available' : 'offline';
-      setStatus(revertStatus);
-      showErrorToast(language === 'id' ? '❌ Gagal memperbarui status. Silakan coba lagi.' : '❌ Failed to update status. Please try again.');
-      console.error('❌ Error details:', {
+      const errorMessage = language === 'id' 
+        ? '❌ Gagal memperbarui status. Silakan coba lagi.' 
+        : '❌ Failed to update status. Please try again.';
+      
+      showErrorToast(errorMessage);
+      
+      console.error('❌ Status update error details:', {
         message: error?.message,
         code: error?.code,
         type: error?.type
       });
-      showErrorToast(`Failed to update status: ${error?.message || 'Unknown error'}`);
+      
     } finally {
       setSaving(false);
+      console.log('🏁 Status change completed');
     }
   };
 
@@ -889,8 +896,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       language={language}
       onLogout={onLogout}
     >
-    <div className="bg-gray-50">
-      <div className="max-w-sm mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-sm mx-auto px-4 py-4 space-y-6">
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
@@ -912,61 +918,130 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
           <div className="grid grid-cols-3 gap-3">
             {/* Available */}
             <button
-              onClick={() => handleStatusChange('available')}
-              disabled={saving || status === 'available'}
-              className={`p-4 rounded-xl border-2 transition-all ${
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (saving || isLoadingStatus) return;
+                handleStatusChange('available');
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              disabled={saving || status === 'available' || isLoadingStatus}
+              className={`min-h-[80px] p-4 rounded-xl border-2 transition-all transform active:scale-98 ${
                 status === 'available'
-                  ? 'bg-green-500 border-green-500 shadow-lg'
-                  : 'bg-white border-gray-300 hover:border-green-500 hover:shadow-md'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  ? 'bg-green-500 border-green-500 shadow-lg ring-2 ring-green-300'
+                  : 'bg-white border-gray-300 hover:border-green-500 hover:shadow-md hover:bg-green-50'
+              } disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation`}
+              style={{
+                WebkitTapHighlightColor: 'rgba(34, 197, 94, 0.3)',
+                userSelect: 'none',
+                touchAction: 'manipulation'
+              }}
             >
               <div className="flex flex-col items-center gap-2">
-                <CheckCircle className={`w-8 h-8 ${status === 'available' ? 'text-white' : 'text-green-600'}`} />
+                <CheckCircle className={`w-8 h-8 transition-colors ${
+                  status === 'available' ? 'text-white' : 'text-green-600'
+                }`} />
                 <div className="text-center">
-                  <h3 className={`text-sm font-bold ${status === 'available' ? 'text-white' : 'text-gray-800'}`}>{dict.therapistDashboard.available}</h3>
+                  <h3 className={`text-sm font-bold transition-colors ${
+                    status === 'available' ? 'text-white' : 'text-gray-800'
+                  }`}>{dict.therapistDashboard.available}</h3>
+                  {status === 'available' && (
+                    <div className="mt-1 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  )}
                 </div>
               </div>
             </button>
 
             {/* Busy - Enhanced for Premium */}
             <button
-              onClick={() => handleStatusChange('busy')}
-              disabled={saving || status === 'busy'}
-              className={`p-4 rounded-xl border-2 transition-all relative ${
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (saving || isLoadingStatus) return;
+                handleStatusChange('busy');
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              disabled={saving || status === 'busy' || isLoadingStatus}
+              className={`min-h-[80px] p-4 rounded-xl border-2 transition-all transform active:scale-98 relative ${
                 status === 'busy'
-                  ? 'bg-amber-500 border-amber-500 shadow-lg'
-                  : 'bg-white border-gray-300 hover:border-amber-400 hover:shadow-md'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  ? 'bg-amber-500 border-amber-500 shadow-lg ring-2 ring-amber-300'
+                  : 'bg-white border-gray-300 hover:border-amber-400 hover:shadow-md hover:bg-amber-50'
+              } disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation`}
+              style={{
+                WebkitTapHighlightColor: 'rgba(245, 158, 11, 0.3)',
+                userSelect: 'none',
+                touchAction: 'manipulation'
+              }}
             >
               {!isPremium && status === 'busy' && busyTimeRemaining !== null && (
-                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold animate-pulse">
                   {Math.floor(busyTimeRemaining)}h
                 </div>
               )}
               <div className="flex flex-col items-center gap-2">
-                <Clock className={`w-8 h-8 ${status === 'busy' ? 'text-white' : 'text-yellow-600'}`} />
+                <Clock className={`w-8 h-8 transition-colors ${
+                  status === 'busy' ? 'text-white' : 'text-yellow-600'
+                }`} />
                 <div className="text-center">
-                  <h3 className={`text-sm font-bold ${status === 'busy' ? 'text-white' : 'text-gray-800'}`}>
+                  <h3 className={`text-sm font-bold transition-colors ${
+                    status === 'busy' ? 'text-white' : 'text-gray-800'
+                  }`}>
                     {dict.therapistDashboard.busy}
                   </h3>
+                  {status === 'busy' && (
+                    <div className="mt-1 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  )}
                 </div>
               </div>
             </button>
 
             {/* Offline */}
             <button
-              onClick={() => handleStatusChange('offline')}
-              disabled={saving || status === 'offline'}
-              className={`p-4 rounded-xl border-2 transition-all ${
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (saving || isLoadingStatus) return;
+                handleStatusChange('offline');
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              disabled={saving || status === 'offline' || isLoadingStatus}
+              className={`min-h-[80px] p-4 rounded-xl border-2 transition-all transform active:scale-98 ${
                 status === 'offline'
-                  ? 'bg-red-500 border-red-500 shadow-lg'
-                  : 'bg-white border-gray-300 hover:border-red-400 hover:shadow-md'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  ? 'bg-red-500 border-red-500 shadow-lg ring-2 ring-red-300'
+                  : 'bg-white border-gray-300 hover:border-red-400 hover:shadow-md hover:bg-red-50'
+              } disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation`}
+              style={{
+                WebkitTapHighlightColor: 'rgba(239, 68, 68, 0.3)',
+                userSelect: 'none',
+                touchAction: 'manipulation'
+              }}
             >
               <div className="flex flex-col items-center gap-2">
-                <XCircle className={`w-8 h-8 ${status === 'offline' ? 'text-white' : 'text-red-600'}`} />
+                <XCircle className={`w-8 h-8 transition-colors ${
+                  status === 'offline' ? 'text-white' : 'text-red-600'
+                }`} />
                 <div className="text-center">
-                  <h3 className={`text-sm font-bold ${status === 'offline' ? 'text-white' : 'text-gray-800'}`}>{dict.therapistDashboard.offline}</h3>
+                  <h3 className={`text-sm font-bold transition-colors ${
+                    status === 'offline' ? 'text-white' : 'text-gray-800'
+                  }`}>{dict.therapistDashboard.offline}</h3>
+                  {status === 'offline' && (
+                    <div className="mt-1 w-2 h-2 bg-white rounded-full"></div>
+                  )}
                 </div>
               </div>
             </button>
@@ -1293,7 +1368,6 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
               </button>
             </div>
           </div>
-        </div>
       </TherapistLayout>
     );
   }
