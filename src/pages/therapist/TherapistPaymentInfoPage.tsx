@@ -668,7 +668,7 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
                   type="text"
                   value={accountName}
                   onChange={(e) => setAccountName(e.target.value)}
-                  placeholder="contoh: Budi Santoso"
+                  placeholder="contoh: Budi Santoso (boleh pakai spasi)"
                   className={`w-full bg-white border rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none transition-colors ${
                     nameMatchWarning ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-orange-500'
                   }`}
@@ -705,11 +705,14 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
                 <input
                   type="text"
                   value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value)}
-                  placeholder="contoh: 1234567890123456"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d\s]/g, '');
+                    setAccountNumber(value);
+                  }}
+                  placeholder="contoh: 1234 5678 9012 3456"
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors font-mono"
                 />
-                <p className="text-xs text-gray-500 mt-2">Masukkan nomor rekening - lihat format pada kartu di atas</p>
+                <p className="text-xs text-gray-500 mt-2">Masukkan nomor rekening (boleh pakai spasi) - lihat format pada kartu di atas</p>
               </div>
             </div>
           </div>

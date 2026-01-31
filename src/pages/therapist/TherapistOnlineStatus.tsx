@@ -111,10 +111,17 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     );
   }
   
+  // Initialize status from therapist prop with better persistence
   const [status, setStatus] = useState<OnlineStatus>(() => {
-    // Initialize status from therapist prop on mount
-    const savedStatus = therapist?.status || therapist?.availability || 'Offline';
-    const statusStr = String(savedStatus).toLowerCase();
+    // First check localStorage for any saved status changes
+    const savedStatus = localStorage.getItem(`therapist-status-${therapist?.$id}`);
+    if (savedStatus && ['available', 'busy', 'offline'].includes(savedStatus)) {
+      return savedStatus as OnlineStatus;
+    }
+    
+    // Fallback to therapist prop status
+    const therapistStatus = therapist?.status || therapist?.availability || 'offline';
+    const statusStr = String(therapistStatus).toLowerCase();
     if (statusStr === 'available' || statusStr === 'active') {
       return 'available';
     } else if (statusStr === 'busy') {
@@ -140,7 +147,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   
   // PWA Install states
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [isAppInstalled, setIsAppInstalled] = useState(() => {
+    // Initialize from localStorage on component mount
+    return localStorage.getItem('pwa-installed') === 'true';
+  });
   const [isIOS, setIsIOS] = useState(false);
   const [pwaEnforcementActive, setPwaEnforcementActive] = useState(false);
   const [forceReinstall, setForceReinstall] = useState(false);
@@ -190,14 +200,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       setCountdownHoursRemaining(therapist.countdownHoursRemaining);
     }
     
-    // Initialize PWA Installation Enforcement
-    // const pwaStatus = PWAInstallationEnforcer.checkInstallationStatus();
-    // setPwaEnforcementActive(!pwaStatus.isInstalled && !pwaStatus.canBypass);
-    // setIsAppInstalled(pwaStatus.isInstalled);
+    // Initialize PWA state from localStorage
+    const storedInstallStatus = localStorage.getItem('pwa-installed') === 'true';
+    setIsAppInstalled(storedInstallStatus);
     
-    // Temporary fallbacks
-    setPwaEnforcementActive(false);
-    setIsAppInstalled(true);
+    // Only enforce PWA if not installed
+    setPwaEnforcementActive(!storedInstallStatus);
+    
+    console.log('📱 PWA status initialized:', { isInstalled: storedInstallStatus, enforceInstall: !storedInstallStatus });
     
     // Start PWA monitoring for critical notifications
     // PWAInstallationEnforcer.startMonitoring(); // Temporarily disabled
@@ -440,6 +450,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const handleStatusChange = async (newStatus: OnlineStatus) => {
     // Prevent multiple rapid clicks
     if (saving || isLoadingStatus) return;
+    
+    // Save to localStorage immediately for persistence across page changes
+    localStorage.setItem(`therapist-status-${therapist.$id}`, newStatus);
     
     setSaving(true);
     try {
@@ -729,15 +742,27 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     try {
       console.log('📱 Simple download initiated...');
       
+      // Check if already installed
+      if (isAppInstalled) {
+        showToast('✅ App is already installed!', 'success', { duration: 3000 });
+        return;
+      }
+      
       // Try native PWA install first
       if (deferredPrompt) {
+        showToast('📱 Installing app...', 'info', { duration: 2000 });
         await deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
         
         if (choiceResult.outcome === 'accepted') {
           setIsAppInstalled(true);
           localStorage.setItem('pwa-installed', 'true');
+          showToast('✅ App installed successfully!', 'success', { duration: 4000 });
           console.log('✅ App downloaded successfully!');
+          return;
+        } else {
+          showToast('❌ App installation cancelled', 'error', { duration: 3000 });
+          console.log('❌ User cancelled installation');
           return;
         }
       }
@@ -746,18 +771,26 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
         showToast('📱 To download the app:\n\n1. Tap the Share button (⬆️)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm', 'info', { duration: 8000 });
+        // On iOS, we can't detect when they actually install, so we'll keep the button available
+        console.log('📱 iOS install instructions shown');
       } else {
-        // For other browsers, set as downloaded for demo purposes
-        setIsAppInstalled(true);
-        localStorage.setItem('pwa-installed', 'true');
-        console.log('✅ App marked as downloaded!');
+        // For browsers that don't support PWA install prompt
+        showToast('📱 PWA installation not supported on this browser.\n\nFor best experience, use Chrome or Safari.', 'warning', { duration: 6000 });
+        console.log('⚠️ Browser does not support PWA installation');
       }
     } catch (error) {
       console.error('Download error:', error);
-      // Even if there's an error, mark as downloaded for better UX
-      setIsAppInstalled(true);
-      localStorage.setItem('pwa-installed', 'true');
+      showToast('❌ Failed to install app. Please try again or use a supported browser.', 'error', { duration: 4000 });
     }
+  };
+
+  // Reset PWA installation state (for testing/debugging)
+  const handleResetPWAState = () => {
+    localStorage.removeItem('pwa-installed');
+    localStorage.removeItem('pwa-install-completed');
+    setIsAppInstalled(false);
+    showToast('🔄 PWA installation state reset. You can now test the download button again.', 'info', { duration: 4000 });
+    console.log('🔄 PWA state reset for testing');
   };
 
   const handleInstallApp = async () => {
@@ -1305,6 +1338,17 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               </>
             )}
           </button>
+          
+          {/* Debug: Reset PWA State Button (only show when app is marked as installed) */}
+          {isAppInstalled && (
+            <button
+              onClick={handleResetPWAState}
+              className="mt-2 w-full py-2 text-xs text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+              title="Reset download state for testing"
+            >
+              🔄 Reset Download State (Dev)
+            </button>
+          )}
         </div>
         )}
       </div>

@@ -152,9 +152,11 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
   const [discountDuration, setDiscountDuration] = useState<number>(0);
   const [isDiscountActive, setIsDiscountActive] = useState(false);
   
-  // PWA Install states
+  // PWA Install states - Initialize from localStorage
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [isAppInstalled, setIsAppInstalled] = useState(() => {
+    return localStorage.getItem('pwa-installed') === 'true';
+  });
   const [isIOS, setIsIOS] = useState(false);
   const [pwaEnforcementActive, setPwaEnforcementActive] = useState(false);
   const [forceReinstall, setForceReinstall] = useState(false);
@@ -701,18 +703,13 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
         showToast('📱 To download the app:\n\n1. Tap the Share button (⬆️)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm', 'info', { duration: 8000 });
+        // On iOS, we can't auto-detect installation, so keep button available
+        console.log('📱 iOS install instructions shown');
       } else {
-        // For other browsers, set as downloaded for demo purposes
-        setIsAppInstalled(true);
-        localStorage.setItem('pwa-installed', 'true');
-        console.log('✅ App marked as downloaded!');
+        // For browsers that don't support PWA install prompt
+        showToast('📱 PWA installation not supported on this browser.\n\nFor best experience, use Chrome, Safari, or Edge.', 'warning', { duration: 6000 });
+        console.log('⚠️ Browser does not support PWA installation');
       }
-    } catch (error) {
-      console.error('Download error:', error);
-      // Even if there's an error, mark as downloaded for better UX
-      setIsAppInstalled(true);
-      localStorage.setItem('pwa-installed', 'true');
-    }
   };
 
   const handleInstallApp = async () => {

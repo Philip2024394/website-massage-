@@ -660,7 +660,7 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                     const value = e.target.value.replace(/[^\d\s]/g, '');
                     setAccountNumber(value);
                   }}
-                  placeholder="contoh: 1234567890123456"
+                  placeholder="contoh: 1234 5678 9012 3456 (boleh pakai spasi)"
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors font-mono"
                   maxLength={20}
                 />
