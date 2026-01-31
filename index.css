@@ -933,7 +933,7 @@ body.elite-refresh-mode {
     overflow-x: hidden !important;
   }
   
-  /* Landing page mobile container fix */
+  /* Landing page mobile container fix - ENHANCED */
   .landing-page-container {
     max-height: 100vh !important;
     overflow-y: auto !important;
@@ -950,6 +950,32 @@ body.elite-refresh-mode {
   .landing-page-container > div:last-child {
     background: transparent !important;
   }
+  
+  /* SPECIFIC PWA MODAL FIX - prevent white background */
+  .landing-page-container .fixed.inset-0.z-50 {
+    background: rgba(0,0,0,0.5) !important; /* Ensure dark background */
+  }
+  
+  .landing-page-container .fixed.inset-0.z-50 > div.relative {
+    background: transparent !important;
+  }
+  
+  .landing-page-container .fixed.inset-0.z-50 div[class*="bg-gray-900"] {
+    background: #111827 !important; /* Keep modal background but ensure it's dark */
+  }
+  
+  /* Fix any AppDrawer white containers */
+  .landing-page-container .fixed.inset-0[class*="bg-white"],
+  .landing-page-container .fixed.inset-0 div[class*="bg-white"] {
+    background: rgba(0,0,0,0.9) !important;
+  }
+  
+  /* Remove any bottom white containers completely */
+  .landing-page-container > .container:last-child,
+  .landing-page-container > .wrapper:last-child,
+  .landing-page-container > div.bg-white:last-child {
+    display: none !important;
+  }
 }
 
 /* iOS Safari specific fixes */
@@ -965,7 +991,7 @@ body.elite-refresh-mode {
   }
 }
 
-/* LANDING PAGE WHITE CONTAINER ELIMINATION */
+/* LANDING PAGE WHITE CONTAINER ELIMINATION - ENHANCED */
 /* Ensure background image container is protected */
 .landing-page-container > div.fixed.inset-0.z-0[style*="backgroundImage"] {
   background: transparent; /* Let inline style backgroundImage take precedence */
@@ -997,6 +1023,43 @@ body.elite-refresh-mode {
 .landing-page-container .overlay,
 .landing-page-container .backdrop {
   background: rgba(0,0,0,0.8) !important;
+}
+
+/* MOBILE SPECIFIC: Eliminate all white containers over footer */
+@media (max-width: 768px) {
+  .landing-page-container,
+  .landing-page-container * {
+    background-color: transparent !important;
+  }
+  
+  /* Preserve essential backgrounds only */
+  .landing-page-container > div.fixed.inset-0.z-0[style*="backgroundImage"],
+  .landing-page-container > div.absolute.inset-0.z-10.bg-gradient-to-b {
+    background: revert !important; /* Allow these specific backgrounds */
+  }
+  
+  /* Remove any white bottom containers */
+  .landing-page-container > div:last-child:not([style*="backgroundImage"]):not(.bg-gradient-to-b) {
+    background: transparent !important;
+  }
+  
+  /* Prevent white overlay containers */
+  .landing-page-container .container,
+  .landing-page-container .wrapper,
+  .landing-page-container .overlay-container {
+    background: transparent !important;
+  }
+  
+  /* Target specific white background divs */
+  .landing-page-container div[class*="bg-white"],
+  .landing-page-container div.bg-white,
+  .landing-page-container [style*="background-color: white"],
+  .landing-page-container [style*="background-color: #ffffff"],
+  .landing-page-container [style*="background: white"],
+  .landing-page-container [style*="background: #ffffff"] {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
 }
 
 /* Prevent white flash at bottom */
