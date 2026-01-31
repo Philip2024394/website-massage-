@@ -364,6 +364,30 @@ export const bookingsScheduleHelp: PageHelpContent = {
       'Blokir waktu untuk istirahat',
       'Cegah booking di luar jam kerja'
     ]
+  },
+  blockDates: {
+    title: 'Blokir Tanggal untuk Booking Terjadwal',
+    content: 'Gunakan tab "Kelola Ketersediaan" untuk memblokir tanggal tertentu ketika Anda tidak tersedia. Tanggal yang diblokir akan tampil MERAH di kalender pelanggan sebagai "booked" dan tidak dapat dipilih.',
+    benefits: [
+      'Blokir tanggal cuti atau libur',
+      'Cegah booking saat tidak tersedia',
+      'Tampil sebagai "booked" ke pelanggan',
+      'Kelola ketersediaan dengan mudah',
+      'Klik tanggal untuk blokir/buka blokir',
+      'Lihat daftar tanggal yang diblokir'
+    ]
+  },
+  availabilityCalendar: {
+    title: 'Kalender Ketersediaan',
+    content: 'Di tab "Kelola Ketersediaan", klik tanggal mana pun untuk memblokir atau membuka blokir. Tanggal yang diblokir berwarna merah. Pelanggan akan melihat tanggal ini sebagai "tidak tersedia" saat memesan.',
+    benefits: [
+      'Kontrol total atas jadwal Anda',
+      'Blokir tanggal masa depan dengan mudah',
+      'Navigasi bulan dengan tombol panah',
+      'Visual jelas: merah = diblokir',
+      'Sinkronisasi langsung dengan database',
+      'Perlindungan otomatis dari booking'
+    ]
   }
 };
 

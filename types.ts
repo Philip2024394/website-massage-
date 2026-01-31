@@ -370,6 +370,9 @@ export interface Therapist {
     safePassSubmittedAt?: string; // Date when therapist submitted application
     safePassApprovedAt?: string; // Date when admin approved the letters
     safePassApprovedBy?: string; // Admin ID who approved the Safe Pass
+    
+    // Blocked dates for availability management
+    blockedDates?: string[]; // Array of ISO date strings (YYYY-MM-DD) when therapist is not available
 }
 
 // Commission payment record

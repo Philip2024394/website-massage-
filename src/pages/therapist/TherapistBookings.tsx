@@ -14,7 +14,7 @@
 import React, { useState, useEffect } from 'react';
 import { BANK_DETAILS_REQUIRED_FOR_SCHEDULED_BOOKINGS, SCHEDULED_BOOKING_DEPOSIT_PERCENTAGE } from '../../constants/businessLogic';
 import { FloatingChatWindow } from '../../chat';
-import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import ChatWindow from '../../components/therapist/ChatWindow';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { devLog, devWarn } from '../../utils/devMode';
@@ -60,7 +60,7 @@ interface TherapistBookingsProps {
 const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate, onLogout }) => {
   const language = 'id'; // Fixed Indonesian language
   const isPremium = true; // All features available for standard 30% commission plan
-  const [activeTab, setActiveTab] = useState<'bookings' | 'schedule'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'schedule' | 'availability'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'received' | 'scheduled' | 'completed'>('all');
@@ -70,6 +70,11 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
   const [bankDetailsComplete, setBankDetailsComplete] = useState(false);
   const [showBankDetailsAlert, setShowBankDetailsAlert] = useState(false);
 
+  // Blocked dates functionality
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+
   // Translation labels
   const labels = {
     en: {
@@ -77,6 +82,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       subtitle: 'Manage appointments and availability',
       bookings: 'Bookings',
       schedule: 'My Schedule',
+      availability: 'Manage Availability',
       all: 'All',
       received: 'Received',
       scheduled: 'Scheduled', 
@@ -113,13 +119,23 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       depositUnpaid: 'UNPAID',
       paymentProofUploaded: 'Payment Proof Uploaded',
       viewProof: 'View Proof',
-      waitingPayment: 'Waiting for Customer Payment'
+      waitingPayment: 'Waiting for Customer Payment',
+      blockedDates: 'Block Dates',
+      blockedDatesDesc: 'Select dates when you are not available',
+      selectDatesToBlock: 'Click dates to block/unblock them',
+      blockedDatesList: 'Currently blocked dates',
+      noBlockedDates: 'No blocked dates',
+      dateBlocked: 'Date blocked',
+      dateUnblocked: 'Date unblocked',
+      prevMonth: 'Previous month',
+      nextMonth: 'Next month'
     },
     id: {
       title: 'Booking & Jadwal',
       subtitle: 'Kelola janji temu dan ketersediaan',
       bookings: 'Booking',
       schedule: 'Jadwal Saya',
+      availability: 'Kelola Ketersediaan',
       all: 'Semua',
       received: 'Diterima',
       scheduled: 'Terjadwal',
@@ -156,7 +172,16 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       depositUnpaid: 'BELUM BAYAR',
       paymentProofUploaded: 'Bukti Pembayaran Terupload',
       viewProof: 'Lihat Bukti',
-      waitingPayment: 'Menunggu Pembayaran Pelanggan'
+      waitingPayment: 'Menunggu Pembayaran Pelanggan',
+      blockedDates: 'Blokir Tanggal',
+      blockedDatesDesc: 'Pilih tanggal saat Anda tidak tersedia',
+      selectDatesToBlock: 'Klik tanggal untuk memblokir/membuka blokir',
+      blockedDatesList: 'Tanggal yang sedang diblokir',
+      noBlockedDates: 'Tidak ada tanggal yang diblokir',
+      dateBlocked: 'Tanggal diblokir',
+      dateUnblocked: 'Tanggal dibuka blokirnya',
+      prevMonth: 'Bulan sebelumnya',
+      nextMonth: 'Bulan selanjutnya'
     }
   };
 
@@ -211,6 +236,14 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     return () => {
       if (unsubscribe) unsubscribe();
     };
+  }, [therapist]);
+
+  // Load blocked dates from therapist profile
+  useEffect(() => {
+    if (therapist?.blockedDates) {
+      console.log('📅 Loading blocked dates:', therapist.blockedDates);
+      setBlockedDates(therapist.blockedDates);
+    }
   }, [therapist]);
 
   const fetchBookings = async () => {
@@ -553,6 +586,79 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       filtered = filtered.filter(b => b.status === 'confirmed');
     } else if (filter === 'completed') {
       filtered = filtered.filter(b => b.status === 'completed');
+
+  // Calendar helper functions for blocked dates
+  const formatDateString = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+
+  const toggleDateBlock = async (date: Date) => {
+    const dateStr = formatDateString(date);
+    const isCurrentlyBlocked = blockedDates.includes(dateStr);
+    
+    try {
+      let updatedBlockedDates: string[];
+      
+      if (isCurrentlyBlocked) {
+        // Remove from blocked dates
+        updatedBlockedDates = blockedDates.filter(d => d !== dateStr);
+        console.log('📅 Unblocking date:', dateStr);
+      } else {
+        // Add to blocked dates
+        updatedBlockedDates = [...blockedDates, dateStr];
+        console.log('🚫 Blocking date:', dateStr);
+      }
+      
+      setBlockedDates(updatedBlockedDates);
+      
+      // Update therapist profile in database
+      const { therapistService } = await import('../../lib/appwriteService');
+      await therapistService.update(therapist?.$id || '', {
+        blockedDates: updatedBlockedDates
+      });
+      
+      console.log('✅ Blocked dates updated successfully');
+    } catch (error) {
+      console.error('❌ Failed to update blocked dates:', error);
+      // Revert state on error
+      setBlockedDates(prev => prev);
+    }
+  };
+
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    return { daysInMonth, startingDayOfWeek };
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setSelectedMonth(prev => {
+      const newMonth = new Date(prev);
+      if (direction === 'prev') {
+        newMonth.setMonth(prev.getMonth() - 1);
+      } else {
+        newMonth.setMonth(prev.getMonth() + 1);
+      }
+      return newMonth;
+    });
+  };
+
+  const isDateBlocked = (date: Date): boolean => {
+    const dateStr = formatDateString(date);
+    return blockedDates.includes(dateStr);
+  };
+
+  const isDateInPast = (date: Date): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date < today;
+  };
     }
 
     // Apply search
@@ -721,10 +827,10 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       </div>
       
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-200 bg-white px-4 pt-4">
+      <div className="flex gap-1 border-b border-gray-200 bg-white px-4 pt-4 overflow-x-auto">
         <button
           onClick={() => setActiveTab('bookings')}
-          className={`px-6 py-3 font-semibold transition-all relative ${
+          className={`px-4 py-3 text-sm font-semibold transition-all relative whitespace-nowrap ${
             activeTab === 'bookings'
               ? 'text-orange-600 border-b-2 border-orange-600'
               : 'text-gray-600 hover:text-gray-900'
@@ -734,7 +840,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
         </button>
         <button
           onClick={() => setActiveTab('schedule')}
-          className={`px-6 py-3 font-semibold transition-all relative ${
+          className={`px-4 py-3 text-sm font-semibold transition-all relative whitespace-nowrap ${
             activeTab === 'schedule'
               ? 'text-orange-600 border-b-2 border-orange-600'
               : 'text-gray-600 hover:text-gray-900'
@@ -742,12 +848,145 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
         >
           🕐 {currentLabels.schedule}
         </button>
+        <button
+          onClick={() => setActiveTab('availability')}
+          className={`px-4 py-3 text-sm font-semibold transition-all relative whitespace-nowrap flex items-center gap-1 ${
+            activeTab === 'availability'
+              ? 'text-orange-600 border-b-2 border-orange-600'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          🚫 {currentLabels.availability}
+          <HelpTooltip 
+            {...bookingsScheduleHelp.blockDates}
+            position="bottom"
+            size="sm"
+          />
+        </button>
       </div>
 
       {/* Tab Content */}
       {activeTab === 'schedule' ? (
         <TherapistSchedule therapist={therapist} onBack={() => setActiveTab('bookings')} />
+      ) : activeTab === 'availability' ? (
+        /* Availability Management Content */
+        <main className="max-w-sm mx-auto px-4 py-6">
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg font-bold text-gray-900">{currentLabels.blockedDates}</h3>
+                <HelpTooltip 
+                  {...bookingsScheduleHelp.blockDates}
+                  position="bottom"
+                  size="md"
+                />
+              </div>
+              <p className="text-sm text-gray-600 mb-4">{currentLabels.blockedDatesDesc}</p>
+              
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => navigateMonth('prev')}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label={currentLabels.prevMonth}
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-semibold text-gray-900">
+                    {selectedMonth.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
+                  </h4>
+                  <HelpTooltip 
+                    {...bookingsScheduleHelp.availabilityCalendar}
+                    position="bottom"
+                    size="sm"
+                  />
+                </div>
+                <button
+                  onClick={() => navigateMonth('next')}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label={currentLabels.nextMonth}
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1 mb-4">
+                {/* Week day headers */}
+                {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(day => (
+                  <div key={day} className="p-2 text-center text-xs font-semibold text-gray-500">
+                    {day}
+                  </div>
+                ))}
+                
+                {(() => {
+                  const { daysInMonth, startingDayOfWeek } = getDaysInMonth(selectedMonth);
+                  const days = [];
+                  
+                  // Empty cells for days before the first day of the month
+                  for (let i = 0; i < startingDayOfWeek; i++) {
+                    days.push(
+                      <div key={`empty-${i}`} className="p-2"></div>
+                    );
+                  }
+                  
+                  // Days of the month
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day);
+                    const isPast = isDateInPast(date);
+                    const isBlocked = isDateBlocked(date);
+                    
+                    days.push(
+                      <button
+                        key={day}
+                        onClick={() => !isPast && toggleDateBlock(date)}
+                        disabled={isPast}
+                        className={`p-2 text-sm font-medium rounded-lg transition-all ${
+                          isPast
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : isBlocked
+                            ? 'bg-red-500 text-white hover:bg-red-600'
+                            : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    );
+                  }
+                  
+                  return days;
+                })()}
+              </div>
+
+              <p className="text-xs text-gray-500 mb-4">{currentLabels.selectDatesToBlock}</p>
+
+              {/* Currently blocked dates list */}
+              <div className="border-t pt-4">
+                <h5 className="font-semibold text-gray-900 mb-2">{currentLabels.blockedDatesList}:</h5>
+                {blockedDates.length === 0 ? (
+                  <p className="text-sm text-gray-500">{currentLabels.noBlockedDates}</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {blockedDates.map(dateStr => {
+                      const date = new Date(dateStr + 'T00:00:00');
+                      return (
+                        <span
+                          key={dateStr}
+                          className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium border border-red-200"
+                        >
+                          {date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </main>
       ) : (
+        /* Bookings Content */
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-6">
         {/* Stats Cards */}

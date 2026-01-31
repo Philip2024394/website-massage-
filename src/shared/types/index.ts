@@ -88,6 +88,7 @@ export interface Therapist extends BaseEntity {
     city?: string; // Selected city/tourist destination
     services: Service[];
     hotelVillaDiscount?: HotelVillaDiscount;
+    blockedDates?: string[]; // Array of ISO date strings when therapist is not available
 }
 
 export interface Place extends BaseEntity {

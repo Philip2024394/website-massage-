@@ -120,6 +120,14 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
   const isDayAvailable = (date: Date): boolean => {
     if (!therapist.operationalHours) return false;
     
+    // Check if date is in therapist's blocked dates
+    if (therapist.blockedDates) {
+      const dateStr = date.toISOString().split('T')[0];
+      if (therapist.blockedDates.includes(dateStr)) {
+        return false; // Date is blocked by therapist
+      }
+    }
+    
     try {
       const weekSchedule = JSON.parse(therapist.operationalHours);
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
@@ -234,20 +242,30 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
       const isSelected = selectedDate?.toDateString() === date.toDateString();
       const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
       
+      // Check if date is specifically blocked by therapist
+      const dateStr = date.toISOString().split('T')[0];
+      const isBlockedByTherapist = therapist.blockedDates?.includes(dateStr) || false;
+      
       days.push(
         <button
           key={day}
           onClick={() => !isPast && isAvailable && setSelectedDate(date)}
           disabled={isPast || !isAvailable}
-          className={`h-12 border border-gray-200 flex items-center justify-center transition-all ${
+          className={`h-12 border border-gray-200 flex items-center justify-center transition-all relative ${
             isSelected ? 'bg-orange-500 text-white border-orange-500' : ''
           } ${
             isAvailable && !isPast && !isSelected ? 'bg-white hover:bg-orange-50 cursor-pointer' : ''
           } ${
-            !isAvailable || isPast ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : ''
+            isBlockedByTherapist ? 'bg-red-500 text-white border-red-500 cursor-not-allowed' : ''
+          } ${
+            (!isAvailable && !isBlockedByTherapist) || isPast ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : ''
           }`}
+          title={isBlockedByTherapist ? 'This date is booked' : ''}
         >
           <span className="text-sm font-semibold">{day}</span>
+          {isBlockedByTherapist && (
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border border-white"></div>
+          )}
         </button>
       );
     }

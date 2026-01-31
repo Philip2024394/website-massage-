@@ -126,6 +126,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [saving, setSaving] = useState(false);
   // All therapists have access to all features - no premium restrictions
   const isPremium = true;
+  const [onlineHoursThisMonth, setOnlineHoursThisMonth] = useState<number>(0);
   const [countdownHoursRemaining, setCountdownHoursRemaining] = useState<number>(12);
   const [availableStartTime, setAvailableStartTime] = useState<string | null>(null);
   const [busyStartTime, setBusyStartTime] = useState<string | null>(therapist?.busyStartTime || null);
