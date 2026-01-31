@@ -5,7 +5,7 @@ import { deviceService } from '../services/deviceService';
 import PageNumberBadge from '../components/PageNumberBadge';
 import PWAInstallIOSModal from '../components/PWAInstallIOSModal';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { MapPin, Play, Globe, Search, X, ChevronUp as ChevronDown } from 'lucide-react';
+import { MapPin, Play, Globe, X, ChevronUp as ChevronDown } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
@@ -24,7 +24,7 @@ interface LandingPageProps {
     onLanguageChange?: (lang: Language) => void;
 }
 
-const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
+const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?v=2026';
 
 // Multi-country data for location selectors with native language mapping
 const COUNTRIES = [
@@ -381,7 +381,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     
     // Location state - now using auto-detected country
     const { city: contextCity, countryCode, autoDetected, detectionMethod, setCity, setCountry, clearCountry } = useCityContext();
-    const [searchQuery, setSearchQuery] = useState('');
     const [selectedCity, setSelectedCity] = useState<string | null>(contextCity || null);
     const [showCountryModal, setShowCountryModal] = useState(false);
     const [cityNotListed, setCityNotListed] = useState(false);
@@ -516,7 +515,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const handleCitySelectNew = async (city: CityOption) => {
         setSelectedCity(city.name);
         setCity(city.name);
-        setSearchQuery('');
         
         console.log('📍 City selected:', city.name, 'in country:', city.country);
         
@@ -600,7 +598,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         
         setShowCountryModal(false);
         setSelectedCity(null);
-        setSearchQuery('');
         
         // Update country in context (this will auto-update currency via CityContext)
         setCountry(newCountryCode, true); // Save preference
@@ -763,15 +760,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     
     // Get cities for the currently detected/selected country - memoize to prevent re-renders
     const availableCities = useMemo(() => CITIES_BY_COUNTRY[countryCode] || [], [countryCode]);
-    const filteredCities = useMemo(() => 
-        searchQuery.trim()
-            ? availableCities.filter(city =>
-                city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                city.region.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-            : availableCities,
-        [searchQuery, availableCities]
-    );
     const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
@@ -780,6 +768,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             
             {/* Fixed background image - stays in place while scrolling - optimized for performance */}
             <div
+                id="main-background-image"
                 className="fixed inset-0 z-0 w-full h-full bg-gray-900"
                 style={{
                     backgroundImage: `url('${imageSrc}')`,
@@ -787,6 +776,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     backgroundPosition: 'center center',
                     backgroundRepeat: 'no-repeat',
                     willChange: 'contents', // Hint browser to optimize layer
+                    minHeight: '100vh',
+                    minWidth: '100vw',
                 }}
             />
             
@@ -838,17 +829,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                             </div>
                         </div>
 
-                        {/* Search Box */}
-                        <div className="mb-4 relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder={`Search city in ${currentCountryData?.name}...`}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-white placeholder-gray-400"
-                            />
-                        </div>
+
 
                         {/* GPS Location Option - Prominently at top */}
                         <button
@@ -884,9 +865,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
 
                         {/* Cities List - Scrollable container */}
                         <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '35vh' }}>
-                            {filteredCities.length > 0 ? (
+                            {availableCities.length > 0 ? (
                                 <>
-                                    {filteredCities.map((city, index) => (
+                                    {availableCities.map((city, index) => (
                                         <button
                                             key={`${city.name}-${index}`}
                                             onClick={() => handleCitySelectNew(city)}
@@ -913,14 +894,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                 </>
                             ) : (
                                 <div className="text-center py-8 text-gray-400">
-                                    <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">No cities found matching "{searchQuery}"</p>
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="text-xs text-orange-400 hover:text-orange-300 mt-2 underline"
-                                    >
-                                        Clear search
-                                    </button>
+                                    <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm">No cities available for this country</p>
                                 </div>
                             )}
                         </div>

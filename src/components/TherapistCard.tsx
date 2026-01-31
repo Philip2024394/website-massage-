@@ -505,11 +505,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         }
     }, [showReferModal, isCustomerLoggedIn]);
 
-    // Load menu data when price list modal opens
+    // Load menu data on component mount for service name display
     useEffect(() => {
         const loadMenu = async () => {
             try {
-                if (showPriceListModal) {
+                // Always load menu data to determine service name for pricing display
+                if (true) {
                     const therapistId = String(therapist.$id || therapist.id);
                     console.log('🍽️ Loading menu for therapist:', therapistId);
                     console.log('🔍 Therapist name:', therapist.name);
@@ -563,7 +564,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             console.error('❌ Unhandled promise rejection:', error);
             console.error('❌ Promise error stack:', error instanceof Error ? error.stack : 'No stack');
         });
-    }, [showPriceListModal, therapist]);
+    }, [therapist]); // Load menu data when therapist changes, not just when modal opens
 
     // Handle anonymous review submission
     const handleAnonymousReviewSubmit = async (reviewData: {
@@ -600,9 +601,68 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         }
     };
     
-    // Parse pricing - support both new separate fields and old JSON format
+    // Parse pricing - support menu data, separate fields, and old JSON format
     const getPricing = () => {
-        // Try new separate fields first (preferred format) - but only if they have valid values
+        // First, check if we have menu data with a cheaper service than the default pricing
+        if (menuData && menuData.length > 0) {
+            // Find services that have 60/90/120 minute pricing
+            const servicesWithFullPricing = menuData.filter(item => {
+                return item.duration60 && item.duration90 && item.duration120 &&
+                       item.price60 && item.price90 && item.price120;
+            });
+
+            if (servicesWithFullPricing.length > 0) {
+                // Get the default pricing first
+                const defaultPricing = (() => {
+                    const hasValidSeparateFields = (
+                        (therapist.price60 && parseInt(therapist.price60) > 0) ||
+                        (therapist.price90 && parseInt(therapist.price90) > 0) ||
+                        (therapist.price120 && parseInt(therapist.price120) > 0)
+                    );
+
+                    if (hasValidSeparateFields) {
+                        return {
+                            "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
+                            "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
+                            "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
+                        };
+                    }
+                    
+                    const parsedPricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
+                    return {
+                        "60": parsedPricing["60"] * 1000,
+                        "90": parsedPricing["90"] * 1000,
+                        "120": parsedPricing["120"] * 1000
+                    };
+                })();
+
+                // Find the cheapest service (based on 60-minute price)
+                const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
+                    const cheapestPrice = parseFloat(cheapest.price60 || '999999');
+                    const currentPrice = parseFloat(current.price60 || '999999');
+                    return currentPrice < cheapestPrice ? current : cheapest;
+                });
+
+                // Convert menu prices to full IDR amounts (assume menu prices are in thousands)
+                const menuPricing = {
+                    "60": parseFloat(cheapestService.price60) * 1000,
+                    "90": parseFloat(cheapestService.price90) * 1000,
+                    "120": parseFloat(cheapestService.price120) * 1000
+                };
+
+                // Use menu pricing if it's cheaper than default pricing
+                if (menuPricing["60"] < defaultPricing["60"] && menuPricing["60"] > 0) {
+                    devLog(`💰 Using cheaper menu pricing for ${therapist.name}:`, {
+                        serviceName: cheapestService.name || cheapestService.serviceName,
+                        menuPricing,
+                        defaultPricing
+                    });
+                    return menuPricing;
+                }
+            }
+        }
+
+        // Fallback to default pricing logic
         const hasValidSeparateFields = (
             (therapist.price60 && parseInt(therapist.price60) > 0) ||
             (therapist.price90 && parseInt(therapist.price90) > 0) ||
@@ -1014,6 +1074,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 formatPrice={formatPrice}
                 getDynamicSpacing={getDynamicSpacing}
                 translatedDescriptionLength={translatedDescription.length}
+                menuData={menuData}
             />
 
             {/* Booking Buttons - Positioned under price containers */}

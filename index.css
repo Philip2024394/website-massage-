@@ -992,9 +992,10 @@ body.elite-refresh-mode {
 }
 
 /* LANDING PAGE WHITE CONTAINER ELIMINATION - ENHANCED */
-/* Ensure background image container is protected */
-.landing-page-container > div.fixed.inset-0.z-0[style*="backgroundImage"] {
-  background: transparent; /* Let inline style backgroundImage take precedence */
+/* CRITICAL: Completely exclude background image container from ALL overrides */
+.landing-page-container > div.fixed.inset-0.z-0 {
+  /* Preserve original background image styles - no overrides */
+  background: inherit;
 }
 
 .landing-page-container * {
@@ -1002,20 +1003,74 @@ body.elite-refresh-mode {
   box-sizing: border-box;
 }
 
-.landing-page-container .bg-white,
-.landing-page-container [style*="background: white"],
-.landing-page-container [style*="background-color: white"],
-.landing-page-container [style*="background: #fff"],
-.landing-page-container [style*="background-color: #fff"] {
+/* Only target WHITE backgrounds specifically - EXCLUDE background image containers */
+.landing-page-container .bg-white:not(.fixed):not([style*="backgroundImage"]),
+.landing-page-container [style*="background: white"]:not(.fixed):not([style*="backgroundImage"]),
+.landing-page-container [style*="background-color: white"]:not(.fixed):not([style*="backgroundImage"]),
+.landing-page-container [style*="background: #fff"]:not(.fixed):not([style*="backgroundImage"]),
+.landing-page-container [style*="background-color: #fff"]:not(.fixed):not([style*="backgroundImage"]) {
   background-color: transparent !important;
   background: transparent !important;
 }
 
 /* Ensure modals and overlays don't create white containers on landing page */
 /* Exclude background image container from transparent background rule */
-.landing-page-container .fixed:not(.bg-gray-900):not([style*="backgroundImage"]),
+.landing-page-container .fixed:not(.bg-gray-900):not([style*="backgroundImage"]):not(#main-background-image),
 .landing-page-container .absolute:not(.bg-gradient-to-b):not([style*="backgroundImage"]) {
   background: transparent !important;
+}
+
+/* PRESERVE ESSENTIAL CONTAINER BACKGROUNDS - DESKTOP */
+.landing-page-container div[class*="bg-gray-900"],
+.landing-page-container div[class*="bg-gray-800"], 
+.landing-page-container div[class*="bg-gray-700"],
+.landing-page-container div[class*="bg-orange-500"],
+.landing-page-container div[class*="bg-gradient-to-r"] {
+  background: revert !important;
+  background-color: revert !important;
+  background-image: revert !important;
+}
+
+/* CRITICAL FIX: Ensure the main background image is never overridden */
+/* Very specific selector to override any conflicting rules */
+body .landing-page-container div.fixed.inset-0.z-0.w-full.h-full.bg-gray-900[style*="backgroundImage"] {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-color: #111827 !important; /* Fallback gray-900 */
+  z-index: 0 !important;
+  display: block !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  /* Don't override backgroundImage - let inline style work */
+}
+
+/* ULTRA-SPECIFIC FIX using ID selector - highest priority */
+div#main-background-image.fixed.bg-gray-900 {
+  background-image: url('https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?v=2026') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: scroll !important;
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 0 !important;
+}
+
+/* SPECIFIC FIX FOR ORANGE GRADIENT HEADERS */
+.landing-page-container .bg-gradient-to-r.from-orange-500.to-orange-600,
+.landing-page-container div[class*="from-orange-500"],
+.landing-page-container div[class*="to-orange-600"] {
+  background: linear-gradient(to right, #f97316, #ea580c) !important;
+  background-image: linear-gradient(to right, #f97316, #ea580c) !important;
 }
 
 /* Fix PWA install modal and other white overlays */
@@ -1027,15 +1082,38 @@ body.elite-refresh-mode {
 
 /* MOBILE SPECIFIC: Eliminate all white containers over footer */
 @media (max-width: 768px) {
-  .landing-page-container,
-  .landing-page-container * {
+  /* Only target white backgrounds specifically - EXCLUDE background image containers */
+  .landing-page-container .bg-white:not(.fixed):not([style*="backgroundImage"]),
+  .landing-page-container [style*="background: white"]:not(.fixed):not([style*="backgroundImage"]),
+  .landing-page-container [style*="background-color: white"]:not(.fixed):not([style*="backgroundImage"]),
+  .landing-page-container [style*="background: #fff"]:not(.fixed):not([style*="backgroundImage"]),
+  .landing-page-container [style*="background-color: #fff"]:not(.fixed):not([style*="backgroundImage"]) {
     background-color: transparent !important;
+    background: transparent !important;
   }
   
-  /* Preserve essential backgrounds only */
-  .landing-page-container > div.fixed.inset-0.z-0[style*="backgroundImage"],
+  /* Preserve essential backgrounds only - DO NOT touch fixed background containers */
   .landing-page-container > div.absolute.inset-0.z-10.bg-gradient-to-b {
-    background: revert !important; /* Allow these specific backgrounds */
+    background: revert !important; /* Allow overlay gradients */
+  }
+  
+  /* RESTORE ESSENTIAL CONTAINER BACKGROUNDS */
+  .landing-page-container div[class*="bg-gray-900"],
+  .landing-page-container div[class*="bg-gray-800"],
+  .landing-page-container div[class*="bg-gray-700"],
+  .landing-page-container div[class*="bg-orange-500"],
+  .landing-page-container div[class*="bg-gradient-to-r"] {
+    background: revert !important;
+    background-color: revert !important;
+    background-image: revert !important;
+  }
+  
+  /* MOBILE: SPECIFIC FIX FOR ORANGE GRADIENT HEADERS */
+  .landing-page-container .bg-gradient-to-r.from-orange-500.to-orange-600,
+  .landing-page-container div[class*="from-orange-500"],
+  .landing-page-container div[class*="to-orange-600"] {
+    background: linear-gradient(to right, #f97316, #ea580c) !important;
+    background-image: linear-gradient(to right, #f97316, #ea580c) !important;
   }
   
   /* Remove any white bottom containers */

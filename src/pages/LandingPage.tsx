@@ -1,11 +1,11 @@
-/**
- * 🔒 PRODUCTION UI – COMPLETE
- * This page is visually complete and approved.
- * ❌ Do NOT change layout, structure, or render order
- * ✅ Text, styling, and logic fixes allowed
- * 🛑 UI changes require explicit qw: instruction
- */
+// This file has been deleted to prevent conflicts with MainLandingPage.tsx
+// MainLandingPage.tsx is the only landing page that should be used
+// Redirecting imports to avoid build errors
 
+export { default } from './MainLandingPage';
+
+// Legacy code deleted to prevent conflicts:
+/*
 import React, { useState, useEffect, useMemo } from 'react';
 import Button from '../components/Button';
 import { locationService } from '../services/locationService';
@@ -13,7 +13,7 @@ import { deviceService } from '../services/deviceService';
 import PageNumberBadge from '../components/PageNumberBadge';
 import PWAInstallIOSModal from '../components/PWAInstallIOSModal';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { MapPin, Play, Globe, Search, X, ChevronUp as ChevronDown } from 'lucide-react';
+import { MapPin, Play, Globe, X, ChevronUp as ChevronDown } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
 
 import { AppDrawer } from '../components/AppDrawerClean';
@@ -389,7 +389,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     
     // Location state - now using auto-detected country
     const { city: contextCity, countryCode, autoDetected, detectionMethod, setCity, setCountry, clearCountry } = useCityContext();
-    const [searchQuery, setSearchQuery] = useState('');
     const [selectedCity, setSelectedCity] = useState<string | null>(contextCity || null);
     const [showCountryModal, setShowCountryModal] = useState(false);
     const [cityNotListed, setCityNotListed] = useState(false);
@@ -524,7 +523,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const handleCitySelectNew = async (city: CityOption) => {
         setSelectedCity(city.name);
         setCity(city.name);
-        setSearchQuery('');
         
         console.log('📍 City selected:', city.name, 'in country:', city.country);
         
@@ -608,7 +606,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         
         setShowCountryModal(false);
         setSelectedCity(null);
-        setSearchQuery('');
         
         // Update country in context (this will auto-update currency via CityContext)
         setCountry(newCountryCode, true); // Save preference
@@ -771,15 +768,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     
     // Get cities for the currently detected/selected country - memoize to prevent re-renders
     const availableCities = useMemo(() => CITIES_BY_COUNTRY[countryCode] || [], [countryCode]);
-    const filteredCities = useMemo(() => 
-        searchQuery.trim()
-            ? availableCities.filter(city =>
-                city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                city.region.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-            : availableCities,
-        [searchQuery, availableCities]
-    );
     const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
@@ -821,7 +809,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 <div className="w-full max-w-lg px-2 sm:px-4">
                     <div className="bg-gray-900 rounded-xl p-2.5 sm:p-6 border border-gray-700 shadow-xl" style={{ backgroundColor: 'rgba(17, 24, 39, 0.95)' }}>
                         {/* Auto-detected Country Header */}
-                        <div className="mb-4 p-3 sm:p-4 bg-gray-800 border border-gray-600 rounded-lg">
+                        <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
                             <div className="flex items-center justify-between flex-wrap gap-2">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <span className="text-xl sm:text-2xl">{currentCountryData?.flag}</span>
@@ -834,7 +822,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-xs text-gray-300 mt-1">Select your city to continue</p>
+                                        <p className="text-xs text-orange-100 mt-1">Select your city to continue</p>
                                     </div>
                                 </div>
                                 <button
@@ -846,83 +834,73 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                             </div>
                         </div>
 
-                        {/* Search Box */}
-                        <div className="mb-4 relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder={`Search city in ${currentCountryData?.name}...`}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-white placeholder-gray-400"
-                            />
+
+
+                        {/* GPS Location Option - Prominently at top */}
+                        <button
+                            onClick={handleCityNotListed}
+                            disabled={isDetectingLocation}
+                            className="w-full mb-3 rounded-lg border-2 border-orange-500 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        >
+                            <div className="flex items-center gap-3 pl-4 pr-3 py-4">
+                                <div className="w-6 h-6 flex-shrink-0">
+                                    <MapPin className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <div className="text-base font-bold leading-tight">
+                                        {isDetectingLocation && cityNotListed 
+                                            ? 'Detecting your location...' 
+                                            : 'Use My GPS Location'}
+                                    </div>
+                                    <div className="text-xs text-orange-100 leading-tight mt-1">
+                                        {isDetectingLocation && cityNotListed
+                                            ? 'Please allow location access'
+                                            : 'Find therapists & places closest to you'}
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+
+                        {/* Divider */}
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="flex-1 h-px bg-gray-700"></div>
+                            <span className="text-xs text-gray-400 font-medium">OR SELECT A CITY</span>
+                            <div className="flex-1 h-px bg-gray-700"></div>
                         </div>
 
-                        {/* Cities List - Scrollable container (max-height 40vh on mobile) */}
-                        <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '40vh' }}>
-                            {filteredCities.length > 0 ? (
+                        {/* Cities List - Scrollable container */}
+                        <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '35vh' }}>
+                            {availableCities.length > 0 ? (
                                 <>
-                                    {filteredCities.map((city, index) => (
+                                    {availableCities.map((city, index) => (
                                         <button
                                             key={`${city.name}-${index}`}
                                             onClick={() => handleCitySelectNew(city)}
-                                            className={`w-full p-3 rounded-lg border-2 text-left transition-all flex-shrink-0 ${
+                                            className={`w-full rounded-lg border-2 transition-all flex-shrink-0 relative ${
                                                 selectedCity === city.name
                                                     ? "border-orange-500 bg-orange-500 text-white shadow-lg"
                                                     : "border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-white"
                                             }`}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-5 h-5 flex-shrink-0">
-                                                    <MapPin className={`w-5 h-5 ${
-                                                        selectedCity === city.name ? "text-white" : "text-orange-400"
-                                                    }`} />
-                                                </div>
-                                                <div className="flex-1 min-w-0 text-left">
+                                            <div className="py-3 pr-3">
+                                                <MapPin className={`absolute left-[86px] top-1/2 -translate-y-1/2 w-5 h-5 ${
+                                                    selectedCity === city.name ? "text-white" : "text-orange-400"
+                                                }`} />
+                                                <div className="absolute left-[120px] right-3 top-1/2 -translate-y-1/2 text-left">
                                                     <div className="font-medium text-sm leading-tight">{city.name}</div>
                                                     <div className={`text-xs leading-tight mt-0.5 ${
                                                         selectedCity === city.name ? "text-orange-100" : "text-gray-400"
                                                     }`}>{city.region} • {city.description}</div>
                                                 </div>
+                                                <div className="h-12"></div>
                                             </div>
                                         </button>
                                     ))}
-                                    
-                                    {/* "My city is not listed" option */}
-                                    <button
-                                        onClick={handleCityNotListed}
-                                        disabled={isDetectingLocation}
-                                        className="w-full p-3 mt-2 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-gray-300 hover:text-white transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-5 h-5 flex-shrink-0">
-                                                <MapPin className="w-5 h-5 text-gray-400" />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="text-sm font-medium leading-tight">
-                                                    {isDetectingLocation && cityNotListed 
-                                                        ? 'Detecting your location...' 
-                                                        : 'Use my GPS location'}
-                                                </div>
-                                                <div className="text-xs text-gray-400 leading-tight mt-0.5">
-                                                    {isDetectingLocation && cityNotListed
-                                                        ? 'Please allow location access'
-                                                        : 'Automatically detect your precise city'}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </button>
                                 </>
                             ) : (
                                 <div className="text-center py-8 text-gray-400">
-                                    <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">No cities found matching "{searchQuery}"</p>
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="text-xs text-orange-400 hover:text-orange-300 mt-2 underline"
-                                    >
-                                        Clear search
-                                    </button>
+                                    <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm">No cities available for this country</p>
                                 </div>
                             )}
                         </div>

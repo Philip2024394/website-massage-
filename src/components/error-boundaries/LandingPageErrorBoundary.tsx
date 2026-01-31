@@ -1,4 +1,6 @@
-# LANDING PAGE ERROR BOUNDARY - PROTECTION GUARD
+/**
+ * LANDING PAGE ERROR BOUNDARY - PROTECTION GUARD
+ */
 
 import React, { Component, ReactNode } from 'react';
 

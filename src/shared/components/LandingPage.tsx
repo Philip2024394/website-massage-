@@ -1,3 +1,11 @@
+// This file has been deleted to prevent conflicts with MainLandingPage.tsx
+// MainLandingPage.tsx is the only landing page that should be used
+// Redirecting imports to avoid build errors
+
+export { default } from '../../pages/MainLandingPage';
+
+// Legacy code deleted to prevent conflicts:
+/*
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useBackground } from '../hooks/useBackground';

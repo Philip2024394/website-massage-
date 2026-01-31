@@ -18,6 +18,7 @@ import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { bookingService } from '../lib/bookingService';
+import { therapistMenusService } from '../lib/appwriteService';
 import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
@@ -68,6 +69,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
     const [showJoinPopup, setShowJoinPopup] = useState(false);
+    const [menuData, setMenuData] = useState<any[]>([]);
 
     // Handle share functionality
     const handleShareClick = (e: React.MouseEvent) => {
@@ -89,6 +91,34 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         };
 
         loadBookingsCount();
+    }, [therapist]);
+
+    // Load menu data on component mount for service name display
+    useEffect(() => {
+        const loadMenu = async () => {
+            try {
+                const therapistId = String(therapist.$id || therapist.id);
+                console.log('🏠 Loading menu data for TherapistHomeCard:', therapist.name, therapistId);
+                
+                try {
+                    const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
+                    if (menuDoc?.menuData) {
+                        const parsed = JSON.parse(menuDoc.menuData);
+                        setMenuData(Array.isArray(parsed) ? parsed : []);
+                        console.log('🏠 Menu data loaded for', therapist.name, ':', parsed.length, 'items');
+                    } else {
+                        setMenuData([]);
+                    }
+                } catch (error: any) {
+                    console.log('🏠 Menu collection not available for', therapist.name, '- using default pricing');
+                    setMenuData([]);
+                }
+            } catch (outerError) {
+                setMenuData([]);
+            }
+        };
+        
+        loadMenu();
     }, [therapist]);
 
     // Generate share URL
@@ -280,8 +310,58 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     const locationDisplay = getLocationDisplay();
 
-    // Parse pricing
+    // Parse pricing - support menu data, separate fields, and old JSON format
     const getPricing = () => {
+        // First, check if we have menu data with a cheaper service than the default pricing
+        if (menuData && menuData.length > 0) {
+            // Find services that have 60/90/120 minute pricing
+            const servicesWithFullPricing = menuData.filter(item => {
+                return item.duration60 && item.duration90 && item.duration120 &&
+                       item.price60 && item.price90 && item.price120;
+            });
+
+            if (servicesWithFullPricing.length > 0) {
+                // Get the default pricing first
+                const defaultPricing = (() => {
+                    const hasValidSeparateFields = (
+                        (therapist.price60 && parseInt(therapist.price60) > 0) ||
+                        (therapist.price90 && parseInt(therapist.price90) > 0) ||
+                        (therapist.price120 && parseInt(therapist.price120) > 0)
+                    );
+
+                    if (hasValidSeparateFields) {
+                        return {
+                            "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
+                            "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
+                            "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
+                        };
+                    }
+                    return { "60": 0, "90": 0, "120": 0 };
+                })();
+
+                // Find the cheapest service (based on 60-minute price)
+                const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
+                    const cheapestPrice = parseFloat(cheapest.price60 || '999999');
+                    const currentPrice = parseFloat(current.price60 || '999999');
+                    return currentPrice < cheapestPrice ? current : cheapest;
+                });
+
+                // Convert menu prices to full IDR amounts (assume menu prices are in thousands)
+                const menuPricing = {
+                    "60": parseFloat(cheapestService.price60) * 1000,
+                    "90": parseFloat(cheapestService.price90) * 1000,
+                    "120": parseFloat(cheapestService.price120) * 1000
+                };
+
+                // Use menu pricing if it's cheaper than default pricing
+                if (menuPricing["60"] < defaultPricing["60"] && menuPricing["60"] > 0) {
+                    console.log('🏠 Using cheaper menu pricing for', therapist.name, ':', menuPricing);
+                    return menuPricing;
+                }
+            }
+        }
+
+        // Fallback to default pricing logic
         const hasValidSeparateFields = (
             (therapist.price60 && parseInt(therapist.price60) > 0) ||
             (therapist.price90 && parseInt(therapist.price90) > 0) ||
@@ -300,6 +380,49 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     };
 
     const pricing = getPricing();
+
+    // Determine service name based on menu data
+    const getServiceName = (): string => {
+        console.log(`🏠 Determining service name for ${therapist.name}:`, { 
+            hasMenuData: !!menuData, 
+            menuLength: menuData?.length || 0
+        });
+
+        // If no menu data or empty menu, default to "Traditional Massage"
+        if (!menuData || menuData.length === 0) {
+            return 'Traditional Massage';
+        }
+
+        // Find services that have 60/90/120 minute pricing
+        const servicesWithFullPricing = menuData.filter(item => {
+            return item.duration60 && item.duration90 && item.duration120 &&
+                   item.price60 && item.price90 && item.price120;
+        });
+
+        if (servicesWithFullPricing.length === 0) {
+            return 'Traditional Massage';
+        }
+
+        // Find the cheapest service (based on 60-minute price)
+        const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
+            const cheapestPrice = parseFloat(cheapest.price60 || '999999');
+            const currentPrice = parseFloat(current.price60 || '999999');
+            return currentPrice < cheapestPrice ? current : cheapest;
+        });
+
+        // Extract service name - use first word + "Massage"
+        if (cheapestService.name || cheapestService.serviceName || cheapestService.title) {
+            const serviceName = cheapestService.name || cheapestService.serviceName || cheapestService.title;
+            const firstWord = serviceName.split(' ')[0];
+            const result = `${firstWord} Massage`;
+            console.log(`🏠 Generated service name for ${therapist.name}: "${result}"`);
+            return result;
+        }
+
+        return 'Traditional Massage';
+    };
+
+    const serviceName = getServiceName();
 
     const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
     const effectiveRating = rawRating > 0 ? rawRating : 4.8;
@@ -706,6 +829,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
             {/* Content */}
             <div className="px-4 pb-4">
+                {/* Service Name Header */}
+                <div className="text-center mb-2">
+                    <h3 className="text-gray-800 font-bold text-sm tracking-wide">
+                        {serviceName}
+                    </h3>
+                </div>
+
                 {/* Pricing */}
                 <div className="grid grid-cols-3 gap-2 mb-7">
                     {pricing["60"] > 0 && (

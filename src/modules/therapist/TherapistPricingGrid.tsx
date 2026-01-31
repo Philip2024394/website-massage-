@@ -10,6 +10,7 @@ interface TherapistPricingGridProps {
     formatPrice: (price: number | string) => string;
     getDynamicSpacing: (large: string, medium: string, small: string, descLength: number) => string;
     translatedDescriptionLength: number;
+    menuData?: any[]; // Menu data to determine service name
 }
 
 const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
@@ -19,15 +20,81 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
     animatedPriceIndex,
     formatPrice,
     getDynamicSpacing,
-    translatedDescriptionLength
+    translatedDescriptionLength,
+    menuData = []
 }) => {
     console.log('🧱 TherapistPricingGrid rendered');
 
+    // Determine service name based on menu data
+    const getServiceName = (): string => {
+        console.log(`🏷️ Determining service name for ${therapist.name}:`, { 
+            hasMenuData: !!menuData, 
+            menuLength: menuData?.length || 0,
+            menuItems: menuData?.map(item => ({ 
+                name: item.name || item.serviceName || item.title,
+                price60: item.price60,
+                hasPricing: !!(item.price60 && item.price90 && item.price120)
+            }))
+        });
+
+        // If no menu data or empty menu, default to "Traditional Massage"
+        if (!menuData || menuData.length === 0) {
+            console.log(`🏷️ No menu data found for ${therapist.name}, using Traditional Massage`);
+            return 'Traditional Massage';
+        }
+
+        // Find services that have 60/90/120 minute pricing
+        const servicesWithFullPricing = menuData.filter(item => {
+            // Check if this menu item has 60, 90, and 120 minute options
+            return item.duration60 && item.duration90 && item.duration120 &&
+                   item.price60 && item.price90 && item.price120;
+        });
+
+        console.log(`🏷️ Found ${servicesWithFullPricing.length} services with full pricing for ${therapist.name}`);
+
+        if (servicesWithFullPricing.length === 0) {
+            // No services with complete pricing found, use default
+            console.log(`🏷️ No services with complete pricing found for ${therapist.name}, using Traditional Massage`);
+            return 'Traditional Massage';
+        }
+
+        // Find the cheapest service (based on 60-minute price)
+        const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
+            const cheapestPrice = parseFloat(cheapest.price60 || '999999');
+            const currentPrice = parseFloat(current.price60 || '999999');
+            return currentPrice < cheapestPrice ? current : cheapest;
+        });
+
+        console.log(`🏷️ Cheapest service for ${therapist.name}:`, cheapestService);
+
+        // Extract service name - use first word + "Massage"
+        if (cheapestService.name || cheapestService.serviceName || cheapestService.title) {
+            const serviceName = cheapestService.name || cheapestService.serviceName || cheapestService.title;
+            const firstWord = serviceName.split(' ')[0];
+            const result = `${firstWord} Massage`;
+            console.log(`🏷️ Generated service name for ${therapist.name}: "${result}" from "${serviceName}"`);
+            return result;
+        }
+
+        // Fallback to traditional
+        console.log(`🏷️ No service name found for ${therapist.name}, using Traditional Massage fallback`);
+        return 'Traditional Massage';
+    };
+
+    const serviceName = getServiceName();
+
     return (
         <>
+            {/* Service Name Header */}
+            <div className={`text-center mb-2 px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-2', translatedDescriptionLength)}`}>
+                <h3 className="text-gray-800 font-bold text-base tracking-wide">
+                    {serviceName}
+                </h3>
+            </div>
+
             {/* Discounted Prices Header */}
             {isDiscountActive(therapist) && (
-                <div className={`text-center mb-[10px] px-4 ${getDynamicSpacing('mt-5', 'mt-4', 'mt-3', translatedDescriptionLength)}`}>
+                <div className={`text-center mb-[10px] px-4 ${getDynamicSpacing('mt-2', 'mt-2', 'mt-1', translatedDescriptionLength)}`}>
                     <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
                         🔥 Discounted Price's Displayed
                     </p>
