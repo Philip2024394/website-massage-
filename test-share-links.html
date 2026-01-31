@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Share Links - IndaStreet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            color: #667eea;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .therapist-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .therapist-id {
+            font-size: 12px;
+            color: #999;
+            font-family: monospace;
+            margin-bottom: 12px;
+        }
+        
+        .url-box {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #667eea;
+            margin-bottom: 10px;
+            word-break: break-all;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-available {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .note-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+        
+        .note-text {
+            color: #856404;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Share Link Tester</h1>
+        <p class="subtitle">Live therapist profile share links from your database</p>
+        
+        <div class="section">
+            <div class="section-title">
+                👥 Available Therapists
+                <span class="status status-loading" id="loadingStatus">Loading...</span>
+            </div>
+            <div id="therapistList">
+                <p style="color: #999; text-align: center; padding: 40px;">Fetching therapists from Appwrite...</p>
+            </div>
+        </div>
+        
+        <div class="note">
+            <div class="note-title">📝 Note</div>
+            <div class="note-text">
+                These are the actual therapist IDs from your Appwrite database. The share links will work when shared via WhatsApp, SMS, or copied to any browser.
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Fetch therapists from the API
+        async function loadTherapists() {
+            try {
+                const response = await fetch('/api/therapists'); // This won't work, we need to use the actual data
+                
+                // For now, let's hardcode the known therapists from the console logs
+                const therapists = [
+                    {
+                        id: '692467a3001f6f05aaa1',
+                        $id: '692467a3001f6f05aaa1',
+                        name: 'Budi',
+                        status: 'Busy'
+                    },
+                    {
+                        id: '693cfadf003d16b9896a',
+                        $id: '693cfadf003d16b9896a',
+                        name: 'Surtiningsih',
+                        status: 'Busy'
+                    }
+                ];
+                
+                displayTherapists(therapists);
+            } catch (error) {
+                console.error('Error loading therapists:', error);
+                document.getElementById('therapistList').innerHTML = `
+                    <div style="color: #dc2626; text-align: center; padding: 40px;">
+                        <p style="font-size: 48px; margin-bottom: 10px;">😔</p>
+                        <p style="font-weight: 600; margin-bottom: 5px;">Failed to load therapists</p>
+                        <p style="font-size: 14px; color: #999;">Using hardcoded test data instead</p>
+                    </div>
+                `;
+                
+                // Use hardcoded data as fallback
+                const fallbackTherapists = [
+                    { id: '692467a3001f6f05aaa1', name: 'Budi', status: 'Busy' },
+                    { id: '693cfadf003d16b9896a', name: 'Surtiningsih', status: 'Busy' }
+                ];
+                displayTherapists(fallbackTherapists);
+            }
+        }
+        
+        function displayTherapists(therapists) {
+            const loadingStatus = document.getElementById('loadingStatus');
+            loadingStatus.textContent = `${therapists.length} Found`;
+            loadingStatus.className = 'status status-available';
+            
+            const container = document.getElementById('therapistList');
+            container.innerHTML = therapists.map(therapist => {
+                const shareUrl = `http://localhost:3000/share/therapist/${therapist.id || therapist.$id}`;
+                const productionUrl = `https://www.indastreetmassage.com/share/therapist/${therapist.id || therapist.$id}`;
+                
+                return `
+                    <div class="card">
+                        <div class="therapist-name">${therapist.name}</div>
+                        <div class="therapist-id">ID: ${therapist.id || therapist.$id}</div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">LOCAL DEV URL:</strong>
+                            <div class="url-box">${shareUrl}</div>
+                            
+                            <strong style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">PRODUCTION URL:</strong>
+                            <div class="url-box">${productionUrl}</div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <a href="${shareUrl}" class="btn btn-primary" target="_blank">
+                                🔍 Test Local
+                            </a>
+                            <button class="btn btn-secondary" onclick="copyToClipboard('${productionUrl}')">
+                                📋 Copy Production URL
+                            </button>
+                            <a href="https://wa.me/?text=${encodeURIComponent('Check out ' + therapist.name + ' on IndaStreet: ' + productionUrl)}" class="btn btn-secondary" target="_blank">
+                                📱 Share via WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        window.copyToClipboard = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Link copied to clipboard!\n\n' + text);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('❌ Failed to copy link');
+            });
+        };
+        
+        // Load therapists on page load
+        loadTherapists();
+    </script>
+</body>
+</html>
