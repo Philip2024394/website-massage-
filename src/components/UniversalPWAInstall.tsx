@@ -186,13 +186,19 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
                 disabled={installing || !status.canInstall}
                 className={`
                   mt-3 inline-flex items-center gap-2 font-semibold rounded-lg transition-all
+                  min-h-[44px] touch-manipulation
                   ${status.canInstall
-                    ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                    ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white shadow-md hover:shadow-lg active:scale-95'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }
                   ${getSizeClasses()}
                   ${installing ? 'opacity-50 cursor-wait' : ''}
                 `}
+                style={{
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
+                  fontSize: '16px' // Prevent iOS zoom
+                }}
               >
                 {installing ? (
                   <div className={`animate-spin rounded-full border-2 border-white border-t-transparent ${getIconSize()}`} />
@@ -234,10 +240,16 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
               disabled={installing || !status.canInstall}
               className={`
                 bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold
-                hover:bg-orange-50 transition-all flex items-center gap-2
+                hover:bg-orange-50 active:bg-orange-100 transition-all flex items-center gap-2
+                min-h-[44px] touch-manipulation
                 ${installing ? 'opacity-50 cursor-wait' : ''}
                 ${!status.canInstall ? 'opacity-50 cursor-not-allowed' : ''}
               `}
+              style={{
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                fontSize: '16px'
+              }}
             >
               {installing ? (
                 <div className="animate-spin rounded-full border-2 border-orange-500 border-t-transparent w-4 h-4" />

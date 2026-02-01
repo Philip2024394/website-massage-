@@ -598,6 +598,30 @@ button, .btn, .clickable, [role="button"] {
   /* Touch optimization */
   touch-action: manipulation !important;
   -webkit-tap-highlight-color: transparent !important;
+  
+  /* Prevent iOS zoom on button tap */
+  font-size: 16px !important;
+}
+
+/* PWA Download Button Mobile Fixes */
+@media (max-width: 768px) {
+  /* Therapist PWA download buttons */
+  button[class*="orange-600"],
+  button[class*="Download"] {
+    min-height: 48px !important;
+    padding: 16px 24px !important;
+    font-size: 16px !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+    transform-origin: center !important;
+  }
+  
+  /* PWA section safe area */
+  div[class*="pwa"],
+  div:has(button[class*="Download"]) {
+    margin-bottom: max(env(safe-area-inset-bottom, 20px), 40px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 12px), 24px) !important;
+  }
   -webkit-touch-callout: none !important;
   user-select: none !important;
   -webkit-user-select: none !important;

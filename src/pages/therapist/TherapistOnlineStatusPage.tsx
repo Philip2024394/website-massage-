@@ -706,15 +706,71 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         }
       }
       
-      // Fallback: Check if it's iOS and show Add to Home Screen instruction
+      // Enhanced iOS installation with visual modal
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
-        showToast('📱 To download the app:\n\n1. Tap the Share button (⬆️)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm', 'info', { duration: 8000 });
-        // On iOS, we can't auto-detect installation, so keep button available
-        console.log('📱 iOS install instructions shown');
+        // Create iOS-specific installation modal for better UX
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000;
+          padding: 20px;
+          box-sizing: border-box;
+        `;
+        
+        modal.innerHTML = `
+          <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+          ">
+            <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+            <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px;">Install Therapist App</h3>
+            <div style="text-align: left; margin-bottom: 24px; color: #6b7280; line-height: 1.5;">
+              <p style="margin: 0 0 12px 0;"><strong>To install on iOS:</strong></p>
+              <p style="margin: 0 0 8px 0;">1. Tap the Share button <span style="font-size: 20px;">⬆️</span></p>
+              <p style="margin: 0 0 8px 0;">2. Scroll down and tap <strong>"Add to Home Screen"</strong></p>
+              <p style="margin: 0;">3. Tap <strong>"Add"</strong> to install</p>
+            </div>
+            <button onclick="this.closest('div[style*=fixed]').remove()" style="
+              background: #f97316;
+              color: white;
+              border: none;
+              padding: 12px 24px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-weight: 600;
+              width: 100%;
+              font-size: 16px;
+            ">Got it!</button>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Remove modal when clicking outside
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            modal.remove();
+          }
+        });
+        
+        console.log('📱 iOS install modal shown');
       } else {
         // For browsers that don't support PWA install prompt
-        showToast('📱 PWA installation not supported on this browser.\n\nFor best experience, use Chrome, Safari, or Edge.', 'warning', { duration: 6000 });
+        showToast('📱 App installation not available on this browser.\n\nFor best experience:\n• Use Chrome, Safari, or Edge\n• Or access via mobile browser', 'warning', { duration: 8000 });
         console.log('⚠️ Browser does not support PWA installation');
       }
     } catch (error) {
@@ -1249,9 +1305,10 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
           )}
         </div>
         
-        {/* SIMPLE: Download App Button */}
+        {/* SIMPLE: Download App Button - Mobile Safe Area */}
         {showPWAInstallSection && (
-        <div className="rounded-xl p-6 border-2 bg-white border-gray-200">
+        <div className="rounded-xl p-6 border-2 bg-white border-gray-200" 
+             style={{ marginBottom: 'max(env(safe-area-inset-bottom, 20px), 40px)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -1292,15 +1349,21 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
             </button>
           </div>
           
-          {/* Simple Download Button */}
+          {/* Simple Download Button - Mobile Optimized */}
           <button
             onClick={handleSimpleDownload}
             disabled={isAppInstalled}
-            className={`w-full py-3 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 ${
+            className={`w-full py-4 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 min-h-[48px] touch-manipulation ${
               isAppInstalled
                 ? 'bg-green-500 text-white cursor-not-allowed'
-                : 'bg-gradient-to-r from-orange-600 to-orange-700 text-white hover:from-orange-700 hover:to-orange-800'
+                : 'bg-gradient-to-r from-orange-600 to-orange-700 text-white hover:from-orange-700 hover:to-orange-800 active:scale-95'
             }`}
+            style={{
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              minHeight: '48px',
+              fontSize: '16px' // Prevent zoom on iOS
+            }}
           >
             {isAppInstalled ? (
               <>

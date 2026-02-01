@@ -2,6 +2,7 @@
  * PWA Installation Status Utilities
  * Centralized PWA installation detection and state management
  */
+import React from 'react';
 
 export interface PWAInstallationStatus {
   isInstalled: boolean;
@@ -152,9 +153,15 @@ export class PWAInstallationStatusChecker {
       }
     }
 
-    // Manual installation instructions
+    // Enhanced manual installation for mobile
     if (status.installMethod === 'manual') {
-      alert(this.getInstallationInstructions(status));
+      // Create better mobile-friendly installation modal
+      const isIOS = status.platform === 'ios';
+      if (isIOS) {
+        this.showIOSInstallationModal();
+      } else {
+        alert(this.getInstallationInstructions(status));
+      }
       return { success: true, result: 'manual-instructions-shown' };
     }
 
@@ -162,6 +169,86 @@ export class PWAInstallationStatusChecker {
       success: false, 
       error: 'No installation method available' 
     };
+  }
+
+  /**
+   * Show iOS-specific installation modal with better UX
+   */
+  static showIOSInstallationModal(): void {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+    
+    modal.innerHTML = `
+      <div style="
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 350px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        animation: slideUp 0.3s ease-out;
+      ">
+        <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+        <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Install App</h3>
+        <div style="text-align: left; margin-bottom: 24px; color: #6b7280; line-height: 1.6;">
+          <p style="margin: 0 0 12px 0; font-weight: 600;">To install on iOS:</p>
+          <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <p style="margin: 0 0 8px 0;">1. Tap the Share button <span style="font-size: 20px;">⬆️</span></p>
+            <p style="margin: 0 0 8px 0;">2. Scroll down to find <strong>"Add to Home Screen"</strong></p>
+            <p style="margin: 0;">3. Tap <strong>"Add"</strong> to install</p>
+          </div>
+          <p style="margin: 0; font-size: 14px; color: #9ca3af;">The app will appear on your home screen with offline access.</p>
+        </div>
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white;
+          border: none;
+          padding: 14px 24px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          width: 100%;
+          font-size: 16px;
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        ">Got it!</button>
+      </div>
+      <style>
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      </style>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Remove modal when clicking outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+    
+    // Auto-remove after 30 seconds
+    setTimeout(() => {
+      if (modal.parentNode) {
+        modal.remove();
+      }
+    }, 30000);
   }
 
   /**
