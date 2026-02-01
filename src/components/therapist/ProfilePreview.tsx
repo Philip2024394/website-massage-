@@ -17,10 +17,10 @@
 
 import React, { useState, useCallback } from 'react';
 import { 
-  Eye, Smartphone, Monitor, Star, MapPin, Phone, 
+  Eye, Phone as Smartphone, Laptop as Desktop, Star, MapPin, Phone, 
   Clock, DollarSign, Calendar, Award, Users,
-  MessageCircle, TrendingUp, ChevronRight, Shield,
-  Heart, Share2, Bookmark, PlayCircle
+  MessageCircle, TrendingUp, Play as ChevronRight, Shield,
+  Heart, Share2, Star as Bookmark, Play as PlayCircle
 } from 'lucide-react';
 import { TherapistProfile, ProfileService, Testimonial } from './EnhancedProfileEditor';
 
@@ -416,7 +416,7 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = ({
                   : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              <Monitor className="w-4 h-4" />
+              <Desktop className="w-4 h-4" />
             </button>
             <button
               onClick={() => setPreviewMode('mobile')}

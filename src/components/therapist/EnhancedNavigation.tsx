@@ -28,9 +28,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Home, User, Calendar, DollarSign, Bell, Settings, 
   Search, Plus, Star, Clock, TrendingUp, Zap, 
-  ChevronRight, ChevronDown, Bookmark, History,
-  Command, Users, CreditCard, BarChart3, Shield,
-  FileText, Gift, ClipboardList, Wallet, MessageCircle
+  Play as ChevronRight, TrendingDown as ChevronDown, Star as Bookmark, Clock as History,
+  Zap as Command, Users, CreditCard, BarChart, Shield,
+  FileText, Gift, FileText as Clipboard, DollarSign as Wallet, MessageCircle
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -128,7 +128,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
       {
         id: 'analytics',
         label: 'Analytics',
-        icon: BarChart3,
+        icon: BarChart,
         color: 'text-blue-500',
         category: 'business',
         priority: 'medium',
@@ -174,7 +174,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
       {
         id: 'custom-menu',
         label: 'Service Menu',
-        icon: ClipboardList,
+        icon: Clipboard,
         color: 'text-orange-500',
         category: 'bookings',
         priority: 'low',

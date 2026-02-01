@@ -16,10 +16,10 @@ import { useMobileDetection } from './hooks/useMobileDetection';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
-import { useState, useEffect, lazy } from 'react';
+import { useState, useEffect } from 'react';
 
-// Temporarily disabled lazy loading to fix AsyncMode error
-const FloatingChatWindow = lazy(() => import('./chat').then(m => ({ default: m.FloatingChatWindow })));
+// Direct import instead of lazy loading to fix loading issues
+import { FloatingChatWindow } from './chat';
 // const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
 import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
@@ -1152,18 +1152,16 @@ const App = () => {
             return null;
         }
         
-        console.log('🔥 RENDERING FloatingChatWindow COMPONENT (lazy loaded)');
+        console.log('🔥 RENDERING FloatingChatWindow COMPONENT (direct import)');
         console.log('✅ FloatingChatWindow RENDERING NOW');
         
         // Re-enable FloatingChatWindow to test booking banner functionality
         return (
-            <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
-                <FloatingChatWindow
-                    userId={activeChat.customerId || 'demo-customer-1'}
-                    userName={activeChat.customerName || 'Demo Customer'}
-                    userRole="customer"
-                />
-            </Suspense>
+            <FloatingChatWindow
+                userId={activeChat.customerId || 'demo-customer-1'}
+                userName={activeChat.customerName || 'Demo Customer'}
+                userRole="customer"
+            />
         );
     };
 

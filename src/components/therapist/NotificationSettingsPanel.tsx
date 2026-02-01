@@ -14,7 +14,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Volume2, VolumeX, Bell, BellOff, Clock, Save, X } from 'lucide-react';
+import { Settings, Zap as Volume, X as VolumeOff, Bell, Bell as BellSlash, Clock, Save, X } from 'lucide-react';
 
 interface NotificationSettings {
   soundEnabled: boolean;
@@ -142,7 +142,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   {localSettings.pushEnabled ? (
                     <Bell className="w-5 h-5 text-blue-500" />
                   ) : (
-                    <BellOff className="w-5 h-5 text-gray-400" />
+                    <BellSlash className="w-5 h-5 text-gray-400" />
                   )}
                   <div>
                     <div className="font-medium">Push Notifications</div>
@@ -163,9 +163,9 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                   {localSettings.soundEnabled ? (
-                    <Volume2 className="w-5 h-5 text-green-500" />
+                    <Volume className="w-5 h-5 text-green-500" />
                   ) : (
-                    <VolumeX className="w-5 h-5 text-gray-400" />
+                    <VolumeOff className="w-5 h-5 text-gray-400" />
                   )}
                   <div>
                     <div className="font-medium">Sound Alerts</div>

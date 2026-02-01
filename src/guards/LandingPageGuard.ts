@@ -141,12 +141,19 @@ export class LandingPageGuard {
         };
       }
 
-      // Test location service availability
-      const locationTest = await locationService.testLocationAvailability();
-      return {
-        available: locationTest.available,
-        details: locationTest
-      };
+      // Test location service availability - simplified check
+      try {
+        const position = await locationService.getCurrentLocation();
+        return {
+          available: !!position,
+          details: { position }
+        };
+      } catch (locationError) {
+        return {
+          available: false,
+          details: { error: locationError }
+        };
+      }
     } catch (error) {
       return {
         available: false,

@@ -17,10 +17,10 @@
 
 import React, { useState, useMemo } from 'react';
 import { 
-  TrendingUp, TrendingDown, Eye, Calendar, Users, 
-  DollarSign, Star, Target, BarChart3, PieChart,
-  Activity, Zap, Award, AlertCircle, CheckCircle2,
-  ArrowUp, ArrowDown, Minus, Info, Lightbulb,
+  TrendingUp, RotateCcw as TrendingDown, Eye, Calendar, Users, 
+  DollarSign, Star, Target, BarChart as BarChart3, Disc as PieChart,
+  Zap as Activity, Zap, Award, AlertCircle, CheckCircle as CheckCircle2,
+  TrendingUp as ArrowUp, RotateCcw as ArrowDown, X as Minus, Info, Sun as Lightbulb,
   Filter, Download, RefreshCw, Clock
 } from 'lucide-react';
 import { TherapistProfile, ProfileAnalytics, ProfileService } from './EnhancedProfileEditor';

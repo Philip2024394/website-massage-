@@ -12,29 +12,37 @@ html, body {
   overscroll-behavior-y: auto !important;
 }
 
-/* Fix therapist layout containers */
+/* Fix therapist layout containers - CRITICAL FOR MOBILE */
 .therapist-page-container {
   height: 100vh !important;
   max-height: 100vh !important;
   min-height: 100vh !important;
   overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
 }
 
 .therapist-layout-content {
   height: auto !important;
   min-height: calc(100vh - 60px) !important;
-  max-height: none !important;
+  max-height: calc(100vh - 60px) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   contain: none !important;
   -webkit-overflow-scrolling: touch !important;
   touch-action: pan-y pan-x !important;
+  flex: 1 !important;
+  position: relative !important;
 }
 
 .therapist-layout-header {
   height: 60px !important;
   min-height: 60px !important;
   max-height: 60px !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 50 !important;
 }
 
 /* Fix PullToRefresh component */
@@ -53,6 +61,25 @@ html, body {
 
 /* Mobile-specific fixes */
 @media (max-width: 768px) {
+  /* Ensure body can scroll properly */
+  body {
+    position: static !important;
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Landing page mobile fixes */
+  .landing-page-container {
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y pan-x !important;
+    position: relative !important;
+  }
+  
   /* Ensure specific containers allow proper content scrolling */
   div[class*="h-screen"]:not(.therapist-page-container), div[class*="min-h-screen"]:not(.therapist-page-container) {
     height: auto !important;
@@ -69,7 +96,7 @@ html, body {
   }
   
   /* Fix overflow constraints */
-  div[style*="overflow: hidden"] {
+  div[style*="overflow: hidden"]:not(.therapist-page-container) {
     overflow: visible !important;
   }
   
@@ -90,7 +117,7 @@ html, body {
   }
   
   /* Critical: Force scroll on any problematic containers */
-  div[class*="overflow-hidden"] {
+  div[class*="overflow-hidden"]:not(.therapist-page-container) {
     overflow: visible !important;
   }
   

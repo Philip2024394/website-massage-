@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Smartphone, Check, X, AlertCircle } from 'lucide-react';
+import { Download, Phone as Smartphone, Check, X, AlertCircle } from 'lucide-react';
 import { PWAInstallationStatusChecker } from '../utils/pwaInstallationStatus';
 
 interface UniversalPWAInstallProps {

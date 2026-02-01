@@ -119,11 +119,43 @@ footer {
 @media (max-width: 768px) {
   .landing-page-container {
     /* Use full viewport height on mobile */
-    min-height: 100dvh; /* Dynamic viewport height - excludes mobile browser UI */
-    height: auto; /* Allow natural height instead of fixed */
-    max-height: none; /* Remove height restrictions */
+    min-height: 100dvh !important; /* Dynamic viewport height - excludes mobile browser UI */
+    height: auto !important; /* Allow natural height instead of fixed */
+    max-height: none !important; /* Remove height restrictions */
     padding-bottom: 0;
     margin-bottom: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y pan-x !important;
+  }
+  
+  /* Therapist dashboard mobile fixes */
+  .therapist-page-container {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .therapist-layout-content {
+    height: auto !important;
+    min-height: calc(100vh - 60px) !important;
+    max-height: calc(100vh - 60px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y pan-x !important;
+  }
+  
+  .therapist-layout-header {
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
+    flex-shrink: 0 !important;
+    z-index: 50 !important;
   }
   
   /* Fix white container issues on mobile */

@@ -2,8 +2,10 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./apps/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{ts,tsx}",
+    "./apps/**/*.{ts,tsx}",
+    "!./node_modules/**",
+    "!./dist/**"
   ],
   // Note: Only scan src/ and apps/ folders to avoid node_modules performance issues
   theme: {

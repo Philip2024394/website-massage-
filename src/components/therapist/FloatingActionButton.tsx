@@ -17,7 +17,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, Calendar, Clock, DollarSign, Bell, 
   MessageCircle, Settings, Search, Zap,
-  Users, Gift, BarChart3, Home, X
+  Users, Gift, BarChart as BarChart3, Home, X
 } from 'lucide-react';
 
 export interface QuickAction {

@@ -13,7 +13,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, X, ArrowRight, Zap, TrendingUp, Users, Star } from 'lucide-react';
+import { Clock, CheckCircle, X, Play as ArrowRight, Zap, TrendingUp, Users, Star } from 'lucide-react';
 
 interface FlowStep {
   title: string;

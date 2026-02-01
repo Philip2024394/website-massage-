@@ -2,7 +2,7 @@
  * PWA Installation Status Utilities
  * Centralized PWA installation detection and state management
  */
-import React from 'react';
+import { useState, useEffect } from 'react';
 
 export interface PWAInstallationStatus {
   isInstalled: boolean;
@@ -273,11 +273,11 @@ export class PWAInstallationStatusChecker {
  * React hook for PWA installation status
  */
 export function usePWAInstallationStatus() {
-  const [status, setStatus] = React.useState<PWAInstallationStatus>(() => 
+  const [status, setStatus] = useState<PWAInstallationStatus>(() => 
     PWAInstallationStatusChecker.checkStatus()
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const updateStatus = () => {
       setStatus(PWAInstallationStatusChecker.checkStatus());
     };

@@ -28,12 +28,12 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  User, Camera, MapPin, Phone, Mail, Clock, 
+  User, Image as CameraIcon, MapPin, Phone, Mail, Clock, 
   DollarSign, Star, Award, TrendingUp, CheckCircle2,
   Upload, Edit3, Save, X, Plus, Trash2, 
   Image as ImageIcon, Calendar, Target,
-  BarChart3, Users, MessageCircle, Sparkles,
-  ChevronRight, ChevronDown, AlertCircle, Info
+  BarChart as BarChart3, Users, MessageCircle, Sparkles,
+  Play as ChevronRight, TrendingDown as ChevronDown, AlertCircle, Info
 } from 'lucide-react';
 
 export interface TherapistProfile {
@@ -168,7 +168,7 @@ const FORM_SECTIONS = [
   { id: 'basic', label: 'Basic Info', icon: User, description: 'Name, bio, and contact details' },
   { id: 'services', label: 'Services', icon: Sparkles, description: 'Your treatments and pricing' },
   { id: 'availability', label: 'Availability', icon: Calendar, description: 'When you\'re available' },
-  { id: 'portfolio', label: 'Portfolio', icon: Camera, description: 'Photos and certifications' },
+  { id: 'portfolio', label: 'Portfolio', icon: CameraIcon, description: 'Photos and certifications' },
   { id: 'settings', label: 'Settings', icon: Target, description: 'Booking and privacy settings' },
   { id: 'analytics', label: 'Insights', icon: BarChart3, description: 'Performance and optimization' }
 ] as const;
@@ -346,7 +346,7 @@ export const EnhancedProfileEditor: React.FC<EnhancedProfileEditorProps> = ({
           </div>
           
           <label className="absolute bottom-2 right-2 bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full cursor-pointer transition-colors shadow-lg">
-            <Camera className="w-4 h-4" />
+            <CameraIcon className="w-4 h-4" />
             <input
               type="file"
               accept="image/*"
@@ -626,7 +626,7 @@ export const EnhancedProfileEditor: React.FC<EnhancedProfileEditorProps> = ({
             {activeSection === 'portfolio' && (
               <div className="space-y-6">
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <CameraIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Photo Portfolio</h3>
                   <p className="text-gray-600 mb-4">Showcase your work and certifications</p>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-lg mx-auto">

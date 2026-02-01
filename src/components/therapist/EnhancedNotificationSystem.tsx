@@ -25,7 +25,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Bell, BellRing, Volume2, VolumeX, Settings, X, Check, Clock, AlertTriangle, Star, MessageCircle, Calendar, DollarSign } from 'lucide-react';
+import { Bell, Bell as BellRing, Zap as Volume, X as VolumeOff, Settings, X, Check, Clock, AlertTriangle, Star, MessageCircle, Calendar, DollarSign } from 'lucide-react';
 import { pushNotificationsService } from '../../lib/pushNotificationsService';
 import { bookingSoundService } from '../../services/bookingSound.service';
 

@@ -17,9 +17,9 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { 
-  Plus, Edit3, Trash2, Move, Camera, DollarSign, 
+  Plus, Edit3, Trash2, Shuffle as Move, Image as Camera, DollarSign, 
   Clock, Tag, Image as ImageIcon, Copy, Eye,
-  ChevronUp, ChevronDown, MoreVertical, Star,
+  TrendingUp as ChevronUp, TrendingDown as ChevronDown, MoreVertical as MoreVertical, Star,
   TrendingUp, Users, Calendar, AlertCircle,
   CheckCircle2, Package, Zap, Target
 } from 'lucide-react';

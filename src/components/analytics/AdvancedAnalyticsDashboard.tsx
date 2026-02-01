@@ -28,12 +28,12 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
-  BarChart3, TrendingUp, TrendingDown, Users, DollarSign,
+  BarChart, TrendingUp, RotateCcw as TrendingDown, Users, DollarSign,
   Calendar, Clock, Star, Target, Zap, Award, 
   Filter, Download, RefreshCw, Settings, Eye,
-  ArrowUp, ArrowDown, Minus, AlertCircle, CheckCircle2,
-  PieChart, Activity, Bell, Bookmark, Share2,
-  ChevronRight, ChevronDown, MoreVertical, Info
+  TrendingUp as ArrowUp, RotateCcw as ArrowDown, X as Minus, AlertCircle, CheckCircle,
+  Disc as PieChart, Zap as Activity, Bell, Star as Bookmark, Share2,
+  Play as ChevronRight, TrendingDown as ChevronDown, MoreVertical as MoreVertical, Info
 } from 'lucide-react';
 
 export interface AnalyticsData {

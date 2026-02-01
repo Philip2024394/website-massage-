@@ -148,8 +148,8 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
                   <div>
-                    <p className="font-semibold text-gray-900">One-time Certification Fee</p>
-                    <p className="text-sm text-gray-600">IDR 350,000 after admin approval</p>
+                    <p className="font-semibold text-gray-900">Annual Certification Fee</p>
+                    <p className="text-sm text-gray-600">IDR 800,000 per year, renewed annually on 12th calendar date</p>
                   </div>
                 </div>
               </div>
@@ -237,7 +237,7 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
               </div>
               <h4 className="font-bold text-gray-900 mb-2">Payment</h4>
               <p className="text-sm text-gray-600">
-                Pay IDR 350,000 after approval
+                Pay IDR 800,000 annual fee after approval
               </p>
             </div>
             <div className="text-center">
@@ -298,7 +298,7 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="opacity-90">Valid Until:</span>
-                  <span className="font-semibold">2 Years</span>
+                  <span className="font-semibold">1 Year</span>
                 </div>
               </div>
               
@@ -315,7 +315,7 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
           
           <p className="text-center text-gray-600 mt-8 max-w-2xl mx-auto">
             Your Safe Pass card will display your professional credentials and authorized status to work in hotels and villas. 
-            The card is valid for 2 years from the date of issuance.
+            The card is valid for 1 year from the date of issuance and must be renewed annually on the 12th calendar date.
           </p>
         </div>
       </section>
@@ -388,7 +388,8 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="font-bold text-gray-900 mb-3 text-lg">Is the Safe Pass valid across all of Indonesia?</h3>
               <p className="text-gray-600">
-                Yes! Once certified, your Safe Pass is valid for hotel and villa services throughout Indonesia for 2 years from the date of issuance.
+                Yes! Once certified, your Safe Pass is valid for hotel and villa services throughout Indonesia for 1 year from the date of issuance. 
+                The certification must be renewed annually on the 12th calendar date for IDR 800,000.
               </p>
             </div>
             
