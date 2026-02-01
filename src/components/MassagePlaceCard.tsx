@@ -579,15 +579,22 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 />
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        {/* Verified Badge - Show if manually verified, admin verified, or has KTP uploaded */}
-                                        {((place as any).isVerified || (place as any).verifiedBadge || (place as any).ktpPhotoUrl || (place as any).ktpVerified) && (
-                                            <img 
-                                                src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
-                                                alt="Verified"
-                                                className="w-4 h-4 flex-shrink-0"
-                                                title="Verified Massage Place - ID Verified"
-                                            />
-                                        )}
+                                        {/* Verified Badge - Show if manually verified, admin verified, has KTP uploaded, or has complete profile */}
+                                        {(() => {
+                                            const hasVerifiedBadge = (place as any).isVerified || (place as any).verifiedBadge || (place as any).ktpVerified;
+                                            const hasBankDetails = place.bankName && place.accountName && place.accountNumber;
+                                            const hasKtpUploaded = (place as any).ktpPhotoUrl;
+                                            const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                            
+                                            return shouldShowBadge && (
+                                                <img 
+                                                    src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                                    alt="Verified"
+                                                    className="w-4 h-4 flex-shrink-0"
+                                                    title="Verified Massage Place - Complete Profile"
+                                                />
+                                            );
+                                        })()}
                                         <h2 className="text-lg font-bold text-white leading-tight">{place.name}</h2>
                                     </div>
                                     <div className="flex items-center gap-2 text-xs">

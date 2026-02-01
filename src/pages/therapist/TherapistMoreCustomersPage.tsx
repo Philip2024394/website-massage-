@@ -23,9 +23,9 @@ interface MoreCustomersPageProps {
 
 const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({ 
   therapist, 
-  onBack,
-  const language = 'id'; // Fixed Indonesian language 
+  onBack
 }) => {
+  const language = 'id'; // Fixed Indonesian language
   const [expandedSection, setExpandedSection] = useState<string | null>('dashboard-features');
 
   const toggleSection = (section: string) => {

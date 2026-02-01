@@ -777,7 +777,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         <div className="landing-page-container scrollable relative w-full bg-gray-900 overflow-y-auto" style={{ 
             height: '100vh',
             maxHeight: '100vh',
-            minHeight: '100vh',
             minHeight: '100dvh', // Dynamic viewport height for mobile
             position: 'relative'
         }}>
@@ -793,7 +792,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     backgroundPosition: 'center center',
                     backgroundRepeat: 'no-repeat',
                     willChange: 'contents', // Hint browser to optimize layer
-                    minHeight: '100vh',
                     minHeight: '100dvh', // Dynamic viewport height for mobile
                     minWidth: '100vw',
                     position: 'fixed',
@@ -812,7 +810,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             
             {/* Scrollable content */}
             <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-3 sm:px-6 text-center w-full" style={{ 
-                minHeight: '100vh',
                 minHeight: '100dvh', // Dynamic viewport height for mobile
                 paddingBottom: 'env(safe-area-inset-bottom, 0px)' // Respect mobile safe area
             }}>

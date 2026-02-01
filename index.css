@@ -4,6 +4,9 @@
 /* Elite Therapist Dashboard Styles */
 @import url('./src/styles/elite-therapist-dashboard.css');
 
+/* Enhanced Navigation Styles */
+@import url('./src/styles/enhanced-navigation.css');
+
 /* CRITICAL: Mobile scrolling fix */
 @import url('./src/styles/mobile-scroll-fix.css');
 

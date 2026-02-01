@@ -670,9 +670,28 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                 );
                             })()}
                             
-                            <h3 className="text-lg font-bold text-gray-900">
-                                {therapist.name}
-                            </h3>
+                            <div className="flex items-center gap-2">
+                                {/* Verified Badge - Show if therapist has both bank details and KTP */}
+                                {(() => {
+                                    const hasVerifiedBadge = (therapist as any).verifiedBadge || therapist.isVerified;
+                                    const hasBankDetails = therapist.bankName && therapist.accountName && therapist.accountNumber;
+                                    const hasKtpUploaded = therapist.ktpPhotoUrl;
+                                    const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                    
+                                    return shouldShowBadge && (
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                            alt="Verified"
+                                            className="w-5 h-5 flex-shrink-0"
+                                            title="Verified Therapist - Complete Profile"
+                                        />
+                                    );
+                                })()}
+                                
+                                <h3 className="text-lg font-bold text-gray-900">
+                                    {therapist.name}
+                                </h3>
+                            </div>
                         </div>
                     </div>
 

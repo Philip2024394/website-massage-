@@ -35,7 +35,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
     {
       id: 'commission',
       title: 'Pro - Pay As You Go',
-      description: 'Start earning with no upfront costs',
+      description: 'Commission-based membership - pay only when you earn',
       pricing: '30% commission per completed booking',
       benefits: [
         '✅ No monthly fees or upfront costs',
@@ -49,8 +49,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
         '✅ Access to all booking features'
       ],
       warnings: [
-        '⚠️ 30% commission deducted from each booking',
-        '⚠️ Upgrade to Plus Plan available anytime for 0% commission'
+        '⚠️ 30% commission deducted from each booking'
       ],
       icon: <Zap className="w-8 h-8" />,
       color: 'orange',

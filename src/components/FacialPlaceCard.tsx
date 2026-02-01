@@ -412,7 +412,26 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                         
                         {/* Name and Status Column */}
                         <div className="flex-1 min-w-0 pt-12 pb-2">
-                            <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
+                            <div className="flex items-center gap-2">
+                                {/* Verified Badge - Show if place has both bank details and KTP */}
+                                {(() => {
+                                    const hasVerifiedBadge = (place as any).verifiedBadge || (place as any).isVerified;
+                                    const hasBankDetails = place.bankName && place.accountName && place.accountNumber;
+                                    const hasKtpUploaded = place.ktpPhotoUrl;
+                                    const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                    
+                                    return shouldShowBadge && (
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                            alt="Verified"
+                                            className="w-5 h-5 flex-shrink-0"
+                                            title="Verified Place - Complete Profile"
+                                        />
+                                    );
+                                })()}
+                                
+                                <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
+                            </div>
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1">
                                 <span className="relative mr-1.5">
                                     {/* Static ring glow effect */}

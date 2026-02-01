@@ -399,7 +399,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                         Our focus remains clear:
                     </p>
                     <p className="text-xl font-bold text-orange-600 mt-3">
-                        Professional wellness. Verified providers. Trusted delivery.
+                        Professional wellness. Verified providers. Proven With Trusted Standards.
                     </p>
                 </div>
 

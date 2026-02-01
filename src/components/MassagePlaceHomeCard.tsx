@@ -299,9 +299,28 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                         {/* Name Only */}
                         <div className="mb-1">
                             <div className="flex items-center justify-between gap-2 mb-1">
-                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
-                                    {place.name || "Massage Place"}
-                                </h3>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    {/* Verified Badge - Show if place has both bank details and KTP */}
+                                    {(() => {
+                                        const hasVerifiedBadge = (place as any).verifiedBadge || (place as any).isVerified;
+                                        const hasBankDetails = place.bankName && place.accountName && place.accountNumber;
+                                        const hasKtpUploaded = place.ktpPhotoUrl;
+                                        const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                        
+                                        return shouldShowBadge && (
+                                            <img 
+                                                src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                                alt="Verified"
+                                                className="w-5 h-5 flex-shrink-0"
+                                                title="Verified Place - Complete Profile"
+                                            />
+                                        );
+                                    })()}
+                                    
+                                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                                        {place.name || "Massage Place"}
+                                    </h3>
+                                </div>
                             </div>
                         </div>
 

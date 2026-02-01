@@ -1,4 +1,6 @@
-# LANDING PAGE GUARD - ROUTE PROTECTION
+/**
+ * LANDING PAGE GUARD - ROUTE PROTECTION
+ */
 
 import { useEffect } from 'react';
 import { locationService } from '../services/locationService';

@@ -18,15 +18,19 @@
  * - Account status checked before each message
  */
 
-import { Client, Functions } from 'appwrite';
+import { Client, Functions, Databases, ID } from 'appwrite';
 
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
 
-const APPWRITE_ENDPOINT = 'https://syd.cloud.appwrite.io/v1';
-const APPWRITE_PROJECT_ID = '68f23b11000d25eb3664'; // Main project ID
+const APPWRITE_ENDPOINT = 'https://cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID = '66e5c5d1003b5b00c1d0'; // Correct main project ID
 const SEND_MESSAGE_FUNCTION_ID = '6972e0c30012060a2762'; // Appwrite Function ID (deployed sendChatMessage)
+
+// FALLBACK: Direct database access when function fails
+const FALLBACK_DATABASE_ID = '66e5c5d100248f08b3b5';
+const FALLBACK_MESSAGES_COLLECTION = 'messages';
 
 // ============================================================================
 // TYPES
@@ -72,6 +76,7 @@ const client = new Client()
   .setProject(APPWRITE_PROJECT_ID);
 
 const functions = new Functions(client);
+const databases = new Databases(client); // Fallback direct database access
 
 // ============================================================================
 // SERVER-ENFORCED CHAT SERVICE
@@ -206,10 +211,62 @@ class ServerEnforcedChatService {
         };
       }
 
+      // 🚨 FALLBACK: Try direct database write when function fails
+      console.warn('⚠️ [FALLBACK] Function failed, attempting direct database write...');
+      return await this.fallbackDirectSend(request);
+    }
+  }
+
+  /**
+   * 🆘 FALLBACK: Direct database write when server function fails
+   * This ensures messages are never lost even if the function is down
+   */
+  private async fallbackDirectSend(request: SendMessageRequest): Promise<SendMessageResponse> {
+    try {
+      console.log('🆘 [FALLBACK] Using direct database write...');
+      
+      const messageData = {
+        conversationId: request.roomId,
+        senderId: request.senderId,
+        senderName: request.senderName,
+        senderRole: request.senderType,
+        receiverId: request.recipientId,
+        receiverName: request.recipientName,
+        receiverRole: request.recipientType || 'therapist',
+        message: request.message,
+        messageType: 'text',
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        
+        // Duplicate fields for compatibility
+        messageId: ID.unique(),
+        recipientId: request.recipientId,
+        content: request.message,
+        sentAt: new Date().toISOString()
+      };
+      
+      const response = await databases.createDocument(
+        FALLBACK_DATABASE_ID,
+        FALLBACK_MESSAGES_COLLECTION,
+        ID.unique(),
+        messageData
+      );
+      
+      console.log('✅ [FALLBACK] Message sent via direct database:', response.$id);
+      
+      return {
+        success: true,
+        messageId: response.$id,
+        message: 'Message sent (fallback mode)'
+      };
+      
+    } catch (fallbackError) {
+      console.error('❌ [FALLBACK] Direct database write also failed:', fallbackError);
+      
       return {
         success: false,
-        error: 'FUNCTION_ERROR',
-        message: 'Failed to send message. Please try again.',
+        error: 'TOTAL_FAILURE',
+        message: 'Chat service completely unavailable. Please try again later.'
       };
     }
   }

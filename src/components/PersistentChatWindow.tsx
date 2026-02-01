@@ -864,20 +864,28 @@ export function PersistentChatWindow() {
               console.log('═══════════════════════════════════════════');
               console.log('✅ [ORDER NOW] Message sent successfully');
               console.log('📋 [FLOW STEP 1 ✅] Message sending completed');
-              console.log('📋 [FLOW STEP 2 →] Starting booking creation...');
+              console.log('📋 [FLOW STEP 2 →] Starting booking creation with chat integration...');
               console.log('Current URL (should NOT change):', window.location.href);
               console.log('Current step before setBookingStep:', chatState.bookingStep);
               console.log('═══════════════════════════════════════════');
               
+              // 🔥 CRITICAL: Always open chat after booking attempt
               setBookingStep('chat');
               
-              console.log('✅ CHAT OPENED AFTER IMMEDIATE BOOKING');
-              console.log('📋 [FLOW STEP 3 ✅] Chat session ready');
-              console.log('📋 [FLOW STEP 4 →] Transitioning from details to chat step...');
-              console.log('✅ setBookingStep("chat") called for immediate booking');
-              console.log('📋 [FLOW STEP 4 ✅] Step transition completed');
-              console.log('Current step after setBookingStep:', chatState.bookingStep);
-              console.log('Booking created successfully:', bookingCreated);
+              console.log('🎪 [BOOKING→CHAT] Chat window opened after booking creation');
+              console.log('📋 [FLOW STEP 3 ✅] Chat session ready with booking integration');
+              console.log('📋 [FLOW STEP 4 →] Booking created, transitioning to chat interface...');
+              console.log('✅ setBookingStep("chat") called for immediate booking with chat integration');
+              console.log('📋 [FLOW STEP 4 ✅] Step transition completed - chat ready for communication');
+              console.log('🔄 [INTEGRATION STATUS] Booking result:', bookingCreated ? 'SUCCESS' : 'FAILED');
+              console.log('🔄 [CHAT FLOW] Current step after setBookingStep:', chatState.bookingStep);
+              
+              if (bookingCreated) {
+                console.log('✅ [BOOKING→CHAT] Integration successful - booking created and chat opened');
+                console.log('📡 [DASHBOARD NOTIFY] Therapist dashboard will receive real-time notification');
+              } else {
+                console.log('⚠️ [BOOKING→CHAT] Booking creation failed but chat opened for communication');
+              }
               
               if (!bookingCreated) {
                 console.warn('⚠️ Note: Booking creation failed, but chat is now open');

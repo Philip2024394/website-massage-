@@ -73,15 +73,25 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                     {/* Name left aligned with offset */}
                     <div className="mb-2 ml-[75px]">
                         <div className="flex items-center gap-2">
-                            {/* Verified Badge */}
-                            {((therapist as any).verifiedBadge || therapist.isVerified) && (
-                                <img 
-                                    src={customVerifiedBadge || "https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"}
-                                    alt="Verified"
-                                    className="w-5 h-5 flex-shrink-0"
-                                    title="Verified Therapist"
-                                />
-                            )}
+                            {/* Verified Badge - Show if manually verified OR has both bank details and KTP */}
+                            {(() => {
+                                // 🏆 VERIFICATION CRITERIA:
+                                // 1. Manual verification flag (isVerified/verifiedBadge) OR
+                                // 2. Complete bank details (bankName + accountName + accountNumber) AND KTP uploaded
+                                const hasVerifiedBadge = (therapist as any).verifiedBadge || therapist.isVerified;
+                                const hasBankDetails = therapist.bankName && therapist.accountName && therapist.accountNumber;
+                                const hasKtpUploaded = therapist.ktpPhotoUrl;
+                                const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                
+                                return shouldShowBadge && (
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                        alt="Verified"
+                                        className="w-5 h-5 flex-shrink-0"
+                                        title="Verified Therapist - Bank Details & KTP Complete"
+                                    />
+                                );
+                            })()}
                             
                             {/* Hotel/Villa Safe Pass Badge */}
                             {(therapist as any).hotelVillaSafePassStatus === 'active' && (

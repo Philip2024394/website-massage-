@@ -648,66 +648,82 @@ export enum MessageSenderType {
 }
 
 export interface ChatRoom {
-    $id?: string;
+    // Appwrite system fields
+    $id?: string;                       // Auto-generated document ID
+    $createdAt?: string;                // Auto-generated creation timestamp
+    $updatedAt?: string;                // Auto-generated update timestamp
     
-    // Required fields from Appwrite schema
-    customerId: string;                  // Size: 255, required
+    // Required fields from your Appwrite schema
+    customerId: string;                 // Size: 255, required
     customerName: string;               // Size: 255, required  
     customerLanguage: string;           // Size: 10, required ('en' | 'id')
-    customerPhoto?: string;             // Size: 500, nullable
-    
-    therapistId?: string;               // Size: 255, nullable - changed to string to match schema
     therapistName: string;              // Size: 255, required
     therapistLanguage: string;          // Size: 10, required ('en' | 'id')
     therapistType: string;              // Size: 50, required ('therapist' | 'place' | 'facial')
-    therapistPhoto?: string;            // Size: 500, nullable
-    
-    status: string;                     // Size: 50, required (ChatRoomStatus values)
+    status: string;                     // Size: 50, required (active/closed/expired etc.)
     expiresAt: string;                  // Required datetime - ISO timestamp
+    unreadCount: number;                // Required integer - for notifications
+    createdAt: string;                  // Required datetime - manual creation timestamp
+    updatedAt: string;                  // Required datetime - manual update timestamp
     
-    // Optional datetime fields
+    // Optional nullable fields from your schema
+    lastMessageAt?: string;             // Nullable datetime - last message timestamp
+    customerPhoto?: string;             // Size: 500, nullable - customer profile image
+    therapistPhoto?: string;            // Size: 500, nullable - therapist profile image
     acceptedAt?: string;                // Nullable datetime - when booking accepted
     declinedAt?: string;                // Nullable datetime - when booking declined
-    lastMessageAt?: string;             // Nullable datetime - last message timestamp
-    
-    // Other fields
-    unreadCount: number;                // Required integer - for therapist notifications
     lastMessagePreview?: string;        // Size: 200, nullable - preview of last message
     bookingId?: string;                 // Size: 100, nullable - related booking reference
-    
-    // Appwrite system fields (auto-generated)
-    $createdAt?: string;                // Auto datetime
-    $updatedAt?: string;                // Auto datetime
-    createdAt?: string;                 // Manual datetime, required
-    updatedAt?: string;                 // Manual datetime, required
+    therapistId?: string;               // Size: 255, nullable - therapist ID
 }
 
 export interface ChatMessage {
-    $id?: string;
-    roomId: string;            // Chat room ID
+    // Appwrite system fields
+    $id?: string;                       // Auto-generated document ID
+    $createdAt?: string;                // Auto-generated creation timestamp
+    $updatedAt?: string;                // Auto-generated update timestamp
     
-    // Sender info
-    senderId: string;          // User ID or provider ID
-    senderType: MessageSenderType;
-    senderName: string;
+    // Required message fields
+    senderId: string;                   // Size: 255, required
+    senderName: string;                 // Size: 255, required
+    senderType: string;                 // Required enum (customer, therapist, admin, system)
+    recipientId: string;                // Size: 255, required
+    recipientName: string;              // Size: 255, required
+    recipientType: string;              // Required enum
+    roomId: string;                     // Size: 255, required
+    message: string;                    // Size: 5000, required - main message content
+    content: string;                    // Size: 255, required - message content alias
+    messageType: string;                // Required enum (text, system, booking, etc.)
+    originalLanguage: string;           // Size: 10, required (en/id)
+    createdAt: string;                  // Required datetime
+    read: boolean;                      // Required boolean
+    isSystemMessage: boolean;           // Required boolean
+    conversationId: string;             // Size: 255, required
+    receiverId: string;                 // Size: 255, required
+    receivername: string;               // Size: 255, required
+    bookingid: string;                  // Size: 255, required
+    originalMessageId: string;          // Size: 255, required
+    expiresat: string;                  // Required datetime
+    archivedBy: string;                 // Size: 50, required
+    sessionId: string;                  // Size: 150, required
     
-    // Message content
-    originalText: string;      // Original message in sender's language
-    text?: string;             // Text alias for originalText
-    type?: string;             // Message type (system, user, etc.)
-    originalLanguage: 'en' | 'id';
-    translatedText?: string;   // Auto-translated to recipient's language
-    translatedLanguage?: 'en' | 'id';
+    // Optional/nullable fields
+    translatedText?: string;            // Size: 5000, nullable - auto-translated content
+    translatedLanguage?: string;        // Enum, nullable (en/id)
+    readAt?: string;                    // Datetime, nullable - when message was read
+    fileUrl?: string;                   // Size: 500, nullable - attached file URL
+    fileName?: string;                  // Size: 255, nullable - attached file name
+    location?: string;                  // Size: 500, nullable - location data JSON
+    metadata?: string;                  // Size: 500, nullable - additional metadata JSON
+    savedby?: string;                   // Size: 255, nullable - user who saved message
+    savedat?: string;                   // Datetime, nullable - when message was saved
     
-    // Translation toggle
-    showOriginal?: boolean;    // Client-side only (not stored)
+    // Boolean fields with defaults
+    keepForever?: boolean;              // Default: false - prevent auto-deletion
+    markedForSave?: boolean;            // Default: false - marked for permanent save
     
-    // Status
-    isRead: boolean;
-    readAt?: string;
-    
-    // Metadata
-    createdAt?: string;
+    // Client-side only fields (not stored in Appwrite)
+    showOriginal?: boolean;             // Translation toggle for UI
 }
 
 export interface ChatNotification {

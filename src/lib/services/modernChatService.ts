@@ -94,13 +94,28 @@ class ModernChatService {
     const { chatRoomId, content, senderId, senderName, senderType } = params;
 
     const messageData = {
-      chatRoomId,
-      content: content.trim(),
+      roomId: chatRoomId,
+      message: content.trim(),
+      content: content.trim(), // Required alias
       senderId,
       senderName,
       senderType,
-      timestamp: new Date().toISOString(),
+      recipientId: 'system', // Required field
+      recipientName: 'System', // Required field  
+      recipientType: 'system', // Required field
+      messageType: 'text', // Required enum
+      originalLanguage: 'en', // Required field
+      createdAt: new Date().toISOString(),
       read: false,
+      isSystemMessage: false,
+      conversationId: chatRoomId, // Required field
+      receiverId: 'system', // Required field
+      receivername: 'System', // Required field
+      bookingid: 'none', // Required field
+      originalMessageId: 'none', // Required field
+      expiresat: new Date(Date.now() + 24*60*60*1000).toISOString(),
+      archivedBy: 'none', // Required field
+      sessionId: chatRoomId, // Required field
       status: 'sent' as const
     };
 

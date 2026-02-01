@@ -53,23 +53,39 @@ export const simpleChatService = {
         try {
             const timestamp = new Date().toISOString();
             const messageData: any = {
-                // Primary fields (matching your Appwrite schema)
-                conversationId: data.conversationId,
+                // Required message content fields
+                message: data.message,
+                content: data.message.length > 255 ? data.message.substring(0, 255) : data.message,
+                
+                // Required sender/recipient fields
                 senderId: data.senderId,
                 senderName: data.senderName,
-                senderRole: data.senderRole,
-                receiverId: data.receiverId,
-                receiverName: data.receiverName,
-                receiverRole: data.receiverRole,
-                message: data.message,
-                messageType: data.messageType || 'text',
-                isRead: false,
+                senderType: data.senderRole,
+                recipientId: data.receiverId,
+                recipientName: data.receiverName,
+                recipientType: data.receiverRole,
                 
-                // Duplicate fields (your schema has these)
-                messageId: ID.unique(), // duplicate of $id
-                recipientId: data.receiverId, // duplicate of receiverId
-                content: data.message, // duplicate of message
-                sentAt: timestamp, // duplicate of $createdAt
+                // Required IDs and metadata
+                roomId: data.conversationId,
+                conversationId: data.conversationId,
+                receiverId: data.receiverId,
+                receivername: data.receiverName,
+                sessionId: data.conversationId,
+                
+                // Required enums and settings
+                messageType: data.messageType || 'text',
+                originalLanguage: 'en',
+                
+                // Required timestamps and status
+                createdAt: timestamp,
+                read: false,
+                isSystemMessage: false,
+                
+                // Required fields with defaults
+                bookingid: data.bookingId || 'none',
+                originalMessageId: 'none',
+                expiresat: new Date(Date.now() + 24*60*60*1000).toISOString(),
+                archivedBy: 'none',
                 
                 // Optional metadata
                 metadata: JSON.stringify(data.metadata || {})

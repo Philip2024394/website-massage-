@@ -181,6 +181,7 @@ export type Page =
     | 'facial-types'
     | 'providers'
     | 'discounts'
+    | 'real-chat-test' // 🔗 Real Chat Integration Test
     | 'therapist-login'
     | 'place-login'
     | 'facial-portal'

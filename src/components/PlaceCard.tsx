@@ -196,7 +196,27 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                     
                     {/* Name and Distance */}
                     <div className="flex-1 min-w-0 pb-1">
-                        <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
+                        <div className="flex items-center gap-2">
+                            {/* Verified Badge - Show if place has both bank details and KTP */}
+                            {(() => {
+                                // 🏆 VERIFICATION CRITERIA: Bank details + KTP upload required
+                                const hasVerifiedBadge = (place as any).verifiedBadge || place.isVerified;
+                                const hasBankDetails = place.bankName && place.accountName && place.accountNumber;
+                                const hasKtpUploaded = place.ktpPhotoUrl;
+                                const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                
+                                return shouldShowBadge && (
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                        alt="Verified"
+                                        className="w-5 h-5 flex-shrink-0"
+                                        title="Verified Place - Bank Details & KTP Complete"
+                                    />
+                                );
+                            })()}
+                            
+                            <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
+                        </div>
                     </div>
                     
                     <div className="flex items-center text-sm text-gray-500 gap-1 pb-1 flex-shrink-0">

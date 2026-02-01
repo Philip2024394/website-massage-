@@ -292,7 +292,13 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                 <IndastreetAchievements 
                     therapistId={(therapist as any).id || (therapist as any).$id}
                     therapistName={therapist.name}
-                    isVerified={(therapist as any).isVerified || (therapist as any).verifiedBadge}
+                    isVerified={(() => {
+                        // Real verification logic: Bank details AND KTP required
+                        const hasBankDetails = therapist.bankName && therapist.accountName && therapist.accountNumber;
+                        const hasKtpUploaded = therapist.ktpPhotoUrl;
+                        const isManuallyVerified = (therapist as any).isVerified || (therapist as any).verifiedBadge;
+                        return Boolean(isManuallyVerified || (hasBankDetails && hasKtpUploaded));
+                    })()}
                     verifiedDate={(therapist as any).verifiedAt}
                     mode={mode}
                     onViewAll={undefined} // Remove manage button - no valid route for regular users

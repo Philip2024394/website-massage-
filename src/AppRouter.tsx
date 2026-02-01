@@ -92,6 +92,7 @@ const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipA
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
+const AppwriteDiagnostic = React.lazy(() => import('./pages/AppwriteDiagnostic'));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
 const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
 const RoleSelectionPage = React.lazy(() => import('./pages/auth/RoleSelectionPage'));
@@ -541,6 +542,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'help-faq':
             return renderRoute(publicRoutes.helpFaq.component, {
+                t: t,
+                language: props.language,
+                onNavigate: props.onNavigate
+            });
+
+        // � Appwrite Connection Diagnostic
+        case 'appwrite-diagnostic':
+            return renderRoute(() => <AppwriteDiagnostic />, {
+                t: t,
+                language: props.language,
+                onNavigate: props.onNavigate
+            });
+
+        // �🔬 Appwrite Connection Diagnostic
+        case 'diagnostic':
+            return renderRoute(() => <DiagnosticPage />, {
                 t: t,
                 language: props.language,
                 onNavigate: props.onNavigate

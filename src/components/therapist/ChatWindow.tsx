@@ -240,32 +240,34 @@ export default function ChatWindow({
                 setBookingStatus('pending');
             }
 
-            // Subscribe to real-time updates
+            // Subscribe to real-time updates with enhanced customer connection
             const unsubscribe = simpleChatService.subscribeToMessages(conversationId, (newMsg) => {
+                console.log('🎆 [THERAPIST↔CUSTOMER] New message received from customer chat:', {
+                    messageId: newMsg.$id,
+                    from: newMsg.senderName,
+                    senderId: newMsg.senderId,
+                    content: newMsg.message?.substring(0, 50) + '...',
+                    chatIntegrated: true
+                });
+                
                 setMessages(prev => {
                     const exists = prev.some(m => m.$id === newMsg.$id);
                     if (!exists) {
-                        // Play notification sound for new customer messages (not system messages)
+                        // 🔔 Play notification sound for new customer messages (not system messages)
                         if (newMsg.senderId !== 'system' && newMsg.senderId !== providerId) {
                             try {
                                 const audio = new Audio('/sounds/booking-notification.mp3');
                                 audio.volume = 0.7;
                                 audio.play().catch(err => console.warn('Failed to play message sound:', err));
-                                console.log('🔊 New message notification played');
+                                
+                                console.log('🎵 [CUSTOMER→THERAPIST] Notification sound played for customer message');
                             } catch (err) {
-                                console.warn('Audio playback error:', err);
+                                console.warn('Audio error:', err);
                             }
                         }
                         
-                        return [...prev, {
-                            $id: newMsg.$id || '',
-                            $createdAt: newMsg.$createdAt || new Date().toISOString(),
-                            senderId: newMsg.senderId,
-                            senderName: newMsg.senderName,
-                            message: newMsg.message,
-                            messageType: newMsg.messageType as any,
-                            isRead: newMsg.isRead
-                        }];
+                        console.log('✅ [CHAT SYNC] Customer message added to therapist chat window');
+                        return [...prev, newMsg];
                     }
                     return prev;
                 });

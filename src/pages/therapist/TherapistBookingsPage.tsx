@@ -175,7 +175,9 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
         unsubscribe = bookingService.subscribeToProviderBookings(
           therapist.$id,
           (newBooking) => {
-            devLog('🔔 New booking notification:', newBooking);
+            devLog('🔔 [MAIN→DASHBOARD] New booking notification received:', newBooking);
+            devLog('🔄 [INTEGRATION STATUS] Chat room available:', !!newBooking.chatRoomId);
+            devLog('📡 [REAL-TIME] Dashboard successfully connected to main app booking flow');
             
             // Play booking notification sound
             try {
@@ -186,17 +188,19 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
               devWarn('Audio playback error:', err);
             }
             
-            // Show browser notification
+            // Show enhanced browser notification with chat info
             if ('Notification' in window && Notification.permission === 'granted') {
+              const hasChat = !!newBooking.chatRoomId;
               new Notification('New Booking Request! 🎉', {
-                body: `${newBooking.userName || 'Customer'} requested ${newBooking.service} min massage`,
+                body: `${newBooking.userName || 'Customer'} requested ${newBooking.service} min massage${hasChat ? ' (Chat Available)' : ''}`,
                 icon: '/icon-192x192.png',
                 badge: '/icon-192x192.png',
                 tag: 'booking-' + newBooking.$id
               });
             }
             
-            // Add to bookings list
+            // Add to bookings list with integration status
+            console.log('📋 [DASHBOARD UPDATE] Adding new booking to dashboard list with chat integration');
             setBookings(prev => [newBooking, ...prev]);
           }
         );

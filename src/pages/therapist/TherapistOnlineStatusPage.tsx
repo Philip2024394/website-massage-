@@ -717,6 +717,9 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         showToast('📱 PWA installation not supported on this browser.\n\nFor best experience, use Chrome, Safari, or Edge.', 'warning', { duration: 6000 });
         console.log('⚠️ Browser does not support PWA installation');
       }
+    } catch (error) {
+      console.error('Error handling PWA install:', error);
+    }
   };
 
   const handleInstallApp = async () => {
@@ -1314,7 +1317,6 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         </div>
         )}
       </div>
-    </div>
     </TherapistLayout>
     
     {/* Booking Request Floating Window - Shows countdown timer and accept/reject buttons */}
@@ -1330,9 +1332,9 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       userRole="therapist"
     />
     </>
-    );
+  );
   } catch (error) {
-    console.error('TherapistOnlineStatus render error:', error);
+    console.error('TherapistOnlineStatus component error:', error);
     return (
       <TherapistLayout
         therapist={therapist || { name: 'Therapist', id: 'error' }}
@@ -1341,37 +1343,22 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         language={propLanguage}
         onLogout={onLogout}
       >
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-          <div className="text-center p-6 max-w-md mx-auto">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center p-6">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Dashboard Error</h2>
-            <p className="text-gray-600 mb-4">Unable to load therapist dashboard. Please try refreshing the page.</p>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Component Error</h2>
+            <p className="text-gray-600 mb-4">Unable to load component.</p>
             <button
-              onClick={async () => {
-                try {
-                  const { softRecover } = await import('../../utils/softNavigation');
-                  softRecover();
-                } catch {
-                  window.location.reload();
-                }
-              }}
+              onClick={() => window.location.reload()}
               className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
             >
               Refresh Page
             </button>
-            <div className="mt-4">
-              <button
-                onClick={onBack}
-                className="text-orange-500 hover:text-orange-600 underline"
-              >
-                Go Back
-              </button>
-            </div>
           </div>
+        </div>
       </TherapistLayout>
     );
   }
 };
 
 export default TherapistOnlineStatusPage;
-

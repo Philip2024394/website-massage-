@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat System Diagnostic</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0/dist/appwrite.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        h1 { color: #fff; text-align: center; margin-bottom: 30px; }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+            font-weight: bold;
+        }
+        .success { background: rgba(0,255,0,0.2); border-left: 4px solid #00ff00; }
+        .error { background: rgba(255,0,0,0.2); border-left: 4px solid #ff0000; }
+        .warning { background: rgba(255,165,0,0.2); border-left: 4px solid #ffa500; }
+        .info { background: rgba(0,191,255,0.2); border-left: 4px solid #00bfff; }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        .appwrite-link {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        pre { 
+            background: rgba(0,0,0,0.3); 
+            padding: 15px; 
+            border-radius: 5px; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Chat System Diagnostic</h1>
+        
+        <div id="config" class="info status">
+            <strong>📊 Configuration:</strong><br>
+            Endpoint: https://syd.cloud.appwrite.io/v1<br>
+            Project: 68f23b11000d25eb3664<br>
+            Database: 68f76ee1000e64ca8d05
+        </div>
+
+        <button onclick="runDiagnostic()">🚀 Run Chat Diagnostic</button>
+        
+        <a href="https://cloud.appwrite.io/console/project-68f23b11000d25eb3664/databases/database-68f76ee1000e64ca8d05/collections" 
+           target="_blank" class="appwrite-link">
+            🔧 Open Appwrite Console → Collections
+        </a>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+        
+        // Configuration
+        const ENDPOINT = 'https://syd.cloud.appwrite.io/v1';
+        const PROJECT_ID = '68f23b11000d25eb3664';
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        
+        const client = new Client()
+            .setEndpoint(ENDPOINT)
+            .setProject(PROJECT_ID);
+        
+        const databases = new Databases(client);
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        async function runDiagnostic() {
+            document.getElementById('results').innerHTML = '';
+            
+            try {
+                addResult('🔄 Testing Appwrite connection...', 'info');
+                
+                // Test basic connection
+                const collections = await databases.listCollections(DATABASE_ID);
+                addResult(`✅ Connected! Found ${collections.collections.length} collections`, 'success');
+                
+                // Check required collections
+                addResult('🔍 Checking for chat collections...', 'info');
+                
+                const requiredCollections = [
+                    { id: 'chat_messages', name: 'Chat Messages' },
+                    { id: 'chat_rooms', name: 'Chat Rooms' }
+                ];
+                
+                let missingCollections = [];
+                
+                for (const required of requiredCollections) {
+                    try {
+                        const collection = await databases.getCollection(DATABASE_ID, required.id);
+                        addResult(`✅ ${required.name}: EXISTS (${collection.attributes.length} attributes)`, 'success');
+                        
+                        // Test read access
+                        try {
+                            const docs = await databases.listDocuments(DATABASE_ID, required.id, [], 1);
+                            addResult(`&nbsp;&nbsp;&nbsp;🔓 Read access: OK (${docs.total} documents)`, 'success');
+                        } catch (readError) {
+                            addResult(`&nbsp;&nbsp;&nbsp;⚠️ Read access: ${readError.message}`, 'warning');
+                        }
+                        
+                    } catch (error) {
+                        if (error.code === 404) {
+                            missingCollections.push(required);
+                            addResult(`❌ ${required.name}: MISSING (404 Error)`, 'error');
+                        } else {
+                            addResult(`❌ ${required.name}: ERROR - ${error.message}`, 'error');
+                        }
+                    }
+                }
+                
+                // Test realtime
+                addResult('🔄 Testing realtime WebSocket...', 'info');
+                
+                let realtimeWorking = false;
+                const timeout = setTimeout(() => {
+                    if (!realtimeWorking) {
+                        addResult('❌ Realtime: TIMEOUT (connection blocked)', 'error');
+                    }
+                }, 3000);
+                
+                try {
+                    const unsubscribe = client.subscribe('account', (response) => {
+                        realtimeWorking = true;
+                        clearTimeout(timeout);
+                        addResult('✅ Realtime WebSocket: WORKING', 'success');
+                        unsubscribe();
+                    });
+                } catch (realtimeError) {
+                    clearTimeout(timeout);
+                    addResult(`❌ Realtime: ${realtimeError.message}`, 'error');
+                }
+                
+                // Summary and next steps
+                setTimeout(() => {
+                    addResult('<hr><strong>🎯 DIAGNOSTIC SUMMARY</strong>', 'info');
+                    
+                    if (missingCollections.length === 0) {
+                        addResult('🎉 All required collections exist! Chat should work.', 'success');
+                    } else {
+                        addResult(`💥 ${missingCollections.length} collections missing - Chat is BROKEN!`, 'error');
+                        addResult('<strong>🔧 TO FIX:</strong><br>1. Click "Open Appwrite Console" above<br>2. Create the missing collections<br>3. Use exact Collection IDs shown in error messages', 'warning');
+                        
+                        missingCollections.forEach(missing => {
+                            addResult(`📋 Create: "${missing.name}" with ID: <code>${missing.id}</code>`, 'warning');
+                        });
+                    }
+                }, 3500);
+                
+            } catch (error) {
+                addResult(`💥 CRITICAL ERROR: ${error.message}`, 'error');
+                if (error.code) {
+                    addResult(`Error Code: ${error.code}`, 'error');
+                }
+                
+                addResult('<strong>🆘 Possible causes:</strong><br>• Wrong project ID or endpoint<br>• Network connectivity issues<br>• Appwrite service down', 'warning');
+            }
+        }
+        
+        // Auto-run diagnostic on page load
+        setTimeout(runDiagnostic, 1000);
+    </script>
+</body>
+</html>

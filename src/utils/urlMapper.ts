@@ -21,6 +21,9 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'facialProviders': '/facial-providers',
     'discounts': '/discounts',
     
+    // 🔗 Real Chat Integration Test
+    'real-chat-test': '/real-chat-test',
+    
     // Auth routes
     'therapist-login': '/therapist-login',
     'therapistLogin': '/therapist-login',

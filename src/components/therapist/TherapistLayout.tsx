@@ -41,6 +41,9 @@ import { useUnreadBadge } from "../../chat/hooks/useUnreadBadge";
 import { useGestureSwipe } from "../../hooks/useGestureSwipe";
 import { FloatingUnreadBadge } from "../../components/UnreadBadge";
 import { pushNotificationsService } from '../../lib/pushNotificationsService';
+import EnhancedNavigation from './EnhancedNavigation';
+import FloatingActionButton from './FloatingActionButton';
+import SmartBreadcrumb from './SmartBreadcrumb';
 
 interface TherapistLayoutProps {
   children: React.ReactNode;
@@ -67,9 +70,36 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   if (!onNavigate) {
     console.warn('⚠️ TherapistLayout: onNavigate prop is missing');
   }
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isRecovering, setIsRecovering] = useState(false);
+  const [showEnhancedNav, setShowEnhancedNav] = useState(false);
+  const [enableFloatingActions, setEnableFloatingActions] = useState(true);
+  const [showBreadcrumbs, setShowBreadcrumbs] = useState(true);
+  
+  // Enhanced navigation preferences
+  useEffect(() => {
+    const prefs = localStorage.getItem('therapist_nav_enhanced_prefs');
+    if (prefs) {
+      try {
+        const parsed = JSON.parse(prefs);
+        setEnableFloatingActions(parsed.floatingActions !== false);
+        setShowBreadcrumbs(parsed.breadcrumbs !== false);
+      } catch (error) {
+        console.error('Failed to load navigation preferences:', error);
+      }
+    }
+  }, []);
+  
+  // Save navigation preferences
+  const saveNavPreferences = useCallback((updates: any) => {
+    const currentPrefs = {
+      floatingActions: enableFloatingActions,
+      breadcrumbs: showBreadcrumbs,
+      ...updates
+    };
+    localStorage.setItem('therapist_nav_enhanced_prefs', JSON.stringify(currentPrefs));
+  }, [enableFloatingActions, showBreadcrumbs]);
   
   // Elite error recovery mechanism - only for critical errors
   const recoverFromError = useCallback(() => {
@@ -215,7 +245,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   const labels = menuLabels[language] || menuLabels.id;
   
   const menuItems = [
-    { id: 'home', label: language === 'id' ? '🏠 Beranda' : '🏠 Home', icon: Home, color: 'text-orange-500' },
+    { id: 'status', label: language === 'id' ? '🏠 Beranda' : '🏠 Home', icon: Home, color: 'text-orange-500' },
     { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: FileText, color: 'text-orange-500' },
     { id: 'status', label: labels.status, icon: Clock, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
@@ -248,8 +278,9 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     
     setIsNavigating(true);
     
-    // Close sidebar immediately for better UX
+    // Close sidebar and enhanced nav immediately for better UX
     setIsSidebarOpen(false);
+    setShowEnhancedNav(false);
     
     // Navigate with slight delay to ensure state cleanup
     requestAnimationFrame(() => {
@@ -261,6 +292,15 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       }, 300);
     });
   }, [isNavigating, onNavigate]);
+
+  // Enhanced navigation toggle
+  const handleEnhancedNavToggle = useCallback(() => {
+    setShowEnhancedNav(prev => !prev);
+    // Close regular sidebar when opening enhanced nav
+    if (!showEnhancedNav) {
+      setIsSidebarOpen(false);
+    }
+  }, [showEnhancedNav]);
   
   // Elite sidebar toggle with error resilience
   const handleSidebarToggle = useCallback((e: React.MouseEvent) => {
@@ -389,7 +429,20 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           </div>
           
           {/* Right side - Menu buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>            
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Enhanced Navigation Toggle */}
+            <button
+              onClick={handleEnhancedNavToggle}
+              className={`p-2 rounded-lg transition-colors ${
+                showEnhancedNav 
+                  ? 'bg-orange-100 text-orange-600' 
+                  : 'hover:bg-gray-100 text-gray-600'
+              }`}
+              title="Enhanced Navigation"
+            >
+              <BarChart3 className="w-5 h-5" />
+            </button>
+            
             {/* Burger Menu */}
             <button
               onClick={handleSidebarToggle}
@@ -418,6 +471,37 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Enhanced Navigation Panel */}
+      {showEnhancedNav && (
+        <div className="fixed top-16 right-4 z-[130] max-w-sm w-full">
+          <EnhancedNavigation
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+            onClose={() => setShowEnhancedNav(false)}
+            therapistData={{
+              ...therapist,
+              unreadCount: totalUnread,
+              pendingBookings: 2 // This would come from actual data
+            }}
+            className="animate-slideDown"
+          />
+        </div>
+      )}
+
+      {/* Smart Breadcrumb Navigation */}
+      {showBreadcrumbs && currentPage !== 'home' && (
+        <SmartBreadcrumb
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+          therapistData={{
+            ...therapist,
+            unreadCount: totalUnread
+          }}
+          showActions={!showEnhancedNav}
+          compact={false}
+        />
+      )}
 
       {/* Space pusher for fixed header */}
       <div style={{ height: '60px' }}></div>
@@ -633,6 +717,21 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       >
         {children}
       </main>
+
+      {/* Floating Action Button */}
+      {enableFloatingActions && (
+        <FloatingActionButton
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+          therapistData={{
+            ...therapist,
+            pendingBookings: 2 // This would come from actual booking data
+          }}
+          position="bottom-right"
+          size="md"
+          showLabel={false}
+        />
+      )}
     </div>
   );
 };

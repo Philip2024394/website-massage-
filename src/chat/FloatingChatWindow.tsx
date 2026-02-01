@@ -521,7 +521,9 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
         therapistType: 'therapist'
       };
 
-      // Save booking to Appwrite
+      // 🔥 Save booking to Appwrite with dashboard integration
+      console.log('📡 [CHAT→DASHBOARD] Creating booking that will notify therapist dashboard in real-time');
+      
       const bookingResponse = await databases.createDocument(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings || 'bookings',
@@ -529,9 +531,12 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
         bookingData
       );
 
-      console.log('✅ Booking saved:', bookingResponse.$id);
+      console.log('✅ [CHAT→DASHBOARD] Booking saved with dashboard integration:', bookingResponse.$id);
+      console.log('📡 [REAL-TIME] Therapist dashboard will receive notification via subscription');
 
-      // Create real chat room
+      // 🔥 Create real chat room with full integration
+      console.log('🎪 [CHAT INTEGRATION] Creating chat room for booking communication');
+      
       const realChatRoom = await createChatRoom({
         bookingId: bookingResponse.$id,
         customerId: userId,

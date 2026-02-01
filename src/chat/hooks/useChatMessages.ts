@@ -97,13 +97,28 @@ export function useChatMessages(
       console.log('📤 [useChatMessages] Sending message:', content);
 
       const messageData = {
-        chatRoomId,
-        content: content.trim(),
+        roomId: chatRoomId,
+        message: content.trim(),
+        content: content.trim(), // Required alias field
         senderType: userRole,
         senderName: currentUserName,
         senderId: currentUserId,
-        timestamp: new Date().toISOString(),
-        read: false
+        recipientId: 'system', // Required field
+        recipientName: 'System', // Required field
+        recipientType: 'system', // Required field
+        messageType: 'text', // Required enum
+        originalLanguage: 'en', // Required field
+        createdAt: new Date().toISOString(),
+        read: false,
+        isSystemMessage: false,
+        conversationId: chatRoomId, // Required field
+        receiverId: 'system', // Required field
+        receivername: 'System', // Required field
+        bookingid: 'none', // Required field
+        originalMessageId: 'none', // Required field
+        expiresat: new Date(Date.now() + 24*60*60*1000).toISOString(), // 24 hours from now
+        archivedBy: 'none', // Required field
+        sessionId: chatRoomId // Required field
       };
 
       await databases.createDocument(

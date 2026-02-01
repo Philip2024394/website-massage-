@@ -481,13 +481,22 @@ module.exports = async ({ req, res, log, error }) => {
       recipientId: String(recipientId),
       recipientName: String(recipientName || ''),
       recipientType: String(recipientType || 'therapist'),
+      roomId: String(roomId),
       message: String(message).trim(),
       content: String(message).trim(),
-      roomId: String(roomId),
+      messageType: 'text',
+      originalLanguage: 'en',
       createdAt: new Date().toISOString(),
       read: false,
-      messageType: 'text',
       isSystemMessage: false,
+      conversationId: String(roomId),
+      receiverId: String(recipientId),
+      receivername: String(recipientName || ''),
+      bookingid: String(roomId),
+      originalMessageId: String(roomId),
+      expiresat: new Date(Date.now() + 24*60*60*1000).toISOString(),
+      archivedBy: 'none',
+      sessionId: String(roomId)
     };
     
     const result = await databases.createDocument(

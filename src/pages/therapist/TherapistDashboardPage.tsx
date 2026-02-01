@@ -87,9 +87,9 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
   onNavigateToCalendar,
   onNavigateToMenu,
   onLogout,
-  onNavigateHome,
-  const language = 'id'; // Fixed Indonesian language for therapist dashboard
+  onNavigateHome
 }) => {
+  const language = 'id'; // Fixed Indonesian language for therapist dashboard
   console.log('🎨 TherapistPortalPage rendering with therapist:', therapist);
   
   const [saving, setSaving] = useState(false);

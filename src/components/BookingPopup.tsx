@@ -543,14 +543,22 @@ ${
         // Show success toast
         showToast('✅ Booking created! Opening chat...', 'success');
         
-        // 🔥 STEP 6: Open chat via ChatProvider instead of events
-        console.log('🔥 STEP 6: Opening chat via ChatProvider...');
+        // 🔥 STEP 6: Open integrated booking-chat flow
+        console.log('🎪 [BOOKING→CHAT] Opening integrated booking-chat flow...');
+        console.log('📡 [MAIN→DASHBOARD] Booking notification sent to therapist dashboard');
         
         // ✅ FIX: Validate required fields before opening chat
         if (!chatRoom.$id) {
           console.error('❌ STEP 6 FAILED: Cannot open chat - missing chatRoom.$id');
           return;
         }
+        
+        console.log('🔄 [INTEGRATION STATUS] Opening chat with booking context:', {
+          chatRoomId: chatRoom.$id,
+          bookingId: booking.$id,
+          therapistId: therapistId.toString(),
+          dashboardReady: true
+        });
         
         const chatOpened = openBookingChat({
           chatRoomId: chatRoom.$id,

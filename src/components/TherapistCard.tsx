@@ -1137,7 +1137,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
                     }}
-                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"
+                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
                 >
                     <MessageCircle className="w-4 h-4"/>
                     <span className="text-sm">{bookNowText}</span>
@@ -1203,7 +1203,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             onIncrementAnalytics('bookings');
                             setBookingsCount(prev => prev + 1);
                         }} 
-                        className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"
+                        className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
                     >
                         <CalendarIcon className="w-4 h-4"/>
                         <span className="text-sm">{scheduleText}</span>

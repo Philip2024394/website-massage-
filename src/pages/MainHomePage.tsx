@@ -28,6 +28,8 @@ import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import UniversalPWAInstall from '../components/UniversalPWAInstall';
+import { PersistentChatProvider } from '../context/PersistentChatProvider';
+import { MessageCircle, X } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
 
 // Custom hooks for logic extraction
@@ -322,6 +324,11 @@ const HomePage: React.FC<HomePageProps> = ({
     
     // Google Maps Autocomplete (minimal UI state)
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
+    
+    // Floating therapist chat state
+    const [showTherapistChat, setShowTherapistChat] = useState(false);
+    const [selectedTherapistForChat, setSelectedTherapistForChat] = useState<any>(null);
+    const [availableTherapists, setAvailableTherapists] = useState<any[]>([]);
     const locationInputRef = useRef<HTMLInputElement>(null);
     const autocompleteRef = useRef<any>(null);
     
@@ -1206,6 +1213,30 @@ const HomePage: React.FC<HomePageProps> = ({
             }
         };
     }, [therapists]);
+
+    // Update available therapists for chat
+    useEffect(() => {
+        const onlineTherapists = (therapists || []).filter((therapist: any) => {
+            return therapist.isLive === true && !therapist.isDeleted;
+        }).slice(0, 5); // Show up to 5 online therapists
+        setAvailableTherapists(onlineTherapists);
+    }, [therapists]);
+
+    // Handle therapist selection for chat
+    const handleTherapistChatSelect = (therapist: any) => {
+        setSelectedTherapistForChat(therapist);
+        setShowTherapistChat(false); // Hide therapist list when chat opens
+        console.log('💬 Starting chat with therapist:', therapist.name);
+    };
+
+    // Handle booking from chat
+    const handleBookingFromChat = (therapist: any) => {
+        console.log('📅 Booking therapist from chat:', therapist.name);
+        if (onSelectTherapist) {
+            onSelectTherapist(therapist);
+        }
+        onBook(therapist, 'therapist');
+    };
 
     // ...existing code...
 
@@ -2687,6 +2718,124 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 autoHideWhenInstalled={true}
               />
             </div>
+            
+            {/* Floating Therapist Chat Button */}
+            {availableTherapists.length > 0 && (
+                <div className="fixed bottom-20 right-4 z-[9998]">
+                    {!showTherapistChat && !selectedTherapistForChat ? (
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowTherapistChat(true)}
+                                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
+                                title="Chat with available therapists"
+                            >
+                                <MessageCircle className="w-6 h-6" />
+                                <span className="font-semibold">Chat</span>
+                            </button>
+                            {/* Online indicator */}
+                            <div className="absolute -top-1 -right-1 bg-green-400 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                                {availableTherapists.length}
+                            </div>
+                        </div>
+                    ) : showTherapistChat && !selectedTherapistForChat ? (
+                        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden w-80">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 flex items-center justify-between">
+                                <h3 className="font-bold text-lg">💆‍♀️ Available Therapists</h3>
+                                <button
+                                    onClick={() => setShowTherapistChat(false)}
+                                    className="hover:bg-white/20 rounded-full p-1 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            
+                            {/* Therapist List */}
+                            <div className="max-h-96 overflow-y-auto">
+                                {availableTherapists.map((therapist: any) => {
+                                    const therapistId = therapist.id || therapist.$id;
+                                    const therapistImage = therapist.imageUrl || THERAPIST_MAIN_IMAGES.getImageForTherapist(therapistId);
+                                    
+                                    return (
+                                        <div key={therapistId} className="p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <img
+                                                    src={therapistImage}
+                                                    alt={therapist.name}
+                                                    className="w-12 h-12 rounded-full object-cover border-2 border-orange-200"
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&h=256&q=80';
+                                                    }}
+                                                />
+                                                <div className="flex-1">
+                                                    <h4 className="font-semibold text-gray-900">{therapist.name}</h4>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                                        <span className="text-sm text-gray-600">Online now</span>
+                                                    </div>
+                                                    {therapist.rating && (
+                                                        <div className="flex items-center gap-1 mt-1">
+                                                            <span className="text-yellow-400">⭐</span>
+                                                            <span className="text-sm text-gray-600">{therapist.rating}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        {therapist.massageTypes?.slice(0, 2).join(', ') || 'Professional massage'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleTherapistChatSelect(therapist)}
+                                                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                                >
+                                                    <MessageCircle className="w-4 h-4" />
+                                                    Chat
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBookingFromChat(therapist)}
+                                                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+                                                >
+                                                    Book Now
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            
+                            <div className="p-3 bg-gray-50 text-center">
+                                <p className="text-xs text-gray-500">
+                                    {availableTherapists.length} therapist{availableTherapists.length !== 1 ? 's' : ''} online
+                                </p>
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
+            )}
+            
+            {/* Floating Chat Window */}
+            {selectedTherapistForChat && (
+                <div className="fixed bottom-4 right-4 z-[9999]">
+                    <PersistentChatProvider>
+                        <div className="relative">
+                            <FloatingChatWindow
+                                userId={user?.id || `guest_${Date.now()}`}
+                                userName={user?.name || loggedInCustomer?.name || 'Guest User'}
+                                userRole={user ? 'customer' : 'guest'}
+                                isGuest={!user}
+                                therapist={selectedTherapistForChat}
+                                onClose={() => {
+                                    setSelectedTherapistForChat(null);
+                                    setShowTherapistChat(false);
+                                }}
+                                onBookingRequest={() => handleBookingFromChat(selectedTherapistForChat)}
+                            />
+                        </div>
+                    </PersistentChatProvider>
+                </div>
+            )}
         </div>
     );
 };

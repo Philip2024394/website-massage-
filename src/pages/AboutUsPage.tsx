@@ -21,7 +21,7 @@ interface AboutUsPageProps {
     t?: any;
     // Add navigation props for the drawer
     onMassageJobsClick?: () => void;
-
+    onHotelPortalClick?: () => void;
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -37,7 +37,7 @@ interface AboutUsPageProps {
 const AboutUsPage: React.FC<AboutUsPageProps> = ({ 
     onNavigate, 
     onMassageJobsClick,
-
+    onHotelPortalClick,
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -58,8 +58,6 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
             {/* Universal Header */}
             <UniversalHeader 
                 onMenuClick={() => setIsMenuOpen(true)}
-                onHomeClick={() => onNavigate?.('home')}
-                showHomeButton={true}
                 showLanguageSelector={false}
             />
             {/* Global App Drawer - same content as Home */}
@@ -69,6 +67,18 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                     onClose={() => setIsMenuOpen(false)}
                     onNavigate={onNavigate}
                     language={language as 'en' | 'id' | 'gb'}
+                    onMassageJobsClick={onMassageJobsClick}
+                    onHotelPortalClick={onHotelPortalClick}
+                    onVillaPortalClick={onVillaPortalClick}
+                    onTherapistPortalClick={onTherapistPortalClick}
+                    onMassagePlacePortalClick={onMassagePlacePortalClick}
+                    onAgentPortalClick={onAgentPortalClick}
+                    onCustomerPortalClick={onCustomerPortalClick}
+                    onAdminPortalClick={onAdminPortalClick}
+                    onTermsClick={onTermsClick}
+                    onPrivacyClick={onPrivacyClick}
+                    therapists={therapists}
+                    places={places}
                 />
             </React19SafeWrapper>
             
@@ -299,7 +309,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                         Our focus remains clear:
                     </p>
                     <p className="text-xl font-bold text-orange-600 mt-3">
-                        Professional wellness. Verified providers. Trusted delivery.
+                        Professional wellness. Verified providers. Proven With Trusted Standards.
                     </p>
                 </div>
 

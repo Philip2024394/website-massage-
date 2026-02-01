@@ -49,7 +49,7 @@ interface AppDrawerProps {
 const drawerTranslations = {
   en: {
     partners: 'Partners',
-    joinIndaStreet: 'Join IndaStreet',
+    joinIndaStreet: 'Join Indastreet Today',
     massageJobs: 'Massage Jobs',
     howItWorks: 'How It Works',
     aboutUs: 'About Us',
@@ -73,7 +73,7 @@ const drawerTranslations = {
   },
   id: {
     partners: 'Mitra',
-    joinIndaStreet: 'Gabung IndaStreet',
+    joinIndaStreet: 'Gabung Indastreet Hari Ini',
     massageJobs: 'Lowongan Pijat',
     howItWorks: 'Cara Kerja',
     aboutUs: 'Tentang Kami',

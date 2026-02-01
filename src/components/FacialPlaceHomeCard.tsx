@@ -251,9 +251,28 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 <div className="flex justify-between items-start mb-2">
                     {/* Name and Status Column */}
                     <div className="flex-1 min-w-0 pr-3">
-                        <h3 className="font-bold text-gray-900 text-base truncate leading-tight">
-                            {place.name || "Facial Clinic"}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                            {/* Verified Badge - Show if place has both bank details and KTP */}
+                            {(() => {
+                                const hasVerifiedBadge = (place as any).verifiedBadge || (place as any).isVerified;
+                                const hasBankDetails = place.bankName && place.accountName && place.accountNumber;
+                                const hasKtpUploaded = place.ktpPhotoUrl;
+                                const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                
+                                return shouldShowBadge && (
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                        alt="Verified"
+                                        className="w-5 h-5 flex-shrink-0"
+                                        title="Verified Place - Complete Profile"
+                                    />
+                                );
+                            })()}
+                            
+                            <h3 className="font-bold text-gray-900 text-base truncate leading-tight">
+                                {place.name || "Facial Clinic"}
+                            </h3>
+                        </div>
                         
                         {/* Status Badge - Under name like profile card */}
                         <div className="mt-1">
