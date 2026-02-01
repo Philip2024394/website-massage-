@@ -152,15 +152,84 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
   const [discountDuration, setDiscountDuration] = useState<number>(0);
   const [isDiscountActive, setIsDiscountActive] = useState(false);
   
-  // PWA Install states - Initialize from localStorage
+  // PWA Install states - Enhanced detection with real-time updates
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(() => {
-    return localStorage.getItem('pwa-installed') === 'true';
+    // Check multiple installation indicators
+    const pwaInstalled = localStorage.getItem('pwa-installed') === 'true';
+    const pwaCompleted = localStorage.getItem('pwa-install-completed') === 'true';
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSStandalone = (window.navigator as any).standalone === true;
+    
+    return pwaInstalled || pwaCompleted || isStandalone || isIOSStandalone;
   });
   const [isIOS, setIsIOS] = useState(false);
   const [pwaEnforcementActive, setPwaEnforcementActive] = useState(false);
   const [forceReinstall, setForceReinstall] = useState(false);
   const [showPWAInstallSection, setShowPWAInstallSection] = useState(true);
+
+  // Enhanced PWA state detection with listeners
+  useEffect(() => {
+    const updatePWAStatus = () => {
+      const pwaInstalled = localStorage.getItem('pwa-installed') === 'true';
+      const pwaCompleted = localStorage.getItem('pwa-install-completed') === 'true';
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isIOSStandalone = (window.navigator as any).standalone === true;
+      
+      const newInstallState = pwaInstalled || pwaCompleted || isStandalone || isIOSStandalone;
+      
+      if (newInstallState !== isAppInstalled) {
+        console.log('📱 PWA status changed:', { 
+          before: isAppInstalled, 
+          after: newInstallState,
+          pwaInstalled,
+          pwaCompleted,
+          isStandalone,
+          isIOSStandalone
+        });
+        setIsAppInstalled(newInstallState);
+      }
+    };
+
+    // Set up PWA event listeners
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      console.log('📱 PWA install prompt available');
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = (e: any) => {
+      console.log('🎉 PWA installed successfully');
+      setIsAppInstalled(true);
+      localStorage.setItem('pwa-installed', 'true');
+      localStorage.setItem('pwa-install-completed', 'true');
+      setDeferredPrompt(null);
+    };
+
+    const handleDisplayModeChange = (e: any) => {
+      console.log('📱 Display mode changed:', e.matches);
+      updatePWAStatus();
+    };
+
+    // Add event listeners
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    mediaQuery.addEventListener('change', handleDisplayModeChange);
+
+    // Check iOS
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent));
+
+    // Initial status update
+    updatePWAStatus();
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      mediaQuery.removeEventListener('change', handleDisplayModeChange);
+    };
+  }, [isAppInstalled]);
 
   // Load initial data once on mount
   useEffect(() => {
@@ -1349,31 +1418,32 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
             </button>
           </div>
           
-          {/* Simple Download Button - Mobile Optimized */}
+          {/* Simple Download Button - Enhanced mobile UX */}
           <button
             onClick={handleSimpleDownload}
             disabled={isAppInstalled}
-            className={`w-full py-4 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 min-h-[48px] touch-manipulation ${
+            className={`w-full py-4 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 min-h-[48px] touch-manipulation transform ${
               isAppInstalled
-                ? 'bg-green-500 text-white cursor-not-allowed'
-                : 'bg-gradient-to-r from-orange-600 to-orange-700 text-white hover:from-orange-700 hover:to-orange-800 active:scale-95'
+                ? 'bg-green-500 text-white cursor-not-allowed opacity-75'
+                : 'bg-gradient-to-r from-orange-600 to-orange-700 text-white hover:from-orange-700 hover:to-orange-800 active:scale-95 shadow-lg hover:shadow-xl'
             }`}
             style={{
               touchAction: 'manipulation',
               WebkitTapHighlightColor: 'transparent',
               minHeight: '48px',
-              fontSize: '16px' // Prevent zoom on iOS
+              fontSize: '16px', // Prevent zoom on iOS
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
             {isAppInstalled ? (
               <>
-                <Lock className="w-5 h-5" />
-                Terunduh
+                <CheckCircle className="w-5 h-5" />
+                App Installed ✓
               </>
             ) : (
               <>
                 <Download className="w-5 h-5" />
-                Unduh Sekarang
+                Download App
               </>
             )}
           </button>

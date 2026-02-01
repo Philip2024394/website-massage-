@@ -704,7 +704,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Elite Main Content - Stable scrolling and performance optimized */}
+      {/* Elite Main Content - Enhanced scrolling and bottom padding for mobile */}
       <main 
         className="relative w-full overflow-y-auto overflow-x-hidden flex-1 therapist-layout-content" 
         style={{ 
@@ -712,10 +712,19 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           touchAction: 'pan-y pan-x',
           height: 'calc(100vh - 60px)',
           maxHeight: 'calc(100vh - 60px)',
-          minHeight: 'calc(100vh - 60px)'
+          minHeight: 'calc(100vh - 60px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 80px), 120px)' // Enhanced bottom padding
         }}
       >
-        {children}
+        <div 
+          className="therapist-content-wrapper"
+          style={{
+            minHeight: '100%',
+            paddingBottom: '60px' // Additional content padding
+          }}
+        >
+          {children}
+        </div>
       </main>
 
       {/* Floating Action Button */}

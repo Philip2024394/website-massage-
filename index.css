@@ -557,7 +557,7 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
   padding-bottom: max(env(safe-area-inset-bottom, 5rem), 6rem) !important;
 }
 
-/* Mobile-specific adjustments */
+/* Enhanced mobile-specific adjustments for therapist dashboard */
 @media (max-width: 768px) {
   .therapist-page-container {
     /* Increase bottom padding on mobile for better footer button visibility */
@@ -565,23 +565,88 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
   }
   
   .therapist-layout-content {
-    /* Additional margin for buttons in footer area */
-    margin-bottom: max(env(safe-area-inset-bottom, 30px), 80px) !important;
+    /* Enhanced margin for buttons in footer area */
+    margin-bottom: max(env(safe-area-inset-bottom, 60px), 120px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 40px), 80px) !important;
+  }
+  
+  .therapist-content-wrapper {
+    padding-bottom: max(env(safe-area-inset-bottom, 80px), 140px) !important;
+    margin-bottom: 40px !important;
   }
   
   /* Fix for buttons at bottom of page */
   .therapist-dashboard-buttons {
-    margin-bottom: max(env(safe-area-inset-bottom, 20px), 60px) !important;
+    margin-bottom: max(env(safe-area-inset-bottom, 40px), 100px) !important;
   }
   
   /* Enhanced pb-20 for mobile */
   .pb-20 {
-    padding-bottom: max(env(safe-area-inset-bottom, 6rem), 7rem) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 7rem), 9rem) !important;
   }
   
   /* Fix for min-height pages with bottom buttons */
   .min-h-screen {
-    padding-bottom: max(env(safe-area-inset-bottom, 1.25rem), 2rem);
+    padding-bottom: max(env(safe-area-inset-bottom, 2rem), 4rem) !important;
+    margin-bottom: max(env(safe-area-inset-bottom, 1rem), 2rem) !important;
+  }
+  
+  /* Specific fixes for therapist dashboard pages */
+  .therapist-page-container .min-h-screen {
+    padding-bottom: max(env(safe-area-inset-bottom, 100px), 160px) !important;
+  }
+  
+  /* PWA section safe area enhancement */
+  div[class*="pwa"],
+  div:has(button[class*="Download"]) {
+    margin-bottom: max(env(safe-area-inset-bottom, 40px), 80px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 24px), 48px) !important;
+  }
+}
+
+/* ======================================================== */
+/* THERAPIST DASHBOARD SCROLLING & TOUCH ENHANCEMENTS */
+/* ======================================================== */
+
+/* Enhanced scrolling for therapist dashboard */
+.therapist-layout-content {
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-y: contain !important;
+  position: relative !important;
+}
+
+/* Prevent scroll lock on therapist pages */
+.therapist-page-container,
+.therapist-layout-content {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  max-height: none !important;
+  touch-action: pan-y !important;
+}
+
+/* Fix for stuck scrolling on mobile */
+@media (max-width: 768px) {
+  .therapist-layout-content {
+    -webkit-overflow-scrolling: touch !important;
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration */
+    will-change: scroll-position !important;
+  }
+  
+  .therapist-content-wrapper {
+    position: relative !important;
+    z-index: 1 !important;
+    min-height: calc(100vh - 60px) !important;
+  }
+  
+  /* Ensure content can be scrolled past footer elements */
+  .therapist-page-container > * {
+    position: relative !important;
+    z-index: auto !important;
   }
 }
 
