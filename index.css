@@ -98,7 +98,7 @@ footer {
   z-index: 50;
 }
 
-/* Landing page container - clean, scrollable */
+/* Landing page container - Enhanced mobile display */
 .landing-page-container {
   position: relative;
   width: 100%;
@@ -112,16 +112,32 @@ footer {
   -webkit-backface-visibility: hidden;
   transform: translateZ(0);
   z-index: 1;
-  z-index: 1;
   -webkit-transform: translateZ(0);
 }
 
-/* Mobile optimization - maximize viewport usage */
+/* Enhanced mobile optimization - fix viewport and white containers */
 @media (max-width: 768px) {
   .landing-page-container {
     /* Use full viewport height on mobile */
     min-height: 100dvh; /* Dynamic viewport height - excludes mobile browser UI */
-    height: 100dvh;
+    height: auto; /* Allow natural height instead of fixed */
+    max-height: none; /* Remove height restrictions */
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  
+  /* Fix white container issues on mobile */
+  .landing-page-container > *:last-child {
+    background: transparent !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Remove any white background containers in footer area */
+  .landing-page-container .bg-white:last-child,
+  .landing-page-container [style*="background: white"]:last-child,
+  .landing-page-container [style*="background-color: white"]:last-child {
+    display: none !important;
   }
 }
 
@@ -1178,74 +1194,27 @@ body.elite-refresh-mode {
   flex-shrink: 0;
 }
 
-/* MOBILE WHITE CONTAINER FIX */
+/* MOBILE WHITE CONTAINER FIX - Simplified and targeted */
 /* Prevent white container appearing at bottom of mobile screens */
 @media (max-width: 768px) {
-  /* Fix AppLayout mobile container sizing */
-  .container-mobile {
-    max-height: 100vh !important;
-    height: 100vh !important;
-    min-height: auto !important;
-    overflow: hidden !important;
-  }
-  
-  /* Ensure content fits within viewport */
-  .content-landscape {
-    max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
-    height: auto !important;
-    min-height: auto !important;
-  }
-  
-  /* Prevent extra white space at bottom */
-  .mobile-optimized {
-    max-height: 100vh !important;
-    height: 100vh !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-  }
-  
   /* Landing page mobile container fix - ENHANCED */
   .landing-page-container {
-    max-height: 100vh !important;
+    max-height: none !important; /* Allow natural height */
     overflow-y: auto !important;
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
   }
   
-  /* Prevent white container overlay on landing page footer */
-  .landing-page-container::after {
+  /* Target only problematic white containers */
+  .landing-page-container > div.bg-white:empty,
+  .landing-page-container > .container.bg-white:empty,
+  .landing-page-container > .wrapper.bg-white:empty {
     display: none !important;
   }
   
-  /* Fix any white div overlays */
-  .landing-page-container > div:last-child {
-    background: transparent !important;
-  }
-  
-  /* SPECIFIC PWA MODAL FIX - prevent white background */
+  /* Fix PWA modal backgrounds without breaking functionality */
   .landing-page-container .fixed.inset-0.z-50 {
-    background: rgba(0,0,0,0.5) !important; /* Ensure dark background */
-  }
-  
-  .landing-page-container .fixed.inset-0.z-50 > div.relative {
-    background: transparent !important;
-  }
-  
-  .landing-page-container .fixed.inset-0.z-50 div[class*="bg-gray-900"] {
-    background: #111827 !important; /* Keep modal background but ensure it's dark */
-  }
-  
-  /* Fix any AppDrawer white containers */
-  .landing-page-container .fixed.inset-0[class*="bg-white"],
-  .landing-page-container .fixed.inset-0 div[class*="bg-white"] {
-    background: rgba(0,0,0,0.9) !important;
-  }
-  
-  /* Remove any bottom white containers completely */
-  .landing-page-container > .container:last-child,
-  .landing-page-container > .wrapper:last-child,
-  .landing-page-container > div.bg-white:last-child {
-    display: none !important;
+    background: rgba(0,0,0,0.5) !important;
   }
 }
 
@@ -1351,63 +1320,45 @@ div#main-background-image.fixed.bg-gray-900 {
   background: rgba(0,0,0,0.8) !important;
 }
 
-/* MOBILE SPECIFIC: Eliminate all white containers over footer */
+/* MOBILE SPECIFIC: Target only problematic white containers */
 @media (max-width: 768px) {
-  /* Only target white backgrounds specifically - EXCLUDE background image containers */
-  .landing-page-container .bg-white:not(.fixed):not([style*="backgroundImage"]),
-  .landing-page-container [style*="background: white"]:not(.fixed):not([style*="backgroundImage"]),
-  .landing-page-container [style*="background-color: white"]:not(.fixed):not([style*="backgroundImage"]),
-  .landing-page-container [style*="background: #fff"]:not(.fixed):not([style*="backgroundImage"]),
-  .landing-page-container [style*="background-color: #fff"]:not(.fixed):not([style*="backgroundImage"]) {
-    background-color: transparent !important;
-    background: transparent !important;
+  /* Fix height issues first */
+  .landing-page-container {
+    min-height: 100dvh !important;
+    max-height: none !important;
   }
   
-  /* Preserve essential backgrounds only - DO NOT touch fixed background containers */
-  .landing-page-container > div.absolute.inset-0.z-10.bg-gradient-to-b {
-    background: revert !important; /* Allow overlay gradients */
+  /* Only target empty white containers that cause footer blocking */
+  .landing-page-container .bg-white:empty,
+  .landing-page-container div[style*="background: white"]:empty {
+    display: none !important;
   }
   
-  /* RESTORE ESSENTIAL CONTAINER BACKGROUNDS */
+  /* Preserve functional white backgrounds (modals, cards, etc.) */
   .landing-page-container div[class*="bg-gray-900"],
-  .landing-page-container div[class*="bg-gray-800"],
-  .landing-page-container div[class*="bg-gray-700"],
   .landing-page-container div[class*="bg-orange-500"],
-  .landing-page-container div[class*="bg-gradient-to-r"] {
+  .landing-page-container .modal,
+  .landing-page-container [role="dialog"],
+  .landing-page-container .card {
     background: revert !important;
-    background-color: revert !important;
-    background-image: revert !important;
   }
   
-  /* MOBILE: SPECIFIC FIX FOR ORANGE GRADIENT HEADERS */
-  .landing-page-container .bg-gradient-to-r.from-orange-500.to-orange-600,
-  .landing-page-container div[class*="from-orange-500"],
-  .landing-page-container div[class*="to-orange-600"] {
-    background: linear-gradient(to right, #f97316, #ea580c) !important;
-    background-image: linear-gradient(to right, #f97316, #ea580c) !important;
+  /* Enhanced PWA banner positioning for mobile safe areas */
+  .pwa-install-banner,
+  .mobile-safe-area {
+    position: fixed !important;
+    bottom: max(env(safe-area-inset-bottom, 20px), 40px) !important;
+    left: 20px !important;
+    right: 20px !important;
+    z-index: 1000 !important;
+    margin: 0 !important;
   }
   
-  /* Remove any white bottom containers */
-  .landing-page-container > div:last-child:not([style*="backgroundImage"]):not(.bg-gradient-to-b) {
-    background: transparent !important;
-  }
-  
-  /* Prevent white overlay containers */
-  .landing-page-container .container,
-  .landing-page-container .wrapper,
-  .landing-page-container .overlay-container {
-    background: transparent !important;
-  }
-  
-  /* Target specific white background divs */
-  .landing-page-container div[class*="bg-white"],
-  .landing-page-container div.bg-white,
-  .landing-page-container [style*="background-color: white"],
-  .landing-page-container [style*="background-color: #ffffff"],
-  .landing-page-container [style*="background: white"],
-  .landing-page-container [style*="background: #ffffff"] {
-    background: transparent !important;
-    background-color: transparent !important;
+  /* Fix PWA banner container styling */
+  .pwa-install-banner > * {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
   }
 }
 
@@ -1422,38 +1373,17 @@ div#main-background-image.fixed.bg-gray-900 {
   background: transparent;
 }
 
-/* ELITE MOBILE FIX: Eliminate any white containers in footer area */
+/* TARGETED MOBILE FIX: Only remove problematic empty containers */
 @media (max-width: 768px) {
+  /* Fix dynamic viewport height issues */
   body .landing-page-container {
-    height: 100vh !important;
-    height: 100dvh !important; /* Dynamic viewport height for mobile */
-    min-height: 100vh !important;
     min-height: 100dvh !important;
+    height: auto !important;
     overflow-x: hidden !important;
   }
   
-  /* Force all potential white containers to be transparent in mobile footer area */
-  .landing-page-container * {
-    position: relative;
-  }
-  
-  .landing-page-container *:not([class*="bg-gray"]):not([class*="bg-orange"]):not([class*="gradient"]):not([style*="backgroundImage"]) {
-    background: transparent !important;
-    background-color: transparent !important;
-  }
-  
-  /* Absolute positioning fix for any floating elements */
-  .landing-page-container .fixed:not(#main-background-image):not([class*="bg-gradient"]) {
+  /* Only target empty white containers at page bottom */
+  .landing-page-container > div:last-child:empty.bg-white {
     display: none !important;
-  }
-}
-
-/* ULTRA-SPECIFIC MOBILE FIX: Target any remaining white elements */
-@media (max-width: 768px) {
-  body > #root > * > .landing-page-container *[style*="background"],
-  body > #root > * > .landing-page-container *[class*="white"],
-  body > #root > * > .landing-page-container *[style*="white"] {
-    background: transparent !important;
-    background-color: transparent !important;
   }
 }

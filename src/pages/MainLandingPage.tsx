@@ -774,11 +774,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
-        <div className="landing-page-container scrollable relative w-full bg-gray-900 overflow-y-auto" style={{ 
-            height: '100vh',
-            maxHeight: '100vh',
+        <div className="landing-page-container mobile-optimized scrollable relative w-full bg-gray-900 overflow-y-auto" style={{ 
+            height: 'auto', // Allow natural height on mobile
+            maxHeight: 'none', // Remove height restrictions
             minHeight: '100dvh', // Dynamic viewport height for mobile
-            position: 'relative'
+            position: 'relative',
+            paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 40px)' // Mobile safe area
         }}>
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             

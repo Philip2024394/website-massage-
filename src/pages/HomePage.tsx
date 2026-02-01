@@ -2679,8 +2679,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 userRole="customer"
             />
 
-            {/* PWA Install Banner */}
-            <PWAInstallBanner />
+            {/* PWA Install Banner - Fixed positioning for mobile */}
+            <div className="pwa-install-banner mobile-safe-area">
+                <PWAInstallBanner />
+            </div>
         </div>
     );
 };
