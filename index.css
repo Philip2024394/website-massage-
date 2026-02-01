@@ -139,6 +139,19 @@ footer {
   .landing-page-container [style*="background-color: white"]:last-child {
     display: none !important;
   }
+  
+  /* Mobile city location containers optimization */
+  .landing-page-container .scrollable {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  /* Ensure city containers are properly sized on mobile */
+  .landing-page-container button[class*="border-gray-600"],
+  .landing-page-container button[class*="border-orange-500"] {
+    min-height: 56px;
+    max-width: 100%;
+  }
 }
 
 /* Root container */

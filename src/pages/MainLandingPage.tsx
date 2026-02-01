@@ -810,11 +810,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             />
             
             {/* Scrollable content */}
-            <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-3 sm:px-6 text-center w-full" style={{ 
+            <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-4 sm:px-6 text-center w-full" style={{ 
                 minHeight: '100dvh', // Dynamic viewport height for mobile
                 paddingBottom: 'env(safe-area-inset-bottom, 0px)' // Respect mobile safe area
             }}>
-                <div className="flex-1 flex flex-col justify-center w-full max-w-lg">
+                <div className="flex-1 flex flex-col justify-center w-full max-w-sm sm:max-w-lg">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
@@ -826,7 +826,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 </p>
                 
                 {/* Location Selector - NEW UX: Auto-detected country, city selection only */}
-                <div className="w-full max-w-lg px-2 sm:px-4">
+                <div className="w-full max-w-sm sm:max-w-lg px-1 sm:px-4">
                     <div className="bg-gray-900 rounded-xl p-2.5 sm:p-6 border border-gray-700 shadow-xl" style={{ backgroundColor: 'rgba(17, 24, 39, 0.95)' }}>
                         {/* Auto-detected Country Header */}
                         <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
@@ -896,23 +896,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                         <button
                                             key={`${city.name}-${index}`}
                                             onClick={() => handleCitySelectNew(city)}
-                                            className={`w-full rounded-lg border-2 transition-all flex-shrink-0 relative ${
+                                            className={`w-full rounded-lg border-2 transition-all flex-shrink-0 ${
                                                 selectedCity === city.name
                                                     ? "border-orange-500 bg-orange-500 text-white shadow-lg"
                                                     : "border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-white"
                                             }`}
                                         >
-                                            <div className="py-3 pr-3">
-                                                <MapPin className={`absolute left-[86px] top-1/2 -translate-y-1/2 w-5 h-5 ${
+                                            <div className="flex items-center gap-3 p-3">
+                                                <MapPin className={`w-4 h-4 flex-shrink-0 ${
                                                     selectedCity === city.name ? "text-white" : "text-orange-400"
                                                 }`} />
-                                                <div className="absolute left-[120px] right-3 top-1/2 -translate-y-1/2 text-left">
-                                                    <div className="font-medium text-sm leading-tight">{city.name}</div>
-                                                    <div className={`text-xs leading-tight mt-0.5 ${
+                                                <div className="flex-1 text-left min-w-0">
+                                                    <div className="font-medium text-sm leading-tight truncate">{city.name}</div>
+                                                    <div className={`text-xs leading-tight mt-0.5 truncate ${
                                                         selectedCity === city.name ? "text-orange-100" : "text-gray-400"
                                                     }`}>{city.region} • {city.description}</div>
                                                 </div>
-                                                <div className="h-12"></div>
                                             </div>
                                         </button>
                                     ))}

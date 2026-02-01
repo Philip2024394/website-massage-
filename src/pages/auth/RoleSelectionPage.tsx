@@ -117,7 +117,7 @@ const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({
                   <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed">
                     IndaStreet is <span className="font-semibold text-gray-900">not just another listing platform.</span>
                     <br />
-                    It is a <span className="font-semibold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">verified, professional ecosystem</span> built to help qualified massage therapists and wellness providers grow <span className="font-semibold text-gray-900">safely, consistently, and globally.</span>
+                    It is a <span className="font-semibold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">verified, professional ecosystem</span> built to help qualified massage therapists and wellness providers grow <span className="font-semibold text-gray-900">consistently and globally.</span>
                   </p>
                 </div>
               </div>
