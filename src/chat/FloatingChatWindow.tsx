@@ -1046,7 +1046,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
 
                     {/* Messages Container with Lock Overlay */}
                     {!isLoading && !messagesError && (
-                      <div className="flex-1 relative overflow-visible">
+                      <div className="flex-1 relative overflow-y-auto" style={{ maxHeight: '400px' }}>
                         {/* Lock Overlay - Only visible when booking is in progress */}
                         {chatRoom.status === 'booking-in-progress' && (
                           <div className="absolute inset-0 bg-white bg-opacity-95 backdrop-blur-sm z-10 flex items-center justify-center">

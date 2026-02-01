@@ -29,6 +29,9 @@ import './src/lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './src/context/LanguageContext';
 import { CityProvider, useCityContext } from './src/context/CityContext';
 
+// 🔒 SCROLL SAFE LAYOUT - Production scroll guarantee
+import ScrollSafeLayout from './src/components/layout/ScrollSafeLayout';
+
 // 🔒 SCROLL WATCHDOG - Prevents AI from breaking scroll
 import { scrollWatchdog } from './src/utils/scrollWatchdog';
 import { agentShareAnalyticsService } from './src/lib/appwriteService';
@@ -83,6 +86,22 @@ const App = () => {
         // 🔒 SCROLL WATCHDOG - Monitor and fix scroll violations
         scrollWatchdog.start();
         console.log('🔒 Global Scroll Architecture Active - Violations will be auto-fixed');
+        
+        // 🧪 SCROLL WATCHDOG (DEV MODE ONLY) - Catches AI damage instantly
+        if (process.env.NODE_ENV === "development") {
+            const watchdogId = setInterval(() => {
+                if (getComputedStyle(document.body).overflow === "hidden") {
+                    console.warn("🚨 SCROLL LOCK DETECTED - Auto-fixing...");
+                    document.body.style.overflow = "auto";
+                }
+                if (getComputedStyle(document.documentElement).overflow === "hidden") {
+                    console.warn("🚨 HTML SCROLL LOCK DETECTED - Auto-fixing...");
+                    document.documentElement.style.overflow = "auto";
+                }
+            }, 1500);
+            
+            return () => clearInterval(watchdogId);
+        }
         
         // 🔒 Initialize Global Scroll Architecture - PERMANENT FIX
         initScrollLockDetection();
@@ -1154,7 +1173,8 @@ const App = () => {
     };
 
     return (
-        <CityProvider>
+        <ScrollSafeLayout>
+            <CityProvider>
         <LanguageProvider value={{ 
             language: language as 'en' | 'id', 
             setLanguage: (lang: any) => handleLanguageSelect(lang as 'en' | 'id' | 'gb')
@@ -1446,6 +1466,7 @@ const App = () => {
         </ChatProvider>
         </LanguageProvider>
         </CityProvider>
+        </ScrollSafeLayout>
     );
 };
 

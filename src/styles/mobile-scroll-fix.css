@@ -63,7 +63,7 @@ body {
   padding-bottom: 2rem;
 }
 
-/* 💬 SAFE CHAT WINDOW RULES - FOLLOWS GLOBAL SCROLL ARCHITECTURE */
+/* 💬 CHAT WINDOW CLEANUP (PRODUCTION READY) */
 .chat-messages {
   max-height: 60vh;
   overflow-y: auto !important;
@@ -72,10 +72,10 @@ body {
 }
 
 .chat-window {
-  /* Chat window participates in global scroll - no isolation */
+  /* Chat has its own scroll - page scroll remains enabled */
   position: fixed;
   max-height: 80vh;
-  overflow-y: visible; /* Allow global scroll to work */
+  overflow-y: auto; /* FIXED: Allow chat internal scrolling */
   z-index: 9999;
 }
 

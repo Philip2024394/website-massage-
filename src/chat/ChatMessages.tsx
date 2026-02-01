@@ -174,8 +174,12 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   return (
     <div 
-      className="flex-1 p-4 space-y-4 overflow-visible" 
-      style={{ overscrollBehavior: 'auto' }}
+      className="flex-1 p-4 space-y-4 overflow-y-auto" 
+      style={{ 
+        maxHeight: '60vh',
+        overscrollBehavior: 'contain',
+        WebkitOverflowScrolling: 'touch'
+      }}
     >
       <style>{`
         .scrollbar-hide::-webkit-scrollbar {

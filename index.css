@@ -14,6 +14,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 🔒 SCROLL SAFE ROOT */
+.scroll-safe-root {
+  width: 100%;
+  min-height: 100%;
+  overflow: visible;
+}
+
 /* 🔒 GLOBAL SCROLL GUARANTEE - OVERRIDES ALL AI DAMAGE */
 html, body {
   height: auto !important;
