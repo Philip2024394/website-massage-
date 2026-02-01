@@ -67,22 +67,24 @@ select {
    KEYBOARD OPENING BEHAVIOR
    =================================================================== */
 
-/* Prevent content jumping when keyboard opens */
+/* Prevent content jumping when keyboard opens - SCROLL SAFE */
 html {
   height: -webkit-fill-available;
 }
 
 body {
-  min-height: 100vh;
+  /* FIXED: Never use 100vh - breaks mobile scrolling */
+  min-height: auto;
   min-height: -webkit-fill-available;
 }
 
 /* iOS: Prevent viewport from resizing when keyboard opens */
-/* ⚠️ CRITICAL FIX: Only apply scroll lock to chat-specific pages, NOT therapist dashboard */
+/* ⚠️ CRITICAL FIX: NEVER LOCK BODY SCROLL - violates ONE SCROLL AUTHORITY */
 @supports (-webkit-touch-callout: none) {
   body.chat-open {
-    position: fixed;
-    overflow: hidden;
+    /* FIXED: Never lock body scroll - breaks mobile scrolling */
+    position: relative;
+    overflow: visible;
     width: 100%;
   }
   

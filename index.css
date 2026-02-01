@@ -36,8 +36,10 @@ body {
 #root {
   background-color: #f97316; /* Orange background matching loading screen */
   min-height: auto; /* NEVER use 100vh - breaks mobile */
+  height: auto; /* Allow content to grow */
   width: 100%;
   overflow: visible; /* Let content grow naturally */
+  position: relative; /* Ensure proper positioning */
 }
 
 /* 🚫 ABSOLUTE MOBILE BANS - ENFORCE NON-NEGOTIABLE RULES */
@@ -94,7 +96,7 @@ footer {
 .landing-page-container {
   position: relative;
   width: 100%;
-  min-height: 100vh;
+  min-height: auto; /* FIXED: Never use 100vh - breaks mobile scroll */
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -122,11 +124,12 @@ footer {
     touch-action: pan-y pan-x !important;
   }
   
-  /* Therapist dashboard mobile fixes */
+  /* Therapist dashboard mobile fixes - SCROLL SAFE VERSION */
   .therapist-page-container {
-    height: 100vh !important;
-    max-height: 100vh !important;
-    overflow: hidden !important;
+    /* FIXED: Never use 100vh or overflow: hidden - breaks mobile scrolling */
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     display: flex !important;
     flex-direction: column !important;
   }
@@ -584,16 +587,16 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
   z-index: 100 !important;
 }
 
-/* Main content area - proper spacing for header and footer */
+/* Main content area - proper spacing for header and footer - SCROLL SAFE */
 .therapist-page-container {
-  /* Full viewport height for contained scrolling */
-  height: 100vh !important;
-  max-height: 100vh !important;
+  /* FIXED: Never use 100vh or overflow: hidden - breaks mobile scrolling */
+  height: auto !important;
+  max-height: none !important;
   /* Top padding for fixed header + safe area */
   padding-top: calc(60px + max(env(safe-area-inset-top, 0px), 12px)) !important;
   /* Bottom padding for footer area + safe area */
   padding-bottom: max(env(safe-area-inset-bottom, 20px), 80px) !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 /* Ensure content doesn't get cut off by footer */
