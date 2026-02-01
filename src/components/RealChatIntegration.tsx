@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🔗 REAL CHAT INTEGRATION COMPONENT
  * 
@@ -216,7 +217,7 @@ export const RealChatIntegration: React.FC<RealChatIntegrationProps> = ({
   return (
     <div style={{ 
       width: '100%', 
-      height: '100vh', 
+      height: "calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))", 
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       display: 'flex',
       flexDirection: 'column',

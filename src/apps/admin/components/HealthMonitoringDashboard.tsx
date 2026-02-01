@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { 
     Activity, AlertCircle, CheckCircle, Clock, Zap, 
@@ -453,7 +454,7 @@ const HealthMonitoringDashboard: React.FC = () => {
                             Clear Logs
                         </button>
                     </div>
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                    <div className="space-y-2 max-h-64 ">
                         {recentErrors.length === 0 ? (
                             <p className="text-gray-500 text-center py-4">No recent errors</p>
                         ) : (

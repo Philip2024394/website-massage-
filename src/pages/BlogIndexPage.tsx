@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -215,7 +216,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
     const featuredPosts = blogPosts.filter(post => post.featured);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-purple-50 via-white to-blue-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">

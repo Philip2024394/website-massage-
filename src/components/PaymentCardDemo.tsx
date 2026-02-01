@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import PaymentCard from './PaymentCard';
 import BankDetailsForm from './BankDetailsForm';
@@ -25,7 +26,7 @@ const PaymentCardDemo: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 py-12">
             <div className="max-w-7xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-12">

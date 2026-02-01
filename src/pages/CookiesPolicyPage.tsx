@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import LoginDrawer from '../components/LoginDrawer';
 
@@ -10,7 +11,7 @@ const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t: _t }) 
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Header matching HomePage */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">

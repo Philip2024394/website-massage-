@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🛡️ ERROR FALLBACK PAGE
  * Professional full-page error display
@@ -73,7 +74,7 @@ export function ErrorFallbackPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
         {/* Main Card */}
         <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12">

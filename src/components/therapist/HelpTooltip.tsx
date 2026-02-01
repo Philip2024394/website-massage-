@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useRef, useEffect } from 'react';
 import { HelpCircle, X } from 'lucide-react';
@@ -170,7 +171,7 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
               </div>
 
               {/* Body */}
-              <div className="px-4 py-3 space-y-3 max-h-[60vh] overflow-y-auto">
+              <div className="px-4 py-3 space-y-3 max-h-[60vh] ">
                 <p className="text-sm text-gray-700 leading-relaxed">
                   {content}
                 </p>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
 import Button from '../components/Button';
@@ -170,7 +171,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
     };
     
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
              <div className="relative">
                 <img className="w-full h-64 object-cover" src={currentMainImage} alt={place.name} />
                 <div className="absolute inset-0 bg-black/20"></div>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 🚩 FLAG ICON - PERSISTENT CHAT REPORT BUTTON
@@ -143,7 +144,7 @@ const InlineReportForm: React.FC<InlineReportFormProps> = ({
       </div>
 
       {/* Form Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 ">
         <form onSubmit={handleSubmit} className="p-4 space-y-6">
           {/* Contact Information Card */}
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">

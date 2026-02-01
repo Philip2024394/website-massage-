@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
 import React, { useState, useEffect } from 'react';
 import MassagePlaceCard from '../components/MassagePlaceCard';
 import { FloatingChatWindow } from '../chat';
@@ -131,7 +132,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         console.log('❌ MASSAGE PLACE PROFILE: No place provided!');
         return (
             <>
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-100 flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-gray-600 mb-4">Place not found</p>
                     <button 
@@ -436,7 +437,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     if (!place) {
         return (
             <>
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Place not found</h2>
                     <button onClick={onBack} className="px-6 py-3 bg-orange-500 text-white rounded-lg">
@@ -453,7 +454,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
     return (
         <>
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
             {/* Universal Header */}
             <UniversalHeader 
                 language={language}
@@ -527,7 +528,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             />
 
             {/* Main Content */}
-            <main className="w-full max-w-full mx-auto px-4 py-6 pb-24 overflow-x-hidden">
+            <main className="w-full max-w-full mx-auto px-4 py-6 pb-24 ">
                 {/* Massage Place Card - Matching Therapist Card Design */}
                 <div className="max-w-4xl mx-auto">
                     <MassagePlaceCard

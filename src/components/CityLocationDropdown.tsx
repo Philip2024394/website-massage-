@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { INDONESIAN_CITIES_CATEGORIZED, CityLocation } from '../constants/indonesianCities';
@@ -335,7 +336,7 @@ const CityLocationDropdown = ({
               width: `${menuPos.width}px`,
               zIndex: 9999
             }}
-            className="mt-1 bg-white border-2 border-orange-500 rounded-xl shadow-lg max-h-60 overflow-y-auto"
+            className="mt-1 bg-white border-2 border-orange-500 rounded-xl shadow-lg max-h-60 "
           >
             {includeAll && (
               <button

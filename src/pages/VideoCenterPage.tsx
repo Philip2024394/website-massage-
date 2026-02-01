@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState } from 'react';
 import { ArrowLeft, Play, X } from 'lucide-react';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -102,7 +103,7 @@ const VideoCenterPage: React.FC<VideoCenterPageProps> = ({ t, language = 'en', o
     };
 
     return (
-        <div className="min-h-screen bg-white w-full max-w-full overflow-x-hidden">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white w-full max-w-full ">
             {/* Universal Header */}
             <UniversalHeader 
                 language={currentLanguage}

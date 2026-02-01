@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * 🏢 ENTERPRISE PERFORMANCE MONITORING DASHBOARD
  * 
@@ -246,7 +247,7 @@ export const EnterprisePerformanceDashboard: React.FC<DashboardProps> = ({ onClo
       {/* Recent Events */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">Recent Events</h3>
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className="space-y-2 max-h-64 ">
           {monitoringData.recentEvents.slice(-10).map(event => (
             <div key={event.id} className="p-2 border-l-4 border-l-blue-400 bg-gray-50 rounded">
               <div className="flex justify-between items-start">
@@ -452,7 +453,7 @@ export const EnterprisePerformanceDashboard: React.FC<DashboardProps> = ({ onClo
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="p-6  max-h-[calc(90vh-140px)]">
           {activeTab === 'performance' && <PerformanceTab />}
           {activeTab === 'monitoring' && <MonitoringTab />}
           {activeTab === 'database' && <DatabaseTab />}

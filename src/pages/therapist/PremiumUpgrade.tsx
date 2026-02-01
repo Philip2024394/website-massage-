@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (4 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Crown, Upload, CheckCircle, AlertCircle, XCircle, CreditCard, Building2, User, Hash, Copy, Check } from 'lucide-react';
@@ -272,8 +273,8 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }
   };
 
   return (
-    <main className="min-h-screen bg-white pb-20 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-      <div className="max-w-sm mx-auto bg-white min-h-screen">
+    <main className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white pb-20  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+      <div className="max-w-sm mx-auto bg-white min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-200">
           <div className="flex items-center justify-between">

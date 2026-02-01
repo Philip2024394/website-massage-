@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { databases } from '../lib/appwrite';
@@ -104,14 +105,14 @@ const DeclineBookingPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-gray-600">Loading booking...</div></div>;
+    return <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50"><div className="text-gray-600">Loading booking...</div></div>;
   }
   if (error || !booking) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4"><div className="bg-white p-6 rounded-xl shadow"><h1 className="text-lg font-bold mb-2">Booking Not Available</h1><p className="text-sm text-gray-600 mb-4">{error || 'Unable to load booking'}</p><button onClick={() => window.location.href='/'} className="px-4 py-2 bg-orange-600 text-white rounded">Home</button></div></div>;
+    return <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50 p-4"><div className="bg-white p-6 rounded-xl shadow"><h1 className="text-lg font-bold mb-2">Booking Not Available</h1><p className="text-sm text-gray-600 mb-4">{error || 'Unable to load booking'}</p><button onClick={() => window.location.href='/'} className="px-4 py-2 bg-orange-600 text-white rounded">Home</button></div></div>;
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
         {declined ? (
           <div className="text-center">

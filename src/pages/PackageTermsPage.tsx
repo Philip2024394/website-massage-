@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Check, Home } from 'lucide-react';
 
@@ -44,7 +45,7 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       {/* Global Header */}
       <header className="bg-white shadow-md sticky top-0 z-[9997] w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">

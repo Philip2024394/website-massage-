@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { translations } from '../translations/index.ts';
 
@@ -19,7 +20,7 @@ const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
     const safeArr = (arr: any) => (Array.isArray(arr) ? arr : []);
     
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -393,7 +394,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
   // PWA Installation Gate
   if (!isPWAInstalled) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 flex items-center justify-center p-4">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 flex items-center justify-center p-4">
         <div className="max-w-sm w-full bg-white rounded-3xl p-8 text-center shadow-2xl">
           <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Smartphone className="w-10 h-10 text-orange-500" />
@@ -465,7 +466,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
 
   // Main Booking Interface (only shown after PWA installed)
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white pb-20">
       {/* Header */}
       <div className="w-full bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-sm mx-auto px-4 py-5">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🚨 DEVELOPMENT ONLY - BOOKING DEBUG PANEL
  * 
@@ -100,7 +101,7 @@ const BookingDebugPanel: React.FC = () => {
           </button>
         </div>
 
-        <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh]">
+        <div className="p-4 space-y-4  max-h-[60vh]">
           {/* Test Actions */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="font-bold mb-2">Test Actions</h3>

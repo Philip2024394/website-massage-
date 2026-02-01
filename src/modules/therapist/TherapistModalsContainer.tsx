@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import type { Therapist } from '../../types';
 import AnonymousReviewModal from '../../components/AnonymousReviewModal';
@@ -108,7 +109,7 @@ const TherapistModalsContainer: React.FC<TherapistModalsContainerProps> = ({
             {/* Refer Friend Modal */}
             {showReferModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 " onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
                             <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
                                 <img 

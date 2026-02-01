@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { useMobileDetection } from '../hooks/useMobileDetection';
 import { getDeviceDebugInfo, startViewportMonitoring, createDebugOverlay } from '../utils/deviceDebug';
@@ -43,7 +44,7 @@ export default function DeviceDebugPanel() {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2">

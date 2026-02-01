@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles, Hotel } from 'lucide-react';
@@ -199,7 +200,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
             </button>
           </div>
 
-          <nav className="flex-grow overflow-y-auto p-4">
+          <nav className="flex-grow  p-4">
             <div className="space-y-3">
               {/* Authentication Section - Separate Buttons */}
               <div className="border-b border-gray-200 pb-4 mb-4">

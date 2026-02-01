@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import MobileLock from './MobileLock';
 
@@ -38,7 +39,7 @@ export function AppWithMobileLock() {
     <MobileLock>
       <div className="min-h-full bg-white">
         {/* Your existing app content here */}
-        <div className="scrollable max-h-full overflow-y-auto">
+        <div className="scrollable max-h-full ">
           {/* Main app routes and components */}
         </div>
       </div>

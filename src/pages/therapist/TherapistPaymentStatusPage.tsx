@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (6 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, AlertCircle, Calendar, CreditCard, DollarSign, FileText, RefreshCw } from 'lucide-react';
@@ -103,7 +104,7 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex items-center justify-center  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
                 <div className="text-center">
                     <RefreshCw className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
                     <p className="text-gray-600">Loading payment history...</p>
@@ -113,7 +114,7 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
     }
 
     return (
-        <div className="min-h-screen bg-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
             {/* Standardized Page Header */}
             <TherapistPageHeader
                 title="Payment Status"

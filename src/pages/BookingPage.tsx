@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ⚠️ LEGACY BOOKING PAGE - Limited Usage
  * This component is imported in AppRouter but not used in main booking flows.
@@ -93,7 +94,7 @@ function BookingPage({ provider, providerType, onBook, onBack, bookings, t }: Bo
 
     return (
         <>
-        <div className="p-4 bg-gray-50 min-h-screen">
+        <div className="p-4 bg-gray-50 min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
             <header className="flex items-center mb-6">
                 <button 
                     onClick={onBack} 

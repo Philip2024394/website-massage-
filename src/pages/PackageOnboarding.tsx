@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { Check, Star, Briefcase } from 'lucide-react';
 import { membershipSignupService, type PlanType } from '../lib/services/membershipSignup.service';
@@ -122,7 +123,7 @@ const PackageOnboarding: React.FC<PackageOnboardingProps> = ({ onNavigate }) => 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white py-12 px-4">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 to-white py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>

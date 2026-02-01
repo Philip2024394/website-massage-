@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'react';
 
 interface PullToRefreshProps {
@@ -74,7 +75,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
       const html = document.documentElement;
       
       if (prevent) {
-        body.style.overflow = 'hidden';
+        // REMOVED: body.style.overflow = "hidden" - violates global scroll architecture;
         body.style.touchAction = 'none';
         body.classList.add('elite-pulling');
         html.classList.add('elite-refresh-mode');

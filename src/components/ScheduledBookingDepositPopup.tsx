@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { Clock, CreditCard, AlertTriangle, Shield, Calendar, X, CheckCircle } from 'lucide-react';
 
@@ -90,7 +91,7 @@ const ScheduledBookingDepositPopup: React.FC<ScheduledBookingDepositPopupProps> 
 
     return (
         <div className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[110] p-4 ${className}`}>
-            <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] ">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-t-2xl">
                     <div className="flex items-center justify-between">

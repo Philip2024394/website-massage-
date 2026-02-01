@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * 🛡️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
  * This dashboard is a sealed operational surface; do not modify unless explicitly instructed by the owner.
@@ -955,7 +956,7 @@ export default function ChatWindow({
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+            <div className="flex-1  p-4 space-y-3 bg-gray-50">
                 {messages.length === 0 ? (
                     <div className="text-center text-gray-500 mt-8">
                         <svg className="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1399,7 +1400,7 @@ export default function ChatWindow({
             {/* Enlarged Payment Card Modal */}
             {enlargedPaymentCard && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] ">
                         {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-gray-100">
                             <div className="flex items-center gap-3">

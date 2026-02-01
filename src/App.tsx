@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ⚠️ WARNING
  * openChat event is handled ONLY by useOpenChatListener.
@@ -1202,7 +1203,7 @@ const App = () => {
             } ${
                 mobileDetection.hasTouch ? 'touch-enabled' : 'no-touch'
             }`} style={{ 
-                overflowY: 'auto', 
+                overflowY: "visible", 
                 overflowX: 'hidden', 
                 minHeight: '100vh',
                 height: 'auto',

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, Building, Sparkles, Mail, Lock, CheckCircle, ArrowLeft, Home, AlertCircle } from 'lucide-react';
 import { account, ID } from '../../lib/appwrite';
@@ -191,7 +192,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
   const selectedAccountType = accountTypes.find(type => type.type === formData.accountType);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 via-orange-500 to-red-600 relative overflow-hidden">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-400 via-orange-500 to-red-600 relative overflow-hidden">
       <PageNumberBadge pageNumber={999} pageName="CreateAccountPage" isLocked={false} />
       
       {/* Background Pattern */}
@@ -494,7 +495,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
       {/* Profile Photo Policy Modal */}
       {showPhotoModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] ">
             <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-red-600 text-white p-6 rounded-t-2xl">
               <h2 className="text-2xl font-bold">⚠️ Profile Photo Policy</h2>
               <p className="text-orange-100 mt-1">Important Account Security Notice</p>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Star, MessageSquare, User, MessageCircle, Calendar, Clock } from 'lucide-react';
 import { PageContainer } from '../components/layout/PageContainer';
@@ -245,7 +246,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 ">
       {/* Success Message Toast */}
       {showSuccessMessage && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-slide-down">

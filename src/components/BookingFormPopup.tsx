@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ⚠️ DEPRECATED - NOT CURRENTLY USED
  * This component is not actively imported in the main booking flows.
@@ -252,7 +253,7 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
             onClick={onClose}
         >
             <div 
-                className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] "
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

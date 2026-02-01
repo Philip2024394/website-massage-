@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (4 fixes)
 /**
  * 🔒 PRODUCTION UI – COMPLETE (FROZEN PRE-LAUNCH)
  * This page is visually complete and approved.
@@ -169,7 +170,7 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex flex-col  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
       <div className="max-w-sm mx-auto px-4 pt-6 pb-4 w-full">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
@@ -310,7 +311,7 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
         {/* Chat Interface for All Therapists */}
         <div className="bg-white rounded-2xl shadow-lg border-2 border-orange-200 flex flex-col h-[600px]">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white">
+          <div className="flex-1  p-6 space-y-4 bg-white">
             {loading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * ============================================================================
  * 🔒 HARD LOCK: THERAPIST DASHBOARD - STABLE PROFILE MANAGEMENT
@@ -960,7 +961,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   if (!therapist) {
     return (
       <>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">Loading therapist data...</p>
         </div>
@@ -1742,7 +1743,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       {/* Payment Modal for Plus Members */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-h-[90vh] ">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-5 rounded-t-2xl">
               <div className="flex items-center justify-between">

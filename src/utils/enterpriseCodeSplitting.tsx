@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * 🏢 ENTERPRISE CODE SPLITTING UTILITY
  * 
@@ -340,7 +341,7 @@ export const SplitHomePage = withCodeSplitting(
     chunkName: 'home-page',
     preload: true,
     fallback: () => (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
         <EnterpriseFallback message="Loading home page..." />
       </div>
     )
@@ -354,7 +355,7 @@ export const SplitTherapistDashboard = withCodeSplitting(
     preload: false,
     timeout: 15000, // Longer timeout for complex dashboard
     fallback: () => (
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-100">
         <div className="flex items-center justify-center pt-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>

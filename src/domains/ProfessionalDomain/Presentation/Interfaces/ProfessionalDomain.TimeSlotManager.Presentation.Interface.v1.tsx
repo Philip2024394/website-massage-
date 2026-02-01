@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -278,7 +279,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
   // Non-premium lock screen
   if (!isPremium) {
     return (
-      <div className="min-h-screen bg-white p-6">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white p-6">
         <div className="max-w-sm mx-auto">
           <button 
             onClick={onBack}
@@ -354,7 +355,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       {/* Standardized Status Header */}
       <div className="max-w-sm mx-auto px-4 pt-6 pb-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

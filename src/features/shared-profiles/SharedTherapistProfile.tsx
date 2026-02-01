@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * 🔒 PROTECTED FILE - DO NOT MODIFY WITHOUT APPROVAL 🔒
  * 
@@ -682,7 +683,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     if (loading) {
         console.log('⏳ [RENDER] Rendering LOADING state');
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md">
                     <div className="mb-4">
                         <svg className="w-12 h-12 mx-auto text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -711,7 +712,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         // Show therapist selector for /shared/therapist URLs without ID
         if (errorMessage.includes('select a therapist') || window.location.pathname === '/shared/therapist') {
             return (
-                <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+                <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-b from-orange-50 to-white">
                     <div className="container mx-auto px-4 py-8">
                         <div className="text-center mb-8">
                             <div className="mb-4 text-6xl">🎭</div>
@@ -783,7 +784,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         }
         
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-lg">
                     <div className="mb-4 text-6xl">😔</div>
                     <h2 className="text-xl font-bold text-gray-800 mb-2">Profile Not Found</h2>

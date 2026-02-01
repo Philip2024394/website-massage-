@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * Universal Shared Profile Layout
  * Used for therapists, massage places, and facial places
@@ -31,7 +32,7 @@ export const SharedProfileLayout: React.FC<SharedProfileLayoutProps> = ({
     // Loading state
     if (loading) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading profile...</p>
@@ -43,7 +44,7 @@ export const SharedProfileLayout: React.FC<SharedProfileLayoutProps> = ({
     // Error state
     if (error || !providerName) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center p-4">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
                     <div className="text-6xl mb-4">😔</div>
                     <h1 className="text-2xl font-bold text-gray-800 mb-2">
@@ -65,7 +66,7 @@ export const SharedProfileLayout: React.FC<SharedProfileLayoutProps> = ({
 
     // Success state - render children
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Hamburger menu button - fixed position */}
             <button
                 onClick={() => setIsDrawerOpen(true)}

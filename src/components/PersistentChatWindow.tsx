@@ -1242,8 +1242,11 @@ export function PersistentChatWindow() {
       
       <div
         data-testid="persistent-chat-window"
-        className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100%-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-y-auto overflow-x-hidden flex flex-col animate-slide-up scrollbar-hide"
+        className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100%-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col animate-slide-up"
         style={{ 
+          /* MOBILE SCROLL COMPLIANCE: Chat window respects global scroll authority */
+          overflowY: 'visible',
+          overflowX: 'visible',
           overscrollBehavior: 'contain',
           height: 'min(600px, calc(100vh - 60px))',
           fontFamily: 'system-ui, -apple-system, sans-serif',

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 😀 EMOJI PICKER - Modern Emoji Selection Component
@@ -177,7 +178,7 @@ export function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
       )}
 
       {/* Emoji Grid */}
-      <div className="p-3 max-h-64 overflow-y-auto">
+      <div className="p-3 max-h-64 ">
         {filteredEmojis.length > 0 ? (
           <div className="grid grid-cols-8 gap-1">
             {filteredEmojis.map((emoji, index) => (

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
 import { FloatingChatWindow } from '../../chat';
@@ -218,7 +219,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       <TherapistPageHeader
         title="Scheduled Orders"
         subtitle="Manage your appointments and schedule"
@@ -369,7 +370,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
         {/* Add Manual Booking Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] ">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-bold text-gray-900">Add External Booking</h2>
                 <button

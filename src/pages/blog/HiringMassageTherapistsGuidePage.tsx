@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
@@ -40,7 +41,7 @@ const HiringMassageTherapistsGuidePage: React.FC<HiringMassageTherapistsGuidePag
         return cleanup;
     }, []);
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
@@ -69,7 +70,7 @@ const HiringMassageTherapistsGuidePage: React.FC<HiringMassageTherapistsGuidePag
                                 <CloseIcon />
                             </button>
                         </div>
-                        <nav className="flex-grow overflow-y-auto p-4">
+                        <nav className="flex-grow  p-4">
                             <div className="space-y-2">
                                 <button onClick={() => { onNavigate?.('home'); setIsMenuOpen(false); }} className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md border-l-4 border-orange-500 group">
                                     <span className="text-2xl">🏠</span>

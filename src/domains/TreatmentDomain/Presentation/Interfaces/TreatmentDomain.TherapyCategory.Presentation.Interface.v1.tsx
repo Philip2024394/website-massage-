@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -334,7 +335,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
             <UniversalHeader
                 onNavigate={onNavigate}
                 onMenuToggle={() => setIsMenuOpen(true)}
@@ -400,7 +401,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="p-4 pb-20 overflow-x-hidden max-w-full">
+            <main className="p-4 pb-20  max-w-full">
                 <div className="flex flex-col gap-4 max-w-full">
                     {massageTypes.map((massage, index) => (
                         <div 

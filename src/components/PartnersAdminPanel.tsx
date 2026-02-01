@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * ============================================================================
  * 🏨 PARTNERS ADMIN PANEL - APPWRITE CONNECTION MANAGER
@@ -201,7 +202,7 @@ const PartnersAdminPanel: React.FC<PartnersAdminPanelProps> = ({ onClose }) => {
                     </div>
                 </div>
 
-                <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div className="p-6 space-y-6  max-h-[calc(90vh-120px)]">
                     {/* Connection Status */}
                     <div className="bg-gray-50 rounded-lg p-4">
                         <div className="flex items-center gap-3 mb-2">
@@ -293,7 +294,7 @@ const PartnersAdminPanel: React.FC<PartnersAdminPanelProps> = ({ onClose }) => {
                                 <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                             )}
                         </h3>
-                        <div className="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm max-h-64 overflow-y-auto">
+                        <div className="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm max-h-64 ">
                             {logs.length === 0 ? (
                                 <p className="text-gray-500">No activity yet...</p>
                             ) : (

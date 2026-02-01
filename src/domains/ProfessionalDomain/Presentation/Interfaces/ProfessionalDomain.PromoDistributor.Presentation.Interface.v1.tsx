@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -443,7 +444,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-20">
       {/* Standardized Page Header */}
       <TherapistPageHeader
         title={labels.title}

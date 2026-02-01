@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, X, Eye, CheckCircle } from 'lucide-react';
@@ -167,7 +168,7 @@ const BookingNotificationBar: React.FC<BookingNotificationBarProps> = ({
 
         {/* Individual notifications */}
         {notifications.length > 1 && (
-          <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+          <div className="mt-2 space-y-1 max-h-32 ">
             {notifications.slice(1).map((notification) => (
               <div
                 key={notification.id}

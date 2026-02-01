@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * 🌍 CHAT LANGUAGE SELECTOR COMPONENT
  * 
@@ -62,7 +63,7 @@ export const ChatLanguageSelector: React.FC<ChatLanguageSelectorProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 ">
           {/* Auto-translate Toggle */}
           <div className="p-3 border-b border-gray-200">
             <button
@@ -172,7 +173,7 @@ export const ChatLanguageSelectorCompact: React.FC<ChatLanguageSelectorProps> = 
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto">
+        <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-72 ">
           <div className="p-2">
             {SUPPORTED_LANGUAGES.map((lang) => (
               <button

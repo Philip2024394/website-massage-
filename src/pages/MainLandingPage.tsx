@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
 import React, { useState, useEffect, useMemo } from 'react';
 import Button from '../components/Button';
 import { locationService } from '../services/locationService';
@@ -774,7 +775,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
-        <div className="landing-page-container mobile-optimized scrollable relative w-full bg-gray-900 overflow-y-auto overflow-x-hidden" style={{ 
+        <div className="landing-page-container mobile-optimized scrollable relative w-full bg-gray-900  " style={{ 
             height: 'auto', // Allow natural height on mobile
             minHeight: '100dvh', // Dynamic viewport height for mobile
             maxHeight: 'none', // Remove height restrictions
@@ -892,7 +893,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         </div>
 
                         {/* Cities List - Scrollable container */}
-                        <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '35vh' }}>
+                        <div className="flex flex-col gap-2  scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '35vh' }}>
                             {availableCities.length > 0 ? (
                                 <>
                                     {availableCities.map((city, index) => (
@@ -947,10 +948,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                          top: '0', 
                          left: '0', 
                          width: '100vw', 
-                         height: '100vh',
+                         height: "calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))",
                          zIndex: 9999
                      }}>
-                    <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+                    <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full max-h-[90vh]  border border-gray-700 shadow-2xl">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-white">Change Country</h3>
                             <button

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useState, useEffect } from 'react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
@@ -94,7 +95,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
@@ -179,7 +180,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                 </div>
             </div>
 
-            <div className="mx-auto px-4 py-16 pb-24 max-w-full overflow-x-hidden">
+            <div className="mx-auto px-4 py-16 pb-24 max-w-full ">
                 {/* What Is Balinese Massage */}
                 <div className="mb-16 max-w-full">
                     <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">What is Balinese Massage?</h2>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🛡️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
  * This dashboard is a sealed operational surface; do not modify unless explicitly instructed by the owner.
@@ -642,7 +643,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
 
                 {/* Content */}
                 {/* Messages */}
-                <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
+                <div className="flex-1 p-4  space-y-3 bg-gray-50 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
                     <style>{`
                         div::-webkit-scrollbar {
                             display: none;

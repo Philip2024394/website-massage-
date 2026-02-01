@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useRef } from 'react';
 import { Home, Download, Share2, Printer } from 'lucide-react';
 import QRCode from 'qrcode';
@@ -174,7 +175,7 @@ const QRCodePage: React.FC<QRCodePageProps> = ({ onNavigate }) => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-amber-50">
             {/* Header */}
             <header className="bg-white shadow-md p-4 sticky top-0 z-40">
                 <div className="flex justify-between items-center max-w-4xl mx-auto">

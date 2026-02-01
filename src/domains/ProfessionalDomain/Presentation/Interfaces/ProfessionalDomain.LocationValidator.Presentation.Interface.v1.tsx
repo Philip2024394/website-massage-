@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -365,7 +366,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-b from-orange-50 to-white">
       {/* Page Header */}
       <TherapistPageHeader
         title="Hotel & Villa Safe Pass Certification"

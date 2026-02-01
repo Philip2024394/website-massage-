@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { X as CloseIcon } from 'lucide-react';
 
@@ -40,7 +41,7 @@ export const PartnersDrawer: React.FC<PartnersDrawerProps> = ({ isOpen, onClose,
         </div>
 
         {/* Scrollable Menu Content */}
-        <nav className="flex-grow overflow-y-auto p-4">
+        <nav className="flex-grow  p-4">
           <div className="space-y-2">
             {items.map((item) => {
               const Icon = item.icon as any;

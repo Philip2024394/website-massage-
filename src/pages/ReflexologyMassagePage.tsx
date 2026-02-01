@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -48,7 +49,7 @@ const ReflexologyMassagePage: React.FC<ReflexologyMassagePageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             <UniversalHeader
                 onNavigate={onNavigate}
                 onMenuToggle={() => setIsMenuOpen(true)}

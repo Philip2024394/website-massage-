@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useState, useEffect } from 'react';
 import { Share2, Download, Copy, Check, Clock, AlertCircle, Zap, Power, Timer } from 'lucide-react';
 import Button from '../components/Button';
@@ -304,7 +305,7 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-purple-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500 mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading discount settings...</p>
@@ -314,7 +315,7 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 pb-20">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-purple-50 pb-20">
             {/* Enhanced Header */}
             <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 text-white p-6 shadow-xl">
                 <div className="max-w-4xl mx-auto">
@@ -528,7 +529,7 @@ const DiscountSharePage: React.FC<DiscountSharePageProps> = ({
             {/* Create Banner Modal */}
             {showActivateModal && selectedDiscount && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl max-w-lg w-full max-h-[95vh] overflow-y-auto shadow-2xl">
+                    <div className="bg-white rounded-2xl max-w-lg w-full max-h-[95vh]  shadow-2xl">
                         {/* Modal Header */}
                         <div className={`bg-gradient-to-r ${selectedDiscount.color} p-4 md:p-6 text-white`}>
                             <h2 className="text-xl md:text-2xl font-bold mb-1">Activate {selectedDiscount.percentage}% Discount</h2>

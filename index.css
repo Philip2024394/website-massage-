@@ -14,66 +14,58 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent white flash during loading - Orange background for seamless transition */
+/* 🔒 GLOBAL MOBILE SCROLL GUARANTEE - PERMANENT FIX */
+/* RULE #1: BODY IS THE ONLY SCROLLER ON MOBILE */
 html, body {
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background-color: #f97316 !important; /* Orange background matching loading screen */
   margin: 0;
   padding: 0;
 }
 
+/* NEVER LOCK SCROLL BY DEFAULT */
+body {
+  position: relative;
+}
+
 #root {
   background-color: #f97316; /* Orange background matching loading screen */
-  min-height: 100vh;
-}
-
-/* Clean, mobile-first layout - body scrolling enabled */
-html, body, #root {
-  margin: 0;
-  padding: 0;
+  min-height: auto; /* NEVER use 100vh - breaks mobile */
   width: 100%;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y pan-x;
-  /* Elite mobile pull-to-refresh compatibility */
-  overscroll-behavior: none; /* Prevent native pull-to-refresh conflicts */
-  overscroll-behavior-y: none; /* Elite mode: Custom pull-to-refresh only */
-  overscroll-behavior-x: none;
+  overflow: visible; /* Let content grow naturally */
 }
 
-html {
-  overflow-y: scroll;
-  overflow-x: hidden;
-  height: 100%;
-  /* Firefox fix: Explicit height for proper scrolling */
-  min-height: 100%;
-  /* Elite mobile pull-to-refresh compatibility */
-  overscroll-behavior: none; /* Custom elite pull-to-refresh */
-  /* Firefox-specific scrollbar fix */
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+/* 🚫 ABSOLUTE MOBILE BANS - ENFORCE NON-NEGOTIABLE RULES */
+.h-screen, .min-h-screen {
+  height: auto !important;
+  min-height: auto !important;
 }
 
-body {
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 100vh;
-  height: auto;
-  position: relative;
-  overscroll-behavior-y: auto;
-  overscroll-behavior-x: none;
+/* Override any vh units on mobile */
+@media (max-width: 768px) {
+  *[style*="100vh"], 
+  *[style*="100dvh"],
+  *[class*="h-screen"],
+  *[class*="min-h-screen"] {
+    height: auto !important;
+    min-height: auto !important;
+  }
+  
+  /* Prevent position fixed wrappers around full pages */
+  .fixed[style*="height: 100vh"],
+  .fixed[class*="h-screen"] {
+    position: relative !important;
+    height: auto !important;
+  }
 }
 
-#root {
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 100vh;
-  /* Allow root to grow with content */
-  height: auto;
-  /* Firefox fix: Ensure root can scroll */
-  position: relative;
-  /* Firefox: Force scrolling context */
-  display: flex;
-  flex-direction: column;
-}
+/* ❌ REMOVED: Complex scroll overrides that violated ONE SCROLL AUTHORITY rule */
+/* Body scrolling is now managed by global scroll guarantee above */
 
 /* Ensure all scrollable elements work on mobile */
 .scrollable {

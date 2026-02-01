@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * MoreCustomersPage - Comprehensive guide for therapists to increase bookings
  * 
@@ -33,7 +34,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Page Header */}
       <TherapistPageHeader
         title="Therapist Dashboard"

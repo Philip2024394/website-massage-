@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Badge, Clock, Star, Zap, Menu } from 'lucide-react';
 import NotificationBell from '../components/NotificationBell';
@@ -137,7 +138,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Header with Burger Menu */}
             <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">

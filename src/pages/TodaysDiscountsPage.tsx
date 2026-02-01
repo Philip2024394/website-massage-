@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useMemo } from 'react';
 import { ArrowLeft, Clock, MapPin, Star } from 'lucide-react';
 import type { Page } from '../types/pageTypes';
@@ -44,7 +45,7 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps & { therapists?: an
     }, [therapists]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-pink-50">
             {/* Header */}
             <div className="bg-gradient-to-r from-orange-500 to-pink-600 text-white sticky top-0 z-50 shadow-lg">
                 <div className="max-w-7xl mx-auto px-4 py-4">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🛡️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
  * This dashboard is a sealed operational surface; do not modify unless explicitly instructed by the owner.
@@ -125,7 +126,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
         });
         
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
                     <div className="text-6xl mb-4">❌</div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Component Load Error</h2>

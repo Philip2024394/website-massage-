@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect, useRef } from 'react';
 import { 
     Clock, MapPin, Phone, Mail, Star, 
@@ -142,7 +143,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* App Drawer */}
             <AppDrawer
                 isOpen={isMenuOpen}
@@ -628,7 +629,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
             {/* Booking Modal */}
             {showBookingModal && selectedTreatment && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] ">
                         <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 flex items-center justify-between">
                             <h3 className="text-xl font-bold">Book Treatment</h3>
                             <button

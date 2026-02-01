@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { Calendar, Clock, X, AlertCircle, CheckCircle, MessageSquare } from 'lucide-react';
 
@@ -114,7 +115,7 @@ const DateChangeRequestModal: React.FC<DateChangeRequestModalProps> = ({
 
     return (
         <div className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[120] p-4 ${className}`}>
-            <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[90vh] ">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-2xl">
                     <div className="flex items-center justify-between">

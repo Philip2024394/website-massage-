@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Calendar, ShieldCheck } from 'lucide-react';
 import AnonymousReviewModal from '../../AnonymousReviewModal';
@@ -620,7 +621,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Refer Friend Modal */}
             {showReferModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[78vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 animate-fadeIn overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[78vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 animate-fadeIn " onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden relative">
                                 {/* Main coin image */}

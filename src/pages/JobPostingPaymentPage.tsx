@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { CreditCard, AlertCircle, CheckCircle, Copy, ArrowLeft, DollarSign, Calendar } from 'lucide-react';
 import { databases } from '../lib/appwrite';
@@ -135,7 +136,7 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading...</p>
@@ -145,7 +146,7 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex flex-col">
             {/* Main Header/Navigation */}
             <header className="bg-white shadow-md">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">

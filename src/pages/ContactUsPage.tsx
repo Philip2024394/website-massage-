@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { ArrowLeft, Mail, Phone, Globe, Clock, CheckCircle, ChevronDown, ChevronUp, User, Briefcase, Settings, Eye, Upload, Shield } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
@@ -271,7 +272,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
     const selectedCountry = COUNTRIES.find(c => c.code === formData.country);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Universal Header */}
             <UniversalHeader 
                 onMenuClick={() => setIsMenuOpen(true)}

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { 
     Clock, MapPin, Phone, Mail, Star,
@@ -104,7 +105,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
     const gallery = place.galleryImages || [];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Universal Header */}
             <UniversalHeader 
                 language={(place as any).language || 'id'}

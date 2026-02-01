@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * ============================================================================
  * �️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
@@ -588,7 +589,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           </div>
 
           {/* Navigation Menu */}
-          <nav className="flex-1 overflow-y-auto p-4">
+          <nav className="flex-1  p-4">
             <div className="space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
@@ -706,7 +707,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
       {/* Elite Main Content - Enhanced scrolling and bottom padding for mobile */}
       <main 
-        className="relative w-full overflow-y-auto overflow-x-hidden flex-1 therapist-layout-content" 
+        className="relative w-full   flex-1 therapist-layout-content" 
         style={{ 
           WebkitOverflowScrolling: 'touch', 
           touchAction: 'pan-y pan-x',

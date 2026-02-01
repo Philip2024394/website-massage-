@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, User, Building2, Sparkles } from 'lucide-react';
 import { membershipSignupService, type PortalType } from '../../lib/services/membershipSignup.service';
@@ -155,7 +156,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
 
   if (!role) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
           <p className="mt-2 text-gray-600">Loading...</p>
@@ -168,7 +169,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
   const IconComponent = roleDisplay.icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mb-4">

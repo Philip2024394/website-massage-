@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3, X, XCircle, DollarSign } from 'lucide-react';
@@ -333,7 +334,7 @@ const TherapistEarningsPage: React.FC<TherapistEarningsProps> = ({ therapist, on
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-4">
         {/* Standardized Status Header */}

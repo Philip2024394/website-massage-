@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * 🔒 PRODUCTION UI – COMPLETE (FROZEN PRE-LAUNCH)
  * This page is visually complete and approved.
@@ -709,7 +710,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
       <div className="max-w-sm mx-auto px-4 pt-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

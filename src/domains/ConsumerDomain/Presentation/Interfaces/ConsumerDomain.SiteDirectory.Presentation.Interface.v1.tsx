@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -159,7 +160,7 @@ const MenuPage: React.FC = () => {
   if (loading || !hotel) return <div className="p-8 text-center">Loading menu...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-2">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex flex-col items-center py-8 px-2">
       <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-xl flex flex-col items-center">
         <h1 className="text-2xl font-bold mb-2 text-brand-green">{hotel.name}</h1>
         <h2 className="text-lg font-semibold mb-4 text-gray-700">Massage Service Menu</h2>

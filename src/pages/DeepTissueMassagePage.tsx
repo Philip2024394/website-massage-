@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -40,7 +41,7 @@ const DeepTissueMassagePage: React.FC<DeepTissueMassagePageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full">
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🔒 PRODUCTION-GRADE ERROR BOUNDARY
  * Prevents white screens by catching React errors
@@ -72,7 +73,7 @@ export class ProductionErrorBoundary extends Component<Props, State> {
             const isDev = import.meta.env.DEV;
             
             return (
-                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+                <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
                     <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 border border-gray-200">
                         {/* Error Icon */}
                         <div className="flex justify-center mb-6">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -125,7 +126,7 @@ const PaymentInfoPage: React.FC<PaymentInfoPageProps> = ({ onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
@@ -166,7 +167,7 @@ const PaymentInfoPage: React.FC<PaymentInfoPageProps> = ({ onNavigate }) => {
                             </button>
                         </div>
 
-                        <nav className="flex-grow overflow-y-auto p-4">
+                        <nav className="flex-grow  p-4">
                             <div className="space-y-2">
                                 <button 
                                     onClick={() => onNavigate('home')} 
@@ -184,7 +185,7 @@ const PaymentInfoPage: React.FC<PaymentInfoPageProps> = ({ onNavigate }) => {
                 </div>
             )}
 
-            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-teal-50">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-green-50 via-white to-teal-50">
                 {/* Hero Section */}
                 <div 
                     className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-20 relative bg-cover bg-center"

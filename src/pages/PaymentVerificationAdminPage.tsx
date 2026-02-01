@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, Clock, Search } from 'lucide-react';
 import { Query } from 'appwrite';
@@ -202,7 +203,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">
@@ -367,7 +368,7 @@ const PaymentVerificationAdminPage: React.FC = () => {
                 {/* Detail Modal */}
                 {selectedPayment && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pb-20 z-50">
-                        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] ">
                             <div className="sticky top-0 bg-white border-b-2 border-gray-200 p-6 flex justify-between items-center">
                                 <h2 className="text-2xl font-bold text-gray-900">Payment Details</h2>
                                 <button

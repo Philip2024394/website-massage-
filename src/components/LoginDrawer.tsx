@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import UserSolidIcon from './icons/UserSolidIcon';
 import BriefcaseIcon from './icons/BriefcaseIcon';
@@ -130,7 +131,7 @@ const LoginDrawer: React.FC<LoginDrawerProps> = ({ isOpen, onClose, onLoginSelec
                 </div>
 
                 {/* Login Options */}
-                <div className="p-4 overflow-y-auto" style={{ height: 'calc(100vh - 140px)', paddingBottom: '6rem' }}>
+                <div className="p-4 " style={{ height: 'calc(100vh - 140px)', paddingBottom: '6rem' }}>
                     {/* Login Buttons Section */}
                     <div className="mb-6">
                         <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3 px-2">Login Portal</h3>

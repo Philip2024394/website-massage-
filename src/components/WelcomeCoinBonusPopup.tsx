@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -52,7 +53,7 @@ export const WelcomeCoinBonusPopup: React.FC<WelcomeCoinBonusPopupProps> = ({
                     animate={{ scale: 1, y: 0, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
                     transition={{ type: 'spring', duration: 0.6, bounce: 0.4 }}
-                    className="relative bg-gradient-to-br from-white to-orange-50 rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+                    className="relative bg-gradient-to-br from-white to-orange-50 rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] "
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Confetti Background Effect */}

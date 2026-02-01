@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * AdvancedAnalytics - Elite Business Intelligence Dashboard
  * 
@@ -198,7 +199,7 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
 
   if (loading) {
     return (
-      <div className="max-w-sm mx-auto bg-gray-50 min-h-screen">
+      <div className="max-w-sm mx-auto bg-gray-50 min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
         <div className="px-4 py-6">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-3/4"></div>
@@ -217,7 +218,7 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
   if (!data) return null;
 
   return (
-    <div className="max-w-sm mx-auto bg-gray-50 min-h-screen">
+    <div className="max-w-sm mx-auto bg-gray-50 min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
       {/* Header */}
       <div className="bg-gradient-to-br from-orange-500 to-orange-600 px-4 pt-6 pb-8">
         <h1 className="text-2xl font-bold text-white mb-2">Analytics Elite</h1>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import { useState, useEffect, useRef } from 'react';
 import { messagingService } from '../lib/appwriteService';
 
@@ -267,7 +268,7 @@ export default function MessageCenter({
 
             <div className="flex-1 flex overflow-hidden">
                 {/* Conversations List */}
-                <div className="w-1/3 border-r border-gray-200 overflow-y-auto">
+                <div className="w-1/3 border-r border-gray-200 ">
                     {conversations.length === 0 ? (
                         <div className="p-6 text-center text-gray-500">
                             <p>No conversations yet</p>
@@ -316,7 +317,7 @@ export default function MessageCenter({
                     {selectedConversation ? (
                         <>
                             {/* Messages List */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                            <div className="flex-1  p-4 space-y-4">
                                 {messages.map(msg => {
                                     const isOwnMessage = msg.senderId === currentUserId;
                                     const isSystemMessage = msg.messageType === 'system';

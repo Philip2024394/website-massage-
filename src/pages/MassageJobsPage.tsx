@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { Query } from 'appwrite';
 import { databases } from '../lib/appwrite';
@@ -252,7 +253,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     // const businessTypes = ['all', 'hotel', 'spa', 'wellness-center', 'resort', 'home-service', 'other'];
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Header - Same as Home Page */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm border-b border-gray-200">
                 <div className="flex justify-between items-center">
@@ -279,7 +280,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="p-4 bg-white min-h-screen">
+            <main className="p-4 bg-white min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
                 <div className="max-w-7xl mx-auto">
 
                     {/* Test Marker - SYSTEM WORKING */}

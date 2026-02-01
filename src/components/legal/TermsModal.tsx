@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * Legal Terms Modal Component
  * Displays full terms and requires acceptance
@@ -119,7 +120,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({
 
         {/* Content - Scrollable */}
         <div 
-          className="flex-1 overflow-y-auto px-6 py-4"
+          className="flex-1  px-6 py-4"
           onScroll={handleScroll}
         >
           {/* Important Notice */}

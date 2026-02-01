@@ -70,24 +70,20 @@ const ElitePullToRefresh: React.FC<PullToRefreshProps> = ({
     }
   }, []);
 
-  // Prevent momentum scrolling and over-scroll on iOS
+  // DISABLED: Previous momentum scrolling prevention violated global scroll architecture
+  // Global mobile-scroll-fix.css now handles all scroll behavior uniformly
   const preventMomentumScrolling = useCallback((prevent: boolean) => {
+    // COMPLIANCE: Never manipulate body/html overflow - violates ONE SCROLL AUTHORITY rule
+    // Global CSS architecture handles all mobile scroll behavior
+    console.log(`🚫 SCROLL VIOLATION PREVENTED: PullToRefresh attempted ${prevent ? 'disable' : 'enable'} body scroll`);
+    
     if (eliteMode && 'ontouchstart' in window) {
-      const body = document.body;
-      const html = document.documentElement;
-      
-      if (prevent) {
-        body.style.overflow = 'hidden';
-        body.style.position = 'fixed';
-        body.style.width = '100%';
-        body.style.touchAction = 'none';
-        html.style.overflow = 'hidden';
-      } else {
-        body.style.overflow = '';
-        body.style.position = '';
-        body.style.width = '';
-        body.style.touchAction = '';
-        html.style.overflow = '';
+      // Only set touch-action on the component itself, not body/html
+      const container = containerRef.current;
+      if (container && prevent) {
+        container.style.touchAction = 'none';
+      } else if (container) {
+        container.style.touchAction = '';
       }
     }
   }, [eliteMode]);
@@ -319,7 +315,7 @@ const ElitePullToRefresh: React.FC<PullToRefreshProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden ${className}`}
+      className={`relative ${className}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -375,7 +371,7 @@ const ElitePullToRefresh: React.FC<PullToRefreshProps> = ({
       <div style={{ 
         paddingTop: (isPulling || isRefreshing) ? `${Math.max(pullDistance * (eliteMode ? 0.6 : 1), 0)}px` : '0px',
         transition: isPulling ? 'none' : 'padding-top 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        minHeight: '100vh'
+        minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))'
       }}>
         {children}
       </div>

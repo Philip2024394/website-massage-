@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { X } from 'lucide-react';
 
@@ -29,7 +30,7 @@ export const ExpandedImageModal: React.FC<ExpandedImageModalProps> = ({ image, o
                 <X className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </button>
             
-            <div className="max-w-[95vw] sm:max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="max-w-[95vw] sm:max-w-4xl w-full max-h-[90vh] " onClick={(e) => e.stopPropagation()}>
                 <img
                     src={image.imageUrl}
                     alt={image.caption}

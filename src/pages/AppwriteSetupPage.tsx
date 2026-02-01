@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 import Button from '../components/Button';
@@ -119,7 +120,7 @@ export const AppwriteSetupPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 p-8">
             <div className="max-w-4xl mx-auto">
                 <div className="bg-white rounded-lg shadow-lg p-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-6">
@@ -198,7 +199,7 @@ export const AppwriteSetupPage: React.FC = () => {
 
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold mb-4">Setup Logs</h2>
-                        <div className="bg-gray-900 text-green-400 p-4 pb-20 rounded-lg h-64 overflow-y-auto font-mono text-sm">
+                        <div className="bg-gray-900 text-green-400 p-4 pb-20 rounded-lg h-64  font-mono text-sm">
                             {logs.map((log, index) => (
                                 <div key={index}>{log}</div>
                             ))}

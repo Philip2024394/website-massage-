@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { useMobileDetection } from '../hooks/useMobileDetection';
 
@@ -9,7 +10,7 @@ export default function MobileDetectionDemo() {
   const mobile = useMobileDetection();
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Enhanced Mobile Detection Demo</h1>
         

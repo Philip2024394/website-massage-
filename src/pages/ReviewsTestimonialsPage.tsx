@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 
 interface ReviewsTestimonialsPageProps {
@@ -8,7 +9,7 @@ interface ReviewsTestimonialsPageProps {
 
 const ReviewsTestimonialsPage: React.FC<ReviewsTestimonialsPageProps> = ({ onBack, onNavigate, t: _t }) => {
     return (
-        <div className="min-h-screen bg-gray-50 p-4 pb-20">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 p-4 pb-20">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center gap-4 pb-20 mb-6">

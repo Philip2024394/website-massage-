@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 🔧 NOTIFICATION SETTINGS PANEL - TASK 2 COMPLETION
@@ -132,7 +133,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
           </div>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)] space-y-6">
+        <div className="p-6  max-h-[calc(90vh-180px)] space-y-6">
           {/* General Settings */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">General</h3>

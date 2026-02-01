@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { autoTranslationService, ALL_LANGUAGES, BASIC_LANGUAGES, TRANSLATION_SCOPES } from '../lib/autoTranslationService';
 
@@ -104,7 +105,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ onClose }) => {
                     </div>
                 </div>
 
-                <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                <div className="p-6 space-y-6  max-h-[calc(90vh-200px)]">
                     {/* Statistics */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="bg-blue-50 rounded-lg p-4">
@@ -255,7 +256,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ onClose }) => {
                                     Clear Logs
                                 </button>
                             </div>
-                            <div className="bg-gray-900 rounded-lg p-4 max-h-64 overflow-y-auto">
+                            <div className="bg-gray-900 rounded-lg p-4 max-h-64 ">
                                 <div className="font-mono text-sm space-y-1">
                                     {logs.map((log, index) => (
                                         <div 

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 🧭 ENHANCED NAVIGATION SYSTEM - TASK 4 IMPLEMENTATION
@@ -518,7 +519,7 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
       </div>
 
       {/* Navigation Content */}
-      <div className="p-4 max-h-96 overflow-y-auto">
+      <div className="p-4 max-h-96 ">
         {/* Search Results */}
         {searchQuery && (
           <div className="mb-6">

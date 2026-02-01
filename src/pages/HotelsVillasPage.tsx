@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { ArrowLeft, Shield, CheckCircle, Users, Award, Phone, Mail, MessageCircle } from 'lucide-react';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -42,7 +43,7 @@ const HotelsVillasPage: React.FC<HotelsVillasPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Universal Header */}
             <UniversalHeader
                 onHomeClick={() => onNavigate('home')}

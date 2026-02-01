@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -244,7 +245,7 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
             {/* Header matching HomePage */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
                 <div className="flex justify-between items-center">
@@ -295,7 +296,7 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="p-4 pb-20 overflow-x-hidden max-w-full">
+            <main className="p-4 pb-20  max-w-full">
                 <div className="flex flex-col gap-4 max-w-full">
                     {facialTypes.map((facial, index) => (
                         <div 

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * 📅 ACTIVE BOOKING FLOW #2: Scheduled Booking
  * 
@@ -245,7 +246,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[85vh] sm:max-h-[90vh] "
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Orange Indastreet Branding */}
@@ -355,7 +356,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+              <div className="grid grid-cols-3 gap-2 max-h-64 ">
                 {timeSlots.map((slot, index) => (
                   <button
                     key={index}

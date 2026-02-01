@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type compatibility
 /**
  * 🛡️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
@@ -631,7 +632,7 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-white" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
       <div className="w-full px-4 pt-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 
 interface ServiceTermsPageProps {
@@ -9,7 +10,7 @@ interface ServiceTermsPageProps {
 const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactNumber: _contactNumber }) => {
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -377,8 +378,8 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }
   };
 
   return (
-    <main className="min-h-screen bg-white pb-20">
-      <div className="max-w-sm mx-auto bg-white min-h-screen">
+    <main className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white pb-20">
+      <div className="max-w-sm mx-auto bg-white min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-200">
           <div className="flex items-center justify-between">

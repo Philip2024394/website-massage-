@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 💼 SERVICE CUSTOMIZATION PANEL - ADVANCED SERVICE MANAGEMENT
@@ -274,7 +275,7 @@ export const ServiceCustomizationPanel: React.FC<ServiceCustomizationPanelProps>
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-2xl w-full max-h-96 overflow-y-auto">
+        <div className="bg-white rounded-xl max-w-2xl w-full max-h-96 ">
           <div className="p-6">
             <div className="flex justify-between items-start mb-6">
               <h3 className="text-xl font-bold text-gray-900">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { therapistAuth } from '../../lib/auth';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Home, CheckCircle, Star } from 'lucide-react';
@@ -208,7 +209,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20therapist%20bew.png?updatedAt=1763136088363)'
                 }}
             >
-                <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
+                <div className="max-w-md w-full relative z-10 max-h-full  pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
                     {/* Header - Positioned right under header area */}
                     <div className="text-center mb-4 sm:mb-6">
                         <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Therapist</h2>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useState, useEffect } from 'react';
 import { analyticsService, PlatformAnalytics } from '../services/analyticsService';
 import { TrendingUp, Users, DollarSign, Calendar, Star, MapPin, Award, BarChart3 } from 'lucide-react';
@@ -53,7 +54,7 @@ const PlatformAnalyticsPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mx-auto mb-4" />
                     <p className="text-gray-600 text-sm">Loading analytics...</p>
@@ -64,14 +65,14 @@ const PlatformAnalyticsPage: React.FC = () => {
 
     if (!analytics) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50">
                 <p className="text-gray-600">No analytics data available</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>

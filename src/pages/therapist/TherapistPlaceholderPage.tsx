@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * TherapistPlaceholderPage - Temporary page for routes under construction
  * Ensures no blank/error pages during development
@@ -20,7 +21,7 @@ const TherapistPlaceholderPage: React.FC<TherapistPlaceholderPageProps> = ({
   description = 'This page is under construction and will be available soon.'
 }) => {
   return (
-    <div className="min-h-screen bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader, AlertTriangle } from 'lucide-react';
@@ -55,7 +56,7 @@ const LeadDeclinePage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
                 <div className="text-center">
                     <Loader className="w-12 h-12 text-gray-500 animate-spin mx-auto mb-4" />
                     <p className="text-gray-600">Loading...</p>
@@ -66,7 +67,7 @@ const LeadDeclinePage: React.FC = () => {
 
     if (result) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
                     {result.success ? (
                         <>
@@ -112,7 +113,7 @@ const LeadDeclinePage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">

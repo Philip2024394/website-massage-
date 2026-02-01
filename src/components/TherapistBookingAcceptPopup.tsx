@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Clock, MapPin, DollarSign, X } from 'lucide-react';
 import { databases } from '../lib/appwrite';
@@ -181,7 +182,7 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] ">
         {isAccepted ? (
           // Success State
           <div className="p-8 text-center">

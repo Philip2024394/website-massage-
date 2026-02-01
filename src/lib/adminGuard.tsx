@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * =====================================================================
  * ADMIN ROUTE GUARD - Role-Based Access Control
@@ -103,7 +104,7 @@ export const AdminGuard: React.FC<AdminGuardProps> = ({
     // Loading state
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-100">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Verifying admin access...</p>
@@ -123,7 +124,7 @@ export const AdminGuard: React.FC<AdminGuardProps> = ({
         }
 
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-100">
                 <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
                     <div className="text-6xl mb-4">🔒</div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">

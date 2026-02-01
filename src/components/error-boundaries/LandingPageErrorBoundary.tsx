@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * LANDING PAGE ERROR BOUNDARY - PROTECTION GUARD
  */
@@ -60,7 +61,7 @@ export class LandingPageErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       // Fallback UI that doesn't require the landing page
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
             <div className="mb-6">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">

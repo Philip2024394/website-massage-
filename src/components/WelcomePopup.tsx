@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 
 interface WelcomePopupProps {
@@ -119,7 +120,7 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
       </div>
 
       <div 
-        className="bg-gradient-to-br from-white to-orange-50 rounded-3xl max-w-md w-full p-8 relative shadow-2xl animate-popIn max-h-[90vh] overflow-y-auto"
+        className="bg-gradient-to-br from-white to-orange-50 rounded-3xl max-w-md w-full p-8 relative shadow-2xl animate-popIn max-h-[90vh] "
         style={{
           animation: 'popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
         }}

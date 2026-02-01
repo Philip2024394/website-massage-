@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useState, useEffect } from 'react';
 import { 
     ExternalLink as ExternalLinkIcon, 
@@ -390,7 +391,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading Indastreet Partners...</p>
@@ -400,7 +401,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Universal Header with Home Button */}
             <UniversalHeader
                 onMenuClick={() => setIsMenuOpen(true)}
@@ -799,7 +800,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             {/* Refer a Friend Modal */}
             {showReferModal && selectedPartner && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 " onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
                             <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
                                 <img 

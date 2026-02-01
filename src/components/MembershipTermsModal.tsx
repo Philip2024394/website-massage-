@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { X, FileText } from 'lucide-react';
 
@@ -65,7 +66,7 @@ const MembershipTermsModal: React.FC<MembershipTermsModalProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto max-h-[60vh]">
+                <div className="p-6  max-h-[60vh]">
                     <div className="space-y-6">
                         {/* Plan Features */}
                         <div>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * =====================================================================
  * UNIFIED ADMIN DASHBOARD - Full Implementation
@@ -356,7 +357,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <aside className="w-64 bg-white shadow-sm flex-shrink-0 overflow-y-auto">
+                <aside className="w-64 bg-white shadow-sm flex-shrink-0 ">
                     <nav className="p-4 space-y-2">
                         {navItems.map((item) => (
                             <button
@@ -376,7 +377,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 p-8 overflow-y-auto bg-gray-100 w-full">
+                <main className="flex-1 p-8  bg-gray-100 w-full">
                     {loading && activeView === 'dashboard' ? (
                         <div className="flex items-center justify-center h-64">
                             <div className="text-center">
@@ -774,7 +775,7 @@ const SettingsPanel = () => (
 const AdminDashboardWithGuard: React.FC<AdminDashboardPageProps> = (props) => (
     <AdminGuardDev
         fallback={
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-100">
                 <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
                     <div className="text-6xl mb-4">🔒</div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">

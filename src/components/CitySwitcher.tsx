@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { MapPin, Check } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
@@ -50,7 +51,7 @@ export const CitySwitcher: React.FC<CitySwitcherProps> = ({ onClose }) => {
         {currentLabel}: <span className="font-semibold text-teal-600">{currentCity}</span>
       </div>
 
-      <div className="max-h-96 overflow-y-auto space-y-1">
+      <div className="max-h-96  space-y-1">
         {INDONESIAN_CITIES.map((city) => (
           <button
             key={city}

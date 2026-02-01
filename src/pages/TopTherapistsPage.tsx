@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useMemo } from 'react';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
@@ -87,7 +88,7 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Universal Header */}
             <UniversalHeader 
                 language={currentLanguage}

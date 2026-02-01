@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (10 fixes)
 // @ts-expect-error - React 19 type compatibility issue with lucide-react icons, will be resolved in future version
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
@@ -85,7 +86,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     // Safety check for translations loading
     if (loading) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
           <div className="text-center">
             <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
             <p className="text-gray-600">Loading dashboard...</p>
@@ -98,7 +99,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   if (!therapist) {
     console.error('❌ No therapist data provided to TherapistOnlineStatus');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
         <div className="text-center">
           <p className="text-gray-600 mb-4">{dict?.therapistDashboard?.loading || 'Loading therapist data...'}</p>
           <button
@@ -971,7 +972,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       <div className="max-w-sm mx-auto px-4 py-6 space-y-6">
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -1373,7 +1374,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   } catch (error) {
     console.error('TherapistOnlineStatus render error:', error);
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
         <div className="text-center p-6 max-w-md mx-auto">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">Dashboard Error</h2>

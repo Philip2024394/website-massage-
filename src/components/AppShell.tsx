@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (4 fixes)
 import React from 'react';
 
 /**
@@ -16,12 +17,12 @@ interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   return (
-    <div className="app-shell min-h-screen bg-white">
+    <div className="app-shell min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       {/* DISABLED: Header removed to prevent conflicts with landing page design */}
       {/* Landing page components handle their own headers */}
       
       {/* Main Content Area - Renders children immediately */}
-      <main className="flex-1 min-h-screen">
+      <main className="flex-1 min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
         {children}
       </main>
 
@@ -38,11 +39,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
  */
 export const AppShellSkeleton: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       {/* DISABLED: Header skeleton removed to prevent conflicts */}
       
       {/* Content Skeleton - Minimal loading state */}
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center">
         <div className="text-center">
           <div className="text-3xl font-bold mb-4">
             <span className="text-black">Inda</span>

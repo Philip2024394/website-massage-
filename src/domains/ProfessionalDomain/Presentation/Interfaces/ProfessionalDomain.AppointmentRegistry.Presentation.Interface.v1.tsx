@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -698,7 +699,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       {/* Standardized Status Header */}
       <div className="max-w-sm mx-auto px-4 pt-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -223,7 +224,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       {/* Safe-area padding for notch devices */}
       <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
         {/* Mobile Header */}

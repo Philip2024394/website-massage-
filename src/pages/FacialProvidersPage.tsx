@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import type { Place, UserLocation, Analytics } from '../types';
 import FacialPlaceCard from '../components/FacialPlaceCard';
@@ -178,7 +179,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 w-full max-w-full overflow-x-hidden">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full ">
             <PageNumberBadge pageNumber={400} pageName="FacialProviders" isLocked={false} />
             
             {/* Universal Header */}

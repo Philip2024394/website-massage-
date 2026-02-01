@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Star, FileText } from 'lucide-react';
 import { chatTranslationService } from '../services/chatTranslationService';
@@ -68,7 +69,7 @@ const PriceListPage: React.FC<PriceListPageProps> = ({ therapist, onBack }) => {
     const reviewCount = getDisplayReviewCount(therapist.reviewCount || 0);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Header - Same as HomePage */}
             <div className="sticky top-0 z-40 bg-white shadow-md">
                 <div className="max-w-7xl mx-auto px-4 py-3">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
 import React, { useState, useEffect } from 'react';
 import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
@@ -45,7 +46,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
     const imageUrl = `https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=${Date.now()}&tr=w-1920,h-400,fo-auto`;
 
     return (
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
             <header 
                 className="p-4 sticky top-0 z-20 shadow-sm bg-cover bg-center bg-no-repeat w-full max-w-full overflow-hidden"
                 style={{
@@ -93,7 +94,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                                 <CloseIcon />
                             </button>
                         </div>
-                        <nav className="flex-grow overflow-y-auto p-4">
+                        <nav className="flex-grow  p-4">
                             <div className="space-y-2">
                                 <button onClick={() => { onNavigate?.('home'); setIsMenuOpen(false); }} className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md border-l-4 border-orange-500 group">
                                     <span className="text-2xl">🏠</span>
@@ -115,7 +116,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                 </div>
             )}
 
-            <article className="mx-auto px-4 py-12 overflow-x-hidden w-full max-w-full">
+            <article className="mx-auto px-4 py-12  w-full max-w-full">
                 <nav className="mb-8 text-sm text-gray-600 max-w-full">
                     <button onClick={() => onNavigate?.('home')} className="hover:text-orange-600">Home</button> / 
                     <button onClick={() => onNavigate?.('blog')} className="hover:text-orange-600 ml-1">Blog</button> / 
@@ -147,7 +148,7 @@ const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePagePro
                     />
                 </div>
 
-                <div className="prose prose-base max-w-none overflow-x-hidden">
+                <div className="prose prose-base max-w-none ">
                     <p className="text-lg text-gray-700 mb-6 leading-relaxed">
                         Balinese massage (Pijat Bali) is a 1,000-year-old healing tradition combining acupressure, reflexology, aromatherapy, and gentle stretching. Rooted in Ayurvedic, Chinese, and indigenous Balinese medicine, this deeply therapeutic modality balances energy flow, relieves tension, and promotes holistic wellness.
                     </p>

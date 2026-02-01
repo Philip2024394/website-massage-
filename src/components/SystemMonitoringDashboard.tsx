@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 🚨 UNIFIED SYSTEM MONITORING DASHBOARD
@@ -233,7 +234,7 @@ export const SystemMonitoringDashboard: React.FC<SystemMonitoringProps> = ({
   const featuresDisplay = getStatusDisplay(overview.features.status);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { ArrowLeft, Building2, Globe, Award, Users, TrendingUp, Shield, Target, Heart, CheckCircle, Download, Share2, MapPin, Mail, Phone, Facebook, Instagram, Linkedin, Home, MessageCircle } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
@@ -86,7 +87,7 @@ function CompanyProfilePage({ onBack, t, language }: CompanyProfilePageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <PageContainer className="py-3">

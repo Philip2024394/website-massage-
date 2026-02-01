@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CoinWelcomePopupProps {
@@ -23,7 +24,7 @@ export const CoinWelcomePopup = ({ isOpen, onClose, customerName }: CoinWelcomeP
                     animate={{ scale: 1, y: 0, opacity: 1 }}
                     exit={{ scale: 0.5, opacity: 0 }}
                     transition={{ type: 'spring', duration: 0.5 }}
-                    className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+                    className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-lg w-full mx-4 max-h-[90vh] "
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Decorative Background */}

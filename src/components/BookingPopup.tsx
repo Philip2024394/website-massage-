@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * 📋 ACTIVE BOOKING FLOW #3: Menu Slider "Book Now"
  * 
@@ -663,7 +664,7 @@ ${
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] "
           onClick={(e) => e.stopPropagation()}
         >
           <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl">
@@ -731,7 +732,7 @@ ${
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] "
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-t-2xl">

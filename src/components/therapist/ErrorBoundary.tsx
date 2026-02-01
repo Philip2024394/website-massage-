@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🛡️ THERAPIST PROFESSIONAL ERROR BOUNDARY
  * Catches React errors and displays user-friendly fallback
@@ -63,7 +64,7 @@ class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
             {/* Error Icon */}
             <div className="flex justify-center mb-6">

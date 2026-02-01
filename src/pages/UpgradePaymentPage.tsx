@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState } from 'react';
 import { Upload, CreditCard, AlertCircle, CheckCircle, Copy } from 'lucide-react';
 import { databases, storage, ID } from '../lib/appwrite';
@@ -141,7 +142,7 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
 
     if (submitSuccess) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4 pb-20">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4 pb-20">
                 <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle className="w-12 h-12 text-green-500" />
@@ -172,7 +173,7 @@ const UpgradePaymentPage: React.FC<UpgradePaymentPageProps> = ({ onBack }) => {
     const selectedBank = formData.paymentMethod !== 'other' ? bankAccounts[formData.paymentMethod as keyof typeof bankAccounts] : null;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">

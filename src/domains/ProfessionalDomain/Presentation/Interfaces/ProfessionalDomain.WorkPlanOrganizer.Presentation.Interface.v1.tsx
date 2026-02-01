@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -427,7 +428,7 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
   };
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white pb-20">
       {/* Standardized Status Header */}
       <div className="max-w-md mx-auto px-4 pt-6 pb-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
@@ -633,7 +634,7 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
       {/* Schedule Settings Modal */}
       {showScheduleSettings && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
-          <div className="w-full max-w-sm mx-auto bg-white border-t border-black rounded-t-2xl p-5 space-y-3 animate-slide-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-sm mx-auto bg-white border-t border-black rounded-t-2xl p-5 space-y-3 animate-slide-up max-h-[90vh] ">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-bold text-black">Working Hours</h2>
               <button

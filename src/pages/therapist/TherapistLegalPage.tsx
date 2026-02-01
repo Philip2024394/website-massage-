@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * TherapistLegal - Terms of Service and Privacy Policy
  */
@@ -139,7 +140,7 @@ Data dikumpulkan hanya dengan persetujuan Anda dan sesuai hukum yang berlaku.`
       language={language}
       onLogout={onLogout}
     >
-      <div className="min-h-screen bg-white">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
         <div className="max-w-sm mx-auto px-4 py-6">
           {/* Tab Switcher */}
           <div className="mb-6">

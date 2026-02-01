@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useEffect, useState } from 'react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
@@ -993,7 +994,7 @@ const ConfirmTherapistsPage: React.FC = () => {
       {/* Edit Therapist Modal */}
       {showEditModal && editingTherapist && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pb-20">
-          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] ">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800">Edit Therapist Profile</h3>
@@ -1309,7 +1310,7 @@ const ConfirmTherapistsPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Massage Specialties
                   </label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-4 pb-20">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60  border border-gray-200 rounded-lg p-4 pb-20">
                     {[
                       'Swedish Massage', 'Deep Tissue', 'Hot Stone', 'Thai Massage', 
                       'Aromatherapy', 'Sports Massage', 'Reflexology', 'Shiatsu',
@@ -1419,7 +1420,7 @@ const ConfirmTherapistsPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Massage Types Offered
                   </label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-4 pb-20">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60  border border-gray-200 rounded-lg p-4 pb-20">
                     {[
                       'Traditional', 'Body Scrub', 'Facial', 'Acupressure', 'Scraping', 'Cupping',
                       'Sprain', 'Hands', 'Feet',

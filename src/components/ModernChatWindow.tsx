@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 🚀 MODERN CHAT WINDOW - WhatsApp/Messenger-style Real-time Chat
@@ -323,7 +324,7 @@ export function ModernChatWindow({
           {/* Messages Container */}
           <div 
             ref={messagesContainerRef}
-            className="h-96 overflow-y-auto p-4 bg-gray-50"
+            className="h-96  p-4 bg-gray-50"
           >
             {loading ? (
               <div className="flex items-center justify-center h-full">

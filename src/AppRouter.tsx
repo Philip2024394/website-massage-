@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (6 fixes)
 /**
  * AppRouter - Enterprise-grade routing architecture
  * 
@@ -278,7 +279,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
                 <div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
             </div>
         );
@@ -286,7 +287,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
 
     if (error || !therapist) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
                     <div className="text-6xl mb-4">❌</div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Profile Not Found</h2>
@@ -362,7 +363,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     // Loading state - NEVER show loading spinner on landing page to prevent splash screen
     if (props.isLoading && page !== 'landing') {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
                 <div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
             </div>
         );
@@ -392,7 +393,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
             
             return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
                     <div className="text-6xl mb-4">⚠️</div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Component Load Error (patched)</h2>
@@ -941,7 +942,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('  - Route issue: No therapist ID in URL or selectedTherapist missing');
             
             return (
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
                     <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
                         <div className="text-6xl mb-4">⚠️</div>
                         <h2 className="text-xl font-bold text-gray-900 mb-2">Component Load Error (patched)</h2>
@@ -1700,7 +1701,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.error('[ROUTE RESOLVE] ❌ props.currentPage:', props.currentPage);
             console.error('[ROUTE RESOLVE] ❌ All props keys:', Object.keys(props));
             return (
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
                     <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
                         <div className="text-6xl mb-4">⚠️</div>
                         <h2 className="text-xl font-bold text-gray-900 mb-2">Route Not Found</h2>

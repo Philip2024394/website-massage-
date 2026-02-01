@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { setupBlogArticleSEO } from '../../utils/seoSchema';
 import UniversalHeader from '../../components/shared/UniversalHeader';
@@ -43,7 +44,7 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Universal Header */}
             <UniversalHeader 
                 onMenuClick={() => setIsMenuOpen(true)}
@@ -62,7 +63,7 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                                 <CloseIcon />
                             </button>
                         </div>
-                        <nav className="flex-grow overflow-y-auto p-4">
+                        <nav className="flex-grow  p-4">
                             <div className="space-y-2">
                                 <button onClick={() => { onNavigate?.('home'); setIsMenuOpen(false); }} className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md border-l-4 border-orange-500 group">
                                     <span className="text-2xl">🏠</span>

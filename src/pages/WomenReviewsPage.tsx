@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -21,7 +22,7 @@ const WomenReviewsPage: React.FC<WomenReviewsPageProps> = ({ t, language, onNavi
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Universal Header */}
             <UniversalHeader 
                 language={currentLanguage}

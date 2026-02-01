@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 // Drawer is home-only; not used here
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -41,7 +42,7 @@ const AromatherapyMassagePage: React.FC<AromatherapyMassagePageProps> = ({
     // No drawer state here; drawer is restricted to HomePage
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             

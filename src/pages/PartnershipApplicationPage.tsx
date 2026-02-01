@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * 🔒 SEALED OWNER-CONTROLLED JEWEL STANDARD - PARTNERSHIP APPLICATION PAGE
  * 
@@ -628,7 +629,7 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-white">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
                 <div className="max-w-2xl mx-auto px-4 py-12 text-center">
                     <div className="mb-8">
                         <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4" />
@@ -662,7 +663,7 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none' }}>
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none' }}>
             {/* 🔒 SEALED OWNER-CONTROLLED CONTENT PROTECTION ACTIVE */}
             <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 py-1 text-xs font-medium text-center shadow-lg">
                 <span className="inline-flex items-center gap-2">

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🔍 FACEBOOK AI COMPLIANCE - ADMIN ERROR NOTIFICATION SYSTEM
  * 
@@ -149,7 +150,7 @@ export const AdminErrorNotification: React.FC<AdminErrorNotificationProps> = ({
     <div className={`fixed ${positionClasses[position]} z-[9999] max-w-md`}>
       {/* Error List */}
       {errors.length > 0 && (
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <div className="space-y-2 max-h-96 ">
           {errors.map((error) => (
             <div
               key={error.id}

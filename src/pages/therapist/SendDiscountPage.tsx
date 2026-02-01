@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * 🎁 SEND DISCOUNT PAGE
  * 
@@ -341,7 +342,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-20  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Page Header */}
       <TherapistPageHeader
         title={labels.title}

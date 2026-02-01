@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { Shield, CheckCircle2, Building, Star, Award, Users, Clock, FileText } from 'lucide-react';
 
@@ -21,7 +22,7 @@ const HotelVillaSafePassPage: React.FC<HotelVillaSafePassPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       {/* Hero Section */}
       <section className="bg-white border-b border-orange-100 py-16">
         <div className="max-w-6xl mx-auto px-6">

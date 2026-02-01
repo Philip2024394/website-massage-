@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import type { Page } from '../../types/pageTypes';
 import { Star, QrCode, Tag, Building, Menu, Users, Bell, Package, Settings, X } from 'lucide-react';
@@ -126,7 +127,7 @@ export const SideDrawer: React.FC<{
                 </div>
 
                 {/* Navigation Items */}
-                <nav className="flex flex-col p-4 space-y-2 overflow-y-auto h-[calc(100vh-140px)]">
+                <nav className="flex flex-col p-4 space-y-2  h-[calc(100vh-140px)]">
                     {navigationItems.map((item) => (
                         <button
                             key={item.id}

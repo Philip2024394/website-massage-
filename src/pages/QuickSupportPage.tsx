@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 
 interface QuickSupportPageProps {
@@ -6,7 +7,7 @@ interface QuickSupportPageProps {
 
 const QuickSupportPage: React.FC<QuickSupportPageProps> = ({ onNavigate }) => {
     return (
-        <div className="min-h-screen bg-gray-50 pb-32">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-32">
             {/* Header */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">

@@ -20,29 +20,30 @@ const getEnvVar = (key: string, defaultValue: string = ''): string => {
 
 export const GOOGLE_MAPS_API_KEY = getEnvVar('VITE_GOOGLE_MAPS_API_KEY', '');
 
-// ⚠️ DEPRECATED: This config file is being phased out
-// ⚠️ USE INSTEAD: lib/appwrite-collection-validator.ts with VALIDATED_COLLECTIONS
-// ⚠️ This provides runtime validation and blocks numeric hash IDs
+// ⚠️ SCHEMA ANCHORED: Using canonical schema from config/appwriteSchema.ts
+// ⚠️ NO schema definitions allowed in this file - import only
+// ⚠️ This eliminates schema drift and duplicate definitions
 
+import { COLLECTIONS, APPWRITE_DATABASE, SchemaValidator } from '../config/appwriteSchema';
 import { VALIDATED_COLLECTIONS, DATABASE_ID } from './appwrite-collection-validator';
 
-// Appwrite Configuration
+// Appwrite Configuration - ANCHORED TO CANONICAL SCHEMA
 export const APPWRITE_CONFIG = {
-    endpoint: 'https://syd.cloud.appwrite.io/v1',
-    projectId: '68f23b11000d25eb3664',
+    endpoint: APPWRITE_DATABASE.endpoint,
+    projectId: APPWRITE_DATABASE.projectId,
     
-    // Database ID from your Appwrite project - PRODUCTION DATABASE
-    databaseId: DATABASE_ID,
+    // Database ID from canonical schema - SINGLE SOURCE OF TRUTH
+    databaseId: APPWRITE_DATABASE.databaseId,
     
     // ✅ Collection IDs - TEXT-BASED ONLY (numeric hashes blocked)
     collections: {
-        // Disabled collections to prevent 401/404 errors
+        // CANONICAL SCHEMA COLLECTIONS - SINGLE SOURCE OF TRUTH
         admins: null, // ⚠️ DISABLED - Collection doesn't exist
         therapists: VALIDATED_COLLECTIONS.therapists,
         places: VALIDATED_COLLECTIONS.places,
         facial_places: 'facial_places_collection', // ✅ Text-based collection ID
         agents: null, // ⚠️ DISABLED - Collection doesn't exist
-        bookings: VALIDATED_COLLECTIONS.bookings,
+        bookings: SchemaValidator.getCollectionId('BOOKINGS'),
         reviews: VALIDATED_COLLECTIONS.reviews,
         notifications: VALIDATED_COLLECTIONS.notifications,
         users: VALIDATED_COLLECTIONS.users,
@@ -72,7 +73,7 @@ export const APPWRITE_CONFIG = {
         paymentTransactions: 'payment_transactions',
         premiumPayments: 'premium_payments',
         therapistMenus: 'therapist_menus', // 🛡️ CRITICAL: Must use underscores, NOT spaces. 'Therapist Menus' causes 400 errors!
-        messages: 'messages', // 🔧 Fixed: lowercase to match Appwrite collection ID
+        messages: SchemaValidator.getCollectionId('MESSAGES'), // 🔒 SCHEMA ANCHORED
         packages: 'Packages',
         pushSubscriptions: 'push_subscriptions',
         loyaltyWallets: 'loyalty_wallets',
@@ -80,7 +81,7 @@ export const APPWRITE_CONFIG = {
         coinTransactions: 'coin_transactions',
         userRegistrations: 'user_registrations',
         chatRooms: VALIDATED_COLLECTIONS.chat_rooms,
-        chatMessages: VALIDATED_COLLECTIONS.chat_messages,
+        chatMessages: SchemaValidator.getCollectionId('CHAT_MESSAGES'), // 🔒 SCHEMA ANCHORED
         chatAuditLogs: 'chat_audit_logs',
         chatSessions: 'chat_sessions',
         chatTranslations: null, // Disabled - collection doesn't exist (causes 404 errors)

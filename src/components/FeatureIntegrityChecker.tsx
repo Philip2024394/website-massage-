@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 🔍 FEATURE INTEGRITY CHECKER - PAGE & COMPONENT VERIFICATION
@@ -727,7 +728,7 @@ export const FeatureIntegrityChecker: React.FC<FeatureIntegrityProps> = ({
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Issues Found ({results.errors.length})
               </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-64 ">
                 {Object.values(results.categories).flatMap(cat => cat.issues)
                   .slice(0, 10)
                   .map((issue) => (

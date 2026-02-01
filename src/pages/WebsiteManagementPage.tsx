@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { Globe, Star, Save, Eye, Home, BarChart3, Users, MapPin, TrendingUp } from 'lucide-react';
 
@@ -86,7 +87,7 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Header - match HomePage look (white, brand) */}
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">

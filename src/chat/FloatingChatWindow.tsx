@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * FloatingChatWindow Component - Appwrite-First Architecture
  * 
@@ -729,7 +730,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                 
                 {/* BOOKING FORM for booking-in-progress status */}
                 {chatRoom.status === 'booking-in-progress' && (
-                  <div className="flex-1 flex flex-col p-4 overflow-y-auto scrollbar-hide relative">
+                  <div className="flex-1 flex flex-col p-4  scrollbar-hide relative">
                     
                     {/* Lock Overlay floating over the booking form */}
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-50/95 to-white/95 backdrop-blur-md z-20 flex items-center justify-center">

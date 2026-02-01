@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * Membership Package Display Component
  * 
@@ -314,7 +315,7 @@ export const MembershipPackageDisplay: React.FC<MembershipPackageDisplayProps> =
 
             {/* Terms and Conditions */}
             {showTerms && (
-                <div className="bg-white rounded-lg border-2 border-gray-300 p-6 max-h-96 overflow-y-auto">
+                <div className="bg-white rounded-lg border-2 border-gray-300 p-6 max-h-96 ">
                     <h3 className="text-xl font-bold mb-4">Membership Terms & Conditions</h3>
                     <div className="space-y-4 text-sm text-gray-700">
                         <section>

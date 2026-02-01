@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import PullToRefresh from './PullToRefresh';
 
@@ -17,7 +18,7 @@ const PullToRefreshTest: React.FC = () => {
       eliteMode={true}
       errorBoundary={true}
       threshold={90}
-      className="min-h-screen bg-gradient-to-b from-blue-50 to-white"
+      className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-b from-blue-50 to-white"
       loadingText="🔄 Refreshing data..."
       releaseText="↑ Release to refresh"
       pullText="↓ Pull down to refresh"

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import { useState, useEffect } from 'react';
 
 interface SocialSharePopupProps {
@@ -20,13 +21,16 @@ export default function SocialSharePopup({
     const [showCopySuccess, setShowCopySuccess] = useState(false);
 
     useEffect(() => {
+        // 🔒 GLOBAL SCROLL ARCHITECTURE COMPLIANT
+        // Modal should NOT lock body scroll - let page remain scrollable
+        // Use backdrop and modal positioning instead of scroll lock
         if (isOpen) {
-            document.body.style.overflow = 'hidden';
+            // No body scroll manipulation - violates ONE SCROLL AUTHORITY
         } else {
-            document.body.style.overflow = 'unset';
+            // No cleanup needed - body scroll was never touched
         }
         return () => {
-            document.body.style.overflow = 'unset';
+            // No cleanup needed - body scroll was never touched
         };
     }, [isOpen]);
 

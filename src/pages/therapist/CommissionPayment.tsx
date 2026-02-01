@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Wallet, Upload, Clock, AlertCircle, CheckCircle, Building2, User, Hash, Copy, Check, Calendar, XCircle, Timer, Sparkles, AlertTriangle, ArrowRight } from 'lucide-react';
@@ -633,7 +634,7 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Page Header with Back Navigation */}
       <TherapistPageHeader
         title=""

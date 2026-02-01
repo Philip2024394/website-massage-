@@ -12,7 +12,6 @@ import AppRouter from './AppRouter';
 import { useAllHooks } from './src/hooks/useAllHooks';
 import { useAutoReviews } from './src/hooks/useAutoReviews';
 import { useMobileLock } from './src/hooks/useMobileLock';
-import { usePreventScroll } from './src/hooks/usePreventScroll';
 import { useMobileDetection } from './src/hooks/useMobileDetection';
 import { useTranslations } from './src/lib/useTranslations';
 import { DeviceStylesProvider } from './src/components/DeviceAware';
@@ -33,6 +32,9 @@ import { agentShareAnalyticsService } from './src/lib/appwriteService';
 import { analyticsService, AnalyticsEventType } from './src/services/analyticsService';
 import type { Therapist, Place, Analytics } from './src/types';
 import './src/lib/notificationSound'; // Initialize notification sound system
+import { initScrollLockDetection } from './src/utils/scrollLockDetection';
+import { AIProtectionSystem } from './src/utils/aiProtection';
+import { AIProtectionSystem } from './src/utils/aiProtection';
 import { pushNotifications } from './src/lib/pushNotifications'; // Initialize Appwrite push notifications
 // REMOVED: chatSessionService import - no longer using global chat sessions
 // REMOVED: ChatErrorBoundary import - no longer using global ChatWindow
@@ -75,6 +77,12 @@ const App = () => {
     
     // 🚨 CRITICAL FIX: Clear pending deeplinks on app start to prevent unwanted redirects
     useEffect(() => {
+        // 🔒 Initialize Global Scroll Architecture - PERMANENT FIX
+        initScrollLockDetection();
+        
+        // 🔐 Initialize AI Protection System
+        AIProtectionSystem.init();
+        
         const clearRedirectsForHomePage = () => {
             const currentPath = window.location.pathname + window.location.hash;
             const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 

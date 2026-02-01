@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import MapPinIcon from './icons/MapPinIcon';
 import Button from './Button';
@@ -92,7 +93,7 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ isOpen, onLocationSet, on
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] ">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-brand-orange to-orange-500 px-6 py-4">
                     <div className="flex items-center space-x-3">

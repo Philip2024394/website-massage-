@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { X, QrCode, LinkIcon, MessageSquare } from 'lucide-react';
 import { safeDownload } from '../../utils/domSafeHelpers';
@@ -34,7 +35,7 @@ export const QRModal: React.FC<QRModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden max-h-[90vh] " onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3">
                     <div className="flex justify-between items-start">

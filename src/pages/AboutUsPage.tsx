@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🔒 PRODUCTION UI – COMPLETE
  * This page is visually complete and approved.
@@ -54,7 +55,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Universal Header */}
             <UniversalHeader 
                 onMenuClick={() => setIsMenuOpen(true)}

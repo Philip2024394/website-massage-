@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
 import { Play, CheckCircle, XCircle, Clock, Zap, Bell, Vibrate } from 'lucide-react';
@@ -515,7 +516,7 @@ const BookingFlowTester: React.FC<BookingFlowTesterProps> = ({
         <div className="space-y-4">
           <h4 className="text-lg font-semibold text-gray-800 mb-3">Test Results</h4>
           
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="space-y-3 max-h-96 ">
             {testResults.map((result, index) => (
               <div
                 key={index}

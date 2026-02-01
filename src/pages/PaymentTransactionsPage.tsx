@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect, useCallback } from 'react';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
@@ -394,7 +395,7 @@ The IndaStreet Team 🙏`;
             {/* Payment Proof Modal */}
             {selectedTransaction && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pb-20 z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] ">
                         <div className="p-6">
                             <div className="flex items-start justify-between mb-6">
                                 <div>

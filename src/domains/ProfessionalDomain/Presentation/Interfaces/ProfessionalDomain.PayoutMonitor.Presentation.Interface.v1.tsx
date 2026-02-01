@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -190,7 +191,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex items-center justify-center">
                 <div className="text-center">
                     <RefreshCw className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
                     <p className="text-gray-600">Loading payment history...</p>
@@ -200,7 +201,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
     }
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Standardized Page Header */}
             <TherapistPageHeader
                 title="Payment Status"

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -26,7 +27,7 @@ const DeferredApp: React.FC = () => {
         console.error('❌ DeferredApp: Failed to load full app:', error);
         // Show error instead of reloading to prevent infinite reload loop
         setFullApp(() => () => (
-          <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#f97316' }}>
+          <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center p-4" style={{ backgroundColor: '#f97316' }}>
             <div className="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
               <h2 className="text-xl font-semibold text-red-600 mb-2">Loading Error</h2>
               <p className="text-gray-600 mb-4">Unable to load the application. Please refresh the page.</p>
@@ -52,7 +53,7 @@ const DeferredApp: React.FC = () => {
 
   // MINIMAL LOADING STATE - No intermediate content
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
       <Helmet>
         <title>IndaStreet - Loading...</title>
       </Helmet>

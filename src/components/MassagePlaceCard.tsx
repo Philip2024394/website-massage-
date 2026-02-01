@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../src/types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
@@ -627,7 +628,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         </div>
 
                         {/* Price List Content - Scrollable */}
-                        <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 180px)' }}>
+                        <div className="flex-1  p-4" style={{ height: 'calc(100vh - 180px)' }}>
                             {menuData.length > 0 ? (
                                 <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                                     {/* Table Header - Hidden on mobile */}

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
@@ -44,7 +45,7 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full">
                 <div className="flex justify-between items-center">
                     {/* Back Arrow */}
@@ -117,7 +118,7 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
             </div>
 
             {/* Tab Navigation */}
-            <div className="max-w-6xl mx-auto px-4 mt-8 overflow-x-hidden">
+            <div className="max-w-6xl mx-auto px-4 mt-8 ">
                 <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-wrap gap-2 max-w-full">
                     <button
                         onClick={() => setActiveTab('therapist')}

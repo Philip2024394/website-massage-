@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (6 fixes)
 /**
  * 🔒 PRODUCTION UI – COMPLETE
  * This page is visually complete and approved.
@@ -1221,7 +1222,7 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="home-page-container scrollable min-h-screen bg-gray-50 w-full max-w-[100vw] overflow-x-hidden">
+        <div className="home-page-container scrollable min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-[100vw] ">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
@@ -1379,11 +1380,11 @@ const HomePage: React.FC<HomePageProps> = ({
             </div>
             
             {/* Scrollable Content Area */}
-            <main className="w-full max-w-full overflow-x-hidden">
+            <main className="w-full max-w-full ">
             <PageContainer className="px-3 sm:px-4 pt-8 pb-24">
                 {/* Content changes based on active tab */}
                 {activeTab === 'home' && (
-                    <div className="max-w-full overflow-x-hidden pb-8">
+                    <div className="max-w-full  pb-8">
                         <div className="mb-3 text-center mt-[26px]">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
                             <p className="text-gray-600">
@@ -2115,7 +2116,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 )}
 
                 {activeTab === 'places' && (
-                    <div className="max-w-full overflow-x-hidden">
+                    <div className="max-w-full ">
                         <div className="mb-3 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.massagePlacesTitle || 'Featured Massage Spas'}</h3>
                             <p className="text-gray-600">
@@ -2246,7 +2247,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
                 {/* Facials Tab - Show facial places */}
                 {activeTab === 'facials' && (
-                    <div className="max-w-full overflow-x-hidden">
+                    <div className="max-w-full ">
                         <div className="mb-3 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialClinics || 'Facial Clinics'}</h3>
                             <p className="text-gray-600">

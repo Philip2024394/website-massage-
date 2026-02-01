@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import type { Therapist } from '../types';
 import { AvailabilityStatus } from '../types';
@@ -196,7 +197,7 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
         }
     };
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-amber-50">
             {/* Header */}
             <div className="w-full bg-white border-b shadow-sm">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">

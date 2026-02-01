@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { X, Star, Calendar, Clock, User, MessageSquare, MessageCircle } from 'lucide-react';
 
@@ -122,7 +123,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh]  relative">
         {/* Close button in top-right corner */}
         <button
           onClick={handleClose}

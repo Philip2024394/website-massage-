@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { X, MapPin, Send, CheckCircle } from 'lucide-react';
 
@@ -144,7 +145,7 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
                 </div>
 
                 {/* Content - Scrollable */}
-                <div className="overflow-y-auto flex-1 p-4">
+                <div className=" flex-1 p-4">
                     {/* Logo/Image */}
                     <div className="flex justify-center mb-4">
                         <img

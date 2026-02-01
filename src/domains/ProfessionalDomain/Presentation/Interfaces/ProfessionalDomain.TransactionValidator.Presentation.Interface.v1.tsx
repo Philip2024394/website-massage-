@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -200,7 +201,7 @@ const PaymentReviewPage: React.FC<PaymentReviewPageProps> = ({
       language={language}
       onLogout={onLogout}
     >
-      <div className="min-h-screen">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
         <PaymentReviewProcess
           onSubmit={handleSubmitPaymentProof}
           isSubmitting={isSubmitting}

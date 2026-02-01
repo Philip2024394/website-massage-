@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { 
@@ -260,7 +261,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-b from-orange-50 to-white">
       {/* Page Header */}
       <TherapistPageHeader
         title="Hotel & Villa Safe Pass Certification"

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { Crown, Check, AlertCircle, FileText, DollarSign, Calendar, Zap, TrendingUp } from 'lucide-react';
@@ -118,7 +119,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Safe-area padding for notch devices */}
       <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
         {/* Mobile Header */}

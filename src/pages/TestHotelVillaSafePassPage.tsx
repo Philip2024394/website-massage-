@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // Test component for hotel-villa-safe-pass route
 import React from 'react';
 
@@ -13,7 +14,7 @@ const TestHotelVillaSafePassPage: React.FC<TestHotelVillaSafePassPageProps> = ({
   language = 'en'
 }) => {
   return (
-    <div className="min-h-screen bg-white p-8">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white p-8">
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4 text-gray-900">
           Hotel & Villa Safe Pass - TEST VERSION

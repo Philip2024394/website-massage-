@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * TherapistPriceListModal Component
  * 
@@ -118,7 +119,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                 </div>
 
                 {/* Price List Content - Natural scrolling */}
-                <div className="flex-1 p-4 max-h-[70vh] overflow-y-auto">
+                <div className="flex-1 p-4 max-h-[70vh] ">
                     {menuData.length > 0 ? (
                         <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                             {/* Table Header - Hidden on mobile */}

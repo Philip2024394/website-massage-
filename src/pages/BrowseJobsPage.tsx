@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect, useCallback } from 'react';
 import { Query, ID } from 'appwrite';
 import { databases } from '../lib/appwrite';
@@ -451,7 +452,7 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
         : 'Therapists who are ready to work can spotlight themselves and upload proof within 3 hours.';
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             <header className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 py-6">
                     <div className="flex flex-wrap items-center gap-4">

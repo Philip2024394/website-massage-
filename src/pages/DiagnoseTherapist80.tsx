@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { therapistService } from '../lib/appwriteService';
 import PageContainer from '../components/layout/PageContainer';
@@ -147,7 +148,7 @@ const DiagnoseTherapist80: React.FC = () => {
                         {allTherapists.length > 0 && (
                             <div className="mt-4">
                                 <p className="font-medium text-red-800 mb-2">First 20 available therapist IDs:</p>
-                                <div className="bg-white rounded p-3 max-h-60 overflow-y-auto">
+                                <div className="bg-white rounded p-3 max-h-60 ">
                                     {allTherapists.slice(0, 20).map((t: any, i: number) => (
                                         <div key={i} className="text-sm py-1">
                                             {i + 1}. ID: <span className="font-mono font-bold">{t.$id || t.id}</span> - {t.name}

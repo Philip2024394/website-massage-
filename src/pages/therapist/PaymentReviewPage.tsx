@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
@@ -95,7 +96,7 @@ const PaymentReviewPage: React.FC<PaymentReviewPageProps> = ({
       language={language}
       onLogout={onLogout}
     >
-      <div className="min-h-screen overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
         <PaymentReviewProcess
           onSubmit={handleSubmitPaymentProof}
           isSubmitting={isSubmitting}

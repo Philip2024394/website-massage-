@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useEffect, useState } from 'react';
 import { bookingService, reviewService } from '../lib/appwriteService';
 import { Booking } from '../types';
@@ -75,7 +76,7 @@ const CustomerReviewsPage: React.FC<CustomerReviewsPageProps> = ({ user, onBack 
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-20">
       <PageNumberBadge pageNumber={302} pageName="CustomerReviews" isLocked={false} />
       <header className="bg-white p-4 shadow-md sticky top-0 z-40 flex items-center justify-between">
         <button onClick={onBack} className="text-gray-700 hover:text-orange-600 font-semibold">← Back</button>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * ♿ ACCESSIBILITY DASHBOARD - TASK 8 COMPONENT
@@ -828,7 +829,7 @@ export const AccessibilityDashboard: React.FC<AccessibilityDashboardProps> = ({
         </div>
       </div>
 
-      <div className="flex min-h-screen">
+      <div className="flex min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
         {/* Navigation Sidebar */}
         <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0">
           <div className="p-6">

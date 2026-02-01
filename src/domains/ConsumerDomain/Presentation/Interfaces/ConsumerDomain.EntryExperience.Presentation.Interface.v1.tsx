@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -880,7 +881,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
-        <div className="landing-page-container scrollable relative w-full h-screen bg-gray-900 overflow-y-auto" style={{ maxHeight: '100vh' }}>
+        <div className="landing-page-container scrollable relative w-full h-screen bg-gray-900 " style={{ maxHeight: '100vh' }}>
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             
             {/* Fixed background image - stays in place while scrolling - optimized for performance */}
@@ -902,7 +903,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             />
             
             {/* Scrollable content */}
-            <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-3 sm:px-6 text-center w-full min-h-screen">
+            <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-3 sm:px-6 text-center w-full min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
                 <div className="flex-1 flex flex-col justify-center w-full max-w-lg">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
@@ -956,7 +957,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         </div>
 
                         {/* Cities List - Scrollable container (max-height 40vh on mobile) */}
-                        <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '40vh' }}>
+                        <div className="flex flex-col gap-2  scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '40vh' }}>
                             {filteredCities.length > 0 ? (
                                 <>
                                     {filteredCities.map((city, index) => (
@@ -1044,10 +1045,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                          top: '0', 
                          left: '0', 
                          width: '100vw', 
-                         height: '100vh',
+                         height: "calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))",
                          zIndex: 9999
                      }}>
-                    <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+                    <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full max-h-[90vh]  border border-gray-700 shadow-2xl">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-white">Change Country</h3>
                             <button

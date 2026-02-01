@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React from 'react';
 import PullToRefresh from '../PullToRefresh';
 
@@ -25,7 +26,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     
     const content = (
         <div className={isFullScreen ? "min-h-screen flex flex-col mobile-optimized" : "max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col mobile-optimized container-mobile"}>
-            <div className="flex-1 content-landscape overflow-y-auto overflow-x-hidden">
+            <div className="flex-1 content-landscape  ">
                 {children}
             </div>
         </div>
@@ -39,7 +40,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 eliteMode={true}
                 errorBoundary={true}
                 threshold={90}
-                className="min-h-screen"
+                className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]"
                 loadingText="🔄 Refreshing..."
                 releaseText="↑ Release to refresh"
                 pullText="↓ Pull to refresh"

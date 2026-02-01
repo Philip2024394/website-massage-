@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 // 🔒 LOGIC LOCKED - DO NOT MODIFY VERIFICATION & BANK DETAILS LOGIC
 // UI/styling changes allowed ONLY
@@ -230,7 +231,7 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-screen bg-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       {/* Main Content */}
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-6">

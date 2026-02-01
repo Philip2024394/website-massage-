@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                        🔐 AUTHORIZATION REQUIRED                      ║
@@ -624,7 +625,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
     });
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             <UniversalHeader
                 onNavigate={onNavigate}
                 onMenuToggle={() => setIsMenuOpen(true)}

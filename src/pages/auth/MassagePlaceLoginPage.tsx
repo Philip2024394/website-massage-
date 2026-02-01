@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { placeAuth } from '../../lib/auth';
 import { saveSessionCache } from '../../lib/sessionManager';
@@ -274,7 +275,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20spa.png)'
                 }}
             >
-                <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
+                <div className="max-w-md w-full relative z-10 max-h-full  pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
                     {/* Header - Positioned right under header area */}
                     <div className="text-center mb-4 sm:mb-6">
                         <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Massage Place</h2>

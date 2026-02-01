@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, LogIn, Home, ShieldCheck } from 'lucide-react';
 
@@ -41,7 +42,7 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex flex-col">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-orange-50 flex flex-col">
             {/* Header */}
             <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <button 

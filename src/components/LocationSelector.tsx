@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Search, Loader, MapPin as MapPinIcon, CheckCircle, AlertCircle } from 'lucide-react';
 import { locationService, LocationOption, DetectedLocation } from '../lib/locationService';
@@ -235,7 +236,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           </div>
 
           {/* Results */}
-          <div className="max-h-64 overflow-y-auto">
+          <div className="max-h-64 ">
             {searchResults.length > 0 ? (
               <>
                 {/* Popular/Recent Section */}

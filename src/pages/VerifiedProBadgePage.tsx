@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Info, Star, Award, Menu, Home } from 'lucide-react';
 import { verificationService } from '../lib/appwriteService';
@@ -81,7 +82,7 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, onN
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <PageContainer className="py-3">

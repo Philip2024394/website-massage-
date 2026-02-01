@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
 import { Clock, Check, X, AlertTriangle, Volume2, VolumeX } from 'lucide-react';
@@ -254,7 +255,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
     // Expanded View - Full booking details
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] ">
                 {/* Header with Close Button */}
                 <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 flex items-center justify-between rounded-t-2xl">
                     <h2 className="text-2xl font-bold flex items-center gap-2">

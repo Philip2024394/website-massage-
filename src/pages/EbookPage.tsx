@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 
 interface EbookPageProps {
@@ -17,7 +18,7 @@ export const EbookPage: React.FC<EbookPageProps> = ({ ebookId, title, content, s
     <>
       {/* SEO will be handled by document head - this is the content component */}
 
-      <div className="min-h-screen bg-gray-50 pb-40">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-40">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-4xl mx-auto px-4 py-6">

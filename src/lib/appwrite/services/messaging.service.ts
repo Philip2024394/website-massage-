@@ -2,6 +2,8 @@
  * Messaging Service
  * SINGLE SOURCE OF TRUTH for all chat message creation
  * All chat_messages collection writes MUST go through this service
+ * 
+ * 🔒 SCHEMA ANCHORED: Uses canonical schema validation
  */
 
 import { databases, APPWRITE_CONFIG } from '../config';
@@ -19,15 +21,36 @@ import {
   CHAT_MESSAGE_ATTRIBUTES as ATTR
 } from '../constants';
 
+// 🔒 CANONICAL SCHEMA IMPORT - SINGLE SOURCE OF TRUTH
+import { 
+  COLLECTIONS, 
+  SchemaValidator, 
+  MessageDocument,
+  getMessageSchema 
+} from '../../../config/appwriteSchema';
+
 export const messagingService = {
     async create(message: any): Promise<any> {
         try {
-            // STEP 3: COLLECTION ID USAGE CHECK
-            const collectionId = APPWRITE_CONFIG.collections.messages;
+            // 🔒 CANONICAL SCHEMA VALIDATION
+            const schema = getMessageSchema();
+            console.log('[MESSAGING] 🔒 Using canonical schema for messages collection');
+            console.log('[MESSAGING] Required attributes:', SchemaValidator.getRequiredAttributes('MESSAGES'));
+            
+            // Validate against canonical schema
+            const validation = SchemaValidator.validateDocument('MESSAGES', message);
+            if (!validation.valid) {
+                const error = `❌ SCHEMA VALIDATION FAILED: ${validation.errors.join(', ')}`;
+                console.error(`[MESSAGING] ${error}`);
+                throw new Error(error);
+            }
+            
+            // STEP 3: COLLECTION ID FROM CANONICAL SCHEMA
+            const collectionId = SchemaValidator.getCollectionId('MESSAGES');
             
             console.log('[MESSAGING] 📝 Creating message document');
             console.log('[MESSAGING] Database ID:', APPWRITE_CONFIG.databaseId);
-            console.log('[MESSAGING] Collection ID:', collectionId);
+            console.log('[MESSAGING] Collection ID (from schema):', collectionId);
             console.log('[MESSAGING] Message keys:', Object.keys(message));
             
             // FAIL IMMEDIATELY if collection ID is empty

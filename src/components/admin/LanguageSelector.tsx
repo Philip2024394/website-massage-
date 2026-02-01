@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import { commonLanguages } from '../../constants/languages';
 
@@ -48,7 +49,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       </label>
       
       {/* Checkbox Grid */}
-      <div className="max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-gray-50">
+      <div className="max-h-48  border border-gray-300 rounded-lg p-3 bg-gray-50">
         <div className="grid grid-cols-2 gap-3">
           {commonLanguages.map((language) => (
             <label key={language} className="flex items-center space-x-2 text-sm cursor-pointer hover:bg-white p-2 rounded transition-colors">

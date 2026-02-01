@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 
 interface EbookCardProps {
@@ -205,7 +206,7 @@ export const EbookCard: React.FC<EbookCardProps> = ({
                 </svg>
               </button>
             </div>
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div className="p-6  max-h-[60vh]">
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-600 italic mb-4">
                   This is a preview of the first few pages. Purchase the full ebook to access all {ebook.pages} pages.

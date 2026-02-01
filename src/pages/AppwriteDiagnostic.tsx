@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * Appwrite Diagnostic Tool
  * Tests what's blocking message sending and booking creation
@@ -141,7 +142,7 @@ export const AppwriteDiagnostic: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">
@@ -161,7 +162,7 @@ export const AppwriteDiagnostic: React.FC = () => {
 
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold mb-3">Diagnostic Results:</h3>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-2 max-h-96 ">
               {results.length === 0 ? (
                 <p className="text-gray-500 italic">Click "Run Diagnostic" to start testing...</p>
               ) : (

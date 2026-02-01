@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // File deleted as part of unified login refactor.
 import React, { useState, useEffect } from 'react';
 import { therapistService, placesService as placeService } from '../../lib/appwriteService';
@@ -112,7 +113,7 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
     const switchText = mode === 'register' ? t.switchToLogin : t.switchToRegister;
 
     return (
-        <div className="min-h-screen flex flex-col justify-center p-4 relative" style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20rooms.png?updatedAt=1761150670027')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex flex-col justify-center p-4 relative" style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20rooms.png?updatedAt=1761150670027')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
             {/* Free Membership Badge */}
             {mode === 'register' && (
                 <div className="absolute top-4 right-4 z-20">

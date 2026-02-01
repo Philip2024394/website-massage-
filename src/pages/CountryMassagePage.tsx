@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React from 'react';
 import { getCountryContent, CountryMassageType } from '../config/countryContent';
 import PageContainer from '../components/layout/PageContainer';
@@ -26,7 +27,7 @@ const CountryMassagePage: React.FC<CountryMassagePageProps> = ({
 
     if (!countryContent || !massageType) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">Page Not Found</h1>
                     <p className="text-gray-600 mb-6">The requested massage type could not be found.</p>
@@ -51,7 +52,7 @@ const CountryMassagePage: React.FC<CountryMassagePageProps> = ({
                 onBackClick={() => onNavigate(`${countryCode.toLowerCase()}`)}
             />
             
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-orange-50">
                 {/* Hero Section */}
                 <div className="relative overflow-hidden bg-gradient-to-r from-orange-500 via-orange-600 to-red-500">
                     <div className="absolute inset-0 bg-black opacity-20"></div>

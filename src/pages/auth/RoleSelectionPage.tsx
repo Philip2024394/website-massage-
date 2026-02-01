@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState } from 'react';
 import { User, Building2, Sparkles, ArrowLeft, CheckCircle, Globe, Star, Users, TrendingUp, Shield, Award, MapPin, Calendar, Clock } from 'lucide-react';
 import UniversalHeader from '../../components/shared/UniversalHeader';
@@ -65,7 +66,7 @@ const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       {/* Universal Header - Same as HomePage */}
       <UniversalHeader 
         language={language}
@@ -99,7 +100,7 @@ const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({
       )}
 
       {/* Main Content */}
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-yellow-50/20">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-gray-50 via-orange-50/30 to-yellow-50/20">
         
         {/* Hero Section */}
         <div className="relative overflow-hidden">
@@ -109,6 +110,7 @@ const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8">
                 <span className="text-gray-900">Why Join </span>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">IndaStreet</span>
+                <span className="text-gray-900"> over IndaStreet Massage</span>
               </h1>
               
               <div className="relative">

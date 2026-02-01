@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import type { Language } from '../types/pageTypes';
 
@@ -11,7 +12,7 @@ const SimpleTestPage: React.FC<SimpleTestPageProps> = ({ language, translations 
     console.log('🧪 SimpleTestPage: Translations:', translations);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
             <div className="max-w-4xl mx-auto">
                 <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
                     <h1 className="text-3xl font-bold text-gray-800 mb-4">

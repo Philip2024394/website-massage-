@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (8 fixes)
 import React, { useState, useEffect } from 'react';
 import { databases } from '../lib/appwrite';
 import { Query } from 'appwrite';
@@ -122,7 +123,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-gray-50 pb-32 overflow-x-hidden w-full max-w-full">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-32  w-full max-w-full">
                 {/* Header */}
                 <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
                     <div className="flex justify-between items-center max-w-full">
@@ -143,7 +144,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                     </div>
                 </header>
 
-                <div className="mx-auto px-4 py-12 max-w-full overflow-x-hidden">
+                <div className="mx-auto px-4 py-12 max-w-full ">
                     <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-gray-100 max-w-full">
                         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,7 +199,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-32 overflow-x-hidden w-full max-w-full">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-32  w-full max-w-full">
             {/* Header */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
                 <div className="flex justify-between items-center max-w-full">
@@ -245,7 +246,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                         </div>
 
                         {/* Menu Content */}
-                        <nav className="flex-grow overflow-y-auto p-4">
+                        <nav className="flex-grow  p-4">
                             <div className="space-y-2">
                                 <button 
                                     onClick={() => { window.location.href = '/'; setIsMenuOpen(false); }} 
@@ -289,7 +290,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
 
             {/* Hero Section with indaStreet Guy Image */}
             <div className="relative bg-white text-gray-800 py-12 overflow-hidden w-full max-w-full">
-                <div className="mx-auto px-4 max-w-full overflow-x-hidden">
+                <div className="mx-auto px-4 max-w-full ">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6 max-w-full">
                         {/* Text Content */}
                         <div className="flex-1 text-center md:text-left z-10">
@@ -320,7 +321,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
             </div>
 
             {/* Main Content */}
-            <main className="p-4 overflow-x-hidden w-full max-w-full">
+            <main className="p-4  w-full max-w-full">
                 <div className="mx-auto max-w-full">
                     {/* Personal Touch Message */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-200 max-w-full">

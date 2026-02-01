@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { User, Lock, Mail, Square } from 'lucide-react';
 import HomeIcon from '../../components/icons/HomeIcon';
@@ -417,7 +418,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex flex-col bg-gray-50">
             {/* Global Header */}
             <header className="bg-white shadow-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">

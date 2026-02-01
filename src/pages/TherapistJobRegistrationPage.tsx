@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState } from 'react';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
@@ -147,7 +148,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Header - Same as HomePage */}
             <header className="bg-white p-4 shadow-md sticky top-0 z-20">
                 <div className="flex justify-between items-center">
@@ -465,7 +466,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                     {/* Preferred Locations */}
                     <div className="space-y-4">
                         <h2 className="text-xl font-bold text-gray-900">Preferred Work Locations</h2>
-                        <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                        <div className="max-h-48  border border-gray-200 rounded-lg p-3">
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 {indonesianCities.map((city) => (
                                     <label key={city} className="flex items-center space-x-2 cursor-pointer">

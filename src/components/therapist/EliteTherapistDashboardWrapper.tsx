@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { EliteStabilityProvider } from './EliteStabilityProvider';
 import { useStability } from './EliteStabilityProvider';
@@ -186,7 +187,7 @@ const EliteErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children 
 
   if (hasError) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-lg w-full bg-white rounded-xl shadow-lg p-6 text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
             <Shield className="w-8 h-8 text-red-600" />

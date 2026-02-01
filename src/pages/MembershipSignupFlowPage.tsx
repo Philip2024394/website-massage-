@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, ArrowLeft, Upload, Clock, AlertTriangle, User, Building2, Sparkles } from 'lucide-react';
@@ -236,7 +237,7 @@ const MembershipSignupFlow: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Header */}
             <header className="border-b border-gray-100 bg-white sticky top-0 z-10">
                 <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
@@ -517,7 +518,7 @@ const TermsStep: React.FC<{
                 <p className="text-gray-600">{isPro ? 'Pro Plan' : 'Plus Plan'} Agreement</p>
             </div>
 
-            <div className="bg-gray-50 rounded-2xl p-6 max-h-96 overflow-y-auto space-y-4 text-sm text-gray-700">
+            <div className="bg-gray-50 rounded-2xl p-6 max-h-96  space-y-4 text-sm text-gray-700">
                 {isPro ? (
                     <>
                         <p className="text-red-600 font-semibold">⚠ Critical Compliance Notice</p>

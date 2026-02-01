@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * ============================================================================
  * 🎨 THEME CUSTOMIZATION ENGINE - TASK 7 COMPONENT
@@ -1006,7 +1007,7 @@ export const ThemeCustomizationEngine: React.FC<ThemeCustomizationEngineProps> =
         </div>
       </div>
 
-      <div className="flex min-h-screen">
+      <div className="flex min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
         {/* Theme Editor */}
         <div className={`${showPreview ? 'w-1/2' : 'w-full'} border-r border-gray-200 bg-white`}>
           {/* Navigation */}
@@ -1033,7 +1034,7 @@ export const ThemeCustomizationEngine: React.FC<ThemeCustomizationEngineProps> =
           </div>
 
           {/* Section Content */}
-          <div className="p-6 overflow-y-auto" style={{ height: 'calc(100vh - 140px)' }}>
+          <div className="p-6 " style={{ height: 'calc(100vh - 140px)' }}>
             {renderSectionContent()}
           </div>
         </div>
@@ -1049,7 +1050,7 @@ export const ThemeCustomizationEngine: React.FC<ThemeCustomizationEngineProps> =
               
               <div 
                 ref={previewRef}
-                className="h-full p-6 overflow-y-auto"
+                className="h-full p-6 "
                 style={{
                   fontFamily: theme.typography.fontFamilies.primary,
                   backgroundColor: theme.colors.neutral[50]

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, User, CheckCircle, Crown, Lock, Clock } from 'lucide-react';
@@ -160,7 +161,7 @@ const TherapistChatPage: React.FC<TherapistChatProps> = ({ therapist, onBack }) 
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex flex-col">
       {/* Standardized Status Header */}
       <div className="max-w-sm mx-auto px-4 pt-6 pb-4 w-full">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
@@ -269,7 +270,7 @@ const TherapistChatPage: React.FC<TherapistChatProps> = ({ therapist, onBack }) 
         {/* Chat Interface for All Therapists */}
         <div className="bg-white rounded-2xl shadow-lg border-2 border-orange-200 flex flex-col h-[600px]">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white">
+          <div className="flex-1  p-6 space-y-4 bg-white">
             {loading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>

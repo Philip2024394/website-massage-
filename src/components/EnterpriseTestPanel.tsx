@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
 import { Bell, TestTube, CheckCircle, XCircle, Play, Vibrate, Zap } from 'lucide-react';
@@ -183,7 +184,7 @@ const EnterpriseTestPanel: React.FC<EnterpriseTestPanelProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 space-y-6 max-h-[70vh] ">
           
           {/* 🧪 Comprehensive Booking Flow Tester */}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
@@ -217,7 +218,7 @@ const EnterpriseTestPanel: React.FC<EnterpriseTestPanelProps> = ({
                 </div>
               </div>
               
-              <div className="space-y-2 max-h-40 overflow-y-auto">
+              <div className="space-y-2 max-h-40 ">
                 {testResults.map((result, index) => (
                   <div
                     key={index}

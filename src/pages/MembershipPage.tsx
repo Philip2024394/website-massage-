@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import MembershipTermsModal from '../components/MembershipTermsModal';
 import { FileText, Star } from 'lucide-react';
@@ -83,7 +84,7 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 py-12 px-4">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
                     <CheckCircleIcon className="w-16 h-16 text-brand-green mx-auto mb-4" />

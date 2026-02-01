@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
 import React, { useState } from 'react';
 import { Building2, MapPin, DollarSign, Home, Briefcase, Phone, Mail, X, Menu } from 'lucide-react';
 import { databases, ID } from '../lib/appwrite';
@@ -360,7 +361,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             {/* Header - Match HomePage style */}
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
@@ -1137,7 +1138,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             </button>
                             
                             {showRequirementsDropdown && (
-                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 ">
                                     {/* Close Button */}
                                     <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex justify-end">
                                         <button
@@ -1213,7 +1214,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             </button>
                             
                             {showBenefitsDropdown && (
-                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 ">
                                     {/* Close Button */}
                                     <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex justify-end">
                                         <button
@@ -1293,7 +1294,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             </button>
                             
                             {showMassageTypesDropdown && (
-                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 ">
                                     {/* Close Button */}
                                     <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex justify-end">
                                         <button
@@ -1373,7 +1374,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             </button>
                             
                             {showLanguagesDropdown && (
-                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-60 ">
                                     {/* Close Button */}
                                     <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex justify-end">
                                         <button

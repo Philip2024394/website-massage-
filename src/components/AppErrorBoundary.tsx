@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
@@ -72,7 +73,7 @@ class AppErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       // Friendly error fallback UI
       return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
             {/* Error Icon */}
             <div className="flex justify-center mb-6">

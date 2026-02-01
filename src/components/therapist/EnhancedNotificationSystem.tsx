@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ============================================================================
  * 🔔 ENHANCED NOTIFICATION SYSTEM - TASK 2 IMPLEMENTATION
@@ -542,7 +543,7 @@ export const EnhancedNotificationSystem: React.FC<EnhancedNotificationSystemProp
         </div>
       </div>
       
-      <div className="max-h-80 overflow-y-auto">
+      <div className="max-h-80 ">
         {notifications.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />

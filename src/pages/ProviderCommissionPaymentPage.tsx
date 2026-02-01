@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect, useCallback } from 'react';
 import type { CommissionRecord } from '../types';
 import { CommissionPaymentStatus, CommissionPaymentMethod } from '../types';
@@ -124,7 +125,7 @@ const ProviderCommissionPaymentPage: React.FC<ProviderCommissionPaymentPageProps
         .reduce((sum, p) => sum + p.commissionAmount, 0);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-gray-50">
             {/* Header */}
             <header className="bg-gradient-to-r from-gray-900 to-orange-600 text-white py-6 px-4 shadow-xl">
                 <div className="max-w-4xl mx-auto">

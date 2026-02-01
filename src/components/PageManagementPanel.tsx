@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { getLockedPages, getUnlockedPages, PAGE_REGISTRY } from '../config/pageRegistry';
 
@@ -131,7 +132,7 @@ const PageManagementPanel: React.FC<PageManagementPanelProps> = ({
                         </div>
 
                         {/* Page List */}
-                        <div className="flex-1 overflow-y-auto">
+                        <div className="flex-1 ">
                             {filteredPages.map(page => (
                                 <div 
                                     key={page.number}

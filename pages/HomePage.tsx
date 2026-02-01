@@ -1240,7 +1240,7 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="home-page-container scrollable min-h-screen bg-gray-50 w-full max-w-full overflow-x-hidden">
+        <div className="home-page-container scrollable min-h-full bg-gray-50 w-full max-w-full overflow-x-hidden">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
