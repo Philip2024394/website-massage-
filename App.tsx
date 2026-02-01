@@ -28,6 +28,9 @@ import { bookingExpirationService } from './src/services/bookingExpirationServic
 import './src/lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './src/context/LanguageContext';
 import { CityProvider, useCityContext } from './src/context/CityContext';
+
+// 🔒 SCROLL WATCHDOG - Prevents AI from breaking scroll
+import { scrollWatchdog } from './src/utils/scrollWatchdog';
 import { agentShareAnalyticsService } from './src/lib/appwriteService';
 import { analyticsService, AnalyticsEventType } from './src/services/analyticsService';
 import type { Therapist, Place, Analytics } from './src/types';
@@ -77,6 +80,10 @@ const App = () => {
     
     // 🚨 CRITICAL FIX: Clear pending deeplinks on app start to prevent unwanted redirects
     useEffect(() => {
+        // 🔒 SCROLL WATCHDOG - Monitor and fix scroll violations
+        scrollWatchdog.start();
+        console.log('🔒 Global Scroll Architecture Active - Violations will be auto-fixed');
+        
         // 🔒 Initialize Global Scroll Architecture - PERMANENT FIX
         initScrollLockDetection();
         

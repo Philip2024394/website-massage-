@@ -14,6 +14,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 🔒 GLOBAL SCROLL GUARANTEE - OVERRIDES ALL AI DAMAGE */
+html, body {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 🛡️ KILL 100vh MOBILE BUG - SAFARI + CHROME FIX */
+@supports (-webkit-touch-callout: none) {
+  .h-screen, .min-h-screen,
+  *[class*="h-screen"],
+  *[class*="min-h-screen"] {
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+}
+
 /* 🔒 GLOBAL MOBILE SCROLL GUARANTEE - PERMANENT FIX */
 /* RULE #1: BODY IS THE ONLY SCROLLER ON MOBILE */
 html, body {

@@ -605,7 +605,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
             className={`
               fixed bg-white rounded-t-2xl shadow-2xl border border-gray-200 z-50
               transition-all duration-300 ease-in-out
-              ${isMinimized ? 'h-16' : 'h-[600px]'}
+              ${isMinimized ? 'h-16' : 'max-h-[80vh] h-auto min-h-[400px]'}
               w-96
             `}
             style={{
@@ -613,6 +613,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
               bottom: '0px',
               transform: isMinimized ? 'translateY(calc(100% - 64px))' : 'translateY(0)'
             }}
+
           >
             {/* Header */}
             <div 
@@ -730,7 +731,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                 
                 {/* BOOKING FORM for booking-in-progress status */}
                 {chatRoom.status === 'booking-in-progress' && (
-                  <div className="flex-1 flex flex-col p-4  scrollbar-hide relative">
+                  <div className="flex-1 flex flex-col p-4 relative">
                     
                     {/* Lock Overlay floating over the booking form */}
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-50/95 to-white/95 backdrop-blur-md z-20 flex items-center justify-center">
@@ -1045,7 +1046,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
 
                     {/* Messages Container with Lock Overlay */}
                     {!isLoading && !messagesError && (
-                      <div className="flex-1 relative overflow-hidden">
+                      <div className="flex-1 relative overflow-visible">
                         {/* Lock Overlay - Only visible when booking is in progress */}
                         {chatRoom.status === 'booking-in-progress' && (
                           <div className="absolute inset-0 bg-white bg-opacity-95 backdrop-blur-sm z-10 flex items-center justify-center">

@@ -144,10 +144,11 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Prevent scrolling behind chat window */
+/* ⚠️ CRITICAL: NEVER LOCK BODY SCROLL - violates ONE SCROLL AUTHORITY rule */
 body.chat-open {
-  overflow: hidden;
-  position: fixed;
+  /* FIXED: Body must always remain scrollable */
+  overflow: visible;
+  position: relative;
   width: 100%;
 }
 
