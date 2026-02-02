@@ -48,6 +48,11 @@ esbuild
 *-old.*
 *.disabled
 deleted/
+
+# Reports (prevents large JSON files)
+*-report.json
+eslint-report.json
+file-size-report.json
 __deleted__/
 
 # Test/Debug HTML files (53 files causing file watcher overload)
