@@ -28,11 +28,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
-  Activity, Zap, Clock, Cpu, Wifi, TrendingUp, TrendingDown,
-  AlertTriangle, CheckCircle, Monitor, Smartphone, Globe,
-  BarChart3, LineChart, PieChart, Settings, Gauge, 
-  Server, Database, Cloud, Timer, Eye, Target
-} from 'lucide-react';
+  Activity, Zap, Clock, Cpu, Wifi, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Computer, Phone, Globe, BarChart, LineChart, PieChart, Settings, Gauge, Server, Database, Cloud, Timer, Eye, Target} from 'lucide-react';
 
 export interface PerformanceMonitorProps {
   enabled?: boolean;

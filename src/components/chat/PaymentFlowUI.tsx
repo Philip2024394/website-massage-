@@ -5,19 +5,7 @@
 
 import React, { useState } from 'react';
 import { 
-  CreditCard, 
-  Wallet, 
-  Smartphone, 
-  DollarSign,
-  Lock,
-  Shield,
-  Check,
-  AlertCircle,
-  Info,
-  Gift,
-  Percent,
-  Clock
-} from 'lucide-react';
+  CreditCard, Wallet, Phone, DollarSign, Lock, Shield, Check, AlertCircle, Info, Gift, Percent, Clock} from 'lucide-react';
 
 export type PaymentMethod = 'card' | 'paypal' | 'apple_pay' | 'google_pay' | 'cash';
 
@@ -93,7 +81,7 @@ export const PaymentFlowUI: React.FC<PaymentFlowUIProps> = ({
     {
       id: 'apple_pay',
       name: 'Apple Pay',
-      icon: <Smartphone className="w-6 h-6" />,
+      icon: <Phone className="w-6 h-6" />,
       description: 'Quick and secure payment',
       available: true,
       processingTime: 'Instant',
@@ -102,7 +90,7 @@ export const PaymentFlowUI: React.FC<PaymentFlowUIProps> = ({
     {
       id: 'google_pay',
       name: 'Google Pay',
-      icon: <Smartphone className="w-6 h-6" />,
+      icon: <Phone className="w-6 h-6" />,
       description: 'Pay with Google',
       available: true,
       processingTime: 'Instant',

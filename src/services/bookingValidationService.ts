@@ -223,7 +223,7 @@ export function validateBookingPayload(rawData: any): ValidationResult {
   }
 
   // Step 2: Apply defaults for optional fields
-  if (!payload.status) payload.status = 'Pending';
+  if (!payload.status) payload.status = 'pending_accept'; // ✅ Valid Appwrite status
   if (!payload.paymentMethod) payload.paymentMethod = 'Unpaid';
 
   // Step 3: Check for extra fields (warn but don't fail)

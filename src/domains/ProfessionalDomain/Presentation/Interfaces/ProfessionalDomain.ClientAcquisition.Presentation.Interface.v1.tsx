@@ -112,11 +112,7 @@ function requestAuthorization() {
  */
 import React, { useState } from 'react';
 import { 
-  Users, Star, TrendingUp, Clock, Eye, DollarSign, Camera, Edit3, MessageCircle,
-  ChevronRight, ChevronDown, CheckCircle, AlertCircle, Gift, Zap, Target, 
-  Image, FileText, Phone, MapPin, Calendar, Heart, Award, Shield, Sparkles,
-  Timer, Activity, BarChart3, PieChart, ThumbsUp, BookOpen, Lightbulb, Crown
-} from 'lucide-react';
+  Users, Star, TrendingUp, Clock, Eye, DollarSign, Camera, Edit3, MessageCircle, ChevronRight, ChevronDown, CheckCircle, AlertCircle, Gift, Zap, Target, Image, FileText, Phone, MapPin, Calendar, Heart, Award, Shield, Sparkles, Timer, Activity, BarChart, PieChart, ThumbsUp, BookOpen, Lightbulb, Crown} from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { moreCustomersHelp } from './constants/helpContent';
@@ -279,7 +275,7 @@ const MoreCustomersPage: React.FC<MoreCustomersPageProps> = ({
         {/* Quick Stats Overview */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-orange-500" />
+            <BarChart className="w-5 h-5 text-orange-500" />
             Status Performa Anda Saat Ini
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

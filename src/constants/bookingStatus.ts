@@ -30,3 +30,39 @@ export const DEFAULT_BOOKING_STATUS = BOOKING_STATUS.PENDING_ACCEPT;
  * Use this when customer has submitted booking but no therapist assigned yet  
  */
 export const SEARCHING_BOOKING_STATUS = BOOKING_STATUS.SEARCHING;
+
+/**
+ * Normalize booking status to valid Appwrite enum value
+ * Maps legacy/invalid statuses to valid ones
+ * 
+ * @param status - Raw status string (may be invalid)
+ * @returns Valid BookingStatus enum value
+ */
+export function normalizeBookingStatus(status: string | undefined | null): BookingStatus {
+  if (!status) return BOOKING_STATUS.PENDING_ACCEPT;
+  
+  const normalized = status.toLowerCase().trim();
+  
+  // Map legacy/invalid statuses to valid ones
+  const statusMap: Record<string, BookingStatus> = {
+    'pending': BOOKING_STATUS.PENDING_ACCEPT,
+    'pending_accept': BOOKING_STATUS.PENDING_ACCEPT,
+    'requested': BOOKING_STATUS.PENDING_ACCEPT,
+    'idle': BOOKING_STATUS.IDLE,
+    'registering': BOOKING_STATUS.REGISTERING,
+    'searching': BOOKING_STATUS.SEARCHING,
+    'active': BOOKING_STATUS.ACTIVE,
+    'confirmed': BOOKING_STATUS.ACTIVE,
+    'cancelled': BOOKING_STATUS.CANCELLED,
+    'completed': BOOKING_STATUS.COMPLETED,
+  };
+  
+  const validStatus = statusMap[normalized];
+  
+  if (!validStatus) {
+    console.warn(`[BOOKING_STATUS] Invalid status "${status}" normalized to "${BOOKING_STATUS.PENDING_ACCEPT}"`);
+    return BOOKING_STATUS.PENDING_ACCEPT;
+  }
+  
+  return validStatus;
+}

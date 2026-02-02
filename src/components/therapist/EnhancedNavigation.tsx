@@ -27,12 +27,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  Home, User, Calendar, DollarSign, Bell, Settings, 
-  Search, Plus, Star, Clock, TrendingUp, Zap, 
-  Play as ChevronRight, TrendingDown as ChevronDown, Star as Bookmark, Clock as History,
-  Zap as Command, Users, CreditCard, BarChart, Shield,
-  FileText, Gift, FileText as Clipboard, DollarSign as Wallet, MessageCircle
-} from 'lucide-react';
+  Home, User, Calendar, DollarSign, Bell, Settings, Search, Plus, Star, Clock, TrendingUp, Zap, Play as ChevronRight, ChevronDown, Star as Bookmark, Clock as History, Zap as Command, Users, CreditCard, BarChart, Shield, FileText, Gift, FileText as Clipboard, DollarSign as Wallet, MessageCircle} from 'lucide-react';
 
 export interface NavigationItem {
   id: string;

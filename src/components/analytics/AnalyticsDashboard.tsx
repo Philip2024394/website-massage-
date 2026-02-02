@@ -28,12 +28,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  BarChart3, TrendingUp, TrendingDown, Users, DollarSign,
-  MapPin, Clock, MessageCircle, Target, Eye, Zap,
-  Calendar, Filter, Download, RefreshCw, Settings,
-  Smartphone, Monitor, Globe, Star, Award, Activity,
-  PieChart, LineChart, BarChart, Timer, Heart
-} from 'lucide-react';
+  BarChart, TrendingUp, TrendingDown, Users, DollarSign, MapPin, Clock, MessageCircle, Target, Eye, Zap, Calendar, Filter, Download, RefreshCw, Settings, Phone, Computer, Globe, Star, Award, Activity, PieChart, LineChart, BarChart, Timer, Heart} from 'lucide-react';
 
 export interface AnalyticsDashboardProps {
   enabled?: boolean;
@@ -551,7 +546,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="w-7 h-7 text-blue-600" />
+              <BarChart className="w-7 h-7 text-blue-600" />
               Analytics Dashboard
             </h1>
             <p className="text-gray-600 mt-1">

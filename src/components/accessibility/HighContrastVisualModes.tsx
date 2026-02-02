@@ -28,12 +28,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  Palette, Sun, Moon, Eye, EyeOff, Type, Contrast,
-  Settings, Play, Pause, RotateCcw, Download, Upload,
-  Zap, ZapOff, Target, Filter, Sliders, Brush,
-  Monitor, Smartphone, Tablet, Search, Info,
-  CheckCircle, AlertTriangle, Star, Award
-} from 'lucide-react';
+  Brush, Sun, Moon, Eye, EyeOff, Type, Palette, Settings, Play, Pause, RotateCcw, Download, Upload, Zap, ZapOff, Target, Filter, Sliders, Brush, Computer, Phone, Phone, Search, Info, CheckCircle, AlertTriangle, Star, Award} from 'lucide-react';
 
 export interface HighContrastVisualModesProps {
   enabled?: boolean;
@@ -411,13 +406,13 @@ export const HighContrastVisualModes: React.FC<HighContrastVisualModesProps> = (
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <Palette className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+            <Brush className="w-6 h-6 text-blue-600 mx-auto mb-2" />
             <div className="font-medium text-blue-900">Active Theme</div>
             <div className="text-sm text-blue-700">{activeTheme.name}</div>
           </div>
           
           <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-            <Contrast className="w-6 h-6 text-green-600 mx-auto mb-2" />
+            <Palette className="w-6 h-6 text-green-600 mx-auto mb-2" />
             <div className="font-medium text-green-900">Contrast Score</div>
             <div className="text-sm text-green-700">{activeTheme.rating}%</div>
           </div>
@@ -445,7 +440,7 @@ export const HighContrastVisualModes: React.FC<HighContrastVisualModesProps> = (
             onClick={() => applyTheme(HIGH_CONTRAST_THEMES[0])}
             className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
           >
-            <Contrast className="w-6 h-6 text-gray-600" />
+            <Palette className="w-6 h-6 text-gray-600" />
             <span className="text-sm text-gray-700">High Contrast</span>
           </button>
           
@@ -650,7 +645,7 @@ export const HighContrastVisualModes: React.FC<HighContrastVisualModesProps> = (
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Palette className="w-7 h-7 text-blue-600" />
+              <Brush className="w-7 h-7 text-blue-600" />
               High Contrast & Visual Modes
             </h1>
             <p className="text-gray-600 mt-1">

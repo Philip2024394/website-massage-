@@ -22,11 +22,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Shield, Activity, Users, BarChart3, Settings, 
-  CheckCircle, AlertTriangle, Volume2, Keyboard, 
-  Palette, Eye, Target, Zap, Star, Award,
-  TrendingUp, Clock, Bell, BookOpen
-} from 'lucide-react';
+  Shield, Activity, Users, BarChart, Settings, CheckCircle, AlertTriangle, Volume, Hash, Brush, Eye, Target, Zap, Star, Award, TrendingUp, Clock, Bell, BookOpen} from 'lucide-react';
 
 // Import our accessibility components
 import AccessibilityDashboard from './AccessibilityDashboard';
@@ -261,7 +257,7 @@ export const IntegratedAccessibilityDashboard: React.FC<IntegratedAccessibilityD
             onClick={() => handleFeatureActivation('high-contrast', !settings?.highContrastMode)}
             className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
           >
-            <Palette className="w-6 h-6 text-purple-600" />
+            <Brush className="w-6 h-6 text-purple-600" />
             <span className="text-sm text-gray-700">High Contrast</span>
             {settings?.highContrastMode && (
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -272,7 +268,7 @@ export const IntegratedAccessibilityDashboard: React.FC<IntegratedAccessibilityD
             onClick={() => handleFeatureActivation('screen-reader', !settings?.screenReaderEnabled)}
             className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
           >
-            <Volume2 className="w-6 h-6 text-blue-600" />
+            <Volume className="w-6 h-6 text-blue-600" />
             <span className="text-sm text-gray-700">Screen Reader</span>
             {settings?.screenReaderEnabled && (
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -283,7 +279,7 @@ export const IntegratedAccessibilityDashboard: React.FC<IntegratedAccessibilityD
             onClick={() => handleFeatureActivation('keyboard-navigation', !settings?.keyboardNavigationEnabled)}
             className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
           >
-            <Keyboard className="w-6 h-6 text-green-600" />
+            <Hash className="w-6 h-6 text-green-600" />
             <span className="text-sm text-gray-700">Keyboard Nav</span>
             {settings?.keyboardNavigationEnabled && (
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>

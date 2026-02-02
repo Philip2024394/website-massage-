@@ -25,8 +25,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     };
     
     const content = (
-        <div className={isFullScreen ? "min-h-screen flex flex-col mobile-optimized" : "max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col mobile-optimized container-mobile"}>
-            <div className="flex-1 content-landscape  ">
+        <div className={isFullScreen ? "w-full min-h-screen mobile-optimized" : "max-w-md mx-auto min-h-screen bg-white shadow-lg mobile-optimized container-mobile"}>
+            <div className="content-landscape">
                 {children}
             </div>
         </div>

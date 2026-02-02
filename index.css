@@ -23,11 +23,12 @@
 
 /* 🔒 GLOBAL SCROLL GUARANTEE - OVERRIDES ALL AI DAMAGE */
 html, body {
-  height: auto !important;
-  min-height: 100% !important;
-  overflow-y: auto !important;
+  height: 100% !important;
+  min-height: 100vh !important;
+  overflow-y: scroll !important;
   overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch;
+  position: relative !important;
 }
 
 /* 🛡️ KILL 100vh MOBILE BUG - SAFARI + CHROME FIX */
@@ -61,11 +62,12 @@ body {
 
 #root {
   background-color: #f97316; /* Orange background matching loading screen */
-  min-height: auto; /* NEVER use 100vh - breaks mobile */
+  min-height: 100%; /* Take full height of body */
   height: auto; /* Allow content to grow */
   width: 100%;
-  overflow: visible; /* Let content grow naturally */
+  overflow: visible !important; /* CRITICAL: Let content grow naturally - DO NOT restrict */
   position: relative; /* Ensure proper positioning */
+  display: block !important; /* Prevent flex container scroll trap */
 }
 
 /* 🚫 ABSOLUTE MOBILE BANS - ENFORCE NON-NEGOTIABLE RULES */
@@ -207,14 +209,8 @@ footer {
   }
 }
 
-/* Root container */
-#root {
-  min-height: 100vh;
-  height: auto;
-  width: 100%;
-  position: relative;
-  background: white;
-}
+/* Root container - REMOVED DUPLICATE (covered above) */
+/* Duplicate #root styles consolidated above at line 62 */
 
 /* Ensure all main page containers can scroll */
 .HomePage,
@@ -768,13 +764,13 @@ button, .btn, .clickable, [role="button"] {
   div:has(button[class*="Download"]) {
     margin-bottom: max(env(safe-area-inset-bottom, 20px), 40px) !important;
     padding-bottom: max(env(safe-area-inset-bottom, 12px), 24px) !important;
+    -webkit-touch-callout: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    
+    /* Enhanced transitions for touch feedback */
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
-  -webkit-touch-callout: none !important;
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  
-  /* Enhanced transitions for touch feedback */
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* Elite touch feedback for therapist dashboard buttons */

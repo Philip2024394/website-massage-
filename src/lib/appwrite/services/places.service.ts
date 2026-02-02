@@ -10,6 +10,12 @@ import { duplicateAccountDetectionService } from '../../../services/duplicateAcc
 export const placesService = {
     async getAllPlaces(city?: string): Promise<any[]> {
         try {
+            // Check if places collection is configured
+            if (!APPWRITE_CONFIG.collections.places) {
+                console.log('ℹ️ [PLACES] Places collection not configured (optional feature)');
+                return [];
+            }
+
             // Check if user is authenticated to avoid 401 errors
             let isAuthenticated = false;
             try {
@@ -58,7 +64,12 @@ export const placesService = {
             }
 
             return response.documents;
-        } catch (error) {
+        } catch (error: any) {
+            // Silently handle missing places collection (optional feature)
+            if (error?.code === 404 && error?.message?.includes('Collection')) {
+                console.log('ℹ️ [PLACES] Places collection not configured (optional feature)');
+                return [];
+            }
             console.error('Error fetching places:', error);
             return [];
         }

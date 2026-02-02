@@ -1436,14 +1436,10 @@ const App = () => {
 
 
 
-            {/* Booking Chat Window */}
-            {renderChatWindow()}
-
-            {/* New Standalone Floating Chat - Only on home page (rendered in HomePage.tsx) */}
-
             {/* 🔒 PERSISTENT CHAT WINDOW - Facebook Messenger style
                 This renders at ROOT level, OUTSIDE all other components.
-                It will NEVER disappear once opened. */}
+                It will NEVER disappear once opened. 
+                NOTE: Old FloatingChatWindow system disabled - using PersistentChatWindow only */}
             <PersistentChatWindow />
 
             {/* 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring */}

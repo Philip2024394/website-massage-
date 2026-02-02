@@ -29,11 +29,11 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
-  Eye, EyeOff, Accessibility, Shield, Award, AlertTriangle,
+  Eye, EyeOff, Shield, Award, AlertTriangle,
   Check, X, Info, Settings, Download, Upload, RefreshCw,
-  Contrast, Volume2, VolumeX, MousePointer, Keyboard,
-  Monitor, Smartphone, Tablet, Globe, Star, Target,
-  BarChart3, TrendingUp, TrendingDown, Zap, Heart,
+  Edit, Volume as Music, Settings as Gear,
+  Home, Phone, Globe, Star, Target,
+  BarChart, TrendingUp, ChevronDown as ArrowDown, Zap, Heart,
   BookOpen, FileText, Search, Filter, Calendar, Clock
 } from 'lucide-react';
 
@@ -330,7 +330,7 @@ export const AccessibilityDashboard: React.FC<AccessibilityDashboardProps> = ({
 
   // Tabs configuration
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3, description: 'Accessibility metrics and status' },
+    { id: 'overview', label: 'Overview', icon: BarChart, description: 'Accessibility metrics and status' },
     { id: 'issues', label: 'Issues', icon: AlertTriangle, description: 'Compliance violations and fixes' },
     { id: 'settings', label: 'Settings', icon: Settings, description: 'Accessibility preferences' },
     { id: 'audit', label: 'Audit', icon: Search, description: 'Detailed compliance testing' },
@@ -535,7 +535,7 @@ export const AccessibilityDashboard: React.FC<AccessibilityDashboardProps> = ({
           onClick={() => updateSettings({ visual: { ...settings.visual, highContrast: !settings.visual.highContrast } })}
           className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors text-left"
         >
-          <Contrast className="w-6 h-6 text-gray-600" />
+          <Edit className="w-6 h-6 text-gray-600" />
           <div>
             <div className="font-medium text-gray-900">High Contrast</div>
             <div className="text-sm text-gray-500">{settings.visual.highContrast ? 'Enabled' : 'Disabled'}</div>
@@ -546,7 +546,7 @@ export const AccessibilityDashboard: React.FC<AccessibilityDashboardProps> = ({
           onClick={() => updateSettings({ keyboard: { ...settings.keyboard, focusVisible: !settings.keyboard.focusVisible } })}
           className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors text-left"
         >
-          <Keyboard className="w-6 h-6 text-gray-600" />
+          <Gear className="w-6 h-6 text-gray-600" />
           <div>
             <div className="font-medium text-gray-900">Focus Indicators</div>
             <div className="text-sm text-gray-500">{settings.keyboard.focusVisible ? 'Visible' : 'Hidden'}</div>
@@ -557,7 +557,7 @@ export const AccessibilityDashboard: React.FC<AccessibilityDashboardProps> = ({
           onClick={() => updateSettings({ screenReader: { ...settings.screenReader, enabled: !settings.screenReader.enabled } })}
           className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors text-left"
         >
-          <Volume2 className="w-6 h-6 text-gray-600" />
+          <Music className="w-6 h-6 text-gray-600" />
           <div>
             <div className="font-medium text-gray-900">Screen Reader</div>
             <div className="text-sm text-gray-500">{settings.screenReader.enabled ? 'Optimized' : 'Standard'}</div>
@@ -790,7 +790,7 @@ export const AccessibilityDashboard: React.FC<AccessibilityDashboardProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Accessibility className="w-7 h-7 text-blue-600" />
+              <Shield className="w-7 h-7 text-blue-600" />
               Accessibility Dashboard
             </h1>
             <p className="text-gray-600 mt-1">

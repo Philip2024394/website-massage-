@@ -28,14 +28,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
-  Brain, TrendingUp, TrendingDown, Target, Lightbulb, 
-  AlertTriangle, CheckCircle2, Eye, Zap, Award,
-  Users, DollarSign, Calendar, Clock, Star, Activity,
-  ArrowUp, ArrowDown, Minus, Info, Filter, Download,
-  ChevronRight, ChevronDown, MoreVertical, Bell,
-  PieChart, BarChart3, LineChart, Layers, Settings,
-  BookOpen, MessageSquare, Share2, Bookmark
-} from 'lucide-react';
+  Brain, TrendingUp, TrendingDown, Target, Lightbulb, AlertTriangle, CheckCircle2, Eye, Zap, Award, Users, DollarSign, Calendar, Clock, Star, Activity, ArrowUp, ArrowDown, Minus, Info, Filter, Download, ChevronRight, ChevronDown, MoreVertical, Bell, PieChart, BarChart, LineChart, Layers, Settings, BookOpen, MessageSquare, Share2, Bookmark} from 'lucide-react';
 
 export interface BusinessIntelligenceProps {
   data?: BusinessData;

@@ -5,20 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Bell, 
-  BellRing, 
-  Volume2, 
-  VolumeX,
-  Smartphone, 
-  Mail,
-  MessageSquare,
-  AlertTriangle,
-  CheckCircle,
-  Info,
-  Clock,
-  X,
-  Settings
-} from 'lucide-react';
+  Bell, BellRing, Volume, VolumeOff, Phone, Mail, MessageSquare, AlertTriangle, CheckCircle, Info, Clock, X, Settings} from 'lucide-react';
 import { BookingProgressStep } from './BookingProgressStepper';
 
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';

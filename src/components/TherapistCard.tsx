@@ -1093,46 +1093,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             (e.target as HTMLElement).removeAttribute('data-clicking');
                         });
                         
-                        console.log('🚀 [ENTERPRISE] Book Now clicked on therapist card');
+                        console.log('🚀 [BOOK NOW] Book Now clicked on therapist card');
+                        console.log('🔍 [BOOK NOW] Current window.location:', window.location.href);
+                        console.log('🔍 [BOOK NOW] sessionStorage.has_entered_app:', sessionStorage.getItem('has_entered_app'));
                         
-                        try {
-                            // Create enterprise booking request
-                            const bookingId = await enterpriseBookingFlowService.createBookingRequest({
-                                userId: 'current_user', // Replace with actual user ID
-                                userDetails: {
-                                    name: 'Current User', // Replace with actual user data
-                                    phone: '+1234567890',
-                                    location: 'User Location'
-                                },
-                                serviceType: 'book-now',
-                                services: [
-                                    {
-                                        id: 'massage',
-                                        name: 'Massage Service',
-                                        duration: 90,
-                                        price: pricing?.[0]?.price || 100
-                                    }
-                                ],
-                                totalPrice: pricing?.[0]?.price || 100,
-                                duration: 90,
-                                location: {
-                                    address: locationAreaDisplayName,
-                                    coordinates: { lat: 0, lng: 0 } // Replace with actual coordinates
-                                },
-                                preferredTherapists: [therapist.$id],
-                                urgency: 'normal'
-                            });
-                            
-                            console.log(`✅ Enterprise booking request created: ${bookingId}`);
-                            
-                            // Open booking chat as fallback
-                            openBookingChat(therapist);
-                            
-                        } catch (error) {
-                            console.error('❌ Enterprise booking failed:', error);
-                            // Fallback to original booking flow
-                            openBookingChat(therapist);
-                        }
+                        // 🔒 CRITICAL: Open chat directly - skip enterprise booking service
+                        // Enterprise service might be causing navigation issues
+                        console.log('💬 [BOOK NOW] Opening persistent chat window...');
+                        openBookingChat(therapist);
+                        console.log('✅ [BOOK NOW] Chat window opened successfully');
                         
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);

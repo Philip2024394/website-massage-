@@ -367,22 +367,30 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Get or create user ID on mount
   useEffect(() => {
+    console.log('🔐 PersistentChat: Initializing user ID...');
     const initUser = async () => {
       try {
+        console.log('🔐 Attempting to get authenticated user...');
         const user = await account.get();
         setCurrentUserId(user.$id);
         setCurrentUserName(user.name || 'Customer');
+        setIsGuestUser(false);
         console.log('✅ PersistentChat: User authenticated:', user.$id);
-      } catch {
+      } catch (error) {
+        console.log('👤 No authenticated user, creating anonymous ID for guest...');
         // Create anonymous ID for guests
         let anonId = localStorage.getItem('persistent_chat_user_id');
         if (!anonId) {
           anonId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           localStorage.setItem('persistent_chat_user_id', anonId);
+          console.log('✨ Created new anonymous ID:', anonId);
+        } else {
+          console.log('♻️ Reusing existing anonymous ID:', anonId);
         }
         setCurrentUserId(anonId);
         setCurrentUserName('Guest');
-        console.log('👤 PersistentChat: Using anonymous ID:', anonId);
+        setIsGuestUser(true);
+        console.log('✅ PersistentChat: Using anonymous ID:', anonId);
       }
     };
     initUser();
@@ -651,11 +659,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
               Query.equal('recipientId', currentUserId)
             ])
           ]),
-          Query.orderAsc('createdAt'),
-          Query.limit(100)
+          Query.orderDesc('createdAt'),
+          Query.limit(50) // Reduced from 100 to prevent memory issues
         ]
       );
 
+      // Optimize memory by only mapping necessary fields
       const messages: ChatMessage[] = response.documents.map((doc: any) => ({
         $id: doc.$id,
         senderId: doc.senderId,
@@ -669,7 +678,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         messageType: doc.messageType || 'text',
         roomId: doc.roomId || '',
         isSystemMessage: doc.isSystemMessage || false,
-      }));
+      })).reverse(); // Reverse after mapping to show oldest first
 
       console.log(`📥 Loaded ${messages.length} messages from history`);
       return messages;
@@ -1339,6 +1348,25 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
     console.log('📦 [LOCALSTORAGE] Creating booking with localStorage bookingService');
     
+    // 🔑 CRITICAL FIX: Ensure authenticated session before creating booking
+    console.log('🔑 [AUTH] Ensuring authentication session for booking...');
+    try {
+      const { ensureAuthSession } = await import('../lib/authSessionHelper');
+      const authResult = await ensureAuthSession('Order Now booking creation');
+      
+      if (!authResult.success) {
+        console.error('❌ [AUTH] Failed to establish session:', authResult.error);
+        addSystemNotification('❌ Authentication failed. Please refresh the page and try again.');
+        return false;
+      }
+      
+      console.log('✅ [AUTH] Session established for booking:', authResult.userId);
+    } catch (authError: any) {
+      console.error('❌ [AUTH] Unexpected error ensuring session:', authError);
+      addSystemNotification('❌ Authentication error. Please refresh the page and try again.');
+      return false;
+    }
+    
     // Import the localStorage booking service
     const { bookingService } = await import('../lib/bookingService');
     
@@ -1347,11 +1375,27 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const price = bookingData.totalPrice || (bookingData as any).price || 0;
     const bookingId = chatState.bookingData?.bookingId || bookingData.bookingId;
     
+    console.log('🔍 [BOOKING VALIDATION] Checking therapist data...');
+    console.log('- Therapist object:', therapist);
+    console.log('- Therapist ID:', therapist?.id);
+    console.log('- Therapist $id:', therapist?.$id);
+    console.log('- Therapist name:', therapist?.name);
+    
     if (!therapist) {
-      console.log('❌ [LOCALSTORAGE] No therapist available');
+      console.error('❌ [CRITICAL] No therapist in chat state!');
+      console.error('❌ chatState.therapist is:', therapist);
       addSystemNotification('❌ No therapist selected for booking');
       return false;
     }
+    
+    if (!therapist.id && !therapist.$id) {
+      console.error('❌ [CRITICAL] Therapist object has no ID!');
+      console.error('❌ Therapist object:', JSON.stringify(therapist));
+      addSystemNotification('❌ Therapist ID missing. Please refresh and try again.');
+      return false;
+    }
+    
+    console.log('✅ [VALIDATION] Therapist validated:', therapist.id || therapist.$id);
     
     if (!bookingId) {
       console.error('❌ [APPWRITE] No booking ID available');
@@ -1405,28 +1449,28 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     
     // Prepare booking data for Appwrite
     // 📱 NOTE: WhatsApp is NOT sent to therapist (admin-only, stored in localStorage)
+    // ✅ FIXED: Match exact Appwrite schema field names (lowercase, with typos preserved)
     const appwriteBooking = {
       customerId: currentUserId || 'guest',
       customerName: customerName, // ✅ GUARANTEED non-empty
-      customerPhone: customerPhone, // 📞 Required: sent to therapist for booking
+      customerphone: customerPhone, // ✅ FIXED: lowercase to match Appwrite schema
       customerWhatsApp: customerPhone, // ✅ Use phone number for validation (required field)
       therapistId: String(therapist?.id || therapist?.$id || ''), // 🔒 Always string for consistency
       therapistName: therapist?.name || '',
       therapistType: 'therapist' as const,
-      serviceType: bookingData.serviceType || 'Traditional Massage',
+      servicetype: bookingData.serviceType || 'Traditional Massage', // ✅ FIXED: lowercase to match Appwrite schema
       duration,
       price,
       location: bookingData.locationZone || chatState.customerLocation || bookingData.address || 'Address provided in chat',
-      locationType: (bookingData.locationType as 'home' | 'hotel' | 'villa') || 'home',
+      locationtype: (bookingData.locationType as 'home' | 'hotel' | 'villa') || 'home', // ✅ FIXED: lowercase to match Appwrite schema
       address: bookingData.address || chatState.customerLocation || 'Address provided in chat',
-      roomNumber: bookingData.roomNumber || null,
-      massageFor: (bookingData.massageFor as 'male' | 'female' | 'children') || 'male',
+      roomnumber: bookingData.roomNumber || '', // ✅ FIXED: lowercase to match Appwrite schema, empty string instead of null (required field)
       // 📍 GPS coordinates are OPTIONAL - don't send if not available
-      coordinates: bookingData.coordinates || undefined,
-      date: bookingData.scheduledDate || chatState.selectedDate || new Date().toISOString().split('T')[0],
+      cordinates: bookingData.coordinates ? JSON.stringify(bookingData.coordinates) : undefined, // ✅ FIXED: typo "cordinates" to match Appwrite schema, convert to string
+      bookingDate: new Date().toISOString(),
       time: bookingData.scheduledTime || chatState.selectedTime || new Date().toLocaleTimeString('en-US', { hour12: false }),
       status: 'pending' as const,
-      responseDeadline: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes from now
+      responcedeadline: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // ✅ FIXED: typo "responcedeadline" to match Appwrite schema
       notes: bookingData.discountCode ? `Discount: ${bookingData.discountPercentage}%` : undefined,
     };
     

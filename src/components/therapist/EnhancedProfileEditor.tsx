@@ -28,13 +28,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  User, Image as CameraIcon, MapPin, Phone, Mail, Clock, 
-  DollarSign, Star, Award, TrendingUp, CheckCircle2,
-  Upload, Edit3, Save, X, Plus, Trash2, 
-  Image as ImageIcon, Calendar, Target,
-  BarChart as BarChart3, Users, MessageCircle, Sparkles,
-  Play as ChevronRight, TrendingDown as ChevronDown, AlertCircle, Info
-} from 'lucide-react';
+  User, Image as CameraIcon, MapPin, Phone, Mail, Clock, DollarSign, Star, Award, TrendingUp, CheckCircle2, Upload, Edit3, Save, X, Plus, Trash2, Image as ImageIcon, Calendar, Target, BarChart as BarChart3, Users, MessageCircle, Sparkles, Play as ChevronRight, ChevronDown, AlertCircle, Info} from 'lucide-react';
 
 export interface TherapistProfile {
   id: string;

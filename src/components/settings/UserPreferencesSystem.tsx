@@ -29,15 +29,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  User, Settings, Bell, Shield, Eye, Cloud,
-  Monitor, Smartphone, Globe, Zap, Clock, Key,
-  Layout, Grid, List, Calendar, MapPin, Phone,
-  Mail, MessageSquare, Heart, Star, Trophy,
-  Download, Upload, RefreshCw, Save, Undo,
-  Check, X, AlertTriangle, Info, Search, Filter,
-  ChevronDown, ChevronRight, Plus, Minus, Edit,
-  Trash2, Copy, Share, BookOpen, Target, Layers
-} from 'lucide-react';
+  User, Settings, Bell, Shield, Eye, Cloud, Computer, Phone, Globe, Zap, Clock, Key, Layout, Grid, List, Calendar, MapPin, Phone, Mail, MessageSquare, Heart, Star, Trophy, Download, Upload, RefreshCw, Save, Undo, Check, X, AlertTriangle, Info, Search, Filter, ChevronDown, ChevronRight, Plus, Minus, Edit, Trash2, Copy, Share, BookOpen, Target, Layers} from 'lucide-react';
 
 export interface UserPreferencesSystemProps {
   preferences?: UserPreferences;
@@ -980,7 +972,7 @@ export const UserPreferencesSystem: React.FC<UserPreferencesSystemProps> = ({
       case 'display':
         return (
           <div className="text-center py-12">
-            <Monitor className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <Computer className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Display Preferences</h3>
             <p className="text-gray-600">Theme and display customization coming soon</p>
           </div>

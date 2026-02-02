@@ -1,7 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
-import { Clock, Check, X, AlertTriangle, Volume2, VolumeX } from 'lucide-react';
+import { Clock, Check, X, AlertTriangle, Volume, VolumeOff} from 'lucide-react';
 import { bookingAcknowledgmentService } from '../../lib/services/bookingAcknowledgmentService';
 import { bookingSoundService } from "../../services/bookingSound.service";
 
@@ -283,7 +283,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                     {hasBookings && (
                         <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
                             <div className="flex items-center gap-2">
-                                {audioPlaying ? <Volume2 className="w-5 h-5 text-blue-600 animate-pulse" /> : <VolumeX className="w-5 h-5 text-gray-400" />}
+                                {audioPlaying ? <Volume className="w-5 h-5 text-blue-600 animate-pulse" /> : <VolumeOff className="w-5 h-5 text-gray-400" />}
                                 <span className="text-sm font-medium text-blue-900">
                                     {audioPlaying ? 'Notification Playing' : 'Notifications'}
                                 </span>

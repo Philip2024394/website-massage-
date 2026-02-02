@@ -1,0 +1,83 @@
+{
+  "timestamp": "2026-02-02T11:21:34.090Z",
+  "passed": [
+    {
+      "category": "Bookings",
+      "test": "CREATE operation",
+      "details": "ID: 698088be0005c033e7b1"
+    },
+    {
+      "category": "Bookings",
+      "test": "READ operation",
+      "details": "Retrieved booking 698088be0005c033e7b1"
+    },
+    {
+      "category": "Bookings",
+      "test": "UPDATE operation",
+      "details": "Updated status to active"
+    },
+    {
+      "category": "Bookings",
+      "test": "LIST operation",
+      "details": "Found 1 bookings"
+    },
+    {
+      "category": "Bookings",
+      "test": "DELETE operation (cleanup)",
+      "details": "Test booking removed"
+    },
+    {
+      "category": "Real Booking",
+      "test": "Order Now simulation",
+      "details": "Booking 698088bf0009b2ab1472 created"
+    },
+    {
+      "category": "Real Booking",
+      "test": "Data integrity",
+      "details": "All fields saved correctly"
+    },
+    {
+      "category": "Permissions",
+      "test": "Bookings - READ access",
+      "details": "Role: any() configured"
+    },
+    {
+      "category": "Permissions",
+      "test": "Messages - READ access",
+      "details": "Role: any() configured"
+    },
+    {
+      "category": "Permissions",
+      "test": "Chat Sessions - READ access",
+      "details": "Role: any() configured"
+    },
+    {
+      "category": "Performance",
+      "test": "Query speed",
+      "details": "194ms (excellent)"
+    },
+    {
+      "category": "Error Handling",
+      "test": "Invalid ID detection",
+      "details": "Correct 404 error thrown"
+    },
+    {
+      "category": "Error Handling",
+      "test": "Required field validation",
+      "details": "Schema validation working"
+    }
+  ],
+  "failed": [
+    {
+      "category": "Messages",
+      "test": "CREATE operation",
+      "details": "Invalid document structure: Missing required attribute \"isSystemMessage\" (400)"
+    },
+    {
+      "category": "Chat Sessions",
+      "test": "CREATE operation",
+      "details": "Invalid document structure: Missing required attribute \"chatId\" (400)"
+    }
+  ],
+  "warnings": []
+}

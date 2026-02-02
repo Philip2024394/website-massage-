@@ -40,7 +40,7 @@ export const APPWRITE_CONFIG = {
         // CANONICAL SCHEMA COLLECTIONS - SINGLE SOURCE OF TRUTH
         admins: null, // ⚠️ DISABLED - Collection doesn't exist
         therapists: VALIDATED_COLLECTIONS.therapists,
-        places: VALIDATED_COLLECTIONS.places,
+        places: null, // ⚠️ DISABLED - Optional feature, collection not configured (prevents 404 errors)
         facial_places: 'facial_places_collection', // ✅ Text-based collection ID
         agents: null, // ⚠️ DISABLED - Collection doesn't exist
         bookings: SchemaValidator.getCollectionId('BOOKINGS'),

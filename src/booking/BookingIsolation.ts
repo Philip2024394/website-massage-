@@ -1,6 +1,25 @@
 /**
  * 🔒 BOOKING SYSTEM ISOLATION - TIER-1 PRODUCTION IMPLEMENTATION
  * 
+ * ⚠️ DEPRECATED - STEP 20 LEGACY CLEANUP
+ * 
+ * This file is superseded by the V2 core architecture:
+ * - New Authority: `/src_v2/core/booking/createBooking.ts`
+ * - With Step 19 observability logging
+ * - Protected by Step 18 architecture lockdown
+ * 
+ * STATUS: Preserved as emergency fallback only
+ * DO NOT USE for new development - use V2 core instead
+ * 
+ * MIGRATION PATH:
+ * ```typescript
+ * // OLD (deprecated)
+ * import { BookingIsolation } from '../booking/BookingIsolation';
+ * 
+ * // NEW (use this)
+ * import { createBooking } from '../src_v2/core/booking';
+ * ```
+ * 
  * FINAL ARCHITECTURE: Complete defensive isolation of booking flow and chat system.
  * Based on verified Appwrite schema and production requirements.
  * 

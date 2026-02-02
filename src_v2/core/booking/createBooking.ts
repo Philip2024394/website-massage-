@@ -1,0 +1,260 @@
+/**
+ * ============================================================================
+ * 💎 CREATE BOOKING - STEP 13 CORE EXTRACTION + STEP 19 OBSERVABILITY
+ * ============================================================================
+ * 
+ * This is THE AUTHORITATIVE booking creation function.
+ * 
+ * FIXES: "Both message sending and booking creation failed" 
+ * 
+ * HOW IT FIXES:
+ * - Uses THE SINGLE Appwrite client from /core/clients (no duplication)
+ * - Either succeeds with booking ID or fails with typed error
+ * - No UI imports, no context, no router, no state, no hidden retries
+ * - Deterministic: same input = same output
+ * - Testable in isolation
+ * - STEP 19: Minimal observability logging for core boundaries
+ * 
+ * RULES:
+ * - Import Appwrite client from /core/clients (NEVER create new one)
+ * - Validate contract FIRST (fail early)
+ * - Try Appwrite operation ONCE (no retries)
+ * - Return typed success OR typed error (no ambiguity)
+ * - Log operations for debugging
+ * - STEP 19: Log success/failure at core boundaries
+ * 
+ * ============================================================================
+ */
+
+import { databases, DATABASE_ID, COLLECTION_IDS, ID } from '../clients/appwrite';
+import { CoreLogger } from '../CoreLogger';
+import { 
+  validateBookingContract, 
+  BookingContract 
+} from './booking.contract';
+import { 
+  BookingCreateResult,
+  BookingDocument,
+  createValidationError,
+  createAppwriteError,
+  createNetworkError,
+  createUnknownError,
+  createBookingSuccess
+} from './booking.types';
+
+/**
+ * THE AUTHORITATIVE BOOKING CREATOR - WITH STEP 19 OBSERVABILITY
+ * 
+ * This function is the SINGLE point of truth for booking creation.
+ * All UI components must call this function (not create their own Appwrite clients).
+ * 
+ * STEP 19: Wrapped with CoreLogger for minimal boundary logging.
+ * 
+ * @param payload - Raw booking data from UI/API
+ * @returns Promise<BookingCreateResult> - Success with ID or typed error
+ */
+export async function createBooking(payload: unknown): Promise<BookingCreateResult> {
+  return CoreLogger.loggedOperation(
+    'booking',
+    'createBooking', 
+    async () => {
+      const startTime = Date.now();
+      console.log('🎯 [BOOKING-CORE] Starting booking creation...');
+      console.log('📝 [BOOKING-CORE] Payload type:', typeof payload);
+      
+      // STEP 1: VALIDATE CONTRACT (fail early if invalid)
+      console.log('🔍 [BOOKING-CORE] Step 1: Validating contract...');
+      const contractValidation = validateBookingContract(payload);
+      
+      if (!contractValidation.valid) {
+        console.error('❌ [BOOKING-CORE] Contract validation failed:', contractValidation.errors);
+        return createValidationError(contractValidation.errors);
+      }
+      
+      if (!contractValidation.sanitizedData) {
+        console.error('❌ [BOOKING-CORE] No sanitized data returned from validation');
+        return createValidationError([{
+          field: 'sanitizedData',
+          message: 'Contract validation succeeded but no sanitized data returned',
+          expected: 'BookingContract',
+          received: undefined
+        }]);
+      }
+      
+      console.log('✅ [BOOKING-CORE] Contract validation passed');
+      const bookingData = contractValidation.sanitizedData;
+
+      // STEP 2: PREPARE APPWRITE DOCUMENT
+      console.log('🔧 [BOOKING-CORE] Step 2: Preparing Appwrite document...');
+      
+      const bookingDocument: Omit<BookingDocument, '$id' | '$collectionId' | '$databaseId' | '$createdAt' | '$updatedAt' | '$permissions'> = {
+        // Customer info
+        customerName: bookingData.customerName,
+        customerPhone: bookingData.customerPhone,
+        ...(bookingData.customerWhatsApp && { customerWhatsApp: bookingData.customerWhatsApp }),
+        
+        // Service info
+        serviceType: bookingData.serviceType,
+        ...(bookingData.serviceDescription && { serviceDescription: bookingData.serviceDescription }),
+        duration: bookingData.duration,
+        
+        // DateTime and flexibility
+        ...(bookingData.preferredDateTime && { 
+          preferredDateTime: bookingData.preferredDateTime.toISOString() 
+        }),
+        ...(bookingData.flexible !== undefined && { flexible: bookingData.flexible }),
+        
+        // Provider preference
+        ...(bookingData.preferredProvider && { preferredProvider: bookingData.preferredProvider }),
+        
+        // Location
+        location: bookingData.location,
+        
+        // Additional info
+        ...(bookingData.specialRequests && { specialRequests: bookingData.specialRequests }),
+        ...(bookingData.accessibilityNeeds && { accessibilityNeeds: bookingData.accessibilityNeeds }),
+        ...(bookingData.source && { source: bookingData.source }),
+        ...(bookingData.chatSessionId && { chatSessionId: bookingData.chatSessionId }),
+        ...(bookingData.affiliateCode && { affiliateCode: bookingData.affiliateCode }),
+        ...(bookingData.budget && { budget: bookingData.budget }),
+        
+        // System fields
+        status: 'pending_accept' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      console.log('📄 [BOOKING-CORE] Document prepared for collection:', COLLECTION_IDS.bookings);
+      console.log('🎯 [BOOKING-CORE] Customer:', bookingDocument.customerName);
+      console.log('🎯 [BOOKING-CORE] Service:', `${bookingDocument.serviceType} (${bookingDocument.duration}min)`);
+      console.log('🎯 [BOOKING-CORE] Location:', bookingDocument.location.address);
+
+      // STEP 3: CREATE BOOKING IN APPWRITE (single attempt, no retries)
+      console.log('🚀 [BOOKING-CORE] Step 3: Creating booking in Appwrite...');
+      console.log('📍 [BOOKING-CORE] Database ID:', DATABASE_ID);
+      console.log('📍 [BOOKING-CORE] Collection ID:', COLLECTION_IDS.bookings);
+      
+      const bookingId = ID.unique();
+      console.log('🆔 [BOOKING-CORE] Generated booking ID:', bookingId);
+      
+      const createdBooking = await databases.createDocument(
+        DATABASE_ID,
+        COLLECTION_IDS.bookings,
+        bookingId,
+        bookingDocument
+      );
+      
+      console.log('✅ [BOOKING-CORE] Booking created successfully!');
+      console.log('📝 [BOOKING-CORE] Created document ID:', createdBooking.$id);
+      console.log('⏱️ [BOOKING-CORE] Creation time:', `${Date.now() - startTime}ms`);
+      
+      // STEP 4: RETURN SUCCESS
+      const successResult = createBookingSuccess(createdBooking.$id, {
+        ...bookingDocument,
+        $id: createdBooking.$id,
+        $collectionId: createdBooking.$collectionId,
+        $databaseId: createdBooking.$databaseId,
+        $createdAt: createdBooking.$createdAt,
+        $updatedAt: createdBooking.$updatedAt,
+        $permissions: createdBooking.$permissions
+      });
+      
+      console.log('🎉 [BOOKING-CORE] Booking creation completed successfully');
+      return successResult;
+      
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      console.error('💥 [BOOKING-CORE] Booking creation failed:', error);
+      console.error('⏱️ [BOOKING-CORE] Failed after:', `${duration}ms`);
+      
+      // Handle specific Appwrite errors
+      if (error?.code && error?.message && error?.type) {
+        console.error('🔥 [BOOKING-CORE] Appwrite error detected');
+        console.error('📍 Code:', error.code);
+        console.error('📍 Type:', error.type);
+        console.error('📍 Message:', error.message);
+        return createAppwriteError(error);
+      }
+      
+      // Handle network errors
+      if (error?.name === 'TypeError' || error?.message?.includes('fetch') || error?.message?.includes('network')) {
+        console.error('🌐 [BOOKING-CORE] Network error detected');
+        return createNetworkError(error);
+      }
+      
+      // Handle unknown errors
+      console.error('❓ [BOOKING-CORE] Unknown error type');
+      console.error('📍 Error name:', error?.name);
+      console.error('📍 Error message:', error?.message);
+      console.error('📍 Error stack:', error?.stack);
+      
+      return createUnknownError(error);
+    }
+    },
+    // Extract meaningful info from payload for logging context
+    { 
+      customerName: (payload as any)?.customerName || 'unknown',
+      serviceType: (payload as any)?.serviceType || 'unknown'
+    }
+  );
+}
+
+/**
+ * SIMPLE BOOKING STATUS CHECK (bonus utility)
+ * 
+ * Check if a booking exists and return its status.
+ * Useful for testing and verification.
+ */
+export async function getBookingStatus(bookingId: string): Promise<{
+  exists: boolean;
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  error?: string;
+}> {
+  try {
+    console.log('🔍 [BOOKING-CORE] Checking booking status for:', bookingId);
+    
+    const booking = await databases.getDocument(
+      DATABASE_ID,
+      COLLECTION_IDS.bookings,
+      bookingId
+    );
+    
+    console.log('✅ [BOOKING-CORE] Booking found, status:', booking.status);
+    
+    return {
+      exists: true,
+      status: booking.status as 'pending' | 'confirmed' | 'cancelled' | 'completed'
+    };
+    
+  } catch (error: any) {
+    console.warn('⚠️ [BOOKING-CORE] Could not get booking status:', error?.message);
+    
+    return {
+      exists: false,
+      error: error?.message || 'Unknown error'
+    };
+  }
+}
+
+/**
+ * TEST BOOKING PAYLOAD FACTORY
+ * 
+ * Creates a valid test payload for isolated testing.
+ * Use this to test the booking function without UI.
+ */
+export function createTestBookingPayload(overrides: Partial<BookingContract> = {}): BookingContract {
+  return {
+    customerName: 'Test Customer',
+    customerPhone: '+628123456789',
+    serviceType: 'massage',
+    duration: 60,
+    location: {
+      address: 'Test Address, Jakarta, Indonesia'
+    },
+    source: 'web',
+    ...overrides
+  };
+}
+
+// Export the main function as default
+export default createBooking;

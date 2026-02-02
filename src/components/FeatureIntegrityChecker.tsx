@@ -26,10 +26,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  CheckCircle, XCircle, AlertTriangle, RefreshCw, FileText,
-  Navigation, Layers, Zap, Users, MessageCircle, Settings,
-  Globe, Smartphone, Monitor, Database, Shield, Activity
-} from 'lucide-react';
+  CheckCircle, XCircle, AlertTriangle, RefreshCw, FileText, Navigation, Layers, Zap, Users, MessageCircle, Settings, Globe, Phone, Computer, Database, Shield, Activity} from 'lucide-react';
 
 export interface FeatureIntegrityProps {
   onVerificationComplete?: (results: VerificationResults) => void;

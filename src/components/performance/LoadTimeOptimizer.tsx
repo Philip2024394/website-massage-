@@ -28,12 +28,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { 
-  Zap, Clock, Gauge, TrendingUp, TrendingDown, AlertTriangle,
-  Image, FileText, Globe, Wifi, Smartphone, Monitor,
-  CheckCircle, XCircle, Settings, Target, BarChart3,
-  Layers, Package, Download, Upload, RefreshCw, Play,
-  Pause, SkipForward, Activity, Timer, Eye, Award
-} from 'lucide-react';
+  Zap, Clock, Gauge, TrendingUp, TrendingDown, AlertTriangle, Image, FileText, Globe, Wifi, Phone, Computer, CheckCircle, XCircle, Settings, Target, BarChart, Layers, Package, Download, Upload, RefreshCw, Play, Pause, SkipForward, Activity, Timer, Eye, Award} from 'lucide-react';
 
 export interface LoadTimeOptimizerProps {
   enabled?: boolean;

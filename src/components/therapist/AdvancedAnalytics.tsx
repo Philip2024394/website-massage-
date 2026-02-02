@@ -7,20 +7,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  Calendar,
-  DollarSign,
-  Clock,
-  Target,
-  Award,
-  ArrowUp,
-  ArrowDown,
-  Eye,
-  MessageSquare,
-  Star
-} from 'lucide-react';
+  BarChart, TrendingUp, Users, Calendar, DollarSign, Clock, Target, Award, ArrowUp, ArrowDown, Eye, MessageSquare, Star} from 'lucide-react';
 import { showToast } from '../lib/toastUtils';
 
 interface AnalyticsData {

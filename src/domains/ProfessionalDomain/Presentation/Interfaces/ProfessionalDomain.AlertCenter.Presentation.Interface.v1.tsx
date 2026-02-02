@@ -107,11 +107,7 @@ function requestAuthorization() {
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { 
-  Bell, Calendar, MessageCircle, AlertCircle, CheckCircle, Clock, X, ExternalLink, 
-  TrendingUp, User, DollarSign, Eye, Star, Settings, Zap, Target, BarChart3,
-  CreditCard, Heart, Shield, Award, Flame, Activity, Users, MapPin, Camera,
-  Edit3, Globe, Phone, Mail, FileText, Image, Sparkles, Timer, Home, Briefcase
-} from 'lucide-react';
+  Bell, Calendar, MessageCircle, AlertCircle, CheckCircle, Clock, X, ExternalLink, TrendingUp, User, DollarSign, Eye, Star, Settings, Zap, Target, BarChart, CreditCard, Heart, Shield, Award, Flame, Activity, Users, MapPin, Camera, Edit3, Globe, Phone, Mail, FileText, Image, Sparkles, Timer, Home, Briefcase} from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import ChatWindow from '../../components/therapist/ChatWindow';
 import HelpTooltip from '../../components/therapist/HelpTooltip';

@@ -28,12 +28,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
-  Volume2, VolumeX, Play, Pause, RotateCcw, Settings,
-  Eye, EyeOff, Headphones, Speaker, Mic, Navigation,
-  Text, Image, Link, List, Table, Form, AlertTriangle,
-  CheckCircle, Info, Search, Filter, Download, Upload,
-  Layers, BookOpen, Target, Zap, Heart, Star, Award
-} from 'lucide-react';
+  Volume, VolumeOff, Play, Pause, RotateCcw, Settings, Eye, EyeOff, Headphones, Speaker, Mic, Navigation, Text, Image, Link, List, Table, Form, AlertTriangle, CheckCircle, Info, Search, Filter, Download, Upload, Layers, BookOpen, Target, Zap, Heart, Star, Award} from 'lucide-react';
 
 export interface ScreenReaderSupportProps {
   enabled?: boolean;
@@ -349,7 +344,7 @@ export const ScreenReaderSupport: React.FC<ScreenReaderSupportProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <Volume2 className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <Volume className="w-8 h-8 text-blue-600 mx-auto mb-2" />
             <div className="font-medium text-blue-900">Speech Synthesis</div>
             <div className="text-sm text-blue-700">{synthRef.current ? 'Available' : 'Not Available'}</div>
           </div>
@@ -582,7 +577,7 @@ export const ScreenReaderSupport: React.FC<ScreenReaderSupportProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Volume2 className="w-7 h-7 text-blue-600" />
+              <Volume className="w-7 h-7 text-blue-600" />
               Screen Reader Support
             </h1>
             <p className="text-gray-600 mt-1">

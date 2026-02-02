@@ -28,12 +28,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
-  Keyboard, Play, Pause, RotateCcw, Settings, Eye, Target,
-  Navigation, ArrowRight, ArrowDown, ArrowUp, ArrowLeft,
-  MousePointer, Focus, ZapOff, Zap, AlertTriangle, CheckCircle,
-  List, Map, BookOpen, Search, Filter, Download, Upload,
-  Command, Layers, Activity, BarChart3, Trophy, Star
-} from 'lucide-react';
+  Hash, Play, Pause, RotateCcw, Settings, Eye, Target, Navigation, ArrowRight, ArrowDown, ArrowUp, ArrowLeft, Cursor, Focus, ZapOff, Zap, AlertTriangle, CheckCircle, List, Map, BookOpen, Search, Filter, Download, Upload, Command, Layers, Activity, BarChart, Trophy, Star} from 'lucide-react';
 
 export interface KeyboardNavigationProps {
   enabled?: boolean;
@@ -387,7 +382,7 @@ export const KeyboardNavigationManager: React.FC<KeyboardNavigationProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <Keyboard className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <Hash className="w-8 h-8 text-blue-600 mx-auto mb-2" />
             <div className="font-medium text-blue-900">Focusable Elements</div>
             <div className="text-2xl font-bold text-blue-700">{focusableElements.length}</div>
           </div>
@@ -632,7 +627,7 @@ export const KeyboardNavigationManager: React.FC<KeyboardNavigationProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Keyboard className="w-7 h-7 text-blue-600" />
+              <Hash className="w-7 h-7 text-blue-600" />
               Keyboard Navigation Manager
             </h1>
             <p className="text-gray-600 mt-1">

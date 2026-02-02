@@ -17,12 +17,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { 
-  TrendingUp, RotateCcw as TrendingDown, Eye, Calendar, Users, 
-  DollarSign, Star, Target, BarChart as BarChart3, Disc as PieChart,
-  Zap as Activity, Zap, Award, AlertCircle, CheckCircle as CheckCircle2,
-  TrendingUp as ArrowUp, RotateCcw as ArrowDown, X as Minus, Info, Sun as Lightbulb,
-  Filter, Download, RefreshCw, Clock
-} from 'lucide-react';
+  TrendingUp, RotateCcw as TrendingDown, Eye, Calendar, Users, DollarSign, Star, Target, BarChart as BarChart3, Disc as PieChart, Zap as Activity, Zap, Award, AlertCircle, CheckCircle as CheckCircle2, TrendingUp as ArrowUp, RotateCcw as ArrowDown, X as Minus, Info, Sun as Lightbulb, Filter, Download, RefreshCw, Clock} from 'lucide-react';
 import { TherapistProfile, ProfileAnalytics, ProfileService } from './EnhancedProfileEditor';
 
 interface ProfileAnalyticsDashboardProps {
@@ -544,7 +539,7 @@ export const ProfileAnalyticsDashboard: React.FC<ProfileAnalyticsDashboardProps>
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-500" />
+              <BarChart className="w-5 h-5 text-blue-500" />
               Analytics & Insights
             </h2>
             <p className="text-sm text-gray-600 mt-1">

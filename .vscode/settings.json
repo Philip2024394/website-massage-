@@ -40,10 +40,12 @@
   "files.hotExit": "off",
   
   "files.watcherExclude": {
+    "**/*.json": true,
     "**/node_modules/**": true,
     "**/dist/**": true,
     "**/build/**": true,
     "**/.next/**": true,
+    "**/.git/**": true,
     "**/out/**": true,
     "**/coverage/**": true,
     "**/tests/html-debug/**": true,
@@ -108,6 +110,13 @@
     "**/analyze-*.mjs": true,
     "**/*.md": true
   },
+
+  "files.associations": {
+    "*.json": "plaintext"
+  },
+  "json.validate.enable": false,
+  "json.schemaDownload.enable": false,
+  "editor.largeFileOptimizations": true,
 
   "typescript.tsserver.maxTsServerMemory": 12288,
   "files.maxMemoryForLargeFilesMB": 8192,

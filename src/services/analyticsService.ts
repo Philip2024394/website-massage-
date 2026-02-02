@@ -650,14 +650,27 @@ class AnalyticsService {
         try {
             // FORCE-FAIL: Throw if collections are empty (expose hidden callers)
             if (!COLLECTIONS.THERAPISTS) throw new Error('THERAPISTS collection ID is empty');
-            if (!COLLECTIONS.PLACES) throw new Error('PLACES collection ID is empty');
             if (!COLLECTIONS.USERS) throw new Error('USERS collection ID is empty');
             if (!COLLECTIONS.bookings) throw new Error('bookings collection ID is empty');
 
             // Get counts from collections
             const therapistsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.THERAPISTS);
-            const placesData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES);
             const usersData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS);
+            
+            // Places collection is OPTIONAL - handle gracefully
+            let placesData = { documents: [] };
+            if (COLLECTIONS.PLACES) {
+                try {
+                    placesData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES);
+                } catch (placesError: any) {
+                    // Log as info since places is optional
+                    if (placesError.code === 404) {
+                        logger.info('Places collection not found - feature disabled');
+                    } else {
+                        logger.debug('Places collection unavailable:', placesError);
+                    }
+                }
+            }
             const bookingsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.bookings, [
                 Query.greaterThanEqual('createdAt', startDate),
                 Query.lessThanEqual('createdAt', endDate)
@@ -768,9 +781,10 @@ class AnalyticsService {
 
     private async getPlaceData(placeId: number | string): Promise<any> {
         try {
-            // FORCE-FAIL: Throw if collection is empty
+            // Places collection is OPTIONAL
             if (!COLLECTIONS.PLACES) {
-                throw new Error('PLACES collection ID is empty - cannot fetch place data');
+                logger.debug('Places collection not configured - returning null');
+                return null;
             }
             const docs = await databases.listDocuments(
                 DATABASE_ID,
@@ -778,9 +792,14 @@ class AnalyticsService {
                 [Query.equal('$id', placeId.toString())]
             );
             return docs.documents[0];
-        } catch (error) {
-            logger.error('Error fetching place:', error);
-            throw error;
+        } catch (error: any) {
+            // Log as debug for 404 (optional feature), error for other issues
+            if (error.code === 404) {
+                logger.debug('Places collection not found - optional feature disabled');
+            } else {
+                logger.error('Error fetching place:', error);
+            }
+            return null;
         }
     }
 }

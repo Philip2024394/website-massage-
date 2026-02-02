@@ -28,13 +28,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
-  BarChart, TrendingUp, RotateCcw as TrendingDown, Users, DollarSign,
-  Calendar, Clock, Star, Target, Zap, Award, 
-  Filter, Download, RefreshCw, Settings, Eye,
-  TrendingUp as ArrowUp, RotateCcw as ArrowDown, X as Minus, AlertCircle, CheckCircle,
-  Disc as PieChart, Zap as Activity, Bell, Star as Bookmark, Share2,
-  Play as ChevronRight, TrendingDown as ChevronDown, MoreVertical as MoreVertical, Info
-} from 'lucide-react';
+  BarChart, TrendingUp, RotateCcw as TrendingDown, Users, DollarSign, Calendar, Clock, Star, Target, Zap, Award, Filter, Download, RefreshCw, Settings, Eye, TrendingUp as ArrowUp, RotateCcw as ArrowDown, X as Minus, AlertCircle, CheckCircle, Disc as PieChart, Zap as Activity, Bell, Star as Bookmark, Share2, Play as ChevronRight, TrendingDown as ChevronDown, MoreVertical as MoreVertical, Info} from 'lucide-react';
 
 export interface AnalyticsData {
   overview: OverviewMetrics;
@@ -760,7 +754,7 @@ export const AdvancedAnalyticsDashboard: React.FC<AdvancedAnalyticsDashboardProp
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="w-7 h-7 text-blue-500" />
+              <BarChart className="w-7 h-7 text-blue-500" />
               Analytics Dashboard
             </h1>
             <p className="text-gray-600 mt-1">

@@ -37,7 +37,7 @@
  * - Never disappears once opened
  */
 
-import React, { useState, useRef, useEffect, memo } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, memo } from 'react';
 import { usePersistentChat, ChatMessage, BookingStep, validateMessage } from '../context/PersistentChatProvider';
 import { MessageCircle, X, Send, Clock, MapPin, User, Phone, Check, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
 import CustomDatePicker from './CustomDatePicker';
@@ -56,6 +56,7 @@ import { useBookingForm } from '../modules/chat/hooks/useBookingForm';
 import { DURATION_OPTIONS, formatPrice, formatTime } from '../modules/chat/utils/chatHelpers';
 import ScheduledBookingDepositModal from './ScheduledBookingDepositModal';
 import { BookingChatLockIn } from '../lib/validation/bookingChatLockIn';
+import { bookingFlowMonitor } from '../utils/bookingFlowDiagnostics';
 
 // Import new enhanced chat UI components
 import {
@@ -76,6 +77,118 @@ import {
 } from './chat';
 import { BookingProgress } from './BookingProgress';
 import { SimpleBookingWelcome } from '../modules/chat/SimpleBookingWelcome';
+
+// ========================================================================
+// BOOKING RELIABILITY UTILITIES
+// ========================================================================
+
+/**
+ * Wraps a promise with a timeout
+ * @param promise - The promise to wrap
+ * @param timeoutMs - Timeout in milliseconds
+ * @returns Promise that rejects if timeout is reached
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+    ),
+  ]);
+}
+
+/**
+ * Retries an async operation with exponential backoff
+ * @param operation - The async operation to retry
+ * @param maxRetries - Maximum number of retry attempts
+ * @param baseDelayMs - Base delay for exponential backoff (1000ms = 1s, 2s, 4s)
+ * @param timeoutMs - Timeout for each attempt
+ * @returns Promise with the operation result
+ */
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000,
+  timeoutMs: number = 5000
+): Promise<{ success: boolean; data?: T; error?: Error; attempts: number; duration: number }> {
+  const startTime = Date.now();
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const attemptStart = Date.now();
+    
+    try {
+      console.log(`🔄 [ORDER_NOW_MONITOR] Booking attempt #${attempt} start: ${new Date(attemptStart).toISOString()}`);
+      
+      const result = await withTimeout(operation(), timeoutMs);
+      const duration = Date.now() - attemptStart;
+      
+      // ✅ CRITICAL FIX: Only log success if Appwrite actually created the booking
+      // createBooking returns true/false or booking object - verify it's truthy
+      if (!result) {
+        throw new Error('Booking creation returned false - Appwrite validation failed');
+      }
+      
+      // For boolean returns, check it's exactly true
+      // For object returns (with $id), check the object exists
+      const isSuccess = result === true || (typeof result === 'object' && result !== null);
+      
+      if (!isSuccess) {
+        throw new Error(`Booking creation failed - got result: ${JSON.stringify(result)}`);
+      }
+      
+      console.log(`✅ [ORDER_NOW_MONITOR] Booking attempt #${attempt} SUCCESS | Duration: ${duration}ms`);
+      
+      return {
+        success: true,
+        data: result,
+        attempts: attempt,
+        duration: Date.now() - startTime,
+      };
+    } catch (error) {
+      lastError = error as Error;
+      const duration = Date.now() - attemptStart;
+      
+      console.error(`❌ [ORDER_NOW_MONITOR] Booking attempt #${attempt} FAILED | Duration: ${duration}ms | Error: ${lastError.message}`);
+      
+      // Don't delay after the last attempt
+      if (attempt < maxRetries) {
+        const delayMs = baseDelayMs * Math.pow(2, attempt - 1);
+        console.log(`⏳ [ORDER_NOW_MONITOR] Retrying in ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+  
+  // All retries failed
+  const totalDuration = Date.now() - startTime;
+  console.error(`💥 [ORDER_NOW_MONITOR] All ${maxRetries} booking attempts FAILED | Total duration: ${totalDuration}ms`);
+  
+  return {
+    success: false,
+    error: lastError || new Error('Unknown error'),
+    attempts: maxRetries,
+    duration: totalDuration,
+  };
+}
+
+/**
+ * Categorizes booking errors for better reporting
+ */
+function categorizeBookingError(error: Error): 'timeout' | 'network' | 'validation' | 'unknown' {
+  const message = error.message.toLowerCase();
+  
+  if (message.includes('timeout') || message.includes('timed out')) {
+    return 'timeout';
+  }
+  if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
+    return 'network';
+  }
+  if (message.includes('validation') || message.includes('invalid') || message.includes('required')) {
+    return 'validation';
+  }
+  return 'unknown';
+}
 
 export function PersistentChatWindow() {
   const {
@@ -240,14 +353,9 @@ export function PersistentChatWindow() {
       setCurrentLanguage(lang);
       document.documentElement.setAttribute('data-lang', lang);
       
-      // Apply translations to all elements with data-gb attributes
-      document.querySelectorAll('[data-gb]').forEach(el => {
-        const translations = el.getAttribute('data-gb')?.split('|');
-        if (translations && translations.length === 2) {
-          // Default to Indonesian (first option)
-          el.textContent = translations[0];
-        }
-      });
+      // ❌ REMOVED: DOM mutation that caused insertBefore crash
+      // Translation should be handled by React components reading currentLanguage state
+      console.log('🌐 [LANGUAGE] Initialized to:', lang);
     };
     
     // Initialize translations after a short delay to ensure DOM is ready
@@ -331,33 +439,64 @@ export function PersistentChatWindow() {
   };
 
   // Arrival countdown timer
+  const arrivalTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    const timer = setInterval(() => {
+    if (arrivalTimerRef.current) clearInterval(arrivalTimerRef.current);
+    arrivalTimerRef.current = setInterval(() => {
       setArrivalCountdown(prev => Math.max(0, prev - 1));
     }, 1000);
-    return () => clearInterval(timer);
+    return () => {
+      if (arrivalTimerRef.current) {
+        clearInterval(arrivalTimerRef.current);
+        arrivalTimerRef.current = null;
+      }
+    };
   }, []);
 
   // Therapist response countdown timer
+  const responseTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
+    // Clear existing timer
+    if (responseTimerRef.current) {
+      clearInterval(responseTimerRef.current);
+      responseTimerRef.current = null;
+    }
+    
     // Only run countdown if booking is pending/requested and waiting for therapist response
     if (chatState.currentBooking && 
         (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') &&
         therapistResponseCountdown > 0) {
-      const timer = setInterval(() => {
+      responseTimerRef.current = setInterval(() => {
         setTherapistResponseCountdown(prev => {
           const newCount = prev - 1;
           if (newCount <= 0) {
             // Auto-cancel booking when timer expires
             addSystemNotification('⏰ Booking expired - No response from therapists. You can try booking again.');
-            // Optional: Auto-close chat or show rebooking options
+            if (responseTimerRef.current) {
+              clearInterval(responseTimerRef.current);
+              responseTimerRef.current = null;
+            }
           }
           return Math.max(0, newCount);
         });
       }, 1000);
-      return () => clearInterval(timer);
     }
+    
+    return () => {
+      if (responseTimerRef.current) {
+        clearInterval(responseTimerRef.current);
+        responseTimerRef.current = null;
+      }
+    };
   }, [chatState.currentBooking?.status, therapistResponseCountdown]);
+
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    return () => {
+      if (arrivalTimerRef.current) clearInterval(arrivalTimerRef.current);
+      if (responseTimerRef.current) clearInterval(responseTimerRef.current);
+    };
+  }, []);
 
   // Reset countdown timer when a new booking is created
   useEffect(() => {
@@ -376,19 +515,32 @@ export function PersistentChatWindow() {
   };
 
   // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (chatState.messages.length > 0) {
+  useLayoutEffect(() => {
+    if (chatState.messages.length > 0 && chatState.bookingStep === 'chat') {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [chatState.messages.length]); // Only trigger on message count change, not full array
+  }, [chatState.messages.length, chatState.bookingStep]); // Only trigger on message count change or step change
 
-  // Don't render if no therapist or not open
-  if (!chatState.isOpen || !chatState.therapist) {
-    return null;
-  }
-
+  // ✅ MOVED AFTER ALL HOOKS: Extract data from chatState
   const { therapist, messages, bookingStep, selectedDuration, isMinimized } = chatState;
   const isScheduleMode = chatState.bookingMode === 'schedule';
+  
+  // 🔍 DIAGNOSTIC: Log bookingStep changes to track state transitions
+  React.useEffect(() => {
+    console.log('🎨 [BOOKING STEP CHANGED]', {
+      newStep: bookingStep,
+      shouldShowChat: bookingStep === 'chat',
+      shouldShowDetails: bookingStep === 'details',
+      shouldShowDuration: bookingStep === 'duration',
+      hasBooking: !!chatState.currentBooking,
+      messageCount: messages.length
+    });
+  }, [bookingStep]);
+
+  // ✅ FIX: Don't render if no therapist or not open - MOVED AFTER ALL HOOKS
+  if (!chatState.isOpen || !therapist) {
+    return null;
+  }
 
   // Get price for duration - consistent with TherapistCard pricing logic
   const getPrice = (minutes: number) => {
@@ -468,7 +620,14 @@ export function PersistentChatWindow() {
   const handleCustomerSubmit = async (e: React.FormEvent) => {
     console.log('🎯 [HANDLE CUSTOMER SUBMIT] Function called');
     
-    // 🔒 CRITICAL: Prevent default IMMEDIATELY before any async operations
+    // � START BOOKING FLOW MONITORING
+    const monitorSession = bookingFlowMonitor.startBookingFlow(
+      therapist?.id || therapist?.$id,
+      chatState.currentUserId || 'guest'
+    );
+    bookingFlowMonitor.checkpoint('submit_handler_start', 'started');
+    
+    // �🔒 CRITICAL: Prevent default IMMEDIATELY before any async operations
     e.preventDefault();
     e.stopPropagation();
     
@@ -512,13 +671,11 @@ export function PersistentChatWindow() {
     console.log('Customer form data:', {
       name: customerForm.name,
       whatsApp: customerForm.whatsApp,
-      massageFor: customerForm.massageFor,
       locationType: customerForm.locationType
     });
     console.log('Form validation state:', {
       hasName: !!customerForm.name,
       hasWhatsApp: !!customerForm.whatsApp,
-      hasMassageFor: !!customerForm.massageFor,
       hasLocationType: !!customerForm.locationType,
       clientMismatchError: !!clientMismatchError
     });
@@ -529,11 +686,11 @@ export function PersistentChatWindow() {
     const isWhatsAppValid = customerForm.whatsApp && customerForm.whatsApp.length >= 8 && customerForm.whatsApp.length <= 15;
     const isNameValid = customerForm.name && customerForm.name.trim().length > 0;
     
-    if (!isNameValid || !isWhatsAppValid || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType) {
+    // ✅ FIXED: Removed massageFor validation (field not in Appwrite schema)
+    if (!isNameValid || !isWhatsAppValid || !!clientMismatchError || !customerForm.locationType) {
       console.error('❌ [ORDER NOW] Button should be disabled! Missing required fields:');
       console.error('- Name:', !isNameValid ? 'MISSING/INVALID' : 'OK');
       console.error('- WhatsApp:', !isWhatsAppValid ? `MISSING/INVALID (length: ${customerForm.whatsApp?.length || 0})` : 'OK');
-      console.error('- Treatment For:', !customerForm.massageFor ? 'MISSING' : 'OK');
       console.error('- Location Type:', !customerForm.locationType ? 'MISSING' : 'OK');
       console.error('- Client Mismatch:', !!clientMismatchError ? 'ERROR' : 'OK');
       
@@ -542,12 +699,11 @@ export function PersistentChatWindow() {
         errorPoint: 'Form Validation',
         errorReason: 'Required fields are missing or invalid. Please check: ' + 
           [!isNameValid && 'Name', !isWhatsAppValid && 'WhatsApp (8-15 digits)', 
-           !customerForm.massageFor && 'Treatment For', !customerForm.locationType && 'Location Type',
+           !customerForm.locationType && 'Location Type',
            clientMismatchError && 'Client Information Mismatch'].filter(Boolean).join(', '),
         errorDetails: {
           name: isNameValid ? '✅' : '❌',
           whatsApp: isWhatsAppValid ? '✅' : '❌',
-          massageFor: customerForm.massageFor ? '✅' : '❌',
           locationType: customerForm.locationType ? '✅' : '❌',
           clientMismatch: clientMismatchError || 'none'
         },
@@ -555,7 +711,7 @@ export function PersistentChatWindow() {
       });
       
       // Show user-friendly error notification
-      addSystemNotification('❌ Please fill in all required fields: Name, WhatsApp, Treatment For, and Location Type');
+      addSystemNotification('❌ Please fill in all required fields: Name, WhatsApp, and Location Type');
       
       // Additional validation for hotel/villa specific fields
       if (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') {
@@ -574,7 +730,7 @@ export function PersistentChatWindow() {
       if (typeof window !== 'undefined' && window.reportBookingComplianceError) {
         window.reportBookingComplianceError({
           type: 'booking-failure',
-          message: `Order Now clicked with missing fields: Name=${!!isNameValid}, WhatsApp=${!!isWhatsAppValid}, MassageFor=${!!customerForm.massageFor}, LocationType=${!!customerForm.locationType}`,
+          message: `Order Now clicked with missing fields: Name=${!!isNameValid}, WhatsApp=${!!isWhatsAppValid}, LocationType=${!!customerForm.locationType}`,
           component: 'PersistentChatWindow-ValidationError',
           severity: 'high'
         });
@@ -606,7 +762,10 @@ export function PersistentChatWindow() {
       }
     }, 8000);
     
-    // Monitor for URL changes and RESTORE if changed
+    // 🔧 DISABLED: URL restoration monitoring
+    // The URL should stay stable during booking - if it changes, it's likely intentional
+    // This monitoring was causing issues by fighting against legitimate URL updates
+    /* 
     const originalURL = window.location.href;
     const urlCheckInterval = setInterval(() => {
       if (window.location.href !== originalURL) {
@@ -622,14 +781,27 @@ export function PersistentChatWindow() {
     
     // Clear interval after 10 seconds
     setTimeout(() => clearInterval(urlCheckInterval), 10000);
+    */
     
-    console.log('📋 Form submitted - starting booking process');
+    console.log('📋 [FLOW] Starting booking creation process');
+    console.log('🔍 [DEBUG] About to validate required fields...');
     
     if (!customerForm.name || !customerForm.whatsApp) {
-      console.warn('⚠️ Missing required fields');
+      console.error('❌ [VALIDATION FAILED] Missing required fields');
+      console.error('- Name:', customerForm.name || 'MISSING');
+      console.error('- WhatsApp:', customerForm.whatsApp || 'MISSING');
+      setBookingError({
+        errorPoint: 'Form Validation',
+        errorReason: 'Missing required fields',
+        errorDetails: { name: !!customerForm.name, whatsApp: !!customerForm.whatsApp },
+        timestamp: new Date().toLocaleString()
+      });
+      setIsSending(false);
       return;
     }
-
+    
+    console.log('✅ [VALIDATION] Required fields present');
+    
     // ✅ CRITICAL: Set customer details with full WhatsApp (country code + number)
     const fullWhatsApp = `${customerForm.countryCode}${customerForm.whatsApp}`;
     console.log('✅ Setting customer WhatsApp:', fullWhatsApp);
@@ -773,7 +945,7 @@ export function PersistentChatWindow() {
                 customerPhone: fullWhatsApp,
                 customerWhatsApp: fullWhatsApp,
                 customerName: customerForm.name,
-                massageFor: customerForm.massageFor,
+                // massageFor: customerForm.massageFor, // ❌ REMOVED: Not in Appwrite schema
                 locationType: customerForm.locationType,
                 address: scheduledLocationText, // ✅ Same as location
                 roomNumber: customerForm.roomNumber || undefined,
@@ -815,11 +987,11 @@ export function PersistentChatWindow() {
               throw schedError;
             }
           } else {
-            // Regular immediate booking
-            console.log('📝 Creating immediate booking...');
+            // Regular immediate booking with timeout and retry logic
+            console.log('📝 Creating immediate booking with reliability layer...');
             try {
               // 🔒 CREATE BOOKING WITH SIMPLE LOCATION FIELD
-              console.log('📝 Creating immediate booking...');
+              console.log('📝 [ORDER_NOW_MONITOR] Initiating booking creation with timeout and retry protection');
               
               // ✅ SIMPLIFIED: Use the location text field directly
               const locationText = customerForm.location?.trim() || 'Location provided in chat';
@@ -830,12 +1002,13 @@ export function PersistentChatWindow() {
                 originalLocation: customerForm.location
               });
               
-              const bookingCreated = await createBooking({
+              // 🛡️ RELIABILITY LAYER: Wrap createBooking with timeout and retry logic
+              const bookingPayload = {
                 // Customer info
                 customerName: customerForm.name,
                 customerPhone: fullWhatsApp,
                 customerWhatsApp: fullWhatsApp,
-                massageFor: customerForm.massageFor,
+                // massageFor: customerForm.massageFor, // ❌ REMOVED: Field not in Appwrite schema (causes 400 error)
                 
                 // Service details
                 duration: selectedDuration || 60,
@@ -855,42 +1028,144 @@ export function PersistentChatWindow() {
                 coordinates: customerForm.coordinates,
                 discountCode: hasDiscount ? discountCode : undefined,
                 discountPercentage: hasDiscount ? discountValidation.percentage : undefined
+              };
+              
+              console.log('🚀 [ORDER_NOW_MONITOR] Booking payload prepared:', {
+                customerName: bookingPayload.customerName,
+                duration: bookingPayload.duration,
+                price: bookingPayload.price,
+                location: bookingPayload.location
               });
               
-              console.log('📝 createBooking returned:', bookingCreated);
+              // Execute booking with timeout and retry logic
+              const bookingResult = await withRetry(
+                () => createBooking(bookingPayload),
+                3, // maxRetries
+                1000, // baseDelayMs (1s, 2s, 4s backoff)
+                5000 // timeoutMs per attempt
+              );
               
-              // 🔒 ALWAYS SWITCH TO CHAT STEP after message is sent successfully
-              // Even if booking fails, user should see chat window with error message
-              console.log('═══════════════════════════════════════════');
-              console.log('✅ [ORDER NOW] Message sent successfully');
-              console.log('📋 [FLOW STEP 1 ✅] Message sending completed');
-              console.log('📋 [FLOW STEP 2 →] Starting booking creation with chat integration...');
-              console.log('Current URL (should NOT change):', window.location.href);
-              console.log('Current step before setBookingStep:', chatState.bookingStep);
-              console.log('═══════════════════════════════════════════');
+              // Log final result
+              console.log(`📊 [ORDER_NOW_MONITOR] Booking operation completed:`, {
+                success: bookingResult.success,
+                attempts: bookingResult.attempts,
+                duration: bookingResult.duration,
+                bookingId: bookingResult.success ? (bookingResult.data as any)?.id || 'unknown' : null,
+                timestamp: new Date().toISOString()
+              });
               
-              // 🔥 CRITICAL: Always open chat after booking attempt
-              setBookingStep('chat');
+              const bookingCreated = bookingResult.success ? bookingResult.data : false;
               
-              console.log('🎪 [BOOKING→CHAT] Chat window opened after booking creation');
-              console.log('📋 [FLOW STEP 3 ✅] Chat session ready with booking integration');
-              console.log('📋 [FLOW STEP 4 →] Booking created, transitioning to chat interface...');
-              console.log('✅ setBookingStep("chat") called for immediate booking with chat integration');
-              console.log('📋 [FLOW STEP 4 ✅] Step transition completed - chat ready for communication');
-              console.log('🔄 [INTEGRATION STATUS] Booking result:', bookingCreated ? 'SUCCESS' : 'FAILED');
-              console.log('🔄 [CHAT FLOW] Current step after setBookingStep:', chatState.bookingStep);
+              bookingFlowMonitor.checkpoint('booking_creation', bookingCreated ? 'success' : 'failed',
+                { 
+                  bookingCreated: !!bookingCreated, 
+                  therapistId: therapist?.id || therapist?.$id,
+                  attempts: bookingResult.attempts,
+                  duration: bookingResult.duration
+                },
+                bookingCreated ? undefined : `Booking creation failed after ${bookingResult.attempts} attempts`
+              );
               
-              if (bookingCreated) {
-                console.log('✅ [BOOKING→CHAT] Integration successful - booking created and chat opened');
-                console.log('📡 [DASHBOARD NOTIFY] Therapist dashboard will receive real-time notification');
-              } else {
-                console.log('⚠️ [BOOKING→CHAT] Booking creation failed but chat opened for communication');
-              }
+              console.log('📝 [ORDER_NOW_MONITOR] Booking created:', !!bookingCreated, '| Booking ID:', bookingCreated ? (bookingCreated as any).id : null);
               
+              // ✅ FIXED: Only open chat if booking succeeded
               if (!bookingCreated) {
-                console.warn('⚠️ Note: Booking creation failed, but chat is now open');
-                // User will see error notification from createBooking in chat window
+                const errorCategory = bookingResult.error ? categorizeBookingError(bookingResult.error) : 'unknown';
+                
+                console.error('❌ [ORDER_NOW_MONITOR] Booking creation FAILED after all retries');
+                console.error('📊 [ORDER_NOW_MONITOR] Failure reason:', errorCategory);
+                console.error('📊 [ORDER_NOW_MONITOR] Error details:', bookingResult.error?.message);
+                console.error('📊 [ORDER_NOW_MONITOR] Total attempts:', bookingResult.attempts);
+                console.error('📊 [ORDER_NOW_MONITOR] Total duration:', bookingResult.duration, 'ms');
+                
+                bookingFlowMonitor.checkpoint('booking_creation', 'failed',
+                  { 
+                    bookingCreated: false, 
+                    therapistId: therapist?.id || therapist?.$id,
+                    errorCategory,
+                    attempts: bookingResult.attempts,
+                    duration: bookingResult.duration
+                  },
+                  `Booking failed: ${errorCategory} - ${bookingResult.error?.message}`
+                );
+                
+                // User-friendly error message based on error category
+                let userMessage = '❌ Booking could not be completed. Please try again.';
+                if (errorCategory === 'timeout') {
+                  userMessage = '⏱️ Booking request timed out. Please check your connection and try again.';
+                } else if (errorCategory === 'network') {
+                  userMessage = '🌐 Network error. Please check your internet connection and try again.';
+                } else if (errorCategory === 'validation') {
+                  userMessage = '⚠️ Please check your booking details and try again.';
+                }
+                
+                addSystemNotification(userMessage);
+                setIsSending(false);
+                return; // Stay in details step, do NOT open chat
               }
+              
+              console.log('═══════════════════════════════════════════');
+              console.log('✅ [ORDER_NOW_MONITOR] Booking created successfully');
+              console.log('📋 [FLOW STEP 1 ✅] Message sending completed');
+              console.log('📋 [FLOW STEP 2 ✅] Booking creation successful');
+              console.log('📊 [ORDER_NOW_MONITOR] Success metrics:', {
+                attempts: bookingResult.attempts,
+                duration: bookingResult.duration + 'ms',
+                bookingId: (bookingCreated as any)?.id || 'unknown',
+                timestamp: new Date().toISOString()
+              });
+              console.log('Current URL (should NOT change):', window.location.href);
+              console.log('🔍 [DEBUG] Current bookingStep BEFORE setBookingStep:', chatState.bookingStep);
+              console.log('🔍 [DEBUG] Current booking object:', chatState.currentBooking);
+              console.log('🔍 [DEBUG] isOpen:', chatState.isOpen);
+              console.log('═══════════════════════════════════════════');
+              
+              // ✅ RELIABILITY: Open chat window and start welcome timer
+              console.log('🚀 [ORDER_NOW_MONITOR] Opening chat window and starting welcome timer...');
+              console.log('🔄 [CALLING] setBookingStep("chat") NOW...');
+              console.log('🔄 [BEFORE CALL] Current bookingStep:', chatState.bookingStep);
+              setBookingStep('chat');
+              console.log('🔄 [CALLED] setBookingStep("chat") completed');
+              console.log('🔄 [IMMEDIATELY AFTER] bookingStep still shows:', chatState.bookingStep, '(expected - React state is async)');
+              
+              // Wait for React to process state update
+              setTimeout(() => {
+                console.log('🔍 [ORDER_NOW_MONITOR] bookingStep AFTER setBookingStep (100ms later):', chatState.bookingStep);
+                if (chatState.bookingStep === 'chat') {
+                  console.log('✅ [ORDER_NOW_MONITOR] Chat window opened successfully');
+                  console.log('✅ [ORDER_NOW_MONITOR] Welcome timer should be visible');
+                } else {
+                  console.warn('⚠️ [ORDER_NOW_MONITOR] Chat window not yet opened - state update pending');
+                }
+              }, 100);
+              
+              // Verify chat window opened after longer delay
+              setTimeout(() => {
+                console.log('🔍 [ORDER_NOW_MONITOR] bookingStep after 500ms:', chatState.bookingStep);
+                if (chatState.bookingStep !== 'chat') {
+                  console.error('❌ [ORDER_NOW_MONITOR] STATE UPDATE FAILED - bookingStep never changed to "chat"!');
+                  console.error('❌ [DIAGNOSIS] Check PersistentChatProvider.setBookingStep implementation');
+                  console.error('🔧 [RECOVERY] Attempting to force chat window open...');
+                  // Force state update if needed
+                  setBookingStep('chat');
+                } else {
+                  console.log('✅ [ORDER_NOW_MONITOR] Chat window confirmed open with welcome message and timer');
+                }
+              }, 500);
+              
+              console.log('🎪 [BOOKING→CHAT] Chat window opened after booking success');
+              console.log('📋 [FLOW STEP 3 ✅] Chat session ready with booking integration');
+              console.log('⏱️ [FLOW STEP 4 ✅] Welcome timer started');
+              console.log('✅ setBookingStep("chat") called for immediate booking with chat integration');
+              console.log('📡 [DASHBOARD NOTIFY] Therapist dashboard will receive real-time notification');
+              
+              bookingFlowMonitor.checkpoint('booking_success', 'success', {
+                bookingCreated: true,
+                chatStep: chatState.bookingStep,
+                attempts: bookingResult.attempts,
+                duration: bookingResult.duration
+              });
+              bookingFlowMonitor.endBookingFlow(true);
             } catch (bookingError) {
               console.error('❌ createBooking threw error:', bookingError);
               
@@ -951,7 +1226,11 @@ export function PersistentChatWindow() {
               
               if (fallbackResult.success) {
                 console.log('✅ [FALLBACK] Isolated booking created despite message failure:', fallbackResult.bookingId);
+                console.log('🔄 [FALLBACK] Switching to chat after successful fallback booking...');
+                setBookingStep('chat');
               } else {
+                console.error('❌ [FALLBACK] Fallback booking failed:', fallbackResult.error);
+                addSystemNotification('❌ Booking creation failed. Please try again.');
                 throw new Error(fallbackResult.error || 'Fallback booking failed');
               }
             } catch (bookingError) {
@@ -968,11 +1247,18 @@ export function PersistentChatWindow() {
                 },
                 timestamp: new Date().toLocaleString()
               });
+              
+              // Do NOT open chat on total failure
+              addSystemNotification('❌ Both message and booking creation failed. Please try again.');
+              setIsSending(false);
+              return; // Stay in details step
             }
           }
           
-          console.log('🔄 [FALLBACK] Switching to chat for user feedback...');
-          setBookingStep('chat');
+          // ❌ REMOVED: No longer switching to chat unconditionally
+          console.log('⚠️ [FALLBACK] Message failed - staying in details step');
+          addSystemNotification('❌ Message sending failed. Please try again.');
+          setIsSending(false);
         }
       } catch (innerError) {
         console.error('❌ Error in booking flow:', innerError);
@@ -991,7 +1277,7 @@ export function PersistentChatWindow() {
       console.error('❌ [OUTER CATCH] Error message:', err.message);
       console.error('❌ [OUTER CATCH] Error stack:', err.stack);
       
-      // � Set comprehensive error state for display
+      // 🚨 Set comprehensive error state for display
       setBookingError({
         errorPoint: 'Booking Flow - Final Catch',
         errorReason: err.message || 'An unexpected error occurred during booking submission',
@@ -1002,7 +1288,6 @@ export function PersistentChatWindow() {
           formData: {
             name: customerForm.name ? '✅ Provided' : '❌ Missing',
             whatsApp: customerForm.whatsApp ? '✅ Provided' : '❌ Missing',
-            massageFor: customerForm.massageFor || '❌ Missing',
             locationType: customerForm.locationType || '❌ Missing'
           }
         },
@@ -1027,7 +1312,6 @@ export function PersistentChatWindow() {
       
       // ✅ DEFENSIVE CLEANUP: Navigation is cleaned up by isolated booking service
       console.log('✅ [BOOKING ISOLATION] Cleanup handled by isolation layer');
-      setIsSubmittingBooking(false);
     }
     
     // 🔒 FINAL SAFEGUARD: Return false to prevent any form submission
@@ -1244,14 +1528,10 @@ export function PersistentChatWindow() {
         data-testid="persistent-chat-window"
         className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100%-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col animate-slide-up"
         style={{ 
-          /* MOBILE SCROLL COMPLIANCE: Chat window respects global scroll authority */
-          overflowY: 'visible',
-          overflowX: 'visible',
-          overscrollBehavior: 'contain',
+          /* MOBILE SCROLL COMPLIANCE: Chat window with internal scrolling */
           height: 'min(600px, calc(100vh - 60px))',
+          maxHeight: 'calc(100vh - 60px)',
           fontFamily: 'system-ui, -apple-system, sans-serif',
-          scrollbarWidth: 'none', /* Firefox */
-          msOverflowStyle: 'none', /* Internet Explorer 10+ */
         }}
       >
       {/* CSS for hiding webkit scrollbars */}
@@ -1336,69 +1616,14 @@ export function PersistentChatWindow() {
               return;
             }
             
+            // ✅ REACT-SAFE: Only update language state, let React re-render
             const newLang = currentLanguage === 'id' ? 'en' : 'id';
             setCurrentLanguage(newLang);
             document.documentElement.setAttribute('data-lang', newLang);
             
-            // 🚨 CRITICAL FIX: SAFE TRANSLATION - Only update STATIC text elements
-            // This prevents breaking the booking flow by overriding dynamic content
-            document.querySelectorAll('[data-gb]').forEach(el => {
-              // SKIP all interactive, form, or dynamic content elements
-              const skipTranslation = (
-                // Form elements
-                el.tagName === 'INPUT' || 
-                el.tagName === 'BUTTON' || 
-                el.tagName === 'TEXTAREA' ||
-                el.tagName === 'SELECT' ||
-                el.hasAttribute('value') ||
-                el.hasAttribute('onChange') ||
-                
-                // Dynamic content containers (booking data)
-                el.id?.includes('booking') ||
-                el.id?.includes('countdown') ||
-                el.id?.includes('customer') ||
-                el.id?.includes('therapist') ||
-                el.textContent?.match(/\d+:\d+/) || // Time format
-                el.textContent?.match(/ID:\s*\w+/) || // Booking ID format
-                
-                // React-controlled elements
-                el.classList.contains('react-component') ||
-                el.closest('.booking-form') ||
-                el.closest('[data-react]') ||
-                el.closest('.error-container') ||
-                
-                // Elements with dynamic content
-                el.querySelector('input, button, textarea') ||
-                
-                // Skip if element has actual dynamic content (not just translation placeholders)
-                (el.textContent && el.textContent.length > 50 && !el.getAttribute('data-gb')?.includes('|'))
-              );
-              
-              if (skipTranslation) {
-                console.log('🔒 [TRANSLATION SAFETY] Skipping dynamic element:', {
-                  tag: el.tagName,
-                  id: el.id,
-                  class: el.className,
-                  content: el.textContent?.slice(0, 50) + '...'
-                });
-                return; // Skip this element
-              }
-              
-              // Only translate STATIC labels and text
-              const translations = el.getAttribute('data-gb')?.split('|');
-              if (translations && translations.length === 2) {
-                // Verify it's a static label by checking if content matches translation
-                const currentText = el.textContent?.trim();
-                const isStaticLabel = translations.some(t => t === currentText);
-                
-                if (isStaticLabel || !currentText || currentText.length < 3) {
-                  el.textContent = newLang === 'id' ? translations[0] : translations[1];
-                  console.log('✅ [TRANSLATION] Updated static label:', el.id || el.tagName);
-                } else {
-                  console.log('🔒 [TRANSLATION SAFETY] Skipping dynamic content:', currentText?.slice(0, 30));
-                }
-              }
-            });
+            // ❌ REMOVED: DOM mutation that caused insertBefore crash
+            // Translation should be handled by React components reading currentLanguage state
+            console.log('🌐 [LANGUAGE] Switched to:', newLang);
           }}
           id="language-selector" 
           data-gb="Bahasa|Language"
@@ -1700,8 +1925,12 @@ export function PersistentChatWindow() {
       )}
       </>
 
-      {/* Content area */}
-      <div className="flex-1 bg-white flex flex-col">
+      {/* Content area - SCROLLABLE for mobile booking forms */}
+      <div className="flex-1 bg-white flex flex-col overflow-y-auto" style={{ 
+        overscrollBehavior: 'contain',
+        WebkitOverflowScrolling: 'touch',
+        maxHeight: '100%'
+      }}>
         
         {/* Duration Selection Step */}
         {bookingStep === 'duration' && (
@@ -2194,10 +2423,10 @@ export function PersistentChatWindow() {
                     <p className="text-xs text-red-600 mt-1">Please choose a different therapist or select a compatible option.</p>
                   </div>
                 )}
-                {/* Validation warning when no selection */}
+                {/* Optional field - no validation warning needed */}
                 {!customerForm.massageFor && (
-                  <p className="text-xs text-red-600 mt-2 text-center flex items-center justify-center gap-1 font-medium">
-                    <span>⚠️</span> Please select who the treatment is for
+                  <p className="text-xs text-gray-500 mt-2 text-center flex items-center justify-center gap-1 font-medium">
+                    <span>ℹ️</span> Optional: Select who the treatment is for
                   </p>
                 )}
               </div>
@@ -2489,9 +2718,9 @@ export function PersistentChatWindow() {
               <button
                 type="submit"
                 data-testid="order-now-button"
-                disabled={isSending || !customerForm.name.trim() || !customerForm.whatsApp || customerForm.whatsApp.length < 8 || customerForm.whatsApp.length > 15 || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
+                disabled={isSending || !customerForm.name.trim() || !customerForm.whatsApp || customerForm.whatsApp.length < 8 || customerForm.whatsApp.length > 15 || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
                 className={`w-full py-3 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
-                  (!isSending && customerForm.name.trim() && customerForm.whatsApp && customerForm.whatsApp.length >= 8 && customerForm.whatsApp.length <= 15 && customerForm.massageFor && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))
+                  (!isSending && customerForm.name.trim() && customerForm.whatsApp && customerForm.whatsApp.length >= 8 && customerForm.whatsApp.length <= 15 && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))
                     ? 'bg-green-500 hover:bg-green-600 text-white'
                     : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
                 }`}
@@ -2513,120 +2742,115 @@ export function PersistentChatWindow() {
         )}
 
         {/* Chat Messages Step */}
-        {bookingStep === 'chat' && (
-          <div className="flex flex-col h-full">
-            {/* Persistent Countdown Banner - Always visible when booking is pending */}
-            {/* Persistent Countdown Banner - Always visible when booking is pending */}
-            {(() => {
-              const shouldShow = chatState.currentBooking && 
-                               (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && 
-                               therapistResponseCountdown > 0;
-              
-              console.log('🔍 Countdown Banner Debug:', {
-                bookingStep: chatState.bookingStep,
-                hasBooking: !!chatState.currentBooking,
-                bookingStatus: chatState.currentBooking?.status,
-                bookingId: chatState.currentBooking?.id,
-                countdownValue: therapistResponseCountdown,
-                shouldShow: shouldShow,
-                currentTime: new Date().toISOString()
-              });
-              
-              return shouldShow;
-            })() && null}
-            
-            {/* Messages */}
-            <div className="flex-1 min-h-0">
-              <div className="p-4 space-y-3">
-              {messages.length === 0 ? (
-                <div className="text-center py-12 px-4">
-                  {/* Animated welcome */}
-                  <div className="relative mb-6">
-                    <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                      <MessageCircle className="w-10 h-10 text-white" />
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gray-300 rounded-full border-3 border-white animate-bounce">
-                      <div className="w-full h-full bg-gray-200 rounded-full animate-ping"></div>
-                    </div>
+        <div className={`flex flex-col h-full ${bookingStep === 'chat' ? '' : 'hidden'}`}>
+          {/* 🔍 DEBUG: Log rendering state */}
+          {(() => {
+            console.log('🎨 [RENDER] Chat view rendering check:');
+            console.log('  - bookingStep:', bookingStep);
+            console.log('  - bookingStep === "chat":', bookingStep === 'chat');
+            console.log('  - CSS class applied:', bookingStep === 'chat' ? 'visible (shown)' : 'hidden (not displayed)');
+            console.log('  - chatState.bookingStep:', chatState.bookingStep);
+            console.log('  - Local bookingStep var:', bookingStep);
+            console.log('  - Match?:', chatState.bookingStep === bookingStep);
+            console.log('  - chatState.currentBooking:', !!chatState.currentBooking);
+            console.log('  - messages.length:', messages.length);
+            console.log('  - 🚨 IF CHAT NOT VISIBLE: Check if bookingStep !== "chat"');
+            return null;
+          })()}
+          {/* Messages */}
+          <div className="flex-1 min-h-0">
+            <div className="p-4 space-y-3">
+              {/* Welcome message - always rendered, hidden when messages exist */}
+              <div className={`text-center py-12 px-4 ${messages.length === 0 ? '' : 'hidden'}`}>
+                {/* Animated welcome */}
+                <div className="relative mb-6">
+                  <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                    <MessageCircle className="w-10 h-10 text-white" />
                   </div>
-                  
-                  {/* Welcome message */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      🎉 Welcome Budiarti Massage Service
-                    </h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">
-                      Your booking has been successfully submitted.<br/>
-                      You can chat directly with your therapist once they accept booking.
-                    </p>
-                  </div>
-                  
-                  {/* Booking Information Bubble */}
-                  <div className="bg-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm">
-                    <h4 className="font-semibold text-gray-800 text-sm mb-4" id="booking-details-title" data-gb="Detail Booking|Booking Details">
-                      Detail Booking
-                    </h4>
-                    
-                    <div className="space-y-3 text-sm text-gray-700">
-                      {/* Service Type */}
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium" id="service-label" data-gb="Layanan|Service">Layanan:</span>
-                        <span id="service-value" data-gb="Pijat|Massage">Pijat</span>
-                      </div>
-                      
-                      {/* Duration */}
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium" id="duration-label" data-gb="Durasi|Duration">Durasi:</span>
-                        <span id="duration-value">{chatState.selectedDuration || 60} menit</span>
-                      </div>
-                      
-                      {/* Price */}
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium" id="price-label" data-gb="Harga|Price">Harga:</span>
-                        <span className="font-semibold" id="price-value">{Math.round(getPrice(chatState.selectedDuration || 60) / 1000)}k</span>
-                      </div>
-                      
-                      {/* Arrival Time */}
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">Arrival:</span>
-                        <span>30-60 Minutes</span>
-                      </div>
-                      
-                      {/* Payment Methods */}
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium" id="payment-label" data-gb="Pembayaran|Payment">Pembayaran:</span>
-                        <span id="payment-methods" data-gb="Tunai • Transfer|Cash • Transfer">Tunai • Transfer</span>
-                      </div>
-                    </div>
-                    
-                    {/* Booking Progress Indicator */}
-                    <div className="mt-4 pt-4 border-t border-gray-300">
-                      <BookingProgress 
-                        currentStatus={chatState.currentBooking?.status || 'sent'}
-                        className="border-0 p-0 bg-transparent"
-                        deadline={chatState.currentBooking?.responseDeadline}
-                        role={chatState.isTherapistView ? 'therapist' : 'user'}
-                        bookingId={chatState.currentBooking?.id}
-                        therapistName={therapist.name}
-                        onCancel={() => cancelBooking()}
-                        onAccept={() => handleAcceptBooking(chatState.currentBooking!.id)}
-                        onDecline={() => handleDeclineBooking(chatState.currentBooking!.id)}
-                        onExpire={() => {
-                          addSystemNotification('⏰ Booking expired - No response received. Please try booking again.');
-                          setChatState(prev => ({
-                            ...prev,
-                            currentBooking: prev.currentBooking ? {
-                              ...prev.currentBooking,
-                              status: 'expired'
-                            } : null
-                          }));
-                        }}
-                      />
-                    </div>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gray-300 rounded-full border-3 border-white animate-bounce">
+                    <div className="w-full h-full bg-gray-200 rounded-full animate-ping"></div>
                   </div>
                 </div>
-              ) : (
-                messages.map((msg: ChatMessage) => {
+                
+                {/* Welcome message */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    🎉 Welcome Budiarti Massage Service
+                  </h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    Your booking has been successfully submitted.<br/>
+                    You can chat directly with your therapist once they accept booking.
+                  </p>
+                </div>
+                
+                {/* Booking Information Bubble */}
+                <div className="bg-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <h4 className="font-semibold text-gray-800 text-sm mb-4" id="booking-details-title" data-gb="Detail Booking|Booking Details">
+                    Detail Booking
+                  </h4>
+                  
+                  <div className="space-y-3 text-sm text-gray-700">
+                    {/* Service Type */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium" id="service-label" data-gb="Layanan|Service">Layanan:</span>
+                      <span id="service-value" data-gb="Pijat|Massage">Pijat</span>
+                    </div>
+                    
+                    {/* Duration */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium" id="duration-label" data-gb="Durasi|Duration">Durasi:</span>
+                      <span id="duration-value">{chatState.selectedDuration || 60} menit</span>
+                    </div>
+                    
+                    {/* Price */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium" id="price-label" data-gb="Harga|Price">Harga:</span>
+                      <span className="font-semibold" id="price-value">{Math.round(getPrice(chatState.selectedDuration || 60) / 1000)}k</span>
+                    </div>
+                    
+                    {/* Arrival Time */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Arrival:</span>
+                      <span>30-60 Minutes</span>
+                    </div>
+                    
+                    {/* Payment Methods */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium" id="payment-label" data-gb="Pembayaran|Payment">Pembayaran:</span>
+                      <span id="payment-methods" data-gb="Tunai • Transfer|Cash • Transfer">Tunai • Transfer</span>
+                    </div>
+                  </div>
+                  
+                  {/* Booking Progress Indicator */}
+                  <div className="mt-4 pt-4 border-t border-gray-300">
+                    <BookingProgress 
+                      currentStatus={chatState.currentBooking?.status || 'sent'}
+                      className="border-0 p-0 bg-transparent"
+                      deadline={chatState.currentBooking?.responseDeadline}
+                      role={chatState.isTherapistView ? 'therapist' : 'user'}
+                      bookingId={chatState.currentBooking?.id}
+                      therapistName={therapist.name}
+                      onCancel={() => cancelBooking()}
+                      onAccept={() => handleAcceptBooking(chatState.currentBooking!.id)}
+                      onDecline={() => handleDeclineBooking(chatState.currentBooking!.id)}
+                      onExpire={() => {
+                        addSystemNotification('⏰ Booking expired - No response received. Please try booking again.');
+                        setChatState(prev => ({
+                          ...prev,
+                          currentBooking: prev.currentBooking ? {
+                            ...prev.currentBooking,
+                            status: 'expired'
+                          } : null
+                        }));
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Message list - always rendered, hidden when empty */}
+              <div className={messages.length === 0 ? 'hidden' : ''}>
+                {messages.map((msg: ChatMessage) => {
                   const isOwn = msg.senderType === 'customer' || 
                                (msg.senderId !== therapist.id && msg.senderType !== 'therapist' && msg.senderType !== 'system');
                   const isSystem = msg.senderType === 'system' || msg.isSystemMessage;
@@ -2681,14 +2905,16 @@ export function PersistentChatWindow() {
                       </div>
                     </div>
                   );
-                })
-              )}
-              <div ref={messagesEndRef} />
+                })}
               </div>
+              
+              {/* Scroll anchor - always present */}
+              <div ref={messagesEndRef} />
             </div>
+          </div>
 
-            {/* Status-specific UI Components based on booking status */}
-            {chatState.currentBooking && (
+          {/* Status-specific UI Components based on booking status */}
+          {chatState.currentBooking && (
               <>
                 {/* Removed duplicate waiting message - shown in BookingWelcomeBanner above */}
                 {false && (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && (
@@ -2895,7 +3121,6 @@ export function PersistentChatWindow() {
               </>
             )}
           </div>
-        )}
       </div>
 
       {/* Real-time Notifications */}

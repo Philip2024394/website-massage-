@@ -39,7 +39,7 @@ async function testServerEnforcedChatService() {
     const request = {
       senderId: CHAT_RELIABILITY_TEST.testCustomerId,
       senderName: CHAT_RELIABILITY_TEST.customerName,
-      senderType: 'customer' as const,
+      senderType: 'customer',
       recipientId: CHAT_RELIABILITY_TEST.testTherapistId,
       recipientName: CHAT_RELIABILITY_TEST.therapistName,
       recipientType: 'therapist',
@@ -69,8 +69,8 @@ async function testServerEnforcedChatService() {
     
   } catch (error) {
     console.error('❌ SERVER-ENFORCED SERVICE: Exception occurred');
-    console.error('Error:', (error as Error).message);
-    return { success: false, method: 'server-enforced', error: (error as Error).message };
+    console.error('Error:', error.message);
+    return { success: false, method: 'server-enforced', error: error.message };
   }
 }
 
@@ -109,8 +109,8 @@ async function testDirectChatService() {
     
   } catch (error) {
     console.error('❌ DIRECT CHAT SERVICE: Exception occurred');
-    console.error('Error:', (error as Error).message);
-    return { success: false, method: 'direct', error: (error as Error).message };
+    console.error('Error:', error.message);
+    return { success: false, method: 'direct', error: error.message };
   }
 }
 
@@ -148,8 +148,8 @@ async function testSimpleChatService() {
     
   } catch (error) {
     console.error('❌ SIMPLE CHAT SERVICE: Exception occurred');
-    console.error('Error:', (error as Error).message);
-    return { success: false, method: 'simple', error: (error as Error).message };
+    console.error('Error:', error.message);
+    return { success: false, method: 'simple', error: error.message };
   }
 }
 
@@ -191,8 +191,8 @@ async function testDatabaseConnectivity() {
     
   } catch (error) {
     console.error('❌ DATABASE CONNECTIVITY: Failed');
-    console.error('Error:', (error as Error).message);
-    return { success: false, error: (error as Error).message };
+    console.error('Error:', error.message);
+    return { success: false, error: error.message };
   }
 }
 
@@ -214,7 +214,7 @@ async function testRealtimeSubscription() {
     // Set up subscription
     const channelName = `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.chatMessages}.documents`;
     
-    const unsubscribe = client.subscribe(channelName, (response: any) => {
+    const unsubscribe = client.subscribe(channelName, (response) => {
       console.log('📡 REAL-TIME: Received event:', response.events[0]);
       if (response.payload && response.payload.conversationId === CHAT_RELIABILITY_TEST.conversationId) {
         console.log('📨 REAL-TIME: Test message received!', response.payload.$id);
@@ -239,8 +239,8 @@ async function testRealtimeSubscription() {
     
   } catch (error) {
     console.error('❌ REAL-TIME SUBSCRIPTION: Failed');
-    console.error('Error:', (error as Error).message);
-    return { success: false, error: (error as Error).message };
+    console.error('Error:', error.message);
+    return { success: false, error: error.message };
   }
 }
 
@@ -332,12 +332,12 @@ async function runChatReliabilityTest() {
     console.log('\n' + '='.repeat(70));
     console.log('❌ RELIABILITY TEST FAILED');
     console.log('='.repeat(70));
-    console.error('Critical error:', (error as Error).message);
+    console.error('Critical error:', error.message);
     console.log(`\n⏱️ Time before failure: ${totalTime}ms`);
     
     return {
       success: false,
-      error: (error as Error).message,
+      error: error.message,
       chatSendWillFail: true,
       totalTime: totalTime
     };

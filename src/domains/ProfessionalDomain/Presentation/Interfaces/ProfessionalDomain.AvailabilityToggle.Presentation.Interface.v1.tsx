@@ -106,7 +106,7 @@ function requestAuthorization() {
 
 // @ts-expect-error - React 19 type compatibility issue with lucide-react icons, will be resolved in future version
 import React, { useState, useEffect } from 'react';
-import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
+import { Power, Clock, CheckCircle, XCircle, Crown, Download, Phone, Badge, AlertTriangle, X, Lock} from "lucide-react";
 import { therapistService } from '../../lib/appwriteService';
 import { AvailabilityStatus } from "../../types";
 import { devLog, devWarn } from "../../utils/devMode";
@@ -1272,7 +1272,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                 isAppInstalled ? 'bg-green-500' : 'bg-orange-600'
               }`}>
-                {isAppInstalled ? <Lock className="w-6 h-6 text-white" /> : <Smartphone className="w-6 h-6 text-white" />}
+                {isAppInstalled ? <Lock className="w-6 h-6 text-white" /> : <Phone className="w-6 h-6 text-white" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">

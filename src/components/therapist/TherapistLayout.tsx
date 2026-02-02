@@ -34,9 +34,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Menu, X, User, Calendar, DollarSign, 
-  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart3, Home
-} from 'lucide-react';
+  Menu, X, User, Calendar, DollarSign, Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart, Home} from 'lucide-react';
 import BookingBadge from './BookingBadge';
 import { useUnreadBadge } from "../../chat/hooks/useUnreadBadge";
 import { useGestureSwipe } from "../../hooks/useGestureSwipe";
@@ -441,7 +439,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
               }`}
               title="Enhanced Navigation"
             >
-              <BarChart3 className="w-5 h-5" />
+              <BarChart className="w-5 h-5" />
             </button>
             
             {/* Burger Menu */}

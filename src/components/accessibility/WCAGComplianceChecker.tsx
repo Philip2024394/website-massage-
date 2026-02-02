@@ -29,12 +29,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
-  CheckCircle, XCircle, AlertTriangle, Info, Eye, Keyboard,
-  Monitor, Contrast, Volume2, MousePointer, Search, Play,
-  Pause, RotateCcw, Download, Upload, Settings, Code,
-  Layers, Navigation, Focus, Accessibility, Target, Zap,
-  FileText, BookOpen, ExternalLink, Copy, Check, X
-} from 'lucide-react';
+  CheckCircle, XCircle, AlertTriangle, Info, Eye, Hash, Computer, Palette, Volume, Cursor, Search, Play, Pause, RotateCcw, Download, Upload, Settings, Code, Layers, Navigation, Focus, Shield, Target, Zap, FileText, BookOpen, ExternalLink, Copy, Check, X} from 'lucide-react';
 
 export interface WCAGComplianceCheckerProps {
   targetElement?: HTMLElement | null;
@@ -423,7 +418,7 @@ export const WCAGComplianceChecker: React.FC<WCAGComplianceCheckerProps> = ({
                   check.category === 'interactive' ? 'bg-blue-500' : 'bg-orange-500'
                 }`}>
                   {check.category === 'automated' ? <Zap className="w-3 h-3" /> :
-                   check.category === 'interactive' ? <MousePointer className="w-3 h-3" /> : 
+                   check.category === 'interactive' ? <Cursor className="w-3 h-3" /> : 
                    <Eye className="w-3 h-3" />}
                 </div>
                 <input

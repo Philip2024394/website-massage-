@@ -28,13 +28,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
-  Activity, AlertTriangle, CheckCircle2, Clock, Zap, 
-  Server, Cpu, HardDrive, Wifi, Database, Globe,
-  TrendingUp, TrendingDown, Eye, Settings, RefreshCw,
-  ArrowUp, ArrowDown, Minus, Info, AlertCircle, 
-  BarChart3, LineChart, Target, Bell, Download, 
-  Shield, Code, Monitor, Smartphone, Tablet, Layers
-} from 'lucide-react';
+  Activity, AlertTriangle, CheckCircle2, Clock, Zap, Server, Cpu, HardDrive, Wifi, Database, Globe, TrendingUp, TrendingDown, Eye, Settings, RefreshCw, ArrowUp, ArrowDown, Minus, Info, AlertCircle, BarChart, LineChart, Target, Bell, Download, Shield, Code, Computer, Phone, Phone, Layers} from 'lucide-react';
 
 export interface PerformanceMonitoringProps {
   data?: SystemPerformanceData;

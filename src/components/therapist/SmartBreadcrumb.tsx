@@ -14,7 +14,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { Play as ChevronRight, Home, Calendar, DollarSign, User, Settings, Bell, BarChart as BarChart3, Users, Gift, Clock, TrendingDown as ChevronDown } from 'lucide-react';
+import { Play as ChevronRight, Home, Calendar, DollarSign, User, Settings, Bell, BarChart as BarChart3, Users, Gift, Clock, ChevronDown} from 'lucide-react';
 
 export interface BreadcrumbItem {
   id: string;

@@ -18,11 +18,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { 
-  Eye, Phone as Smartphone, Laptop as Desktop, Star, MapPin, Phone, 
-  Clock, DollarSign, Calendar, Award, Users,
-  MessageCircle, TrendingUp, Play as ChevronRight, Shield,
-  Heart, Share2, Star as Bookmark, Play as PlayCircle
-} from 'lucide-react';
+  Eye, Phone as Smartphone, Laptop as Desktop, Star, MapPin, Phone, Clock, DollarSign, Calendar, Award, Users, MessageCircle, TrendingUp, Play as ChevronRight, Shield, Heart, Share2, Star as Bookmark, Play as PlayCircle} from 'lucide-react';
 import { TherapistProfile, ProfileService, Testimonial } from './EnhancedProfileEditor';
 
 interface ProfilePreviewProps {
@@ -427,7 +423,7 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = ({
                   : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              <Smartphone className="w-4 h-4" />
+              <Phone className="w-4 h-4" />
             </button>
           </div>
         </div>

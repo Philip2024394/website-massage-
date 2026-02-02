@@ -29,13 +29,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
-  Palette, Eye, Download, Upload, RefreshCw, Zap,
-  Sun, Moon, Clock, Paintbrush, Type, Spacing,
-  Image, Layers, Code, Save, Undo, Redo,
-  Check, X, AlertTriangle, Info, Star, Heart,
-  Monitor, Smartphone, Tablet, Settings,
-  ColorWand, Contrast, Accessibility, Globe
-} from 'lucide-react';
+  Brush, Eye, Download, Upload, RefreshCw, Zap, Sun, Moon, Clock, Paintbrush, Type, Spacing, Image, Layers, Code, Save, Undo, Redo, Check, X, AlertTriangle, Info, Star, Heart, Computer, Phone, Phone, Settings, ColorWand, Palette, Shield, Globe} from 'lucide-react';
 
 export interface ThemeCustomizationEngineProps {
   currentTheme?: ThemeConfiguration;
@@ -938,7 +932,7 @@ export const ThemeCustomizationEngine: React.FC<ThemeCustomizationEngineProps> =
       case 'accessibility':
         return (
           <div className="text-center py-12">
-            <Accessibility className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Accessibility Settings</h3>
             <p className="text-gray-600">Advanced accessibility controls coming soon</p>
           </div>
@@ -967,19 +961,19 @@ export const ThemeCustomizationEngine: React.FC<ThemeCustomizationEngineProps> =
                 onClick={() => setPreviewDevice('desktop')}
                 className={`p-2 rounded-lg ${previewDevice === 'desktop' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-100'}`}
               >
-                <Monitor className="w-4 h-4" />
+                <Computer className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setPreviewDevice('tablet')}
                 className={`p-2 rounded-lg ${previewDevice === 'tablet' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-100'}`}
               >
-                <Tablet className="w-4 h-4" />
+                <Phone className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setPreviewDevice('mobile')}
                 className={`p-2 rounded-lg ${previewDevice === 'mobile' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-100'}`}
               >
-                <Smartphone className="w-4 h-4" />
+                <Phone className="w-4 h-4" />
               </button>
             </div>
             

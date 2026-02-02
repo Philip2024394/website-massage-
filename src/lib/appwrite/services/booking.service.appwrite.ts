@@ -11,7 +11,7 @@
 import { databases, APPWRITE_CONFIG } from '../config';
 import { ID, Query } from 'appwrite';
 import type { Booking, BookingStatus } from '../../../types';
-import { BOOKING_STATUS } from '../../../constants/bookingStatus';
+import { BOOKING_STATUS, normalizeBookingStatus } from '../../../constants/bookingStatus';
 
 // Lazy getters to avoid TDZ errors during module initialization
 const getDatabaseId = () => APPWRITE_CONFIG.databaseId;
@@ -34,7 +34,7 @@ function generateBookingId(): string {
 function validateBookingData(data: any): void {
   const required = {
     userId: data.userId || data.customerId || 'anonymous', // Multiple fallbacks
-    status: data.status || 'pending_accept', // Default status
+    status: normalizeBookingStatus(data.status), // ✅ Normalize to valid Appwrite status
     therapistId: data.therapistId,
     serviceDuration: data.serviceDuration || data.duration?.toString(), // Convert number to string
     location: data.location || data.address || data.locationZone, // Multiple location sources
@@ -115,7 +115,7 @@ export const appwriteBookingService = {
         const isRecent = docCreatedAt > lookbackTime;
         const sameCustomer = doc.customerWhatsApp === bookingData.customerWhatsApp;
         const sameTime = doc.time === bookingData.time && doc.date === bookingData.date;
-        const notExpired = doc.status === 'Pending' || doc.status === 'Confirmed';
+        const notExpired = doc.status === 'pending_accept' || doc.status === 'active'; // ✅ Valid statuses
         
         return isRecent && sameCustomer && sameTime && notExpired;
       });
@@ -143,7 +143,7 @@ export const appwriteBookingService = {
       const appwriteDoc = {
         // ✅ REQUIRED FIELDS - VERIFIED AGAINST LIVE APPWRITE
         userId: bookingData.customerId || bookingData.userId || 'anonymous',
-        status: BOOKING_STATUS.PENDING_ACCEPT, // ✅ VERIFIED: Valid status from enum
+        status: normalizeBookingStatus(bookingData.status) || BOOKING_STATUS.PENDING_ACCEPT, // ✅ Normalized valid status
         therapistId: bookingData.therapistId,
         serviceDuration: bookingData.duration?.toString() || '60', // ✅ VERIFIED: Must be string
         location: bookingData.location || bookingData.address || bookingData.locationZone || 'Unknown Location',
@@ -155,7 +155,7 @@ export const appwriteBookingService = {
         duration: bookingData.duration, // Keep number version for compatibility
         locationType: bookingData.locationType,
         address: bookingData.address,
-        massageFor: bookingData.massageFor,
+        // massageFor: bookingData.massageFor, // ❌ REMOVED: Not in Appwrite schema (causes 400 error)
         bookingId,
         serviceType: bookingData.serviceType || 'Traditional Massage'
         
@@ -432,7 +432,7 @@ export const appwriteBookingService = {
           const booking = response.payload as any; // Use any for Appwrite payload which has therapistId and expiresAt
           
           // Filter for this therapist's bookings
-          if (booking.therapistId === therapistId && booking.status === 'Pending') {
+          if (booking.therapistId === therapistId && booking.status === 'pending_accept') { // ✅ Valid Appwrite status
             // Check if not expired
             const expiresAt = new Date(booking.expiresAt);
             if (expiresAt > new Date()) {

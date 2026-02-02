@@ -311,7 +311,7 @@ export async function validateBookingAcceptance(
             };
         }
 
-        if (booking.status !== 'Pending') {
+        if (booking.status !== 'pending_accept') { // ✅ Valid Appwrite status
             return {
                 allowed: false,
                 reason: `Booking is already ${booking.status}`,

@@ -110,8 +110,8 @@ export function validateBookingSchema(data: any): AppwriteBookingSchema {
         ));
     }
 
-    // ✅ CRITICAL: Check status
-    const validStatuses = ['Pending', 'Confirmed', 'Completed', 'Cancelled', 'Expired', 'Reassigned'];
+    // ✅ CRITICAL: Check status - Use valid Appwrite enum values
+    const validStatuses = ['idle', 'registering', 'searching', 'pending_accept', 'active', 'cancelled', 'completed'];
     if (!data.status || !validStatuses.includes(data.status)) {
         errors.push(new SchemaValidationError(
             'status',

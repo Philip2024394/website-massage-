@@ -73,7 +73,7 @@ export const initScrollLockDetection = () => {
   // Console commands for manual testing
   (window as any).scrollDebug = {
     testBodyLock: () => {
-      document.// REMOVED: body.style.overflow = "hidden" - violates global scroll architecture;
+      // REMOVED: body.style.overflow = "hidden" - violates global scroll architecture;
       console.log('🧪 Testing body lock (should trigger warning)');
       setTimeout(() => {
         document.body.style.overflow = '';

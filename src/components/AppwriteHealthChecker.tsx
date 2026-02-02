@@ -26,11 +26,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
-  CheckCircle, XCircle, AlertTriangle, RefreshCw, Shield,
-  Database, MessageCircle, User, Calendar, Activity,
-  Settings, TrendingUp, Zap, Globe, Wifi, WifiOff,
-  Server, Clock, BarChart3, Users, DollarSign
-} from 'lucide-react';
+  CheckCircle, XCircle, AlertTriangle, RefreshCw, Shield, Database, MessageCircle, User, Calendar, Activity, Settings, TrendingUp, Zap, Globe, Wifi, WifiOff, Server, Clock, BarChart, Users, DollarSign} from 'lucide-react';
 import { databases, account, APPWRITE_DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 import { Query } from 'appwrite';
 

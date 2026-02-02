@@ -81,6 +81,7 @@ class EnterpriseMonitoringService {
   private isMonitoring = false;
   private healthCheckInterval?: NodeJS.Timeout;
   private metricsInterval?: NodeJS.Timeout;
+  private startupTime: number;
 
   // Service endpoints to monitor
   private services = [
@@ -92,6 +93,7 @@ class EnterpriseMonitoringService {
 
   constructor() {
     this.sessionId = this.generateSessionId();
+    this.startupTime = Date.now();
     this.initializeDefaultAlerts();
     this.startMonitoring();
     logger.info('🏢 Enterprise monitoring service initialized');
@@ -380,8 +382,12 @@ class EnterpriseMonitoringService {
    * Check system alerts
    */
   private checkSystemAlerts(metrics: SystemMetrics): void {
-    // Memory usage alert
-    if (metrics.memory > 80) {
+    // Skip memory alerts during initialization phase (first 10 seconds)
+    const timeSinceStartup = Date.now() - this.startupTime;
+    const isInitPhase = timeSinceStartup < 10000;
+    
+    // Memory usage alert (suppressed during initialization)
+    if (metrics.memory > 80 && !isInitPhase) {
       this.recordEvent({
         type: 'performance',
         message: 'High memory usage detected',

@@ -1,4 +1,27 @@
 /**
+ * ⚠️ DEPRECATED - STEP 20 LEGACY CLEANUP
+ * 
+ * This direct chat service is superseded by the V2 core architecture:
+ * - New Authority: `/src_v2/core/chat/sendMessage.ts`
+ * - With Step 19 observability logging
+ * - Protected by Step 18 architecture lockdown
+ * 
+ * STATUS: Preserved as emergency fallback only
+ * DO NOT USE for new development - use V2 core instead
+ * 
+ * MIGRATION PATH:
+ * ```typescript
+ * // OLD (deprecated)
+ * import { directChatService } from '../lib/services/directChatService';
+ * 
+ * // NEW (use this)
+ * import { sendMessage } from '../src_v2/core/chat';
+ * ```
+ * 
+ * =================================================================
+ * LEGACY DOCUMENTATION BELOW - KEPT FOR REFERENCE
+ * =================================================================
+ * 
  * 🔧 DIRECT CHAT SERVICE - FALLBACK FOR RELIABILITY
  * 
  * This service provides direct database access for chat messages

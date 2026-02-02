@@ -889,7 +889,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             if (selectedCity === 'all') return true;
             
-            // STRICT CITY MATCH: GPS-AUTHORITATIVE FILTERING
+            // SMART CITY MATCH: GPS-AUTHORITATIVE FILTERING WITH REGION AWARENESS
             // Priority: city (GPS-derived) → locationId → location (legacy fallback)
             const therapistCity = t.city || t.locationId || t.location;
             
@@ -908,7 +908,18 @@ const HomePage: React.FC<HomePageProps> = ({
             }
             const normalizedSelectedCity = selectedCity.toLowerCase().trim();
             
-            // EXACT MATCH REQUIRED (after normalization)
+            // BALI REGION MATCHING: Denpasar, Canggu, Ubud, Seminyak, etc. are all in Bali
+            const baliCities = ['denpasar', 'canggu', 'ubud', 'seminyak', 'sanur', 'kuta', 'nusa dua', 'jimbaran', 'uluwatu', 'bali'];
+            const isBaliTherapist = baliCities.includes(normalizedTherapistCity) || normalizedTherapistCity.includes('bali');
+            const isBaliUser = baliCities.includes(normalizedSelectedCity) || normalizedSelectedCity.includes('bali');
+            
+            // Match if both are in Bali region
+            if (isBaliTherapist && isBaliUser) {
+                console.log(`✅ INCLUDED: "${t.name}" (${therapistCity}) matches Bali region with user in ${selectedCity}`);
+                return true;
+            }
+            
+            // EXACT MATCH (after normalization)
             const matches = normalizedTherapistCity === normalizedSelectedCity;
             
             if (matches) {

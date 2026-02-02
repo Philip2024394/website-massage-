@@ -57,8 +57,8 @@ class ConnectionStabilityService {
       baseReconnectDelay: 2000,
       maxReconnectDelay: 10000,
       heartbeatInterval: 30000,
-      connectionTimeout: 5000,
-      qualityCheckInterval: 10000,
+      connectionTimeout: 10000, // Increased from 5s to 10s for slower connections
+      qualityCheckInterval: 15000, // Increased from 10s to 15s
       enableFallbackPolling: true,
       enableNetworkDetection: false,
       ...config

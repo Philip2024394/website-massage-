@@ -185,7 +185,14 @@ export const useAppState = () => {
       // Deep links like /profile/therapist/:id must be respected
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       const isPageReload = navigation?.type === 'reload' || navigation?.type === 'navigate';
-      const isRootPath = pathname === '/' || pathname === '' || pathname === '/home';
+      const isRootPath = pathname === '/' || pathname === '';
+      const isHomePath = pathname === '/home';
+      
+      // 🏠 FIX: If user directly navigates to /home, respect that and show home page
+      if (isHomePath) {
+        console.log('🏠 Direct /home URL navigation → home page');
+        return 'home';
+      }
       
       if (isPageReload && !pageParam && isRootPath) {
         console.log('🔄 Fresh ROOT page load detected - clearing session to show landing page');

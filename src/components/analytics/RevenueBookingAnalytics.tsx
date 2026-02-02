@@ -28,12 +28,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
-  DollarSign, TrendingUp, TrendingDown, Calendar, Clock, 
-  Target, PieChart, BarChart3, Users, Star, Award,
-  ArrowUp, ArrowDown, Minus, Filter, Download, Settings,
-  ChevronDown, ChevronRight, Info, AlertCircle, CheckCircle2,
-  Zap, Eye, EyeOff, RefreshCw, Share2, Bookmark, Calculator
-} from 'lucide-react';
+  DollarSign, TrendingUp, TrendingDown, Calendar, Clock, Target, PieChart, BarChart, Users, Star, Award, ArrowUp, ArrowDown, Minus, Filter, Download, Settings, ChevronDown, ChevronRight, Info, AlertCircle, CheckCircle2, Zap, Eye, EyeOff, RefreshCw, Share2, Bookmark, Calculator} from 'lucide-react';
 
 export interface RevenueBookingAnalyticsProps {
   data?: FinancialData;

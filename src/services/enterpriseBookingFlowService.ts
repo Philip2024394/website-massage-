@@ -12,6 +12,7 @@ import { logger } from './enterpriseLogger';
  */
 
 import { bookingService } from '../lib/bookingService';
+import { therapistService } from '../lib/appwrite/services/therapist.service';
 // import { enterpriseMonitoringService } from './enterpriseMonitoringService'; // Commented out to avoid import errors
 // Note: bookingSoundService removed - using browser Audio API instead
 
@@ -405,29 +406,68 @@ class EnterpriseBookingFlowService {
 
   /**
    * Get available therapists based on location and preferences
-   * Note: This is a placeholder - actual implementation requires therapist service integration
    */
-  private async getAvailableTherapists(_request: BookingRequest): Promise<string[]> {
+  private async getAvailableTherapists(request: BookingRequest): Promise<string[]> {
     try {
-      // TODO: Integrate with actual therapist availability service
-      // For now, return empty array to allow compilation
-      // This should be replaced with actual therapist matching logic
+      logger.info('🔍 Searching for available therapists...');
       
-      logger.warn('⚠️ getAvailableTherapists: Using placeholder implementation');
+      // Extract city from location address
+      const city = this.extractCityFromAddress(request.location.address);
       
-      // When integrated, this should:
-      // 1. Query therapists near the location
-      // 2. Filter by service types
-      // 3. Check online/availability status
-      // 4. Prioritize preferred therapists
-      // 5. Sort by rating, distance, response time
+      // Query therapists from database
+      const allTherapists = await therapistService.getAll(city);
       
-      return [];
+      logger.info(`📋 Found ${allTherapists.length} total therapists in ${city || 'all locations'}`);
+      
+      // Filter for available therapists only
+      const availableTherapists = allTherapists.filter(therapist => {
+        const status = (therapist.status || therapist.availability || '').toLowerCase();
+        const isAvailable = status === 'available' || therapist.isLive === true;
+        return isAvailable;
+      });
+      
+      logger.info(`✅ ${availableTherapists.length} therapists are currently available`);
+      
+      // If preferred therapists specified, prioritize them
+      let sortedTherapists = [...availableTherapists];
+      if (request.preferredTherapists && request.preferredTherapists.length > 0) {
+        sortedTherapists.sort((a, b) => {
+          const aPreferred = request.preferredTherapists!.includes(a.$id) ? 1 : 0;
+          const bPreferred = request.preferredTherapists!.includes(b.$id) ? 1 : 0;
+          return bPreferred - aPreferred;
+        });
+      }
+      
+      // Return therapist IDs
+      const therapistIds = sortedTherapists.map(t => t.$id);
+      
+      if (therapistIds.length === 0) {
+        logger.warn('⚠️ No available therapists found for this booking');
+      }
+      
+      return therapistIds;
 
     } catch (error) {
       logger.error('❌ Failed to get available therapists:', error);
       return [];
     }
+  }
+
+  /**
+   * Extract city name from address string
+   */
+  private extractCityFromAddress(address: string): string | undefined {
+    // Common Indonesian cities
+    const cities = ['Jakarta', 'Yogyakarta', 'Bali', 'Surabaya', 'Bandung', 'Medan', 'Semarang'];
+    const addressLower = address.toLowerCase();
+    
+    for (const city of cities) {
+      if (addressLower.includes(city.toLowerCase())) {
+        return city;
+      }
+    }
+    
+    return undefined; // Will query all therapists
   }
 
   /**

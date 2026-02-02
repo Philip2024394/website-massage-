@@ -28,14 +28,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { 
-  FileText, Plus, Save, Download, Share2, Calendar,
-  Eye, Edit3, Copy, Trash2, Filter, Settings, 
-  BarChart3, PieChart, LineChart, Table, Target,
-  Image, Type, Layers, Move, Grid, Layout,
-  Clock, Mail, Users, Lock, Unlock, Star,
-  ChevronDown, ChevronRight, MoreVertical, Search,
-  Palette, AlignLeft, AlignCenter, AlignRight, Bold
-} from 'lucide-react';
+  FileText, Plus, Save, Download, Share2, Calendar, Eye, Edit3, Copy, Trash2, Filter, Settings, BarChart, PieChart, LineChart, Table, Target, Image, Type, Layers, Move, Grid, Layout, Clock, Mail, Users, Lock, Unlock, Star, ChevronDown, ChevronRight, MoreVertical, Search, Brush, AlignLeft, AlignCenter, AlignRight, Bold} from 'lucide-react';
 
 export interface CustomReportBuilderProps {
   availableMetrics?: ReportMetric[];
@@ -592,7 +585,7 @@ export const CustomReportBuilder: React.FC<CustomReportBuilderProps> = ({
                   </div>
                   
                   <div className="h-20 bg-gray-200 rounded flex items-center justify-center">
-                    {component.type === 'chart' && <BarChart3 className="w-8 h-8 text-gray-400" />}
+                    {component.type === 'chart' && <BarChart className="w-8 h-8 text-gray-400" />}
                     {component.type === 'table' && <Table className="w-8 h-8 text-gray-400" />}
                     {component.type === 'kpi' && <Target className="w-8 h-8 text-gray-400" />}
                     {component.type === 'text' && <Type className="w-8 h-8 text-gray-400" />}
@@ -680,7 +673,7 @@ export const CustomReportBuilder: React.FC<CustomReportBuilderProps> = ({
               </h3>
               <div className="h-64 bg-white rounded border border-gray-200 flex items-center justify-center">
                 <div className="text-center text-gray-500">
-                  {component.type === 'chart' && <BarChart3 className="w-16 h-16 mx-auto mb-2" />}
+                  {component.type === 'chart' && <BarChart className="w-16 h-16 mx-auto mb-2" />}
                   {component.type === 'table' && <Table className="w-16 h-16 mx-auto mb-2" />}
                   {component.type === 'kpi' && <Target className="w-16 h-16 mx-auto mb-2" />}
                   <p>Live {component.type} will render here</p>

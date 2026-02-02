@@ -28,12 +28,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { 
-  TrendingUp, TrendingDown, BarChart3, LineChart, PieChart as PieIcon,
-  Maximize2, Minimize2, Download, Settings, Play, Pause, 
-  RotateCcw, ZoomIn, ZoomOut, Filter, Share2, Eye, EyeOff,
-  ChevronDown, ChevronRight, Info, AlertCircle, CheckCircle2,
-  RefreshCw, MousePointer, Move3D, Layers, Activity
-} from 'lucide-react';
+  TrendingUp, TrendingDown, BarChart, LineChart, PieChart as PieIcon, Maximize2, Minimize2, Download, Settings, Play, Pause, RotateCcw, ZoomIn, ZoomOut, Filter, Share2, Eye, EyeOff, ChevronDown, ChevronRight, Info, AlertCircle, CheckCircle2, RefreshCw, Cursor, Move3D, Layers, Activity} from 'lucide-react';
 
 export interface DataVisualizationProps {
   data: ChartDataSet[];

@@ -29,13 +29,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
-  Settings, User, Bell, Shield, Palette, Globe, 
-  Database, Download, Upload, Key, Lock, Eye,
-  Moon, Sun, Monitor, Smartphone, Mail, Phone,
-  Calendar, Clock, MapPin, CreditCard, Link,
-  Save, RefreshCw, Search, Filter, ChevronRight,
-  Check, X, AlertTriangle, Info, Zap, Target
-} from 'lucide-react';
+  Settings, User, Bell, Shield, Brush, Globe, Database, Download, Upload, Key, Lock, Eye, Moon, Sun, Computer, Phone, Mail, Phone, Calendar, Clock, MapPin, CreditCard, Link, Save, RefreshCw, Search, Filter, ChevronRight, Check, X, AlertTriangle, Info, Zap, Target} from 'lucide-react';
 
 export interface AdvancedSettingsPanelProps {
   userSettings?: UserSettings;

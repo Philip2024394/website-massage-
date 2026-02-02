@@ -18,12 +18,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { 
-  Plus, Edit3, Trash2, Shuffle as Move, Image as Camera, DollarSign, 
-  Clock, Tag, Image as ImageIcon, Copy, Eye,
-  TrendingUp as ChevronUp, TrendingDown as ChevronDown, MoreVertical as MoreVertical, Star,
-  TrendingUp, Users, Calendar, AlertCircle,
-  CheckCircle2, Package, Zap, Target
-} from 'lucide-react';
+  Plus, Edit3, Trash2, Shuffle as Move, Image as Camera, DollarSign, Clock, Tag, Image as ImageIcon, Copy, Eye, TrendingUp as ChevronUp, TrendingDown as ChevronDown, MoreVertical as MoreVertical, Star, TrendingUp, Users, Calendar, AlertCircle, CheckCircle2, Package, Zap, Target} from 'lucide-react';
 import { ProfileService, ServicePackage, PriceDiscount } from './EnhancedProfileEditor';
 
 interface ServiceCustomizationPanelProps {
