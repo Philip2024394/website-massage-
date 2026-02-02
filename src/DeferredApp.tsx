@@ -46,30 +46,13 @@ const DeferredApp: React.FC = () => {
     return () => clearTimeout(loadTimer);
   }, []);
 
-  // Show full app if loaded, otherwise show minimal loader
+  // Show full app if loaded, otherwise return empty fragment for skeleton
   if (FullApp) {
     return <FullApp />;
   }
 
-  // MINIMAL LOADING STATE - No intermediate content
-  return (
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
-      <Helmet>
-        <title>IndaStreet - Loading...</title>
-      </Helmet>
-      
-      {/* Simple loading spinner */}
-      <div className="text-center">
-        <div className="mb-4">
-          <div className="text-3xl font-bold">
-            <span className="text-white">Inda</span>
-            <span className="text-white">Street</span>
-          </div>
-        </div>
-        <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
-      </div>
-    </div>
-  );
+  // Return empty fragment - keeps #root technically non-empty but visually empty
+  // This allows index.html skeleton CSS to remain visible
+  return <></>;
 };
-
 export default DeferredApp;

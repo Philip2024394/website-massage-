@@ -124,7 +124,9 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       roomNumber: input.hotelRoomNumber,
       status: DEFAULT_BOOKING_STATUS, // ✅ FIXED: Use valid Appwrite enum value 'pending_accept'
       date: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[0] : now.toISOString().split('T')[0],
-      time: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[1] : now.toISOString().split('T')[1]
+      time: input.scheduledTime ? input.scheduledTime.toISOString().split('T')[1] : now.toISOString().split('T')[1],
+      // 🔒 CRITICAL: providerType must be explicit, not inferred
+      providerType: input.providerType || 'therapist' // ✅ Explicit enum value
     };
 
     console.log('🔍 [FALLBACK DIAGNOSTIC] Final booking data:', JSON.stringify(bookingData, null, 2));

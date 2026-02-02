@@ -561,6 +561,8 @@ ${
           dashboardReady: true
         });
         
+        // ⚠️ NOTE: This openBookingChat call uses a different signature (booking context)
+        // NOT the same as therapist-based openBookingChat
         const chatOpened = openBookingChat({
           chatRoomId: chatRoom.$id,
           bookingId: booking.$id,

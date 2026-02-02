@@ -29,12 +29,20 @@ class ErrorLoggingService {
   private isProcessing = false;
   private maxQueueSize = 100;
   private batchSize = 10;
+  private isRateLimited = false; // Circuit breaker for rate limiting
+  private rateLimitResetTime = 0; // When to retry after rate limit
 
   /**
    * Log error silently - never throws
    */
   async logError(error: Error | string, context?: Partial<ErrorLogEntry>): Promise<void> {
     try {
+      // Skip logging if we're rate limited
+      if (this.isRateLimited && Date.now() < this.rateLimitResetTime) {
+        // Silently drop errors during rate limit - prevent cascade
+        return;
+      }
+      
       const errorEntry = this.createErrorEntry(error, context);
       
       // Add to queue for batch processing
@@ -211,6 +219,8 @@ class ErrorLoggingService {
    * Upload error to Appwrite database
    */
   private async uploadToDatabase(errorEntry: ErrorLogEntry): Promise<void> {
+    // Disabled: ERROR_LOGS collection doesn't exist - errors logged to console only
+    return;
     try {
       await databases.createDocument(
         DATABASE_ID,
@@ -221,8 +231,20 @@ class ErrorLoggingService {
           context: JSON.stringify(errorEntry.context || {}),
         }
       );
-    } catch (uploadError) {
-      // Store locally if upload fails
+      
+      // Reset rate limit flag on successful upload
+      this.isRateLimited = false;
+    } catch (uploadError: any) {
+      // Detect 429 rate limit and activate circuit breaker
+      if (uploadError.code === 429 || uploadError.status === 429) {
+        console.warn('⚠️ Error logging rate limited - pausing for 60 seconds');
+        this.isRateLimited = true;
+        this.rateLimitResetTime = Date.now() + 60000; // Wait 60 seconds
+        this.errorQueue = []; // Clear queue to stop cascade
+        return; // Don't store locally, just drop
+      }
+      
+      // Store locally if upload fails for other reasons
       this.storeLocally(errorEntry);
     }
   }

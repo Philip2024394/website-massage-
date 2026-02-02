@@ -32,7 +32,7 @@
  * - 🔒 SERVER-ENFORCED ANTI-CONTACT VALIDATION (TAMPER RESISTANT)
  */
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
 import { client, databases, ID, account } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
@@ -104,11 +104,15 @@ export interface BookingData {
   customerId: string;
   customerName: string;
   customerPhone?: string;
+  customerWhatsApp?: string; // Optional WhatsApp number (admin-only)
   
   // Service details
   serviceType: string;
   duration: number;
   locationZone: string;
+  address?: string; // Customer address (may be provided during booking flow)
+  locationType?: 'home' | 'hotel' | 'villa'; // Type of location
+  roomNumber?: string; // Room number for hotel/villa bookings
   coordinates?: { lat: number; lng: number };
   
   // Booking type and pricing
@@ -147,7 +151,7 @@ export interface BookingData {
 
 // Therapist info for chat
 export interface ChatTherapist {
-  id: string; // Now uses therapist name for easy debugging
+  id: string; // Display name for easy debugging
   name: string;
   image?: string;
   pricing?: Record<string, number>;
@@ -161,7 +165,7 @@ export interface ChatTherapist {
   duration?: number;
   bankCardDetails?: string; // Bank card info for payment
   clientPreferences?: string;
-  appwriteId?: string; // Keep Appwrite ID for database operations
+  appwriteId: string; // 🔒 REQUIRED: Appwrite document ID from therapists collection - MUST be present for booking
 }
 
 // Message structure matching Appwrite schema
@@ -312,6 +316,7 @@ const initialState: ChatWindowState = {
   customerLocation: '',
   coordinates: null,
   selectedService: null, // Pre-selected from Menu Harga
+  chatRoomId: null, // Chat room ID for messaging
   // Initialize connection status
   connectionStatus: {
     isConnected: false,
@@ -659,12 +664,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
               Query.equal('recipientId', currentUserId)
             ])
           ]),
-          Query.orderDesc('createdAt'),
-          Query.limit(50) // Reduced from 100 to prevent memory issues
+          Query.orderAsc('createdAt'),
+          Query.limit(100)
         ]
       );
 
-      // Optimize memory by only mapping necessary fields
       const messages: ChatMessage[] = response.documents.map((doc: any) => ({
         $id: doc.$id,
         senderId: doc.senderId,
@@ -678,7 +682,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         messageType: doc.messageType || 'text',
         roomId: doc.roomId || '',
         isSystemMessage: doc.isSystemMessage || false,
-      })).reverse(); // Reverse after mapping to show oldest first
+      }));
 
       console.log(`📥 Loaded ${messages.length} messages from history`);
       return messages;
@@ -695,6 +699,18 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     console.log('� DEBUGGING: Previous therapist:', chatState.therapist?.name, chatState.therapist?.id);
     console.log('🔍 DEBUGGING: New therapist:', therapist.name, therapist.id);
     console.log('�🔒 Locking chat to prevent accidental closure during booking');
+    
+    // 🔒 CRITICAL VALIDATION: Block if therapist.appwriteId is missing
+    if (!therapist.appwriteId) {
+      const errorMsg = `❌ CRITICAL: Cannot open chat - therapist.appwriteId is missing for ${therapist.name}. ` +
+        `This is a data integrity issue. Therapist must have valid Appwrite document ID before booking can proceed.`;
+      console.error('═'.repeat(80));
+      console.error(errorMsg);
+      console.error('Therapist object:', therapist);
+      console.error('═'.repeat(80));
+      throw new Error(errorMsg);
+    }
+    console.log('✅ VALIDATION PASSED: therapist.appwriteId present:', therapist.appwriteId);
     
     // 🔒 CRITICAL: Notify AppStateContext that chat window is visible
     // This prevents landing page redirects during booking flow
@@ -758,24 +774,29 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
     // Load existing messages
     if (currentUserId) {
-      // ✅ FIX: Use appwriteId for database queries, not the name-based id
-      const therapistIdForQuery = therapist.appwriteId || therapist.id;
+      // ✅ FIX: Use ONLY appwriteId for database queries - no fallbacks
+      // Validation above ensures appwriteId is always present
+      const therapistIdForQuery = therapist.appwriteId;
       console.log('🔍 DEBUGGING: Loading messages with therapistId:', therapistIdForQuery);
       
       const messages = await loadMessages(therapistIdForQuery);
       if (messages.length > 0) {
-        setChatState(prev => ({
-          ...prev,
-          messages,
-          // ✅ FIX: Only go to 'chat' step if there's an actual booking
-          // Otherwise stay in 'duration' step to allow new booking creation
-          bookingStep: prev.currentBooking ? 'chat' : prev.bookingStep,
-        }));
-        
-        // 🔓 UNLOCK CHAT when there's existing conversation
-        setIsLocked(false);
-        console.log('🔓 Chat unlocked - existing conversation loaded');
-        console.log('📋 BookingStep:', prev.currentBooking ? 'chat (has booking)' : 'duration (no booking)');
+        setChatState(prev => {
+          const newState = {
+            ...prev,
+            messages,
+            // ✅ FIX: Only go to 'chat' step if there's an actual booking
+            // Otherwise stay in 'duration' step to allow new booking creation
+            bookingStep: prev.currentBooking ? 'chat' : prev.bookingStep,
+          };
+          
+          // 🔓 UNLOCK CHAT when there's existing conversation
+          setIsLocked(false);
+          console.log('🔓 Chat unlocked - existing conversation loaded');
+          console.log('📋 BookingStep:', newState.bookingStep, prev.currentBooking ? '(has booking)' : '(no booking)');
+          
+          return newState;
+        });
       }
     }
   }, [currentUserId, loadMessages]);
@@ -811,6 +832,18 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     options?: { isScheduled?: boolean; depositRequired?: boolean; depositPercentage?: number }
   ) => {
     console.log('💬 Opening chat with pre-selected service:', therapist.name, service, options);
+    
+    // 🔒 CRITICAL VALIDATION: Block if therapist.appwriteId is missing
+    if (!therapist.appwriteId) {
+      const errorMsg = `❌ CRITICAL: Cannot open chat - therapist.appwriteId is missing for ${therapist.name}. ` +
+        `This is a data integrity issue. Therapist must have valid Appwrite document ID before booking can proceed.`;
+      console.error('═'.repeat(80));
+      console.error(errorMsg);
+      console.error('Therapist object:', therapist);
+      console.error('═'.repeat(80));
+      throw new Error(errorMsg);
+    }
+    console.log('✅ VALIDATION PASSED: therapist.appwriteId present:', therapist.appwriteId);
     
     // 🔒 CRITICAL: Notify AppStateContext that chat window is visible
     setIsChatWindowVisible(true);
@@ -863,8 +896,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
     // Load existing messages
     if (currentUserId) {
-      // ✅ FIX: Use appwriteId for database queries, not the name-based id
-      const therapistIdForQuery = therapist.appwriteId || therapist.id;
+      // ✅ FIX: Use ONLY appwriteId for database queries - no fallbacks
+      // Validation above ensures appwriteId is always present
+      const therapistIdForQuery = therapist.appwriteId;
       console.log('🔍 DEBUGGING: Loading messages (service) with therapistId:', therapistIdForQuery);
       
       const messages = await loadMessages(therapistIdForQuery);
@@ -887,11 +921,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       : `🚀 Immediate booking selected: ${service.serviceName} (${service.duration} min) - Total: Rp ${service.price.toLocaleString('id-ID')}`;
     
     addMessage({
-      id: Date.now().toString(),
-      text: systemMessage,
-      sender: 'system',
-      timestamp: new Date(),
-      isSystemNotification: true
+      senderId: 'system',
+      senderName: 'System',
+      message: systemMessage,
+      type: 'system'
     });
 
   }, [currentUserId, loadMessages, addMessage]);
@@ -978,14 +1011,40 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Set booking step
   const setBookingStep = useCallback((step: BookingStep) => {
-    setChatState(prev => ({ ...prev, bookingStep: step }));
+    console.log('📋 [setBookingStep] Setting step to:', step);
+    
+    // ✅ FIX: Use functional update to ensure we get latest state
+    setChatState(prev => {
+      console.log('📋 [setBookingStep] INSIDE setChatState - prev.bookingStep:', prev.bookingStep);
+      console.log('📋 [setBookingStep] INSIDE setChatState - prev.isOpen:', prev.isOpen);
+      console.log('📋 [setBookingStep] INSIDE setChatState - prev.therapist:', prev.therapist?.name);
+      
+      const newState = { 
+        ...prev, 
+        bookingStep: step,
+        // 🔒 CRITICAL: Ensure chat window is OPEN when entering chat mode
+        isOpen: step === 'chat' ? true : prev.isOpen,
+        isMinimized: step === 'chat' ? false : prev.isMinimized,
+      };
+      
+      console.log('📋 [setBookingStep] NEW State:', {
+        bookingStep: newState.bookingStep,
+        isOpen: newState.isOpen,
+        isMinimized: newState.isMinimized,
+        therapist: newState.therapist?.name
+      });
+      
+      return newState;
+    });
     
     // 🔓 UNLOCK CHAT when entering normal chat mode
     if (step === 'chat') {
+      console.log('🔓 Unlocking chat and notifying AppStateContext...');
       setIsLocked(false);
-      console.log('🔓 Chat unlocked - normal chat mode active');
+      setIsChatWindowVisible(true);
+      console.log('✅ Chat unlocked and AppStateContext notified');
     }
-  }, []);
+  }, [setIsChatWindowVisible]);
 
   // Set selected duration
   const setSelectedDuration = useCallback((duration: number) => {
@@ -1071,7 +1130,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         conversationId: roomId,
         senderId: currentUserId,
         senderName: currentUserName || chatState.customerName || 'Guest',
-        senderRole: isGuestUser ? 'guest' : 'customer',
+        senderRole: 'customer',
         receiverId: therapist.id,
         receiverName: therapist.name,
         receiverRole: 'therapist',
@@ -1099,7 +1158,6 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           messageType: 'text',
           roomId,
           isSystemMessage: false,
-          therapistRoomId: `therapist_${therapist.id}_customer_${currentUserId}`,
         };
 
         setChatState(prev => ({
@@ -1150,7 +1208,6 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
             messageType: 'text',
             roomId,
             isSystemMessage: false,
-            therapistRoomId: `therapist_${therapist.id}_customer_${currentUserId}`,
           };
 
           setChatState(prev => ({
@@ -1181,12 +1238,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           conversationId: roomId,
           senderId: currentUserId,
           senderName: currentUserName || chatState.customerName || 'Guest',
-          senderRole: isGuestUser ? 'guest' : 'customer',
+          senderRole: 'customer',
           receiverId: therapist.id,
           receiverName: therapist.name,
           receiverRole: 'therapist',
           message: messageContent.trim(),
-          messageType: 'emergency'
+          messageType: 'text'
         });
         
         if (directResult.success) {
@@ -1206,7 +1263,6 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
             messageType: 'text',
             roomId,
             isSystemMessage: false,
-            therapistRoomId: `therapist_${therapist.id}_customer_${currentUserId}`,
           };
 
           setChatState(prev => ({
@@ -1229,7 +1285,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           conversationId: roomId,
           senderId: currentUserId,
           senderName: currentUserName || chatState.customerName || 'Guest',
-          senderRole: isGuestUser ? 'guest' : 'customer',
+          senderRole: 'customer',
           receiverId: therapist.id,
           receiverName: therapist.name,
           receiverRole: 'therapist',
@@ -1254,7 +1310,6 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
             messageType: 'text',
             roomId,
             isSystemMessage: false,
-            therapistRoomId: `therapist_${therapist.id}_customer_${currentUserId}`,
           };
 
           setChatState(prev => ({
@@ -1373,12 +1428,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const therapist = chatState.therapist;
     const duration = bookingData.duration || chatState.selectedDuration || 60;
     const price = bookingData.totalPrice || (bookingData as any).price || 0;
-    const bookingId = chatState.bookingData?.bookingId || bookingData.bookingId;
     
     console.log('🔍 [BOOKING VALIDATION] Checking therapist data...');
     console.log('- Therapist object:', therapist);
     console.log('- Therapist ID:', therapist?.id);
-    console.log('- Therapist $id:', therapist?.$id);
     console.log('- Therapist name:', therapist?.name);
     
     if (!therapist) {
@@ -1388,20 +1441,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       return false;
     }
     
-    if (!therapist.id && !therapist.$id) {
+    if (!therapist.id) {
       console.error('❌ [CRITICAL] Therapist object has no ID!');
       console.error('❌ Therapist object:', JSON.stringify(therapist));
       addSystemNotification('❌ Therapist ID missing. Please refresh and try again.');
       return false;
     }
     
-    console.log('✅ [VALIDATION] Therapist validated:', therapist.id || therapist.$id);
-    
-    if (!bookingId) {
-      console.error('❌ [APPWRITE] No booking ID available');
-      addSystemNotification('❌ Booking ID missing. Please refresh and try again.');
-      return false;
-    }
+    console.log('✅ [VALIDATION] Therapist validated:', therapist.id);
     
     // 🔒 CRITICAL: Validate customerName is present (REQUIRED field)
     // ✅ GUEST BOOKING ENABLED: Allow "Guest" as valid name for anonymous users
@@ -1434,7 +1481,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     
     // 📞 Use phone number for booking (required field)
     // WhatsApp is optional and only used for admin tracking
-    let customerPhone = bookingData.customerPhone || chatState.customerPhone || '';
+    let customerPhone = bookingData.customerPhone || chatState.customerWhatsApp || '';
     customerPhone = customerPhone.replace(/^\+/, ''); // Strip + prefix
     
     if (!customerPhone) {
@@ -1447,6 +1494,20 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     console.log('✅ VALIDATION PASSED: customerPhone =', customerPhone);
     console.log('📱 [ADMIN-ONLY] customerWhatsApp =', customerWhatsApp || 'Not provided');
     
+    // 🔒 CRITICAL VALIDATION: therapist.appwriteId MUST exist
+    // This is the final validation before booking creation - FAIL FAST if missing
+    if (!therapist.appwriteId) {
+      const errorMsg = 'INVALID THERAPIST STATE: Missing Appwrite document ID. ' +
+        'Cannot create booking without valid provider document ID.';
+      console.error('═'.repeat(80));
+      console.error('❌ CRITICAL:', errorMsg);
+      console.error('Therapist object:', therapist);
+      console.error('═'.repeat(80));
+      addSystemNotification('❌ Invalid therapist data. Please refresh and try again.');
+      return false;
+    }
+    console.log('✅ VALIDATION PASSED: therapist.appwriteId =', therapist.appwriteId);
+    
     // Prepare booking data for Appwrite
     // 📱 NOTE: WhatsApp is NOT sent to therapist (admin-only, stored in localStorage)
     // ✅ FIXED: Match exact Appwrite schema field names (lowercase, with typos preserved)
@@ -1455,10 +1516,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       customerName: customerName, // ✅ GUARANTEED non-empty
       customerphone: customerPhone, // ✅ FIXED: lowercase to match Appwrite schema
       customerWhatsApp: customerPhone, // ✅ Use phone number for validation (required field)
-      therapistId: String(therapist?.id || therapist?.$id || ''), // 🔒 Always string for consistency
+      // 🔒 CRITICAL: Use ONLY therapist.appwriteId (Appwrite document ID)
+      // NEVER fall back to .id or .$id - those may contain display names
+      therapistId: therapist.appwriteId,
+      // 🔒 CRITICAL: Send as therapistAppwriteId for booking.service.appwrite.ts validation
+      therapistAppwriteId: therapist.appwriteId,
       therapistName: therapist?.name || '',
       therapistType: 'therapist' as const,
-      servicetype: bookingData.serviceType || 'Traditional Massage', // ✅ FIXED: lowercase to match Appwrite schema
+      serviceType: bookingData.serviceType || 'Traditional Massage',
       duration,
       price,
       location: bookingData.locationZone || chatState.customerLocation || bookingData.address || 'Address provided in chat',
@@ -1468,6 +1533,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       // 📍 GPS coordinates are OPTIONAL - don't send if not available
       cordinates: bookingData.coordinates ? JSON.stringify(bookingData.coordinates) : undefined, // ✅ FIXED: typo "cordinates" to match Appwrite schema, convert to string
       bookingDate: new Date().toISOString(),
+      date: new Date().toISOString(), // ✅ ADDED: date field for TypeScript interface
+      customerPhone: customerPhone, // ✅ ADDED: camelCase customerPhone for TypeScript interface
       time: bookingData.scheduledTime || chatState.selectedTime || new Date().toLocaleTimeString('en-US', { hour12: false }),
       status: 'pending' as const,
       responcedeadline: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // ✅ FIXED: typo "responcedeadline" to match Appwrite schema
@@ -1554,14 +1621,16 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       console.log('📋 [BOOKING] Chat booking object created:', chatBooking);
       console.log('📋 [BOOKING] Starting countdown and updating UI state...');
       
-      // ✅ FIX: Update state in ONE batch to avoid race conditions
-      // Set both booking and countdown together, then switch to chat step
+      // ⏱️ Small delay to let form finish any pending operations
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      // ✅ Update chat state to switch to chat mode
       setChatState(prev => { 
         const newState = {
           ...prev, 
           currentBooking: chatBooking,
-          bookingCountdown: 300, // Initialize countdown immediately
-          bookingStep: 'chat'
+          bookingCountdown: 300,
+          bookingStep: 'chat' as BookingStep
         };
         console.log('📋 [STATE UPDATE] New chat state:', {
           hasBooking: !!newState.currentBooking,
@@ -1572,15 +1641,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         return newState;
       });
       
-      // Wait a tick for React to process state update
-      setTimeout(() => {
-        console.log('📋 [STATE VERIFY] Current state after update:', {
-          hasBooking: !!chatState.currentBooking,
-          bookingId: chatState.currentBooking?.bookingId,
-          countdown: chatState.bookingCountdown,
-          step: chatState.bookingStep
-        });
-      }, 100);
+      // 🔓 Unlock and notify immediately - proper conditional rendering eliminates race conditions
+      setIsLocked(false);
+      setIsChatWindowVisible(true);
+      console.log('🔓 Chat unlocked and AppStateContext notified');
       
       console.log('✅ [BOOKING] State updated - booking should now be visible in UI');
       
@@ -1666,7 +1730,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       addSystemNotification(userErrorMessage);
       return false;
     }
-  }, [chatState.therapist, chatState.selectedDuration, chatState.customerLocation, chatState.coordinates, chatState.selectedDate, chatState.selectedTime, chatState.customerName, chatState.customerWhatsApp, currentUserId, currentUserName, addSystemNotification, startCountdown]);
+  }, [chatState.therapist, chatState.selectedDuration, chatState.customerLocation, chatState.coordinates, chatState.selectedDate, chatState.selectedTime, chatState.customerName, chatState.customerWhatsApp, currentUserId, currentUserName, addSystemNotification, startCountdown, setBookingStep]);
 
   // Update booking status
   const updateBookingStatus = useCallback((status: BookingStatus) => {
@@ -1950,7 +2014,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     return result.allowed ? null : (result.userMessage || null);
   }, [chatState.therapist]);
 
-  const contextValue: PersistentChatContextValue = {
+  const contextValue: PersistentChatContextValue = useMemo(() => ({
     chatState,
     isLocked,
     isConnected,
@@ -1984,7 +2048,39 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     shareBankCard,
     confirmPayment,
     addSystemNotification,
-  };
+  }), [
+    chatState,
+    isLocked,
+    isConnected,
+    openChat,
+    openChatWithService,
+    minimizeChat,
+    maximizeChat,
+    closeChat,
+    lockChat,
+    unlockChat,
+    setBookingStep,
+    setSelectedDuration,
+    setSelectedDateTime,
+    setCustomerDetails,
+    addMessage,
+    sendMessage,
+    updateTherapist,
+    canBookNow,
+    canSchedule,
+    getAvailabilityMessage,
+    createBooking,
+    updateBookingStatus,
+    acceptBooking,
+    rejectBooking,
+    confirmBooking,
+    cancelBooking,
+    setOnTheWay,
+    completeBooking,
+    shareBankCard,
+    confirmPayment,
+    addSystemNotification,
+  ]);
 
   return (
     <PersistentChatContext.Provider value={contextValue}>

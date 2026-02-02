@@ -96,8 +96,9 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
         
         console.log('🏢 Opening booking for place:', place.name);
         
+        // 🔒 CRITICAL: Use appwriteId (Appwrite document ID), not id
         openBookingChat({
-            id: place.$id,
+            appwriteId: place.$id,  // ✅ REQUIRED: Appwrite document ID
             name: place.name,
             image: place.profilePicture || place.mainImage,
             pricing: getParsedPricing(),

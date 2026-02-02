@@ -256,7 +256,9 @@ export const therapistService = {
                     availability: normalizeStatus(therapist.availability || therapist.status),
                     description: cleanDescription,
                     busyUntil: (extractedBusyTimer as any)?.busyUntil as any || null,
-                    busyDuration: (extractedBusyTimer as any)?.busyDuration as any || null
+                    busyDuration: (extractedBusyTimer as any)?.busyDuration as any || null,
+                    // ✅ FIX #1: Map Appwrite document.$id to appwriteId field (REQUIRED for booking integrity)
+                    appwriteId: (therapist as any).$id || therapist.id
                 };
             });
             
@@ -520,7 +522,9 @@ export const therapistService = {
                     availability: normalizeStatus(therapist.availability || therapist.status),
                     description: cleanDescription,
                     busyUntil: (extractedBusyTimer as any)?.busyUntil as any || null,
-                    busyDuration: (extractedBusyTimer as any)?.busyDuration as any || null
+                    busyDuration: (extractedBusyTimer as any)?.busyDuration as any || null,
+                    // 🔒 REQUIRED: Map Appwrite document.$id to appwriteId field
+                    appwriteId: (therapist as any).$id || therapist.id
                 };
             });
             
@@ -586,7 +590,9 @@ export const therapistService = {
                     availability: normalizeStatus(therapist.availability || therapist.status),
                     description: cleanDescription,
                     busyUntil: (extractedBusyTimer as any)?.busyUntil as any || null,
-                    busyDuration: (extractedBusyTimer as any)?.busyDuration as any || null
+                    busyDuration: (extractedBusyTimer as any)?.busyDuration as any || null,
+                    // 🔒 REQUIRED: Map Appwrite document.$id to appwriteId field
+                    appwriteId: (therapist as any).$id || therapist.id
                 };
             });
             

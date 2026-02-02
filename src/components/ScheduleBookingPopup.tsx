@@ -297,10 +297,12 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                     
                     // NEW: Open chat window immediately after duration selection
                     console.log('🚀 Duration selected, opening booking chat...');
+                    // 🔒 CRITICAL: Must provide appwriteId for booking integrity
+                    // Note: If therapistId is not a valid Appwrite document ID, this will fail validation
                     openBookingChat({
-                      therapistId,
-                      therapistName,
-                      therapistImage: profilePicture,
+                      appwriteId: therapistId.toString(), // ✅ REQUIRED: Appwrite document ID
+                      name: therapistName,
+                      image: profilePicture,
                       duration: option.minutes,
                       pricing: pricing || { "60": 250000, "90": 350000, "120": 450000 }
                     });

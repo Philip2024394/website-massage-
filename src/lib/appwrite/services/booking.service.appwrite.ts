@@ -36,11 +36,14 @@ function validateBookingData(data: any): void {
     userId: data.userId || data.customerId || 'anonymous', // Multiple fallbacks
     status: normalizeBookingStatus(data.status), // ✅ Normalize to valid Appwrite status
     therapistId: data.therapistId,
+    providerId: data.therapistId || data.providerId, // ✅ CRITICAL: therapistId IS the providerId
+    service: data.serviceType || 'Traditional Massage', // ✅ REQUIRED: Appwrite schema field name
     serviceDuration: data.serviceDuration || data.duration?.toString(), // Convert number to string
     location: data.location || data.address || data.locationZone, // Multiple location sources
     price: data.price || data.totalPrice, // Alternative price field
     customerName: data.customerName,
     customerWhatsApp: data.customerWhatsApp,
+    bookingDate: data.date || data.bookingDate || new Date().toISOString(), // ✅ REQUIRED
   };
 
   const missing: string[] = [];
@@ -52,8 +55,17 @@ function validateBookingData(data: any): void {
   });
 
   if (missing.length > 0) {
-    throw new Error(`Missing required booking fields: ${missing.join(', ')}`);
+    console.error('❌ [APPWRITE VALIDATION] Missing required fields:');
+    missing.forEach(field => {
+      console.error(`   ❌ ${field}: ${required[field as keyof typeof required]}`);
+    });
+    throw new Error(
+      `Missing required booking fields: ${missing.join(', ')}. ` +
+      `Cannot create booking without these fields. Check your booking data.`
+    );
   }
+  
+  console.log('✅ [APPWRITE VALIDATION] All required fields present');
   
   // Validate status enum
   const validStatuses = ['idle', 'registering', 'searching', 'pending_accept', 'active', 'cancelled', 'completed'];
@@ -142,33 +154,96 @@ export const appwriteBookingService = {
 
       const appwriteDoc = {
         // ✅ REQUIRED FIELDS - VERIFIED AGAINST LIVE APPWRITE
-        userId: bookingData.customerId || bookingData.userId || 'anonymous',
+        customerId: bookingData.customerId || bookingData.userId || 'anonymous', // ✅ REQUIRED: customerId field
+        userId: bookingData.customerId || bookingData.userId || 'anonymous', // ✅ REQUIRED: userId field (schema requires both)
+        customerphone: bookingData.customerphone || bookingData.customerWhatsApp || '', // ✅ REQUIRED: customerphone field
+        servicetype: bookingData.serviceType || 'Traditional Massage', // ✅ REQUIRED: servicetype field (lowercase)
+        locationtype: bookingData.locationType || bookingData.locationtype || 'home', // ✅ REQUIRED: locationtype field (lowercase)
+        roomnumber: bookingData.roomnumber || bookingData.roomNumber || '', // ✅ REQUIRED: roomnumber field (lowercase)
         status: normalizeBookingStatus(bookingData.status) || BOOKING_STATUS.PENDING_ACCEPT, // ✅ Normalized valid status
         therapistId: bookingData.therapistId,
-        serviceDuration: bookingData.duration?.toString() || '60', // ✅ VERIFIED: Must be string
         location: bookingData.location || bookingData.address || bookingData.locationZone || 'Unknown Location',
-        price: bookingData.price || bookingData.totalPrice,
+        price: Math.round((bookingData.price || bookingData.totalPrice) / 1000), // Appwrite expects price in thousands (160 for 160k Rp)
         customerName: bookingData.customerName,
         customerWhatsApp: bookingData.customerWhatsApp,
         
         // ✅ OPTIONAL FIELDS - VERIFIED ACCEPTED
         duration: bookingData.duration, // Keep number version for compatibility
-        locationType: bookingData.locationType,
         address: bookingData.address,
         // massageFor: bookingData.massageFor, // ❌ REMOVED: Not in Appwrite schema (causes 400 error)
         bookingId,
-        serviceType: bookingData.serviceType || 'Traditional Massage'
+        bookingDate: bookingData.date || bookingData.bookingDate || new Date().toISOString(), // ✅ REQUIRED: bookingDate field
+        time: bookingData.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }), // ✅ Include time if available
+        service: (bookingData.serviceType || 'Traditional Massage').substring(0, 16), // Max 16 chars
+        startTime: bookingData.time || new Date().toISOString(), // ✅ REQUIRED: Appwrite schema field
+        responseDeadline: bookingData.responseDeadline || new Date(Date.now() + 5 * 60 * 1000).toISOString(), // ✅ REQUIRED: 5 min default
+        responcedeadline: bookingData.responseDeadline || new Date(Date.now() + 5 * 60 * 1000).toISOString(), // ✅ REQUIRED: Appwrite typo in schema
+        createdAt: new Date().toISOString(), // ✅ REQUIRED: Appwrite schema field
         
-        // 🗑️ REMOVED: Fields not accepted by Appwrite schema
-        // - therapistName (not in schema)
-        // - providerType/providerId (legacy fields)
-        // - customerId (mapped to userId) 
-        // - startTime/expiresAt/responseDeadline (not in schema)
+        // 🔒 CRITICAL: providerId - MUST be Appwrite document ID, NOT name
+        // ⚠️ FAIL-FAST: If therapistAppwriteId is missing, throw error immediately
+        // ⚠️ NEVER fall back to display name - this corrupts the database
+        providerId: (() => {
+          if (!bookingData.therapistAppwriteId) {
+            throw new Error(
+              'CRITICAL: Missing therapistAppwriteId (Appwrite document ID). ' +
+              'Cannot create booking without valid provider document ID. ' +
+              'This is a data integrity issue - therapist data must be fetched from Appwrite first.'
+            );
+          }
+          
+          // 🔒 VALIDATE ID FORMAT: Must be valid Appwrite document ID (16-20 hex chars)
+          const appwriteIdPattern = /^[a-f0-9]{16,20}$/i;
+          if (!appwriteIdPattern.test(bookingData.therapistAppwriteId)) {
+            throw new Error(
+              `CRITICAL: Invalid Appwrite document ID format: "${bookingData.therapistAppwriteId}". ` +
+              'Expected 16-20 hexadecimal characters. Display names are not valid document IDs. ' +
+              'This indicates corrupted therapist data - must be fetched from Appwrite with proper $id mapping.'
+            );
+          }
+          
+          return bookingData.therapistAppwriteId;
+        })(),
+        providerName: bookingData.therapistName || bookingData.providerName || 'Unknown Provider', // ✅ Display name only
+        
+        // 🔒 CRITICAL: providerType - MUST be explicit enum value
+        // ⚠️ Appwrite does NOT infer this - you MUST supply it
+        // ⚠️ Valid values: "therapist" | "spa" | "clinic"
+        providerType: bookingData.providerType || 'therapist', // ✅ Default to "therapist"
       };
 
       console.log('📤 [APPWRITE] Sending to Appwrite databases.createDocument()...');
       console.log('📤 [APPWRITE] Database:', getDatabaseId());
       console.log('📤 [APPWRITE] Collection:', getBookingsCollectionId());
+      console.log('═'.repeat(80));
+      console.log('📦 [APPWRITE] FINAL PAYLOAD TO APPWRITE:');
+      console.log(JSON.stringify(appwriteDoc, null, 2));
+      console.log('═'.repeat(80));
+
+      // 🔒 HARD PREFLIGHT VALIDATION - BLOCKS INVALID SUBMISSIONS (NO RETRIES)
+      console.log('🔒 [PREFLIGHT] Running hard validation before createDocument()...');
+      const REQUIRED_FIELDS = [
+        "providerId",
+        "providerType",
+        "bookingDate",
+        "startTime",
+        "createdAt",
+        "service",
+        "price",
+        "status",
+        "customerName",
+        "customerWhatsApp",
+        "locationtype"
+      ];
+
+      for (const field of REQUIRED_FIELDS) {
+        if (!appwriteDoc[field]) {
+          console.error('❌ [PREFLIGHT BLOCKED] Missing required field:', field);
+          console.error('📦 [PREFLIGHT BLOCKED] Current payload:', JSON.stringify(appwriteDoc, null, 2));
+          throw new Error(`PREFLIGHT VALIDATION FAILED: Missing required booking field "${field}". Cannot proceed to createDocument().`);
+        }
+      }
+      console.log('✅ [PREFLIGHT] All required fields present - proceeding to createDocument()');
 
       // 🔒 Step 5: Create document in Appwrite (single source of truth)
       const createdDoc = await databases.createDocument(

@@ -151,6 +151,30 @@ async function withRetry<T>(
       
       console.error(`❌ [ORDER_NOW_MONITOR] Booking attempt #${attempt} FAILED | Duration: ${duration}ms | Error: ${lastError.message}`);
       
+      // 🔒 CRITICAL: Only retry transient errors (network, timeout, server errors, rate limits)
+      // DO NOT retry validation errors (400), auth errors (401), permission errors (403), not found (404)
+      const errorStatus = (lastError as any).status || (lastError as any).code;
+      const isTransientError = 
+        errorStatus === 429 || // Rate limit - retryable with backoff
+        errorStatus >= 500 || // Server errors (500, 502, 503, etc.)
+        lastError.message.includes('timeout') || 
+        lastError.message.includes('ETIMEDOUT') ||
+        lastError.message.includes('ECONNREFUSED') ||
+        lastError.message.includes('network') ||
+        lastError.message.includes('Rate limit');
+      
+      if (!isTransientError) {
+        console.error(`🚫 [ORDER_NOW_MONITOR] Non-retryable error detected (status: ${errorStatus})`);
+        console.error(`   → This is a validation/client error, not a transient failure`);
+        console.error(`   → Stopping retries immediately to prevent unnecessary API calls`);
+        return {
+          success: false,
+          error: lastError,
+          attempts: attempt,
+          duration: Date.now() - startTime,
+        };
+      }
+      
       // Don't delay after the last attempt
       if (attempt < maxRetries) {
         const delayMs = baseDelayMs * Math.pow(2, attempt - 1);
@@ -439,64 +463,33 @@ export function PersistentChatWindow() {
   };
 
   // Arrival countdown timer
-  const arrivalTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    if (arrivalTimerRef.current) clearInterval(arrivalTimerRef.current);
-    arrivalTimerRef.current = setInterval(() => {
+    const timer = setInterval(() => {
       setArrivalCountdown(prev => Math.max(0, prev - 1));
     }, 1000);
-    return () => {
-      if (arrivalTimerRef.current) {
-        clearInterval(arrivalTimerRef.current);
-        arrivalTimerRef.current = null;
-      }
-    };
+    return () => clearInterval(timer);
   }, []);
 
   // Therapist response countdown timer
-  const responseTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    // Clear existing timer
-    if (responseTimerRef.current) {
-      clearInterval(responseTimerRef.current);
-      responseTimerRef.current = null;
-    }
-    
     // Only run countdown if booking is pending/requested and waiting for therapist response
     if (chatState.currentBooking && 
         (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') &&
         therapistResponseCountdown > 0) {
-      responseTimerRef.current = setInterval(() => {
+      const timer = setInterval(() => {
         setTherapistResponseCountdown(prev => {
           const newCount = prev - 1;
           if (newCount <= 0) {
             // Auto-cancel booking when timer expires
             addSystemNotification('⏰ Booking expired - No response from therapists. You can try booking again.');
-            if (responseTimerRef.current) {
-              clearInterval(responseTimerRef.current);
-              responseTimerRef.current = null;
-            }
+            // Optional: Auto-close chat or show rebooking options
           }
           return Math.max(0, newCount);
         });
       }, 1000);
+      return () => clearInterval(timer);
     }
-    
-    return () => {
-      if (responseTimerRef.current) {
-        clearInterval(responseTimerRef.current);
-        responseTimerRef.current = null;
-      }
-    };
   }, [chatState.currentBooking?.status, therapistResponseCountdown]);
-
-  // Cleanup all timers on unmount
-  useEffect(() => {
-    return () => {
-      if (arrivalTimerRef.current) clearInterval(arrivalTimerRef.current);
-      if (responseTimerRef.current) clearInterval(responseTimerRef.current);
-    };
-  }, []);
 
   // Reset countdown timer when a new booking is created
   useEffect(() => {
@@ -1120,39 +1113,9 @@ export function PersistentChatWindow() {
               console.log('🔍 [DEBUG] isOpen:', chatState.isOpen);
               console.log('═══════════════════════════════════════════');
               
-              // ✅ RELIABILITY: Open chat window and start welcome timer
-              console.log('🚀 [ORDER_NOW_MONITOR] Opening chat window and starting welcome timer...');
-              console.log('🔄 [CALLING] setBookingStep("chat") NOW...');
-              console.log('🔄 [BEFORE CALL] Current bookingStep:', chatState.bookingStep);
-              setBookingStep('chat');
-              console.log('🔄 [CALLED] setBookingStep("chat") completed');
-              console.log('🔄 [IMMEDIATELY AFTER] bookingStep still shows:', chatState.bookingStep, '(expected - React state is async)');
-              
-              // Wait for React to process state update
-              setTimeout(() => {
-                console.log('🔍 [ORDER_NOW_MONITOR] bookingStep AFTER setBookingStep (100ms later):', chatState.bookingStep);
-                if (chatState.bookingStep === 'chat') {
-                  console.log('✅ [ORDER_NOW_MONITOR] Chat window opened successfully');
-                  console.log('✅ [ORDER_NOW_MONITOR] Welcome timer should be visible');
-                } else {
-                  console.warn('⚠️ [ORDER_NOW_MONITOR] Chat window not yet opened - state update pending');
-                }
-              }, 100);
-              
-              // Verify chat window opened after longer delay
-              setTimeout(() => {
-                console.log('🔍 [ORDER_NOW_MONITOR] bookingStep after 500ms:', chatState.bookingStep);
-                if (chatState.bookingStep !== 'chat') {
-                  console.error('❌ [ORDER_NOW_MONITOR] STATE UPDATE FAILED - bookingStep never changed to "chat"!');
-                  console.error('❌ [DIAGNOSIS] Check PersistentChatProvider.setBookingStep implementation');
-                  console.error('🔧 [RECOVERY] Attempting to force chat window open...');
-                  // Force state update if needed
-                  setBookingStep('chat');
-                } else {
-                  console.log('✅ [ORDER_NOW_MONITOR] Chat window confirmed open with welcome message and timer');
-                }
-              }, 500);
-              
+              // ✅ State update happens atomically in createBooking - no need to call setBookingStep again
+              console.log('✅ [BOOKING→CHAT] Booking created with chat mode enabled');
+              console.log('✅ [STATE] createBooking set bookingStep to "chat" atomically with booking data');
               console.log('🎪 [BOOKING→CHAT] Chat window opened after booking success');
               console.log('📋 [FLOW STEP 3 ✅] Chat session ready with booking integration');
               console.log('⏱️ [FLOW STEP 4 ✅] Welcome timer started');
@@ -1934,7 +1897,7 @@ export function PersistentChatWindow() {
         
         {/* Duration Selection Step */}
         {bookingStep === 'duration' && (
-          <div className="p-4">
+          <div key="duration-step" className="p-4">
             <div className="text-center mb-4">
               <div className="w-48 h-48 mx-auto mb-3 rounded-full overflow-hidden">
                 <img 
@@ -2042,7 +2005,7 @@ export function PersistentChatWindow() {
 
         {/* DateTime Selection Step (for Schedule mode) */}
         {bookingStep === 'datetime' && (
-          <div className="p-4">
+          <div key="datetime-step" className="p-4">
             <div className="text-center mb-4">
               <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
                 <Calendar className="w-8 h-8 text-orange-500" />
@@ -2113,7 +2076,7 @@ export function PersistentChatWindow() {
 
         {/* Confirmation Step - Pre-selected service from Menu Harga */}
         {bookingStep === 'confirmation' && chatState.selectedService && (
-          <div className="p-4">
+          <div key="confirmation-step" className="p-4">
             {/* Service Card with Arrival Countdown */}
             <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4 border border-orange-200 shadow-sm mb-4">
               {/* Header with therapist */}
@@ -2202,7 +2165,7 @@ export function PersistentChatWindow() {
 
         {/* Customer Details Step */}
         {bookingStep === 'details' && (
-          <div className="p-4">
+          <div key="details-step" className="p-4">
             <div className="text-center mb-4">
               <div className="w-64 h-64 mx-auto -mt-[15px] flex items-center justify-center">
                 <img 
@@ -2726,42 +2689,29 @@ export function PersistentChatWindow() {
                 }`}
               >
                 {isSending ? (
-                  <>
+                  <React.Fragment key="sending">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     Sending...
-                  </>
+                  </React.Fragment>
                 ) : (
-                  <>
+                  <React.Fragment key="ready">
                     <Send className="w-5 h-5" />
                     Order Now
-                  </>
+                  </React.Fragment>
                 )}
               </button>
             </form>
           </div>
         )}
 
-        {/* Chat Messages Step */}
-        <div className={`flex flex-col h-full ${bookingStep === 'chat' ? '' : 'hidden'}`}>
-          {/* 🔍 DEBUG: Log rendering state */}
-          {(() => {
-            console.log('🎨 [RENDER] Chat view rendering check:');
-            console.log('  - bookingStep:', bookingStep);
-            console.log('  - bookingStep === "chat":', bookingStep === 'chat');
-            console.log('  - CSS class applied:', bookingStep === 'chat' ? 'visible (shown)' : 'hidden (not displayed)');
-            console.log('  - chatState.bookingStep:', chatState.bookingStep);
-            console.log('  - Local bookingStep var:', bookingStep);
-            console.log('  - Match?:', chatState.bookingStep === bookingStep);
-            console.log('  - chatState.currentBooking:', !!chatState.currentBooking);
-            console.log('  - messages.length:', messages.length);
-            console.log('  - 🚨 IF CHAT NOT VISIBLE: Check if bookingStep !== "chat"');
-            return null;
-          })()}
+        {/* Chat Messages Step - Only render when in chat mode */}
+        <div key="chat-step" className={`flex flex-col h-full ${bookingStep === 'chat' ? '' : 'hidden'}`}>
           {/* Messages */}
           <div className="flex-1 min-h-0">
             <div className="p-4 space-y-3">
-              {/* Welcome message - always rendered, hidden when messages exist */}
-              <div className={`text-center py-12 px-4 ${messages.length === 0 ? '' : 'hidden'}`}>
+              {/* Welcome message - conditionally rendered */}
+              {messages.length === 0 && (
+              <div className="text-center py-12 px-4">
                 {/* Animated welcome */}
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
@@ -2847,9 +2797,11 @@ export function PersistentChatWindow() {
                   </div>
                 </div>
               </div>
+              )}
               
-              {/* Message list - always rendered, hidden when empty */}
-              <div className={messages.length === 0 ? 'hidden' : ''}>
+              {/* Message list - conditionally rendered */}
+              {messages.length > 0 && (
+              <>
                 {messages.map((msg: ChatMessage) => {
                   const isOwn = msg.senderType === 'customer' || 
                                (msg.senderId !== therapist.id && msg.senderType !== 'therapist' && msg.senderType !== 'system');
@@ -2906,7 +2858,8 @@ export function PersistentChatWindow() {
                     </div>
                   );
                 })}
-              </div>
+              </>
+              )}
               
               {/* Scroll anchor - always present */}
               <div ref={messagesEndRef} />
@@ -3120,7 +3073,6 @@ export function PersistentChatWindow() {
 
               </>
             )}
-          </div>
       </div>
 
       {/* Real-time Notifications */}
@@ -3262,6 +3214,7 @@ export function PersistentChatWindow() {
       serviceType="Traditional Massage"
       isProcessing={isProcessingDeposit}
     />
+    </div>
       </>
     </StatusThemeProvider>
   );

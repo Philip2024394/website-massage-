@@ -32,8 +32,20 @@ export function usePersistentChatIntegration() {
    * Convert Therapist type to ChatTherapist type
    */
   const convertToChatTherapist = useCallback((therapist: Therapist): ChatTherapist => {
-    // ✅ FIX: Use therapist NAME as primary identifier instead of complex Appwrite IDs
-    // This prevents ID mismatches and makes debugging much easier
+    // 🔒 CRITICAL VALIDATION #1: appwriteId MUST exist (fail-fast, no fallbacks)
+    // This is the ONLY validation that matters - prevents corrupted data from entering system
+    if (!therapist.appwriteId) {
+      const errorMsg = 
+        'BLOCKED: Therapist missing appwriteId. Data did not originate from Appwrite. ' +
+        'This is a data integrity issue - therapist must be fetched from Appwrite with valid document ID.';
+      console.error('═'.repeat(80));
+      console.error('❌ CRITICAL:', errorMsg);
+      console.error('Therapist object:', therapist);
+      console.error('═'.repeat(80));
+      throw new Error(errorMsg);
+    }
+    
+    // Secondary validation: name should exist (but less critical than appwriteId)
     const therapistName = therapist.name;
     if (!therapistName) {
       console.error('❌ ERROR: Therapist missing name', therapist);
@@ -42,7 +54,7 @@ export function usePersistentChatIntegration() {
     
     console.log('🔍 CONVERT: Converting therapist to ChatTherapist:', {
       name: therapistName,
-      appwriteId: therapist.$id || therapist.id,
+      appwriteId: therapist.appwriteId,
       price60: therapist.price60,
       price90: therapist.price90,
       price120: therapist.price120,
@@ -66,6 +78,8 @@ export function usePersistentChatIntegration() {
         '120': 550000,
       };
       console.warn('⚠️ Using fallback pricing - should fix therapist profile data!');
+      
+      // appwriteId already validated above - must be present
       const fallbackChatTherapist = {
         id: therapistName, // ✅ Use NAME as ID
         name: therapistName,
@@ -77,7 +91,8 @@ export function usePersistentChatIntegration() {
         price90: therapist.price90 || '450', 
         price120: therapist.price120 || '550',
         duration: 60,
-        appwriteId: therapist.$id || therapist.id,
+        // 🔒 REQUIRED: appwriteId from validated therapist object
+        appwriteId: therapist.appwriteId,
       };
       
       console.log('⚠️ CONVERT: Using fallback ChatTherapist:', {
@@ -91,6 +106,7 @@ export function usePersistentChatIntegration() {
     
     console.log('✅ Therapist pricing loaded:', therapist.name, pricing);
     
+    // appwriteId already validated above - must be present
     const chatTherapist = {
       id: therapistName, // ✅ Use NAME as ID for easy debugging
       name: therapistName,
@@ -102,8 +118,8 @@ export function usePersistentChatIntegration() {
       price90: therapist.price90,
       price120: therapist.price120,
       duration: 60,
-      // Keep Appwrite ID for database operations
-      appwriteId: therapist.$id || therapist.id,
+      // 🔒 REQUIRED: appwriteId from validated therapist object
+      appwriteId: therapist.appwriteId,
     };
     
     console.log('✅ CONVERT: ChatTherapist created:', {
