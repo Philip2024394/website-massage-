@@ -41,7 +41,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
     startTime: '',
     duration: 60,
     customerName: '',
-    customerPhone: '',
+    // 🔒 PRIVACY: Phone number collection removed
     service: '60',
     location: '',
     notes: '',

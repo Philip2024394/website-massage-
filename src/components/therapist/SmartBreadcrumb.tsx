@@ -165,10 +165,11 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
       currentId = pageInfo.parent || '';
     }
     
-    // Ensure we always have home at the root (unless we're on home)
-    if (path.length > 0 && path[0].id !== 'home' && currentPage !== 'home') {
+    // For therapist context, use 'status' as the home page instead of 'home'
+    // The 'status' page (Online Status) is the main working page for therapists
+    if (path.length > 0 && path[0].id !== 'status' && currentPage !== 'status') {
       path.unshift({
-        id: 'home',
+        id: 'status',
         label: 'Home',
         icon: Home,
         isClickable: true,

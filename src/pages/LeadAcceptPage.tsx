@@ -1,7 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, Loader, DollarSign, Clock, User, Phone, MapPin, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, Loader, DollarSign, Clock, User, Phone, MapPin, Calendar, MessageCircle } from 'lucide-react';
 import { leadGenerationService } from '../lib/appwriteService';
 
 const LeadAcceptPage: React.FC = () => {
@@ -157,11 +157,12 @@ const LeadAcceptPage: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* 🔒 PRIVACY: Customer WhatsApp REMOVED - therapists use in-app chat only */}
                             <div className="flex items-start gap-3">
-                                <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
+                                <MessageCircle className="w-5 h-5 text-blue-400 mt-0.5" />
                                 <div className="flex-1">
-                                    <p className="text-sm text-gray-500">WhatsApp</p>
-                                    <p className="font-semibold text-gray-900">{lead.customerWhatsApp}</p>
+                                    <p className="text-sm text-gray-500">Communication</p>
+                                    <p className="font-semibold text-blue-900">Use in-app chat system</p>
                                 </div>
                             </div>
 

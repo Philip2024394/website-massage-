@@ -105,6 +105,13 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
   // Safety check - redirect if no therapist data
   if (!therapist) {
     console.error('❌ No therapist data provided to TherapistOnlineStatus');
+    console.error('🔍 [DEBUG] Props received:', {
+      hasTherapist: !!therapist,
+      hasOnBack: !!onBack,
+      hasOnNavigate: !!onNavigate,
+      hasOnRefresh: !!onRefresh,
+      language: propLanguage
+    });
     return (
       <TherapistLayout
         therapist={therapist || { name: 'Therapist', id: 'unknown' }}

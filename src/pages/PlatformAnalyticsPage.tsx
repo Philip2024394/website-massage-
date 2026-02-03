@@ -1,7 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useState, useEffect } from 'react';
 import { analyticsService, PlatformAnalytics } from '../services/analyticsService';
-import { TrendingUp, Users, DollarSign, Calendar, Star, MapPin, Award, BarChart3 } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Calendar, Star, MapPin, Award, BarChart } from 'lucide-react';
 
 interface KpiProps { icon: React.ReactNode; label: string; value: string; sub?: string; }
 const KpiCard: React.FC<KpiProps> = ({ icon, label, value, sub }) => (
@@ -105,7 +105,7 @@ const PlatformAnalyticsPage: React.FC = () => {
                     <KpiCard icon={<Calendar className="w-4 h-4 text-orange-600" />} label="Bookings" value={formatNumber(analytics.totalBookings)} sub={`${analytics.bookingCompletionRate.toFixed(1)}% success`} />
                     <KpiCard icon={<DollarSign className="w-4 h-4 text-green-600" />} label="Revenue" value={formatCurrency(analytics.totalRevenue)} sub={`Avg ${formatCurrency(analytics.averageBookingValue)}`} />
                     <KpiCard icon={<TrendingUp className="w-4 h-4 text-indigo-600" />} label="Growth" value={`${(analytics.userGrowthRate || 0).toFixed(1)}%`} sub={`Providers ${(analytics.providerGrowthRate || 0).toFixed(1)}%`} />
-                    <KpiCard icon={<BarChart3 className="w-4 h-4 text-red-600" />} label="Conversion" value={`${(analytics.platformConversionRate || 0).toFixed(1)}%`} sub={`${formatNumber(analytics.averageBookingsPerUser)} bk/user`} />
+                    <KpiCard icon={<BarChart className="w-4 h-4 text-red-600" />} label="Conversion" value={`${(analytics.platformConversionRate || 0).toFixed(1)}%`} sub={`${formatNumber(analytics.averageBookingsPerUser)} bk/user`} />
                 </div>
 
                 {showDetailed && (
@@ -137,7 +137,7 @@ const PlatformAnalyticsPage: React.FC = () => {
                         {/* Provider Breakdown */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="bg-white rounded-2xl p-6 shadow-lg">
-                                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><BarChart3 className="w-6 h-6 text-brand-500" />Therapist Network</h3>
+                                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><BarChart className="w-6 h-6 text-brand-500" />Therapist Network</h3>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center p-4 pb-20 bg-gray-50 rounded-xl"><span className="text-gray-700 font-medium">Total Therapists</span><span className="text-2xl font-bold text-gray-900">{analytics.totalTherapists}</span></div>
                                     <div className="flex justify-between items-center p-4 pb-20 bg-green-50 rounded-xl"><span className="text-gray-700 font-medium">Live & Available</span><span className="text-2xl font-bold text-green-600">{analytics.liveTherapists}</span></div>

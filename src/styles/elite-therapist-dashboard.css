@@ -8,6 +8,19 @@ button, .elite-button, [role="button"], input[type="button"], input[type="submit
   font-size: 1rem;
   line-height: 1.2;
   box-sizing: border-box;
+  padding: 0.5rem 1rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure all interactive elements meet WCAG touch target requirements */
+a, [role="button"], button, input, select, textarea, .clickable {
+  min-height: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
 }
 
 button:focus-visible, .elite-button:focus-visible, [role="button"]:focus-visible {
@@ -30,12 +43,38 @@ input, textarea, select {
 @media (max-width: 768px) {
   button, .elite-button, [role="button"], input[type="button"], input[type="submit"], .therapist-page-container button, .therapist-page-container .elite-button {
     font-size: 1.05rem;
-    min-width: 48px;
-    min-height: 48px;
+    min-width: 56px;
+    min-height: 56px;
+    padding: 0.75rem 1.25rem;
   }
   input, textarea, select {
     font-size: 1.05rem;
-    min-height: 48px;
+    min-height: 56px;
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Prevent horizontal overflow on mobile */
+  .therapist-page-container {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  .therapist-layout-content {
+    padding: 0.5rem;
+    max-width: calc(100vw - 1rem);
+  }
+  
+  /* Mobile grid adjustments */
+  .grid {
+    gap: 0.5rem !important;
+  }
+  
+  .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .grid-cols-3, .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 /* ============================================================================
@@ -166,7 +205,112 @@ input, textarea, select {
 }
 
 /* ============================================================================
- * ELITE SIDEBAR STABILITY
+ * BURGER MENU & SIDEBAR RESPONSIVE DESIGN - FACEBOOK/AMAZON STANDARDS
+ * ============================================================================ */
+
+/* Burger menu button responsive touch targets */
+.burger-menu-btn {
+  /* Mobile-first: Large touch targets */
+  min-width: 56px;
+  min-height: 56px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  contain: layout style;
+  transform: translateZ(0);
+}
+
+.burger-menu-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateZ(0) scale(1.02);
+}
+
+.burger-menu-btn:active {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateZ(0) scale(0.98);
+}
+
+/* Sidebar close button */
+.sidebar-close-btn {
+  min-width: 48px;
+  min-height: 48px;
+  transition: all 0.2s ease-in-out;
+  contain: layout style;
+  transform: translateZ(0);
+}
+
+/* ============================================================================
+ * DEVICE-SPECIFIC RESPONSIVE BREAKPOINTS
+ * ============================================================================ */
+
+/* Mobile devices (< 768px) - Largest touch targets */
+@media (max-width: 767px) {
+  .burger-menu-btn {
+    min-width: 56px;
+    min-height: 56px;
+    padding: 16px;
+  }
+  
+  .sidebar-close-btn {
+    min-width: 56px;
+    min-height: 56px;
+    padding: 16px;
+  }
+  
+  #therapist-sidebar {
+    width: min(320px, calc(100vw - 32px)) !important;
+    max-width: calc(100vw - 32px) !important;
+    border-radius: 16px 0 0 16px;
+  }
+}
+
+/* Tablet devices (768px - 1024px) - Medium touch targets */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .burger-menu-btn {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 12px;
+  }
+  
+  .sidebar-close-btn {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 12px;
+  }
+  
+  #therapist-sidebar {
+    width: min(360px, calc(50vw)) !important;
+    max-width: calc(60vw) !important;
+  }
+}
+
+/* Desktop devices (> 1024px) - Standard targets with hover enhancement */
+@media (min-width: 1025px) {
+  .burger-menu-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+  
+  .burger-menu-btn:hover {
+    background-color: rgba(249, 115, 22, 0.1);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+  }
+  
+  .sidebar-close-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+  
+  #therapist-sidebar {
+    width: 400px !important;
+    max-width: 400px !important;
+    min-width: 360px !important;
+  }
+}
+
+/* ============================================================================
+ * SIDEBAR STABILITY & PERFORMANCE
  * ============================================================================ */
 
 .therapist-sidebar {
@@ -298,14 +442,99 @@ input, textarea, select {
 /* Elite tablet optimizations */
 @media (min-width: 769px) and (max-width: 1024px) {
   .therapist-sidebar {
-    width: 320px;
-    max-width: 320px;
-    min-width: 320px;
+    width: min(320px, calc(40vw));
+    max-width: min(320px, calc(40vw));
+    min-width: 280px;
+  }
+  
+  /* Tablet layout adjustments */
+  .therapist-layout-content {
+    padding: 1rem 2rem;
+    max-width: calc(100vw - 320px);
+  }
+  
+  /* Tablet-specific grid layouts */
+  .grid-cols-2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  
+  .grid-cols-1 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
-/* Elite desktop optimizations */
+/* ============================================================================
+ * LAYOUT SHIFT PREVENTION - CLS < 0.1 TARGET
+ * ============================================================================ */
+
+.therapist-layout-stable {
+  contain: layout style paint;
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.therapist-grid-stable {
+  contain: layout;
+  will-change: contents;
+  transform: translateZ(0);
+}
+
+/* Prevent aspect ratio shifts */
+.therapist-card {
+  aspect-ratio: 16/9;
+  contain: layout style;
+  min-height: 120px;
+}
+
+.therapist-button {
+  contain: layout style;
+  min-width: 120px;
+  min-height: 48px;
+  will-change: auto;
+}
+
+/* ============================================================================
+ * ELITE DESKTOP OPTIMIZATIONS - FACEBOOK/AMAZON STANDARDS
+ * ============================================================================ */
+
 @media (min-width: 1025px) {
+  .therapist-sidebar {
+    width: var(--stable-sidebar-width);
+    max-width: var(--stable-sidebar-width);
+    min-width: var(--stable-sidebar-width);
+  }
+  
+  .therapist-layout-content {
+    padding: 2rem 3rem;
+    max-width: calc(100% - var(--stable-sidebar-width));
+  }
+  
+  /* Desktop grid optimizations */
+  .grid-cols-1 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  .grid-cols-2 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  .grid-cols-3 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  
+  /* Ensure consistent gaps */
+  .grid {
+    gap: 1.5rem;
+  }
+  
+  /* Desktop touch targets can be smaller but still accessible */
+  button, .elite-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+  }
+  
   .therapist-sidebar {
     position: relative;
     transform: none;

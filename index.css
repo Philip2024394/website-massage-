@@ -14,6 +14,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   🎯 FACEBOOK/AMAZON RESPONSIVE TOUCH TARGET SYSTEM
+   ============================================================================
+   Elite cross-device compatibility standards for main site components
+   Applied to match therapist dashboard implementation standards
+   ========================================================================== */
+
+/* Base Touch Target Standards */
+@layer components {
+  /* Mobile-first touch targets (56px minimum for thumb interaction) */
+  .touch-target-mobile {
+    @apply min-w-[56px] min-h-[56px] w-14 h-14;
+  }
+  
+  /* Tablet touch targets (48px balanced for hybrid interaction) */
+  .touch-target-tablet {
+    @apply md:min-w-[48px] md:min-h-[48px] md:w-12 md:h-12;
+  }
+  
+  /* Desktop touch targets (44px optimized for mouse/trackpad) */
+  .touch-target-desktop {
+    @apply lg:min-w-[44px] lg:min-h-[44px] lg:w-11 lg:h-11;
+  }
+  
+  /* Combined elite touch target class */
+  .elite-touch-target {
+    @apply touch-target-mobile touch-target-tablet touch-target-desktop;
+    @apply touch-manipulation will-change-transform;
+    @apply contain-layout contain-style;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Performance Optimization Classes */
+@layer utilities {
+  /* CSS Containment for layout performance */
+  .contain-layout { contain: layout; }
+  .contain-style { contain: style; }
+  .contain-paint { contain: paint; }
+  .contain-strict { contain: strict; }
+  
+  /* GPU Acceleration utilities */
+  .transform-gpu { 
+    transform: translateZ(0); 
+    will-change: transform;
+  }
+  
+  /* Layout Shift Prevention */
+  .layout-stable {
+    contain: layout style paint;
+    will-change: transform;
+  }
+}
+
 /* 🔒 SCROLL SAFE ROOT */
 .scroll-safe-root {
   width: 100%;

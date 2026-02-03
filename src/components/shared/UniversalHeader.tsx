@@ -253,7 +253,7 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                             </div>
                         )}
 
-                        {/* Burger Menu Button */}
+                        {/* Burger Menu Button - Enhanced for Facebook/Amazon Standards */}
                         {showMenuButton && onMenuClick && (
                             <button 
                                 onClick={(e) => {
@@ -262,10 +262,35 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                                     console.log('🍔 UniversalHeader burger menu clicked!');
                                     onMenuClick();
                                 }}
-                                title="Menu" 
-                                className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
+                                title="Open navigation menu" 
+                                aria-label="Open navigation menu"
+                                aria-expanded="false"
+                                role="button"
+                                type="button"
+                                className="
+                                    hover:bg-orange-50 active:bg-orange-100 rounded-full 
+                                    transition-all duration-200 text-orange-500 flex-shrink-0 
+                                    flex items-center justify-center touch-manipulation
+                                    /* Mobile: 56px touch targets for optimal thumb interaction */
+                                    min-w-[56px] min-h-[56px] w-14 h-14
+                                    /* Tablet: 48px balanced for hybrid interaction */
+                                    md:min-w-[48px] md:min-h-[48px] md:w-12 md:h-12
+                                    /* Desktop: 44px optimized for mouse/trackpad */
+                                    lg:min-w-[44px] lg:min-h-[44px] lg:w-11 lg:h-11
+                                    /* Performance optimizations */
+                                    will-change-transform contain-layout contain-style
+                                "
+                                style={{
+                                    WebkitTapHighlightColor: 'transparent',
+                                    touchAction: 'manipulation'
+                                } as React.CSSProperties}
                             >
-                                <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                                <BurgerMenuIcon className="
+                                    /* Responsive icon sizing */
+                                    w-6 h-6 md:w-5 md:h-5 lg:w-6 lg:h-6
+                                    transition-transform duration-200
+                                    group-hover:scale-105 group-active:scale-95
+                                " />
                             </button>
                         )}
                     </div>

@@ -91,7 +91,7 @@ const DeclineBookingPage: React.FC = () => {
         const result = await broadcastDecline({
           bookingId,
           customerName: booking.customerName || 'Customer',
-          customerWhatsApp: booking.customerWhatsApp || '',
+          // 🔒 PRIVACY: WhatsApp NEVER shared with therapists
           durationMinutes: booking.duration,
           price: booking.price
         }, booking.therapistId);

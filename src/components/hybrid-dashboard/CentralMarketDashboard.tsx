@@ -19,7 +19,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { 
   Users, MapPin, Building, Sparkles, Settings, 
   Grid3X3, List, Filter, Search, Plus, 
-  BarChart3, TrendingUp, Bell, Menu, X 
+  BarChart, TrendingUp, Bell, Menu, X 
 } from 'lucide-react';
 
 // Market segment types

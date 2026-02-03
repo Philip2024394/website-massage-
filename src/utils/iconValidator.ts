@@ -114,7 +114,7 @@ export const SafeIcons = {
   
   // Charts & Analytics
   BarChart: getIcon('BarChart', 'TrendingUp'),
-  BarChart3: getIcon('BarChart3', 'TrendingUp'),
+  BarChart3: getIcon('BarChart', 'TrendingUp'), // BarChart3 doesn't exist in lucide-react, use BarChart
   TrendingUp: LucideIcons.TrendingUp,
   
   // Device & Tech

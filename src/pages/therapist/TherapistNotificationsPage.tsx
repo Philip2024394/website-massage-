@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Bell, Calendar, MessageCircle, AlertCircle, CheckCircle, Clock, X, ExternalLink, 
-  TrendingUp, User, DollarSign, Eye, Star, Settings, Zap, Target, BarChart3,
+  TrendingUp, User, DollarSign, Eye, Star, Settings, Zap, Target, BarChart,
   CreditCard, Heart, Shield, Award, Flame, Gauge, Users, MapPin, Camera,
   Edit3, Globe, Phone, Mail, FileText, Image, Sparkles, Timer, Home, Briefcase
 } from 'lucide-react';

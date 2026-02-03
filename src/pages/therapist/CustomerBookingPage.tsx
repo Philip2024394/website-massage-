@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (6 fixes)
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, CreditCard, Upload, CheckCircle, AlertCircle, X, Download, Smartphone, ChevronLeft, ChevronRight, Building2, Bell } from 'lucide-react';
+import { Calendar, Clock, CreditCard, Upload, CheckCircle, AlertCircle, X, Download, Smartphone, ChevronLeft, ChevronRight, Building2, Bell, MessageCircle } from 'lucide-react';
 import { Therapist, Booking } from '../../types';
 import { showToast } from '../../utils/showToastPortal';
 
@@ -26,7 +26,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string>('');
   const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
+  // 🔒 PRIVACY: Phone number collection removed for customer privacy
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [submitting, setSubmitting] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -169,7 +169,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
   };
 
   const handleSubmitBooking = async () => {
-    if (!selectedDate || !selectedTime || !customerName || !customerPhone || !paymentMethod) {
+    if (!selectedDate || !selectedTime || !customerName || !paymentMethod) {
       showToast('Please fill in all required fields', 'error');
       return;
     }
@@ -199,7 +199,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
         status: 'pending', // Always pending until therapist verifies payment
         paymentType: paymentMethod,
         paymentStatus: 'pending', // Requires therapist verification
-        customerPhoneNumber: customerPhone,
+        // 🔒 PRIVACY: Phone numbers not collected by therapists
         therapistAccepted: false,
         notificationSent: false,
       };
@@ -213,7 +213,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
       setPaymentProof(null);
       setPaymentProofPreview('');
       setCustomerName('');
-      setCustomerPhone('');
+      // Phone field removed for privacy
       setTermsAccepted(false);
       
       if (onBookingComplete) {
@@ -467,21 +467,21 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
-            <div>
-              <label className="text-sm font-semibold text-gray-700 mb-2 block">Phone Number</label>
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="+62 xxx xxx xxxx"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
+            {/* 🔒 PRIVACY: Phone number collection REMOVED - therapists use in-app communication only */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-blue-800">
+                <MessageCircle className="w-5 h-5" />
+                <span className="font-semibold">Customer Communication</span>
+              </div>
+              <p className="text-blue-700 text-sm mt-1">
+                All customer communication happens through our secure in-app chat system
+              </p>
             </div>
           </div>
         )}
 
         {/* Step 5: Payment & Terms */}
-        {customerName && customerPhone && (
+        {customerName && (
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Payment Details</h3>
             <p className="text-sm text-gray-600 mb-4">Transfer deposit to therapist's account</p>

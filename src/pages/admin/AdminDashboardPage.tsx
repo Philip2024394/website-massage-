@@ -314,12 +314,12 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
     };
 
     return (
-        <div className="h-screen bg-gray-100 flex flex-col overflow-hidden" style={{
+        <div className="min-h-screen bg-gray-100" style={{
             width: '100vw',
             maxWidth: 'none'
         }}>
             {/* Header */}
-            <header className="bg-white shadow-sm border-b flex-shrink-0" style={{width: '100%'}}>
+            <header className="bg-white shadow-sm border-b sticky top-0 z-10" style={{width: '100%'}}>
                 <div className="px-8 py-4 flex justify-between items-center w-full" style={{minWidth: '100%'}}>
                     <div className="flex items-center space-x-4">
                         <h1 className="text-2xl font-bold text-gray-800">
@@ -355,10 +355,10 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 </div>
             </header>
 
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex min-h-screen">
                 {/* Sidebar */}
-                <aside className="w-64 bg-white shadow-sm flex-shrink-0 ">
-                    <nav className="p-4 space-y-2">
+                <aside className="w-64 bg-white shadow-sm">
+                    <nav className="p-4 space-y-2 sticky top-16">
                         {navItems.map((item) => (
                             <button
                                 key={item.id}
@@ -377,7 +377,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 p-8  bg-gray-100 w-full">
+                <main className="flex-1 p-8 bg-gray-100 w-full min-h-screen" style={{ paddingBottom: '2rem' }}>
                     {loading && activeView === 'dashboard' ? (
                         <div className="flex items-center justify-center h-64">
                             <div className="text-center">

@@ -1,3 +1,4 @@
+import React from 'react';
 import { logger } from './enterpriseLogger';
 /**
  * ⚡ CHAT MESSAGE PAGINATION SERVICE - FACEBOOK STANDARDS

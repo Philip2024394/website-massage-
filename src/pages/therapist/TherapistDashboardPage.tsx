@@ -955,9 +955,8 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
-        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 py-4 shadow-lg">
-          <div className="max-w-full sm:max-w-sm mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
-            <div className="flex items-center gap-3">
+        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 md:px-8 py-4 shadow-lg">
+          <div className="max-w-full sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">\n            <div className="flex items-center gap-3">
               <span className="text-2xl animate-pulse">⏰</span>
               <div>
                 <p className="font-bold text-lg">Payment Due Tonight at 12:00 AM</p>

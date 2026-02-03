@@ -59,8 +59,6 @@ export function useTranslations(language?: 'en' | 'id' | 'gb') {
     
     const currentLanguage = language || ctx.language || getStoredLanguage();
     
-    // Log current language for debugging
-    console.log('🌐 useTranslations: Current language:', currentLanguage);
     // Normalize 'gb' to 'en' for dictionary selection while preserving requested language
     const normalizedLang = currentLanguage === 'gb' ? 'en' : currentLanguage;
     

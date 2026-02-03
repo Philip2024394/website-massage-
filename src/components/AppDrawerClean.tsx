@@ -188,19 +188,66 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   const content = (
     <>
       <div className="fixed inset-0" role="dialog" aria-modal="true" style={{ zIndex: 99999 }}>
-        <div className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose} />
-        <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-white shadow-2xl flex flex-col transform transition-transform ease-in-out duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`} style={{ zIndex: 99999 }}>
+        <div 
+          className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+          onClick={onClose}
+          aria-hidden="true" 
+        />
+        <div 
+          className={`
+            absolute right-0 top-0 bottom-0 bg-white shadow-2xl flex flex-col 
+            transition-transform ease-in-out duration-300
+            /* Facebook/Amazon responsive drawer sizing */
+            w-[75%] max-w-[280px]
+            sm:w-[320px] sm:max-w-[320px]
+            md:w-[350px] md:max-w-[350px]
+            lg:w-[380px] lg:max-w-[380px]
+            /* Performance optimizations */
+            will-change-transform contain-layout contain-style contain-paint
+            /* Hardware acceleration for smooth animations */
+            transform-gpu backdrop-blur-sm
+            ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+          `} 
+          style={{ 
+            zIndex: 99999,
+            contain: 'layout style paint',
+            transform: isOpen ? 'translate3d(0, 0, 0)' : 'translate3d(100%, 0, 0)'
+          }}
+          aria-labelledby="drawer-title"
+          aria-describedby="drawer-description"
+        >
           <div className="p-6 flex justify-between items-center border-b border-black">
-            <h2 className="font-bold text-2xl">
+            <h2 id="drawer-title" className="font-bold text-2xl">
               <span className="text-black">Inda</span>
               <span className="text-orange-500">Street</span>
             </h2>
-            <button onClick={onClose} className="p-2 rounded-full transition-colors" aria-label="Close menu">
-              <CloseIcon className="w-6 h-6 text-black" />
+            <button 
+              onClick={onClose} 
+              className="
+                rounded-full transition-all duration-200 touch-manipulation
+                /* Mobile: 56px touch targets */
+                min-w-[56px] min-h-[56px] w-14 h-14 
+                /* Tablet: 48px touch targets */
+                md:min-w-[48px] md:min-h-[48px] md:w-12 md:h-12
+                /* Desktop: 44px touch targets */
+                lg:min-w-[44px] lg:min-h-[44px] lg:w-11 lg:h-11
+                flex items-center justify-center
+                hover:bg-gray-100 active:bg-gray-200
+                will-change-transform contain-layout
+              " 
+              aria-label="Close navigation menu"
+              title="Close navigation menu"
+              type="button"
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              } as React.CSSProperties}
+            >
+              <CloseIcon className="w-6 h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-black transition-transform duration-200" />
             </button>
           </div>
 
-          <nav className="flex-grow  p-4">
+          <nav className="flex-grow p-4" id="drawer-description" aria-label="Main navigation">
             <div className="space-y-3">
               {/* Authentication Section - Separate Buttons */}
               <div className="border-b border-gray-200 pb-4 mb-4">
@@ -208,7 +255,23 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   {/* Create Account Button */}
                   <button 
                     onClick={() => handleItemClick(undefined, 'createAccount')} 
-                    className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                    className="
+                      flex items-center justify-center gap-3 w-full rounded-xl 
+                      bg-gradient-to-r from-orange-500 to-orange-600 
+                      hover:from-orange-600 hover:to-orange-700 
+                      shadow-lg hover:shadow-xl transform hover:scale-105 
+                      transition-all duration-200 touch-manipulation
+                      /* Mobile: 56px minimum height for touch */
+                      py-4 px-4 min-h-[56px]
+                      /* Tablet: 48px minimum height */
+                      md:py-3 md:min-h-[48px] 
+                      /* Desktop: 44px minimum height */
+                      lg:py-3 lg:min-h-[44px]
+                      will-change-transform
+                    "
+                    type="button"
+                    aria-label="Create new account"
+                    style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
                     <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">Create Account</span>
@@ -217,7 +280,22 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   {/* Sign In Button */}
                   <button 
                     onClick={() => handleItemClick(undefined, 'login')} 
-                    className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl border-2 border-orange-500 bg-white hover:bg-orange-50 shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
+                    className="
+                      flex items-center justify-center gap-3 w-full rounded-xl 
+                      border-2 border-orange-500 bg-white hover:bg-orange-50 
+                      shadow-md hover:shadow-lg transform hover:scale-105 
+                      transition-all duration-200 touch-manipulation
+                      /* Mobile: 56px minimum height for touch */
+                      py-4 px-4 min-h-[56px]
+                      /* Tablet: 48px minimum height */
+                      md:py-3 md:min-h-[48px]
+                      /* Desktop: 44px minimum height */
+                      lg:py-3 lg:min-h-[44px]
+                      will-change-transform
+                    "
+                    type="button"
+                    aria-label="Sign in to your account"
+                    style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <span className="text-sm text-orange-500 font-bold">Sign In</span>
@@ -229,7 +307,21 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* City Switcher Button */}
                 <button 
                   onClick={() => setShowCitySwitcher(!showCitySwitcher)} 
-                  className="flex items-center gap-3 w-full py-2 px-3 rounded-lg bg-teal-50 hover:bg-teal-100 transition-colors border-2 border-teal-200"
+                  className="
+                    flex items-center gap-3 w-full rounded-lg bg-teal-50 
+                    hover:bg-teal-100 transition-colors border-2 border-teal-200
+                    touch-manipulation
+                    /* Mobile: 56px minimum height */
+                    py-3 px-3 min-h-[56px]
+                    /* Tablet: 48px minimum height */
+                    md:py-2 md:min-h-[48px]
+                    /* Desktop: 44px minimum height */
+                    lg:py-2 lg:min-h-[44px]
+                  "
+                  type="button"
+                  aria-expanded={showCitySwitcher}
+                  aria-label={`Current city: ${city}. Click to change city`}
+                  style={{ touchAction: 'manipulation' } as React.CSSProperties}
                 >
                   <MapPin className="w-5 h-5 text-teal-600 flex-shrink-0" />
                   <div className="flex-grow text-left">

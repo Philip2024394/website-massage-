@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAPID Key Verification Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        
+        .test-section {
+            padding: 30px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .status-card.success {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        
+        .status-card.error {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+        
+        .status-card.warning {
+            border-color: #ffc107;
+            background: #fffbf0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-indicator.success { background: #28a745; }
+        .status-indicator.error { background: #dc3545; }
+        .status-indicator.warning { background: #ffc107; }
+        
+        .test-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 10px 10px 0;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .success-box {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .console-log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔑 VAPID Key Verification</h1>
+            <p>Testing Web Push Notification Setup</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Current Status</h2>
+            
+            <!-- Environment Variables Check -->
+            <div class="status-card" id="envStatus">
+                <h3><span class="status-indicator" id="envIndicator"></span>Environment Variables</h3>
+                <p id="envMessage">Checking VAPID keys in environment...</p>
+                <div class="code-block" id="envKeys"></div>
+            </div>
+            
+            <!-- Service Worker Check -->
+            <div class="status-card" id="swStatus">
+                <h3><span class="status-indicator" id="swIndicator"></span>Service Worker</h3>
+                <p id="swMessage">Checking service worker registration...</p>
+            </div>
+            
+            <!-- Push Manager Check -->
+            <div class="status-card" id="pushStatus">
+                <h3><span class="status-indicator" id="pushIndicator"></span>Push Manager</h3>
+                <p id="pushMessage">Checking push notification support...</p>
+            </div>
+            
+            <!-- Permission Check -->
+            <div class="status-card" id="permissionStatus">
+                <h3><span class="status-indicator" id="permissionIndicator"></span>Notification Permission</h3>
+                <p id="permissionMessage">Checking notification permissions...</p>
+                <button class="test-button" id="requestPermissionBtn" onclick="requestNotificationPermission()">
+                    Request Permission
+                </button>
+            </div>
+            
+            <!-- VAPID Subscription Test -->
+            <div class="status-card" id="subscriptionStatus">
+                <h3><span class="status-indicator" id="subscriptionIndicator"></span>VAPID Subscription</h3>
+                <p id="subscriptionMessage">Ready to test VAPID subscription...</p>
+                <button class="test-button" id="testSubscriptionBtn" onclick="testVapidSubscription()">
+                    Test VAPID Subscription
+                </button>
+                <div class="code-block" id="subscriptionResult" style="display: none;"></div>
+            </div>
+            
+            <div class="info-box">
+                <h4>✅ What This Test Does:</h4>
+                <ul>
+                    <li><strong>Environment Check:</strong> Verifies VAPID keys are loaded from .env file</li>
+                    <li><strong>Service Worker:</strong> Confirms push notification service worker is registered</li>
+                    <li><strong>Browser Support:</strong> Checks if your browser supports web push notifications</li>
+                    <li><strong>VAPID Validation:</strong> Tests if your VAPID keys can create a valid push subscription</li>
+                    <li><strong>Permission Flow:</strong> Verifies notification permission request works</li>
+                </ul>
+            </div>
+            
+            <h3>📊 Test Console</h3>
+            <div class="console-log" id="testConsole">
+                <div style="color: #28a745;">[INFO] VAPID verification test ready</div>
+                <div style="color: #6c757d;">[INFO] Checking environment and browser capabilities...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let testConsole = document.getElementById('testConsole');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#6c757d',
+                success: '#28a745',
+                error: '#dc3545',
+                warning: '#ffc107'
+            };
+            
+            testConsole.innerHTML += `<div style="color: ${colors[type]}">[${type.toUpperCase()}] ${timestamp}: ${message}</div>`;
+            testConsole.scrollTop = testConsole.scrollHeight;
+        }
+        
+        function updateStatus(elementId, status, message) {
+            const card = document.getElementById(elementId);
+            const indicator = document.getElementById(elementId.replace('Status', 'Indicator'));
+            const messageEl = document.getElementById(elementId.replace('Status', 'Message'));
+            
+            card.className = `status-card ${status}`;
+            indicator.className = `status-indicator ${status}`;
+            messageEl.textContent = message;
+        }
+        
+        // Test 1: Check Environment Variables
+        function checkEnvironmentVariables() {
+            log('Checking VAPID environment variables...', 'info');
+            
+            // These would be injected by Vite in a real app
+            const publicKey = import.meta.env?.VITE_VAPID_PUBLIC_KEY;
+            const contactEmail = import.meta.env?.VITE_VAPID_CONTACT_EMAIL;
+            
+            const keysDiv = document.getElementById('envKeys');
+            
+            if (publicKey && publicKey.length > 50) {
+                updateStatus('envStatus', 'success', '✅ VAPID keys found and properly configured');
+                keysDiv.innerHTML = `
+Public Key: ${publicKey.substring(0, 20)}...${publicKey.substring(publicKey.length - 10)}
+Contact: ${contactEmail || 'Not set'}
+Key Length: ${publicKey.length} characters`;
+                log('VAPID public key found and validated', 'success');
+                return true;
+            } else {
+                updateStatus('envStatus', 'error', '❌ VAPID keys missing or invalid in environment');
+                keysDiv.innerHTML = 'VITE_VAPID_PUBLIC_KEY not found or too short';
+                log('VAPID public key missing or invalid', 'error');
+                return false;
+            }
+        }
+        
+        // Test 2: Check Service Worker
+        async function checkServiceWorker() {
+            log('Checking service worker support...', 'info');
+            
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    updateStatus('swStatus', 'success', '✅ Service worker registered successfully');
+                    log('Service worker registered: ' + registration.scope, 'success');
+                    return registration;
+                } catch (error) {
+                    updateStatus('swStatus', 'warning', '⚠️ Service worker registration failed');
+                    log('Service worker error: ' + error.message, 'warning');
+                    return null;
+                }
+            } else {
+                updateStatus('swStatus', 'error', '❌ Service worker not supported');
+                log('Service worker not supported in this browser', 'error');
+                return null;
+            }
+        }
+        
+        // Test 3: Check Push Manager
+        function checkPushManager() {
+            log('Checking push notification support...', 'info');
+            
+            if ('PushManager' in window) {
+                updateStatus('pushStatus', 'success', '✅ Push notifications supported');
+                log('Push Manager API available', 'success');
+                return true;
+            } else {
+                updateStatus('pushStatus', 'error', '❌ Push notifications not supported');
+                log('Push Manager API not available', 'error');
+                return false;
+            }
+        }
+        
+        // Test 4: Check Notification Permission
+        function checkNotificationPermission() {
+            log('Checking notification permission...', 'info');
+            
+            if ('Notification' in window) {
+                const permission = Notification.permission;
+                
+                switch (permission) {
+                    case 'granted':
+                        updateStatus('permissionStatus', 'success', '✅ Notification permission granted');
+                        log('Notification permission: granted', 'success');
+                        document.getElementById('requestPermissionBtn').disabled = true;
+                        break;
+                    case 'denied':
+                        updateStatus('permissionStatus', 'error', '❌ Notification permission denied');
+                        log('Notification permission: denied', 'error');
+                        break;
+                    default:
+                        updateStatus('permissionStatus', 'warning', '⚠️ Notification permission not requested');
+                        log('Notification permission: default (not requested)', 'warning');
+                }
+                
+                return permission === 'granted';
+            } else {
+                updateStatus('permissionStatus', 'error', '❌ Notification API not supported');
+                log('Notification API not available', 'error');
+                return false;
+            }
+        }
+        
+        // Request notification permission
+        async function requestNotificationPermission() {
+            log('Requesting notification permission...', 'info');
+            
+            try {
+                const permission = await Notification.requestPermission();
+                checkNotificationPermission();
+                
+                if (permission === 'granted') {
+                    log('Permission granted by user', 'success');
+                } else {
+                    log('Permission denied by user', 'warning');
+                }
+            } catch (error) {
+                log('Permission request failed: ' + error.message, 'error');
+            }
+        }
+        
+        // Test VAPID subscription
+        async function testVapidSubscription() {
+            log('Testing VAPID subscription creation...', 'info');
+            
+            const button = document.getElementById('testSubscriptionBtn');
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                const publicKey = import.meta.env?.VITE_VAPID_PUBLIC_KEY;
+                
+                if (!publicKey) {
+                    throw new Error('VAPID public key not found');
+                }
+                
+                // Convert VAPID key to Uint8Array
+                const applicationServerKey = urlBase64ToUint8Array(publicKey);
+                
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: applicationServerKey
+                });
+                
+                updateStatus('subscriptionStatus', 'success', '✅ VAPID subscription created successfully');
+                log('VAPID subscription successful', 'success');
+                
+                // Show subscription details
+                const resultDiv = document.getElementById('subscriptionResult');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+Endpoint: ${subscription.endpoint.substring(0, 50)}...
+P256dh Key: ${subscription.getKey('p256dh') ? 'Present' : 'Missing'}
+Auth Token: ${subscription.getKey('auth') ? 'Present' : 'Missing'}
+                `;
+                
+                button.textContent = '✅ Test Passed';
+                
+            } catch (error) {
+                updateStatus('subscriptionStatus', 'error', '❌ VAPID subscription failed: ' + error.message);
+                log('VAPID subscription failed: ' + error.message, 'error');
+                button.textContent = 'Test Failed';
+                button.disabled = false;
+            }
+        }
+        
+        // Utility function to convert VAPID key
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+            
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+        
+        // Run tests on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            log('Starting VAPID verification tests...', 'info');
+            
+            // Run all tests
+            const hasVapidKeys = checkEnvironmentVariables();
+            const serviceWorker = await checkServiceWorker();
+            const hasPushManager = checkPushManager();
+            const hasPermission = checkNotificationPermission();
+            
+            // Enable subscription test if prerequisites are met
+            if (hasVapidKeys && serviceWorker && hasPushManager) {
+                document.getElementById('testSubscriptionBtn').disabled = false;
+                log('All prerequisites met - subscription test ready', 'info');
+            } else {
+                log('Prerequisites not met - subscription test disabled', 'warning');
+            }
+            
+            log('VAPID verification tests completed', 'info');
+        });
+    </script>
+</body>
+</html>

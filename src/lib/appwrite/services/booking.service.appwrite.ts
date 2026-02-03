@@ -332,8 +332,18 @@ export const appwriteBookingService = {
         return expiresAt > now;
       });
 
-      console.log(`✅ [APPWRITE] ${activeBookings.length} active (non-expired) bookings`);
-      return activeBookings as Booking[];
+      // 🔒 PRIVACY SANITIZATION: Remove customer WhatsApp from therapist-facing API
+      const sanitizedBookings = activeBookings.map((booking: any) => ({
+        ...booking,
+        // Remove sensitive customer contact information
+        customerPhone: undefined,
+        customerWhatsApp: undefined,
+        // Keep essential booking information only
+        customerName: booking.customerName || 'Customer'
+      }));
+
+      console.log(`✅ [APPWRITE] ${sanitizedBookings.length} active bookings (privacy sanitized)`);
+      return sanitizedBookings as Booking[];
 
     } catch (error: any) {
       console.error('❌ [APPWRITE] Failed to list bookings:', error);

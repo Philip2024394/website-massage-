@@ -1,5 +1,32 @@
 /**
- * 🚀 BOOKING CREATION WITH CHAT INTEGRATION
+ * �🔒 BOOKING CREATION SERVICE - REVENUE CRITICAL 🔒🚨
+ * 
+ * FINANCIAL IMPACT: Direct revenue generation for 120+ users
+ * PROTECTION STATUS: 🟢 LOCKED - STABLE PRODUCTION
+ * INTEGRATION: Chat + Appwrite + Payment Processing
+ * 
+ * 🚫 AI AGENTS - CRITICAL WARNING:
+ * This service creates real bookings that generate actual revenue.
+ * Bugs here = Lost money + Angry customers + System failures
+ * 
+ * 🔐 PROTECTED METHODS:
+ * - createBookingWithChat() - Core booking creation
+ * - Payment integration logic
+ * - Chat room creation
+ * - Database transactions
+ * 
+ * ⚠️ PRODUCTION DATA:
+ * - Creates real Appwrite documents
+ * - Triggers actual payment processing
+ * - Sends notifications to real users
+ * - Updates therapist availability
+ * 
+ * 🔑 UNLOCK REQUIRED FOR CHANGES
+ * Format: "UNLOCK BOOKING_CREATION WITH CODE: [code] FOR: [specific change]"
+ */
+
+/**
+ * �🚀 BOOKING CREATION WITH CHAT INTEGRATION
  * 
  * Purpose: Helper functions to create bookings that automatically open chat windows
  * Features:

@@ -25,11 +25,11 @@ function buildWhatsAppMessage(booking: BookingPayload, acceptUrl: string, declin
   return (
     `🛎️ NEW MASSAGE REQUEST\n` +
     `👤 Client: ${booking.customerName}\n` +
-    `📱 WhatsApp: ${booking.customerWhatsApp}\n` +
     `⏱️ Duration: ${booking.durationMinutes} min\n` +
     `💰 Price: IDR ${booking.price}\n` +
     (booking.notes ? `📝 Notes: ${booking.notes}\n` : '') +
     `\n✅ Accept: ${acceptUrl}\n❌ Decline: ${declineUrl}\n` +
+    `\n🔒 Contact customer through in-app chat system only.\n` +
     `\nRespond within 15 minutes to secure booking.`
   );
 }

@@ -101,10 +101,10 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                     console.log('✅ [Login] Session restored - loggedInProvider should now be set');
                 }
                 
-                // Redirect to therapist dashboard using page state navigation
+                // Redirect to therapist status page (first page after login)
                 if (onNavigate) {
-                    console.log('🚀 [Login] Navigating to therapist dashboard');
-                    onNavigate('therapist');
+                    console.log('🚀 [Login] Navigating to therapist status page');
+                    onNavigate('therapist-status');
                 } else {
                     console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
                 }

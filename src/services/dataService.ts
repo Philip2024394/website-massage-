@@ -37,6 +37,7 @@ const getRandomMainImage = (index: number): string => {
 const generateMockTherapists = (): Therapist[] => [
     {
         id: 1,
+        appwriteId: 'mock_therapist_1', // Added required Appwrite document ID
         name: 'Maya Wellness',
         email: 'maya@example.com',
         profilePicture: 'https://via.placeholder.com/150/FFB366/FFFFFF?text=Maya',
@@ -69,6 +70,7 @@ const generateMockTherapists = (): Therapist[] => [
     },
     {
         id: 2,
+        appwriteId: 'mock_therapist_2',
         name: 'Budi Massage Therapy',
         email: 'budi@example.com',
         profilePicture: 'https://via.placeholder.com/150/66B2FF/FFFFFF?text=Budi',
@@ -99,6 +101,7 @@ const generateMockTherapists = (): Therapist[] => [
     },
     {
         id: 3,
+        appwriteId: 'mock_therapist_3',
         name: 'Sari Holistic Care',
         email: 'sari@example.com',
         profilePicture: 'https://via.placeholder.com/150/FF66B2/FFFFFF?text=Sari',
@@ -132,6 +135,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Bali Therapists
     {
         id: 4,
+        appwriteId: 'mock_therapist_4',
         name: 'Kadek Traditional Bali',
         email: 'kadek@example.com',
         profilePicture: 'https://via.placeholder.com/150/FF9933/FFFFFF?text=Kadek',
@@ -164,6 +168,7 @@ const generateMockTherapists = (): Therapist[] => [
     },
     {
         id: 5,
+        appwriteId: 'mock_therapist_5',
         name: 'Putu Seminyak Spa',
         email: 'putu@example.com',
         profilePicture: 'https://via.placeholder.com/150/FF6B6B/FFFFFF?text=Putu',
@@ -197,6 +202,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Yogyakarta Therapists
     {
         id: 6,
+        appwriteId: 'mock_therapist_6',
         name: 'Rini Jogja Heritage',
         email: 'rini@example.com',
         profilePicture: 'https://via.placeholder.com/150/4ECDC4/FFFFFF?text=Rini',
@@ -230,6 +236,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Bandung Therapists
     {
         id: 7,
+        appwriteId: 'mock_therapist_7',
         name: 'Dian Mountain Therapy',
         email: 'dian@example.com',
         profilePicture: 'https://via.placeholder.com/150/96CEB4/FFFFFF?text=Dian',
@@ -261,6 +268,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Surabaya Therapists
     {
         id: 8,
+        appwriteId: 'mock_therapist_8',
         name: 'Adi East Java Wellness',
         email: 'adi@example.com',
         profilePicture: 'https://via.placeholder.com/150/FECA57/FFFFFF?text=Adi',
@@ -294,6 +302,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Medan Therapists
     {
         id: 9,
+        appwriteId: 'mock_therapist_9',
         name: 'Sinta Sumatra Care',
         email: 'sinta@example.com',
         profilePicture: 'https://via.placeholder.com/150/FF9FF3/FFFFFF?text=Sinta',
@@ -327,6 +336,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Makassar Therapists
     {
         id: 10,
+        appwriteId: 'mock_therapist_10',
         name: 'Ratna Sulawesi Touch',
         email: 'ratna@example.com',
         profilePicture: 'https://via.placeholder.com/150/54A0FF/FFFFFF?text=Ratna',
@@ -360,6 +370,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Palembang Therapists
     {
         id: 11,
+        appwriteId: 'mock_therapist_11',
         name: 'Indra Musi River Spa',
         email: 'indra@example.com',
         profilePicture: 'https://via.placeholder.com/150/5F27CD/FFFFFF?text=Indra',
@@ -391,6 +402,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Denpasar Bali Additional
     {
         id: 12,
+        appwriteId: 'mock_therapist_12',
         name: 'Wayan Capital Therapy',
         email: 'wayan@example.com',
         profilePicture: 'https://via.placeholder.com/150/00D2D3/FFFFFF?text=Wayan',
@@ -424,6 +436,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Balikpapan Therapists
     {
         id: 13,
+        appwriteId: 'mock_therapist_13',
         name: 'Dewi Kalimantan Wellness',
         email: 'dewi@example.com',
         profilePicture: 'https://via.placeholder.com/150/FF6348/FFFFFF?text=Dewi',
@@ -457,6 +470,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Manado Therapists
     {
         id: 14,
+        appwriteId: 'mock_therapist_14',
         name: 'Grace Bunaken Touch',
         email: 'grace@example.com',
         profilePicture: 'https://via.placeholder.com/150/FF9F43/FFFFFF?text=Grace',
@@ -490,6 +504,7 @@ const generateMockTherapists = (): Therapist[] => [
     // Lombok Therapists  
     {
         id: 15,
+        appwriteId: 'mock_therapist_15',
         name: 'Sasak Lombok Healing',
         email: 'sasak@example.com',
         profilePicture: 'https://via.placeholder.com/150/10AC84/FFFFFF?text=Sasak',

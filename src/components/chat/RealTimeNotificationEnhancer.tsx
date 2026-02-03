@@ -65,8 +65,16 @@ export const RealTimeNotificationEnhancer: React.FC<RealTimeNotificationEnhancer
     quietHours: { start: '22:00', end: '08:00' }
   });
   
+  // Facebook/Amazon Standard: Enhanced state management
+  const [escalationState, setEscalationState] = useState<Map<string, number>>(new Map());
+  const [failedNotifications, setFailedNotifications] = useState<Set<string>>(new Set());
+  const [retryTimeouts, setRetryTimeouts] = useState<Map<string, NodeJS.Timeout>>(new Map());
+  const [connectionHealth, setConnectionHealth] = useState<'healthy' | 'degraded' | 'offline'>('healthy');
+  
   const audioRef = useRef<HTMLAudioElement>(null);
   const notificationTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const escalationIntervals = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const audioContext = useRef<AudioContext | null>(null);
 
   // Sound files for different notification types
   const notificationSounds = {
@@ -78,18 +86,26 @@ export const RealTimeNotificationEnhancer: React.FC<RealTimeNotificationEnhancer
     info: '/sounds/info.mp3'
   };
 
-  // Add notification function
+  // Add notification function with Facebook/Amazon standard escalation
   const addNotification = (config: Omit<NotificationConfig, 'id'>) => {
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const notification: NotificationConfig = { ...config, id };
+    
+    console.log('📢 Adding notification with escalation capability:', notification);
     
     setNotifications(prev => {
       const updated = [notification, ...prev].slice(0, maxNotifications);
       return updated;
     });
     
-    // Handle delivery methods
+    // Handle delivery methods with retry logic
     handleNotificationDelivery(notification);
+    
+    // Facebook/Amazon Standard: Start escalation for critical notifications
+    if (config.priority === 'urgent' || config.priority === 'high') {
+      console.log('🚨 Starting escalation for critical notification:', id);
+      setTimeout(() => escalateNotification(id), 10000); // Start escalation after 10 seconds
+    }
     
     // Auto-close timer
     if (notification.autoClose && notification.closeAfter) {
@@ -206,6 +222,76 @@ export const RealTimeNotificationEnhancer: React.FC<RealTimeNotificationEnhancer
       console.log('Email notification:', { title, message, config });
     } catch (error) {
       console.error('Failed to send email:', error);
+    }
+  };
+
+  // Facebook/Amazon Standard: Notification escalation with exponential backoff
+  const escalateNotification = (notificationId: string, attempt: number = 1) => {
+    const maxAttempts = 5;
+    const baseDelay = 5000; // 5 seconds
+    const maxDelay = 60000; // 1 minute
+    
+    if (attempt > maxAttempts) {
+      console.error('🚨 CRITICAL: Notification escalation failed after max attempts:', notificationId);
+      setFailedNotifications(prev => new Set([...prev, notificationId]));
+      return;
+    }
+    
+    const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
+    console.log(`🔄 Escalating notification ${notificationId}, attempt ${attempt}, delay: ${delay}ms`);
+    
+    const timeout = setTimeout(() => {
+      // Retry notification with escalated priority
+      const notification = notifications.find(n => n.id === notificationId);
+      if (notification && !document.hidden && !isQuietHours()) {
+        playEnhancedSound(notification.priority === 'urgent' ? 'critical' : 'urgent');
+        
+        // Vibrate with escalating pattern
+        if ('vibrate' in navigator) {
+          const pattern = Array(attempt).fill([300, 200]).flat();
+          navigator.vibrate(pattern);
+        }
+        
+        // Schedule next escalation
+        escalateNotification(notificationId, attempt + 1);
+      }
+    }, delay);
+    
+    escalationIntervals.current.set(`${notificationId}-${attempt}`, timeout);
+  };
+  
+  // Enhanced cross-browser audio system
+  const playEnhancedSound = async (urgency: 'normal' | 'urgent' | 'critical' = 'normal') => {
+    try {
+      // Method 1: HTML Audio API
+      if (audioRef.current && userPreferences.sound) {
+        audioRef.current.currentTime = 0;
+        await audioRef.current.play();
+        return;
+      }
+      
+      // Method 2: Web Audio API fallback
+      if (!audioContext.current && window.AudioContext) {
+        audioContext.current = new AudioContext();
+      }
+      
+      if (audioContext.current) {
+        const oscillator = audioContext.current.createOscillator();
+        const gainNode = audioContext.current.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.current.destination);
+        
+        // Different frequencies for urgency levels
+        const frequency = urgency === 'critical' ? 1000 : urgency === 'urgent' ? 800 : 600;
+        oscillator.frequency.setValueAtTime(frequency, audioContext.current.currentTime);
+        gainNode.gain.setValueAtTime(0.3, audioContext.current.currentTime);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.current.currentTime + 0.3);
+      }
+    } catch (error) {
+      console.warn('🔊 Enhanced audio failed:', error);
     }
   };
 

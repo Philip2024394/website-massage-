@@ -5,7 +5,7 @@ import { logger } from './enterpriseLogger';
  */
 
 import { 
-  Booking, 
+  ChatBooking as Booking, // Use ChatBooking as the main Booking type
   BookingStatus, 
   CreateBookingRequest, 
   TherapistMatch, 

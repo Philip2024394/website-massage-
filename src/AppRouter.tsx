@@ -21,6 +21,11 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { SkeletonLoader } from './components/SkeletonLoader';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from './lib/appwrite';
 
+// 🚀 ENTERPRISE LOADING SYSTEM
+import { useLoading, useComponentLoading } from './context/LoadingContext';
+import { EnterpriseLoader } from './components/EnterpriseLoader';
+import { SkeletonLoader as EnterpriseSkeleton, PageSkeleton } from './components/ui/SkeletonLoader';
+
 // Error Boundary for lazy loading failures
 class LazyLoadErrorBoundary extends React.Component<
   { children: React.ReactNode; fallback: React.ReactNode },
@@ -237,11 +242,14 @@ interface AppRouterProps {
 /**
  * Helper component to fetch therapist from Appwrite when not in memory
  * Used for direct link sharing (cold starts)
+ * 🚀 UPDATED: Uses enterprise loading patterns
  */
 const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => {
     const [therapist, setTherapist] = React.useState<any>(null);
-    const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    
+    // 🚀 ENTERPRISE LOADING: Component-specific loading state
+    const { isLoading, setLoading } = useComponentLoading(`therapist-profile-${therapistId}`);
 
     // Official images constants (same as SharedTherapistProfile)
     const OFFICIAL_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258';
@@ -250,6 +258,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
     React.useEffect(() => {
         const fetchTherapist = async () => {
             try {
+                setLoading(true);
                 console.log('🔍 [FETCH] Loading therapist from Appwrite:', therapistId);
                 const fetchedTherapist = await databases.getDocument(
                     DATABASE_ID, 
@@ -266,23 +275,21 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
                 
                 console.log('✅ [FETCH] Therapist loaded:', therapistWithImages.name);
                 setTherapist(therapistWithImages);
-                setLoading(false);
+                setError(null);
             } catch (err: any) {
                 console.error('❌ [FETCH] Failed to load therapist:', err);
                 setError(err.message || 'Failed to load profile');
+            } finally {
                 setLoading(false);
             }
         };
 
         fetchTherapist();
-    }, [therapistId]);
+    }, [therapistId, setLoading]);
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
-                <div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
-            </div>
-        );
+    // 🚀 ENTERPRISE LOADING: Skeleton loader instead of spinner
+    if (isLoading) {
+        return <PageSkeleton variant="therapist-dashboard" />;
     }
 
     if (error || !therapist) {
@@ -352,6 +359,9 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
 export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const { page, language, handleLanguageSelect } = props;
     const { t, dict, loading: translationsLoading } = useTranslations();
+    
+    // 🚀 ENTERPRISE LOADING SYSTEM Integration
+    const { loading, setPageLoading } = useLoading();
 
     const resolveTherapistProfile = () => {
         if (props.loggedInProvider?.type !== 'therapist') return null;
@@ -360,14 +370,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         return match || (props.loggedInProvider as any);
     };
 
-    // Loading state - NEVER show loading spinner on landing page to prevent splash screen
-    if (props.isLoading && page !== 'landing') {
-        return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
-                <div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    // 🔄 REPLACED: Legacy loading pattern with enterprise system
+    React.useEffect(() => {
+        // Set page loading state when isLoading prop changes
+        if (page !== 'landing') {
+            setPageLoading(props.isLoading);
+        }
+    }, [props.isLoading, page, setPageLoading]);
 
     /**
      * Render route with suspense boundary and proper language props
@@ -444,7 +453,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         return (
             <LazyLoadErrorBoundary fallback={<ErrorFallback />}>
-                <Suspense fallback={<LoadingSpinner />}>
+                <Suspense fallback={<EnterpriseSkeleton variant="card" className="mx-auto my-8" />}>
                     <Component 
                         {...props} 
                         {...componentProps} 
@@ -460,10 +469,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
     /**
      * Route matcher - Enterprise pattern for clean routing
+     * 🚀 WRAPPED: With enterprise page loading system
      */
     console.log('[ROUTER] Resolving page:', page, '| Type:', typeof page);
     
-    switch (page) {
+    return (
+        <EnterpriseLoader
+            variant="page"
+            pageVariant={
+                page.includes('therapist') ? 'therapist-dashboard' : 
+                page === 'home' || page === 'landing' ? 'home' : 
+                'generic'
+            }
+        >
+            {(() => {
+                switch (page) {
         // ===== PUBLIC ROUTES =====
         case 'landing':
             return renderRoute(publicRoutes.landing.component);
@@ -1423,10 +1443,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapistDashboard':
         case 'therapist-dashboard':
             console.log('🔷 [SWITCH CASE] therapist-dashboard MATCHED - REDIRECTING TO STATUS');
-            // Redirect to status page instead of dashboard
+            console.log('✅ [FIRST PAGE] Showing Online Status as first page');
+            console.log('🔍 [DEBUG] therapist data:', props.loggedInProvider);
+            // Redirect to status page instead of dashboard (First page after login)
             return renderRoute(therapistRoutes.status.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                therapist: props.loggedInProvider || props.user,
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
@@ -1435,10 +1457,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'status':
         case 'therapist-status':
             console.log('🔵 [ROUTE DEBUG] therapist-status case matched!');
+            console.log('✅ [FIRST PAGE] Therapist Online Status Page');
+            console.log('🔍 [DEBUG] therapist data:', props.loggedInProvider);
             console.log('[ROUTE RESOLVE] therapist-status → TherapistOnlineStatus');
             return renderRoute(therapistRoutes.status.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                therapist: props.loggedInProvider || props.user,
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
@@ -1720,7 +1744,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     </div>
                 </div>
             );
-    }
+                }
+            })()}
+        </EnterpriseLoader>
+    );
 };
 
 export default AppRouter;

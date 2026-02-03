@@ -1,0 +1,228 @@
+import React from 'react';
+import { useLoading } from '../context/LoadingContext';
+import { SkeletonLoader, PageSkeleton } from './ui/SkeletonLoader';
+
+interface EnterpriseLoaderProps {
+  variant?: 'global' | 'page' | 'component' | 'inline';
+  fallback?: React.ReactNode;
+  className?: string;
+  children?: React.ReactNode;
+  componentId?: string;
+  showProgress?: boolean;
+  pageVariant?: 'therapist-dashboard' | 'home' | 'generic';
+}
+
+/**
+ * Enterprise-grade loader component following Amazon/Meta UX standards
+ * 
+ * Key Features:
+ * - No layout shifts (reserves space)
+ * - Progressive loading states
+ * - Accessibility compliant
+ * - Performance optimized
+ * - Graceful degradation
+ */
+export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
+  variant = 'component',
+  fallback,
+  className = '',
+  children,
+  componentId,
+  showProgress = false,
+  pageVariant = 'generic'
+}) => {
+  const { loading, progress, canShowContent, isCriticalLoading, getComponentLoading } = useLoading();
+
+  const shouldShowLoading = () => {
+    switch (variant) {
+      case 'global':
+        return loading.global;
+      case 'page':
+        return loading.page || isCriticalLoading();
+      case 'component':
+        return componentId ? getComponentLoading(componentId) : false;
+      case 'inline':
+        return loading.data;
+      default:
+        return false;
+    }
+  };
+
+  const isLoading = shouldShowLoading();
+
+  // For global loading - show full screen loading with brand
+  if (variant === 'global' && isLoading) {
+    return (
+      <div 
+        className="fixed inset-0 flex flex-col items-center justify-center z-50 bg-orange-500"
+        role="status"
+        aria-live="polite"
+        aria-label={progress.message || "Application is loading"}
+      >
+        {/* Brand Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            IndaStreet
+          </h1>
+          <p className="text-white/90 text-lg font-medium">
+            Professional Massage Services
+          </p>
+        </div>
+        
+        {/* Progress Indicator */}
+        {showProgress && (
+          <div className="relative w-20 h-20 mb-6">
+            <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+              <circle
+                cx="40"
+                cy="40"
+                r="36"
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth="8"
+                fill="none"
+              />
+              <circle
+                cx="40"
+                cy="40"
+                r="36"
+                stroke="white"
+                strokeWidth="8"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 36}`}
+                strokeDashoffset={`${2 * Math.PI * 36 * (1 - progress.current / 100)}`}
+                className="transition-all duration-300 ease-out"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        )}
+        
+        {/* Loading Message */}
+        <p className="text-white/90 text-base font-medium mb-4">
+          {progress.message || 'Loading...'}
+        </p>
+        
+        {/* Loading Dots */}
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+          <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+          <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+        </div>
+        
+        {/* Stage Indicator */}
+        {showProgress && (
+          <div className="mt-8 w-64 max-w-full">
+            <div className="flex justify-between text-white/70 text-xs mb-2">
+              <span className={progress.stage === 'initializing' ? 'text-white' : ''}>
+                Initializing
+              </span>
+              <span className={progress.stage === 'loading' ? 'text-white' : ''}>
+                Loading
+              </span>
+              <span className={progress.stage === 'authenticating' ? 'text-white' : ''}>
+                Authenticating
+              </span>
+              <span className={progress.stage === 'finalizing' ? 'text-white' : ''}>
+                Ready
+              </span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-1">
+              <div 
+                className="h-1 rounded-full bg-white transition-all duration-500"
+                style={{ width: `${Math.min(progress.current, 100)}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // For page loading - show page skeleton
+  if (variant === 'page' && isLoading) {
+    return (
+      <div 
+        className={`${className}`}
+        role="status"
+        aria-live="polite"
+        aria-label="Page content is loading"
+      >
+        {fallback || <PageSkeleton variant={pageVariant} />}
+      </div>
+    );
+  }
+
+  // For component loading - show skeleton in place
+  if (variant === 'component' && isLoading) {
+    return (
+      <div 
+        className={`${className}`}
+        role="status"
+        aria-live="polite"
+        aria-label="Content is loading"
+      >
+        {fallback || <SkeletonLoader variant="card" />}
+      </div>
+    );
+  }
+
+  // For inline loading - show minimal spinner
+  if (variant === 'inline' && isLoading) {
+    return (
+      <div className={`flex items-center justify-center ${className}`}>
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent"></div>
+        <span className="ml-2 text-gray-600">Loading...</span>
+      </div>
+    );
+  }
+
+  // Show children when not loading
+  return <>{children}</>;
+};
+
+/**
+ * Higher-order component for wrapping components with loading states
+ */
+export const withEnterpriseLoader = <P extends object>(
+  Component: React.ComponentType<P>,
+  componentId: string,
+  fallback?: React.ReactNode
+) => {
+  const WrappedComponent = React.forwardRef<any, P>((props, ref) => (
+    <EnterpriseLoader 
+      variant="component" 
+      componentId={componentId}
+      fallback={fallback}
+    >
+      <Component {...(props as P)} ref={ref} />
+    </EnterpriseLoader>
+  ));
+  
+  WrappedComponent.displayName = `withEnterpriseLoader(${Component.displayName || Component.name || 'Component'})`;
+  
+  return WrappedComponent;
+};
+
+/**
+ * Loading boundary component for sections of the app
+ */
+export const LoadingBoundary: React.FC<{
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  className?: string;
+}> = ({ children, fallback, className }) => {
+  const { isCriticalLoading } = useLoading();
+  
+  if (isCriticalLoading()) {
+    return (
+      <div className={className}>
+        {fallback || <SkeletonLoader variant="list" count={3} />}
+      </div>
+    );
+  }
+  
+  return <>{children}</>;
+};

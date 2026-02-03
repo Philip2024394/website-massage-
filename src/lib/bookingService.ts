@@ -34,7 +34,7 @@ export interface Booking {
     massageFor?: 'male' | 'female' | 'children';
     date: string;
     time: string;
-    status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'searching';
+    status: 'idle' | 'registering' | 'searching' | 'pending_accept' | 'active' | 'cancelled' | 'completed' | 'pending' | 'confirmed';
     responseDeadline?: string;
     expiresAt?: string; // ⏱️ CRITICAL: 5-minute expiry
     acceptedAt?: string;

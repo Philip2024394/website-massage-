@@ -163,17 +163,42 @@ export const StatusThemeProvider: React.FC<StatusThemeProviderProps> = ({
   };
 
   useEffect(() => {
-    // Apply global theme variables to document root
-    const root = document.documentElement;
-    applyThemeToElement(root, currentTheme);
-    
-    // Add status class to body for global status-specific styling
-    document.body.className = document.body.className.replace(/booking-status-\w+/g, '');
-    document.body.classList.add(`booking-status-${currentStatus}`);
+    // ⚠️ CRITICAL FIX: Defer DOM mutations to prevent React reconciliation conflicts
+    // Use requestAnimationFrame to ensure React has finished its render phase
+    const timeoutId = setTimeout(() => {
+      try {
+        // Apply global theme variables to document root
+        const root = document.documentElement;
+        if (root) {
+          applyThemeToElement(root, currentTheme);
+        }
+        
+        // Add status class to body for global status-specific styling
+        // Use defensive checks to prevent DOM manipulation errors
+        if (document.body) {
+          const bodyClasses = document.body.className || '';
+          const cleanedClasses = bodyClasses.replace(/booking-status-\w+/g, '').trim();
+          document.body.className = cleanedClasses;
+          document.body.classList.add(`booking-status-${currentStatus}`);
+        }
+      } catch (error) {
+        // Silently fail if DOM manipulation fails during transitions
+        console.warn('StatusThemeProvider: DOM update skipped during transition', error);
+      }
+    }, 0);
     
     return () => {
-      // Cleanup on unmount
-      document.body.className = document.body.className.replace(/booking-status-\w+/g, '');
+      clearTimeout(timeoutId);
+      // Cleanup on unmount - use try-catch for safety
+      try {
+        if (document.body) {
+          const bodyClasses = document.body.className || '';
+          document.body.className = bodyClasses.replace(/booking-status-\w+/g, '').trim();
+        }
+      } catch (error) {
+        // Silently fail during cleanup
+        console.warn('StatusThemeProvider: Cleanup skipped', error);
+      }
     };
   }, [currentStatus, currentTheme]);
 

@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
-import { Globe, Star, Save, Eye, Home, BarChart3, Users, MapPin, TrendingUp } from 'lucide-react';
+import { Globe, Star, Save, Eye, Home, BarChart, Users, MapPin, TrendingUp } from 'lucide-react';
 
 interface WebsiteManagementPageProps {
     onBack: () => void;
@@ -208,7 +208,7 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                         <span>Traffic</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-[11px] text-gray-700">
-                                        <BarChart3 className="w-3.5 h-3.5" />
+                                        <BarChart className="w-3.5 h-3.5" />
                                         <span>SEO Boost</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-[11px] text-gray-700">
@@ -320,7 +320,7 @@ const WebsiteManagementPage: React.FC<WebsiteManagementPageProps> = ({
                                     <p className="text-[10px] text-gray-600">Quality backlink improves visibility</p>
                                 </div>
                                 <div className="flex flex-col gap-1 bg-white rounded-lg p-3 border border-gray-200">
-                                    <BarChart3 className="w-4 h-4 text-gray-600" />
+                                    <BarChart className="w-4 h-4 text-gray-600" />
                                     <h4 className="text-xs font-medium text-gray-800">More Traffic</h4>
                                     <p className="text-[10px] text-gray-600">Directory sends relevant visitors</p>
                                 </div>

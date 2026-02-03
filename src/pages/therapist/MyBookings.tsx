@@ -41,7 +41,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
     startTime: '',
     duration: 60,
     customerName: '',
-    customerPhone: '',
+    // 🔒 PRIVACY: Phone number collection removed
     service: '60',
     location: '',
     notes: '',
@@ -79,12 +79,8 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
         startTime: doc.startTime,
         duration: doc.duration || parseInt(doc.service),
         customerName: doc.userName || doc.customerName || 'Customer',
+        // 🔒 PRIVACY: Customer phone NEVER shared with therapists
         service: doc.service,
-        status: doc.status,
-        source: doc.source || 'platform',
-        totalCost: doc.totalCost,
-        location: doc.location,
-        customerPhone: doc.customerPhone,
         notes: doc.notes
       }));
 

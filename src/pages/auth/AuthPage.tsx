@@ -33,14 +33,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
         'unified'
     );
 
-    console.log('🔍 AuthPage RENDER - mode detection:', {
-        propMode,
-        pathname: window.location.pathname,
-        finalMode: mode,
-        shouldShowDropdown: mode !== 'signin',
-        shouldShowTerms: mode !== 'signin'
-    });
-
     const accountTypes = [
         { value: 'therapist', label: t?.massageTherapist || 'Massage Therapist' },
         { value: 'massage-place', label: t?.massageSpa || 'Massage Place' },
@@ -62,7 +54,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
             return false;
         }
         
-        // Validate password length (Appwrite requires 8 characters minimum)
+        // Validate password length only (Appwrite will validate other requirements)
         if (password.length < 8) {
             setError(t?.passwordMinLength || 'Password must be at least 8 characters');
             return false;
@@ -95,6 +87,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                 setError('Please accept terms & conditions');
                 return false;
             }
+            if (!captchaVerified) {
+                setError('Please complete the security verification (slide to unlock)');
+                return false;
+            }
         }
         
         return true;
@@ -103,6 +99,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
     const createNewAccount = async (normalizedEmail: string, password: string, accountType: string) => {
         try {
             console.log('🔵 Step 1: Creating Appwrite auth account for:', normalizedEmail);
+            console.log('🔍 Password length:', password.length);
+            console.log('🔍 Password has lowercase:', /[a-z]/.test(password));
+            console.log('🔍 Password has uppercase:', /[A-Z]/.test(password));
+            console.log('🔍 Password has numbers:', /[0-9]/.test(password));
+            console.log('🔍 Password preview:', password.substring(0, 3) + '***');
             
             // 1. Create Appwrite auth account
             const authUser = await authService.register(
@@ -129,13 +130,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
             
             // Create profile in appropriate collection
             if (accountType === 'therapist') {
-                const therapistId = ID.unique();
-                console.log('🔵 Creating therapist profile with ID:', therapistId);
+                console.log('🔵 Creating therapist profile');
                 await (therapistService as any).create({
                     email: profileData.email,
                     name: (profileData as any).name,
-                    therapistId: therapistId,
-                    id: therapistId,
                     countryCode: '+62',
                     whatsappNumber: '',
                     specialization: 'General Massage',
@@ -202,12 +200,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
             }
             
             console.log('✅ Step 2 Complete: Profile document created');
-            console.log('🔵 Step 3: Waiting for database indexing...');
+            console.log('🔵 Step 3: Waiting for database indexing and session setup...');
             
-            // Wait a moment for database to index the new document
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Wait for database to index the new document and for session to be ready
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             console.log('✅ Account creation process completed successfully');
+            console.log('✅ Ready to navigate to dashboard for account type:', accountType);
             
         } catch (error: any) {
             console.error('❌ Account creation failed at step:', error);
@@ -221,11 +220,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
             // Provide specific error messages based on error type
             if (error.code === 409 || error.message?.includes('already exists')) {
                 throw new Error('An account with this email already exists. Please sign in instead.');
-            } else if (error.code === 400 || error.message?.includes('Password')) {
-                throw new Error('Password must be at least 8 characters long.');
             } else if (error.code === 429 || error.message?.includes('rate limit')) {
                 throw new Error('Too many attempts. Please wait a moment and try again.');
             } else {
+                // Just pass through the actual error message from Appwrite
                 throw new Error(error.message || 'Failed to create account. Please try again.');
             }
         }
@@ -240,13 +238,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
         setError('');
         
         try {
-            // Normalize email
+            // Normalize email and password (trim whitespace)
             const normalizedEmail = email.toLowerCase().trim();
+            const trimmedPassword = password.trim();
             
             if (mode === 'signin') {
                 // Sign in mode - try to login first, then get user profile
                 try {
-                    const user = await authService.login(normalizedEmail, password);
+                    const user = await authService.login(normalizedEmail, trimmedPassword);
                     console.log('✅ Sign in successful');
                     console.log('✅ User ID:', user.$id);
                     console.log('✅ User email:', user.email);
@@ -315,7 +314,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                 try {
                     console.log('🔵 Starting account creation process...');
                     // Create new account
-                    await createNewAccount(normalizedEmail, password, accountType);
+                    await createNewAccount(normalizedEmail, trimmedPassword, accountType);
                     
                     console.log('✅ Account created successfully!');
                     
@@ -330,8 +329,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                     // Enhanced error messages for signup with translations
                     if (error.message?.includes('already exists')) {
                         setError(t?.errorEmailAlreadyRegistered || '❌ This email is already registered. Please:\n• Use the Sign In button instead\n• Or use a different email address\n• Contact support if you forgot your password');
-                    } else if (error.message?.includes('Password')) {
-                        setError(t?.errorPasswordRequirements || '❌ Password requirements not met:\n• Must be at least 8 characters long\n• Include letters and numbers\n• No spaces at start or end');
+                    } else if (error.message?.includes('Password') || error.message?.includes('password')) {
+                        // Show the actual error message from Appwrite or provide guidance
+                        const errorMsg = error.message || t?.errorPasswordRequirements || 
+                            '❌ Password requirements:\n• Must be at least 8 characters\n• Use lowercase letters + numbers\n• Try: "password123" or "abc12345"';
+                        setError(errorMsg);
                     } else if (error.message?.includes('rate limit') || error.code === 429) {
                         setError(t?.errorRateLimit || '⚠️ Too many attempts. Please wait a moment before trying again.');
                     } else if (error.message?.includes('email') && error.message?.includes('invalid')) {
@@ -383,7 +385,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                     console.log('🆕 Creating new account');
                     
                     try {
-                        await createNewAccount(normalizedEmail, password, accountType);
+                        await createNewAccount(normalizedEmail, trimmedPassword, accountType);
                         
                         console.log('✅ Account created successfully!');
                         
@@ -534,7 +536,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                                 type="text" 
                                 value={password} 
                                 onChange={(e) => {
-                                    setPassword(e.target.value);
+                                    // Trim leading/trailing spaces automatically
+                                    setPassword(e.target.value.trim());
                                     if (error) setError(''); // Clear error when user starts typing
                                 }} 
                                 className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${

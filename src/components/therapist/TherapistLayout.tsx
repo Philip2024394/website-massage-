@@ -44,6 +44,9 @@ import EnhancedNavigation from './EnhancedNavigation';
 import FloatingActionButton from './FloatingActionButton';
 import SmartBreadcrumb from './SmartBreadcrumb';
 
+// Alias BarChart as BarChart3 for compatibility (BarChart3 doesn't exist in lucide-react)
+const BarChart3 = BarChart;
+
 interface TherapistLayoutProps {
   children: React.ReactNode;
   therapist: any;
@@ -244,9 +247,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   const labels = menuLabels[language] || menuLabels.id;
   
   const menuItems = [
-    { id: 'status', label: language === 'id' ? '🏠 Beranda' : '🏠 Home', icon: Home, color: 'text-orange-500' },
-    { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: FileText, color: 'text-orange-500' },
     { id: 'status', label: labels.status, icon: Clock, color: 'text-orange-500' },
+    { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: FileText, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
     { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-orange-500' },
     { id: 'more-customers', label: labels['more-customers'], icon: Users, color: 'text-orange-500' },
@@ -326,10 +328,10 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
   return (
     <div 
-      className="h-screen bg-white w-full max-w-full therapist-page-container flex flex-col overflow-hidden" 
+      className="bg-white w-full max-w-full therapist-page-container"
       style={{ 
-        WebkitOverflowScrolling: 'touch',
-        touchAction: 'pan-y pan-x'
+        minHeight: '100vh',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 40px)'
       }}
     >
       {/* Elite Header - Now working with forced visibility and safe area support */}
@@ -341,13 +343,17 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           left: '0', 
           right: '0',
           height: '60px',
+          minHeight: '60px',
+          maxHeight: '60px',
           backgroundColor: 'white',
           borderBottom: '1px solid #e5e7eb',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           zIndex: '100',
           display: 'flex',
           alignItems: 'center',
-          width: '100vw'
+          width: '100%',
+          maxWidth: '100%',
+          contain: 'layout style'
         }}
       >
         <div style={{ 
@@ -355,10 +361,12 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%',
+          maxWidth: '100%',
           padding: '0 16px',
           height: '100%',
           overflow: 'visible',
-          minWidth: '100%'
+          minWidth: '0',
+          contain: 'layout'
         }}>
           {/* Left side - Therapist Profile */}
           <div style={{ 
@@ -442,25 +450,31 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
               <BarChart className="w-5 h-5" />
             </button>
             
-            {/* Burger Menu */}
+            {/* Burger Menu - Enhanced Responsive Design */}
             <button
               onClick={handleSidebarToggle}
+              className="burger-menu-btn relative flex items-center justify-center transition-all duration-200 ease-in-out rounded-lg
+                         min-w-[56px] min-h-[56px] p-2
+                         sm:min-w-[48px] sm:min-h-[48px] sm:p-2
+                         lg:min-w-[44px] lg:min-h-[44px] lg:p-2
+                         hover:bg-gray-100 active:bg-gray-200 active:scale-95
+                         touch-manipulation select-none cursor-pointer
+                         focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
               style={{
-                padding: '8px',
-                border: 'none',
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
               }}
+              aria-label={isSidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isSidebarOpen}
+              aria-controls="therapist-sidebar"
+              role="button"
+              tabIndex={0}
             >
               {isSidebarOpen ? (
-                <X style={{ width: '24px', height: '24px', color: 'black' }} />
+                <X className="w-6 h-6 sm:w-5 sm:h-5 text-gray-700 transition-colors" />
               ) : (
                 <>
-                  <Menu style={{ width: '24px', height: '24px', color: 'black' }} />
+                  <Menu className="w-6 h-6 sm:w-5 sm:h-5 text-gray-700 transition-colors" />
                   {totalUnread > 0 && (
                     <FloatingUnreadBadge count={totalUnread} size="sm" />
                   )}
@@ -505,10 +519,10 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       {/* Space pusher for fixed header */}
       <div style={{ height: '60px' }}></div>
 
-      {/* Sidebar Overlay - Fixed z-index and event propagation */}
+      {/* Sidebar Overlay - Enhanced responsive behavior */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-[110]"
+          className="fixed inset-0 bg-black bg-opacity-50 z-[110] transition-opacity duration-300 ease-in-out"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -518,20 +532,37 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             e.preventDefault();
             setIsSidebarOpen(false);
           }}
+          style={{
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
+            contain: 'strict'
+          }}
+          aria-label="Close navigation menu"
+          role="button"
+          tabIndex={-1}
         />
       )}
 
-      {/* Sidebar with gesture support - Fixed z-index and smooth animation */}
+      {/* Sidebar with gesture support - Enhanced responsive design */}
       <aside
         {...swipeHandlers}
-        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-[120] transform transition-transform duration-300 ease-in-out ${
-          isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        id="therapist-sidebar"
+        className={`fixed top-0 right-0 bg-white shadow-2xl z-[120] transform transition-transform duration-300 ease-in-out
+                   w-80 max-w-[90vw] sm:w-72 sm:max-w-[80vw] lg:w-80 lg:max-w-[400px]
+                   ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
         style={{
           willChange: 'transform',
           backfaceVisibility: 'hidden',
-          pointerEvents: isSidebarOpen ? 'auto' : 'none'
+          pointerEvents: isSidebarOpen ? 'auto' : 'none',
+          visibility: isSidebarOpen ? 'visible' : 'hidden',
+          height: '100vh',
+          maxHeight: '100vh',
+          overflowY: 'auto',
+          contain: 'layout style paint'
         }}
+        aria-label="Therapist navigation menu"
+        role="navigation"
+        aria-hidden={!isSidebarOpen}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
@@ -550,15 +581,21 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                 onTouchStart={(e) => {
                   e.preventDefault();
                 }}
-                className="p-2 rounded-full transition-colors touch-manipulation cursor-pointer select-none hover:bg-gray-100 active:bg-gray-200"
+                className="sidebar-close-btn flex items-center justify-center transition-all duration-200 ease-in-out rounded-full
+                           min-w-[48px] min-h-[48px] p-2
+                           hover:bg-gray-100 active:bg-gray-200 active:scale-95
+                           touch-manipulation cursor-pointer select-none
+                           focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
                 style={{
                   WebkitTapHighlightColor: 'transparent',
                   userSelect: 'none',
                   touchAction: 'manipulation'
                 }}
-                aria-label="Close menu"
+                aria-label="Close navigation menu"
+                role="button"
+                tabIndex={0}
               >
-                <X className="w-6 h-6 text-black" />
+                <X className="w-6 h-6 text-gray-700" />
               </button>
             </div>
             
@@ -587,7 +624,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           </div>
 
           {/* Navigation Menu */}
-          <nav className="flex-1  p-4">
+          <nav className="flex-1 overflow-y-auto p-4">
             <div className="space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
@@ -703,22 +740,17 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Elite Main Content - Enhanced scrolling and bottom padding for mobile */}
+      {/* Main Content - Natural scrolling following global standards */}
       <main 
-        className="relative w-full   flex-1 therapist-layout-content" 
+        className="relative w-full therapist-layout-content" 
         style={{ 
-          WebkitOverflowScrolling: 'touch', 
-          touchAction: 'pan-y pan-x',
-          height: 'calc(100vh - 60px)',
-          maxHeight: 'calc(100vh - 60px)',
-          minHeight: 'calc(100vh - 60px)',
+          paddingTop: '60px', // Account for fixed header
           paddingBottom: 'max(env(safe-area-inset-bottom, 80px), 120px)' // Enhanced bottom padding
         }}
       >
         <div 
           className="therapist-content-wrapper"
           style={{
-            minHeight: '100%',
             paddingBottom: '60px' // Additional content padding
           }}
         >

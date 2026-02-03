@@ -1,99 +1,103 @@
-/* 🔒 GLOBAL MOBILE SCROLL GUARANTEE - PERMANENT FIX */
+/* 🌐 GLOBAL SCROLLING STANDARDS - FOLLOWING WEB BEST PRACTICES */
 
-/* RULE #1: BODY IS THE ONLY SCROLLER ON MOBILE */
-html, body {
+/* RULE #1: DOCUMENT/BODY LEVEL SCROLLING - SINGLE SCROLL AUTHORITY */
+html {
   width: 100%;
-  height: auto;
-  min-height: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-/* NEVER LOCK SCROLL BY DEFAULT */
-body {
   position: relative;
 }
 
-/* 🚫 MOBILE BANS ENFORCEMENT */
-/* Prevent height: 100vh and h-screen disasters */
-.h-screen, .min-h-screen {
-  height: auto !important;
-  min-height: auto !important;
-}
-
-/* Override any vh units on mobile */
+/* RULE #2: PREVENT SCROLL-JACKING - Allow natural browser behavior */
+/* Only override problematic height patterns that conflict with natural scrolling */
 @media (max-width: 768px) {
-  *[style*="100vh"], 
-  *[style*="100dvh"],
-  *[class*="h-screen"],
-  *[class*="min-h-screen"] {
+  /* Mobile-specific: Convert viewport-dependent layouts to content-dependent */
+  .h-screen:not(.preserve-height),
+  .min-h-screen:not(.preserve-height) {
+    min-height: 100vh !important;
     height: auto !important;
-    min-height: auto !important;
+  }
+  
+  /* Override fixed viewport heights that prevent scrolling */
+  *[style*="height: 100vh"]:not(.preserve-height),
+  *[style*="height: 100dvh"]:not(.preserve-height) {
+    min-height: 100vh !important;
+    height: auto !important;
   }
 }
 
-/* ✅ SAFE PAGE LAYOUT PATTERN - USE EVERYWHERE */
+/* RULE #3: SAFE LAYOUT PATTERNS - STANDARDS COMPLIANT */
 .safe-page-wrapper {
-  min-height: auto;
+  min-height: 100vh;
   overflow: visible;
 }
 
 .safe-page-wrapper main {
   min-height: auto;
   overflow: visible;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
 }
 
-/* Fixed headers are allowed, but not full page wrappers */
+/* RULE #4: STICKY HEADERS ARE ALLOWED - BUT NO BODY LOCKING */
 .safe-header {
   position: sticky;
   top: 0;
   z-index: 50;
+  background: white;
 }
-
-/* Therapist dashboard - safe approach */
-.therapist-dashboard {
-  min-height: auto;
+/* RULE #5: COMPONENT-SPECIFIC SCROLL HANDLING */
+/* Therapist dashboard - Natural content flow */
+.therapist-dashboard,
+.therapist-page-container {
+  min-height: 100vh;
   overflow: visible;
 }
 
-.therapist-content {
+.therapist-content,
+.therapist-layout-content {
   min-height: auto;
   overflow: visible;
   padding-bottom: 2rem;
 }
 
-/* 💬 CHAT WINDOW CLEANUP (PRODUCTION READY) */
+/* RULE #6: MODALS & OVERLAYS - CONTAINED SCROLLING */
 .chat-messages {
   max-height: 60vh;
-  overflow-y: auto !important;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
 .chat-window {
-  /* Chat has its own scroll - page scroll remains enabled */
   position: fixed;
   max-height: 80vh;
-  overflow-y: auto; /* FIXED: Allow chat internal scrolling */
+  overflow-y: auto;
   z-index: 9999;
+  /* Allow internal scrolling while maintaining page scroll */
 }
 
-/* NEVER lock body scroll for chat - violates ONE SCROLL AUTHORITY */
+/* CRITICAL: Never lock body scroll for overlays */
+body.modal-open,
 body.chat-open {
-  overflow: visible !important;
+  overflow-y: auto !important;
   position: relative !important;
 }
 
-/* 🔁 MODAL & LOADER SAFE PATTERNS */
 .modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 1000;
-  /* backdrop only, no body lock */
+  /* Backdrop only - no scroll locking */
 }
 
 .modal-content {
@@ -102,48 +106,54 @@ body.chat-open {
   -webkit-overflow-scrolling: touch;
 }
 
-/* ✅ SAFE MOBILE PATTERNS */
+/* RULE #7: PWA & MOBILE BROWSER COMPATIBILITY */
 @media (max-width: 768px) {
-  /* Body must always scroll */
+  /* Ensure body always remains scrollable */
   body {
     overflow-y: auto !important;
     position: relative !important;
+    touch-action: manipulation;
   }
   
-  /* No viewport height constraints */
+  /* Let page containers grow naturally */
   .page-container {
-    min-height: auto;
+    min-height: 100vh;
+    height: auto;
     overflow: visible;
   }
   
-  /* Let content grow naturally */
-  main {
-    min-height: auto;
-    overflow: visible;
-  }
-  
-  /* Ensure main content can scroll */
-  main {
-    height: auto !important;
+  /* Main content areas should never constrain height */
+  main:not(.preserve-height) {
     min-height: auto !important;
+    height: auto !important;
     max-height: none !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  /* Fix any container that blocks scrolling */
-  .container, .max-w-sm, .max-w-md, .max-w-lg {
-    max-height: none !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  /* Critical: Force scroll on any problematic containers */
-  div[class*="overflow-hidden"]:not(.therapist-page-container) {
     overflow: visible !important;
   }
   
-  div[class*="overflow-y-hidden"] {
-    overflow-y: visible !important;
+  /* Container elements should allow natural flow */
+  .container:not(.preserve-height),
+  .max-w-sm:not(.preserve-height),
+  .max-w-md:not(.preserve-height),
+  .max-w-lg:not(.preserve-height) {
+    max-height: none !important;
+    overflow: visible !important;
   }
+}
+
+/* RULE #8: EXCEPTIONS DOCUMENTATION */
+/* Components that require fixed heights should use .preserve-height class */
+.preserve-height {
+  /* This class exempts elements from global scroll normalization */
+  /* Use sparingly and only when absolutely necessary */
+}
+
+/* RULE #9: SAFE TOUCH INTERACTIONS */
+* {
+  /* Prevent zoom on double-tap while allowing scroll */
+  touch-action: manipulation;
+}
+
+input, textarea, select {
+  /* Allow normal input interactions */
+  touch-action: auto;
 }

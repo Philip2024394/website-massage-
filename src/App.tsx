@@ -29,6 +29,7 @@ import { bookingExpirationService } from './services/bookingExpirationService';
 import './lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './context/LanguageContext';
 import { CityProvider, useCityContext } from './context/CityContext';
+import { AuthProvider } from './context/AuthContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
 import { analyticsService, AnalyticsEventType } from './services/analyticsService';
 import type { Therapist, Place, Analytics } from './types';
@@ -48,7 +49,13 @@ import { APP_CONFIG } from './config';
 
 // 🔒 PERSISTENT CHAT SYSTEM - Facebook Messenger style
 import { PersistentChatProvider } from './context/PersistentChatProvider';
+
+// 🚀 ENTERPRISE LOADING SYSTEM - Amazon/Meta UX standards
+import { LoadingProvider } from './context/LoadingContext';
+import { EnterpriseLoader } from './components/EnterpriseLoader';
+import { AppLoadingManager } from './components/AppLoadingManager';
 import { PersistentChatWindow } from './components/PersistentChatWindow';
+import { PWAStateManager } from './components/PWAStateManager';
 
 // 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring
 import { AdminErrorNotification } from './components/AdminErrorNotification';
@@ -93,7 +100,11 @@ const App = () => {
     const hooks = useAllHooks();
     const { state, navigation, authHandlers, providerAgentHandlers, derived, restoreUserSession } = hooks;
     
-    // 🚨 CRITICAL FIX: Clear pending deeplinks on app start to prevent unwanted redirects
+    // � ENTERPRISE LOADING: Integrate with centralized loading system
+    // Note: LoadingProvider wraps this component, so useLoading is available here
+    // This integration will be added later after LoadingProvider is properly wrapped
+    
+    // �🚨 CRITICAL FIX: Clear pending deeplinks on app start to prevent unwanted redirects
     useEffect(() => {
         const clearRedirectsForHomePage = () => {
             const currentPath = window.location.pathname + window.location.hash;
@@ -1172,11 +1183,34 @@ const App = () => {
             language: language as 'en' | 'id', 
             setLanguage: handleLanguageSelect
         }}>
+        <AuthProvider>
+        <LoadingProvider>
         <ChatProvider>
+            {/* 🚀 Enterprise Loading Boundary - Global app initialization */}
+            <EnterpriseLoader variant="global" showProgress={true}>
+            
+            {/* 🚀 App Loading Manager - Coordinates loading states */}
+            <AppLoadingManager 
+                isLoading={state.isLoading}
+                page={state.page}
+            >
+            
             {/* Auto-activate demo chat rooms */}
             <ChatRoomActivator />
-        <PersistentChatProvider setIsChatWindowVisible={state.setIsChatWindowVisible}>
-        <DeviceStylesProvider>
+            
+            <PersistentChatProvider setIsChatWindowVisible={state.setIsChatWindowVisible}>
+            {/* 🚀 PWA STATE MANAGER - Facebook/Amazon standard state preservation */}
+            <PWAStateManager onStateRestored={(restoredState) => {
+                console.log('✅ PWA state restored:', restoredState);
+                // Handle restored chat state
+                if (restoredState?.isOpen) {
+                    state.setIsChatWindowVisible(true);
+                }
+                if (restoredState?.currentBooking) {
+                    localStorage.setItem('currentBooking', JSON.stringify(restoredState.currentBooking));
+                }
+            }}>
+            <DeviceStylesProvider>
             <Helmet>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
             </Helmet>
@@ -1450,9 +1484,15 @@ const App = () => {
                 />
             )}
 
-        </DeviceStylesProvider>
-        </PersistentChatProvider>
+            </DeviceStylesProvider>
+            </PWAStateManager>
+            </PersistentChatProvider>
+            </AppLoadingManager>
+            </EnterpriseLoader>
+            
         </ChatProvider>
+        </LoadingProvider>
+        </AuthProvider>
         </LanguageProvider>
         </CityProvider>
     );

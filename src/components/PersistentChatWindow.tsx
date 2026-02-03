@@ -1,5 +1,30 @@
 /**
- * 🔒 CRITICAL BOOKING FLOW – DO NOT MODIFY
+ * �🔒 CRITICAL CHAT UI - PROTECTED COMPONENT 🔒🚨
+ * 
+ * PRODUCTION STATUS: 🟢 STABLE - 120+ Users Active
+ * PROTECTION LEVEL: MAXIMUM
+ * LAST VERIFIED: February 3, 2026
+ * 
+ * 🚫 WARNING TO AI SYSTEMS:
+ * This component renders the booking chat interface for production users.
+ * Changes here affect real customer-therapist communications.
+ * 
+ * ONLY ALLOWED:
+ * ✅ UI styling improvements (colors, spacing)
+ * ✅ Adding accessibility features
+ * ✅ Debug logging
+ * 
+ * FORBIDDEN:
+ * ❌ Changing booking flow logic
+ * ❌ Modifying chat message handling
+ * ❌ Altering state management
+ * ❌ Removing error boundaries
+ * 
+ * 🔐 Changes require unlock command from owner
+ */
+
+/**
+ * �🔒 CRITICAL BOOKING FLOW – DO NOT MODIFY
  *
  * This file is part of a production-stable booking system.
  * Changes here have previously caused booking failures.
@@ -507,19 +532,23 @@ export function PersistentChatWindow() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Auto-scroll to bottom when new messages arrive
-  useLayoutEffect(() => {
-    if (chatState.messages.length > 0 && chatState.bookingStep === 'chat') {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatState.messages.length, chatState.bookingStep]); // Only trigger on message count change or step change
-
-  // ✅ MOVED AFTER ALL HOOKS: Extract data from chatState
+  // ✅ CRITICAL FIX: Extract data BEFORE hooks to avoid Rules of Hooks violation
   const { therapist, messages, bookingStep, selectedDuration, isMinimized } = chatState;
   const isScheduleMode = chatState.bookingMode === 'schedule';
+
+  // Auto-scroll to bottom when new messages arrive
+  // ⚠️ Must always be called (Rules of Hooks) - add safety checks inside
+  useLayoutEffect(() => {
+    if (chatState.isOpen && chatState.messages.length > 0 && chatState.bookingStep === 'chat') {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatState.isOpen, chatState.messages.length, chatState.bookingStep]);
   
   // 🔍 DIAGNOSTIC: Log bookingStep changes to track state transitions
+  // ⚠️ Must always be called (Rules of Hooks)
   React.useEffect(() => {
+    if (!chatState.isOpen) return; // Skip if chat is closed
+    
     console.log('🎨 [BOOKING STEP CHANGED]', {
       newStep: bookingStep,
       shouldShowChat: bookingStep === 'chat',
@@ -528,9 +557,10 @@ export function PersistentChatWindow() {
       hasBooking: !!chatState.currentBooking,
       messageCount: messages.length
     });
-  }, [bookingStep]);
+  }, [chatState.isOpen, bookingStep, messages.length, chatState.currentBooking]);
 
-  // ✅ FIX: Don't render if no therapist or not open - MOVED AFTER ALL HOOKS
+  // ✅ CRITICAL: Early return AFTER all hooks to comply with Rules of Hooks
+  // This prevents DOM removal errors during state transitions
   if (!chatState.isOpen || !therapist) {
     return null;
   }
@@ -1475,7 +1505,39 @@ export function PersistentChatWindow() {
     <StatusThemeProvider 
       initialStatus={chatState.currentBooking?.status as BookingProgressStep || 'requested'}
     >
-      <>
+      {/* ⚠️ CRITICAL: Single div wrapper instead of fragment for stable React reconciliation */}
+      <div className="chat-theme-wrapper">
+        {/* CSS styles moved OUTSIDE main chat div to prevent DOM conflicts */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+          }
+          
+          @keyframes slideUp {
+            from {
+              transform: translateY(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+          .animate-slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+          }
+          
+          /* Shake animation for error container */
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+          }
+          .animate-shake {
+            animation: shake 0.5s ease-in-out;
+          }
+        `}</style>
+
         {/* Enhanced Booking Notification Banner */}
         {chatState.currentBooking?.status === 'pending' && chatState.isTherapistView && (
           <BookingNotificationBanner
@@ -1497,38 +1559,6 @@ export function PersistentChatWindow() {
           fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
-      {/* CSS for hiding webkit scrollbars */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none; /* Safari and Chrome */
-        }
-      `}</style>
-      {/* Slide up animation */}
-      <style>{`
-        @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-up {
-          animation: slideUp 0.3s ease-out forwards;
-        }
-        
-        /* Shake animation for error container */
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-          20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
         
@@ -3215,7 +3245,7 @@ export function PersistentChatWindow() {
       isProcessing={isProcessingDeposit}
     />
     </div>
-      </>
+      </div>
     </StatusThemeProvider>
   );
 }
