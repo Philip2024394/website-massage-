@@ -652,7 +652,10 @@ export default function ChatWindow({
             
             console.log('✅ Booking cancelled and saved to database');
             
-            // Close chat after 2 seconds
+            // Enhanced cancel message as requested by user
+            addStatusUpdate('cancelled', '❌ Booking cancelled. Please view directory for your preferred Therapist / Places.');
+            
+            // Close chat after 2 seconds and redirect to directory
             setTimeout(() => {
                 onClose();
                 // Redirect to directory

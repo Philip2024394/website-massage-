@@ -138,8 +138,8 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
   };
 
   const getStatusMessage = () => {
-    if (countdown.isExpired) {
-      return '⏰ Response time expired - Finding other therapists...';
+    if (countdown.isExpired || bookingStatus === 'broadcast_all') {
+      return '⏰ We are now finding the next available therapist in your location for first-come-first-serve acceptance.';
     } else if (bookingStatus === 'accepted') {
       return '✅ Booking accepted! You can now chat with your therapist.';
     } else if (bookingStatus === 'rejected') {
@@ -221,15 +221,20 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
         </div>
       )}
 
-      {/* Cancel button */}
-      {showCancelButton && (
+      {/* Enhanced cancel button with directory message */}
+      {(showCancelButton || bookingStatus === 'broadcast_all') && (
         <div className="mt-3">
           <button
             onClick={onCancelBooking}
-            className="px-4 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+            className="w-full px-4 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium"
           >
-            Cancel Booking
+            Cancel & Browse Directory
           </button>
+          {bookingStatus === 'broadcast_all' && (
+            <p className="text-xs text-gray-600 mt-1 text-center">
+              Browse directory for your preferred Therapist / Places
+            </p>
+          )}
         </div>
       )}
 

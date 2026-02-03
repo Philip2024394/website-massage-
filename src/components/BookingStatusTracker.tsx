@@ -130,22 +130,36 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
               icon: '/logo.png'
             });
           }
-        } else if (updatedBooking.status === 'rejected' || updatedBooking.status === 'expired') {
-          // Therapist rejected or booking expired
-          setStatus('searching');
-          playNotificationSound('alert');
-          showToast('Finding another therapist...', 'warning');
-          
-          // Show browser notification
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Searching for Therapist', {
-              body: 'Looking for another available therapist for you.',
-              icon: '/logo.png'
-            });
+        } else if (updatedBooking.status === 'rejected' || updatedBooking.status === 'expired' || updatedBooking.status === 'broadcast_all') {
+          // Therapist rejected, booking expired, or now broadcasting to all
+          if (updatedBooking.status === 'broadcast_all') {
+            setStatus('broadcasting');
+            playNotificationSound('alert');
+            showToast('Finding nearby therapists for first-come-first-serve...', 'warning');
+            
+            // Show browser notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Broadcasting to All Therapists', {
+                body: 'Finding the next available therapist in your location.',
+                icon: '/logo.png'
+              });
+            }
+          } else {
+            setStatus('searching');
+            playNotificationSound('alert');
+            showToast('Finding another therapist...', 'warning');
+            
+            // Show browser notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Searching for Therapist', {
+                body: 'Looking for another available therapist for you.',
+                icon: '/logo.png'
+              });
+            }
+            
+            // Trigger auto-reassignment (will be handled by backend/service)
+            simulateTherapistAcceptance();
           }
-          
-          // Trigger auto-reassignment (will be handled by backend/service)
-          simulateTherapistAcceptance();
         }
       }
     );
@@ -222,6 +236,15 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
     playNotificationSound('alert');
     if (bookingId) stopContinuousNotifications(bookingId);
     setShowCancelWarning(false);
+    
+    // Show cancel message with directory redirect
+    showToast('Booking cancelled. Please view directory for your preferred Therapist / Places.', 'info');
+    
+    // Redirect to directory after brief delay
+    setTimeout(() => {
+      window.location.href = '/therapists';
+    }, 2000);
+    
     onClose();
   };
 

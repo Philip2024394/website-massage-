@@ -82,6 +82,13 @@ export function BookingProgress({
       description: 'Terapis sedang meninjau'
     },
     {
+      id: 'broadcast_all',
+      label: 'Mencari Alternatif',
+      labelEn: 'Finding Alternative',
+      icon: Send,
+      description: 'Mencari terapis terdekat'
+    },
+    {
       id: 'accepted',
       label: 'Diterima',
       labelEn: 'Accepted',

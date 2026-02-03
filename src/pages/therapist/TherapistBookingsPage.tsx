@@ -24,6 +24,7 @@ import { trackBookingAcceptance } from '../../lib/services/universalBookingAccep
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { bookingsScheduleHelp } from './constants/helpContent';
 import { showErrorToast, showWarningToast } from '../../lib/toastUtils';
+import { TherapistOnTheWayButton } from '../../components/TherapistOnTheWayButton';
 
 interface Booking {
   $id: string;
@@ -1031,25 +1032,42 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
                     </>
                   )}
                   {booking.status === 'confirmed' && (
-                    <>
-                      <button
-                        onClick={() => {
-                          setSelectedBooking(booking);
-                          setChatOpen(true);
+                    <div className="space-y-4">
+                      {/* On The Way Button Component - Full Width */}
+                      <TherapistOnTheWayButton
+                        bookingId={booking.$id}
+                        therapistId={currentTherapist?.$id || ''}
+                        therapistName={currentTherapist?.name || 'Therapist'}
+                        customerName={booking.customerName}
+                        customerPhone={booking.customerPhone}
+                        customerAddress={booking.location}
+                        isBookingAccepted={true}
+                        onStatusUpdate={(status) => {
+                          console.log('Journey status updated for booking:', booking.$id, status);
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white rounded-2xl hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 font-bold transition-all shadow-lg shadow-orange-300/50 hover:shadow-xl hover:shadow-orange-400/60 hover:-translate-y-0.5"
-                      >
-                        <MessageCircle className="w-5 h-5" />
-                        Chat Customer
-                      </button>
-                      <button
-                        onClick={() => handleCompleteBooking(booking.$id)}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 font-bold transition-all shadow-lg shadow-blue-300/50 hover:shadow-xl hover:shadow-blue-400/60 hover:-translate-y-0.5"
-                      >
-                        <CheckCircle className="w-5 h-5" />
-                        Mark Complete
-                      </button>
-                    </>
+                      />
+                      
+                      {/* Action Buttons - Flex Row */}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            setSelectedBooking(booking);
+                            setChatOpen(true);
+                          }}
+                          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white rounded-2xl hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 font-bold transition-all shadow-lg shadow-orange-300/50 hover:shadow-xl hover:shadow-orange-400/60 hover:-translate-y-0.5"
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          Chat Customer
+                        </button>
+                        <button
+                          onClick={() => handleCompleteBooking(booking.$id)}
+                          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 font-bold transition-all shadow-lg shadow-blue-300/50 hover:shadow-xl hover:shadow-blue-400/60 hover:-translate-y-0.5"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                          Mark Complete
+                        </button>
+                      </div>
+                    </div>
                   )}
                   {booking.status === 'completed' && (
                     <button

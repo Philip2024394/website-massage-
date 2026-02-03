@@ -1691,16 +1691,25 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       // Note: Initial value already set in state above
       startCountdown(300, async () => {
         console.log('⏰ [ENGINE] 5-minute timer expired for booking:', engineBooking.bookingId);
-        // Engine handles expiration automatically
-        addSystemNotification('⏰ 5-minute timer expired! Your booking is now being sent to ALL available and busy therapists.');
+        // Engine handles expiration automatically - Enhanced broadcast system
+        addSystemNotification(
+          '⏰ No response received. We are now finding the next available therapist in your location for first-come-first-serve acceptance. ' +
+          'You can cancel booking to browse directory for your preferred therapist/place.'
+        );
+        
+        // Update status to show we're now broadcasting to all therapists
         setChatState(prev => ({
           ...prev,
           currentBooking: prev.currentBooking ? { 
             ...prev.currentBooking, 
-            status: 'waiting_others',
-            lifecycleStatus: 'EXPIRED' as any
+            status: 'broadcast_all',
+            lifecycleStatus: 'EXPIRED' as any,
+            broadcastStarted: new Date().toISOString()
           } : null,
         }));
+        
+        // Trigger enhanced broadcast system to all therapists/places in location
+        await triggerLocationBasedBroadcast(engineBooking);
       });
       
       console.log('✅ [ENGINE REDIRECT] Booking creation completed successfully');
@@ -1898,9 +1907,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     addSystemNotification(`🎉 Booking confirmed! ${therapistName} will notify you when they are on the way.`);
   }, [chatState.therapist, chatState.currentBooking, stopCountdown, addSystemNotification]);
 
-  // Cancel booking (any state → DECLINED)
+  // Enhanced cancel booking with directory redirection
   const cancelBooking = useCallback(async () => {
     stopCountdown();
+    
+    // Show cancel confirmation message
+    addSystemNotification(
+      '❌ Booking cancelled. Please view directory for your preferred Therapist / Places.'
+    );
     
     const currentBooking = chatState.currentBooking;
     

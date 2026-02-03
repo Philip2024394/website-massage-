@@ -7,6 +7,7 @@ import { startContinuousNotifications, stopContinuousNotifications } from '../li
 import { playSound, playSequence } from '../lib/notificationSounds';
 import { broadcastDecline } from '../lib/bookingAssignment';
 import { bookingSoundService } from '../services/bookingSound.service';
+import { TherapistOnTheWayButton } from './TherapistOnTheWayButton';
 
 interface TherapistBookingAcceptPopupProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ interface TherapistBookingAcceptPopupProps {
   location?: string;
   bookingTime: string;
   therapistId: string;
+  therapistName?: string;
+  address?: string;
   providerType?: 'therapist' | 'place';
   bookingType?: 'immediate' | 'scheduled';
   scheduledTime?: string;
@@ -34,11 +37,17 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
   price,
   location,
   bookingTime,
-  therapistId
-  , providerType = 'therapist', bookingType = 'immediate', scheduledTime
+  therapistId,
+  therapistName = 'Therapist',
+  address = location || 'Customer Location',
+  providerType = 'therapist', 
+  bookingType = 'immediate', 
+  scheduledTime
 }) => {
   const [isAccepting, setIsAccepting] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
+  const [bookingAccepted, setBookingAccepted] = useState(false);
+  const [bookingAccepted, setBookingAccepted] = useState(false);
 
   // CRITICAL: Loud continuous alert until therapist acts
   useEffect(() => {
@@ -160,16 +169,17 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
       }
       
       setIsAccepted(true);
+      setBookingAccepted(true); // Enable On The Way button
       
       // CRITICAL: Stop all booking alerts immediately on accept
       stopContinuousNotifications(bookingId);
       bookingSoundService.stopBookingAlert(bookingId);
       playSound('bookingAccepted');
 
-      // Close popup after showing success
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      // Don't auto-close - keep open for On The Way button
+      // setTimeout(() => {
+      //   onClose();
+      // }, 2000);
 
     } catch (error) {
       console.error('Error accepting booking:', error);
@@ -184,13 +194,37 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] ">
         {isAccepted ? (
-          // Success State
-          <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle size={48} className="text-green-600" />
+          // Success State with On The Way Button
+          <div className="p-6">
+            <div className="text-center mb-6">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={48} className="text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Booking Accepted! ✅</h2>
+              <p className="text-gray-600 mb-4">Customer has been notified.</p>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Booking Accepted!</h2>
-            <p className="text-gray-600">Customer has been notified. See you soon!</p>
+            
+            {/* On The Way Button Component */}
+            <TherapistOnTheWayButton
+              bookingId={bookingId}
+              therapistId={therapistId}
+              therapistName={customerName || 'Therapist'}
+              customerName={customerName}
+              customerPhone={customerWhatsApp}
+              customerAddress={location || 'Customer Location'}
+              isBookingAccepted={bookingAccepted}
+              onStatusUpdate={(status) => {
+                console.log('Journey status updated:', status);
+              }}
+            />
+            
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="w-full mt-4 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors"
+            >
+              Close
+            </button>
           </div>
         ) : (
           <>

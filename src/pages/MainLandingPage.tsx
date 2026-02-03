@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Button from '../components/Button';
 import { locationService } from '../services/locationService';
 import { deviceService } from '../services/deviceService';
+import { customerGPSService } from '../services/customerGPSCollectionService';
 import PageNumberBadge from '../components/PageNumberBadge';
 import PWAInstallIOSModal from '../components/PWAInstallIOSModal';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -449,6 +450,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         detectCountry();
     }, []); // Empty deps - runs ONLY ONCE
 
+    // 🎯 SIMPLE GPS AUTO-COLLECTION ON ENTRY
+    useEffect(() => {
+        const initializeGPS = async () => {
+            try {
+                console.log('📍 Starting silent GPS collection on landing page...');
+                await customerGPSService.autoCollectOnEntry();
+                console.log('✅ GPS auto-collection completed');
+            } catch (error) {
+                console.log('📍 GPS auto-collection failed (this is normal):', error);
+            }
+        };
+        
+        // Small delay to let the page settle
+        const timer = setTimeout(initializeGPS, 1500);
+        return () => clearTimeout(timer);
+    }, []); // Run once on mount
+
     // Removed image preload effect - not needed for background images
     // Background images load progressively and don't need preloading state
 
@@ -665,11 +683,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         setIsDetectingLocation(true);
         
         try {
-            // Request GPS permission and get precise location
-            console.log('🎯 Requesting GPS location...');
-            const gpsLocation = await locationService.getCurrentLocation();
+            // Use enhanced customer GPS service for precise location
+            console.log('🎯 Requesting precise GPS location...');
+            const gpsData = await customerGPSService.collectForBooking();
             
-            // Extract city name from the GPS address
+            if (!gpsData) {
+                throw new Error('Unable to get your location');
+            }
+            
+            // Extract city name from GPS data
+            const gpsLocation = {
+                address: gpsData.address,
+                lat: gpsData.coordinates.lat,
+                lng: gpsData.coordinates.lng
+            };
+            
             const addressParts = gpsLocation.address.split(',');
             let detectedCity = addressParts[0].trim(); // Usually city is first part
             
@@ -859,6 +887,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         </div>
 
 
+
+                        {/* GPS Location Status Indicator - Subtle */}
+                        {gpsCollected && gpsLocation && (
+                            <div className="mb-3 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="flex items-center gap-2 text-green-700">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span className="text-xs font-medium">
+                                        📍 Location detected: {gpsLocation}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-green-600 mt-1">
+                                    Therapist bookings will include your precise location automatically
+                                </p>
+                            </div>
+                        )}
 
                         {/* GPS Location Option - Prominently at top */}
                         <button
