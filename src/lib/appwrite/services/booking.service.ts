@@ -280,6 +280,11 @@ export const bookingService = {
 
     async getByProvider(providerId: string, providerType: 'therapist' | 'place'): Promise<any[]> {
         try {
+            // Skip if bookings collection is disabled
+            if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+                return [];
+            }
+
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.bookings,
@@ -291,7 +296,12 @@ export const bookingService = {
                 ]
             );
             return response.documents;
-        } catch (error) {
+        } catch (error: any) {
+            // Handle 404/400 gracefully - collection might not exist or schema mismatch
+            if (error?.code === 404 || error?.code === 400 || error?.message?.includes('Collection') || error?.message?.includes('could not be found')) {
+                console.warn(`⚠️ Bookings unavailable for ${providerType} ${providerId} - collection may not be configured`);
+                return [];
+            }
             console.error('Error fetching provider bookings:', error);
             return [];
         }
