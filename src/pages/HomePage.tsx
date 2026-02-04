@@ -736,11 +736,11 @@ const HomePage: React.FC<HomePageProps> = ({
                    selectedTherapists.map((t: any) => t.name));
         
         // Create showcase versions with busy status and target city location
+        // CRITICAL: Preserve original Appwrite $id for share links to work
         const showcaseProfiles = selectedTherapists.map((therapist: any, index: number) => ({
             ...therapist,
-            // Override key properties for showcase
-            $id: `showcase-${therapist.$id || therapist.id}-${targetCity}-${index}`, // Unique ID with index for duplicates
-            id: `showcase-${therapist.$id || therapist.id}-${targetCity}-${index}`,
+            // KEEP ORIGINAL APPWRITE $id (required for /share/{id} URLs to work)
+            // DO NOT modify $id or id fields
             status: 'busy', // Always busy to prevent bookings outside Yogyakarta
             availability: 'busy',
             isAvailable: false, // Ensure not bookable
@@ -749,7 +749,6 @@ const HomePage: React.FC<HomePageProps> = ({
             locationId: targetCity.toLowerCase(), // Set locationId to match city
             _locationArea: targetCity.toLowerCase(), // Set _locationArea for card display
             isShowcaseProfile: true, // Flag to identify showcase profiles
-            originalTherapistId: therapist.$id || therapist.id, // Keep reference to original
             showcaseCity: targetCity, // Track which city this showcase is for
             // Keep all other properties (name, image, rating, reviews, etc.) the same
         }));

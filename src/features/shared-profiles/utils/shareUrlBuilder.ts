@@ -30,77 +30,63 @@ function generateSEOSlug(location: string, name: string): string {
 }
 
 /**
- * Generate SEO-optimized share URL for therapist
- * Format: /share/pijat-yogyakarta-wiwid/694ed78e002b0c06171e
- * SEO keywords in URL = better Google ranking!
+ * Generate simple, reliable share URL for therapist
+ * Format: /share/{documentId}
+ * CRITICAL: Use Appwrite document $id ONLY - no slugs, no showcase IDs
  */
 export function generateTherapistShareURL(therapist: Therapist): string {
-    const id = (therapist as any).id ?? (therapist as any).$id ?? '';
+    const id = (therapist as any).$id ?? (therapist as any).id ?? '';
     if (!id) {
         console.error('❌ No ID found for therapist:', therapist);
-        return `${LIVE_SITE_URL}/therapist-profile/unknown`;
+        return `${LIVE_SITE_URL}/share/unknown`;
     }
     
-    if (SHARE_URL_FORMAT === 'standard') {
-        // Standard profile route for sharing (HashRouter format)
-        return `${LIVE_SITE_URL}/#/therapist-profile/${id}`;
-    }
-
-    // Default to SEO format: keyword-rich slug + ID
-    const location = therapist.location || 'Indonesia';
-    const name = therapist.name || 'therapist';
-    const seoSlug = generateSEOSlug(location, name);
-    return `${LIVE_SITE_URL}/share/${seoSlug}/${id}`;
+    // Strip showcase prefix if present (return original ID)
+    const cleanId = id.replace(/^showcase-([a-z0-9]+)-.+$/, '$1');
+    
+    // MANDATORY: Simple format ONLY - /share/{documentId}
+    return `${LIVE_SITE_URL}/share/${cleanId}`;
 }
 
 /**
- * Generate SEO-optimized share URL for massage place
- * Format: /share/pijat-yogyakarta-spa-name/place-id
+ * Generate simple, reliable share URL for massage place
+ * Format: /share/{documentId}
+ * CRITICAL: Use Appwrite document $id ONLY
  */
 export function generatePlaceShareURL(place: Place): string {
-    const id = (place as any).id ?? (place as any).$id ?? '';
+    const id = (place as any).$id ?? (place as any).id ?? '';
     if (!id) {
         console.error('❌ No ID found for place:', place);
-        return `${LIVE_SITE_URL}/profile/place/unknown`;
+        return `${LIVE_SITE_URL}/share/unknown`;
     }
     
-    if (SHARE_URL_FORMAT === 'standard') {
-        return `${LIVE_SITE_URL}/profile/place/${id}`;
-    }
-
-    const location = (place as any).city || (place as any).location || 'Indonesia';
-    const name = (place as any).name || 'spa';
-    const seoSlug = generateSEOSlug(location, name);
-    return `${LIVE_SITE_URL}/share/${seoSlug}/${id}`;
+    // MANDATORY: Simple format ONLY - /share/{documentId}
+    return `${LIVE_SITE_URL}/share/${id}`;
 }
 
 /**
- * Generate SEO-optimized share URL for facial place
- * Format: /share/pijat-yogyakarta-facial-name/facial-id
+ * Generate simple, reliable share URL for facial place
+ * Format: /share/{documentId}
+ * CRITICAL: Use Appwrite document $id ONLY
  */
 export function generateFacialShareURL(place: Place): string {
-    const id = (place as any).id ?? (place as any).$id ?? '';
+    const id = (place as any).$id ?? (place as any).id ?? '';
     if (!id) {
         console.error('❌ No ID found for facial place:', place);
-        return `${LIVE_SITE_URL}/profile/facial/unknown`;
+        return `${LIVE_SITE_URL}/share/unknown`;
     }
     
-    if (SHARE_URL_FORMAT === 'standard') {
-        return `${LIVE_SITE_URL}/profile/facial/${id}`;
-    }
-
-    const location = (place as any).city || (place as any).location || 'Indonesia';
-    const name = (place as any).name || 'facial';
-    const seoSlug = generateSEOSlug(location, name);
-    return `${LIVE_SITE_URL}/share/${seoSlug}/${id}`;
+    // MANDATORY: Simple format ONLY - /share/{documentId}
+    return `${LIVE_SITE_URL}/share/${id}`;
 }
 
 /**
  * Extract provider ID from share URL
  * Handles all formats:
- * - /share/pijat-yogyakarta-wiwid/694ed78e002b0c06171e (NEW SEO format)
- * - /share/therapist/694ed78e002b0c06171e (Simple format)
- * - /therapist-profile/694ed78e002b0c06171e-pijat-yogyakarta-wiwid (Legacy)
+ * - /share/{id} (NEW MANDATORY FORMAT - simple direct ID)
+ * - /share/therapist/{id} (Legacy explicit type format)
+ * - /share/{slug}/{id} (Legacy SEO format)
+ * - /therapist-profile/{id} (Legacy profile format)
  */
 export function extractProviderIdFromURL(url: string): { 
     id: string; 
@@ -108,6 +94,15 @@ export function extractProviderIdFromURL(url: string): {
 } {
     const urlObj = new URL(url, LIVE_SITE_URL);
     const path = urlObj.pathname;
+    
+    // NEW FORMAT: /share/{id} (simple direct ID - PRIORITY)
+    const simpleMatch = path.match(/^\/share\/([a-z0-9]+)$/);
+    if (simpleMatch) {
+        const id = simpleMatch[1];
+        console.log('✅ [SHARE URL] Simple format matched: /share/' + id);
+        // Default to therapist (most common), actual type determined by fetching document
+        return { type: 'therapist', id };
+    }
     
     // SEO format: /share/{slug}/{id}
     // Match anything that starts with /share/ and has at least 2 segments after

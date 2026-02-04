@@ -37,11 +37,13 @@ export default function ShareProfilePopup({ memberId, memberName, memberType = '
     }
   }, []);
   
-  // Generate profile URL using HashRouter format (CRITICAL: Must include #/)
-  const profileUrl = `${window.location.origin}/#/therapist-profile/${memberId}`;
+  // Generate simple share URL: /share/{documentId}
+  // CRITICAL: Use production URL, not localhost
+  const LIVE_SITE = 'https://www.indastreetmassage.com';
+  const profileUrl = `${LIVE_SITE}/share/${memberId}`;
   
   console.log('📤 Share popup opened for member:', memberId);
-  console.log('🔗 Profile URL generated (HashRouter format with #/):', profileUrl);
+  console.log('🔗 Profile URL generated (simple format):', profileUrl);
 
   const handleCopyLink = async () => {
     try {
