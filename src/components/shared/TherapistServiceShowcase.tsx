@@ -102,17 +102,17 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                 {/* Header */}
                 <div className="px-4 py-3 border-b border-gray-100">
                     <h3 className="text-lg font-semibold text-gray-800">
-                        Massage Focus & Sensitivity Guide
+                        Panduan Fokus & Sensitivitas Pijat
                     </h3>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                        This visual guide allows you if need to clearly communicate your massage preferences to the therapist.
-                        By referencing the image name and numbered key points, you can indicate specific areas to focus on or avoid, ensuring a personalized, comfortable, and effective massage experience.
+                        Panduan visual ini memungkinkan Anda untuk berkomunikasi dengan jelas tentang preferensi pijat Anda kepada terapis.
+                        Dengan merujuk pada nama gambar dan titik-titik yang diberi nomor, Anda dapat menunjukkan area tertentu untuk difokuskan atau dihindari, memastikan pengalaman pijat yang personal, nyaman, dan efektif.
                     </p>
                     <p className="text-xs text-gray-500 mt-2">
-                        You may simply reference the image name and point number (eg, "Body Back – Point 6") to guide the therapist.
+                        Anda cukup menyebutkan nama gambar dan nomor titik (misalnya, "Punggung Belakang – Titik 6") untuk membimbing terapis.
                     </p>
                     <p className="text-xs text-gray-500 mt-2 italic">
-                        This guide supports communication but does not replace verbal discussion with your therapist.
+                        Panduan ini mendukung komunikasi tetapi tidak menggantikan diskusi verbal dengan terapis Anda.
                     </p>
                 </div>
                 
@@ -124,15 +124,15 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                             {/* Body Front */}
                             <div 
                                 className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer group h-full min-h-[400px]"
-                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyFront, 'Body Front - Massage reference points')}
+                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyFront, 'Tubuh Depan - Titik referensi pijat')}
                             >
                                 <img
                                     src={MASSAGE_GUIDE_IMAGES.bodyFront}
-                                    alt="Body Front - Massage reference guide"
+                                    alt="Tubuh Depan - Panduan referensi pijat"
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     loading="lazy"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400/f3f4f6/374151?text=Body+Front';
+                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400/f3f4f6/374151?text=Tubuh+Depan';
                                     }}
                                 />
                             </div>
@@ -140,19 +140,19 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                             {/* Body Back */}
                             <div 
                                 className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative h-full min-h-[400px]"
-                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyBack, 'Body Back - Massage reference points')}
+                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyBack, 'Punggung Belakang - Titik referensi pijat')}
                             >
                                 <img
                                     src={MASSAGE_GUIDE_IMAGES.bodyBack}
-                                    alt="Body Back - Massage reference guide"
+                                    alt="Punggung Belakang - Panduan referensi pijat"
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     loading="lazy"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400/f3f4f6/374151?text=Body+Back';
+                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400/f3f4f6/374151?text=Punggung+Belakang';
                                     }}
                                 />
                                 <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-                                    Body Back
+                                    Punggung Belakang
                                 </div>
                             </div>
                         </div>
@@ -162,57 +162,57 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                             {/* Arm and Hand */}
                             <div 
                                 className="aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative"
-                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.armHand, 'Arm and Hand - Massage reference points')}
+                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.armHand, 'Lengan dan Tangan - Titik referensi pijat')}
                             >
                                 <img
                                     src={MASSAGE_GUIDE_IMAGES.armHand}
-                                    alt="Arm and Hand - Massage reference guide"
+                                    alt="Lengan dan Tangan - Panduan referensi pijat"
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     loading="lazy"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x225/f3f4f6/374151?text=Arm+and+Hand';
+                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x225/f3f4f6/374151?text=Lengan+dan+Tangan';
                                     }}
                                 />
                                 <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-                                    Arm and Hand
+                                    Lengan dan Tangan
                                 </div>
                             </div>
 
                             {/* Head and Face */}
                             <div 
                                 className="aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative"
-                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.headFace, 'Head and Face - Massage reference points')}
+                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.headFace, 'Kepala dan Wajah - Titik referensi pijat')}
                             >
                                 <img
                                     src={MASSAGE_GUIDE_IMAGES.headFace}
-                                    alt="Head and Face - Massage reference guide"
+                                    alt="Kepala dan Wajah - Panduan referensi pijat"
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     loading="lazy"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x225/f3f4f6/374151?text=Head+and+Face';
+                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x225/f3f4f6/374151?text=Kepala+dan+Wajah';
                                     }}
                                 />
                                 <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-                                    Head and Face
+                                    Kepala dan Wajah
                                 </div>
                             </div>
 
                             {/* Foot and Calf */}
                             <div 
                                 className="aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative"
-                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.footCalf, 'Foot and Calf - Massage reference points')}
+                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.footCalf, 'Kaki dan Betis - Titik referensi pijat')}
                             >
                                 <img
                                     src={MASSAGE_GUIDE_IMAGES.footCalf}
-                                    alt="Foot and Calf - Massage reference guide"
+                                    alt="Kaki dan Betis - Panduan referensi pijat"
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     loading="lazy"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x225/f3f4f6/374151?text=Foot+and+Calf';
+                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x225/f3f4f6/374151?text=Kaki+dan+Betis';
                                     }}
                                 />
                                 <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-                                    Foot and Calf
+                                    Kaki dan Betis
                                 </div>
                             </div>
                         </div>
@@ -221,7 +221,7 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                     {/* Helper Text */}
                     <div className="mt-4 text-center">
                         <p className="text-sm text-gray-500">
-                            Click any image to view detailed reference points • Use this guide to communicate your preferences clearly
+                            Klik gambar apa pun untuk melihat titik referensi detail • Gunakan panduan ini untuk mengkomunikasikan preferensi Anda dengan jelas
                         </p>
                     </div>
                 </div>
@@ -233,7 +233,7 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                         className="flex items-center justify-center gap-2 text-sm text-gray-700 hover:text-indigo-600 transition-colors mx-auto group"
                     >
                         <Info size={18} className="text-gray-500 group-hover:text-indigo-600 transition-colors" />
-                        <span className="font-medium">Which Massage Type</span>
+                        <span className="font-medium">Jenis Pijat Apa</span>
                     </button>
                 </div>
             </div>
