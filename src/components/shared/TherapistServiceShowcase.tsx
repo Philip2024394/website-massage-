@@ -28,11 +28,11 @@ interface TherapistServiceShowcaseProps {
 
 // Massage guide reference images from ImageKit CDN
 const MASSAGE_GUIDE_IMAGES = {
-    bodyFront: 'https://ik.imagekit.io/7grri5v7d/body%20part%205.png',
-    bodyBack: 'https://ik.imagekit.io/7grri5v7d/body%20part%204.png',
-    armHand: 'https://ik.imagekit.io/7grri5v7d/body%20part%203.png',
-    headFace: 'https://ik.imagekit.io/7grri5v7d/body%20part%202.png',
-    footCalf: 'https://ik.imagekit.io/7grri5v7d/body%20part%201.png'
+    bodyFront: 'https://ik.imagekit.io/7grri5v7d/body%20part%205.png?updatedAt=1770240547579',
+    bodyBack: 'https://ik.imagekit.io/7grri5v7d/body%20part%204.png?updatedAt=1770240670476',
+    armHand: 'https://ik.imagekit.io/7grri5v7d/body%20part%203.png?updatedAt=1770240730008',
+    headFace: 'https://ik.imagekit.io/7grri5v7d/body%20part%202.png?updatedAt=1770240801336',
+    footCalf: 'https://ik.imagekit.io/7grri5v7d/body%20part%201.png?updatedAt=1770240868167'
 };
 
 const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ therapist }) => {
@@ -63,11 +63,11 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                         Massage Focus & Sensitivity Guide
                     </h3>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                        This visual guide allows clients to clearly communicate their massage preferences to the therapist.
-                        By referencing the image name and numbered key points, clients can indicate specific areas to focus on or avoid, ensuring a personalized, comfortable, and effective massage experience.
+                        This visual guide allows you if need to clearly communicate your massage preferences to the therapist.
+                        By referencing the image name and numbered key points, you can indicate specific areas to focus on or avoid, ensuring a personalized, comfortable, and effective massage experience.
                     </p>
                     <p className="text-xs text-gray-500 mt-2">
-                        Clients may simply reference the image name and point number (e.g., "Body Back – Point 6") to guide the therapist.
+                        You may simply reference the image name and point number (eg, "Body Back – Point 6") to guide the therapist.
                     </p>
                     <p className="text-xs text-gray-500 mt-2 italic">
                         This guide supports communication but does not replace verbal discussion with your therapist.
