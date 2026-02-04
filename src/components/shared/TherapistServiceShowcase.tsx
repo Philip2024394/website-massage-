@@ -120,10 +120,10 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                 <div className="p-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Left Side: 2 Tall Images (Body Front & Back) */}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-3 min-h-[400px]">
                             {/* Body Front */}
                             <div 
-                                className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden cursor-pointer group"
+                                className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer group h-full min-h-[400px]"
                                 onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyFront, 'Body Front - Massage reference points')}
                             >
                                 <img
@@ -135,14 +135,11 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400/f3f4f6/374151?text=Body+Front';
                                     }}
                                 />
-                                <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-                                    Body Front
-                                </div>
                             </div>
 
                             {/* Body Back */}
                             <div 
-                                className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative"
+                                className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative h-full min-h-[400px]"
                                 onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyBack, 'Body Back - Massage reference points')}
                             >
                                 <img
@@ -249,11 +246,11 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                 >
                     {/* Close Button */}
                     <button
-                        className="fixed top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+                        className="fixed top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-orange-50 transition-colors"
                         onClick={closeMassageTypes}
                         aria-label="Close massage types"
                     >
-                        <X size={24} strokeWidth={2} />
+                        <X size={24} strokeWidth={2} className="text-orange-500" />
                     </button>
 
                     {/* Content - Reusing MassageTypesPage cards */}
@@ -299,11 +296,11 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                 >
                     {/* Close Button */}
                     <button
-                        className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-[10000]"
+                        className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:bg-orange-50 transition-colors z-[10000]"
                         onClick={closeLightbox}
                         aria-label="Close lightbox"
                     >
-                        <X size={32} strokeWidth={2} />
+                        <X size={32} strokeWidth={2} className="text-orange-500" />
                     </button>
 
                     {/* Enlarged Image */}
