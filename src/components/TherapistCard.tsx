@@ -84,7 +84,7 @@ interface TherapistCardProps {
     userLocation?: { lat: number; lng: number } | null; // User's current location for distance calculation
     onRate: (therapist: Therapist) => void;
     onBook: (therapist: Therapist) => void;
-    // onQuickBookWithChat?: (therapist: Therapist) => void; // ❌ REMOVED: Complex event chain
+    onQuickBookWithChat?: () => void; // ✅ RESTORED: For shared profile booking
     onChatWithBusyTherapist?: (therapist: Therapist) => void; // Chat with busy therapist
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     onShowRegisterPrompt?: () => void; // Show registration popup
@@ -105,7 +105,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     userLocation,
     onRate, 
     // onBook, // Removed - using industry standard booking flow instead
-    // onQuickBookWithChat, // ❌ REMOVED: Complex event chain - using direct integration
+    onQuickBookWithChat, // ✅ RESTORED: Use when provided (shared profile)
     onIncrementAnalytics,
     onShowRegisterPrompt,
     onNavigate,
@@ -1097,11 +1097,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         console.log('🔍 [BOOK NOW] Current window.location:', window.location.href);
                         console.log('🔍 [BOOK NOW] sessionStorage.has_entered_app:', sessionStorage.getItem('has_entered_app'));
                         
-                        // 🔒 CRITICAL: Open chat directly - skip enterprise booking service
-                        // Enterprise service might be causing navigation issues
-                        console.log('💬 [BOOK NOW] Opening persistent chat window...');
-                        openBookingChat(therapist);
-                        console.log('✅ [BOOK NOW] Chat window opened successfully');
+                        // ✅ CRITICAL: Use prop handler if provided (shared profile), otherwise use direct integration
+                        if (onQuickBookWithChat) {
+                            console.log('📤 [SHARED PROFILE] Using onQuickBookWithChat handler');
+                            onQuickBookWithChat();
+                        } else {
+                            console.log('💬 [BOOK NOW] Opening persistent chat window...');
+                            openBookingChat(therapist);
+                            console.log('✅ [BOOK NOW] Chat window opened successfully');
+                        }
                         
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
