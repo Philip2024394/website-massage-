@@ -52,7 +52,7 @@ import TherapistPlaceholderPage from '../../pages/therapist/TherapistPlaceholder
 import TherapistHotelVillaSafePassPage from '../../pages/therapist/TherapistHotelVillaSafePassPage';
 import TherapistCustomersPage from '../../pages/therapist/TherapistCustomersPage';
 import TherapistAnalyticsPage from '../../pages/therapist/TherapistAnalyticsPage';
-import BannerDiscountPage from '../../pages/therapist/BannerDiscountPage';
+import BannerDiscountPage from '../../pages/therapist/BannerDiscountPage.tsx';
 
 export const therapistRoutes = {
   dashboard: {

@@ -47,7 +47,6 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
   const [isAccepting, setIsAccepting] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
   const [bookingAccepted, setBookingAccepted] = useState(false);
-  const [bookingAccepted, setBookingAccepted] = useState(false);
 
   // CRITICAL: Loud continuous alert until therapist acts
   useEffect(() => {
