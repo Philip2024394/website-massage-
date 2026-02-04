@@ -69,6 +69,9 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                     <p className="text-xs text-gray-500 mt-2">
                         Clients may simply reference the image name and point number (e.g., "Body Back – Point 6") to guide the therapist.
                     </p>
+                    <p className="text-xs text-gray-500 mt-2 italic">
+                        This guide supports communication but does not replace verbal discussion with your therapist.
+                    </p>
                 </div>
                 
                 {/* Multi-Image Reference Layout */}
