@@ -21,7 +21,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Info } from 'lucide-react';
 import type { Therapist } from '../../types';
-import { MASSAGE_TYPE_DETAILS } from '../../constants';
+import { MASSAGE_TYPE_DETAILS, getMassageTypeImage } from '../../constants';
+import { MassageTypeCard } from './MassageTypeCard';
 
 interface TherapistServiceShowcaseProps {
     therapist: Therapist;
@@ -40,6 +41,7 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
     const [isMassageTypesOpen, setIsMassageTypesOpen] = useState(false);
+    const [expandedCards, setExpandedCards] = useState<{ [key: string]: boolean }>({});
 
     const openLightbox = (imageSrc: string, imageAlt: string) => {
         setSelectedImage({ src: imageSrc, alt: imageAlt });
@@ -57,12 +59,27 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
 
     const openMassageTypes = () => {
         setIsMassageTypesOpen(true);
+        setExpandedCards({}); // Reset expansion state when opening modal
         document.body.style.overflow = 'hidden';
     };
 
     const closeMassageTypes = () => {
         setIsMassageTypesOpen(false);
+        setExpandedCards({}); // Reset expansion state when closing modal
         document.body.style.overflow = 'unset';
+    };
+
+    const toggleCardExpansion = (massageName: string) => {
+        setExpandedCards(prev => ({
+            ...prev,
+            [massageName]: !prev[massageName]
+        }));
+    };
+
+    // Cycle through popularity ratings
+    const popularityRatings = [4.2, 4.5, 4.7, 4.8];
+    const getPopularity = (index: number) => {
+        return popularityRatings[index % popularityRatings.length];
     };
 
     // Close modals on ESC key
@@ -239,71 +256,36 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                         <X size={24} strokeWidth={2} />
                     </button>
 
-                    {/* Content */}
+                    {/* Content - Reusing MassageTypesPage cards */}
                     <div 
-                        className="max-w-4xl mx-auto px-4 py-6 sm:px-6 sm:py-8"
+                        className="max-w-4xl mx-auto px-4 py-12 sm:px-6"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
-                            Massage Type Overview
-                        </h2>
-                        <p className="text-sm text-gray-600 mb-8 text-center max-w-2xl mx-auto">
-                            Explore different massage styles to find the perfect treatment for your needs
-                        </p>
+                        {/* Massage Types Grid - Same layout as directory page */}
+                        <div className="flex flex-col gap-4">
+                            {MASSAGE_TYPE_DETAILS.map((massageTypeDetail, index) => {
+                                const massage = {
+                                    name: massageTypeDetail.name,
+                                    description: massageTypeDetail.shortDescription || massageTypeDetail.description,
+                                    fullDescription: massageTypeDetail.description,
+                                    benefits: massageTypeDetail.benefits || [],
+                                    duration: massageTypeDetail.duration || '60-90 min',
+                                    intensity: massageTypeDetail.intensity || 'Medium',
+                                    bestFor: massageTypeDetail.bestFor || [],
+                                    image: getMassageTypeImage(massageTypeDetail.name),
+                                    popularity: getPopularity(index)
+                                };
 
-                        {/* Massage Types Grid */}
-                        <div className="grid gap-6 sm:grid-cols-2">
-                            {MASSAGE_TYPE_DETAILS.map((massageType) => (
-                                <div 
-                                    key={massageType.name}
-                                    className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"
-                                >
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2">
-                                        {massageType.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">
-                                        {massageType.shortDescription}
-                                    </p>
-
-                                    {/* Benefits */}
-                                    {massageType.benefits && massageType.benefits.length > 0 && (
-                                        <div className="mb-3">
-                                            <p className="text-xs font-semibold text-gray-700 mb-1">Key Benefits:</p>
-                                            <div className="flex flex-wrap gap-1">
-                                                {massageType.benefits.slice(0, 3).map((benefit, idx) => (
-                                                    <span 
-                                                        key={idx}
-                                                        className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full"
-                                                    >
-                                                        {benefit}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Details */}
-                                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                                        {massageType.duration && (
-                                            <span className="flex items-center gap-1">
-                                                ⏱️ {massageType.duration}
-                                            </span>
-                                        )}
-                                        {massageType.intensity && (
-                                            <span className="flex items-center gap-1">
-                                                💪 {massageType.intensity}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Footer Note */}
-                        <div className="mt-8 text-center">
-                            <p className="text-xs text-gray-500 italic">
-                                Discuss your preferences with your therapist to customize your experience
-                            </p>
+                                return (
+                                    <MassageTypeCard
+                                        key={massage.name}
+                                        massage={massage}
+                                        expanded={expandedCards[massage.name] || false}
+                                        onToggleExpanded={() => toggleCardExpansion(massage.name)}
+                                        showActionButtons={false}
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
