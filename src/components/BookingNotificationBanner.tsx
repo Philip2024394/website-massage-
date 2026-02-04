@@ -96,6 +96,7 @@ export function BookingNotificationBanner({
   // ========================================================================
 
   const formatTime = (ms: number) => {
+    if (!Number.isFinite(ms) || ms < 0) return '--:--';
     const totalSeconds = Math.ceil(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;

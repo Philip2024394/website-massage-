@@ -54,7 +54,7 @@ import { PersistentChatProvider } from './context/PersistentChatProvider';
 import { LoadingProvider } from './context/LoadingContext';
 import { EnterpriseLoader } from './components/EnterpriseLoader';
 import { AppLoadingManager } from './components/AppLoadingManager';
-import { PersistentChatWindow } from './components/PersistentChatWindow';
+import PersistentChatWindowSafe from './components/PersistentChatWindowSafe';
 import { PWAStateManager } from './components/PWAStateManager';
 
 // 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring
@@ -1473,8 +1473,8 @@ const App = () => {
             {/* 🔒 PERSISTENT CHAT WINDOW - Facebook Messenger style
                 This renders at ROOT level, OUTSIDE all other components.
                 It will NEVER disappear once opened. 
-                NOTE: Old FloatingChatWindow system disabled - using PersistentChatWindow only */}
-            <PersistentChatWindow />
+                NOTE: Using PersistentChatWindowSafe wrapper to bypass Babel JSX parsing errors */}
+            <PersistentChatWindowSafe />
 
             {/* 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring */}
             {process.env.NODE_ENV !== 'production' && (

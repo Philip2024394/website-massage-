@@ -334,18 +334,26 @@ const CityLocationDropdown = ({
               top: `${menuPos.top}px`,
               left: `${menuPos.left}px`,
               width: `${menuPos.width}px`,
-              zIndex: 9999
+              zIndex: 9999,
+              backgroundColor: '#ffffff',
+              color: '#1f2937',
+              borderRadius: '12px',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
+              padding: '8px 0'
             }}
-            className="mt-1 bg-white border-2 border-orange-500 rounded-xl shadow-lg max-h-60 "
+            className="mt-1 max-h-60 overflow-y-auto"
           >
             {includeAll && (
               <button
                 type="button"
                 onClick={() => handleCitySelect('all')}
                 className={`
-                  w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150
-                  ${selectedCity === 'all' ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900'}
+                  w-full px-4 py-3 text-left text-sm transition-colors duration-150
+                  ${selectedCity === 'all' ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900 hover:bg-gray-50'}
                 `}
+                style={{
+                  padding: '12px 16px'
+                }}
               >
                 {placeholder}
               </button>
@@ -358,7 +366,7 @@ const CityLocationDropdown = ({
             ) : (
               <>
                 {/* Search Input */}
-                <div className="sticky top-0 bg-white border-b-2 border-gray-200 p-3 z-10">
+                <div className="sticky top-0 border-b-2 border-gray-200 p-3 z-10" style={{ backgroundColor: '#ffffff' }}>
                   <div className="relative">
                     <input
                       type="text"
@@ -366,6 +374,7 @@ const CityLocationDropdown = ({
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full px-3 py-2 pr-10 border-2 border-gray-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
+                      style={{ backgroundColor: '#ffffff', color: '#1f2937' }}
                       onClick={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
                     />
@@ -449,9 +458,12 @@ const CityLocationDropdown = ({
                                   type="button"
                                   onClick={() => handleCitySelect(city)}
                                   className={`
-                                    w-full px-6 py-2 text-left text-sm hover:bg-orange-50 transition-colors duration-150 pl-8
-                                    ${selectedCity === (city.locationId || city.name.toLowerCase()) ? 'bg-orange-100 text-orange-800 font-medium border-r-2 border-orange-500' : 'text-gray-700'}
+                                    w-full text-left text-sm transition-colors duration-150 pl-8
+                                    ${selectedCity === (city.locationId || city.name.toLowerCase()) ? 'bg-orange-100 text-orange-800 font-medium border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-50'}
                                   `}
+                                  style={{
+                                    padding: '12px 24px 12px 32px'
+                                  }}
                                 >
                                   {hierarchicalConfig.icon} {city.name}
                                 </button>
@@ -471,9 +483,12 @@ const CityLocationDropdown = ({
                               type="button"
                               onClick={() => handleCitySelect(city)}
                               className={`
-                                w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150
-                                ${selectedCity === (city.locationId || city.name.toLowerCase()) ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900'}
+                                w-full text-left text-sm transition-colors duration-150
+                                ${selectedCity === (city.locationId || city.name.toLowerCase()) ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900 hover:bg-gray-50'}
                               `}
+                              style={{
+                                padding: '12px 16px'
+                              }}
                             >
                               {city.name}
                             </button>

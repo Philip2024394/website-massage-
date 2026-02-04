@@ -55,6 +55,7 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
 
   // Format time as MM:SS
   const formatTime = (milliseconds: number): string => {
+    if (!Number.isFinite(milliseconds) || milliseconds < 0) return '--:--';
     const totalSeconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;

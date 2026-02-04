@@ -81,6 +81,12 @@ import {
   ConnectionStatus 
 } from '../lib/services/connectionStabilityService';
 import { chatDataFlowService } from '../lib/services/chatDataFlowService';
+import { useBookingTimer, TimerExpirationEvent, TimerPhase } from '../hooks/useBookingTimer';
+import { 
+  executeBookingTransaction, 
+  isBookingActive, 
+  BookingTransactionParams 
+} from '../services/bookingTransaction.service';
 
 // Collection IDs from config
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
@@ -246,8 +252,11 @@ export interface ChatWindowState {
   connectionStatus: ConnectionStatus;
   // Booking workflow state
   currentBooking: BookingData | null;
-  bookingCountdown: number | null; // Seconds remaining for therapist/user action
+  // bookingCountdown removed - managed by useBookingTimer hook (single authority)
   isTherapistView: boolean; // True if viewing as therapist
+  // 🆕 ELITE FIX: Facebook/Amazon Standard - Transparent degradation visibility
+  isAppwriteDegraded: boolean; // True when Appwrite fails but system continues
+  degradationReason: string | null; // User-friendly explanation of degradation
 }
 
 // ============================================================================
@@ -315,6 +324,9 @@ interface PersistentChatContextValue {
   shareBankCard: () => void;    // Share bank card details
   confirmPayment: (method: 'cash' | 'bank_transfer') => void;
   addSystemNotification: (message: string) => void;
+  // ⏱️ Timer state and control
+  timerState: { isActive: boolean; remainingSeconds: number; phase: string | null; bookingId: string | null };
+  resumeTimerIfNeeded: (bookingId: string) => void;
 }
 
 const PersistentChatContext = createContext<PersistentChatContextValue | null>(null);
@@ -347,15 +359,38 @@ const initialState: ChatWindowState = {
   },
   // Booking workflow state
   currentBooking: null,
-  bookingCountdown: null,
+  // bookingCountdown removed - managed by useBookingTimer hook
   isTherapistView: false,
+  // 🆕 ELITE FIX: Initialize degradation tracking
+  isAppwriteDegraded: false,
+  degradationReason: null,
 };
 
 export function PersistentChatProvider({ children, setIsChatWindowVisible }: { 
   children: ReactNode;
   setIsChatWindowVisible: (visible: boolean) => void; // REQUIRED - no optional behavior
 }) {
-  const [chatState, _setChatState] = useState<ChatWindowState>(initialState);
+  // 🆕 ELITE FIX: Load persisted booking state on mount (Facebook/Amazon Standard)
+  const loadPersistedState = (): Partial<ChatWindowState> | null => {
+    try {
+      const persistedBooking = localStorage.getItem('active_booking_state');
+      if (persistedBooking) {
+        const parsed = JSON.parse(persistedBooking);
+        console.log('📦 Restored active booking from localStorage:', parsed.bookingId);
+        return parsed;
+      }
+    } catch (error) {
+      console.error('❌ Failed to load persisted booking state:', error);
+    }
+    return null;
+  };
+
+  const persistedState = loadPersistedState();
+  const mergedInitialState = persistedState 
+    ? { ...initialState, ...persistedState, isOpen: true, isMinimized: false }
+    : initialState;
+
+  const [chatState, _setChatState] = useState<ChatWindowState>(mergedInitialState);
   
   // DEBUG: Wrapper to track all state changes
   const setChatState = useCallback((updater: any) => {
@@ -382,7 +417,19 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   const [isGuestUser, setIsGuestUser] = useState<boolean>(true); // Track guest status for optimization
   const subscriptionRef = useRef<(() => void) | null>(null);
   const therapistIdRef = useRef<string | null>(null);
-  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // countdownTimerRef removed - timer managed by useBookingTimer hook
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // TIMER MANAGER (Single Authority - Zero Closures)
+  // ═══════════════════════════════════════════════════════════════════════
+  const {
+    timerState,
+    startTimer,
+    stopTimer,
+    updateBookingStateRef,
+    setExpirationHandler,
+    resumeTimerIfNeeded
+  } = useBookingTimer();
 
   // Keep therapist ID ref in sync
   useEffect(() => {
@@ -419,6 +466,106 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     };
     initUser();
   }, []);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // TIMER EXPIRATION HANDLER (Lifecycle-Driven)
+  // ═══════════════════════════════════════════════════════════════════════
+  const handleTimerExpiration = useCallback(async (event: TimerExpirationEvent) => {
+    console.log(`⏰ [EXPIRATION] Timer expired: ${event.phase}`);
+    console.log(`   Booking ID: ${event.bookingId}`);
+    console.log(`   Lifecycle: ${event.lifecycleStatus}`);
+    
+    if (event.phase === 'THERAPIST_RESPONSE') {
+      // PENDING → EXPIRED (therapist didn't respond)
+      if (event.lifecycleStatus === BookingLifecycleStatus.PENDING) {
+        console.log('⏰ [EXPIRATION] Therapist timeout - transitioning to EXPIRED');
+        
+        if (event.documentId) {
+          try {
+            await bookingLifecycleService.expireBooking(event.documentId, 'Therapist timeout');
+          } catch (error) {
+            console.error('❌ [EXPIRATION] Failed to expire booking:', error);
+          }
+        }
+        
+        // Update UI state
+        setChatState(prev => ({
+          ...prev,
+          currentBooking: prev.currentBooking ? {
+            ...prev.currentBooking,
+            lifecycleStatus: BookingLifecycleStatus.EXPIRED,
+          } : null,
+        }));
+        
+        const therapistName = chatState.therapist?.name;
+        const message = therapistName
+          ? `${therapistName} unfortunately is busy to accept your booking. We will locate an alternative replacement now. Please hold while we are processing your booking.`
+          : 'Unfortunately the therapist is busy to accept your booking. We will locate an alternative replacement now. Please hold while we are processing your booking.';
+        
+        addSystemNotification(`⚠️ ${message}`);
+      } else {
+        console.warn(`⚠️ [EXPIRATION] Cannot expire THERAPIST_RESPONSE - unexpected status: ${event.lifecycleStatus}`);
+      }
+      
+    } else if (event.phase === 'CUSTOMER_CONFIRMATION') {
+      // ACCEPTED → EXPIRED (customer didn't confirm)
+      if (event.lifecycleStatus === BookingLifecycleStatus.ACCEPTED) {
+        console.log('⏰ [EXPIRATION] Customer timeout - transitioning to EXPIRED');
+        
+        if (event.documentId) {
+          try {
+            await bookingLifecycleService.expireBooking(event.documentId, 'Customer confirmation timeout');
+          } catch (error) {
+            console.error('❌ [EXPIRATION] Failed to expire booking:', error);
+          }
+        }
+        
+        // Update UI state
+        setChatState(prev => ({
+          ...prev,
+          currentBooking: prev.currentBooking ? {
+            ...prev.currentBooking,
+            lifecycleStatus: BookingLifecycleStatus.EXPIRED,
+          } : null,
+        }));
+        
+        addSystemNotification(
+          '❌ Booking expired - confirmation not received in time.'
+        );
+      } else {
+        console.warn(`⚠️ [EXPIRATION] Cannot expire CUSTOMER_CONFIRMATION - unexpected status: ${event.lifecycleStatus}`);
+      }
+    }
+  }, []);
+  
+  // Register expiration handler on mount
+  useEffect(() => {
+    setExpirationHandler(handleTimerExpiration);
+    console.log('✅ [TIMER] Expiration handler registered');
+  }, [handleTimerExpiration, setExpirationHandler]);
+  
+  // ═══════════════════════════════════════════════════════════════════════
+  // BOOKING STATE REF SYNC (Timer reads latest state via ref - zero closures)
+  // ═══════════════════════════════════════════════════════════════════════
+  useEffect(() => {
+    if (chatState.currentBooking) {
+      updateBookingStateRef({
+        bookingId: chatState.currentBooking.bookingId,
+        documentId: chatState.currentBooking.documentId || null,
+        lifecycleStatus: chatState.currentBooking.lifecycleStatus,
+        isActive: isBookingActive(chatState.currentBooking.lifecycleStatus)
+      });
+      console.log('🔄 [TIMER] Booking state ref updated:', chatState.currentBooking.bookingId);
+    } else {
+      updateBookingStateRef({
+        bookingId: null,
+        documentId: null,
+        lifecycleStatus: null,
+        isActive: false
+      });
+      console.log('🔄 [TIMER] Booking state ref cleared');
+    }
+  }, [chatState.currentBooking, updateBookingStateRef]);
 
   // Subscribe to real-time messages with comprehensive infrastructure validation
   useEffect(() => {
@@ -532,14 +679,17 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       if (!isValid) {
         console.warn('⚠️ Infrastructure validation failed - continuing with limited functionality');
         console.warn('💡 Chat will work but realtime messaging may be limited');
-        // Don't abort - continue with limited functionality
+        // 🆕 ELITE FIX: Surface degradation to user with transparent messaging
         setChatState(prev => ({ 
           ...prev, 
           connectionStatus: { 
             ...prev.connectionStatus, 
             isConnected: false, 
             quality: 'poor' 
-          } 
+          },
+          // Facebook/Amazon Standard: User must know when system is degraded
+          isAppwriteDegraded: true,
+          degradationReason: 'Real-time messaging temporarily unavailable. Messages will sync when connection restores.' 
         }));
         // Continue setup even if validation fails
       }
@@ -550,7 +700,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         // Initialize connection stability service (non-blocking)
         connectionStabilityService.initialize().catch(err => {
           console.warn('⚠️ Connection stability service failed to initialize:', err);
-          // Continue anyway - the app should work without real-time features
+          // 🆕 ELITE FIX: Surface initialization failure to user
+          setChatState(prev => ({
+            ...prev,
+            isAppwriteDegraded: true,
+            degradationReason: 'Connection monitoring temporarily unavailable. Chat functionality may be limited.'
+          }));
         });
         
         // Listen for connection status changes
@@ -818,7 +973,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         });
       }
     }
-  }, [currentUserId, loadMessages]);
+  }, [currentUserId, loadMessages, setIsChatWindowVisible, setIsLocked]);
 
   // Add local message (legacy compatibility) - MOVED HERE to fix initialization order
   const addMessage = useCallback((message: Omit<LegacyMessage, 'id' | 'timestamp'>) => {
@@ -954,7 +1109,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       type: 'system'
     });
 
-  }, [currentUserId, loadMessages, addMessage]);
+  }, [currentUserId, loadMessages, addMessage, setIsChatWindowVisible, setIsLocked]);
 
   // Minimize chat - reset booking flow to duration selection
   const minimizeChat = useCallback(() => {
@@ -1056,6 +1211,34 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         isMinimized: step === 'chat' ? false : prev.isMinimized,
       };
       
+      // 🆕 ELITE FIX: Persist active booking state to localStorage (Facebook/Amazon Standard)
+      if (step !== 'duration' && step !== 'chat' && prev.currentBooking) {
+        try {
+          const bookingState = {
+            bookingStep: step,
+            selectedDuration: prev.selectedDuration,
+            selectedDate: prev.selectedDate,
+            selectedTime: prev.selectedTime,
+            customerName: prev.customerName,
+            customerWhatsApp: prev.customerWhatsApp,
+            customerLocation: prev.customerLocation,
+            coordinates: prev.coordinates,
+            selectedService: prev.selectedService,
+            therapist: prev.therapist,
+            currentBooking: prev.currentBooking,
+            bookingId: prev.currentBooking.bookingId,
+          };
+          localStorage.setItem('active_booking_state', JSON.stringify(bookingState));
+          console.log('💾 Persisted booking state at step:', step);
+        } catch (error) {
+          console.error('❌ Failed to persist booking state:', error);
+        }
+      } else if (step === 'duration') {
+        // Clear persisted state when returning to initial step
+        localStorage.removeItem('active_booking_state');
+        console.log('🧹 Cleared persisted booking state');
+      }
+      
       console.log('📋 [setBookingStep] NEW State:', {
         bookingStep: newState.bookingStep,
         isOpen: newState.isOpen,
@@ -1073,17 +1256,17 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       setIsChatWindowVisible(true);
       console.log('✅ Chat unlocked and AppStateContext notified');
     }
-  }, [setIsChatWindowVisible]);
+  }, [setIsChatWindowVisible, setIsLocked]);
 
   // Set selected duration
   const setSelectedDuration = useCallback((duration: number) => {
     setChatState(prev => ({ ...prev, selectedDuration: duration }));
-  }, []);
+  }, [setChatState]);
 
   // Set selected date and time
   const setSelectedDateTime = useCallback((date: string, time: string) => {
     setChatState(prev => ({ ...prev, selectedDate: date, selectedTime: time }));
-  }, []);
+  }, [setChatState]);
 
   // Set customer details
   const setCustomerDetails = useCallback((details: { 
@@ -1103,7 +1286,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     if (details.name) {
       setCurrentUserName(details.name);
     }
-  }, []);
+  }, [setChatState, setCurrentUserName]);
 
   // Send message - Simple and reliable implementation
   const sendMessage = useCallback(async (messageContent: string): Promise<{ sent: boolean; warning?: string }> => {
@@ -1201,7 +1384,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
       
       // This should almost never happen with 100% Facebook standard
-      console.log('🚨 [100% FACEBOOK] EMERGENCY FALLBACK (Should not happen)');
+      console.log('� [FALLBACK] Attempting server-enforced service...');
       
       // Prepare traditional server request for emergency fallback
       const serverRequest: SendMessageRequest = {
@@ -1215,13 +1398,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         roomId,
       };
 
-      // Emergency fallback 1: Server-enforced service
+      // 🆕 ELITE FIX: Server-enforced fallback (Layer 2 only)
       try {
-        console.log('🚨 [EMERGENCY] Server-enforced service...');
+        console.log('🔄 [FALLBACK] Server-enforced service...');
         const response = await serverEnforcedChatService.sendMessage(serverRequest);
         
         if (response.success && !response.isRestricted && !response.isViolation) {
-          console.log('⚠️ [EMERGENCY] Server fallback succeeded');
+          console.log('✅ [FALLBACK] Server-enforced service succeeded');
           
           // Add to local state
           const newMessage: ChatMessage = {
@@ -1256,105 +1439,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         }
         
       } catch (serverError) {
-        console.error('❌ [EMERGENCY] Server fallback failed:', serverError);
+        console.error('❌ [FALLBACK] Server-enforced service failed:', serverError);
       }
       
-      // Emergency fallback 2: Direct service
-      try {
-        console.log('🚨 [EMERGENCY] Direct chat service...');
-        const { directChatService } = await import('../lib/services/directChatService');
-        const directResult = await directChatService.sendMessage({
-          conversationId: roomId,
-          senderId: currentUserId,
-          senderName: currentUserName || chatState.customerName || 'Guest',
-          senderRole: 'customer',
-          receiverId: therapist.id,
-          receiverName: therapist.name,
-          receiverRole: 'therapist',
-          message: messageContent.trim(),
-          messageType: 'text'
-        });
-        
-        if (directResult.success) {
-          console.log('⚠️ [EMERGENCY] Direct fallback succeeded');
-          
-          // Add to local state
-          const newMessage: ChatMessage = {
-            $id: directResult.messageId || `direct_${Date.now()}`,
-            senderId: currentUserId,
-            senderName: currentUserName || chatState.customerName || 'Guest',
-            senderType: 'customer',
-            recipientId: therapist.id,
-            recipientName: therapist.name,
-            message: messageContent.trim(),
-            createdAt: new Date().toISOString(),
-            read: false,
-            messageType: 'text',
-            roomId,
-            isSystemMessage: false,
-          };
-
-          setChatState(prev => ({
-            ...prev,
-            messages: [...prev.messages, newMessage]
-          }));
-          
-          return { sent: true, warning: 'Sent via emergency direct fallback' };
-        }
-        
-      } catch (directError) {
-        console.error('❌ [EMERGENCY] Direct fallback failed:', directError);
-      }
-      
-      // Ultimate fallback 3: Simple service
-      try {
-        console.log('🚨 [EMERGENCY] Simple chat service (last resort)...');
-        const { simpleChatService } = await import('../lib/simpleChatService');
-        const simpleResult = await simpleChatService.sendMessage({
-          conversationId: roomId,
-          senderId: currentUserId,
-          senderName: currentUserName || chatState.customerName || 'Guest',
-          senderRole: 'customer',
-          receiverId: therapist.id,
-          receiverName: therapist.name,
-          receiverRole: 'therapist',
-          message: messageContent.trim(),
-          messageType: 'text'
-        });
-        
-        if (simpleResult && simpleResult.$id) {
-          console.log('⚠️ [EMERGENCY] Simple fallback succeeded');
-          
-          // Add to local state
-          const newMessage: ChatMessage = {
-            $id: simpleResult.$id,
-            senderId: currentUserId,
-            senderName: currentUserName || chatState.customerName || 'Guest',
-            senderType: 'customer',
-            recipientId: therapist.id,
-            recipientName: therapist.name,
-            message: messageContent.trim(),
-            createdAt: new Date().toISOString(),
-            read: false,
-            messageType: 'text',
-            roomId,
-            isSystemMessage: false,
-          };
-
-          setChatState(prev => ({
-            ...prev,
-            messages: [...prev.messages, newMessage]
-          }));
-          
-          return { sent: true, warning: 'Sent via emergency simple fallback' };
-        }
-        
-      } catch (simpleError) {
-        console.error('❌ [EMERGENCY] Simple fallback failed:', simpleError);
-      }
-      
-      // If we get here, everything failed (extremely unlikely with 100% standard)
-      console.error('🚨 [100% FACEBOOK] CRITICAL: All systems failed (should never happen)');
+      // 🆕 ELITE FIX: Simplified fallback - Facebook/Amazon Standard (2 layers max)
+      // If both primary and server-enforced fail, report critical failure
+      console.error('🚨 [CRITICAL] Both primary and fallback services failed');
       return { 
         sent: false, 
         warning: 'Unable to send message. Please check your connection and try again.' 
@@ -1392,383 +1482,160 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       ...prev,
       messages: [...prev.messages, systemMessage],
     }));
-  }, [chatState.therapist]);
+  }, [chatState.therapist, setChatState]);
 
-  // Start countdown timer for booking actions
-  const startCountdown = useCallback((seconds: number, onExpire: () => void) => {
-    // Clear existing timer
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current);
-    }
-    
-    setChatState(prev => ({ ...prev, bookingCountdown: seconds }));
-    
-    countdownTimerRef.current = setInterval(() => {
-      setChatState(prev => {
-        if (prev.bookingCountdown === null || prev.bookingCountdown <= 1) {
-          if (countdownTimerRef.current) {
-            clearInterval(countdownTimerRef.current);
-            countdownTimerRef.current = null;
-          }
-          onExpire();
-          return { ...prev, bookingCountdown: null };
-        }
-        return { ...prev, bookingCountdown: prev.bookingCountdown - 1 };
-      });
-    }, 1000);
-  }, []);
+  // ═══════════════════════════════════════════════════════════════════════
+  // OLD TIMER FUNCTIONS REMOVED - Now managed by useBookingTimer hook
+  // ═══════════════════════════════════════════════════════════════════════
+  // startCountdown() → Replaced by startTimer() from useBookingTimer
+  // stopCountdown() → Replaced by stopTimer() from useBookingTimer
+  // Timer logic is now single-authority with zero closure capture
 
-  // Stop countdown timer
-  const stopCountdown = useCallback(() => {
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current);
-      countdownTimerRef.current = null;
-    }
-    setChatState(prev => ({ ...prev, bookingCountdown: null }));
-  }, []);
-
-  // Create a new booking using localStorage bookingService
-  // 🔒 CRITICAL: ALL booking creation now uses localStorage only
+  // ═══════════════════════════════════════════════════════════════════════
+  // ATOMIC BOOKING CREATION (Transaction-Style with Rollback)
+  // ═══════════════════════════════════════════════════════════════════════
   const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
-    console.log('📦 [LOCALSTORAGE] Creating booking with localStorage bookingService');
+    console.log('🔒 [TRANSACTION] Starting atomic booking creation');
     
-    // 🔑 CRITICAL FIX: Ensure authenticated session before creating booking
-    console.log('🔑 [AUTH] Ensuring authentication session for booking...');
-    try {
-      const { ensureAuthSession } = await import('../lib/authSessionHelper');
-      const authResult = await ensureAuthSession('Order Now booking creation');
-      
-      if (!authResult.success) {
-        console.error('❌ [AUTH] Failed to establish session:', authResult.error);
-        addSystemNotification('❌ Authentication failed. Please refresh the page and try again.');
-        return false;
-      }
-      
-      console.log('✅ [AUTH] Session established for booking:', authResult.userId);
-    } catch (authError: any) {
-      console.error('❌ [AUTH] Unexpected error ensuring session:', authError);
-      addSystemNotification('❌ Authentication error. Please refresh the page and try again.');
-      return false;
-    }
-    
-    // Import the localStorage booking service
-    const { bookingService } = await import('../lib/bookingService');
-    
+    // ═══════════════════════════════════════════════════════════════════════
+    // Prepare transaction parameters
+    // ═══════════════════════════════════════════════════════════════════════
     const therapist = chatState.therapist;
-    const duration = bookingData.duration || chatState.selectedDuration || 60;
-    const price = bookingData.totalPrice || (bookingData as any).price || 0;
-    
-    console.log('🔍 [BOOKING VALIDATION] Checking therapist data...');
-    console.log('- Therapist object:', therapist);
-    console.log('- Therapist ID:', therapist?.id);
-    console.log('- Therapist name:', therapist?.name);
-    
-    if (!therapist) {
-      console.error('❌ [CRITICAL] No therapist in chat state!');
-      console.error('❌ chatState.therapist is:', therapist);
-      addSystemNotification('❌ No therapist selected for booking');
-      return false;
-    }
-    
-    if (!therapist.id) {
-      console.error('❌ [CRITICAL] Therapist object has no ID!');
-      console.error('❌ Therapist object:', JSON.stringify(therapist));
-      addSystemNotification('❌ Therapist ID missing. Please refresh and try again.');
-      return false;
-    }
-    
-    console.log('✅ [VALIDATION] Therapist validated:', therapist.id);
-    
-    // 🔒 CRITICAL: Validate customerName is present (REQUIRED field)
-    // ✅ GUEST BOOKING ENABLED: Allow "Guest" as valid name for anonymous users
-    const customerName = currentUserName || chatState.customerName;
-    if (!customerName) {
-      console.error('❌ CRITICAL: customerName is missing');
-      console.error('❌ currentUserName:', currentUserName);
-      console.error('❌ chatState.customerName:', chatState.customerName);
-      addSystemNotification('❌ Customer name is required. Please enter your name in the form.');
-      return false;
-    }
-    
-    // 📱 ADMIN-ONLY: WhatsApp is optional and for admin purposes only
-    // Save to localStorage but NOT required for booking creation
-    let customerWhatsApp = bookingData.customerWhatsApp || chatState.customerWhatsApp || '';
-    
-    // ✅ CRITICAL: Strip + prefix from phone numbers for Appwrite compatibility
-    // Appwrite may have issues with + in string fields
-    customerWhatsApp = customerWhatsApp.replace(/^\+/, '');
-    
-    // 💾 Save WhatsApp to localStorage for admin tracking (if provided)
-    if (customerWhatsApp) {
-      try {
-        localStorage.setItem('customer_whatsapp_admin', customerWhatsApp);
-        console.log('💾 [ADMIN] WhatsApp saved to localStorage (without +):', customerWhatsApp);
-      } catch (e) {
-        console.warn('⚠️ Failed to save WhatsApp to localStorage:', e);
-      }
-    }
-    
-    // 📞 Use phone number for booking (required field)
-    // WhatsApp is optional and only used for admin tracking
-    let customerPhone = bookingData.customerPhone || chatState.customerWhatsApp || '';
-    customerPhone = customerPhone.replace(/^\+/, ''); // Strip + prefix
-    
-    if (!customerPhone) {
-      console.error('❌ ERROR: customerPhone is missing');
-      addSystemNotification('❌ Phone number is required. Please enter your phone number.');
-      return false;
-    }
-    
-    console.log('✅ VALIDATION PASSED: customerName =', customerName);
-    console.log('✅ VALIDATION PASSED: customerPhone =', customerPhone);
-    console.log('📱 [ADMIN-ONLY] customerWhatsApp =', customerWhatsApp || 'Not provided');
-    
-    // 🔒 CRITICAL VALIDATION: therapist.appwriteId MUST exist
-    // This is the final validation before booking creation - FAIL FAST if missing
-    if (!therapist.appwriteId) {
-      const errorMsg = 'INVALID THERAPIST STATE: Missing Appwrite document ID. ' +
-        'Cannot create booking without valid provider document ID.';
-      console.error('═'.repeat(80));
-      console.error('❌ CRITICAL:', errorMsg);
-      console.error('Therapist object:', therapist);
-      console.error('═'.repeat(80));
+    if (!therapist?.id || !therapist?.appwriteId) {
       addSystemNotification('❌ Invalid therapist data. Please refresh and try again.');
       return false;
     }
-    console.log('✅ VALIDATION PASSED: therapist.appwriteId =', therapist.appwriteId);
     
-    // Prepare booking data for Appwrite
-    // 📱 NOTE: WhatsApp is NOT sent to therapist (admin-only, stored in localStorage)
-    // ✅ FIXED: Match exact Appwrite schema field names (lowercase, with typos preserved)
-    const appwriteBooking = {
-      customerId: currentUserId || 'guest',
-      customerName: customerName, // ✅ GUARANTEED non-empty
-      customerphone: customerPhone, // ✅ FIXED: lowercase to match Appwrite schema
-      customerWhatsApp: customerPhone, // ✅ Use phone number for validation (required field)
-      // 🔒 CRITICAL: Use ONLY therapist.appwriteId (Appwrite document ID)
-      // NEVER fall back to .id or .$id - those may contain display names
-      therapistId: therapist.appwriteId,
-      // 🔒 CRITICAL: Send as therapistAppwriteId for booking.service.appwrite.ts validation
-      therapistAppwriteId: therapist.appwriteId,
-      therapistName: therapist?.name || '',
-      therapistType: 'therapist' as const,
-      serviceType: bookingData.serviceType || 'Traditional Massage',
-      duration,
-      price,
-      location: bookingData.locationZone || chatState.customerLocation || bookingData.address || 'Address provided in chat',
-      locationtype: (bookingData.locationType as 'home' | 'hotel' | 'villa') || 'home', // ✅ FIXED: lowercase to match Appwrite schema
-      address: bookingData.address || chatState.customerLocation || 'Address provided in chat',
-      roomnumber: bookingData.roomNumber || '', // ✅ FIXED: lowercase to match Appwrite schema, empty string instead of null (required field)
-      // 📍 GPS coordinates are OPTIONAL - don't send if not available
-      cordinates: bookingData.coordinates ? JSON.stringify(bookingData.coordinates) : undefined, // ✅ FIXED: typo "cordinates" to match Appwrite schema, convert to string
-      bookingDate: new Date().toISOString(),
-      date: new Date().toISOString(), // ✅ ADDED: date field for TypeScript interface
-      customerPhone: customerPhone, // ✅ ADDED: camelCase customerPhone for TypeScript interface
-      time: bookingData.scheduledTime || chatState.selectedTime || new Date().toLocaleTimeString('en-US', { hour12: false }),
-      status: 'pending' as const,
-      responcedeadline: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // ✅ FIXED: typo "responcedeadline" to match Appwrite schema
-      notes: bookingData.discountCode ? `Discount: ${bookingData.discountPercentage}%` : undefined,
-    };
-    
-    console.log('📦 [APPWRITE] Creating booking with params:', appwriteBooking);
-    
-    try {
-      console.log('🔍 [DIAGNOSTIC] About to create booking through bookingService');
-      console.log('🔍 [DIAGNOSTIC] bookingService available:', !!bookingService);
-      console.log('🔍 [DIAGNOSTIC] bookingService.createBooking function:', typeof bookingService.createBooking);
-      console.log('🔍 [DIAGNOSTIC] Appwrite booking data:', JSON.stringify(appwriteBooking, null, 2));
-      
-      // Call the Appwrite booking service
-      const createdBooking = await bookingService.createBooking(appwriteBooking);
-      
-      console.log('🔍 [DIAGNOSTIC] Booking service response:', JSON.stringify(createdBooking, null, 2));
-      
-      if (!createdBooking || !createdBooking.bookingId) {
-        console.error('❌ [APPWRITE] Booking creation failed - no booking returned');
-        console.error('🔍 [DIAGNOSTIC] createdBooking is:', createdBooking);
-        console.error('🔍 [DIAGNOSTIC] createdBooking type:', typeof createdBooking);
-        addSystemNotification('❌ Failed to create booking. Please try again.');
-        return false;
-      }
-      
-      console.log('✅ [APPWRITE] Booking created successfully:', createdBooking.bookingId);
-      console.log('✅ [APPWRITE] Document ID:', createdBooking.$id);
-      console.log('✅ [APPWRITE] Expires at:', createdBooking.expiresAt);
-      
-      const engineBooking = {
-        bookingId: createdBooking.bookingId,
-        documentId: createdBooking.$id,
-        therapistId: createdBooking.therapistId,
-        therapistName: createdBooking.therapistName,
-        customerId: createdBooking.customerId,
-        customerName: createdBooking.customerName,
-        customerPhone: createdBooking.customerPhone,
-        serviceType: createdBooking.serviceType,
-        duration: createdBooking.duration,
-        locationZone: createdBooking.location,
-        coordinates: undefined,
-        totalPrice: createdBooking.price,
-        adminCommission: Math.round(createdBooking.price * 0.3), // 30% commission
-        providerPayout: Math.round(createdBooking.price * 0.7), // 70% payout
-        createdAt: createdBooking.createdAt || new Date().toISOString(),
-        responseDeadline: createdBooking.responseDeadline,
-      };
-      console.log('✅ [ENGINE] Booking created successfully:', engineBooking.bookingId);
-      
-      // Convert engine booking to chat state format for UI compatibility
-      const chatBooking: BookingData = {
-        id: engineBooking.bookingId,
-        bookingId: engineBooking.bookingId,
-        documentId: engineBooking.documentId,
-        status: 'pending',
-        lifecycleStatus: 'PENDING' as any,
-        therapistId: engineBooking.therapistId,
-        therapistName: engineBooking.therapistName,
-        providerType: 'therapist',
-        customerId: engineBooking.customerId,
-        customerName: engineBooking.customerName,
-        customerPhone: engineBooking.customerPhone,
-        serviceType: engineBooking.serviceType,
-        duration: engineBooking.duration,
-        locationZone: engineBooking.locationZone,
-        coordinates: engineBooking.coordinates,
-        bookingType: 'BOOK_NOW' as any,
-        totalPrice: engineBooking.totalPrice,
-        adminCommission: engineBooking.adminCommission,
-        providerPayout: engineBooking.providerPayout,
-        discountCode: bookingData.discountCode,
-        discountPercentage: bookingData.discountPercentage,
-        originalPrice: bookingData.originalPrice,
-        discountedPrice: bookingData.discountCode ? price : undefined,
-        createdAt: engineBooking.createdAt,
-        pendingAt: engineBooking.createdAt,
-        responseDeadline: engineBooking.responseDeadline,
-        scheduledDate: bookingData.scheduledDate || chatState.selectedDate || undefined,
-        scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
-      };
-      
-      console.log('📋 [BOOKING] Chat booking object created:', chatBooking);
-      console.log('📋 [BOOKING] Starting countdown and updating UI state...');
-      
-      // ⏱️ Small delay to let form finish any pending operations
-      await new Promise(resolve => setTimeout(resolve, 50));
-      
-      // ✅ Update chat state to switch to chat mode
-      setChatState(prev => { 
-        const newState = {
-          ...prev, 
-          currentBooking: chatBooking,
-          bookingCountdown: 300,
-          bookingStep: 'chat' as BookingStep
-        };
-        console.log('📋 [STATE UPDATE] New chat state:', {
-          hasBooking: !!newState.currentBooking,
-          bookingId: newState.currentBooking?.bookingId,
-          countdown: newState.bookingCountdown,
-          step: newState.bookingStep
-        });
-        return newState;
-      });
-      
-      // 🔓 Unlock and notify immediately - proper conditional rendering eliminates race conditions
-      setIsLocked(false);
-      setIsChatWindowVisible(true);
-      console.log('🔓 Chat unlocked and AppStateContext notified');
-      
-      console.log('✅ [BOOKING] State updated - booking should now be visible in UI');
-      
-      // 🔥 LOCALSTORAGE: Skip chat room creation for now (using in-memory chat)
-      console.log('📦 [LOCALSTORAGE] Skipping Appwrite chat room creation - using in-memory chat');
-      
-      // Show success notification
-      if (bookingData.discountCode) {
-        addSystemNotification(`✅ Booking sent with ${bookingData.discountPercentage}% discount! See countdown timer above.`);
-      } else {
-        // Removed notification message
-      }
-      
-      // Start 5 minute countdown for therapist response
-      // Note: Initial value already set in state above
-      startCountdown(300, async () => {
-        console.log('⏰ [ENGINE] 5-minute timer expired for booking:', engineBooking.bookingId);
-        // Engine handles expiration automatically - Enhanced broadcast system
-        addSystemNotification(
-          '⏰ No response received. We are now finding the next available therapist in your location for first-come-first-serve acceptance. ' +
-          'You can cancel booking to browse directory for your preferred therapist/place.'
-        );
-        
-        // Update status to show we're now broadcasting to all therapists
-        setChatState(prev => ({
-          ...prev,
-          currentBooking: prev.currentBooking ? { 
-            ...prev.currentBooking, 
-            status: 'broadcast_all',
-            lifecycleStatus: 'EXPIRED' as any,
-            broadcastStarted: new Date().toISOString()
-          } : null,
-        }));
-        
-        // Trigger enhanced broadcast system to all therapists/places in location
-        await triggerLocationBasedBroadcast(engineBooking);
-      });
-      
-      console.log('✅ [ENGINE REDIRECT] Booking creation completed successfully');
-      return true;
-      
-    } catch (error: any) {
-      console.error('❌ [ENGINE REDIRECT] Unexpected error:', error);
-      console.error('🔍 [DIAGNOSTIC] Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-      
-      // Enhanced error reporting with detailed debugging
-      const errorDetails = {
-        errorName: error?.name || 'Unknown Error',
-        errorMessage: error?.message || 'No error message provided',
-        errorCode: error?.code || error?.status || 'No error code',
-        errorType: error?.type || 'booking_creation_error',
-        appwriteError: error?.response?.data || error?.response || null,
-        networkError: error?.name === 'TypeError' && error?.message?.includes('fetch'),
-        authError: error?.code === 401 || error?.message?.includes('authentication'),
-        validationError: error?.code === 400 || error?.message?.includes('validation'),
-        serviceError: error?.code >= 500 || error?.message?.includes('service'),
-        timestamp: new Date().toISOString()
-      };
-      
-      console.error('📊 [ERROR DETAILS]:', errorDetails);
-      console.error('🔍 [ERROR ANALYSIS]:');
-      console.error('  - Error Name:', errorDetails.errorName);
-      console.error('  - Error Message:', errorDetails.errorMessage);
-      console.error('  - Error Code:', errorDetails.errorCode);
-      console.error('  - Error Type:', errorDetails.errorType);
-      console.error('  - Appwrite Response:', errorDetails.appwriteError);
-      console.error('  - Stack Trace:', error?.stack?.split('\n').slice(0, 5).join('\n'));
-      
-      // Create detailed error message for user
-      let userErrorMessage = '❌ Failed to create booking. ';
-      
-      if (error?.code === 400) {
-        userErrorMessage += 'Invalid booking data provided. Please check all fields.';
-      } else if (error?.code === 401) {
-        userErrorMessage += 'Authentication failed. Please refresh and try again.';
-      } else if (error?.code === 404) {
-        userErrorMessage += 'Booking collection not found in database.';
-      } else if (error?.code === 500) {
-        userErrorMessage += 'Server error occurred. Please try again in a few minutes.';
-      } else if (error?.message?.includes('address')) {
-        userErrorMessage += 'Address field validation failed. Please provide a complete address.';
-      } else if (error?.message?.includes('therapist')) {
-        userErrorMessage += 'Therapist information is missing or invalid.';
-      } else if (error?.message?.includes('customer')) {
-        userErrorMessage += 'Customer information is incomplete.';
-      } else if (error?.message?.includes('network')) {
-        userErrorMessage += 'Network connection issue. Please check your internet.';
-      } else {
-        userErrorMessage += `Detailed error: ${errorDetails.errorMessage}`;
-      }
-      
-      addSystemNotification(userErrorMessage);
+    const customerName = currentUserName || chatState.customerName;
+    if (!customerName) {
+      addSystemNotification('❌ Customer name is required.');
       return false;
     }
-  }, [chatState.therapist, chatState.selectedDuration, chatState.customerLocation, chatState.coordinates, chatState.selectedDate, chatState.selectedTime, chatState.customerName, chatState.customerWhatsApp, currentUserId, currentUserName, addSystemNotification, startCountdown, setBookingStep]);
+    
+    let customerPhone = bookingData.customerPhone || chatState.customerWhatsApp || '';
+    customerPhone = customerPhone.replace(/^\+/, ''); // Strip + prefix
+    if (!customerPhone) {
+      addSystemNotification('❌ Phone number is required.');
+      return false;
+    }
+    
+    const duration = bookingData.duration || chatState.selectedDuration || 60;
+    const totalPrice = bookingData.totalPrice || (bookingData as any).price || 0;
+    
+    const transactionParams: BookingTransactionParams = {
+      therapist: {
+        id: therapist.id,
+        appwriteId: therapist.appwriteId,
+        name: therapist.name || ''
+      },
+      customerId: currentUserId || 'guest',
+      customerName,
+      customerPhone,
+      customerWhatsApp: bookingData.customerWhatsApp?.replace(/^\+/, ''),
+      duration,
+      totalPrice,
+      serviceType: bookingData.serviceType || 'Traditional Massage',
+      locationZone: bookingData.locationZone || chatState.customerLocation,
+      customerLocation: chatState.customerLocation,
+      address: bookingData.address || chatState.customerLocation || 'Address provided in chat',
+      locationType: (bookingData.locationType as 'home' | 'hotel' | 'villa') || 'home',
+      roomNumber: bookingData.roomNumber || '',
+      coordinates: bookingData.coordinates || chatState.coordinates || undefined,
+      scheduledDate: bookingData.scheduledDate || chatState.selectedDate || undefined,
+      scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
+      bookingType: (bookingData as any).bookingType || 'BOOK_NOW',
+      discountCode: bookingData.discountCode,
+      discountPercentage: bookingData.discountPercentage,
+      originalPrice: bookingData.originalPrice,
+    };
+    
+    console.log('📦 [TRANSACTION] Parameters prepared:', {
+      therapistId: transactionParams.therapist.id,
+      customerName: transactionParams.customerName,
+      duration: transactionParams.duration,
+      totalPrice: transactionParams.totalPrice
+    });
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // Execute atomic transaction (PREPARE → PERSIST → CONFIRM → COMMIT)
+    // ═══════════════════════════════════════════════════════════════════════
+    const result = await executeBookingTransaction(transactionParams);
+    
+    if (!result.success) {
+      console.error('❌ [TRANSACTION] Booking creation failed:', result.error);
+      addSystemNotification(`❌ ${result.error}`);
+      // Chat remains LOCKED - no partial state
+      return false;
+    }
+    
+    console.log('✅ [TRANSACTION] Transaction succeeded, committing state...');
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // COMMIT (Single atomic state update - NO FAILURES BEYOND THIS POINT)
+    // ═══════════════════════════════════════════════════════════════════════
+    const { booking, lifecycleStatus, timerPhase } = result.data!;
+    
+    setChatState(prev => ({
+      ...prev,
+      currentBooking: booking,
+      bookingStep: 'chat' as BookingStep,
+      // NO bookingCountdown - managed by timer hook
+    }));
+    
+    console.log('✅ [COMMIT] State updated with booking:', booking.bookingId);
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // Update booking state ref IMMEDIATELY (timer needs latest state)
+    // ═══════════════════════════════════════════════════════════════════════
+    updateBookingStateRef({
+      bookingId: booking.bookingId,
+      documentId: booking.documentId || null,
+      lifecycleStatus: lifecycleStatus,
+      isActive: isBookingActive(lifecycleStatus)
+    });
+    console.log('🔄 [COMMIT] Booking state ref updated immediately after commit');
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // Start timer BEFORE unlock (ensures timer is active when UI becomes interactive)
+    // ═══════════════════════════════════════════════════════════════════════
+    startTimer(timerPhase, booking.bookingId);
+    console.log(`⏱️ [TIMER] Started ${timerPhase} timer for booking ${booking.bookingId}`);
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // Unlock chat ONLY after timer is started
+    // ═══════════════════════════════════════════════════════════════════════
+    setIsLocked(false);
+    setIsChatWindowVisible(true);
+    console.log('🔓 [COMMIT] Chat unlocked after timer start');
+    
+    // Success notification
+    if (bookingData.discountCode) {
+      addSystemNotification(`✅ Booking sent with ${bookingData.discountPercentage}% discount!`);
+    } else {
+      addSystemNotification('✅ Booking request sent to therapist');
+    }
+    
+    console.log('✅ [TRANSACTION] Booking creation complete');
+    return true;
+    
+  }, [
+    chatState.therapist,
+    chatState.selectedDuration,
+    chatState.customerLocation,
+    chatState.coordinates,
+    chatState.selectedDate,
+    chatState.selectedTime,
+    chatState.customerName,
+    chatState.customerWhatsApp,
+    currentUserId,
+    currentUserName,
+    addSystemNotification,
+    startTimer,
+    updateBookingStateRef,
+    setIsLocked,
+    setIsChatWindowVisible,
+    setChatState
+  ]);
 
   // Update booking status
   const updateBookingStatus = useCallback((status: BookingStatus) => {
@@ -1776,13 +1643,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       ...prev,
       currentBooking: prev.currentBooking ? { ...prev.currentBooking, status } : null,
     }));
-  }, []);
+  }, [setChatState]);
 
   // Therapist accepts booking (PENDING → ACCEPTED)
   // 🔒 AUTO-INJECTS BANK CARD DETAILS FOR SCHEDULED BOOKINGS
   const acceptBooking = useCallback(async () => {
-    stopCountdown();
-    
     const currentBooking = chatState.currentBooking;
     const therapist = chatState.therapist;
     const therapistName = therapist?.name || 'Therapist';
@@ -1797,16 +1662,26 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
+    // SINGLE state update (no status field - lifecycle only)
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
-        status: 'therapist_accepted',
         lifecycleStatus: BookingLifecycleStatus.ACCEPTED,
         acceptedAt: new Date().toISOString(),
-        therapistAcceptedAt: new Date().toISOString(),
       } : null,
     }));
+    
+    // Update booking state ref IMMEDIATELY (timer needs ACCEPTED status)
+    if (currentBooking) {
+      updateBookingStateRef({
+        bookingId: currentBooking.bookingId,
+        documentId: currentBooking.documentId || null,
+        lifecycleStatus: BookingLifecycleStatus.ACCEPTED,
+        isActive: true // ACCEPTED is still active
+      });
+      console.log('🔄 [LIFECYCLE] Booking state ref updated: PENDING → ACCEPTED');
+    }
     
     // Notify user
     addSystemNotification(`✅ Therapist ${therapistName} accepted your booking. You have 1 minute to confirm or the booking is canceled.`);
@@ -1824,28 +1699,15 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }, 500); // Small delay for better UX
     }
     
-    // Start 1 minute countdown for user confirmation
-    startCountdown(60, async () => {
-      // User didn't confirm in time - expire booking
-      if (currentBooking?.documentId) {
-        await bookingLifecycleService.expireBooking(currentBooking.documentId, 'Customer confirmation timeout');
-      }
-      addSystemNotification('❌ Booking expired due to no confirmation. Please select a new therapist from the homepage.');
-      setChatState(prev => ({
-        ...prev,
-        currentBooking: prev.currentBooking ? { 
-          ...prev.currentBooking, 
-          status: 'expired',
-          lifecycleStatus: BookingLifecycleStatus.EXPIRED 
-        } : null,
-      }));
-    });
-  }, [chatState.therapist, chatState.currentBooking, stopCountdown, addSystemNotification, startCountdown]);
+    // Start customer confirmation timer (1 minute)
+    if (currentBooking?.bookingId) {
+      startTimer('CUSTOMER_CONFIRMATION', currentBooking.bookingId);
+      console.log('⏱️ [TIMER] Started CUSTOMER_CONFIRMATION timer (60s)');
+    }
+  }, [chatState.therapist, chatState.currentBooking, startTimer, addSystemNotification, setChatState, updateBookingStateRef]);
 
   // Therapist rejects booking (PENDING/ACCEPTED → DECLINED)
   const rejectBooking = useCallback(async () => {
-    stopCountdown();
-    
     const currentBooking = chatState.currentBooking;
     
     // Update via lifecycle service (server-authoritative)
@@ -1857,30 +1719,31 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
-    addSystemNotification('❌ Booking rejected. Your request is being sent to other available therapists.');
+    // Update state (lifecycle only - no status field)
     setChatState(prev => ({
       ...prev,
-      currentBooking: prev.currentBooking ? { ...prev.currentBooking, status: 'waiting_others' } : null,
+      currentBooking: prev.currentBooking ? {
+        ...prev.currentBooking,
+        lifecycleStatus: BookingLifecycleStatus.DECLINED
+      } : null,
     }));
     
-    // Start new 5 minute countdown for other therapists
-    startCountdown(300, () => {
-      addSystemNotification('⏰ No other therapists available. Please try again later or select a different therapist.');
-      setChatState(prev => ({
-        ...prev,
-        currentBooking: prev.currentBooking ? { 
-          ...prev.currentBooking, 
-          status: 'cancelled',
-          lifecycleStatus: BookingLifecycleStatus.DECLINED 
-        } : null,
-      }));
-    });
-  }, [stopCountdown, addSystemNotification, startCountdown]);
+    // Update booking state ref IMMEDIATELY (timer needs DECLINED status)
+    if (currentBooking) {
+      updateBookingStateRef({
+        bookingId: currentBooking.bookingId,
+        documentId: currentBooking.documentId || null,
+        lifecycleStatus: BookingLifecycleStatus.DECLINED,
+        isActive: false // DECLINED is inactive - timer will stop
+      });
+      console.log('🔄 [LIFECYCLE] Booking state ref updated: → DECLINED');
+    }
+    
+    addSystemNotification('❌ Booking rejected. Your request is being sent to other available therapists.');
+  }, [addSystemNotification, chatState.currentBooking, setChatState, updateBookingStateRef]);
 
   // User confirms booking after therapist accepted (ACCEPTED → CONFIRMED)
   const confirmBooking = useCallback(async () => {
-    stopCountdown();
-    
     const currentBooking = chatState.currentBooking;
     
     // Update via lifecycle service (server-authoritative)
@@ -1892,30 +1755,33 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
+    // Update state (lifecycle only - no status field)
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
-        status: 'user_confirmed',
         lifecycleStatus: BookingLifecycleStatus.CONFIRMED,
         confirmedAt: new Date().toISOString(),
-        userConfirmedAt: new Date().toISOString(),
       } : null,
     }));
     
+    // Update booking state ref IMMEDIATELY (timer needs CONFIRMED status)
+    if (currentBooking) {
+      updateBookingStateRef({
+        bookingId: currentBooking.bookingId,
+        documentId: currentBooking.documentId || null,
+        lifecycleStatus: BookingLifecycleStatus.CONFIRMED,
+        isActive: false // CONFIRMED is inactive - timer stops
+      });
+      console.log('🔄 [LIFECYCLE] Booking state ref updated: ACCEPTED → CONFIRMED');
+    }
+    
     const therapistName = chatState.therapist?.name || 'Therapist';
     addSystemNotification(`🎉 Booking confirmed! ${therapistName} will notify you when they are on the way.`);
-  }, [chatState.therapist, chatState.currentBooking, stopCountdown, addSystemNotification]);
+  }, [chatState.therapist, chatState.currentBooking, addSystemNotification, setChatState, updateBookingStateRef]);
 
   // Enhanced cancel booking with directory redirection
   const cancelBooking = useCallback(async () => {
-    stopCountdown();
-    
-    // Show cancel confirmation message
-    addSystemNotification(
-      '❌ Booking cancelled. Please view directory for your preferred Therapist / Places.'
-    );
-    
     const currentBooking = chatState.currentBooking;
     
     // Update via lifecycle service (server-authoritative)
@@ -1927,32 +1793,50 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
+    // Update state (lifecycle only - no status field)
     addSystemNotification('❌ Booking canceled. Please select a new therapist from the homepage.');
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? { 
         ...prev.currentBooking, 
-        status: 'cancelled',
         lifecycleStatus: BookingLifecycleStatus.DECLINED 
       } : null,
     }));
-  }, [chatState.currentBooking, stopCountdown, addSystemNotification]);
+    
+    // Update booking state ref IMMEDIATELY (timer needs DECLINED status)
+    if (currentBooking) {
+      updateBookingStateRef({
+        bookingId: currentBooking.bookingId,
+        documentId: currentBooking.documentId || null,
+        lifecycleStatus: BookingLifecycleStatus.DECLINED,
+        isActive: false // DECLINED is inactive - timer will stop
+      });
+      console.log('🔄 [LIFECYCLE] Booking state ref updated: → CANCELLED/DECLINED');
+    }
+  }, [chatState.currentBooking, addSystemNotification, setChatState, updateBookingStateRef]);
 
-  // Therapist is on the way
-  const setOnTheWay = useCallback(() => {
+  // Therapist is on the way (remains CONFIRMED, just adds timestamp)
+  const setOnTheWay = useCallback(async () => {
+    const currentBooking = chatState.currentBooking;
     const therapistName = chatState.therapist?.name || 'Therapist';
     
+    // Note: No lifecycle status change - stays CONFIRMED
+    // "On the way" is an operational detail, not a lifecycle state
+    
+    // Update state with timestamp (lifecycle stays CONFIRMED)
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
-        status: 'on_the_way',
         therapistOnTheWayAt: new Date().toISOString(),
       } : null,
     }));
     
+    // No ref update needed - lifecycle status unchanged (still CONFIRMED)
+    console.log('🚗 [OPERATIONAL] Therapist on the way (lifecycle: CONFIRMED)');
+    
     addSystemNotification(`🚗 ${therapistName} is on the way!`);
-  }, [chatState.therapist, addSystemNotification]);
+  }, [chatState.therapist, chatState.currentBooking, addSystemNotification, setChatState]);
 
   // Complete booking (CONFIRMED → COMPLETED) - This is the only state that generates commission
   const completeBooking = useCallback(async () => {
@@ -1971,18 +1855,29 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
+    // Update state (lifecycle only - no status field)
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
-        status: 'completed',
         lifecycleStatus: BookingLifecycleStatus.COMPLETED,
         completedAt: new Date().toISOString(),
       } : null,
     }));
     
+    // Update booking state ref (no timer for COMPLETED)
+    if (currentBooking) {
+      updateBookingStateRef({
+        bookingId: currentBooking.bookingId,
+        documentId: currentBooking.documentId || null,
+        lifecycleStatus: BookingLifecycleStatus.COMPLETED,
+        isActive: false // No active timer for COMPLETED
+      });
+      console.log('🔄 [LIFECYCLE] Booking state ref updated: → COMPLETED');
+    }
+    
     addSystemNotification(`✨ Service completed!\n\n⏱️ Total session: ${totalTime} minutes\n   • Massage: ${duration} min\n   • Travel time: 30-60 min\n\n💳 PAYMENT OPTIONS:\n💵 Cash - Pay directly to therapist\n🏦 Bank Transfer - Use bank details in chat\n\n⚠️ IndaStreet suggests using bank details shared in this chat window to prevent any misunderstanding. If bank details not shared, please request therapist to post them in chat.`);
-  }, [chatState.currentBooking, addSystemNotification]);
+  }, [chatState.currentBooking, addSystemNotification, setChatState, updateBookingStateRef]);
 
   // 🔒 Share bank card details SECURELY (masked display)
   const shareBankCard = useCallback(() => {
@@ -2019,7 +1914,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     }));
     
     addSystemNotification(`✅ Payment confirmed via ${methodLabel}. Thank you!`);
-  }, [addSystemNotification]);
+  }, [addSystemNotification, setChatState]);
 
   // Update therapist
   const updateTherapist = useCallback((updates: Partial<ChatTherapist>) => {
@@ -2027,16 +1922,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       ...prev,
       therapist: prev.therapist ? { ...prev.therapist, ...updates } : null,
     }));
-  }, []);
+  }, [setChatState]);
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (countdownTimerRef.current) {
-        clearInterval(countdownTimerRef.current);
-      }
-    };
-  }, []);
+  // ═══════════════════════════════════════════════════════════════════════
+  // TIMER CLEANUP - Handled by useBookingTimer hook (no legacy refs)
+  // ═══════════════════════════════════════════════════════════════════════
 
   // 🔒 AVAILABILITY ENFORCEMENT UTILITIES
   // These allow UI components to check availability before showing Book Now button
@@ -2091,6 +1981,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     shareBankCard,
     confirmPayment,
     addSystemNotification,
+    timerState,
+    resumeTimerIfNeeded,
   }), [
     chatState,
     isLocked,
@@ -2123,6 +2015,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     shareBankCard,
     confirmPayment,
     addSystemNotification,
+    timerState,
+    resumeTimerIfNeeded,
   ]);
 
   return (

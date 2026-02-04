@@ -161,7 +161,7 @@ export const duplicateAccountDetectionService = {
       const normalizedNumber = accountData.whatsappNumber!.replace(/[\s\-\(\)]/g, '');
 
       const queries = [
-        Query.search('whatsappNumber', normalizedNumber),
+        Query.equal('whatsappNumber', normalizedNumber),
         Query.notEqual('$id', accountData.$id)
       ];
 

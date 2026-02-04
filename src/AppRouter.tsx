@@ -77,6 +77,9 @@ import { placeRoutes } from './router/routes/placeRoutes';
 import { facialRoutes } from './router/routes/facialRoutes';
 
 // Specialized pages not in route modules
+// LoadingGate - NOT lazy loaded for immediate availability (prevents loops)
+import LoadingGate from './pages/LoadingGate';
+
 const CreateAccountPage = React.lazy(() => import('./pages/auth/CreateAccountPage'));
 const ConfirmTherapistsPage = React.lazy(() => import('./pages/ConfirmTherapistsPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
@@ -472,6 +475,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
      * 🚀 WRAPPED: With enterprise page loading system
      */
     console.log('[ROUTER] Resolving page:', page, '| Type:', typeof page);
+    
+    // ⚠️ CRITICAL: LoadingGate must be completely isolated - NO WRAPPERS
+    if (page === 'loading') {
+        console.log('🔄 [ROUTER] Rendering isolated LoadingGate (no providers, no loaders)');
+        return <LoadingGate />;
+    }
     
     return (
         <EnterpriseLoader

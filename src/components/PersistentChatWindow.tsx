@@ -392,25 +392,23 @@ export function PersistentChatWindow() {
     }
   }, [chatState.isTherapistView, maximizeChat]);
 
-  const [currentLanguage, setCurrentLanguage] = useState<'id' | 'en'>('id');
+  // 🌐 CHAT UI LANGUAGE (LOCKED-IN SPEC)
+  // ✅ Default: Indonesian (ID)
+  // ✅ Persistence: localStorage
+  // ✅ Scope: UI text ONLY (labels, buttons, system messages)
+  // ❌ Chat messages: NEVER translated (stay as typed)
+  const [currentLanguage, setCurrentLanguage] = useState<'id' | 'en'>(() => {
+    // Read from localStorage, default to Indonesian
+    const stored = localStorage.getItem('chat_ui_language');
+    return (stored === 'en' || stored === 'gb') ? 'en' : 'id';
+  });
 
-  // Initialize language and translation system
+  // Initialize language system
   useEffect(() => {
-    const initializeTranslations = () => {
-      // Set default language to Indonesian
-      const lang = 'id';
-      setCurrentLanguage(lang);
-      document.documentElement.setAttribute('data-lang', lang);
-      
-      // ❌ REMOVED: DOM mutation that caused insertBefore crash
-      // Translation should be handled by React components reading currentLanguage state
-      console.log('🌐 [LANGUAGE] Initialized to:', lang);
-    };
-    
-    // Initialize translations after a short delay to ensure DOM is ready
-    const timer = setTimeout(initializeTranslations, 100);
-    return () => clearTimeout(timer);
-  }, []);
+    // Sync to HTML attribute for CSS selectors if needed
+    document.documentElement.setAttribute('data-lang', currentLanguage);
+    console.log('🌐 [CHAT UI] Language:', currentLanguage === 'id' ? 'Indonesian' : 'English');
+  }, [currentLanguage]);
 
   // Handle therapist booking responses
   const handleAcceptBooking = async (bookingId: string) => {
@@ -1568,33 +1566,22 @@ export function PersistentChatWindow() {
           className="w-10 h-10 rounded-full object-cover border-2 border-white/20"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-base truncate" id="chat-therapist-name" data-gb="Nama Terapis|Therapist Name">{therapist.name}</h3>
-            {(chatState.bookingData?.bookingId || chatState.currentBooking?.bookingId) && (
-              <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-mono shrink-0" id="booking-id" data-gb="ID Booking|Booking ID">
-                {chatState.bookingData?.bookingId || chatState.currentBooking?.bookingId}
+          <h3 className="font-semibold text-base truncate" id="chat-therapist-name" data-gb="Nama Terapis|Therapist Name">{therapist.name}</h3>
+          {/* Availability Indicator - Green pulsing dot + "Available" text */}
+          {therapist.status === 'AVAILABLE' && (
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1 text-xs text-orange-100">
-            {/* Booking countdown timer */}
-            {chatState.bookingCountdown !== null ? (
-              <span className="flex items-center gap-1 text-yellow-200 font-medium animate-pulse" id="countdown-timer" data-gb="Waktu Tersisa|Time Remaining">
-                {Math.floor(chatState.bookingCountdown / 60)}:{(chatState.bookingCountdown % 60).toString().padStart(2, '0')}
-              </span>
-            ) : (
-              <div className="flex items-center gap-2">
-                {isConnected ? (
-                  <span id="connection-status-live" data-gb="Pemantauan Langsung Indastreet Aktif|Indastreet Live Monitoring Active">Pemantauan Langsung Indastreet Aktif</span>
-                ) : (
-                  <span id="connection-status-connecting" data-gb="Menghubungkan...|Connecting...">Menghubungkan...</span>
-                )}
-              </div>
-            )}
-          </div>
+              <span className="text-green-100" id="availability-status" data-gb="Tersedia|Available">Available</span>
+            </div>
+          )}
         </div>
         
-        {/* Language Selector - Right Side */}
+        {/* 🌐 UI Language Toggle (LOCKED-IN SPEC) */}
+        {/* ✅ Toggles UI text only (labels, buttons, system messages) */}
+        {/* ❌ Does NOT translate chat messages */}
         <button 
           className={`p-2 rounded-full transition-colors ${
             chatState.currentBooking 
@@ -1604,30 +1591,42 @@ export function PersistentChatWindow() {
           onClick={() => {
             // 🔒 SAFETY: Disable language switching during active booking
             if (chatState.currentBooking) {
-              console.warn('🔒 [TRANSLATION SAFETY] Language switching disabled during active booking');
+              console.warn('🔒 [UI LANGUAGE] Switching disabled during active booking');
               alert('⚠️ Language switching is temporarily disabled during booking to prevent data loss.');
               return;
             }
             
-            // ✅ REACT-SAFE: Only update language state, let React re-render
+            // Toggle language
             const newLang = currentLanguage === 'id' ? 'en' : 'id';
+            
+            // Update state
             setCurrentLanguage(newLang);
+            
+            // Persist to localStorage
+            localStorage.setItem('chat_ui_language', newLang);
+            
+            // Sync to HTML attribute
             document.documentElement.setAttribute('data-lang', newLang);
             
-            // ❌ REMOVED: DOM mutation that caused insertBefore crash
-            // Translation should be handled by React components reading currentLanguage state
-            console.log('🌐 [LANGUAGE] Switched to:', newLang);
+            console.log('🌐 [UI LANGUAGE] Switched to:', newLang === 'id' ? 'Indonesian' : 'English');
+            console.log('💬 [MESSAGES] Stay in original language (NOT translated)');
           }}
           id="language-selector" 
           data-gb="Bahasa|Language"
           title={chatState.currentBooking 
             ? 'Language switching disabled during booking' 
-            : (currentLanguage === 'id' ? 'Switch to English' : 'Beralih ke Bahasa Indonesia')
+            : (currentLanguage === 'id' 
+                ? '🌐 Switch to English (UI only)' 
+                : '🌐 Beralih ke Bahasa Indonesia (UI saja)')
           }
           disabled={!!chatState.currentBooking}
         >
           <span className="text-lg flex items-center gap-1">
+            {/* Flag icon + language code */}
             {currentLanguage === 'id' ? '🇮🇩' : '🇬🇧'}
+            <span className="text-xs font-semibold opacity-90">
+              {currentLanguage === 'id' ? 'ID' : 'GB'}
+            </span>
             {chatState.currentBooking && <span className="text-xs">🔒</span>}
           </span>
         </button>
@@ -1644,6 +1643,20 @@ export function PersistentChatWindow() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" stroke="currentColor" fill="none"/>
           </svg>
         </button>
+      </div>
+
+      {/* 🌐 LANGUAGE CLARITY INDICATOR (Subtle UX) */}
+      {/* Shows when user switches language to clarify scope */}
+      <div className="px-4 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+        <div className="flex items-center justify-center gap-2 text-xs text-blue-700">
+          <span className="text-base">🌐</span>
+          <span className="font-medium">
+            {currentLanguage === 'id' 
+              ? 'Bahasa UI: Indonesia • Pesan chat tetap dalam bahasa asli'
+              : 'UI Language: English • Chat messages stay in original language'
+            }
+          </span>
+        </div>
       </div>
 
       {/* 🚨 ERROR DISPLAY CONTAINER - Shows booking flow errors with detailed information */}
@@ -2879,6 +2892,7 @@ export function PersistentChatWindow() {
                             {msg.senderName}
                           </div>
                         )}
+                        {/* 💬 CHAT MESSAGE - ALWAYS ORIGINAL LANGUAGE (NO TRANSLATION) */}
                         <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
                         <div className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? 'text-orange-100 justify-end' : 'text-gray-400'}`}>
                           {formatTime(msg.createdAt)}

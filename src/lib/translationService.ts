@@ -405,7 +405,7 @@ class AdminTranslationService {
             }
 
             // Update therapist in database with translated data
-            const therapistsCollectionId = (import.meta as any).env?.VITE_APPWRITE_THERAPISTS_COLLECTION_ID || 'therapists';
+            const therapistsCollectionId = (import.meta as any).env?.VITE_APPWRITE_THERAPISTS_COLLECTION_ID || 'therapists_collection_id';
             
             await this.databases.updateDocument(
                 this.databaseId,
@@ -505,7 +505,7 @@ class AdminTranslationService {
         errors: string[];
     }> {
         try {
-            const therapistsCollectionId = (import.meta as any).env?.VITE_APPWRITE_THERAPISTS_COLLECTION_ID || 'therapists';
+            const therapistsCollectionId = (import.meta as any).env?.VITE_APPWRITE_THERAPISTS_COLLECTION_ID || 'therapists_collection_id';
             
             // Get all therapists
             const response = await this.databases.listDocuments(

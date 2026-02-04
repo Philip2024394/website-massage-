@@ -12,7 +12,6 @@ interface ChatHeaderProps {
     image?: string;
   };
   isConnected: boolean;
-  bookingCountdown: number | null;
   currentBooking?: {
     status: string;
     bookingId?: string;
@@ -27,7 +26,6 @@ interface ChatHeaderProps {
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
   therapist,
   isConnected,
-  bookingCountdown,
   currentBooking,
   bookingId,
   isLocked,
@@ -50,22 +48,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       </div>
       
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-base truncate">{therapist.name}</h3>
-          {displayBookingId && (
-            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-mono">
-              {displayBookingId}
-            </span>
-          )}
-        </div>
+        <h3 className="font-semibold text-base truncate">{therapist.name}</h3>
         <div className="flex items-center gap-1 text-xs text-orange-100">
-          {/* Booking countdown timer */}
-          {bookingCountdown !== null ? (
-            <span className="flex items-center gap-1 text-yellow-200 font-medium animate-pulse">
-              <Clock className="w-3 h-3" />
-              {Math.floor(bookingCountdown / 60)}:{(bookingCountdown % 60).toString().padStart(2, '0')}
-            </span>
-          ) : isConnected ? (
+          {isConnected ? (
             <>
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               <span>Indastreet Live Monitoring In Process</span>

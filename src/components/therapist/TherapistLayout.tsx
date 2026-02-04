@@ -520,9 +520,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         />
       )}
 
-      {/* Space pusher for fixed header */}
-      <div style={{ height: '60px' }}></div>
-
       {/* Sidebar Overlay - Enhanced responsive behavior */}
       {isSidebarOpen && (
         <div
@@ -667,7 +664,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                       handleNavigate(item.id);
                     }}
                     onTouchStart={(e) => {
-                      e.preventDefault();
+                      // Remove preventDefault - causes passive listener warning
                       e.currentTarget.style.transform = 'scale(0.98)';
                     }}
                     onTouchEnd={(e) => {
@@ -748,13 +745,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
-          paddingTop: '60px',
           paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 80px)',
           flex: '1 1 auto',
           overflowY: 'auto',
           overflowX: 'hidden',
           minHeight: 0,
-          WebkitOverflowScrolling: 'touch'
+          WebkitOverflowScrolling: 'touch',
+          marginTop: '60px'
         }}
       >
         <div 

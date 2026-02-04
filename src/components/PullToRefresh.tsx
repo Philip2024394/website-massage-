@@ -222,6 +222,41 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
     setPullDistance(0);
   }, [disabled, isRefreshing, isPulling, pullDistance, threshold, onRefresh, safeExecute, eliteMode, preventMomentumScrolling]);
 
+  // Register touch event listeners with passive: false to allow preventDefault
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const touchStartHandler = (e: TouchEvent) => {
+      const reactEvent = e as any;
+      reactEvent.persist = () => {};
+      handleTouchStart(reactEvent as React.TouchEvent);
+    };
+
+    const touchMoveHandler = (e: TouchEvent) => {
+      const reactEvent = e as any;
+      reactEvent.persist = () => {};
+      handleTouchMove(reactEvent as React.TouchEvent);
+    };
+
+    const touchEndHandler = (e: TouchEvent) => {
+      const reactEvent = e as any;
+      reactEvent.persist = () => {};
+      handleTouchEnd(reactEvent as React.TouchEvent);
+    };
+
+    // Add event listeners with passive: false to allow preventDefault
+    container.addEventListener('touchstart', touchStartHandler, { passive: false });
+    container.addEventListener('touchmove', touchMoveHandler, { passive: false });
+    container.addEventListener('touchend', touchEndHandler, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchstart', touchStartHandler);
+      container.removeEventListener('touchmove', touchMoveHandler);
+      container.removeEventListener('touchend', touchEndHandler);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -264,9 +299,6 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
     <div
       ref={containerRef}
       className={`relative overflow-hidden ${className}`}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       style={{
         transform: containerTransform,
         transition: isPulling ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

@@ -77,8 +77,12 @@ class PushNotificationManager {
         
         if (vapidKey) {
           options.applicationServerKey = this.urlBase64ToUint8Array(vapidKey);
+          console.log('✅ VAPID key configured for push notifications');
         } else {
-          console.warn('⚠️ VAPID key missing; subscribing without applicationServerKey');
+          // Only log in development - VAPID is optional for testing
+          if (import.meta.env.DEV) {
+            console.info('ℹ️ Push notifications will work without VAPID key (testing mode)');
+          }
         }
         
         subscription = await this.swRegistration.pushManager.subscribe(options);

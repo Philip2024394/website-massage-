@@ -19,6 +19,9 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
   const { language } = useLanguageContext();
   const areas = getServiceAreasForCity(city);
   
+  // Check if this is Canggu for special orange highlighting
+  const isCanggu = city.toLowerCase() === 'canggu';
+  
   if (areas.length === 0) {
     return null;
   }
@@ -46,87 +49,118 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
   const otherAreas = areas.filter(a => !a.popular);
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg p-4 ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-teal-600" />
-          <h3 className="text-lg font-semibold text-gray-800">
-            {language === 'id' ? 'Filter Area' : 'Filter by Area'}
-          </h3>
+    <div className={`relative ${className}`}>
+      {/* Single Glass Card - Orange for Canggu */}
+      <div 
+        className="relative overflow-hidden"
+        style={{
+          background: isCanggu ? '#fde68a' : 'rgba(20, 20, 25, 0.75)',
+          backdropFilter: isCanggu ? 'none' : 'blur(20px)',
+          WebkitBackdropFilter: isCanggu ? 'none' : 'blur(20px)',
+          border: isCanggu ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '14px',
+          boxShadow: isCanggu ? '0 4px 16px rgba(245, 158, 11, 0.2)' : '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+          padding: '14px 16px'
+        }}
+      >
+        {/* Header - Minimal */}
+        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: isCanggu ? '1px solid rgba(124, 45, 18, 0.15)' : '1px solid rgba(255, 255, 255, 0.05)' }}>
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{
+                backgroundColor: isCanggu ? 'rgba(124, 45, 18, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: isCanggu ? 'none' : 'blur(4px)'
+              }}
+            >
+              <MapPin className="w-5 h-5" style={{ color: isCanggu ? '#7c2d12' : 'rgba(255, 255, 255, 0.7)' }} strokeWidth={2} />
+            </div>
+            <h3 className="text-base font-medium tracking-tight" style={{ color: isCanggu ? '#7c2d12' : 'rgba(255, 255, 255, 0.9)' }}>
+              {language === 'id' ? 'Area' : 'Area'}
+            </h3>
+          </div>
+          {selectedArea && (
+            <button
+              onClick={handleClearFilter}
+              className="text-sm transition-colors duration-200 font-medium"
+              style={{
+                color: isCanggu ? 'rgba(124, 45, 18, 0.5)' : 'rgba(255, 255, 255, 0.5)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = isCanggu ? '#7c2d12' : 'rgba(255, 255, 255, 0.8)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = isCanggu ? 'rgba(124, 45, 18, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+            >
+              {language === 'id' ? 'Reset' : 'Reset'}
+            </button>
+          )}
         </div>
-        {selectedArea && (
-          <button
-            onClick={handleClearFilter}
-            className="text-sm text-gray-500 hover:text-teal-600 transition-colors"
-          >
-            {language === 'id' ? 'Hapus Filter' : 'Clear Filter'}
-          </button>
-        )}
+
+        {/* Content Area */}
+        <div className="p-6 space-y-5">
+          {/* Popular Areas */}
+          {popularAreas.length > 0 && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider mb-3 px-1" style={{ color: isCanggu ? 'rgba(124, 45, 18, 0.4)' : 'rgba(255, 255, 255, 0.4)' }}>
+                {language === 'id' ? 'Populer' : 'Popular'}
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                {popularAreas.map((area) => (
+                  <button
+                    key={area.id}
+                    onClick={() => handleAreaClick(area.id)}
+                    className={`
+                      relative px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                      ${
+                        selectedArea === area.id
+                          ? 'text-black shadow-lg shadow-[#F5C77A]/30'
+                          : 'text-white/80 hover:text-white hover:bg-white/10'
+                      }
+                    `}
+                    style={{
+                      background: selectedArea === area.id ? '#F5C77A' : 'rgba(255, 255, 255, 0.05)',
+                      border: selectedArea === area.id ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+                      backdropFilter: selectedArea === area.id ? 'none' : 'blur(10px)'
+                    }}
+                  >
+                    {getAreaName(area)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Other Areas */}
+          {otherAreas.length > 0 && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider mb-3 px-1" style={{ color: isCanggu ? 'rgba(124, 45, 18, 0.4)' : 'rgba(255, 255, 255, 0.4)' }}>
+                {language === 'id' ? 'Lainnya' : 'Other'}
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                {otherAreas.map((area) => (
+                  <button
+                    key={area.id}
+                    onClick={() => handleAreaClick(area.id)}
+                    className={`
+                      relative px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                      ${
+                        selectedArea === area.id
+                          ? 'text-black shadow-lg shadow-[#F5C77A]/30'
+                          : 'text-white/80 hover:text-white hover:bg-white/10'
+                      }
+                    `}
+                    style={{
+                      background: selectedArea === area.id ? '#F5C77A' : 'rgba(255, 255, 255, 0.05)',
+                      border: selectedArea === area.id ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+                      backdropFilter: selectedArea === area.id ? 'none' : 'blur(10px)'
+                    }}
+                  >
+                    {getAreaName(area)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* Popular Areas */}
-      {popularAreas.length > 0 && (
-        <div className="mb-4">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-            {language === 'id' ? 'Area Populer' : 'Popular Areas'}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {popularAreas.map((area) => (
-              <button
-                key={area.id}
-                onClick={() => handleAreaClick(area.id)}
-                className={`
-                  px-4 py-2 rounded-full text-sm font-medium transition-all
-                  ${
-                    selectedArea === area.id
-                      ? 'bg-teal-600 text-white shadow-md scale-105'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }
-                `}
-              >
-                {getAreaName(area)}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Other Areas */}
-      {otherAreas.length > 0 && (
-        <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-            {language === 'id' ? 'Area Lainnya' : 'Other Areas'}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {otherAreas.map((area) => (
-              <button
-                key={area.id}
-                onClick={() => handleAreaClick(area.id)}
-                className={`
-                  px-4 py-2 rounded-full text-sm font-medium transition-all
-                  ${
-                    selectedArea === area.id
-                      ? 'bg-teal-600 text-white shadow-md scale-105'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }
-                `}
-              >
-                {getAreaName(area)}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* No areas message */}
-      {areas.length === 0 && (
-        <p className="text-center text-gray-500 py-4">
-          {language === 'id'
-            ? 'Tidak ada area layanan tersedia untuk kota ini'
-            : 'No service areas available for this city'}
-        </p>
-      )}
     </div>
   );
 };

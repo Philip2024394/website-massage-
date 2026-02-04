@@ -1504,3 +1504,54 @@ div#main-background-image.fixed.bg-gray-900 {
     display: none !important;
   }
 }
+
+/* ===============================
+   GLOBAL SCROLL FIX (HIDDEN BAR)
+   =============================== */
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Enable scrolling everywhere */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar – Chrome, Safari */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+/* Hide scrollbar – Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar – IE / Edge */
+* {
+  -ms-overflow-style: none;
+}
+
+/* Mobile PWA SAFE FIX (Android + iOS) */
+body {
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+/* Fix common React/Vite scroll blockers */
+.h-screen:not(.overflow-hidden-intentional) {
+  min-height: 100vh !important;
+  height: auto !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure layout wrappers don't block scroll */
+.min-h-screen {
+  overflow-y: auto !important;
+}

@@ -397,6 +397,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const [selectedCity, setSelectedCity] = useState<string | null>(contextCity || null);
     const [showCountryModal, setShowCountryModal] = useState(false);
     const [cityNotListed, setCityNotListed] = useState(false);
+    const [gpsCollected, setGpsCollected] = useState(false);
+    const [gpsLocation, setGpsLocation] = useState<string | null>(null);
     
     // Menu state for burger menu
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -692,13 +694,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             }
             
             // Extract city name from GPS data
-            const gpsLocation = {
+            const gpsLocationData = {
                 address: gpsData.address,
                 lat: gpsData.coordinates.lat,
                 lng: gpsData.coordinates.lng
             };
             
-            const addressParts = gpsLocation.address.split(',');
+            // Mark GPS as collected and save location
+            setGpsCollected(true);
+            setGpsLocation(gpsLocationData.address); // Save address as string for display
+            
+            const addressParts = gpsLocationData.address.split(',');
             let detectedCity = addressParts[0].trim(); // Usually city is first part
             
             // If address has multiple parts, try to find the city (usually first or second part)
@@ -711,7 +717,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             }
             
             console.log('📍 GPS detected city:', detectedCity);
-            console.log('📍 Full address:', gpsLocation.address);
+            console.log('📍 Full address:', gpsLocationData.address);
             
             // Save the detected city
             setSelectedCity(detectedCity);
@@ -723,7 +729,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 try {
                     if (enterAppCallback) {
                         console.log('🚀 Using provided enterApp callback with GPS location');
-                        await enterAppCallback(defaultLanguage, gpsLocation);
+                        await enterAppCallback(defaultLanguage, gpsLocationData);
                         return;
                     }
                     

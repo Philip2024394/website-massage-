@@ -134,7 +134,11 @@ class MP3NotificationService {
       
       return null;
     } catch (error) {
-      console.error(`Error loading sound ${filename}:`, error);
+      // Silently handle audio decoding errors - notification sounds are optional
+      // Only log in debug mode to avoid console noise
+      if (import.meta.env.DEV && (window as any).DEBUG_AUDIO) {
+        console.warn(`Could not load sound ${filename}:`, error);
+      }
       return null;
     }
   }

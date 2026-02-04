@@ -160,6 +160,15 @@ const HomePage: React.FC<HomePageProps> = ({
         return null;
     }
     
+    // 🔓 UNLOCK LoadingGate - Clear the lock when reaching home page
+    useEffect(() => {
+        const locked = sessionStorage.getItem("LOADING_LOCKED");
+        if (locked) {
+            console.log("🔓 HomePage: Clearing LoadingGate lock");
+            sessionStorage.removeItem("LOADING_LOCKED");
+        }
+    }, []);
+    
     console.log('🔍 [STAGE 4 - HomePage] Component rendering');
     console.log('🔍 [STAGE 4] Therapists prop received:', therapists?.length || 0);
     console.log('🔍 [STAGE 4] First 3 therapist names:', therapists?.slice(0, 3).map(t => t.name) || []);

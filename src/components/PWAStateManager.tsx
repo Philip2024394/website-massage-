@@ -224,36 +224,17 @@ export const PWAStateManager: React.FC<PWAStateManagerProps> = ({ children, onSt
     <>
       {children}
       
-      {/* Connection Status Indicator */}
-      {connectionStatus.status !== 'healthy' && (
+      {/* Connection Status Indicator - Only show for offline, not slow connection */}
+      {connectionStatus.status === 'offline' && (
         <div className="fixed top-4 right-4 z-[9999] max-w-sm">
-          <div className={`
-            px-4 py-3 rounded-lg shadow-lg border-l-4
-            ${connectionStatus.status === 'offline' 
-              ? 'bg-red-50 border-red-500 text-red-800' 
-              : 'bg-yellow-50 border-yellow-500 text-yellow-800'
-            }
-          `}>
+          <div className="px-4 py-3 rounded-lg shadow-lg border-l-4 bg-red-50 border-red-500 text-red-800">
             <div className="flex items-center gap-2">
-              <div className={`
-                w-3 h-3 rounded-full
-                ${connectionStatus.status === 'offline' ? 'bg-red-500' : 'bg-yellow-500'}
-              `} />
-              <span className="font-medium">
-                {connectionStatus.status === 'offline' ? 'Connection Lost' : 'Slow Connection'}
-              </span>
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <span className="font-medium">Connection Lost</span>
             </div>
             <p className="text-sm mt-1">
-              {connectionStatus.status === 'offline' 
-                ? 'Your messages may not be sent until connection is restored.'
-                : 'Some features may be slower than usual.'
-              }
+              Your messages may not be sent until connection is restored.
             </p>
-            {connectionStatus.latency > 2000 && (
-              <p className="text-xs mt-1 opacity-75">
-                Latency: {Math.round(connectionStatus.latency)}ms
-              </p>
-            )}
           </div>
         </div>
       )}

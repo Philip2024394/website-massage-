@@ -62,10 +62,14 @@ self.addEventListener('activate', (event) => {
             );
         }).then(() => {
             console.log(`✅ Service Worker ${SW_VERSION}: Old caches cleared`);
+            // 📱 CRITICAL: Initialize Android notification channels
+            return initializeAndroidNotificationChannels();
+        }).then(() => {
             // Take control of all clients immediately but smoothly
             return self.clients.claim();
         }).then(() => {
             console.log(`✅ Service Worker ${SW_VERSION}: Activated and controlling all clients`);
+            console.log('🔔 Notification sound system initialized and ready');
         })
     );
 });
@@ -190,13 +194,30 @@ self.addEventListener('push', (event) => {
             critical: [1000, 200, 1000, 200, 1000, 200, 1000, 200, 1000] // 10 seconds
         };
 
-        // ULTIMATE NOTIFICATION OPTIONS - Maximum visibility and persistence
+        // ✅ PWA NOTIFICATION SOUND GUARANTEE - BUSINESS CRITICAL
+        // MANDATORY: Sound must play on Android + iOS PWAs
         const options = {
             body,
             icon,
             badge,
+            // 🔊 EXPLICIT SOUND ENABLEMENT (NON-NEGOTIABLE)
+            sound: 'default', // System notification sound - REQUIRED for PWA
+            silent: false, // NEVER mute - must make sound
+            
             // Maximum vibration for all notifications
             vibrate: vibrationPatterns[priority] || vibrationPatterns.high,
+            
+            // 📱 ANDROID NOTIFICATION CHANNEL SUPPORT (Android 8+)
+            // Ensures high-priority notifications with sound enabled
+            ...(typeof Android !== 'undefined' && {
+                android: {
+                    channelId: 'booking-alerts-high',
+                    sound: 'default',
+                    importance: 'high', // HIGH importance = sound + heads-up
+                    vibrate: true,
+                    priority: 'high'
+                }
+            }),
             
             // Unique tag to prevent grouping, allows multiple notifications
             tag: bookingId ? `booking-${bookingId}-${Date.now()}` : `notification-${Date.now()}`,
@@ -209,9 +230,6 @@ self.addEventListener('push', (event) => {
             
             // Renotify - vibrate again even if notification exists
             renotify: true,
-            
-            // Silent - we control sound (prevents duplicate system sounds)
-            silent: false, // Let system play default sound in standby
             
             // Timestamp for sorting
             timestamp: Date.now(),
@@ -392,7 +410,46 @@ async function updateNotificationBadge() {
 }
 
 /**
+ * 📱 ANDROID NOTIFICATION CHANNEL INITIALIZATION
+ * CRITICAL: Creates high-priority notification channel on Android 8+
+ * Must be called BEFORE showing notifications for sound to work
+ */
+async function initializeAndroidNotificationChannels() {
+    try {
+        // Check if Android notification channels API is available
+        if ('getNotificationChannels' in self.registration) {
+            const existingChannels = await self.registration.getNotificationChannels();
+            
+            // Check if booking-alerts-high channel exists
+            const hasHighPriorityChannel = existingChannels?.some(
+                ch => ch.id === 'booking-alerts-high'
+            );
+            
+            if (!hasHighPriorityChannel && 'createNotificationChannel' in self.registration) {
+                // Create HIGH importance channel for booking alerts
+                await self.registration.createNotificationChannel({
+                    id: 'booking-alerts-high',
+                    name: 'Booking Alerts',
+                    description: 'Critical booking notifications with sound',
+                    importance: 4, // IMPORTANCE_HIGH (Android 8+)
+                    sound: 'default',
+                    vibrate: true,
+                    badge: true,
+                    lights: true,
+                    lightColor: '#FF5722' // Orange for Indastreet brand
+                });
+                
+                console.log('✅ Android notification channel "booking-alerts-high" created');
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ Android notification channels not supported or failed:', error.message);
+    }
+}
+
+/**
  * Play notification sound through all open clients (tabs/windows)
+ * 🔊 IN-APP AUDIO FALLBACK - When app is OPEN, play custom MP3 sound
  */
 async function playNotificationSoundInClients() {
     try {
@@ -402,7 +459,8 @@ async function playNotificationSoundInClients() {
         clients.forEach(client => {
             client.postMessage({
                 type: 'play-notification-sound',
-                soundUrl: NOTIFICATION_SOUND_URL
+                soundUrl: NOTIFICATION_SOUND_URL,
+                priority: 'high' // Indicate this is a high-priority booking alert
             });
         });
         

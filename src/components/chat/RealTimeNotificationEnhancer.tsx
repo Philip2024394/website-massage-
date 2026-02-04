@@ -70,6 +70,8 @@ export const RealTimeNotificationEnhancer: React.FC<RealTimeNotificationEnhancer
   const [failedNotifications, setFailedNotifications] = useState<Set<string>>(new Set());
   const [retryTimeouts, setRetryTimeouts] = useState<Map<string, NodeJS.Timeout>>(new Map());
   const [connectionHealth, setConnectionHealth] = useState<'healthy' | 'degraded' | 'offline'>('healthy');
+  // 🆕 ELITE FIX: Track acknowledged notifications to prevent audio spam
+  const [acknowledgedNotifications, setAcknowledgedNotifications] = useState<Set<string>>(new Set());
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const notificationTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -119,14 +121,28 @@ export const RealTimeNotificationEnhancer: React.FC<RealTimeNotificationEnhancer
   };
 
   // Remove notification
-  const removeNotification = (id: string) => {
+  const removeNotification = (id: string, acknowledged: boolean = false) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
+    
+    // 🆕 ELITE FIX: Track acknowledged notifications to prevent audio spam
+    if (acknowledged) {
+      setAcknowledgedNotifications(prev => new Set([...prev, id]));
+      console.log('✅ Notification acknowledged:', id);
+    }
     
     const timeout = notificationTimeouts.current.get(id);
     if (timeout) {
       clearTimeout(timeout);
       notificationTimeouts.current.delete(id);
     }
+
+    // 🆕 ELITE FIX: Clear all escalation timeouts for this notification
+    escalationIntervals.current.forEach((timeout, key) => {
+      if (key.startsWith(id)) {
+        clearTimeout(timeout);
+        escalationIntervals.current.delete(key);
+      }
+    });
   };
 
   // Handle different delivery methods
@@ -227,6 +243,12 @@ export const RealTimeNotificationEnhancer: React.FC<RealTimeNotificationEnhancer
 
   // Facebook/Amazon Standard: Notification escalation with exponential backoff
   const escalateNotification = (notificationId: string, attempt: number = 1) => {
+    // 🆕 ELITE FIX: Check if notification already acknowledged (prevent audio spam)
+    if (acknowledgedNotifications.has(notificationId)) {
+      console.log('✅ Notification already acknowledged, skipping escalation:', notificationId);
+      return;
+    }
+
     const maxAttempts = 5;
     const baseDelay = 5000; // 5 seconds
     const maxDelay = 60000; // 1 minute
@@ -241,6 +263,12 @@ export const RealTimeNotificationEnhancer: React.FC<RealTimeNotificationEnhancer
     console.log(`🔄 Escalating notification ${notificationId}, attempt ${attempt}, delay: ${delay}ms`);
     
     const timeout = setTimeout(() => {
+      // 🆕 ELITE FIX: Double-check acknowledgment before retry
+      if (acknowledgedNotifications.has(notificationId)) {
+        console.log('✅ Notification acknowledged during escalation, stopping:', notificationId);
+        return;
+      }
+
       // Retry notification with escalated priority
       const notification = notifications.find(n => n.id === notificationId);
       if (notification && !document.hidden && !isQuietHours()) {
