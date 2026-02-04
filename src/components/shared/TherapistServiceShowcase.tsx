@@ -26,13 +26,13 @@ interface TherapistServiceShowcaseProps {
     therapist: Therapist;
 }
 
-// Reference images for massage guide (to be replaced with actual images)
+// Massage guide reference images from ImageKit CDN
 const MASSAGE_GUIDE_IMAGES = {
-    bodyFront: '/massage-guide/body-front.jpg',
-    bodyBack: '/massage-guide/body-back.jpg',
-    armHand: '/massage-guide/arm-hand.jpg',
-    headFace: '/massage-guide/head-face.jpg',
-    footCalf: '/massage-guide/foot-calf.jpg'
+    bodyFront: 'https://ik.imagekit.io/7grri5v7d/body%20part%205.png',
+    bodyBack: 'https://ik.imagekit.io/7grri5v7d/body%20part%204.png',
+    armHand: 'https://ik.imagekit.io/7grri5v7d/body%20part%203.png',
+    headFace: 'https://ik.imagekit.io/7grri5v7d/body%20part%202.png',
+    footCalf: 'https://ik.imagekit.io/7grri5v7d/body%20part%201.png'
 };
 
 const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ therapist }) => {
