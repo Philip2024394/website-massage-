@@ -20,7 +20,7 @@ import RotatingReviews from './RotatingReviews';
 import SocialMediaLinks from './SocialMediaLinks';
 import ShareActions from '../features/shared-profiles/ShareActions';
 import IndastreetAchievements from './IndastreetAchievements';
-import SharedProfileImageGallery from './shared/SharedProfileImageGallery';
+import TherapistServiceShowcase from './shared/TherapistServiceShowcase';
 import type { Therapist, UserLocation } from '../types';
 import { getHeroImageForTherapist, HERO_WELCOME_TEXT } from '../config/heroImages';
 
@@ -280,13 +280,8 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     selectedCity={selectedCity}
                 />
 
-                {/* Random Image Gallery - Only in shared mode */}
-                {mode === 'shared' && (
-                    <SharedProfileImageGallery 
-                        therapistName={therapist.name}
-                        count={4}
-                    />
-                )}
+                {/* Professional Massage Services - Unified across all modes */}
+                <TherapistServiceShowcase therapist={therapist} />
 
                 {/* Indastreet Achievements - Professional Standards Display */}
                 <IndastreetAchievements 
