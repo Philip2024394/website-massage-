@@ -140,8 +140,10 @@ export function usePersistentChatIntegration() {
    * - Opens chat in booking mode
    * - Starts at duration selection
    * - Validates therapist status before opening
+   * @param therapist - Therapist to book
+   * @param source - Optional source tracking ('share' for shared links)
    */
-  const openBookingChat = useCallback((therapist: Therapist) => {
+  const openBookingChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
     console.log('🔒 [PersistentChatIntegration] Opening booking chat for:', therapist.name);
     
     // Check therapist status - block booking if busy or offline
@@ -160,7 +162,7 @@ export function usePersistentChatIntegration() {
     }
     
     const chatTherapist = convertToChatTherapist(therapist);
-    openChat(chatTherapist, 'book');
+    openChat(chatTherapist, 'book', source);
   }, [openChat, convertToChatTherapist]);
   
   /**

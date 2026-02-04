@@ -660,10 +660,29 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         return PREVIEW_IMAGES.default;
     };
 
-    // Wrapper for booking callbacks
-    const handleQuickBook = () => {
-        if (handleQuickBookWithChat && therapist) {
+    // Wrapper for booking callbacks - SHARED LINK SPECIFIC
+    const handleQuickBook = async () => {
+        if (!therapist) return;
+        
+        console.log('📤 [SHARED LINK] Booking initiated from shared profile:', therapist.name);
+        
+        // If parent component provided handler, use it
+        if (handleQuickBookWithChat) {
             handleQuickBookWithChat(therapist, 'therapist');
+            return;
+        }
+        
+        // Otherwise, trigger booking chat with 'share' source marker
+        // This ensures booking goes directly to this therapist (no broadcast)
+        try {
+            const { usePersistentChatIntegration } = await import('../../hooks/usePersistentChatIntegration');
+            const { openBookingChat } = usePersistentChatIntegration();
+            
+            // Mark as shared link booking source
+            console.log('✅ [SHARED LINK] Opening booking chat with source=share');
+            await openBookingChat(therapist, 'share');
+        } catch (error) {
+            console.error('❌ [SHARED LINK] Failed to open booking chat:', error);
         }
     };
 

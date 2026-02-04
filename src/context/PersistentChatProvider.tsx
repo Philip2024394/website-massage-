@@ -254,6 +254,7 @@ export interface ChatWindowState {
   currentBooking: BookingData | null;
   // bookingCountdown removed - managed by useBookingTimer hook (single authority)
   isTherapistView: boolean; // True if viewing as therapist
+  bookingSource: 'share' | 'profile' | 'search' | null; // Track entry point for booking
   // 🆕 ELITE FIX: Facebook/Amazon Standard - Transparent degradation visibility
   isAppwriteDegraded: boolean; // True when Appwrite fails but system continues
   degradationReason: string | null; // User-friendly explanation of degradation
@@ -294,7 +295,7 @@ interface PersistentChatContextValue {
   chatState: ChatWindowState;
   isLocked: boolean;
   isConnected: boolean;
-  openChat: (therapist: ChatTherapist, mode?: 'book' | 'schedule' | 'price') => void;
+  openChat: (therapist: ChatTherapist, mode?: 'book' | 'schedule' | 'price', source?: 'share' | 'profile' | 'search' | null) => void;
   openChatWithService: (therapist: ChatTherapist, service: SelectedService, options?: { isScheduled?: boolean }) => void; // Enhanced Menu Harga integration
   minimizeChat: () => void;
   maximizeChat: () => void;
@@ -868,8 +869,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   }, [currentUserId]);
 
   // Open chat with therapist
-  const openChat = useCallback(async (therapist: ChatTherapist, mode: 'book' | 'schedule' | 'price' = 'book') => {
-    console.log('💬 Opening chat with:', therapist.name, 'mode:', mode);
+  const openChat = useCallback(async (therapist: ChatTherapist, mode: 'book' | 'schedule' | 'price' = 'book', source: 'share' | 'profile' | 'search' | null = null) => {
+    console.log('💬 Opening chat with:', therapist.name, 'mode:', mode, 'source:', source);
+    if (source === 'share') {
+      console.log('📤 SHARED LINK BOOKING: Direct provider booking (no broadcast)');
+    }
     console.log('� DEBUGGING: Previous therapist:', chatState.therapist?.name, chatState.therapist?.id);
     console.log('🔍 DEBUGGING: New therapist:', therapist.name, therapist.id);
     console.log('�🔒 Locking chat to prevent accidental closure during booking');
@@ -931,6 +935,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         selectedDate: null,
         selectedTime: null,
         selectedService: null, // Reset pre-selected service
+        bookingSource: source, // Track booking entry point
         chatRoomId,
         messages: prev.therapist?.id === therapist.id ? prev.messages : [],
         bookingData: {
