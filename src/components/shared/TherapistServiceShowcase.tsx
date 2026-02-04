@@ -21,7 +21,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Info } from 'lucide-react';
 import type { Therapist } from '../../types';
-import { MASSAGE_TYPES } from '../../constants';
+import { MASSAGE_TYPE_DETAILS } from '../../constants';
 
 interface TherapistServiceShowcaseProps {
     therapist: Therapist;
@@ -253,7 +253,7 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
 
                         {/* Massage Types Grid */}
                         <div className="grid gap-6 sm:grid-cols-2">
-                            {MASSAGE_TYPES.map((massageType) => (
+                            {MASSAGE_TYPE_DETAILS.map((massageType) => (
                                 <div 
                                     key={massageType.name}
                                     className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"
