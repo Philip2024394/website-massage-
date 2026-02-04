@@ -1601,7 +1601,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language || 'id'
             });
         
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Customers List with booking history)
+        case 'customers':
+        case 'therapist-customers':
+            console.log('[ROUTE RESOLVE] customers → TherapistCustomersPage');
+            return renderRoute(therapistRoutes.customers.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language || 'id'
+            });
+        
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Guide page for getting more customers)
         case 'more-customers':
             console.log('[ROUTE RESOLVE] more-customers → MoreCustomersPage');
             return renderRoute(therapistRoutes.moreCustomers.component, {
@@ -1611,13 +1622,24 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language || 'id'
             });
         
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Dedicated Analytics Page)
         case 'analytics':
         case 'therapist-analytics':
-            console.log('[ROUTE RESOLVE] analytics → TherapistEarningsPage (analytics view)');
-            return renderRoute(therapistRoutes.earnings.component, {
+            console.log('[ROUTE RESOLVE] analytics → TherapistAnalyticsPage');
+            return renderRoute(therapistRoutes.analytics.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language || 'id'
+            });
+        
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Banner Discount / Voucher System)
+        case 'banner-discount':
+        case 'therapist-banner-discount':
+            console.log('[ROUTE RESOLVE] banner-discount → BannerDiscountPage');
+            return renderRoute(therapistRoutes.bannerDiscount.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('customers'),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });

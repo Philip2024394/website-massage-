@@ -50,6 +50,9 @@ import SendDiscountPage from '../../pages/therapist/SendDiscountPage';
 import MoreCustomersPage from '../../pages/therapist/MoreCustomersPage';
 import TherapistPlaceholderPage from '../../pages/therapist/TherapistPlaceholderPage';
 import TherapistHotelVillaSafePassPage from '../../pages/therapist/TherapistHotelVillaSafePassPage';
+import TherapistCustomersPage from '../../pages/therapist/TherapistCustomersPage';
+import TherapistAnalyticsPage from '../../pages/therapist/TherapistAnalyticsPage';
+import BannerDiscountPage from '../../pages/therapist/BannerDiscountPage';
 
 export const therapistRoutes = {
   dashboard: {
@@ -170,6 +173,24 @@ export const therapistRoutes = {
     path: '/therapist/hotel-villa-safe-pass',
     component: TherapistHotelVillaSafePassPage,
     name: 'therapist-hotel-villa-safe-pass',
+    requiresAuth: true
+  },
+  customers: {
+    path: '/therapist/customers',
+    component: TherapistCustomersPage,
+    name: 'therapist-customers',
+    requiresAuth: true
+  },
+  analytics: {
+    path: '/therapist/analytics',
+    component: TherapistAnalyticsPage,
+    name: 'therapist-analytics',
+    requiresAuth: true
+  },
+  bannerDiscount: {
+    path: '/therapist/banner-discount',
+    component: BannerDiscountPage,
+    name: 'therapist-banner-discount',
     requiresAuth: true
   }
 };

@@ -251,7 +251,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: FileText, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
     { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-orange-500' },
-    { id: 'more-customers', label: labels['more-customers'], icon: Users, color: 'text-orange-500' },
+    { id: 'customers', label: labels['more-customers'], icon: Users, color: 'text-orange-500' },
     { id: 'send-discount', label: labels['send-discount'], icon: Gift, color: 'text-orange-500' },
     { id: 'earnings', label: labels.earnings, icon: DollarSign, color: 'text-orange-500' },
     { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-orange-500' },
@@ -330,8 +330,12 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     <div 
       className="bg-white w-full max-w-full therapist-page-container"
       style={{ 
-        minHeight: '100vh',
-        paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 40px)'
+        height: '100vh',
+        maxHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}
     >
       {/* Elite Header - Now working with forced visibility and safe area support */}
@@ -744,14 +748,20 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
-          paddingTop: '60px', // Account for fixed header
-          paddingBottom: 'max(env(safe-area-inset-bottom, 80px), 120px)' // Enhanced bottom padding
+          paddingTop: '60px',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 80px)',
+          flex: '1 1 auto',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          minHeight: 0,
+          WebkitOverflowScrolling: 'touch'
         }}
       >
         <div 
           className="therapist-content-wrapper"
           style={{
-            paddingBottom: '60px' // Additional content padding
+            paddingBottom: '60px',
+            minHeight: '100%'
           }}
         >
           {children}
