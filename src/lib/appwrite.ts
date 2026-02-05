@@ -1,26 +1,6 @@
 import { Client, Databases, Account, Storage, Functions, ID, Permission, Role, Query } from 'appwrite';
 
-const client = new Client();
-
-client
-    .setEndpoint('https://syd.cloud.appwrite.io/v1')
-    .setProject('68f23b11000d25eb3664');
-
-export const databases = new Databases(client);
-export const account = new Account(client);
-export const storage = new Storage(client);
-export const functions = new Functions(client);
-
-// Export both old and new names for backward compatibility
-// Export both old and new names for backward compatibility
-export { client, ID, Permission, Role, Query };
-export { client as appwriteClient };
-export { databases as appwriteDatabases };
-export { account as appwriteAccount };
-export { storage as appwriteStorage };
-export { functions as appwriteFunctions };
-
-// Database and Collection IDs - UPDATED TO REAL PRODUCTION IDs
+// Database and Collection IDs - MUST BE DEFINED BEFORE CLIENT INITIALIZATION TO AVOID CIRCULAR DEPENDENCY
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const APPWRITE_DATABASE_ID = '68f76ee1000e64ca8d05'; // Alias for validators
 export const COLLECTIONS = {
@@ -55,6 +35,26 @@ export const COLLECTIONS = {
     COMMISSION_RECORDS: '', // ⚠️ DISABLED - Collection doesn't exist
     ATTRIBUTES: '' // ⚠️ DISABLED - Collection doesn't exist
 };
+
+const client = new Client();
+
+client
+    .setEndpoint('https://syd.cloud.appwrite.io/v1')
+    .setProject('68f23b11000d25eb3664');
+
+export const databases = new Databases(client);
+export const account = new Account(client);
+export const storage = new Storage(client);
+export const functions = new Functions(client);
+
+// Export both old and new names for backward compatibility
+// Export both old and new names for backward compatibility
+export { client, ID, Permission, Role, Query };
+export { client as appwriteClient };
+export { databases as appwriteDatabases };
+export { account as appwriteAccount };
+export { storage as appwriteStorage };
+export { functions as appwriteFunctions };
 
 // APPWRITE_CONFIG object for backward compatibility
 export const APPWRITE_CONFIG = {
