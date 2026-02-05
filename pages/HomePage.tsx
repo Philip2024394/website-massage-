@@ -2575,20 +2575,17 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 <>
                     {/* FAB Action Buttons - Fixed position above main button */}
                     {fabMenuOpen && (
-                        <div className="fixed bottom-[140px] right-6 flex flex-col gap-3 z-[60] animate-slideUp pr-2">
-                            {/* Advanced Search - Moved to top */}
+                        <div className="fixed bottom-[140px] right-6 flex flex-col gap-3 z-[60] animate-slideUp">
+                            {/* Advanced Search */}
                             <button
                                 onClick={() => {
                                     onNavigate?.('advanced-search');
                                     setFabMenuOpen(false);
                                 }}
-                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10 will-change-transform"
+                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/10 will-change-transform"
                                 title={translationsObject?.home?.fabMenu?.advancedSearch || 'Advanced Search'}
                             >
-                                <span className="text-xl">🔍</span>
-                                <span className="text-sm font-medium text-white whitespace-nowrap">
-                                    {translationsObject?.home?.fabMenu?.advancedSearch || 'Advanced Search'}
-                                </span>
+                                <span className="text-2xl">🔍</span>
                             </button>
                             
                             {/* Women Reviews */}
@@ -2597,13 +2594,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     onNavigate?.('women-reviews');
                                     setFabMenuOpen(false);
                                 }}
-                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10"
+                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/10"
                                 title={translationsObject?.home?.fabMenu?.womenReviews || 'Indastreet Reviews'}
                             >
-                                <span className="text-xl">👩‍💼</span>
-                                <span className="text-sm font-medium text-white whitespace-nowrap">
-                                    {translationsObject?.home?.fabMenu?.womenReviews || 'Indastreet Reviews'}
-                                </span>
+                                <span className="text-2xl">👩‍💼</span>
                             </button>
                             
                             {/* Help & FAQ */}
@@ -2612,13 +2606,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     onNavigate?.('help-faq');
                                     setFabMenuOpen(false);
                                 }}
-                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10"
+                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/10"
                                 title={translationsObject?.home?.fabMenu?.helpFaq || 'Help & FAQ'}
                             >
-                                <span className="text-xl">❓</span>
-                                <span className="text-sm font-medium text-white whitespace-nowrap">
-                                    {translationsObject?.home?.fabMenu?.helpFaq || 'Help & FAQ'}
-                                </span>
+                                <span className="text-2xl">❓</span>
                             </button>
                             
                             {/* Top 5 Therapists */}
@@ -2627,13 +2618,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     onNavigate?.('top-therapists');
                                     setFabMenuOpen(false);
                                 }}
-                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10"
+                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/10"
                                 title={translationsObject?.home?.fabMenu?.topTherapists || 'Top 5 Therapists'}
                             >
-                                <span className="text-xl">🏆</span>
-                                <span className="text-sm font-medium text-white whitespace-nowrap">
-                                    {translationsObject?.home?.fabMenu?.topTherapists || 'Top 5 Therapists'}
-                                </span>
+                                <span className="text-2xl">🏆</span>
                             </button>
                             
                             {/* Special Offers */}
@@ -2642,13 +2630,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     onNavigate?.('special-offers');
                                     setFabMenuOpen(false);
                                 }}
-                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10"
+                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/10"
                                 title={translationsObject?.home?.fabMenu?.specialOffers || 'Special Offers'}
                             >
-                                <span className="text-xl">⭐</span>
-                                <span className="text-sm font-medium text-white whitespace-nowrap">
-                                    {translationsObject?.home?.fabMenu?.specialOffers || 'Special Offers'}
-                                </span>
+                                <span className="text-2xl">⭐</span>
                             </button>
                             
                             {/* Video Center */}
@@ -2657,13 +2642,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     onNavigate?.('video-center');
                                     setFabMenuOpen(false);
                                 }}
-                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10"
+                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/10"
                                 title={translationsObject?.home?.fabMenu?.videoCenter || 'Video Center'}
                             >
-                                <span className="text-xl">🎥</span>
-                                <span className="text-sm font-medium text-white whitespace-nowrap">
-                                    {translationsObject?.home?.fabMenu?.videoCenter || 'Video Center'}
-                                </span>
+                                <span className="text-2xl">🎥</span>
                             </button>
                         </div>
                     )}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface MassageType {
     name: string;
@@ -68,11 +69,11 @@ export const MassageTypeCard: React.FC<MassageTypeCardProps> = ({
                 {/* Popularity Badge */}
                 <button
                     onClick={onPopularityClick}
-                    className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1.5 hover:bg-white transition-colors cursor-pointer"
+                    className="absolute top-2 left-2 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1 hover:bg-black/50 transition-colors cursor-pointer"
                     aria-label={`${massage.popularity} stars`}
                 >
-                    <StarIcon className="w-4 h-4 text-yellow-400" />
-                    <span className="font-bold text-gray-800 text-sm">{massage.popularity}</span>
+                    <StarIcon className="w-3.5 h-3.5 text-yellow-400" />
+                    <span className="font-semibold text-white text-xs">{massage.popularity}</span>
                 </button>
             </div>
             
@@ -99,7 +100,17 @@ export const MassageTypeCard: React.FC<MassageTypeCardProps> = ({
                         onClick={onToggleExpanded}
                         className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors mb-3 flex items-center gap-1"
                     >
-                        {expanded ? '− Read Less' : '+ Read More'}
+                        {expanded ? (
+                            <>
+                                <ChevronUp className="w-4 h-4" />
+                                <span>Read Less</span>
+                            </>
+                        ) : (
+                            <>
+                                <ChevronDown className="w-4 h-4" />
+                                <span>Read More</span>
+                            </>
+                        )}
                     </button>
                 )}
 

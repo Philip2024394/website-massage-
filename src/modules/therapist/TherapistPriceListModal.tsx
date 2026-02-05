@@ -31,6 +31,7 @@ interface TherapistPriceListModalProps {
     setSelectedDuration: (duration: '60' | '90' | '120') => void;
     openBookingWithService: (therapist: any, service: any, options?: { bookingType?: 'immediate' | 'scheduled' }) => void;
     chatLang: string;
+    showBookingButtons?: boolean; // Control whether to show booking buttons (profile) or just prices (home)
 }
 
 const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
@@ -47,7 +48,8 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
     setSelectedServiceIndex,
     setSelectedDuration,
     openBookingWithService,
-    chatLang
+    chatLang,
+    showBookingButtons = true // Default true for profile page, false for home page
 }) => {
     if (!showPriceListModal) return null;
 
@@ -151,17 +153,20 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                 </div>
 
                                                 {/* Price buttons in row */}
-                                                <div className="grid grid-cols-8 gap-2 items-end">
+                                                <div className={`grid gap-2 items-end ${showBookingButtons ? 'grid-cols-8' : 'grid-cols-3'}`}>
                                                     {['60', '90', '120'].map((duration) => (
-                                                        <div key={duration} className="col-span-2">
+                                                        <div key={duration} className={showBookingButtons ? 'col-span-2' : 'col-span-1'}>
                                                             <div className="text-[10px] text-gray-600 text-center mb-1 font-semibold">{duration}m</div>
                                                             {service[`price${duration}`] ? (
                                                                 <button
-                                                                    onClick={() => handleSelectService(index, duration as '60' | '90' | '120')}
+                                                                    onClick={() => showBookingButtons && handleSelectService(index, duration as '60' | '90' | '120')}
+                                                                    disabled={!showBookingButtons}
                                                                     className={`w-full px-1 py-1.5 rounded text-[10px] transition-all border-2 ${
-                                                                        isRowSelected && selectedDuration === duration
+                                                                        showBookingButtons && isRowSelected && selectedDuration === duration
                                                                             ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
-                                                                            : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                            : showBookingButtons 
+                                                                            ? 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                            : 'bg-white text-gray-800 border-gray-200 cursor-default'
                                                                     }`}
                                                                 >
                                                                     <span className="block truncate">
@@ -174,7 +179,8 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                         </div>
                                                     ))}
 
-                                                    {/* Action Button */}
+                                                    {/* Action Button - Only show on profile page */}
+                                                    {showBookingButtons && (
                                                     <div className="col-span-2">
                                                         <div className="text-[10px] text-transparent text-center mb-1">-</div>
                                                         <button
@@ -221,6 +227,8 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                             {chatLang === 'id' ? 'Pesan' : 'Book'}
                                                         </button>
                                                     </div>
+                                                    )}
+
                                                 </div>
                                             </div>
 
@@ -239,11 +247,14 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                     <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
                                                         {service[`price${duration}`] ? (
                                                             <button
-                                                                onClick={() => handleSelectService(index, duration as '60' | '90' | '120')}
+                                                                onClick={() => showBookingButtons && handleSelectService(index, duration as '60' | '90' | '120')}
+                                                                disabled={!showBookingButtons}
                                                                 className={`w-full px-1 py-1 rounded text-xs transition-all border-2 min-w-0 ${
-                                                                    isRowSelected && selectedDuration === duration
+                                                                    showBookingButtons && isRowSelected && selectedDuration === duration
                                                                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
-                                                                        : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                        : showBookingButtons
+                                                                        ? 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                        : 'bg-white text-gray-800 border-gray-200 cursor-default'
                                                                 }`}
                                                             >
                                                                 <span className="block truncate text-xs">
@@ -256,7 +267,8 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                     </div>
                                                 ))}
 
-                                                {/* Action Buttons - Both Immediate & Scheduled */}
+                                                {/* Action Buttons - Both Immediate & Scheduled - Only show on profile page */}
+                                                {showBookingButtons && (
                                                 <div className="col-span-2 space-y-1">
                                                     {/* Book Now Button */}
                                                     <button
@@ -378,7 +390,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                         }
                                                     </button>
                                                 </div>
-                                            </div>
+                                                )}\n                                            </div>
                                         </div>
                                     )
                                 })}
@@ -388,17 +400,17 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                         // Fallback pricing when menu data fails to load - use therapist's built-in pricing
                         <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                             {/* Table Header */}
-                            <div className="grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
+                            <div className={`grid gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200 ${showBookingButtons ? 'grid-cols-12' : 'grid-cols-10'}`}>
                                 <div className="col-span-4">Service</div>
                                 <div className="col-span-2 text-center">60 Min</div>
                                 <div className="col-span-2 text-center">90 Min</div>
                                 <div className="col-span-2 text-center">120 Min</div>
-                                <div className="col-span-2 text-center">Action</div>
+                                {showBookingButtons && <div className="col-span-2 text-center">Action</div>}
                             </div>
 
                             {/* Fallback Service Row */}
                             <div className="divide-y divide-orange-100">
-                                <div className="grid grid-cols-12 gap-2 px-3 py-3 hover:bg-orange-50 items-center">
+                                <div className={`grid gap-2 px-3 py-3 hover:bg-orange-50 items-center ${showBookingButtons ? 'grid-cols-12' : 'grid-cols-10'}`}>
                                     {/* Service Name */}
                                     <div className="col-span-4">
                                         <div className="font-medium text-sm text-gray-900">Traditional Massage</div>
@@ -432,7 +444,8 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                         );
                                     })}
 
-                                    {/* Action Buttons - Both Immediate & Scheduled */}
+                                    {/* Action Buttons - Both Immediate & Scheduled - Only show on profile page */}
+                                    {showBookingButtons && (
                                     <div className="col-span-2 space-y-2">
                                         {/* Book Now Button */}
                                         <button
@@ -554,6 +567,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                             }
                                         </button>
                                     </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

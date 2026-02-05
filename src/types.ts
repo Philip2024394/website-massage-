@@ -398,6 +398,9 @@ export interface Therapist {
     safePassSubmittedAt?: string; // Date when therapist submitted application
     safePassApprovedAt?: string; // Date when admin approved the letters
     safePassApprovedBy?: string; // Admin ID who approved the Safe Pass
+    
+    // SafePass Verification Display (for hotels, villas, homes)
+    hasSafePassVerification?: boolean; // Whether to show SafePass verification button
 }
 
 // Commission payment record

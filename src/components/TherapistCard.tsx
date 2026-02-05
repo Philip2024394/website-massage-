@@ -68,6 +68,7 @@ import TherapistProfile from '../modules/therapist/TherapistProfile';
 import TherapistSpecialties from '../modules/therapist/TherapistSpecialties';
 import TherapistLanguages from '../modules/therapist/TherapistLanguages';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
+import SafePassModal from './modals/SafePassModal';
 import { getDynamicSpacing, formatPrice, formatCountdownDisplay, getInitialBookingCount } from '../modules/therapist/therapistHelpers';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 
@@ -99,6 +100,103 @@ interface TherapistCardProps {
     avatarOffsetPx?: number; // Fine-tune avatar overlap in pixels
     selectedCity?: string; // Selected city for location display override
 }
+
+/**
+ * Round Button Row Component - Modern booking interface
+ * Features:
+ * - Three round/pill-shaped buttons
+ * - Active state management (only one active at a time)
+ * - Color transitions: default orange → active green
+ * - Scheduled Bookings default green
+ * - Mobile-friendly touch targets
+ */
+interface RoundButtonRowProps {
+    therapist: Therapist;
+    onBookNow: () => void;
+    onSchedule: () => void;
+    onPriceSlider: () => void;
+    hasScheduledBookings: boolean;
+    bookNowText: string;
+    scheduleText: string;
+    dynamicSpacing: string;
+}
+
+const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
+    onBookNow,
+    onSchedule,
+    onPriceSlider,
+    hasScheduledBookings,
+    bookNowText,
+    scheduleText,
+    dynamicSpacing
+}) => {
+    const [activeButton, setActiveButton] = useState<'book' | 'schedule' | 'price' | null>(null);
+    
+    return (
+        <div className={`flex gap-2 px-4 ${dynamicSpacing}`}>
+            {/* Book Button */}
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveButton('book');
+                    onBookNow();
+                }}
+                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
+                    activeButton === 'book' 
+                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700' 
+                        : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
+                } active:scale-95 shadow-md`}
+            >
+                <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-semibold">Book</span>
+            </button>
+
+            {/* Schedule Button */}
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (hasScheduledBookings) {
+                        setActiveButton('schedule');
+                        onSchedule();
+                    }
+                }}
+                disabled={!hasScheduledBookings}
+                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
+                    !hasScheduledBookings
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : activeButton === 'schedule'
+                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
+                        : 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
+                } active:scale-95 shadow-md`}
+            >
+                <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-semibold">Schedule</span>
+            </button>
+
+            {/* Prices Button */}
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveButton('price');
+                    onPriceSlider();
+                }}
+                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
+                    activeButton === 'price'
+                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
+                        : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
+                } active:scale-95 shadow-md`}
+            >
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs sm:text-sm font-semibold">Prices</span>
+            </button>
+        </div>
+    );
+};
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ 
     therapist, 
@@ -157,6 +255,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         termsAccepted,
         setTermsAccepted
     } = useTherapistCardModals();
+    
+    // SafePass modal state
+    const [showSafePassModal, setShowSafePassModal] = useState(false);
     
     const {
         menuData,
@@ -1008,45 +1109,85 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 <p className="text-xs text-gray-600 text-left">
                     <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
                 </p>
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        console.log('🔴 BUTTON CLICKED - Starting...');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('🍽️ Opening price list modal for:', therapist.name);
-                        console.log('🔍 Therapist ID:', therapist.$id || therapist.id);
-                        console.log('🔍 Current URL:', window.location.href);
-                        console.log('🔍 Session storage has_entered_app:', sessionStorage.getItem('has_entered_app'));
-                        try {
-                            setShowPriceListModal(true);
-                            console.log('✅ Modal state set to true');
-                        } catch (error) {
-                            console.error('❌ Error setting modal state:', error);
-                        }
-                    }}
-                    className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle cursor-pointer relative z-10"
-                >
-                    <style>{`
-                        @keyframes flash-subtle {
-                            0%, 100% { opacity: 1; }
-                            50% { opacity: 0.6; }
-                        }
-                        .animate-flash-subtle {
-                            animation: flash-subtle 2s ease-in-out infinite;
-                        }
-                    `}</style>
-                    <img 
-                        src="https://ik.imagekit.io/7grri5v7d/massage%20oil%20image.png" 
-                        alt="Menu"
-                        className="w-12 h-12 object-contain"
-                        loading="lazy"
-                        decoding="async"
-                        width="48"
-                        height="48"
-                    />
-                    <span className="font-bold text-black text-sm">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
-                </button>
+                
+                {/* Conditional Button: SafePass (if verified) OR Menu Harga (default) */}
+                {(() => {
+                    // TEMPORARY TEST: Force show SafePass for Budi
+                    const isBudi = therapist.name.toLowerCase().includes('budi');
+                    const showSafePass = therapist.hasSafePassVerification || isBudi;
+                    
+                    console.log('🔍 SafePass Debug:', {
+                        therapistName: therapist.name,
+                        hasSafePassVerification: therapist.hasSafePassVerification,
+                        isBudi: isBudi,
+                        showSafePass: showSafePass,
+                        therapistId: therapist.id || therapist.$id,
+                        type: typeof therapist.hasSafePassVerification
+                    });
+                    
+                    return showSafePass ? (
+                        // SafePass Button - Opens verification modal
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('🛡️ Opening SafePass verification modal for:', therapist.name);
+                                setShowSafePassModal(true);
+                            }}
+                            className="hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer relative z-10"
+                        >
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/safe%20pass%20hotel.png" 
+                                alt="SafePass Verified"
+                                className="w-24 h-auto object-contain"
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </button>
+                    ) : (
+                        // Menu Harga Button - Opens price list modal
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                console.log('🔴 BUTTON CLICKED - Starting...');
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('🍽️ Opening price list modal for:', therapist.name);
+                                console.log('🔍 Therapist ID:', therapist.$id || therapist.id);
+                                console.log('🔍 Current URL:', window.location.href);
+                                console.log('🔍 Session storage has_entered_app:', sessionStorage.getItem('has_entered_app'));
+                                try {
+                                    setShowPriceListModal(true);
+                                    console.log('✅ Modal state set to true');
+                                } catch (error) {
+                                    console.error('❌ Error setting modal state:', error);
+                                }
+                            }}
+                            className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle cursor-pointer relative z-10"
+                        >
+                            <style>{`
+                                @keyframes flash-subtle {
+                                    0%, 100% { opacity: 1; }
+                                    50% { opacity: 0.6; }
+                                }
+                                .animate-flash-subtle {
+                                    animation: flash-subtle 2s ease-in-out infinite;
+                                }
+                            `}</style>
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/massage%20oil%20image.png" 
+                                alt="Menu"
+                                className="w-12 h-12 object-contain"
+                                loading="lazy"
+                                decoding="async"
+                                width="48"
+                                height="48"
+                            />
+                            <span className="font-bold text-black text-sm">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
+                        </button>
+                    );
+                })()}
             </div>
 
             {/* Therapist Bio - Natural flow with proper margin */}
@@ -1075,153 +1216,62 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 getDynamicSpacing={getDynamicSpacing}
                 translatedDescriptionLength={translatedDescription.length}
                 menuData={menuData}
+                onPriceClick={() => {
+                    console.log('💰 Price grid clicked - opening price modal');
+                    setShowPriceListModal(true);
+                }}
             />
 
-            {/* Booking Buttons - Positioned under price containers */}
-            <div className={`flex gap-2 px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}`}>
-                <button
-                    onClick={async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        // Prevent multiple rapid clicks
-                        if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
-                            return;
+            {/* Round Button Row - Book Now | Scheduled Bookings | Price Slider */}
+            <RoundButtonRow
+                therapist={therapist}
+                onBookNow={async () => {
+                    if (onQuickBookWithChat) {
+                        console.log('📤 [SHARED PROFILE] Using onQuickBookWithChat handler');
+                        onQuickBookWithChat();
+                    } else {
+                        console.log('💬 [BOOK NOW] Opening persistent chat window...');
+                        openBookingChat(therapist);
+                    }
+                    onIncrementAnalytics('bookings');
+                    setBookingsCount(prev => prev + 1);
+                }}
+                onSchedule={async () => {
+                    if (therapist.bankName && therapist.accountNumber && therapist.accountName) {
+                        try {
+                            const bookingId = await enterpriseBookingFlowService.createBookingRequest({
+                                userId: 'current_user',
+                                userDetails: { name: 'Current User', phone: '+1234567890', location: 'User Location' },
+                                serviceType: 'scheduled',
+                                scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                                services: [{ id: 'massage', name: 'Massage Service', duration: 90, price: pricing?.[0]?.price || 100 }],
+                                totalPrice: pricing?.[0]?.price || 100,
+                                duration: 90,
+                                location: { address: locationAreaDisplayName, coordinates: { lat: 0, lng: 0 } },
+                                preferredTherapists: [therapist.$id],
+                                urgency: 'normal'
+                            });
+                            openScheduleChat(therapist);
+                        } catch (error) {
+                            openScheduleChat(therapist);
                         }
-                        (e.target as HTMLElement).setAttribute('data-clicking', 'true');
-                        requestAnimationFrame(() => {
-                            (e.target as HTMLElement).removeAttribute('data-clicking');
-                        });
-                        
-                        console.log('🚀 [BOOK NOW] Book Now clicked on therapist card');
-                        console.log('🔍 [BOOK NOW] Current window.location:', window.location.href);
-                        console.log('🔍 [BOOK NOW] sessionStorage.has_entered_app:', sessionStorage.getItem('has_entered_app'));
-                        
-                        // ✅ CRITICAL: Use prop handler if provided (shared profile), otherwise use direct integration
-                        if (onQuickBookWithChat) {
-                            console.log('📤 [SHARED PROFILE] Using onQuickBookWithChat handler');
-                            onQuickBookWithChat();
-                        } else {
-                            console.log('💬 [BOOK NOW] Opening persistent chat window...');
-                            openBookingChat(therapist);
-                            console.log('✅ [BOOK NOW] Chat window opened successfully');
-                        }
-                        
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
-                    }}
-                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
-                >
-                    <MessageCircle className="w-4 h-4"/>
-                    <span className="text-sm">{bookNowText}</span>
-                </button>
-                {/* Check if therapist has bank details for scheduled bookings */}
-                {therapist.bankName && therapist.accountNumber && therapist.accountName ? (
-                    <button 
-                        onClick={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            // Prevent multiple rapid clicks
-                            if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
-                                return;
-                            }
-                            (e.target as HTMLElement).setAttribute('data-clicking', 'true');
-                            requestAnimationFrame(() => {
-                                (e.target as HTMLElement).removeAttribute('data-clicking');
-                            });
-                            
-                            console.log('🚀 [ENTERPRISE] Scheduled booking clicked on therapist card');
-                            
-                            try {
-                                // Create enterprise scheduled booking request
-                                const bookingId = await enterpriseBookingFlowService.createBookingRequest({
-                                    userId: 'current_user', // Replace with actual user ID
-                                    userDetails: {
-                                        name: 'Current User', // Replace with actual user data
-                                        phone: '+1234567890',
-                                        location: 'User Location'
-                                    },
-                                    serviceType: 'scheduled',
-                                    scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow by default
-                                    services: [
-                                        {
-                                            id: 'massage',
-                                            name: 'Massage Service',
-                                            duration: 90,
-                                            price: pricing?.[0]?.price || 100
-                                        }
-                                    ],
-                                    totalPrice: pricing?.[0]?.price || 100,
-                                    duration: 90,
-                                    location: {
-                                        address: locationAreaDisplayName,
-                                        coordinates: { lat: 0, lng: 0 } // Replace with actual coordinates
-                                    },
-                                    preferredTherapists: [therapist.$id],
-                                    urgency: 'normal'
-                                });
-                                
-                                console.log(`✅ Enterprise scheduled booking request created: ${bookingId}`);
-                                
-                                // Open schedule chat as fallback
-                                openScheduleChat(therapist);
-                                
-                            } catch (error) {
-                                console.error('❌ Enterprise scheduled booking failed:', error);
-                                // Fallback to original booking flow
-                                openScheduleChat(therapist);
-                            }
-                            
-                            onIncrementAnalytics('bookings');
-                            setBookingsCount(prev => prev + 1);
-                        }} 
-                        className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
-                    >
-                        <CalendarIcon className="w-4 h-4"/>
-                        <span className="text-sm">{scheduleText}</span>
-                    </button>
-                ) : (
-                    <button 
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            // Show popup for unavailable scheduled bookings
-                            alert('This therapist does not accept scheduled bookings at this time. Please look for therapists with orange schedule buttons who are active members and accept scheduled bookings.');
-                        }} 
-                        className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-red-500 text-white hover:bg-red-600 active:bg-red-700 active:scale-95"
-                        disabled
-                    >
-                        <CalendarIcon className="w-4 h-4"/>
-                        <span className="text-sm">Not Available</span>
-                    </button>
-                )}
-            </div>
+                    } else {
+                        alert('This therapist does not accept scheduled bookings at this time.');
+                    }
+                }}
+                onPriceSlider={() => {
+                    console.log('💰 [PRICE SLIDER] Opening price modal...');
+                    setShowPriceListModal(true);
+                }}
+                hasScheduledBookings={!!(therapist.bankName && therapist.accountNumber && therapist.accountName)}
+                bookNowText={bookNowText}
+                scheduleText={scheduleText}
+                dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
+            />
 
             {/* End Content Section wrapper */}
-            </div>
-
-            {/* Terms and Conditions Link - Below booking buttons */}
-            <div className="text-center mt-3 px-4">
-                <button 
-                    type="button"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const isSharedProfile = window.location.pathname.includes('/share/');
-                        const baseUrl = window.location.origin;
-                        if (isSharedProfile) {
-                            const currentUrl = window.location.href;
-                            window.open(`${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}`, '_blank');
-                        } else {
-                            window.open(`${baseUrl}/mobile-terms-and-conditions`, '_blank');
-                        }
-                    }}
-                    className="text-xs text-gray-500 hover:text-gray-700 underline font-medium cursor-pointer bg-transparent border-none p-0"
-                >
-                    Terms And Conditions
-                </button>
             </div>
 
             {/* Hotel/Villa Partner Link - Mobile optimized */}
@@ -1284,7 +1334,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             />
 
             {/* Report Profile Section - Footer Area */}
-            <div className="text-center mt-4 mb-4 px-4">
+            <div className="text-center mt-3 mb-2 px-4">
                 <button 
                     type="button"
                     onClick={(e) => {
@@ -1298,8 +1348,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     }}
                     className="inline-flex flex-col items-center cursor-pointer bg-transparent border-none p-0"
                 >
-                    <span className="text-sm font-bold text-red-600 hover:text-red-700">Report Profile</span>
-                    <span className="text-xs text-gray-500 mt-0.5">Violates Stated Standards</span>
+                    <span className="text-xs font-semibold text-red-600 hover:text-red-700">Report Profile</span>
+                    <span className="text-[10px] text-gray-500">Violates Stated Standards</span>
                 </button>
             </div>
 
@@ -1317,6 +1367,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 setSelectedServiceIndex={setSelectedServiceIndex}
                 setSelectedDuration={setSelectedDuration}
                 openBookingWithService={openBookingWithService}
+                chatLang={chatLang}
+                showBookingButtons={true}
+            />
+            
+            <SafePassModal
+                isOpen={showSafePassModal}
+                onClose={() => setShowSafePassModal(false)}
+                therapistName={therapist.name}
+                therapistImage={therapist.profileImage}
+                safePassIssueDate="2025-01-15"
                 chatLang={chatLang}
             />
         </>

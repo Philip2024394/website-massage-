@@ -25,6 +25,8 @@ import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import TherapistJoinPopup from './TherapistJoinPopup';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
+import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
+import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 
 interface TherapistHomeCardProps {
     therapist: Therapist;
@@ -69,7 +71,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
     const [showJoinPopup, setShowJoinPopup] = useState(false);
+    const [showPriceModal, setShowPriceModal] = useState(false);
     const [menuData, setMenuData] = useState<any[]>([]);
+    const [selectedServiceIndex, setSelectedServiceIndex] = useState<number | null>(null);
+    const [selectedDuration, setSelectedDuration] = useState<'60' | '90' | '120' | null>(null);
+    
+    // Chat integration hook for menu harga bookings
+    const { openBookingWithService } = usePersistentChatIntegration(therapist);
 
     // Handle share functionality
     const handleShareClick = (e: React.MouseEvent) => {
@@ -93,6 +101,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         loadBookingsCount();
     }, [therapist]);
 
+    // Handle service selection in price slider
+    const handleSelectService = (index: number, duration: '60' | '90' | '120') => {
+        console.log('💰 Service selected:', { index, duration });
+        setSelectedServiceIndex(index);
+        setSelectedDuration(duration);
+    };
+    
     // Load menu data on component mount for service name display
     useEffect(() => {
         const loadMenu = async () => {
@@ -916,18 +931,41 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     )}
                 </div>
 
-                {/* View Profile Button */}
-                <button 
-                    onClick={() => onClick(therapist)}
-                    disabled={readOnly}
-                    className={`w-full py-2.5 font-semibold rounded-lg transition-all ${
-                        readOnly 
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                            : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
-                    }`}
-                >
-                    {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
-                </button>
+                {/* Two Button Row - View Profile | Price List/Order */}
+                <div className="flex gap-2">
+                    {/* View Profile Button */}
+                    <button 
+                        onClick={() => onClick(therapist)}
+                        disabled={readOnly}
+                        className={`flex-1 py-2.5 font-semibold rounded-lg transition-all ${
+                            readOnly 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
+                        }`}
+                    >
+                        {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
+                    </button>
+
+                    {/* Price List / Order Button */}
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (!readOnly) {
+                                // Open price list modal/slider
+                                console.log('🏠 Price List clicked for', therapist.name);
+                                setShowPriceModal(true);
+                            }
+                        }}
+                        disabled={readOnly}
+                        className={`flex-1 py-2.5 font-semibold rounded-lg transition-all ${
+                            readOnly 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
+                        }`}
+                    >
+                        {t?.home?.priceList || 'Menu Harga'}
+                    </button>
+                </div>
             </div>
             </div>
 
@@ -948,6 +986,25 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 isOpen={showJoinPopup}
                 onClose={() => setShowJoinPopup(false)}
                 onNavigate={onNavigate}
+            />
+
+            {/* Price List Modal/Slider - Exact same as profile page */}
+            <TherapistPriceListModal
+                showPriceListModal={showPriceModal}
+                setShowPriceListModal={setShowPriceModal}
+                therapist={therapist}
+                displayRating={displayRating}
+                arrivalCountdown="60"
+                formatCountdown={(time: string) => time}
+                menuData={menuData}
+                selectedServiceIndex={selectedServiceIndex}
+                selectedDuration={selectedDuration}
+                handleSelectService={handleSelectService}
+                setSelectedServiceIndex={setSelectedServiceIndex}
+                setSelectedDuration={setSelectedDuration}
+                openBookingWithService={openBookingWithService}
+                chatLang={t?.locale || 'id'}
+                showBookingButtons={false}
             />
         </div>
     );

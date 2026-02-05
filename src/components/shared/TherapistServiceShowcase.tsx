@@ -123,7 +123,7 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                         <div className="grid grid-cols-2 gap-3 min-h-[400px]">
                             {/* Body Front */}
                             <div 
-                                className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer group h-full min-h-[400px]"
+                                className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative h-full min-h-[400px]"
                                 onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyFront, 'Tubuh Depan - Titik referensi pijat')}
                             >
                                 <img
@@ -135,6 +135,9 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400/f3f4f6/374151?text=Tubuh+Depan';
                                     }}
                                 />
+                                <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                                    Front Body
+                                </div>
                             </div>
 
                             {/* Body Back */}
@@ -152,7 +155,7 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                                     }}
                                 />
                                 <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-                                    Punggung Belakang
+                                    Back Body
                                 </div>
                             </div>
                         </div>
@@ -246,11 +249,11 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                 >
                     {/* Close Button */}
                     <button
-                        className="fixed top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-orange-50 transition-colors"
+                        className="fixed top-4 right-4 z-10 p-2 bg-orange-500 rounded-full shadow-lg hover:bg-orange-600 transition-colors"
                         onClick={closeMassageTypes}
                         aria-label="Close massage types"
                     >
-                        <X size={24} strokeWidth={2} className="text-orange-500" />
+                        <X size={24} strokeWidth={2} className="text-black" />
                     </button>
 
                     {/* Content - Reusing MassageTypesPage cards */}
@@ -263,8 +266,8 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                             {MASSAGE_TYPE_DETAILS.map((massageTypeDetail, index) => {
                                 const massage = {
                                     name: massageTypeDetail.name,
-                                    description: massageTypeDetail.shortDescription || massageTypeDetail.description,
-                                    fullDescription: massageTypeDetail.description,
+                                    description: massageTypeDetail.shortDescription,
+                                    fullDescription: massageTypeDetail.fullDescription,
                                     benefits: massageTypeDetail.benefits || [],
                                     duration: massageTypeDetail.duration || '60-90 min',
                                     intensity: massageTypeDetail.intensity || 'Medium',

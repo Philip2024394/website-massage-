@@ -11,6 +11,7 @@ interface TherapistPricingGridProps {
     getDynamicSpacing: (large: string, medium: string, small: string, descLength: number) => string;
     translatedDescriptionLength: number;
     menuData?: any[]; // Menu data to determine service name
+    onPriceClick?: () => void; // Callback to open price modal
 }
 
 const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
@@ -21,7 +22,8 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
     formatPrice,
     getDynamicSpacing,
     translatedDescriptionLength,
-    menuData = []
+    menuData = [],
+    onPriceClick
 }) => {
     console.log('🧱 TherapistPricingGrid rendered');
 
@@ -103,7 +105,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-4 px-4">
                 {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                <div 
+                    onClick={onPriceClick}
+                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 0
@@ -111,7 +115,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                         : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
-                }`}>
+                } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
                     <p className="text-gray-600 text-xs mb-1 font-semibold">60 min</p>
                     {isDiscountActive(therapist) ? (
                         <>
@@ -130,7 +134,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                 </div>
 
                 {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                <div 
+                    onClick={onPriceClick}
+                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 1
@@ -138,7 +144,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                         : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
-                }`}>
+                } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
                     <p className="text-gray-600 text-xs mb-1 font-semibold">90 min</p>
                     {isDiscountActive(therapist) ? (
                         <>
@@ -157,7 +163,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                <div 
+                    onClick={onPriceClick}
+                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 2
@@ -165,7 +173,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                         : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
-                }`}>
+                } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
                     <p className="text-gray-600 text-xs mb-1 font-semibold">120 min</p>
                     {isDiscountActive(therapist) ? (
                         <>

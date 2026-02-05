@@ -98,6 +98,7 @@ const generateMockTherapists = (): Therapist[] => [
           bookings: 0 
         }),
         hotelVillaServiceStatus: HotelVillaServiceStatus.NotOptedIn,
+        hasSafePassVerification: true,
     },
     {
         id: 3,
