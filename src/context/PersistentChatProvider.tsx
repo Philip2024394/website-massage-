@@ -571,9 +571,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const validateInfrastructure = async () => {
       console.log('📊 Infrastructure Validation:');
       console.log(`   - currentUserId: ${currentUserId ? '✅ ' + currentUserId : '❌ Missing'}`);
-      console.log(`   - CHAT_MESSAGES_COLLECTION: ${CHAT_MESSAGES_COLLECTION ? '✅ ' + CHAT_MESSAGES_COLLECTION : '❌ Missing'}`);
-      console.log(`   - CHAT_SESSIONS_COLLECTION: ${CHAT_SESSIONS_COLLECTION ? '✅ ' + CHAT_SESSIONS_COLLECTION : '❌ Missing'}`);
-      console.log(`   - DATABASE_ID: ${DATABASE_ID}`);
+      console.log(`   - CHAT_MESSAGES_COLLECTION: ${APPWRITE_CONFIG.collections.chatMessages ? '✅ ' + APPWRITE_CONFIG.collections.chatMessages : '❌ Missing'}`);
+      console.log(`   - CHAT_SESSIONS_COLLECTION: ${APPWRITE_CONFIG.collections.chatSessions ? '✅ ' + APPWRITE_CONFIG.collections.chatSessions : '❌ Missing'}`);
+      console.log(`   - DATABASE_ID: ${APPWRITE_CONFIG.databaseId}`);
       console.log(`   - Appwrite Endpoint: https://syd.cloud.appwrite.io/v1`);
       console.log(`   - Project ID: 68f23b11000d25eb3664`);
 
@@ -583,7 +583,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         return false;
       }
       
-      if (!CHAT_MESSAGES_COLLECTION) {
+      if (!APPWRITE_CONFIG.collections.chatMessages) {
         console.error('❌ FATAL: CHAT_MESSAGES_COLLECTION is undefined!');
         console.error('🔧 Check APPWRITE_CONFIG.collections.chatMessages configuration');
         return false;
@@ -591,8 +591,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       
       // Test document access (which is what actually matters for chat functionality)
       try {
-        console.log(`🔍 Testing document access: ${CHAT_MESSAGES_COLLECTION}`);
-        const testQuery = await databases.listDocuments(DATABASE_ID, CHAT_MESSAGES_COLLECTION, [], 1);
+        console.log(`🔍 Testing document access: ${APPWRITE_CONFIG.collections.chatMessages}`);
+        const testQuery = await databases.listDocuments(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.chatMessages, [], 1);
         console.log(`✅ chat_messages DOCUMENT ACCESS: ${testQuery.total} total messages available`);
         
         // Test if we can query documents (this is what matters for chat)
@@ -605,7 +605,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         console.error('═'.repeat(80));
         console.error('🚨 CHAT_MESSAGES COLLECTION ACCESS FAILED');
         console.error(`Error Code: ${error.code} | Message: ${error.message}`);
-        console.error(`Collection ID Attempted: ${CHAT_MESSAGES_COLLECTION}`);
+        console.error(`Collection ID Attempted: ${APPWRITE_CONFIG.collections.chatMessages}`);
         
         if (error.code === 404) {
           console.error('🎯 ANALYSIS: chat_messages collection missing or incorrect collection ID');
@@ -627,14 +627,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
       
       // Test chat_sessions collection (session management)
-      if (!CHAT_SESSIONS_COLLECTION) {
+      if (!APPWRITE_CONFIG.collections.chatSessions) {
         console.error('❌ FATAL: CHAT_SESSIONS_COLLECTION is undefined!');
         return false;
       }
       
       try {
-        console.log(`🔍 Testing chat_sessions document access: ${CHAT_SESSIONS_COLLECTION}`);
-        const testSessionQuery = await databases.listDocuments(DATABASE_ID, CHAT_SESSIONS_COLLECTION, [], 1);
+        console.log(`🔍 Testing chat_sessions document access: ${APPWRITE_CONFIG.collections.chatSessions}`);
+        const testSessionQuery = await databases.listDocuments(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.chatSessions, [], 1);
         console.log(`✅ chat_sessions DOCUMENT ACCESS: ${testSessionQuery.total} total sessions available`);
         
         console.log(`📋 Session document access validation: PASSED - Chat can manage sessions`);
@@ -643,7 +643,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         console.error('═'.repeat(80));
         console.error('🚨 CHAT_SESSIONS COLLECTION ACCESS FAILED');
         console.error(`Error Code: ${error.code} | Message: ${error.message}`);
-        console.error(`Collection ID Attempted: ${CHAT_SESSIONS_COLLECTION}`);
+        console.error(`Collection ID Attempted: ${APPWRITE_CONFIG.collections.chatSessions}`);
         
         if (error.code === 404) {
           console.error('🎯 ANALYSIS: chat_sessions collection missing - need to create it');
@@ -815,14 +815,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Load existing messages when chat opens
   const loadMessages = useCallback(async (therapistId: string) => {
-    if (!currentUserId || !CHAT_MESSAGES_COLLECTION) return [];
+    if (!currentUserId || !APPWRITE_CONFIG.collections.chatMessages) return [];
 
     try {
       console.log('📥 Loading chat history with:', therapistId);
       
       const response = await databases.listDocuments(
-        DATABASE_ID,
-        CHAT_MESSAGES_COLLECTION,
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.chatMessages,
         [
           Query.or([
             Query.and([
