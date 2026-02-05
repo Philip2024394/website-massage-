@@ -11,7 +11,45 @@
  * This prevents 404 errors from non-existent collections
  */
 
-import { COLLECTIONS, APPWRITE_DATABASE_ID } from './appwrite';
+// ⚠️ CRITICAL: DO NOT import from './appwrite' - causes circular dependency!
+// Define constants directly here to break the circular dependency chain:
+// appwrite.ts → appwrite.config.ts → appwrite-collection-validator.ts → appwrite.ts
+
+// Database ID - defined directly to avoid circular dependency
+export const APPWRITE_DATABASE_ID = '68f76ee1000e64ca8d05';
+export const DATABASE_ID = APPWRITE_DATABASE_ID;
+
+// Collection definitions - defined directly to avoid circular dependency
+const COLLECTIONS = {
+    THERAPISTS: 'therapists_collection_id',
+    PLACES: 'places_collection_id',
+    FACIAL_PLACES: 'facial_places_collection',
+    USERS: '',
+    AGENTS: '',
+    BOOKINGS: 'bookings_collection_id',
+    REVIEWS: '',
+    ACHIEVEMENTS: 'achievements_collection_id',
+    THERAPIST_ACHIEVEMENTS: 'therapist_achievements_collection_id',
+    THERAPIST_MATCHES: 'therapist_matches',
+    CHAT_SESSIONS: 'chat_sessions',
+    CHAT_MESSAGES: 'chat_messages',
+    CHAT_FLAGS: '',
+    ANALYTICS: '',
+    ANALYTICS_EVENTS: '',
+    ADMINS: '',
+    HOTELS: '',
+    VILLAS: '',
+    PARTNERS: 'indastreet_partners',
+    NOTIFICATIONS: '',
+    MASSAGE_TYPES: '',
+    MEMBERSHIP_PRICING: '',
+    CUSTOM_LINKS: '',
+    IMAGE_ASSETS: '',
+    LOGIN_BACKGROUNDS: '',
+    TRANSLATIONS: '',
+    COMMISSION_RECORDS: '',
+    ATTRIBUTES: ''
+};
 
 // ============================================
 // TYPE DEFINITIONS
@@ -213,9 +251,6 @@ export const VALIDATED_COLLECTIONS = {
   get massage_types() { return getValidatedCollectionId('THERAPISTS' as any); },
   get membership_pricing() { return getValidatedCollectionId('THERAPISTS' as any); },
 };
-
-// Export database ID
-export const DATABASE_ID = APPWRITE_DATABASE_ID;
 
 // ============================================
 // DEVELOPMENT HELPER

@@ -20,7 +20,8 @@
  * - Commission overdue
  */
 
-import { databases, ID, APPWRITE_CONFIG } from '../appwrite';
+import { databases, ID } from '../appwrite';
+import { APPWRITE_CONFIG } from '../appwrite.config';
 import { commissionTrackingService } from './commissionTrackingService';
 
 export interface AdminCommissionNotification {

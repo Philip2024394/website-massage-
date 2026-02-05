@@ -36,6 +36,7 @@ export const COLLECTIONS = {
     ATTRIBUTES: '' // ⚠️ DISABLED - Collection doesn't exist
 };
 
+// Initialize client (safe for client-side only apps)
 const client = new Client();
 
 client
@@ -48,7 +49,6 @@ export const storage = new Storage(client);
 export const functions = new Functions(client);
 
 // Export both old and new names for backward compatibility
-// Export both old and new names for backward compatibility
 export { client, ID, Permission, Role, Query };
 export { client as appwriteClient };
 export { databases as appwriteDatabases };
@@ -56,27 +56,11 @@ export { account as appwriteAccount };
 export { storage as appwriteStorage };
 export { functions as appwriteFunctions };
 
-// APPWRITE_CONFIG object for backward compatibility
-export const APPWRITE_CONFIG = {
-    endpoint: 'https://syd.cloud.appwrite.io/v1',
-    projectId: '68f23b11000d25eb3664',
-    databaseId: DATABASE_ID,
-    collections: {
-        therapists: COLLECTIONS.THERAPISTS,
-        places: COLLECTIONS.PLACES,
-        facial_places: COLLECTIONS.FACIAL_PLACES,
-        bookings: COLLECTIONS.BOOKINGS,
-        therapistsCollection: COLLECTIONS.THERAPISTS,
-        usersCollection: COLLECTIONS.USERS,
-        placesCollection: COLLECTIONS.PLACES,
-        commissionRecords: COLLECTIONS.COMMISSION_RECORDS,
-        messages: COLLECTIONS.CHAT_MESSAGES
-    }
-};
-
-// Storage bucket IDs
 // Storage bucket IDs
 export const STORAGE_BUCKETS = {
     PARTNER_IMAGES: 'partner_images_bucket',
     THERAPIST_DOCUMENTS: '697b3ca50023d08ec335' // KTP, certificates, documents
 };
+
+// ⚠️ APPWRITE_CONFIG has been moved to appwrite.config.ts to avoid circular dependencies
+// Import from '../lib/appwrite.config' instead

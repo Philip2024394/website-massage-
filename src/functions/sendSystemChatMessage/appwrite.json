@@ -8,17 +8,15 @@
   "timeout": 30,
   "enabled": true,
   "logging": true,
-  "entrypoint": "index.js",
-  "commands": "npm install --omit=dev",
+  "entrypoint": "src/functions/sendSystemChatMessage/index.js",
+  "commands": "cd src/functions/sendSystemChatMessage && npm install",
   "ignore": [
     "node_modules",
     ".npm",
-    "src",
     "README.md",
     ".git",
     ".gitignore"
   ],
-  "path": "functions/sendSystemChatMessage",
   "variables": {},
   "scopes": [
     "databases.write",

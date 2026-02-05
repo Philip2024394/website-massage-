@@ -1,5 +1,5 @@
 import { account, databases, DATABASE_ID, COLLECTIONS } from '../appwrite';
-import { APPWRITE_CONFIG } from '../appwrite';
+import { APPWRITE_CONFIG } from '../appwrite.config';
 import { Query } from 'appwrite';
 // import { logger } from '../utils/logger';
 const logger = console;

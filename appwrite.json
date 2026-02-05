@@ -1,0 +1,20 @@
+{
+  "projectId": "YOUR_PROJECT_ID",
+  "projectName": "Indastreet Massage",
+  "functions": [
+    {
+      "$id": "sendSystemChatMessage",
+      "name": "Send System Chat Message",
+      "runtime": "node-18.0",
+      "execute": ["any"],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "index.js",
+      "commands": "npm install",
+      "path": "functions/sendSystemChatMessage"
+    }
+  ]
+}

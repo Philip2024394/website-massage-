@@ -2,7 +2,7 @@
 // Tests commission tracking from ALL bookings and scheduled bookings + chat recording verification
 
 import { databases, Query } from '../appwrite';
-import { APPWRITE_CONFIG } from '../appwrite';
+import { APPWRITE_CONFIG } from '../appwrite.config';
 
 export class ComprehensiveAdminDataFlowTest {
     

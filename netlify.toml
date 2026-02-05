@@ -1,5 +1,6 @@
 # Primary Netlify configuration
 [build]
+  base = "/"
   publish = "dist"
   command = "npm install -g pnpm@10.21.0 --force && pnpm install --no-frozen-lockfile && pnpm run build:netlify"
 

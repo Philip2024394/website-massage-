@@ -129,7 +129,6 @@
     "zustand": "^4.4.0"
   },
   "devDependencies": {
-    "@esbuild/linux-arm64": "0.25.11",
     "@esbuild/linux-x64": "0.25.11",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.57.0",

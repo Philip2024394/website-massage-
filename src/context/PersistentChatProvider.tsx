@@ -88,11 +88,6 @@ import {
   BookingTransactionParams 
 } from '../services/bookingTransaction.service';
 
-// Collection IDs from config
-const DATABASE_ID = APPWRITE_CONFIG.databaseId;
-const CHAT_MESSAGES_COLLECTION = APPWRITE_CONFIG.collections.chatMessages;
-const CHAT_SESSIONS_COLLECTION = APPWRITE_CONFIG.collections.chatSessions;
-
 // Re-export lifecycle status for UI components
 export { BookingLifecycleStatus, BookingType, TherapistAvailabilityStatus };
 // Re-export bank card types
