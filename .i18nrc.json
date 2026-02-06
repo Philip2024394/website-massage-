@@ -1,6 +1,6 @@
 {
   "localeStructure": "file",
-  "localesFolder": "./translations",
+  "localesFolder": "./src/translations",
   "include": [
     "lib/**/*.{ts,tsx}",
     "pages/**/*.{ts,tsx}",

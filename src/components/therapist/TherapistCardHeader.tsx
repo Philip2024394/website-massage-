@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Therapist } from '../../types';
 import { isDiscountActive } from '../../utils/therapistCardHelpers';
+import { Share2 } from 'lucide-react';
 import { getRandomTherapistImage } from '../../utils/therapistImageUtils';
 import { devLog } from '../../utils/devMode';
 

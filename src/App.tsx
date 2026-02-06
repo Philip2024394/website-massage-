@@ -718,6 +718,24 @@ const App = () => {
     // Detect direct path navigation for accept-booking links and membership page
     useEffect(() => {
         try {
+            // � CRITICAL FIX: If user explicitly navigates to root (/), clear any stale hash FIRST
+            // This prevents unexpected redirects to previously visited therapist profiles
+            const currentPath = window.location.pathname || '';
+            const currentHash = window.location.hash || '';
+            
+            if (currentPath === '/' && currentHash && !window.location.search) {
+                // Check if hash contains a profile URL (stale from previous navigation)
+                if (currentHash.includes('/profile/therapist/') || currentHash.includes('/therapist-profile/')) {
+                    console.log('🏠 [ROOT NAVIGATION] User navigated to root, clearing stale profile hash:', currentHash);
+                    window.history.replaceState(null, '', '/');
+                    // Set to landing page (will redirect to home based on app logic)
+                    if (state.page !== 'landing' && state.page !== 'home') {
+                        state.setPage('landing');
+                    }
+                    return; // Stop processing to allow clean start
+                }
+            }
+            
             // 🔥 CRITICAL FIX: Parse hash for hash URLs (/#/path)
             // For /#/therapist-profile/123, pathname = "/" and hash = "#/therapist-profile/123"
             let path = window.location.pathname || '';

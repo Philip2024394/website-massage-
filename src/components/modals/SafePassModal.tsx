@@ -151,14 +151,12 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                 {/* Content - White background, orange accents */}
                 <div className="p-6 space-y-6 bg-white">
                     {/* SafePass Card Image */}
-                    <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
-                        <img
-                            src="https://ik.imagekit.io/7grri5v7d/hotel%205.png"
-                            alt="SafePass Card"
-                            className="w-full max-w-md mx-auto rounded-lg shadow-lg"
-                            loading="lazy"
-                        />
-                    </div>
+                    <img
+                        src="https://ik.imagekit.io/7grri5v7d/scaffolding_indastreetsssssss-removebg-preview.png?updatedAt=1768624889133"
+                        alt="SafePass Card"
+                        className="w-full max-w-md mx-auto"
+                        loading="lazy"
+                    />
 
                     {/* Verified Services - Custom Images */}
                     <div>

@@ -324,7 +324,6 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                         </div>
                     </div>
                 )}            </div>
-        </div>
         
         {/* Therapist Help Modal */}
         <TherapistHelpModal 
@@ -334,6 +333,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
             content={dashboardHelp[currentHelpKey as keyof typeof dashboardHelp]}
             language="id"
         />
+        </div>
     );
 };
 

@@ -26,6 +26,18 @@ export const useAppState = () => {
       // Handle shared profile deep links
       const pathname = window.location.pathname;
       
+      // 🚨 CRITICAL FIX: If pathname is root (/) and hash contains a stale profile URL, clear it
+      // This prevents unexpected redirects when user explicitly navigates to home
+      const hash = window.location.hash || '';
+      if (pathname === '/' && (hash.includes('/profile/therapist/') || hash.includes('/profile/place/'))) {
+        console.log('🏠 [INIT] Root path with stale profile hash detected - clearing:', hash);
+        window.history.replaceState(null, '', '/');
+        // Clear any session storage that might cause redirects
+        sessionStorage.removeItem('direct_therapist_id');
+        sessionStorage.removeItem('pending_deeplink');
+        return 'landing'; // Return landing, which will redirect to home
+      }
+      
       // Handle mobile terms and conditions page FIRST (before any session logic)
       if (pathname === '/mobile-terms-and-conditions') {
         console.log('📄 Mobile terms page detected:', pathname);
@@ -98,7 +110,7 @@ export const useAppState = () => {
       }
       
       // � CRITICAL: Check for admin routes in hash URL (/#/admin)
-      const hash = window.location.hash || '';
+      // Reuse hash variable declared earlier
       if (hash.startsWith('#/')) {
         const hashPath = hash.substring(1); // Remove # to get /admin
         console.log('🔗 [INIT] Hash URL detected:', hashPath);

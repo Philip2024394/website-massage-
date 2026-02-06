@@ -106,7 +106,6 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
         <p className="text-gray-600 text-xs mt-2">
           {getStatusMessage(currentBooking.status)}
         </p>
-        </p>
         
         {/* Cancel Button - Only show before therapist accepts */}
         {(currentBooking.status === 'pending' || currentBooking.status === 'waiting_others') && onCancelBooking && (

@@ -58,30 +58,26 @@ const PlaceServices: React.FC<PlaceServicesProps> = ({
                 <p className="text-xs text-gray-600 text-left">
                     <span className="font-bold">Menerima:</span> {(place as any).therapistGender && (place as any).therapistGender !== 'Unisex' ? `${(place as any).therapistGender} Only` : 'Pria / Wanita'}
                 </p>
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setShowPriceListModal(true);
-                    }}
-                    className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle"
-                >
-                    <style>{`
-                        @keyframes flash-subtle {
-                            0%, 100% { opacity: 1; }
-                            50% { opacity: 0.6; }
-                        }
-                        .animate-flash-subtle {
-                            animation: flash-subtle 2s ease-in-out infinite;
-                        }
-                    `}</style>
-                    <img 
-                        src="https://ik.imagekit.io/7grri5v7d/massage%20table.png" 
-                        alt="Menu"
-                        className="w-12 h-12 object-contain"
-                    />
-                    <span className="font-bold text-black text-sm">{t?.home?.priceMenu || 'Menu Harga'}</span>
-                </button>
+                {/* SafePass Button - Only shows if verified by admin */}
+                {(place as any).hotelVillaSafePassStatus === 'active' && (
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('🛡️ Opening SafePass verification modal for place:', place.name);
+                            // TODO: Add SafePass modal functionality for places
+                        }}
+                        className="hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer relative z-10"
+                    >
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
+                            alt="SafePass Verified"
+                            className="w-12 h-12 object-contain"
+                            loading="lazy"
+                            decoding="async"
+                        />
+                    </button>
+                )}
             </div>
 
             {/* Massage Place Bio - Natural flow with proper margin */}

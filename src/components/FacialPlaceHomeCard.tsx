@@ -7,6 +7,7 @@ import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
+import { Share2 } from 'lucide-react';
 
 interface FacialPlaceHomeCardProps {
     place: Place;

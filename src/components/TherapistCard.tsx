@@ -1110,23 +1110,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
                 </p>
                 
-                {/* Conditional Button: SafePass (if verified) OR Menu Harga (default) */}
+                {/* SafePass Button - Only if verified by admin */}
                 {(() => {
-                    // TEMPORARY TEST: Force show SafePass for Budi
-                    const isBudi = therapist.name.toLowerCase().includes('budi');
-                    const showSafePass = therapist.hasSafePassVerification || isBudi;
-                    
-                    console.log('🔍 SafePass Debug:', {
-                        therapistName: therapist.name,
-                        hasSafePassVerification: therapist.hasSafePassVerification,
-                        isBudi: isBudi,
-                        showSafePass: showSafePass,
-                        therapistId: therapist.id || therapist.$id,
-                        type: typeof therapist.hasSafePassVerification
-                    });
+                    const showSafePass = (therapist as any).hotelVillaSafePassStatus === 'active' || therapist.hasSafePassVerification;
                     
                     return showSafePass ? (
-                        // SafePass Button - Opens verification modal
                         <button
                             type="button"
                             onClick={(e) => {
@@ -1138,55 +1126,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             className="hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer relative z-10"
                         >
                             <img 
-                                src="https://ik.imagekit.io/7grri5v7d/safe%20pass%20hotel.png" 
+                                src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
                                 alt="SafePass Verified"
-                                className="w-28 h-auto object-contain"
-                                loading="lazy"
-                                decoding="async"
-                            />
-                        </button>
-                    ) : (
-                        // Menu Harga Button - Opens price list modal
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                console.log('🔴 BUTTON CLICKED - Starting...');
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('🍽️ Opening price list modal for:', therapist.name);
-                                console.log('🔍 Therapist ID:', therapist.$id || therapist.id);
-                                console.log('🔍 Current URL:', window.location.href);
-                                console.log('🔍 Session storage has_entered_app:', sessionStorage.getItem('has_entered_app'));
-                                try {
-                                    setShowPriceListModal(true);
-                                    console.log('✅ Modal state set to true');
-                                } catch (error) {
-                                    console.error('❌ Error setting modal state:', error);
-                                }
-                            }}
-                            className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle cursor-pointer relative z-10"
-                        >
-                            <style>{`
-                                @keyframes flash-subtle {
-                                    0%, 100% { opacity: 1; }
-                                    50% { opacity: 0.6; }
-                                }
-                                .animate-flash-subtle {
-                                    animation: flash-subtle 2s ease-in-out infinite;
-                                }
-                            `}</style>
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/massage%20oil%20image.png" 
-                                alt="Menu"
                                 className="w-12 h-12 object-contain"
                                 loading="lazy"
                                 decoding="async"
-                                width="48"
-                                height="48"
                             />
-                            <span className="font-bold text-black text-sm">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
                         </button>
-                    );
+                    ) : null;
                 })()}
             </div>
 

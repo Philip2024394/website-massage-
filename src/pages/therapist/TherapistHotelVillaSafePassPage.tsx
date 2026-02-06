@@ -725,7 +725,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
 
         {/* Safe Pass Card Preview - Minimal Design */}
         {currentStatus === 'active' && (
-          <div className="bg-white rounded-2xl border border-orange-100 p-6">
+          <div className="p-0">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center">
                 <Shield className="w-6 h-6 text-white" />
@@ -741,7 +741,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
               <img 
                 src="https://ik.imagekit.io/7grri5v7d/scaffolding_indastreetsssssss-removebg-preview.png?updatedAt=1768624889133" 
                 alt="Professional Safe Pass Card" 
-                className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl"
+                className="w-full h-auto object-contain"
               />
             </div>
             

@@ -4,6 +4,7 @@ import SocialSharePopup from './SocialSharePopup';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { useLanguageContext } from '../context/LanguageContext';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
+import { Share2 } from 'lucide-react';
 
 interface PlaceCardProps {
     place: Place;

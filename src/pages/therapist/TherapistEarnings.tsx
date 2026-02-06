@@ -826,7 +826,6 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       </div>
       </main>
     </div>
-    </TherapistLayout>
     
     {/* Therapist Help Modal */}
     <TherapistHelpModal 
@@ -836,6 +835,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       content={dashboardHelp[currentHelpKey as keyof typeof dashboardHelp]}
       language="id"
     />
+    </TherapistLayout>
   );
 };
 

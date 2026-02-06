@@ -30,6 +30,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
         rating: '',
         availability: '',
         experience: '',
+        safePass: false,
         specialties: [] as string[]
     });
 
@@ -297,6 +298,33 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                                 <option value="5">{currentLanguage === 'id' ? '5+ Tahun' : '5+ Years'}</option>
                                 <option value="10">{currentLanguage === 'id' ? '10+ Tahun' : '10+ Years'}</option>
                             </select>
+                        </div>
+
+                        {/* SafePass Filter */}
+                        <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={filters.safePass}
+                                    onChange={(e) => setFilters({ ...filters, safePass: e.target.checked })}
+                                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 mr-3"
+                                />
+                                <div className="flex items-center gap-2">
+                                    <img 
+                                        src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
+                                        alt="SafePass" 
+                                        className="w-8 h-8 object-contain"
+                                    />
+                                    <div>
+                                        <span className="text-sm font-semibold text-gray-900">
+                                            {currentLanguage === 'id' ? 'SafePass Terverifikasi' : 'SafePass Verified'}
+                                        </span>
+                                        <p className="text-xs text-gray-600 mt-0.5">
+                                            {currentLanguage === 'id' ? 'Terapis dengan sertifikasi hotel, villa & tempat umum' : 'Therapists certified for hotels, villas & public places'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </label>
                         </div>
 
                         {/* Action Buttons */}

@@ -14,7 +14,7 @@
  * DO NOT MODIFY unless you understand React reconciliation.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { bookingService } from '../lib/bookingService';
@@ -27,6 +27,9 @@ import TherapistJoinPopup from './TherapistJoinPopup';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
+import { Share2 } from 'lucide-react';
+import SafePassModal from './modals/SafePassModal';
+import HomePageBookingSlider, { HomePageBookingType } from './HomePageBookingSlider';
 
 interface TherapistHomeCardProps {
     therapist: Therapist;
@@ -72,12 +75,34 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
     const [showJoinPopup, setShowJoinPopup] = useState(false);
     const [showPriceModal, setShowPriceModal] = useState(false);
+    const [showSafePassModal, setShowSafePassModal] = useState(false);
     const [menuData, setMenuData] = useState<any[]>([]);
     const [selectedServiceIndex, setSelectedServiceIndex] = useState<number | null>(null);
     const [selectedDuration, setSelectedDuration] = useState<'60' | '90' | '120' | null>(null);
     
     // Chat integration hook for menu harga bookings
     const { openBookingWithService } = usePersistentChatIntegration(therapist);
+
+    // Handle booking type selection from slider
+    const handleBookingTypeSelect = useCallback((type: HomePageBookingType, selectedTherapist: Therapist) => {
+        console.log('🏠 HomePageBookingSlider selection:', {
+            type: type.id,
+            therapist: selectedTherapist.name,
+            requiresVerification: type.requiresVerification
+        });
+
+        if (type.id === 'book-now') {
+            // Direct to therapist profile for immediate booking
+            onClick(selectedTherapist);
+        } else if (type.id === 'scheduled') {
+            // For scheduled bookings, also go to therapist profile 
+            // The profile page will handle verification requirements
+            onClick(selectedTherapist);
+        }
+        
+        // Track analytics
+        onIncrementAnalytics(`${type.id}_bookings` as keyof Analytics);
+    }, [onClick, onIncrementAnalytics]);
 
     // Handle share functionality
     const handleShareClick = (e: React.MouseEvent) => {
@@ -583,14 +608,12 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 {!readOnly && (
                     <button
                         onClick={handleShareClick}
-                        className="absolute bottom-3 right-3 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
+                        className="absolute bottom-3 right-3 w-11 h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
                         title="Share this therapist"
-                        aria-label="Share this therapist"
-                        style={{ position: 'absolute', bottom: '12px', right: '12px' }}
+                        aria-label="Share profile"
+                        style={{ position: 'absolute', bottom: '12px', right: '12px', minWidth: '44px', minHeight: '44px' }}
                     >
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                        </svg>
+                        <Share2 className="w-5 h-5 text-white" strokeWidth={2.5} />
                     </button>
                 )}
             </div>
@@ -734,120 +757,29 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <p className="text-xs text-gray-600 flex-shrink-0">
                         <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
                     </p>
+                    {/* SafePass Button - Only if verified by admin */}
                     {(() => {
-                        const languagesValue = (therapist as any).languages;
-                        const languages = languagesValue 
-                            ? (typeof languagesValue === 'string' 
-                                ? (languagesValue as string).split(',').map((l: string) => l.trim()) 
-                                : languagesValue)
-                            : [];
+                        const showSafePass = (therapist as any).hotelVillaSafePassStatus === 'active' || therapist.hasSafePassVerification;
                         
-                        // Languages parsed successfully
-                        
-                        if (!languages || !Array.isArray(languages) || languages.length === 0) {
-                            // Fallback: show Indonesian and English flags if no languages specified
-                            return (
-                                <div className="flex items-center gap-1.5">
-                                    <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                        <span 
-                                            className="text-sm" 
-                                            style={{
-                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
-                                                fontSize: '14px',
-                                                lineHeight: '1'
-                                            }}
-                                        >
-                                            🇮🇩
-                                        </span>
-                                        <span className="text-xs font-semibold">ID</span>
-                                    </span>
-                                    <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                        <span 
-                                            className="text-sm" 
-                                            style={{
-                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
-                                                fontSize: '14px',
-                                                lineHeight: '1'
-                                            }}
-                                        >
-                                            🇬🇧
-                                        </span>
-                                        <span className="text-xs font-semibold">EN</span>
-                                    </span>
-                                </div>
-                            );
-                        }
-                        
-                        // Language mapping with flags - using CSS flag icons for better mobile compatibility
-                        const langMap: Record<string, {flag: string, name: string, flagClass?: string}> = {
-                            'english': {flag: '🇬🇧', name: 'EN', flagClass: 'fi fi-gb'},
-                            'indonesian': {flag: '🇮🇩', name: 'ID', flagClass: 'fi fi-id'},
-                            'mandarin': {flag: '🇨🇳', name: 'ZH', flagClass: 'fi fi-cn'},
-                            'japanese': {flag: '🇯🇵', name: 'JP', flagClass: 'fi fi-jp'},
-                            'korean': {flag: '🇰🇷', name: 'KR', flagClass: 'fi fi-kr'},
-                            'thai': {flag: '🇹🇭', name: 'TH', flagClass: 'fi fi-th'},
-                            'vietnamese': {flag: '🇻🇳', name: 'VI', flagClass: 'fi fi-vn'},
-                            'french': {flag: '🇫🇷', name: 'FR', flagClass: 'fi fi-fr'},
-                            'german': {flag: '🇩🇪', name: 'DE', flagClass: 'fi fi-de'},
-                            'spanish': {flag: '🇪🇸', name: 'ES', flagClass: 'fi fi-es'},
-                            'portuguese': {flag: '🇵🇹', name: 'PT', flagClass: 'fi fi-pt'},
-                            'italian': {flag: '🇮🇹', name: 'IT', flagClass: 'fi fi-it'},
-                            'russian': {flag: '🇷🇺', name: 'RU', flagClass: 'fi fi-ru'},
-                            'arabic': {flag: '🇸🇦', name: 'AR', flagClass: 'fi fi-sa'},
-                            'hindi': {flag: '🇮🇳', name: 'HI', flagClass: 'fi fi-in'},
-                            // Language codes for backward compatibility
-                            'en': {flag: '🇬🇧', name: 'EN', flagClass: 'fi fi-gb'},
-                            'id': {flag: '🇮🇩', name: 'ID', flagClass: 'fi fi-id'},
-                            'zh': {flag: '🇨🇳', name: 'ZH', flagClass: 'fi fi-cn'},
-                            'ja': {flag: '🇯🇵', name: 'JP', flagClass: 'fi fi-jp'},
-                            'ko': {flag: '🇰🇷', name: 'KR', flagClass: 'fi fi-kr'},
-                            'th': {flag: '🇹🇭', name: 'TH', flagClass: 'fi fi-th'},
-                            'vi': {flag: '🇻🇳', name: 'VI', flagClass: 'fi fi-vn'},
-                            'fr': {flag: '🇫🇷', name: 'FR', flagClass: 'fi fi-fr'},
-                            'de': {flag: '🇩🇪', name: 'DE', flagClass: 'fi fi-de'},
-                            'es': {flag: '🇪🇸', name: 'ES', flagClass: 'fi fi-es'},
-                            'pt': {flag: '🇵🇹', name: 'PT', flagClass: 'fi fi-pt'},
-                            'it': {flag: '🇮🇹', name: 'IT', flagClass: 'fi fi-it'},
-                            'ru': {flag: '🇷🇺', name: 'RU', flagClass: 'fi fi-ru'},
-                            'ar': {flag: '🇸🇦', name: 'AR', flagClass: 'fi fi-sa'},
-                            'hi': {flag: '🇮🇳', name: 'HI', flagClass: 'fi fi-in'}
-                        };
-                        
-                        return (
-                            <div className="flex items-center gap-1">
-                                {languages.slice(0, 2).map((lang, index, array) => {
-                                    const langKey = lang.toLowerCase();
-                                    // Default to Indonesian flag if language not recognized
-                                    const langInfo = langMap[langKey] || {flag: '🇮🇩', name: 'ID'};
-                                    
-                                    // Skip duplicate language codes
-                                    const isDuplicate = array.slice(0, index).some(prevLang => {
-                                        const prevKey = prevLang.toLowerCase();
-                                        const prevInfo = langMap[prevKey] || {flag: '🇮🇩', name: 'ID'};
-                                        return prevInfo.name === langInfo.name;
-                                    });
-                                    
-                                    if (isDuplicate) return null;
-                                    
-                                    return (
-                                        <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                            {/* Use emoji flag with proper font family to ensure display */}
-                                            <span 
-                                                className="text-sm" 
-                                                style={{
-                                                    fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
-                                                    fontSize: '14px',
-                                                    lineHeight: '1'
-                                                }}
-                                            >
-                                                {langInfo.flag}
-                                            </span>
-                                            <span className="text-xs font-semibold">{langInfo.name}</span>
-                                        </span>
-                                    );
-                                })}
-                            </div>
-                        );
+                        return showSafePass ? (
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    console.log('🛡️ Opening SafePass verification modal for:', therapist.name);
+                                    setShowSafePassModal(true);
+                                }}
+                                className="hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer relative z-10"
+                            >
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
+                                    alt="SafePass Verified"
+                                    className="w-12 h-12 object-contain"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                            </button>
+                        ) : null;
                     })()}
                 </div>
             </div>
@@ -861,111 +793,19 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </div>
             )}
 
-            {/* Content */}
+            {/* View Profile Button */}
             <div className="px-4 pb-4">
-                {/* Service Name Header */}
-                <div className="text-center mb-2">
-                    <h3 className="text-gray-800 font-bold text-sm tracking-wide">
-                        {serviceName}
-                    </h3>
-                </div>
-
-                {/* Pricing */}
-                <div className="grid grid-cols-3 gap-2 mb-7">
-                    {pricing["60"] > 0 && (
-                        <div className={`text-center p-2 rounded-lg min-w-0 transition-all ${
-                            isDiscountActive(therapist) 
-                                ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 min-h-[85px]' 
-                                : 'bg-gray-200 min-h-[70px]'
-                        }`}>
-                            <div className="text-xs text-gray-600 mb-1 font-semibold">60 min</div>
-                            {isDiscountActive(therapist) ? (
-                                <>
-                                    <div className="text-xs font-bold text-gray-500 line-through">Rp {formatPrice(pricing["60"])}</div>
-                                    <div className="text-sm font-bold text-orange-600 animate-pulse">
-                                        Rp {formatPrice(Math.round(pricing["60"] * (1 - (therapist.discountPercentage || 0) / 100)))}
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["60"])}</div>
-                            )}
-                        </div>
-                    )}
-                    {pricing["90"] > 0 && (
-                        <div className={`text-center p-2 rounded-lg min-w-0 transition-all ${
-                            isDiscountActive(therapist) 
-                                ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 min-h-[85px]' 
-                                : 'bg-gray-200 min-h-[70px]'
-                        }`}>
-                            <div className="text-xs text-gray-600 mb-1 font-semibold">90 min</div>
-                            {isDiscountActive(therapist) ? (
-                                <>
-                                    <div className="text-xs font-bold text-gray-500 line-through">Rp {formatPrice(pricing["90"])}</div>
-                                    <div className="text-sm font-bold text-orange-600 animate-pulse">
-                                        Rp {formatPrice(Math.round(pricing["90"] * (1 - (therapist.discountPercentage || 0) / 100)))}
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["90"])}</div>
-                            )}
-                        </div>
-                    )}
-                    {pricing["120"] > 0 && (
-                        <div className={`text-center p-2 rounded-lg min-w-0 transition-all ${
-                            isDiscountActive(therapist) 
-                                ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 min-h-[85px]' 
-                                : 'bg-gray-200 min-h-[70px]'
-                        }`}>
-                            <div className="text-xs text-gray-600 mb-1 font-semibold">120 min</div>
-                            {isDiscountActive(therapist) ? (
-                                <>
-                                    <div className="text-xs font-bold text-gray-500 line-through">Rp {formatPrice(pricing["120"])}</div>
-                                    <div className="text-sm font-bold text-orange-600 animate-pulse">
-                                        Rp {formatPrice(Math.round(pricing["120"] * (1 - (therapist.discountPercentage || 0) / 100)))}
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["120"])}</div>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {/* Two Button Row - View Profile | Price List/Order */}
-                <div className="flex gap-2">
-                    {/* View Profile Button */}
-                    <button 
-                        onClick={() => onClick(therapist)}
-                        disabled={readOnly}
-                        className={`flex-1 py-2.5 font-semibold rounded-lg transition-all ${
-                            readOnly 
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
-                        }`}
-                    >
-                        {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
-                    </button>
-
-                    {/* Price List / Order Button */}
-                    <button 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (!readOnly) {
-                                // Open price list modal/slider
-                                console.log('🏠 Price List clicked for', therapist.name);
-                                setShowPriceModal(true);
-                            }
-                        }}
-                        disabled={readOnly}
-                        className={`flex-1 py-2.5 font-semibold rounded-lg transition-all ${
-                            readOnly 
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
-                        }`}
-                    >
-                        {t?.home?.priceList || 'Menu Harga'}
-                    </button>
-                </div>
+                <button 
+                    onClick={() => onClick(therapist)}
+                    disabled={readOnly}
+                    className={`w-full py-3 font-semibold rounded-lg transition-all ${
+                        readOnly 
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                            : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg'
+                    }`}
+                >
+                    {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
+                </button>
             </div>
             </div>
 
@@ -1005,6 +845,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 openBookingWithService={openBookingWithService}
                 chatLang={t?.locale || 'id'}
                 showBookingButtons={false}
+            />
+
+            {/* SafePass Modal */}
+            <SafePassModal
+                isOpen={showSafePassModal}
+                onClose={() => setShowSafePassModal(false)}
+                therapist={therapist}
             />
         </div>
     );

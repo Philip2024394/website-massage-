@@ -1,6 +1,8 @@
+import React from 'react';
 import type { Therapist } from '../types';
 import { getRandomTherapistImage } from '../../utils/therapistImageUtils';
 import { getDisplayRating, formatRating, getDisplayReviewCount } from '../../utils/ratingUtils';
+import { Share2 } from 'lucide-react';
 
 interface TherapistHeaderProps {
   therapist: Therapist;
