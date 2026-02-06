@@ -162,6 +162,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [pwaEnforcementActive, setPwaEnforcementActive] = useState(false);
   const [forceReinstall, setForceReinstall] = useState(false);
   const [showPWAInstallSection, setShowPWAInstallSection] = useState(true);
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   // Load initial data once on mount
   useEffect(() => {
@@ -755,39 +757,66 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         return;
       }
       
-      // Try native PWA install first
+      // iOS: Show custom instructions modal (iOS doesn't support beforeinstallprompt)
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      if (isIOSDevice) {
+        console.log('📱 iOS detected - showing install instructions modal');
+        setShowIOSInstructions(true);
+        return;
+      }
+      
+      // Android/Desktop Chrome: Try native PWA install prompt
       if (deferredPrompt) {
+        console.log('📱 Native PWA prompt available - triggering...');
         showToast('📱 Installing app...', 'info', { duration: 2000 });
+        
         await deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
         
         if (choiceResult.outcome === 'accepted') {
           setIsAppInstalled(true);
           localStorage.setItem('pwa-installed', 'true');
-          showToast('✅ App installed successfully!', 'success', { duration: 4000 });
-          console.log('✅ App downloaded successfully!');
+          localStorage.setItem('pwa-install-completed', 'true');
+          setDeferredPrompt(null);
+          showToast('✅ App installed successfully! Enable notifications for booking alerts.', 'success', { duration: 5000 });
+          console.log('✅ App installed successfully!');
+          
+          // Request notification permission after successful install
+          setTimeout(async () => {
+            if ('Notification' in window && Notification.permission === 'default') {
+              const permission = await Notification.requestPermission();
+              if (permission === 'granted') {
+                console.log('✅ Notification permission granted');
+                new Notification('IndaStreet Therapist', {
+                  body: '🎉 App installed! You\'ll now receive instant booking notifications.',
+                  icon: '/pwa-icon-192.png',
+                  tag: 'install-success'
+                });
+              }
+            }
+          }, 1000);
           return;
         } else {
-          showToast('❌ App installation cancelled', 'error', { duration: 3000 });
-          console.log('❌ User cancelled installation');
+          console.log('❌ User declined installation');
+          showToast('Installation cancelled. You can install anytime!', 'info', { duration: 3000 });
           return;
         }
       }
       
-      // Fallback: Check if it's iOS and show Add to Home Screen instruction
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (isIOS) {
-        showToast('📱 To download the app:\n\n1. Tap the Share button (⬆️)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm', 'info', { duration: 8000 });
-        // On iOS, we can't detect when they actually install, so we'll keep the button available
-        console.log('📱 iOS install instructions shown');
-      } else {
-        // For browsers that don't support PWA install prompt
-        showToast('📱 PWA installation not supported on this browser.\n\nFor best experience, use Chrome or Safari.', 'warning', { duration: 6000 });
-        console.log('⚠️ Browser does not support PWA installation');
-      }
+      // Fallback: No install prompt available
+      console.log('⚠️ beforeinstallprompt not available');
+      showToast(
+        '📱 To install:\n\n' +
+        '• Chrome: Menu (⋮) → "Install app"\n' +
+        '• Edge: Menu (⋯) → "Apps" → "Install this site as an app"\n' +
+        '• Firefox: Not supported - use Chrome or Edge\n\n' +
+        'Or visit on mobile for better experience.',
+        'info',
+        { duration: 10000 }
+      );
     } catch (error) {
-      console.error('Download error:', error);
-      showToast('❌ Failed to install app. Please try again or use a supported browser.', 'error', { duration: 4000 });
+      console.error('❌ Download error:', error);
+      showToast('❌ Failed to install app. Please try again or use Chrome/Safari.', 'error', { duration: 4000 });
     }
   };
 
@@ -1362,6 +1391,12 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       </div>
     </div>
     </TherapistLayout>
+    
+    {/* iOS Install Instructions Modal */}
+    <IOSInstallInstructions 
+      isOpen={showIOSInstructions}
+      onClose={() => setShowIOSInstructions(false)}
+    />
     
     {/* Therapist Help Modal */}
     <TherapistHelpModal 

@@ -49,7 +49,27 @@ export interface TherapistGPSAlert {
 class BookingFlowGPSIntegration {
 
   /**
-   * 🚀 ENHANCE BOOKING DATA WITH GPS INFORMATION
+   * � MAP VERIFICATION STATUS TO PROXIMITY STATUS
+   * Converts detailed verification status to simpler proximity status for booking flow
+   */
+  private mapVerificationStatusToProximity(
+    status: 'verified' | 'needs_check' | 'mismatch' | 'no_therapist_gps'
+  ): 'verified' | 'warning' | 'unknown' {
+    switch (status) {
+      case 'verified':
+        return 'verified';
+      case 'needs_check':
+      case 'mismatch':
+        return 'warning';
+      case 'no_therapist_gps':
+        return 'unknown';
+      default:
+        return 'unknown';
+    }
+  }
+
+  /**
+   * �🚀 ENHANCE BOOKING DATA WITH GPS INFORMATION
    * Automatically includes customer GPS when available
    */
   async enhanceBookingWithGPS(bookingData: any, therapistData?: any): Promise<GPSEnhancedBookingData> {
@@ -78,7 +98,7 @@ class BookingFlowGPSIntegration {
           
           if (comparison) {
             gpsBookingData.locationVerification = comparison;
-            gpsBookingData.proximityStatus = comparison.verificationStatus;
+            gpsBookingData.proximityStatus = this.mapVerificationStatusToProximity(comparison.verificationStatus);
             gpsBookingData.estimatedDistance = comparison.distance;
             
             console.log('📏 [BOOKING GPS] Distance verification:', {

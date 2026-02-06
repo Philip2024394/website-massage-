@@ -513,14 +513,14 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
 /* Enhanced mobile-specific adjustments for therapist dashboard */
 @media (max-width: 768px) {
   .therapist-page-container {
-    /* Increase bottom padding on mobile for better footer button visibility */
-    padding-bottom: max(env(safe-area-inset-bottom, 30px), 100px) !important;
+    /* Optimized bottom padding - reduced from 100px to 40px */
+    padding-bottom: max(env(safe-area-inset-bottom, 30px), 40px) !important;
   }
   
   .therapist-layout-content {
-    /* Enhanced margin for buttons in footer area */
-    margin-bottom: max(env(safe-area-inset-bottom, 60px), 120px) !important;
-    padding-bottom: max(env(safe-area-inset-bottom, 40px), 80px) !important;
+    /* Optimized margin - reduced from 120px to 60px */
+    margin-bottom: max(env(safe-area-inset-bottom, 40px), 60px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 20px), 40px) !important;
   }
   
   .therapist-content-wrapper {
@@ -546,14 +546,14 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
   
   /* Specific fixes for therapist dashboard pages */
   .therapist-page-container .min-h-screen {
-    padding-bottom: max(env(safe-area-inset-bottom, 100px), 160px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 40px), 60px) !important;
   }
   
-  /* PWA section safe area enhancement */
+  /* PWA section safe area enhancement - reduced from 80px/48px */
   div[class*="pwa"],
   div:has(button[class*="Download"]) {
-    margin-bottom: max(env(safe-area-inset-bottom, 40px), 80px) !important;
-    padding-bottom: max(env(safe-area-inset-bottom, 24px), 48px) !important;
+    margin-bottom: max(env(safe-area-inset-bottom, 20px), 30px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 12px), 20px) !important;
   }
 }
 
@@ -1133,4 +1133,29 @@ body {
 /* Ensure layout wrappers don't block scroll */
 .min-h-screen {
   overflow-y: auto !important;
+}
+
+/* ============================================================================
+   📱 iOS INSTALL MODAL ANIMATION
+   ============================================================================ */
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up {
+    animation: none;
+  }
 }
