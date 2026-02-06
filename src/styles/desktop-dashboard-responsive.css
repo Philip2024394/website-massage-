@@ -1,0 +1,335 @@
+/**
+ * ============================================================================
+ * 🖥️ DESKTOP DASHBOARD RESPONSIVE FIX - FACEBOOK/INSTAGRAM GOLD STANDARD
+ * ============================================================================
+ * 
+ * PROBLEM SOLVED:
+ * - Dashboard stuck at mobile width (390px-480px) on desktop
+ * - Content pushed to one side with empty space
+ * - Hero sections restricting page width
+ * 
+ * SOLUTION:
+ * - Mobile: 100% width with safe margins (up to 480px natural)
+ * - Desktop: Expands to full app width (1200px max, centered)
+ * - Hero sections: Full width with inner content containers
+ * 
+ * STANDARDS:
+ * - ✅ Facebook Messenger / Instagram DM style
+ * - ✅ WhatsApp Web style
+ * - ✅ Centered app layout on wide screens
+ * - ✅ No horizontal clipping
+ * - ✅ Smooth breakpoint transitions
+ * 
+ * ============================================================================
+ */
+
+/* ============================================================================
+ * 1. APP SHELL - RESPONSIVE EXPANSION
+ * ============================================================================ */
+
+/* Base: Mobile-first (already works, no changes) */
+.therapist-page-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.therapist-layout-content {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+/* Desktop: Expand to full app width */
+@media (min-width: 768px) {
+  .therapist-page-container {
+    width: 100%;
+    max-width: 1200px; /* Desktop app width like Facebook/Instagram */
+    margin: 0 auto; /* Center the app */
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .therapist-layout-content {
+    padding: 2rem;
+    max-width: none; /* ❌ Remove mobile constraint */
+  }
+}
+
+/* Wide screens: Expand further for comfortable layout */
+@media (min-width: 1400px) {
+  .therapist-page-container {
+    max-width: 1400px; /* Max app width on ultra-wide screens */
+  }
+}
+
+/* ============================================================================
+ * 2. HERO SECTIONS - FULL WIDTH WITH INNER CONTAINERS
+ * ============================================================================ */
+
+/* Hero sections should span full width but constrain inner content */
+.hero,
+.hero-section,
+[class*="hero"],
+.banner-section {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Inner content of hero sections should be contained */
+.hero-inner,
+.hero-content,
+.section-inner,
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .hero-inner,
+  .hero-content,
+  .section-inner,
+  .container {
+    max-width: 1200px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* ============================================================================
+ * 3. REMOVE MOBILE CONSTRAINTS FROM DESKTOP
+ * ============================================================================ */
+
+@media (min-width: 768px) {
+  /* ❌ Remove mobile max-width constraints */
+  .max-w-sm,
+  .max-w-md,
+  .max-w-lg,
+  .mx-auto {
+    max-width: none !important;
+  }
+  
+  /* ❌ Remove position: fixed width constraints */
+  [style*="position: fixed"][style*="width"]:not(.modal):not(.chat) {
+    width: auto !important;
+    left: auto !important;
+    right: auto !important;
+  }
+  
+  /* ❌ Ensure no horizontal clipping */
+  .therapist-page-container *:not(.modal):not(.chat):not(.sidebar) {
+    max-width: 100%;
+    overflow-x: visible;
+  }
+}
+
+/* ============================================================================
+ * 4. DASHBOARD-SPECIFIC RESPONSIVE LAYOUTS
+ * ============================================================================ */
+
+/* Therapist Dashboard Page */
+.therapist-dashboard-page,
+[class*="dashboard-page"] {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .therapist-dashboard-page,
+  [class*="dashboard-page"] {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+/* Dashboard Cards - Responsive Grid */
+.dashboard-cards,
+.stats-grid,
+.metrics-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr; /* Mobile: Single column */
+}
+
+@media (min-width: 768px) {
+  .dashboard-cards,
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr); /* Tablet: 2 columns */
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(3, 1fr); /* Desktop: 3 columns */
+    gap: 2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr); /* Desktop: 4 columns for stats */
+  }
+}
+
+/* ============================================================================
+ * 5. ADMIN DASHBOARD RESPONSIVE
+ * ============================================================================ */
+
+/* Admin Dashboard Pages */
+.admin-dashboard,
+[class*="admin-page"] {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .admin-dashboard,
+  [class*="admin-page"] {
+    max-width: 1400px; /* Admin needs more space */
+    margin: 0 auto;
+  }
+}
+
+/* Admin tables - horizontal scroll on mobile, full width on desktop */
+.admin-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .admin-table-container {
+    overflow-x: visible;
+  }
+  
+  .admin-table {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+/* ============================================================================
+ * 6. CONTENT CENTERING - FACEBOOK/INSTAGRAM STYLE
+ * ============================================================================ */
+
+/* App content should be centered on desktop */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  #root > * {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ============================================================================
+ * 7. TABLET-SPECIFIC RESPONSIVE RULES
+ * ============================================================================ */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .therapist-page-container {
+    max-width: 900px; /* Tablet comfortable width */
+  }
+  
+  .therapist-layout-content {
+    padding: 1.5rem;
+  }
+  
+  /* Tablet 2-column layouts */
+  .grid-auto {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================================================
+ * 8. SAFE OVERRIDES - EXPLICITLY NO WIDTH LIMITS ON DESKTOP
+ * ============================================================================ */
+
+@media (min-width: 768px) {
+  /* Explicitly remove any lingering mobile constraints */
+  .w-full {
+    width: 100% !important;
+  }
+  
+  .max-w-full {
+    max-width: 100% !important;
+  }
+  
+  /* Dashboard containers should expand */
+  [class*="dashboard"] > div,
+  [class*="dashboard"] > section {
+    width: 100%;
+    max-width: none;
+  }
+  
+  /* Forms should be comfortably narrow, not page-width */
+  form:not(.full-width) {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ============================================================================
+ * 9. BREAKPOINT SUMMARY
+ * ============================================================================ */
+
+/**
+ * BREAKPOINT STRATEGY:
+ * 
+ * Mobile (< 768px):
+ * - Full width (100vw with safe margins)
+ * - Single column layouts
+ * - Large touch targets
+ * 
+ * Tablet (768px - 1023px):
+ * - 900px max-width, centered
+ * - 2-column layouts where appropriate
+ * - Comfortable spacing
+ * 
+ * Desktop (1024px - 1399px):
+ * - 1200px max-width, centered
+ * - 3-4 column layouts
+ * - Facebook/Instagram app style
+ * 
+ * Wide (≥ 1400px):
+ * - 1400px max-width, centered
+ * - Optimal reading width
+ * - No horizontal stretching
+ * 
+ * ✅ Result: Content fills sensibly on all screens
+ * ✅ No empty space on desktop
+ * ✅ No clipping or side-push issues
+ * ✅ Smooth responsive transitions
+ */
+
+/* ============================================================================
+ * 10. ACCESSIBILITY - MAINTAIN WCAG STANDARDS
+ * ============================================================================ */
+
+@media (min-width: 768px) {
+  /* Touch targets can be slightly smaller on desktop with mouse */
+  button, .elite-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Focus outlines more visible on desktop */
+  *:focus-visible {
+    outline: 2px solid #f97316;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2);
+  }
+}
+
+/* ============================================================================
+ * END OF DESKTOP RESPONSIVE FIX
+ * ============================================================================ */

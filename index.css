@@ -4,6 +4,9 @@
 /* Elite Therapist Dashboard Styles */
 @import url('./src/styles/elite-therapist-dashboard.css');
 
+/* 🖥️ Desktop Dashboard Responsive - Facebook/Instagram Gold Standard */
+@import url('./src/styles/desktop-dashboard-responsive.css');
+
 /* Enhanced Navigation Styles */
 @import url('./src/styles/enhanced-navigation.css');
 
