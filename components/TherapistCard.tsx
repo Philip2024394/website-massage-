@@ -1344,7 +1344,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 isOpen={showSafePassModal}
                 onClose={() => setShowSafePassModal(false)}
                 therapistName={therapist.name}
-                therapistImage={therapist.profileImage}
+                therapistImage={(therapist as any).profilePicture || therapist.mainImage || (therapist as any).profileImage}
                 safePassIssueDate="2025-01-15"
                 chatLang={chatLang}
             />
