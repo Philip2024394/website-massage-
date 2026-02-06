@@ -124,91 +124,87 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                 <div className="flex-1 p-4 max-h-[70vh] ">
                     {menuData.length > 0 ? (
                         <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                            {/* Table Header - Hidden on mobile */}
-                            <div className="hidden sm:grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
-                                <div className="col-span-4">Service</div>
-                                <div className="col-span-2 text-center">60 Min</div>
-                                <div className="col-span-2 text-center">90 Min</div>
-                                <div className="col-span-2 text-center">120 Min</div>
-                                <div className="col-span-2 text-center">Action</div>
+                            {/* Header - Clean & Simple */}
+                            <div className="text-center p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
+                                <h2 className="text-xl font-bold text-gray-900 mb-2">Massage Menu</h2>
+                                <p className="text-gray-600">Select service and duration, then choose your booking option</p>
                             </div>
 
-                            {/* Table Rows */}
-                            <div className="divide-y divide-orange-100">
+                            {/* Service Cards - Clean UI Structure */}
+                            <div className="space-y-6">
                                 {menuData.map((service: any, index: number) => {
                                     const isRowSelected = selectedServiceIndex === index;
+                                    const availableDurations = ['60', '90', '120'].filter(duration => service[`price${duration}`]);
 
                                     return (
-                                        <div key={index} className={`transition-colors ${
-                                            isRowSelected ? 'bg-orange-50 border-l-4 border-orange-500' : 'hover:bg-orange-50'
+                                        <div key={index} className={`bg-white rounded-xl border-2 p-4 transition-all ${
+                                            isRowSelected ? 'border-orange-400 shadow-lg bg-orange-50' : 'border-gray-200 hover:border-orange-300'
                                         }`}>
-                                            {/* Mobile Layout: Service name on top, prices below */}
-                                            <div className="sm:hidden px-3 py-3">
-                                                {/* Service Name */}
-                                                <div className="mb-3">
-                                                    <div className="font-medium text-sm text-gray-900">{service.serviceName || service.name || 'Service'}</div>
-                                                    {service.description && (
-                                                        <div className="text-xs text-gray-500 mt-1">{service.description}</div>
-                                                    )}
+                                            {/* 1️⃣ MAIN MENU NAME (MANDATORY, ALWAYS FIRST) */}
+                                            <div className="mb-4 text-center">
+                                                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                                    {service.serviceName || service.name || 'Service'}
+                                                </h3>
+                                                {service.description && (
+                                                    <p className="text-sm text-gray-600">
+                                                        {service.description}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* 2️⃣ PRICE OPTIONS CONTAINER (UNDER MENU NAME) */}
+                                            <div className="mb-6">
+                                                <div className="flex flex-wrap justify-center gap-3">
+                                                    {availableDurations.map((duration) => {
+                                                        const price = service[`price${duration}`];
+                                                        const isSelected = isRowSelected && selectedDuration === duration;
+                                                        
+                                                        return (
+                                                            <button
+                                                                key={duration}
+                                                                onClick={() => showBookingButtons && handleSelectService(index, duration as '60' | '90' | '120')}
+                                                                disabled={!showBookingButtons}
+                                                                className={`flex-1 min-w-[100px] max-w-[140px] px-4 py-3 rounded-xl border-2 transition-all ${
+                                                                    isSelected
+                                                                        ? 'border-orange-500 bg-orange-500 text-white shadow-lg transform scale-105'
+                                                                        : 'border-orange-200 bg-white text-gray-800 hover:border-orange-400 hover:bg-orange-50'
+                                                                }`}
+                                                            >
+                                                                <div className="text-center">
+                                                                    <div className="text-sm font-semibold mb-1">
+                                                                        {duration} min
+                                                                    </div>
+                                                                    <div className="text-sm font-bold">
+                                                                        Rp {(Number(price) * 1000).toLocaleString('id-ID')}
+                                                                    </div>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
                                                 </div>
+                                            </div>
 
-                                                {/* Price buttons in row */}
-                                                <div className={`grid gap-2 items-end ${showBookingButtons ? 'grid-cols-8' : 'grid-cols-3'}`}>
-                                                    {['60', '90', '120'].map((duration) => (
-                                                        <div key={duration} className={showBookingButtons ? 'col-span-2' : 'col-span-1'}>
-                                                            <div className="text-[10px] text-gray-600 text-center mb-1 font-semibold">{duration}m</div>
-                                                            {service[`price${duration}`] ? (
-                                                                <button
-                                                                    onClick={() => showBookingButtons && handleSelectService(index, duration as '60' | '90' | '120')}
-                                                                    disabled={!showBookingButtons}
-                                                                    className={`w-full px-1 py-1.5 rounded text-[10px] transition-all border-2 ${
-                                                                        showBookingButtons && isRowSelected && selectedDuration === duration
-                                                                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
-                                                                            : showBookingButtons 
-                                                                            ? 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
-                                                                            : 'bg-white text-gray-800 border-gray-200 cursor-default'
-                                                                    }`}
-                                                                >
-                                                                    <span className="block truncate">
-                                                                        Rp {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID')}
-                                                                    </span>
-                                                                </button>
-                                                            ) : (
-                                                                <span className="text-xs text-gray-400 text-center block">-</span>
-                                                            )}
-                                                        </div>
-                                                    ))}
-
-                                                    {/* Action Button - Only show on profile page */}
-                                                    {showBookingButtons && (
-                                                    <div className="col-span-2">
-                                                        <div className="text-[10px] text-transparent text-center mb-1">-</div>
+                                            {/* 3️⃣ ACTION AREA (BOTTOM, CLEAR & SEPARATE) */}
+                                            {showBookingButtons && (
+                                                <div className="border-t border-gray-200 pt-4">
+                                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                                         <button
-                                                            className={`w-full px-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all duration-200 ${
+                                                            className={`px-6 py-3 font-semibold rounded-lg transition-all duration-200 ${
                                                                 isRowSelected && selectedDuration
-                                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
-                                                                    : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
+                                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-lg'
+                                                                    : 'bg-orange-500 text-white hover:bg-orange-600'
                                                             }`}
                                                             onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                
                                                                 if (isRowSelected && selectedDuration) {
-                                                                    e.stopPropagation();
-                                                                    console.log('🎯 PRICE SLIDER: User clicked "Pesan Sekarang"', {
-                                                                        service: service.serviceName,
-                                                                        duration: selectedDuration,
-                                                                        price: service[`price${selectedDuration}`]
-                                                                    });
-
                                                                     const priceNum = Number(service[`price${selectedDuration}`]);
-
+                                                                    
                                                                     if (!isNaN(priceNum) && priceNum > 0) {
-                                                                        const formattedPrice = priceNum >= 1000 
-                                                                            ? `${Math.round(priceNum)}K` 
-                                                                            : `${priceNum * 1000}`;
-
-                                                                        console.log('🚀 PRICE SLIDER → Opening booking chat with pre-selected service:', {
+                                                                        console.log('🚀 PRICE SLIDER → Book Now with service:', {
                                                                             serviceName: service.serviceName,
                                                                             duration: selectedDuration,
-                                                                            formattedPrice
+                                                                            price: priceNum * 1000
                                                                         });
 
                                                                         openBookingWithService(therapist, {
@@ -221,18 +217,73 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                         setSelectedServiceIndex(null);
                                                                         setSelectedDuration(null);
                                                                     }
+                                                                } else if (availableDurations.length > 0) {
+                                                                    // Auto-select first available duration
+                                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                                    handleSelectService(index, firstDuration);
                                                                 }
                                                             }}
                                                         >
-                                                            {chatLang === 'id' ? 'Pesan' : 'Book'}
+                                                            {isRowSelected && selectedDuration 
+                                                                ? (chatLang === 'id' ? '✓ Book Now' : '✓ Book Now')
+                                                                : (chatLang === 'id' ? 'Book Now' : 'Book Now')
+                                                            }
+                                                        </button>
+                                                        
+                                                        <button
+                                                            className={`px-6 py-3 font-semibold rounded-lg border-2 transition-all duration-200 ${
+                                                                isRowSelected && selectedDuration
+                                                                    ? 'border-blue-500 bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
+                                                                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50'
+                                                            }`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                
+                                                                if (isRowSelected && selectedDuration) {
+                                                                    const priceNum = Number(service[`price${selectedDuration}`]);
+                                                                    
+                                                                    if (!isNaN(priceNum) && priceNum > 0) {
+                                                                        console.log('📅 PRICE SLIDER → Schedule with service:', {
+                                                                            serviceName: service.serviceName,
+                                                                            duration: selectedDuration,
+                                                                            price: priceNum * 1000
+                                                                        });
+
+                                                                        openBookingWithService(therapist, {
+                                                                            serviceName: service.serviceName,
+                                                                            duration: parseInt(selectedDuration),
+                                                                            price: priceNum * 1000
+                                                                        }, { 
+                                                                            bookingType: 'scheduled',
+                                                                            requireDeposit: true,
+                                                                            depositPercentage: 30
+                                                                        });
+
+                                                                        setShowPriceListModal(false);
+                                                                        setSelectedServiceIndex(null);
+                                                                        setSelectedDuration(null);
+                                                                    }
+                                                                } else if (availableDurations.length > 0) {
+                                                                    // Auto-select first available duration
+                                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                                    handleSelectService(index, firstDuration);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {isRowSelected && selectedDuration 
+                                                                ? (chatLang === 'id' ? '📅 Schedule' : '📅 Schedule')
+                                                                : (chatLang === 'id' ? 'Schedule' : 'Schedule')
+                                                            }
                                                         </button>
                                                     </div>
-                                                    )}
-
                                                 </div>
-                                            </div>
-
-                                            {/* Desktop/Tablet Layout: Original grid */}
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ) : (
                                             <div className="hidden sm:grid grid-cols-12 gap-2 px-3 py-3 items-center">
                                                 {/* Service Name */}
                                                 <div className="col-span-4">
@@ -398,61 +449,63 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                         </div>
                     ) : (
                         // Fallback pricing when menu data fails to load - use therapist's built-in pricing
-                        <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                            {/* Table Header */}
-                            <div className={`grid gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200 ${showBookingButtons ? 'grid-cols-12' : 'grid-cols-10'}`}>
-                                <div className="col-span-4">Service</div>
-                                <div className="col-span-2 text-center">60 Min</div>
-                                <div className="col-span-2 text-center">90 Min</div>
-                                <div className="col-span-2 text-center">120 Min</div>
-                                {showBookingButtons && <div className="col-span-2 text-center">Action</div>}
+                        <div className="bg-white rounded-xl border-2 border-gray-200 p-4">
+                            {/* 1️⃣ MAIN MENU NAME (MANDATORY, ALWAYS FIRST) */}
+                            <div className="mb-4 text-center">
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                    Traditional Massage
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                    Traditional therapeutic massage
+                                </p>
                             </div>
 
-                            {/* Fallback Service Row */}
-                            <div className="divide-y divide-orange-100">
-                                <div className={`grid gap-2 px-3 py-3 hover:bg-orange-50 items-center ${showBookingButtons ? 'grid-cols-12' : 'grid-cols-10'}`}>
-                                    {/* Service Name */}
-                                    <div className="col-span-4">
-                                        <div className="font-medium text-sm text-gray-900">Traditional Massage</div>
-                                        <div className="text-xs text-gray-500 mt-1">Traditional therapeutic massage</div>
-                                    </div>
-
-                                    {/* Price buttons using therapist's pricing */}
+                            {/* 2️⃣ PRICE OPTIONS CONTAINER (UNDER MENU NAME) */}
+                            <div className="mb-6">
+                                <div className="flex flex-wrap justify-center gap-3">
                                     {['60', '90', '120'].map((duration) => {
                                         const priceKey = `price${duration}` as keyof typeof therapist;
                                         const price = therapist[priceKey];
+                                        const isSelected = selectedServiceIndex === 0 && selectedDuration === duration;
+                                        
+                                        if (!price) return null;
+                                        
                                         return (
-                                            <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
-                                                {price ? (
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedServiceIndex(0);
-                                                            setSelectedDuration(duration as '60' | '90' | '120');
-                                                        }}
-                                                        className={`px-2 py-1 rounded text-xs transition-all border-2 ${
-                                                            selectedServiceIndex === 0 && selectedDuration === duration
-                                                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
-                                                                : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
-                                                        }`}
-                                                    >
+                                            <button
+                                                key={duration}
+                                                onClick={() => {
+                                                    setSelectedServiceIndex(0);
+                                                    setSelectedDuration(duration as '60' | '90' | '120');
+                                                }}
+                                                className={`flex-1 min-w-[100px] max-w-[140px] px-4 py-3 rounded-xl border-2 transition-all ${
+                                                    isSelected
+                                                        ? 'border-orange-500 bg-orange-500 text-white shadow-lg transform scale-105'
+                                                        : 'border-orange-200 bg-white text-gray-800 hover:border-orange-400 hover:bg-orange-50'
+                                                }`}
+                                            >
+                                                <div className="text-center">
+                                                    <div className="text-sm font-semibold mb-1">
+                                                        {duration} min
+                                                    </div>
+                                                    <div className="text-sm font-bold">
                                                         Rp {(Number(price) * 1000).toLocaleString('id-ID')}
-                                                    </button>
-                                                ) : (
-                                                    <span className="text-xs text-gray-400">-</span>
-                                                )}
-                                            </div>
+                                                    </div>
+                                                </div>
+                                            </button>
                                         );
                                     })}
+                                </div>
+                            </div>
 
-                                    {/* Action Buttons - Both Immediate & Scheduled - Only show on profile page */}
-                                    {showBookingButtons && (
-                                    <div className="col-span-2 space-y-2">
-                                        {/* Book Now Button */}
+                            {/* 3️⃣ ACTION AREA (BOTTOM, CLEAR & SEPARATE) */}
+                            {showBookingButtons && (
+                                <div className="border-t border-gray-200 pt-4">
+                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                         <button
-                                            className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                                            className={`px-6 py-3 font-semibold rounded-lg transition-all duration-200 ${
                                                 selectedServiceIndex === 0 && selectedDuration
-                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
-                                                    : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
+                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-lg'
+                                                    : 'bg-orange-500 text-white hover:bg-orange-600'
                                             }`}
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -463,54 +516,41 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                 if (therapist.price90) availableDurations.push('90');
                                                 if (therapist.price120) availableDurations.push('120');
                                                 
-                                                console.log('🎯 IMMEDIATE BOOKING (Price Slider): User clicked "Book Now"', {
-                                                    selectedServiceIndex,
-                                                    selectedDuration,
-                                                    availableDurations,
-                                                    therapistId: therapist.id,
-                                                    therapistName: therapist.name
-                                                });
-                                                
-                                                if (availableDurations.length > 0) {
-                                                    // If already selected, proceed to immediate booking
-                                                    if (selectedServiceIndex === 0 && selectedDuration) {
-                                                        const priceKey = `price${selectedDuration}` as keyof typeof therapist;
-                                                        const servicePrice = Number(therapist[priceKey]) * 1000;
-                                                        const serviceDuration = parseInt(selectedDuration);
-                                                        
-                                                        console.log('🚀 IMMEDIATE BOOKING → Opening booking chat (No Deposit Required)');
-                                                        
-                                                        // Close the price list modal
-                                                        setShowPriceListModal(false);
-                                                        
-                                                        // Open chat with immediate booking - NO DEPOSIT
-                                                        openBookingWithService(therapist, {
-                                                            serviceName: 'Traditional Massage',
-                                                            duration: serviceDuration,
-                                                            price: servicePrice
-                                                        });
-                                                    } else {
-                                                        // Auto-select first available duration
-                                                        const firstDuration = availableDurations[0] as '60' | '90' | '120';
-                                                        setSelectedServiceIndex(0);
-                                                        setSelectedDuration(firstDuration);
-                                                        console.log('🎯 Auto-selected (Immediate):', { duration: firstDuration });
-                                                    }
+                                                if (selectedServiceIndex === 0 && selectedDuration) {
+                                                    const priceKey = `price${selectedDuration}` as keyof typeof therapist;
+                                                    const servicePrice = Number(therapist[priceKey]) * 1000;
+                                                    const serviceDuration = parseInt(selectedDuration);
+                                                    
+                                                    console.log('🚀 IMMEDIATE BOOKING → Opening booking chat (No Deposit Required)');
+                                                    
+                                                    // Close the price list modal
+                                                    setShowPriceListModal(false);
+                                                    
+                                                    // Open chat with immediate booking - NO DEPOSIT
+                                                    openBookingWithService(therapist, {
+                                                        serviceName: 'Traditional Massage',
+                                                        duration: serviceDuration,
+                                                        price: servicePrice
+                                                    });
+                                                } else if (availableDurations.length > 0) {
+                                                    // Auto-select first available duration
+                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                    setSelectedServiceIndex(0);
+                                                    setSelectedDuration(firstDuration);
                                                 }
                                             }}
                                         >
                                             {selectedServiceIndex === 0 && selectedDuration 
-                                                ? (chatLang === 'id' ? '✓ Pesan Sekarang' : '✓ Book Now')
-                                                : (chatLang === 'id' ? 'Pilih & Pesan' : 'Select & Book')
+                                                ? (chatLang === 'id' ? '✓ Book Now' : '✓ Book Now')
+                                                : (chatLang === 'id' ? 'Book Now' : 'Book Now')
                                             }
                                         </button>
-
-                                        {/* Schedule Booking Button */}
+                                        
                                         <button
-                                            className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 border-2 ${
+                                            className={`px-6 py-3 font-semibold rounded-lg border-2 transition-all duration-200 ${
                                                 selectedServiceIndex === 0 && selectedDuration
-                                                    ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-lg scale-105'
-                                                    : 'bg-white border-blue-500 text-blue-600 hover:bg-blue-50 cursor-pointer'
+                                                    ? 'border-blue-500 bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
+                                                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50'
                                             }`}
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -521,55 +561,43 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                 if (therapist.price90) availableDurations.push('90');
                                                 if (therapist.price120) availableDurations.push('120');
                                                 
-                                                console.log('📅 SCHEDULED BOOKING (Price Slider): User clicked "Schedule"', {
-                                                    selectedServiceIndex,
-                                                    selectedDuration,
-                                                    availableDurations,
-                                                    therapistId: therapist.id,
-                                                    therapistName: therapist.name
-                                                });
-                                                
-                                                if (availableDurations.length > 0) {
-                                                    // If already selected, proceed to scheduled booking with deposit
-                                                    if (selectedServiceIndex === 0 && selectedDuration) {
-                                                        const priceKey = `price${selectedDuration}` as keyof typeof therapist;
-                                                        const servicePrice = Number(therapist[priceKey]) * 1000;
-                                                        const serviceDuration = parseInt(selectedDuration);
-                                                        
-                                                        console.log('🚀 SCHEDULED BOOKING → Opening booking chat with deposit requirement');
-                                                        
-                                                        // Close the price list modal
-                                                        setShowPriceListModal(false);
-                                                        
-                                                        // Open chat with scheduled booking requiring 30% deposit
-                                                        openBookingWithService(therapist, {
-                                                            serviceName: 'Traditional Massage',
-                                                            duration: serviceDuration,
-                                                            price: servicePrice
-                                                        }, { 
-                                                            bookingType: 'scheduled',
-                                                            requireDeposit: true,
-                                                            depositPercentage: 30
-                                                        });
-                                                    } else {
-                                                        // Auto-select first available duration
-                                                        const firstDuration = availableDurations[0] as '60' | '90' | '120';
-                                                        setSelectedServiceIndex(0);
-                                                        setSelectedDuration(firstDuration);
-                                                        console.log('🎯 Auto-selected (Scheduled):', { duration: firstDuration });
-                                                    }
+                                                if (selectedServiceIndex === 0 && selectedDuration) {
+                                                    const priceKey = `price${selectedDuration}` as keyof typeof therapist;
+                                                    const servicePrice = Number(therapist[priceKey]) * 1000;
+                                                    const serviceDuration = parseInt(selectedDuration);
+                                                    
+                                                    console.log('🚀 SCHEDULED BOOKING → Opening booking chat with deposit requirement');
+                                                    
+                                                    // Close the price list modal
+                                                    setShowPriceListModal(false);
+                                                    
+                                                    // Open chat with scheduled booking requiring 30% deposit
+                                                    openBookingWithService(therapist, {
+                                                        serviceName: 'Traditional Massage',
+                                                        duration: serviceDuration,
+                                                        price: servicePrice
+                                                    }, { 
+                                                        bookingType: 'scheduled',
+                                                        requireDeposit: true,
+                                                        depositPercentage: 30
+                                                    });
+                                                } else if (availableDurations.length > 0) {
+                                                    // Auto-select first available duration
+                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                    setSelectedServiceIndex(0);
+                                                    setSelectedDuration(firstDuration);
                                                 }
                                             }}
                                         >
                                             {selectedServiceIndex === 0 && selectedDuration 
-                                                ? (chatLang === 'id' ? '📅 Jadwalkan (30% DP)' : '📅 Schedule (30% Deposit)')
-                                                : (chatLang === 'id' ? '📅 Jadwalkan' : '📅 Schedule')
+                                                ? (chatLang === 'id' ? '📅 Schedule' : '📅 Schedule')
+                                                : (chatLang === 'id' ? 'Schedule' : 'Schedule')
                                             }
                                         </button>
                                     </div>
-                                    )}
                                 </div>
-                            </div>
+                            )}
+                        </div>
                         </div>
                     )}
                 </div>
