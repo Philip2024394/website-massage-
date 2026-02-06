@@ -53,4 +53,107 @@ class BookingTimeoutHandler {
       }
       
       // Create broadcast request
-      const broadcastRequest: BroadcastRequest = {\n        bookingId: request.bookingId,\n        userLocation,\n        serviceType: request.serviceType,\n        duration: request.duration,\n        price: request.price,\n        customerName: request.customerName,\n        isUrgent: true, // Mark as urgent since it's a timeout fallback\n        excludeProviderIds: [request.originalTherapistId],\n        maxRadius: 15 // Extended radius for timeout scenarios\n      };\n      \n      // Broadcast to nearby providers\n      const broadcastResult = await broadcastToNearbyProviders(broadcastRequest);\n      \n      if (broadcastResult.success && broadcastResult.providerCount > 0) {\n        return {\n          success: true,\n          action: 'broadcasted',\n          providerCount: broadcastResult.providerCount,\n          message: `Found ${broadcastResult.providerCount} nearby providers. First to accept gets the booking!`\n        };\n      } else {\n        return {\n          success: false,\n          action: 'failed',\n          message: 'No nearby therapists or places currently available. Please try again later.'\n        };\n      }\n      \n    } catch (error) {\n      logger.error('❌ Timeout handling failed:', error);\n      return {\n        success: false,\n        action: 'failed',\n        message: 'Unable to find alternative providers. Please try again.'\n      };\n    }\n  }\n  \n  /**\n   * Get current location from browser geolocation API\n   */\n  private getCurrentLocation(): Promise<{lat: number, lng: number} | null> {\n    return new Promise((resolve) => {\n      if (!navigator.geolocation) {\n        resolve(null);\n        return;\n      }\n      \n      navigator.geolocation.getCurrentPosition(\n        (position) => {\n          resolve({\n            lat: position.coords.latitude,\n            lng: position.coords.longitude\n          });\n        },\n        (error) => {\n          logger.warn('⚠️ Geolocation failed:', error.message);\n          resolve(null);\n        },\n        { \n          timeout: 10000,\n          enableHighAccuracy: true,\n          maximumAge: 300000 // 5 minutes cache\n        }\n      );\n    });\n  }\n  \n  /**\n   * Generate user-friendly timeout messages\n   */\n  generateTimeoutMessage(result: TimeoutHandlerResult): string {\n    switch (result.action) {\n      case 'broadcasted':\n        return `⏰ No response received. We are now finding the next available therapist in your location for first-come-first-serve acceptance. Found ${result.providerCount} nearby providers!`;\n        \n      case 'location_required':\n        return '⏰ No response received. Enable location services to find nearby therapists automatically, or cancel to browse directory manually.';\n        \n      case 'failed':\n      default:\n        return '⏰ No response received and no nearby providers available. Please cancel booking to browse directory for your preferred therapist/place.';\n    }\n  }\n  \n  /**\n   * Generate cancel button message based on timeout state\n   */\n  generateCancelMessage(result: TimeoutHandlerResult): string {\n    if (result.action === 'broadcasted' && result.success) {\n      return 'Cancel & Browse Directory';\n    }\n    return 'Browse Directory for Preferred Therapist/Place';\n  }\n}\n\nexport const bookingTimeoutHandler = new BookingTimeoutHandler();\n\n// Helper function for easy use in components\nexport async function handleBookingTimeout(request: BookingTimeoutRequest): Promise<TimeoutHandlerResult> {\n  return bookingTimeoutHandler.handleBookingTimeout(request);\n}
+      const broadcastRequest: BroadcastRequest = {
+        bookingId: request.bookingId,
+        userLocation,
+        serviceType: request.serviceType,
+        duration: request.duration,
+        price: request.price,
+        customerName: request.customerName,
+        isUrgent: true, // Mark as urgent since it's a timeout fallback
+        excludeProviderIds: [request.originalTherapistId],
+        maxRadius: 15 // Extended radius for timeout scenarios
+      };
+      
+      // Broadcast to nearby providers
+      const broadcastResult = await broadcastToNearbyProviders(broadcastRequest);
+      
+      if (broadcastResult.success && broadcastResult.providerCount > 0) {
+        return {
+          success: true,
+          action: 'broadcasted',
+          providerCount: broadcastResult.providerCount,
+          message: `Found ${broadcastResult.providerCount} nearby providers. First to accept gets the booking!`
+        };
+      } else {
+        return {
+          success: false,
+          action: 'failed',
+          message: 'No nearby therapists or places currently available. Please try again later.'
+        };
+      }
+      
+    } catch (error) {
+      logger.error('❌ Timeout handling failed:', error);
+      return {
+        success: false,
+        action: 'failed',
+        message: 'Unable to find alternative providers. Please try again.'
+      };
+    }
+  }
+  
+  /**
+   * Get current location from browser geolocation API
+   */
+  private getCurrentLocation(): Promise<{lat: number, lng: number} | null> {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null);
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          logger.warn('⚠️ Geolocation failed:', error.message);
+          resolve(null);
+        },
+        { 
+          timeout: 10000,
+          enableHighAccuracy: true,
+          maximumAge: 300000 // 5 minutes cache
+        }
+      );
+    });
+  }
+  
+  /**
+   * Generate user-friendly timeout messages
+   */
+  generateTimeoutMessage(result: TimeoutHandlerResult): string {
+    switch (result.action) {
+      case 'broadcasted':
+        return `⏰ No response received. We are now finding the next available therapist in your location for first-come-first-serve acceptance. Found ${result.providerCount} nearby providers!`;
+        
+      case 'location_required':
+        return '⏰ No response received. Enable location services to find nearby therapists automatically, or cancel to browse directory manually.';
+        
+      case 'failed':
+      default:
+        return '⏰ No response received and no nearby providers available. Please cancel booking to browse directory for your preferred therapist/place.';
+    }
+  }
+  
+  /**
+   * Generate cancel button message based on timeout state
+   */
+  generateCancelMessage(result: TimeoutHandlerResult): string {
+    if (result.action === 'broadcasted' && result.success) {
+      return 'Cancel & Browse Directory';
+    }
+    return 'Browse Directory for Preferred Therapist/Place';
+  }
+}
+
+export const bookingTimeoutHandler = new BookingTimeoutHandler();
+
+// Helper function for easy use in components
+export async function handleBookingTimeout(request: BookingTimeoutRequest): Promise<TimeoutHandlerResult> {
+  return bookingTimeoutHandler.handleBookingTimeout(request);
+}

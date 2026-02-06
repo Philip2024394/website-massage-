@@ -222,12 +222,21 @@ class EnhancedBroadcastService {
             serviceType: request.serviceType,
             serviceDuration: request.duration,
             servicePrice: request.price,
-              bookingType: request.bookingType, // NEW: Include booking type
-              distance: Math.round(provider.distance * 100) / 100, // Round to 2 decimal places
-              isUrgent: request.isUrgent || false,
-              status: 'sent',
-              sentAt: new Date().toISOString(),
-              expiresAt: new Date(Date.now() + this.getTimeoutDuration(request.providerType, request.bookingType) * 1000).toISOString(),
+            bookingType: request.bookingType, // NEW: Include booking type
+            distance: Math.round(provider.distance * 100) / 100, // Round to 2 decimal places
+            isUrgent: request.isUrgent || false,
+            status: 'sent',
+            sentAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + this.getTimeoutDuration(request.providerType, request.bookingType) * 1000).toISOString(),
+          }
+        );
+        
+        return notification;
+      } catch (error) {
+        console.error(`Failed to send notification to ${provider.name}:`, error);
+        return null;
+      }
+    });
     
     return Promise.allSettled(notifications);
   }
