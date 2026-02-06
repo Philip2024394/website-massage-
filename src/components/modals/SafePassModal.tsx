@@ -238,7 +238,11 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                     {/* Safety Commitment */}
                     <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
                         <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <Shield className="text-gray-700" size={24} />
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565" 
+                                alt="Verified"
+                                className="w-6 h-6 object-contain"
+                            />
                             {t.safetyTitle}
                         </h3>
                         <p className="text-gray-700 leading-relaxed">
