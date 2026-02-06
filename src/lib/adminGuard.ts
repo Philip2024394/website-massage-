@@ -48,7 +48,7 @@ export const AdminGuard: React.FC<AdminGuardProps> = ({
 }) => {
   // For now, return children directly to avoid breaking existing functionality
   // TODO: Implement proper authentication when ready
-  return <>{children}</>;
+  return children as React.ReactElement;
 };
 
 // ============================================================================
@@ -66,12 +66,12 @@ export const AdminGuardDev: React.FC<AdminGuardProps> = ({
   const isDevMode = process.env.NODE_ENV === 'development';
   
   if (isDevMode) {
-    return <>{children}</>;
+    return children as React.ReactElement;
   }
   
   // In production, you would implement real auth check here
   // For now, allow access to prevent site crashes
-  return <>{children}</>;
+  return children as React.ReactElement;
 };
 
 // ============================================================================
