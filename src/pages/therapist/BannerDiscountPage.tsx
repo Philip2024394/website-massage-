@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { Gift, Send, Check, Copy, ArrowLeft } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { showToast } from '../../utils/showToastPortal';
-import { chatService } from '../../lib/simpleChatService';
+import chatService from '../../lib/simpleChatService';
 
 interface BannerOption {
   id: string;

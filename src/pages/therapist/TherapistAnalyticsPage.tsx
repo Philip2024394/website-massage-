@@ -3,7 +3,7 @@
  * Shows bookings, earnings, ratings, and performance metrics
  */
 import React, { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, DollarSign, Calendar, Star, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { BarChart as BarChart3, TrendingUp, DollarSign, Calendar, Star, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { bookingService } from '../../lib/bookingService';
 

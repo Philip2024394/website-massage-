@@ -73,15 +73,15 @@ export const CustomerOnTheWayNotification: React.FC<CustomerOnTheWayNotification
     
     switch (journeyStatus.status) {
       case 'departed':
-        return <Car className=\"w-6 h-6 text-blue-500\" />;
+        return <Car className="w-6 h-6 text-blue-500" />;
       case 'en_route':
-        return <Car className=\"w-6 h-6 text-orange-500 animate-pulse\" />;
+        return <Car className="w-6 h-6 text-orange-500 animate-pulse" />;
       case 'nearby':
-        return <MapPin className=\"w-6 h-6 text-yellow-500 animate-bounce\" />;
+        return <MapPin className="w-6 h-6 text-yellow-500 animate-bounce" />;
       case 'arrived':
-        return <CheckCircle className=\"w-6 h-6 text-green-500\" />;
+        return <CheckCircle className="w-6 h-6 text-green-500" />;
       default:
-        return <Car className=\"w-6 h-6 text-gray-400\" />;
+        return <Car className="w-6 h-6 text-gray-400" />;
     }
   };
 
@@ -142,22 +142,22 @@ export const CustomerOnTheWayNotification: React.FC<CustomerOnTheWayNotification
   }
 
   return (
-    <div className=\"fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4\">
+    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4">
       <div className={`${getStatusColor()} border-2 rounded-xl p-4 shadow-lg backdrop-blur-sm bg-opacity-95`}>
         {/* Header */}
-        <div className=\"flex items-center justify-between mb-3\">
-          <div className=\"flex items-center gap-3\">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
             {getStatusIcon()}
             <div>
-              <h3 className=\"font-bold text-gray-800\">{getStatusText()}</h3>
-              <p className=\"text-sm text-gray-600\">{journeyStatus.therapistName}</p>
+              <h3 className="font-bold text-gray-800">{getStatusText()}</h3>
+              <p className="text-sm text-gray-600">{journeyStatus.therapistName}</p>
             </div>
           </div>
           
           {onClose && (
             <button
               onClick={onClose}
-              className=\"text-gray-400 hover:text-gray-600 transition-colors\"
+              className="text-gray-400 hover:text-gray-600 transition-colors"
             >
               ✕
             </button>
@@ -165,43 +165,43 @@ export const CustomerOnTheWayNotification: React.FC<CustomerOnTheWayNotification
         </div>
 
         {/* Time Info */}
-        <div className=\"flex items-center justify-between mb-3 p-2 bg-white bg-opacity-60 rounded-lg\">
-          <div className=\"flex items-center gap-2\">
-            <Clock className=\"w-4 h-4 text-gray-600\" />
-            <span className=\"text-sm font-medium text-gray-700\">
+        <div className="flex items-center justify-between mb-3 p-2 bg-white bg-opacity-60 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">
               ETA: {formatTime(journeyStatus.estimatedArrival)}
             </span>
           </div>
-          <div className=\"text-sm font-bold text-gray-800\">
+          <div className="text-sm font-bold text-gray-800">
             {timeRemaining}
           </div>
         </div>
 
         {/* Preparation Message */}
-        <div className=\"mb-3 p-3 bg-white bg-opacity-60 rounded-lg\">
-          <p className=\"text-sm text-gray-700 font-medium\">
+        <div className="mb-3 p-3 bg-white bg-opacity-60 rounded-lg">
+          <p className="text-sm text-gray-700 font-medium">
             {getPrepareMessage()}
           </p>
         </div>
 
         {/* Action Buttons */}
         {journeyStatus.status !== 'arrived' && (
-          <div className=\"flex gap-2\">
+          <div className="flex gap-2">
             <a
               href={`tel:${journeyStatus.customerPhone}`}
-              className=\"flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2\"
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
             >
-              <Phone className=\"w-4 h-4\" />
+              <Phone className="w-4 h-4" />
               Call
             </a>
             
             <a
               href={`https://wa.me/${journeyStatus.customerPhone.replace(/[^0-9]/g, '')}`}
-              target=\"_blank\"
-              rel=\"noopener noreferrer\"
-              className=\"flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2\"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
             >
-              <MessageCircle className=\"w-4 h-4\" />
+              <MessageCircle className="w-4 h-4" />
               WhatsApp
             </a>
           </div>
@@ -209,17 +209,17 @@ export const CustomerOnTheWayNotification: React.FC<CustomerOnTheWayNotification
 
         {/* Arrived State */}
         {journeyStatus.status === 'arrived' && (
-          <div className=\"text-center p-3 bg-green-100 border border-green-300 rounded-lg\">
-            <CheckCircle className=\"w-8 h-8 text-green-600 mx-auto mb-2\" />
-            <div className=\"font-semibold text-green-800\">🎉 Your therapist is here!</div>
-            <div className=\"text-sm text-green-700\">
+          <div className="text-center p-3 bg-green-100 border border-green-300 rounded-lg">
+            <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <div className="font-semibold text-green-800">🎉 Your therapist is here!</div>
+            <div className="text-sm text-green-700">
               Thank you for choosing IndasTreet Massage
             </div>
           </div>
         )}
 
         {/* Journey Progress Indicator */}
-        <div className=\"mt-3 flex items-center gap-1\">
+        <div className="mt-3 flex items-center gap-1">
           {['departed', 'en_route', 'nearby', 'arrived'].map((stage, index) => (
             <div
               key={stage}
@@ -232,7 +232,7 @@ export const CustomerOnTheWayNotification: React.FC<CustomerOnTheWayNotification
           ))}
         </div>
         
-        <div className=\"flex justify-between text-xs text-gray-500 mt-1\">
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>Departed</span>
           <span>En Route</span>
           <span>Nearby</span>
@@ -240,7 +240,7 @@ export const CustomerOnTheWayNotification: React.FC<CustomerOnTheWayNotification
         </div>
 
         {/* Last Updated */}
-        <div className=\"mt-2 text-xs text-gray-500 text-center\">
+        <div className="mt-2 text-xs text-gray-500 text-center">
           Last updated: {new Date().toLocaleTimeString()}
         </div>
       </div>

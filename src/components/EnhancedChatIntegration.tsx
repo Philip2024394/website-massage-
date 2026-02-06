@@ -227,13 +227,13 @@ Please verify the payment and confirm/reject within 30 minutes.
   const getPaymentStatusIcon = (status: string) => {
     switch (status) {
       case 'showing_bank_details':
-        return <CreditCard className=\"w-5 h-5 text-blue-500\" />;
+        return <CreditCard className="w-5 h-5 text-blue-500" />;
       case 'waiting_screenshot':
-        return <Upload className=\"w-5 h-5 text-yellow-500\" />;
+        return <Upload className="w-5 h-5 text-yellow-500" />;
       case 'confirming_payment':
-        return <Clock className=\"w-5 h-5 text-orange-500\" />;
+        return <Clock className="w-5 h-5 text-orange-500" />;
       case 'completed':
-        return <CheckCircle className=\"w-5 h-5 text-green-500\" />;
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
       default:
         return null;
     }
@@ -254,20 +254,20 @@ Please verify the payment and confirm/reject within 30 minutes.
   };
 
   return (
-    <div className=\"flex flex-col h-full bg-gray-50\">
+    <div className="flex flex-col h-full bg-gray-50">
       {/* Payment Status Banner */}
       {paymentFlow.status !== 'idle' && (
-        <div className=\"bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 shadow-lg\">
-          <div className=\"flex items-center gap-3\">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 shadow-lg">
+          <div className="flex items-center gap-3">
             {getPaymentStatusIcon(paymentFlow.status)}
-            <div className=\"flex-1\">
-              <h3 className=\"font-semibold text-lg\">
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg">
                 {paymentFlow.status === 'showing_bank_details' && '💳 Payment Required'}
                 {paymentFlow.status === 'waiting_screenshot' && '📸 Upload Payment Screenshot'}
                 {paymentFlow.status === 'confirming_payment' && '⏳ Payment Under Review'}
                 {paymentFlow.status === 'completed' && '✅ Payment Confirmed'}
               </h3>
-              <p className=\"text-blue-100 text-sm\">
+              <p className="text-blue-100 text-sm">
                 {paymentFlow.status === 'showing_bank_details' && 
                   `Deposit: Rp ${paymentFlow.depositAmount.toLocaleString('id-ID')} • ${formatTimeRemaining(paymentFlow.paymentDeadline)}`}
                 {paymentFlow.status === 'waiting_screenshot' && 
@@ -279,9 +279,9 @@ Please verify the payment and confirm/reject within 30 minutes.
               </p>
             </div>
             {paymentFlow.paymentDeadline && paymentFlow.status !== 'completed' && (
-              <div className=\"text-right\">
-                <div className=\"text-xs text-blue-200\">Deadline:</div>
-                <div className=\"font-mono text-sm\">{formatTimeRemaining(paymentFlow.paymentDeadline)}</div>
+              <div className="text-right">
+                <div className="text-xs text-blue-200">Deadline:</div>
+                <div className="font-mono text-sm">{formatTimeRemaining(paymentFlow.paymentDeadline)}</div>
               </div>
             )}
           </div>
@@ -289,7 +289,7 @@ Please verify the payment and confirm/reject within 30 minutes.
       )}
 
       {/* Chat Messages */}
-      <div className=\"flex-1 overflow-y-auto p-4 space-y-3\">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {chatMessages.map((message) => (
           <div
             key={message.id}
@@ -304,19 +304,19 @@ Please verify the payment and confirm/reject within 30 minutes.
                   : 'bg-white border border-gray-200 text-gray-800'
               }`}
             >
-              <div className=\"font-medium text-sm mb-1\">{message.senderName}</div>
-              <div className=\"whitespace-pre-wrap text-sm\">{message.message}</div>
-              <div className=\"text-xs opacity-70 mt-1\">
+              <div className="font-medium text-sm mb-1">{message.senderName}</div>
+              <div className="whitespace-pre-wrap text-sm">{message.message}</div>
+              <div className="text-xs opacity-70 mt-1">
                 {message.timestamp.toLocaleTimeString()}
               </div>
               
               {/* Payment Screenshot Preview */}
               {message.type === 'screenshot' && message.metadata?.screenshotUrl && (
-                <div className=\"mt-2\">
+                <div className="mt-2">
                   <img 
                     src={message.metadata.screenshotUrl} 
-                    alt=\"Payment screenshot\"
-                    className=\"max-w-full rounded-lg shadow-md\"
+                    alt="Payment screenshot"
+                    className="max-w-full rounded-lg shadow-md"
                   />
                 </div>
               )}
@@ -335,21 +335,21 @@ Please verify the payment and confirm/reject within 30 minutes.
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <Upload className=\"w-8 h-8 text-gray-400 mx-auto mb-2\" />
-          <p className=\"text-gray-600 font-medium\">📸 Upload Payment Screenshot</p>
-          <p className=\"text-sm text-gray-500 mb-3\">
+          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-gray-600 font-medium">📸 Upload Payment Screenshot</p>
+          <p className="text-sm text-gray-500 mb-3">
             Drag & drop or click to upload your bank transfer receipt
           </p>
           <input
-            type=\"file\"
-            accept=\"image/*\"
+            type="file"
+            accept="image/*"
             onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-            className=\"hidden\"
-            id=\"screenshot-upload\"
+            className="hidden"
+            id="screenshot-upload"
           />
           <label
-            htmlFor=\"screenshot-upload\"
-            className=\"inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer transition-colors\"
+            htmlFor="screenshot-upload"
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer transition-colors"
           >
             Choose File 📁
           </label>
@@ -357,9 +357,9 @@ Please verify the payment and confirm/reject within 30 minutes.
       )}
 
       {/* Message Input */}
-      <div className=\"p-4 bg-white border-t border-gray-200\">
-        <div className=\"flex gap-3 items-end\">
-          <div className=\"flex-1\">
+      <div className="p-4 bg-white border-t border-gray-200">
+        <div className="flex gap-3 items-end">
+          <div className="flex-1">
             <textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
@@ -369,7 +369,7 @@ Please verify the payment and confirm/reject within 30 minutes.
                   ? 'Upload payment screenshot first...'
                   : 'Type your message...'
               }
-              className=\"w-full p-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500\"
+              className="w-full p-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={2}
               disabled={paymentFlow.status === 'showing_bank_details'}
             />
@@ -377,15 +377,15 @@ Please verify the payment and confirm/reject within 30 minutes.
           <button
             onClick={handleSendMessage}
             disabled={!newMessage.trim() || paymentFlow.status === 'showing_bank_details'}
-            className=\"bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white p-3 rounded-xl transition-colors flex items-center gap-2\"
+            className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white p-3 rounded-xl transition-colors flex items-center gap-2"
           >
-            <Send className=\"w-5 h-5\" />
+            <Send className="w-5 h-5" />
           </button>
         </div>
 
         {paymentFlow.status === 'showing_bank_details' && (
-          <div className=\"mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs text-yellow-800\">
-            <AlertTriangle className=\"w-4 h-4 inline mr-1\" />
+          <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs text-yellow-800">
+            <AlertTriangle className="w-4 h-4 inline mr-1" />
             Please upload your payment screenshot before sending messages
           </div>
         )}

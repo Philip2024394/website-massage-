@@ -32,9 +32,9 @@ import {
     Download,
     RefreshCw,
     Eye,
-    Server,
+    Database,
     Users,
-    Activity,
+    BarChart,
     Shield,
     Zap
 } from 'lucide-react';
@@ -215,12 +215,12 @@ export const AdminAuditDashboard: React.FC = () => {
 
     const categoryIcons: Record<string, React.ElementType> = {
         'PAGE_FEATURES': Eye,
-        'BACKEND_INTEGRATION': Server, 
-        'DATA_FLOW': Activity,
+        'BACKEND_INTEGRATION': Database, 
+        'DATA_FLOW': BarChart,
         'MEMBER_MANAGEMENT': Users,
         'REAL_TIME_SYNC': Zap,
         'ADMIN_OPERATIONS': Shield,
-        'SYSTEM_HEALTH': Activity
+        'SYSTEM_HEALTH': BarChart
     };
 
     // ============================================================================
@@ -247,7 +247,7 @@ export const AdminAuditDashboard: React.FC = () => {
                         size="sm"
                         disabled={isRunningAudit}
                     >
-                        <Activity className="h-4 w-4 mr-2" />
+                        <BarChart className="h-4 w-4 mr-2" />
                         Health Check
                     </Button>
                     
@@ -273,7 +273,7 @@ export const AdminAuditDashboard: React.FC = () => {
                         ? 'border-green-200 bg-green-50' 
                         : 'border-red-200 bg-red-50'
                 }`}>
-                    <Activity className="h-4 w-4" />
+                    <BarChart className="h-4 w-4" />
                     <AlertDescription>
                         <strong>Health Check:</strong> {quickHealthStatus.message}
                         {quickHealthStatus.details && (
@@ -385,7 +385,7 @@ export const AdminAuditDashboard: React.FC = () => {
 
                                 <div className="mt-4 space-y-3 max-h-96 overflow-y-auto">
                                     {filteredResults.map((result, index) => {
-                                        const IconComponent = categoryIcons[result.category] || Activity;
+                                        const IconComponent = categoryIcons[result.category] || BarChart;
                                         
                                         return (
                                             <div key={index} className="border rounded-lg p-4">

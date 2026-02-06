@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Check, CheckCheck, Eye, Clock, AlertCircle } from 'lucide-react';
+import { Check, Check as CheckCheck, Eye, Clock, AlertCircle } from 'lucide-react';
 import { professionalChatService, MessageStatus, TypingStatus } from '../services/professionalChatNotificationService';
 
 interface ChatMessage {
