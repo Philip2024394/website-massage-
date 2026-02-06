@@ -19,10 +19,12 @@ export default defineConfig({
     react(),
     // 🆕 ELITE PWA PLUGIN: 97% Download Success Rate + Offline Support
     VitePWA({
-      registerType: 'prompt', // Changed from 'autoUpdate' to prevent mid-session activation
+      registerType: 'autoUpdate', // Changed to autoUpdate to force immediate cache refresh
       injectRegister: 'auto',
-      
       workbox: {
+        cleanupOutdatedCaches: true, // Force cleanup of old caches
+        skipWaiting: true, // Immediately activate new service worker
+        clientsClaim: true, // Take control of all clients immediately
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
         // 🔒 CRITICAL: Appwrite removed from cache - NetworkOnly for booking integrity
         runtimeCaching: [
