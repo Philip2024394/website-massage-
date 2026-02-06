@@ -160,7 +160,7 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                         />
                     </div>
 
-                    {/* Verified Services - Gray/Black icons */}
+                    {/* Verified Services - Custom Images */}
                     <div>
                         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                             <Check className="text-gray-700" size={24} />
@@ -168,24 +168,40 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                         </h3>
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-gray-200">
-                                <Hotel className="text-gray-700" size={28} />
-                                <span className="font-semibold text-gray-900">{t.hotels}</span>
+                            <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg border-2 border-gray-200">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/hotel%201.png" 
+                                    alt="Hotel"
+                                    className="w-12 h-12 object-contain"
+                                />
+                                <span className="font-semibold text-gray-900 text-center text-sm">{t.hotels}</span>
                             </div>
                             
-                            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-gray-200">
-                                <Building className="text-gray-700" size={28} />
-                                <span className="font-semibold text-gray-900">{t.villas}</span>
+                            <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg border-2 border-gray-200">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/hotel%202.png" 
+                                    alt="Villa"
+                                    className="w-12 h-12 object-contain"
+                                />
+                                <span className="font-semibold text-gray-900 text-center text-sm">{t.villas}</span>
                             </div>
                             
-                            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-gray-200">
-                                <Dumbbell className="text-gray-700" size={28} />
-                                <span className="font-semibold text-gray-900">{t.gyms}</span>
+                            <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg border-2 border-gray-200">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/hotel%203.png" 
+                                    alt="Gym"
+                                    className="w-12 h-12 object-contain"
+                                />
+                                <span className="font-semibold text-gray-900 text-center text-sm">{t.gyms}</span>
                             </div>
                             
-                            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-gray-200">
-                                <Home className="text-gray-700" size={28} />
-                                <span className="font-semibold text-gray-900">{t.homes}</span>
+                            <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg border-2 border-gray-200">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/hotel%204.png" 
+                                    alt="Home"
+                                    className="w-12 h-12 object-contain"
+                                />
+                                <span className="font-semibold text-gray-900 text-center text-sm">{t.homes}</span>
                             </div>
                         </div>
                     </div>
