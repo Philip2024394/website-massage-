@@ -120,8 +120,8 @@ class BookingNotificationService {
       if (registration) {
         await registration.showNotification(config.title, {
           body: config.body,
-          icon: config.icon || '/icon-192x192.png',
-          badge: config.badge || '/icon-72x72.png',
+          icon: config.icon || '/icon-192.png',
+          badge: config.badge || '/icon-72.png',
           tag: config.tag || 'booking-notification',
           requireInteraction: config.requireInteraction || false,
           actions: config.actions || [],
@@ -132,7 +132,7 @@ class BookingNotificationService {
         // Fallback to basic notification
         const notification = new Notification(config.title, {
           body: config.body,
-          icon: config.icon || '/icon-192x192.png',
+          icon: config.icon || '/icon-192.png',
           tag: config.tag || 'booking-notification',
           data: config.data
         });

@@ -217,8 +217,8 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
             if ('Notification' in window && Notification.permission === 'granted') {
               new Notification('New Booking Request! 🎉', {
                 body: `${newBooking.userName || 'Customer'} requested ${newBooking.service} min massage`,
-                icon: '/icon-192x192.png',
-                badge: '/icon-192x192.png',
+                icon: '/icon-192.png',
+                badge: '/icon-192.png',
                 tag: 'booking-' + newBooking.$id
               });
             }

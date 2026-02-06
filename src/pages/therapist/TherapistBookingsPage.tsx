@@ -195,8 +195,8 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
               const hasChat = !!newBooking.chatRoomId;
               new Notification('New Booking Request! 🎉', {
                 body: `${newBooking.userName || 'Customer'} requested ${newBooking.service} min massage${hasChat ? ' (Chat Available)' : ''}`,
-                icon: '/icon-192x192.png',
-                badge: '/icon-192x192.png',
+                icon: '/icon-192.png',
+                badge: '/icon-192.png',
                 tag: 'booking-' + newBooking.$id
               });
             }

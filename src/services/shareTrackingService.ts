@@ -99,13 +99,24 @@ class ShareTrackingService {
                 metadata: params.metadata
             };
 
-            // Store in share tracking collection
-            await databases.createDocument(
-                DATABASE_ID,
-                SHARE_TRACKING_COLLECTION,
-                ID.unique(),
-                shareEvent
-            );
+            // Store in share tracking collection - fail silently if collection doesn't exist
+            try {
+                await databases.createDocument(
+                    DATABASE_ID,
+                    SHARE_TRACKING_COLLECTION,
+                    ID.unique(),
+                    shareEvent
+                );
+            } catch (dbError: any) {
+                // Silently handle missing collection - this is optional tracking
+                if (dbError?.code === 404 || dbError?.message?.includes('not found')) {
+                    // Collection doesn't exist yet - skip tracking to share collection
+                    console.debug('Share tracking collection not found - skipping document creation');
+                } else {
+                    // Log other errors but don't throw
+                    console.warn('Failed to save share tracking event:', dbError);
+                }
+            }
 
             // Also track in main analytics system
             await analyticsService.trackEvent({
@@ -155,13 +166,22 @@ class ShareTrackingService {
                 metadata: params.metadata
             };
 
-            // Store in share tracking collection
-            await databases.createDocument(
-                DATABASE_ID,
-                SHARE_TRACKING_COLLECTION,
-                ID.unique(),
-                viewEvent
-            );
+            // Store in share tracking collection - fail silently if collection doesn't exist
+            try {
+                await databases.createDocument(
+                    DATABASE_ID,
+                    SHARE_TRACKING_COLLECTION,
+                    ID.unique(),
+                    viewEvent
+                );
+            } catch (dbError: any) {
+                // Silently handle missing collection - this is optional tracking
+                if (dbError?.code === 404 || dbError?.message?.includes('not found')) {
+                    console.debug('Share tracking collection not found - skipping document creation');
+                } else {
+                    console.warn('Failed to save share view event:', dbError);
+                }
+            }
 
             // Also track in main analytics system
             await analyticsService.trackProfileView(
@@ -185,7 +205,7 @@ class ShareTrackingService {
         endDate: string
     ): Promise<ShareAnalytics> {
         try {
-            // Query share tracking events
+            // Query share tracking events - return empty analytics if collection doesn't exist
             const shareQuery = [
                 Query.equal('memberId', memberId),
                 Query.greaterThanEqual('timestamp', startDate),
@@ -193,13 +213,23 @@ class ShareTrackingService {
                 Query.limit(1000)
             ];
 
-            const shareEvents = await databases.listDocuments(
-                DATABASE_ID,
-                SHARE_TRACKING_COLLECTION,
-                shareQuery
-            );
-
-            const events = shareEvents.documents as ShareTrackingEvent[];
+            let events: ShareTrackingEvent[] = [];
+            
+            try {
+                const shareEvents = await databases.listDocuments(
+                    DATABASE_ID,
+                    SHARE_TRACKING_COLLECTION,
+                    shareQuery
+                );
+                events = shareEvents.documents as ShareTrackingEvent[];
+            } catch (dbError: any) {
+                // If collection doesn't exist, return empty analytics
+                if (dbError?.code === 404 || dbError?.message?.includes('not found')) {
+                    console.debug('Share tracking collection not found - returning empty analytics');
+                    return this.getEmptyAnalytics();
+                }
+                throw dbError; // Re-throw other errors
+            }
             
             // Separate shares and views
             const shares = events.filter(e => e.eventType === 'profile_shared');

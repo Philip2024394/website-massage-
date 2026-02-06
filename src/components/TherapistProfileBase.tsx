@@ -153,6 +153,7 @@ interface TherapistProfileBaseProps {
     showHeader?: boolean;
     showSEOFooter?: boolean;
     selectedCity?: string; // For location display override
+    customVerifiedBadge?: string; // Custom verified badge image URL (for shared profile pages)
     
     // Callbacks (optional - may not exist in shared mode)
     onRate?: () => void;
@@ -183,6 +184,7 @@ interface TherapistProfileBaseProps {
 const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     therapist,
     mode,
+    customVerifiedBadge,
     userLocation,
     showHeader = false,
     showSEOFooter = false,
@@ -278,6 +280,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     t={t}
                     hideJoinButton={mode === 'shared'}
                     selectedCity={selectedCity}
+                    customVerifiedBadge={customVerifiedBadge}
                 />
 
                 {/* Professional Massage Services - Unified across all modes */}

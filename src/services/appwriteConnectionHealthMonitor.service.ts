@@ -301,7 +301,7 @@ class AppwriteConnectionHealthMonitor {
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(title, {
         body: message,
-        icon: '/icon-192x192.png',
+        icon: '/icon-192.png',
         tag: 'appwrite-health'
       });
     }

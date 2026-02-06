@@ -37,40 +37,40 @@ class MP3NotificationService {
   private scheduledNotifications = new Map<string, NodeJS.Timeout>();
   private isInitialized = false;
 
-  // Predefined notification sounds
+  // Predefined notification sounds - mapped to actual files in /public/sounds/
   private readonly availableSounds: NotificationSound[] = [
     {
       id: 'gentle_chime',
       name: 'Gentle Chime',
-      filename: 'gentle_chime.mp3',
+      filename: 'alert-notification.mp3', // ✅ Mapped to existing file
       description: 'Soft, pleasant chime for appointment reminders',
       category: 'reminder'
     },
     {
       id: 'booking_confirmed',
       name: 'Booking Confirmed',
-      filename: 'booking_confirmed.mp3', 
+      filename: 'booking-notification.mp3', // ✅ Mapped to existing file
       description: 'Success sound for booking confirmations',
       category: 'booking'
     },
     {
       id: 'payment_success',
       name: 'Payment Success',
-      filename: 'payment_success.mp3',
+      filename: 'payment-notification.mp3', // ✅ Mapped to existing file
       description: 'Confirmation sound for successful payments',
       category: 'payment'
     },
     {
       id: 'appointment_alert',
       name: 'Appointment Alert',
-      filename: 'appointment_alert.mp3',
+      filename: 'alert-notification.mp3', // ✅ Mapped to existing file
       description: 'Urgent alert for upcoming appointments',
       category: 'reminder'
     },
     {
       id: 'spa_bell',
       name: 'Spa Bell',
-      filename: 'spa_bell.mp3',
+      filename: 'success-notification.mp3', // ✅ Mapped to existing file
       description: 'Relaxing spa-like bell sound',
       category: 'reminder'
     }

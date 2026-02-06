@@ -187,8 +187,8 @@ class TherapistNotificationService {
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification(`New Booking Request`, {
         body: `${booking.customerName} wants a ${booking.duration}min ${booking.serviceType} massage at ${booking.location.address}`,
-        icon: '/icon-192x192.png',
-        badge: '/icon-192x192.png',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
         tag: `booking-${booking.bookingId}`,
         requireInteraction: true,
         actions: [

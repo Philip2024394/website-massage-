@@ -83,9 +83,12 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                                 const hasKtpUploaded = therapist.ktpPhotoUrl;
                                 const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
                                 
+                                // Use custom verified badge if provided, otherwise use default
+                                const badgeUrl = customVerifiedBadge || "https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565";
+                                
                                 return shouldShowBadge && (
                                     <img 
-                                        src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                        src={badgeUrl}
                                         alt="Verified"
                                         className="w-5 h-5 flex-shrink-0"
                                         title="Verified Therapist - Bank Details & KTP Complete"
