@@ -1,6 +1,7 @@
 /**
  * IP Geolocation Service
  * Detects user's country automatically using multiple fallback methods
+ * Falls back to the nearest supported country by geographic distance
  */
 
 interface GeolocationResult {
@@ -8,59 +9,156 @@ interface GeolocationResult {
   countryName: string;
   city?: string;
   detected: boolean;
-  method: 'saved' | 'ip' | 'manual' | 'default';
+  method: 'saved' | 'ip' | 'manual' | 'default' | 'nearest';
+  detectedCountry?: string; // Original detected country if fallback was used
+  latitude?: number;
+  longitude?: number;
 }
 
 const SUPPORTED_COUNTRIES = ['ID', 'MY', 'SG', 'TH', 'PH', 'VN', 'GB', 'US', 'AU', 'DE'];
 const DEFAULT_COUNTRY = 'ID';
 
-// Regional fallback mapping for unsupported countries
-const REGIONAL_FALLBACK: { [key: string]: string } = {
-  // Southeast Asia
-  'BN': 'MY', // Brunei → Malaysia
-  'KH': 'TH', // Cambodia → Thailand
-  'LA': 'TH', // Laos → Thailand
-  'MM': 'TH', // Myanmar → Thailand
-  'TL': 'ID', // Timor-Leste → Indonesia
+// Country coordinates (approximate centers) for distance calculation
+const COUNTRY_COORDINATES: { [key: string]: { lat: number; lng: number } } = {
+  // Supported countries
+  'ID': { lat: -2.5, lng: 118.0 },      // Indonesia (center)
+  'MY': { lat: 4.2, lng: 101.9 },       // Malaysia (Kuala Lumpur)
+  'SG': { lat: 1.35, lng: 103.8 },      // Singapore
+  'TH': { lat: 15.87, lng: 100.99 },    // Thailand (Bangkok)
+  'PH': { lat: 12.88, lng: 121.77 },    // Philippines (Manila)
+  'VN': { lat: 14.06, lng: 108.28 },    // Vietnam (center)
+  'GB': { lat: 51.51, lng: -0.13 },     // United Kingdom (London)
+  'US': { lat: 37.09, lng: -95.71 },    // United States (center)
+  'AU': { lat: -25.27, lng: 133.78 },   // Australia (center)
+  'DE': { lat: 51.17, lng: 10.45 },     // Germany (center)
   
-  // East Asia
-  'CN': 'SG', // China → Singapore
-  'HK': 'SG', // Hong Kong → Singapore
-  'MO': 'SG', // Macau → Singapore
-  'TW': 'SG', // Taiwan → Singapore
-  'JP': 'SG', // Japan → Singapore
-  'KR': 'SG', // Korea → Singapore
-  
-  // South Asia
-  'IN': 'SG', // India → Singapore
-  'PK': 'SG', // Pakistan → Singapore
-  'BD': 'SG', // Bangladesh → Singapore
-  'LK': 'SG', // Sri Lanka → Singapore
-  'NP': 'SG', // Nepal → Singapore
-  
-  // Oceania
-  'NZ': 'AU', // New Zealand → Australia
-  'FJ': 'AU', // Fiji → Australia
-  'PG': 'AU', // Papua New Guinea → Australia
-  
-  // Europe
-  'FR': 'GB', // France → UK
-  'ES': 'GB', // Spain → UK
-  'IT': 'GB', // Italy → UK
-  'NL': 'GB', // Netherlands → UK
-  'BE': 'GB', // Belgium → UK
-  'AT': 'DE', // Austria → Germany
-  'CH': 'DE', // Switzerland → Germany
-  'PL': 'DE', // Poland → Germany
-  'CZ': 'DE', // Czech Republic → Germany
-  
-  // Americas
-  'CA': 'US', // Canada → USA
-  'MX': 'US', // Mexico → USA
-  'BR': 'US', // Brazil → USA
-  'AR': 'US', // Argentina → USA
-  'CL': 'US', // Chile → USA
+  // Additional countries for distance calculation
+  'AF': { lat: 33.94, lng: 67.71 },
+  'AL': { lat: 41.15, lng: 20.17 },
+  'DZ': { lat: 28.03, lng: 1.66 },
+  'AR': { lat: -38.42, lng: -63.62 },
+  'AT': { lat: 47.52, lng: 14.55 },
+  'BD': { lat: 23.68, lng: 90.36 },
+  'BE': { lat: 50.50, lng: 4.47 },
+  'BN': { lat: 4.54, lng: 114.73 },
+  'BR': { lat: -14.24, lng: -51.93 },
+  'CA': { lat: 56.13, lng: -106.35 },
+  'CH': { lat: 46.82, lng: 8.23 },
+  'CL': { lat: -35.68, lng: -71.54 },
+  'CN': { lat: 35.86, lng: 104.20 },
+  'CZ': { lat: 49.82, lng: 15.47 },
+  'ES': { lat: 40.46, lng: -3.75 },
+  'FJ': { lat: -17.71, lng: 178.07 },
+  'FR': { lat: 46.23, lng: 2.21 },
+  'HK': { lat: 22.40, lng: 114.11 },
+  'IN': { lat: 20.59, lng: 78.96 },
+  'IT': { lat: 41.87, lng: 12.57 },
+  'JP': { lat: 36.20, lng: 138.25 },
+  'KH': { lat: 12.57, lng: 104.99 },
+  'KR': { lat: 35.91, lng: 127.77 },
+  'LA': { lat: 19.86, lng: 102.50 },
+  'LK': { lat: 7.87, lng: 80.77 },
+  'MO': { lat: 22.20, lng: 113.54 },
+  'MM': { lat: 21.91, lng: 95.96 },
+  'MX': { lat: 23.63, lng: -102.55 },
+  'NL': { lat: 52.13, lng: 5.29 },
+  'NP': { lat: 28.39, lng: 84.12 },
+  'NZ': { lat: -40.90, lng: 174.89 },
+  'PG': { lat: -6.31, lng: 143.96 },
+  'PK': { lat: 30.38, lng: 69.35 },
+  'PL': { lat: 51.92, lng: 19.15 },
+  'RU': { lat: 61.52, lng: 105.32 },
+  'TL': { lat: -8.87, lng: 125.73 },
+  'TW': { lat: 23.70, lng: 120.96 },
 };
+
+/**
+ * Calculate distance between two points using Haversine formula
+ * Returns distance in kilometers
+ */
+function calculateDistance(
+  point1: { lat: number; lng: number },
+  point2: { lat: number; lng: number }
+): number {
+  const R = 6371; // Earth's radius in kilometers
+  
+  const lat1Rad = (point1.lat * Math.PI) / 180;
+  const lat2Rad = (point2.lat * Math.PI) / 180;
+  const deltaLatRad = ((point2.lat - point1.lat) * Math.PI) / 180;
+  const deltaLngRad = ((point2.lng - point1.lng) * Math.PI) / 180;
+
+  const a = 
+    Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
+    Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+    Math.sin(deltaLngRad / 2) * Math.sin(deltaLngRad / 2);
+  
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+  return R * c; // Distance in kilometers
+}
+
+/**
+ * Find the nearest supported country based on geographic coordinates
+ */
+function findNearestSupportedCountry(
+  unsupportedCountryCode: string,
+  latitude?: number,
+  longitude?: number
+): string {
+  // If we have coordinates from IP, use them for precise calculation
+  if (latitude !== undefined && longitude !== undefined) {
+    const userLocation = { lat: latitude, lng: longitude };
+    
+    let nearestCountry = DEFAULT_COUNTRY;
+    let minDistance = Infinity;
+    
+    for (const countryCode of SUPPORTED_COUNTRIES) {
+      const countryCoords = COUNTRY_COORDINATES[countryCode];
+      if (countryCoords) {
+        const distance = calculateDistance(userLocation, countryCoords);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestCountry = countryCode;
+        }
+      }
+    }
+    
+    console.log(
+      `📍 User at [${latitude.toFixed(2)}, ${longitude.toFixed(2)}] from ${unsupportedCountryCode} ` +
+      `→ Nearest supported: ${nearestCountry} (${minDistance.toFixed(0)}km away)`
+    );
+    
+    return nearestCountry;
+  }
+  
+  // Fallback: Use country-to-country distance
+  const unsupportedCoords = COUNTRY_COORDINATES[unsupportedCountryCode];
+  if (!unsupportedCoords) {
+    console.log(`📍 No coordinates for ${unsupportedCountryCode}, using default: ${DEFAULT_COUNTRY}`);
+    return DEFAULT_COUNTRY;
+  }
+  
+  let nearestCountry = DEFAULT_COUNTRY;
+  let minDistance = Infinity;
+  
+  for (const countryCode of SUPPORTED_COUNTRIES) {
+    const countryCoords = COUNTRY_COORDINATES[countryCode];
+    if (countryCoords) {
+      const distance = calculateDistance(unsupportedCoords, countryCoords);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestCountry = countryCode;
+      }
+    }
+  }
+  
+  console.log(
+    `📍 Country ${unsupportedCountryCode} → Nearest supported: ${nearestCountry} ` +
+    `(${minDistance.toFixed(0)}km away)`
+  );
+  
+  return nearestCountry;
+}
 
 class IPGeolocationService {
   private cachedLocation: GeolocationResult | null = null;
@@ -166,37 +264,39 @@ class IPGeolocationService {
 
       const data = await response.json();
       const countryCode = data.country_code;
+      const latitude = data.latitude;
+      const longitude = data.longitude;
 
+      // Check if detected country is directly supported
       if (countryCode && SUPPORTED_COUNTRIES.includes(countryCode)) {
         return {
           countryCode,
           countryName: data.country_name || this.getCountryName(countryCode),
           city: data.city,
+          latitude,
+          longitude,
           detected: true,
           method: 'ip'
         };
       }
 
-      // Check if detected country has a regional fallback
-      if (countryCode && REGIONAL_FALLBACK[countryCode]) {
-        const fallbackCountry = REGIONAL_FALLBACK[countryCode];
-        console.log(`📍 Detected ${countryCode} (${data.country_name}), using nearest supported: ${fallbackCountry}`);
-        return {
-          countryCode: fallbackCountry,
-          countryName: this.getCountryName(fallbackCountry),
-          detected: true,
-          method: 'ip'
-        };
-      }
-
-      // If no fallback, default to Indonesia
+      // Find nearest supported country using distance calculation
       if (countryCode) {
-        console.log(`📍 Detected ${countryCode} but not supported, using default`);
+        const nearestCountry = findNearestSupportedCountry(countryCode, latitude, longitude);
+        console.log(
+          `🌍 IP detected: ${data.country_name} (${countryCode}) at [${latitude}, ${longitude}]\n` +
+          `   → Redirecting to nearest: ${this.getCountryName(nearestCountry)} (${nearestCountry})`
+        );
+        
         return {
-          countryCode: DEFAULT_COUNTRY,
-          countryName: 'Indonesia',
-          detected: false,
-          method: 'default'
+          countryCode: nearestCountry,
+          countryName: this.getCountryName(nearestCountry),
+          city: data.city,
+          latitude,
+          longitude,
+          detected: true,
+          method: 'nearest',
+          detectedCountry: `${data.country_name} (${countryCode})`
         };
       }
     } catch (error) {
@@ -215,37 +315,46 @@ class IPGeolocationService {
 
       const data = await response.json();
       const countryCode = data.country;
+      
+      // Parse location coordinates (format: "lat,lng")
+      let latitude: number | undefined;
+      let longitude: number | undefined;
+      if (data.loc) {
+        const [lat, lng] = data.loc.split(',').map(Number);
+        latitude = lat;
+        longitude = lng;
+      }
 
+      // Check if detected country is directly supported
       if (countryCode && SUPPORTED_COUNTRIES.includes(countryCode)) {
         return {
           countryCode,
           countryName: this.getCountryName(countryCode),
           city: data.city,
+          latitude,
+          longitude,
           detected: true,
           method: 'ip'
         };
       }
 
-      // Check if detected country has a regional fallback
-      if (countryCode && REGIONAL_FALLBACK[countryCode]) {
-        const fallbackCountry = REGIONAL_FALLBACK[countryCode];
-        console.log(`📍 Detected ${countryCode}, using nearest supported: ${fallbackCountry}`);
-        return {
-          countryCode: fallbackCountry,
-          countryName: this.getCountryName(fallbackCountry),
-          detected: true,
-          method: 'ip'
-        };
-      }
-
-      // If no fallback, default to Indonesia
+      // Find nearest supported country using distance calculation
       if (countryCode) {
-        console.log(`📍 Detected ${countryCode} but not supported, using default`);
+        const nearestCountry = findNearestSupportedCountry(countryCode, latitude, longitude);
+        console.log(
+          `🌍 IP detected: ${countryCode} at [${latitude}, ${longitude}]\n` +
+          `   → Redirecting to nearest: ${this.getCountryName(nearestCountry)} (${nearestCountry})`
+        );
+        
         return {
-          countryCode: DEFAULT_COUNTRY,
-          countryName: 'Indonesia',
-          detected: false,
-          method: 'default'
+          countryCode: nearestCountry,
+          countryName: this.getCountryName(nearestCountry),
+          city: data.city,
+          latitude,
+          longitude,
+          detected: true,
+          method: 'nearest',
+          detectedCountry: countryCode
         };
       }
     } catch (error) {
@@ -359,6 +468,39 @@ class IPGeolocationService {
       name: this.getCountryName(code),
       flag: this.getCountryFlag(code)
     }));
+  }
+
+  /**
+   * Calculate and return the nearest supported country for a given location
+   */
+  getNearestCountry(latitude: number, longitude: number): {
+    code: string;
+    name: string;
+    flag: string;
+    distance: number;
+  } {
+    const userLocation = { lat: latitude, lng: longitude };
+    
+    let nearestCountry = DEFAULT_COUNTRY;
+    let minDistance = Infinity;
+    
+    for (const countryCode of SUPPORTED_COUNTRIES) {
+      const countryCoords = COUNTRY_COORDINATES[countryCode];
+      if (countryCoords) {
+        const distance = calculateDistance(userLocation, countryCoords);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestCountry = countryCode;
+        }
+      }
+    }
+    
+    return {
+      code: nearestCountry,
+      name: this.getCountryName(nearestCountry),
+      flag: this.getCountryFlag(nearestCountry),
+      distance: Math.round(minDistance)
+    };
   }
 }
 

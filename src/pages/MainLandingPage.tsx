@@ -14,6 +14,7 @@ import { AppDrawer } from '../components/AppDrawerClean';
 import { loadLanguageResources } from '../lib/i18n';
 import { ipGeolocationService } from '../lib/ipGeolocationService';
 import { isPWA, shouldAllowRedirects } from '../utils/pwaDetection';
+import CountryRedirectNotice from '../components/CountryRedirectNotice';
 import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
 
@@ -393,7 +394,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const ipDetectionRan = React.useRef(false);
     
     // Location state - now using auto-detected country
-    const { city: contextCity, countryCode, autoDetected, detectionMethod, setCity, setCountry, clearCountry } = useCityContext();
+    const { city: contextCity, countryCode, autoDetected, detectionMethod, locationResult, setCity, setCountry, clearCountry } = useCityContext();
     const [selectedCity, setSelectedCity] = useState<string | null>(contextCity || null);
     const [showCountryModal, setShowCountryModal] = useState(false);
     const [cityNotListed, setCityNotListed] = useState(false);
@@ -819,6 +820,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             touchAction: 'pan-y pan-x', // Enable touch scrolling
             overscrollBehavior: 'auto' // Allow native overscroll
         }}>
+            {/* Country Redirect Notification - shows when user is redirected to nearest country */}
+            {locationResult && <CountryRedirectNotice location={locationResult} />}
+            
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             
             {/* Fixed background image - stays in place while scrolling - optimized for performance */}

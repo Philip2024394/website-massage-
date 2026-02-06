@@ -20,7 +20,8 @@ interface CityContextValue {
   city: string | null;
   hasSelectedCity: boolean;
   autoDetected: boolean;
-  detectionMethod: 'saved' | 'ip' | 'manual' | 'default';
+  detectionMethod: 'saved' | 'ip' | 'manual' | 'default' | 'nearest';
+  locationResult: GeolocationResult | null; // Full location data including nearest country info
   setCity: (city: string) => void;
   setCountry: (countryCode: string, savePreference?: boolean) => void;
   clearCity: () => void;
@@ -34,7 +35,8 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [city, setCity] = useState<string | null>(null);
   const [countryCode, setCountryCodeState] = useState<string>('ID');
   const [autoDetected, setAutoDetected] = useState(false);
-  const [detectionMethod, setDetectionMethod] = useState<'saved' | 'ip' | 'manual' | 'default'>('default');
+  const [detectionMethod, setDetectionMethod] = useState<'saved' | 'ip' | 'manual' | 'default' | 'nearest'>('default');
+  const [locationResult, setLocationResult] = useState<GeolocationResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Auto-detect country on mount
@@ -48,6 +50,7 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         // Batch all state updates together to prevent multiple re-renders
         // React 18+ automatically batches these updates
+        setLocationResult(location);
         setCountryCodeState(location.countryCode);
         setAutoDetected(location.detected);
         setDetectionMethod(location.method);
@@ -64,6 +67,7 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Fallback to Indonesia - batch updates
         setCountryCodeState('ID');
         setDetectionMethod('default');
+        setLocationResult(null);
         setIsLoading(false);
         currencyService.setCountry('ID');
       }
@@ -150,6 +154,7 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     hasSelectedCity: !!city,
     autoDetected,
     detectionMethod,
+    locationResult,
     setCity: handleSetCity,
     setCountry: handleSetCountry,
     clearCity,

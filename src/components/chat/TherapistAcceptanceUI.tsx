@@ -39,15 +39,15 @@ export const TherapistAcceptanceUI: React.FC<TherapistAcceptanceUIProps> = ({
 
   return (
     <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4 m-4 shadow-lg">
-      {/* Success Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-          <CheckCircle className="w-6 h-6 text-white" />
+      {/* Success Header - Text Status */}
+      <div className="mb-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl p-4 shadow-lg text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <CheckCircle className="w-6 h-6" />
+          <h3 className="text-lg font-bold">Therapist Accepted!</h3>
         </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-green-800 text-lg">Booking Accepted!</h3>
-          <p className="text-green-600 text-sm">Your therapist is preparing to visit</p>
-        </div>
+        <p className="text-sm opacity-90">
+          {therapist.name} has accepted your booking and is preparing to visit
+        </p>
       </div>
 
       {/* Therapist Profile Card */}

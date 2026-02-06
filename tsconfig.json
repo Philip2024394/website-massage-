@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
@@ -15,6 +16,28 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+
+    /* Path Aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/apps/*": ["./src/apps/*"],
+      "@/admin/*": ["./src/apps/admin/*"],
+      "@/agent/*": ["./src/apps/agent/*"],
+      "@/client/*": ["./src/apps/client/*"],
+      "@/therapist/*": ["./src/apps/therapist/*"],
+      "@/place/*": ["./src/apps/place/*"],
+      "@/hotel/*": ["./src/apps/hotel/*"],
+      "@/villa/*": ["./src/apps/villa/*"],
+      "@/components/*": ["./components/*"],
+      "@/pages/*": ["./pages/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/utils/*": ["./utils/*"],
+      "@/types/*": ["./types/*"],
+      "src/*": ["./src/*"]
+    },
 
     /* Linting - Incrementally enabling strict mode for enterprise standards */
     "strict": false, // TODO: Enable once all type errors resolved

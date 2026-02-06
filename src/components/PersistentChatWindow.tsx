@@ -262,6 +262,8 @@ export function PersistentChatWindow() {
     confirmPayment,
     addSystemNotification,
     lockChat,
+    unlockChat,
+    timerState,
   } = usePersistentChat();
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -285,7 +287,7 @@ export function PersistentChatWindow() {
         );
         
         // Validate countdown timer
-        BookingChatLockIn.validateCountdownTimer(chatState.bookingCountdown);
+        BookingChatLockIn.validateCountdownTimer(timerState.remainingSeconds);
         
         // Development warnings for missing optional fields
         if (process.env.NODE_ENV !== 'production') {
@@ -303,7 +305,7 @@ export function PersistentChatWindow() {
         console.log('⏳ Booking creation in progress - countdown will appear when ready');
       }
     }
-  }, [chatState.isOpen, chatState.currentBooking, chatState.bookingCountdown, chatState.bookingStep, closeChat]);
+  }, [chatState.isOpen, chatState.currentBooking, timerState.remainingSeconds, chatState.bookingStep, closeChat]);
   
   // RULE 2: Guard against opening chat without booking (ONLY for existing chat step)
   // ✅ CRITICAL: Allow Order Now flow - don't guard against initial booking creation
@@ -1504,8 +1506,8 @@ export function PersistentChatWindow() {
     <StatusThemeProvider 
       initialStatus={chatState.currentBooking?.status as BookingProgressStep || 'requested'}
     >
-      {/* Booking Confirmation Container - Takes over entire screen when booking is active */}
-      {chatState.currentBooking && chatState.bookingCountdown && chatState.bookingCountdown > 0 && !chatState.isTherapistView && (
+      {/* Booking Confirmation Container - Only show when chat is NOT open (full-screen overlay) */}
+      {chatState.currentBooking && timerState.isActive && timerState.remainingSeconds > 0 && !chatState.isTherapistView && !chatState.isOpen && (
         <BookingConfirmationContainer
           therapistName={chatState.therapist?.name || 'Therapist'}
           therapistImage={chatState.therapist?.mainImage || chatState.therapist?.profileImage}
@@ -1519,7 +1521,7 @@ export function PersistentChatWindow() {
             price: chatState.currentBooking.price,
             serviceType: chatState.currentBooking.serviceType || 'Professional Treatment'
           }}
-          countdownSeconds={chatState.bookingCountdown}
+          countdownSeconds={timerState.remainingSeconds}
           onCancel={() => cancelBooking()}
           showConfirmation={true}
         />
@@ -2396,10 +2398,10 @@ export function PersistentChatWindow() {
                     <p className="text-xs text-red-600 mt-1">Please choose a different therapist or select a compatible option.</p>
                   </div>
                 )}
-                {/* Optional field - no validation warning needed */}
+                {/* Required field - therapist service compatibility */}
                 {!customerForm.massageFor && (
-                  <p className="text-xs text-gray-500 mt-2 text-center flex items-center justify-center gap-1 font-medium">
-                    <span>ℹ️</span> Optional: Select who the treatment is for
+                  <p className="text-xs text-orange-600 mt-2 text-center flex items-center justify-center gap-1 font-medium">
+                    <span>⚠️</span> Please select who the treatment is for (some therapists only serve specific clients)
                   </p>
                 )}
               </div>
@@ -2783,6 +2785,31 @@ export function PersistentChatWindow() {
                   
                   {/* Booking Progress Indicator */}
                   <div className="mt-4 pt-4 border-t border-gray-300">
+                    {/* 5-Minute Countdown Timer - Show when booking is waiting for response */}
+                    {chatState.currentBooking && timerState.isActive && timerState.remainingSeconds > 0 && (
+                      <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border-2 border-orange-300 shadow-md">
+                        <div className="text-center mb-2">
+                          <p className="text-xs font-semibold text-orange-800 uppercase tracking-wide mb-1">
+                            ⏰ Therapist Response Countdown
+                          </p>
+                          <p className="text-xs text-orange-600">
+                            Therapist has 5 minutes to accept booking
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 bg-white px-5 py-3 rounded-lg">
+                          <Clock className="w-6 h-6 text-orange-600 animate-pulse" />
+                          <span className="text-3xl font-bold text-orange-600 font-mono">
+                            {Math.floor(timerState.remainingSeconds / 60)}:{(timerState.remainingSeconds % 60).toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                        <div className="mt-2 text-center">
+                          <p className="text-xs text-orange-700 font-medium">
+                            Time remaining for therapist to respond
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
                     <BookingProgress 
                       currentStatus={chatState.currentBooking?.status || 'sent'}
                       className="border-0 p-0 bg-transparent"

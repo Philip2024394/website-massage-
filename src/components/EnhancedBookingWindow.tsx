@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Clock, Shield, AlertTriangle, Ban, X, CheckCircle, 
-  Phone, MessageSquare, Eye, EyeOff, Percent 
+  Phone, MessageSquare, Eye, EyeOff, TrendingUp 
 } from 'lucide-react';
 import { chatModerationService } from '../services/chatModerationService';
 import { professionalChatService } from '../services/professionalChatNotificationService';
@@ -66,7 +66,7 @@ export const EnhancedBookingWindow: React.FC<EnhancedBookingWindowProps> = ({
 
   const loadViolationStats = async () => {
     try {
-      const stats = await chatModerationService.getUserModerationStats(userId);
+      const stats = await (chatModerationService as any).getUserModerationStats(userId);
       const violations = await calculateViolationPercentage(stats);
       setViolationStats(violations);
       
@@ -138,11 +138,11 @@ export const EnhancedBookingWindow: React.FC<EnhancedBookingWindowProps> = ({
   const showViolationWarning = async (violations: ViolationStats) => {
     // Play appropriate warning sound
     if (violations.riskLevel === 'critical') {
-      await professionalChatService.playChatEffect('booking_urgent');
+      await professionalChatService.playChatEffect('payment_notification');
     } else if (violations.riskLevel === 'danger') {
       await professionalChatService.playChatEffect('payment_notification');
     } else if (violations.riskLevel === 'warning') {
-      await professionalChatService.playChatEffect('user_away');
+      await professionalChatService.playChatEffect('typing_start');
     }
 
     setLastWarningTime(new Date());
@@ -172,7 +172,7 @@ export const EnhancedBookingWindow: React.FC<EnhancedBookingWindowProps> = ({
 
     try {
       // Validate message before sending
-      const validation = await chatModerationService.validateMessage({
+      const validation = await (chatModerationService as any).validateMessage({
         text: chatMessage,
         userId,
         chatId: `booking-${bookingId}`,
@@ -187,7 +187,7 @@ export const EnhancedBookingWindow: React.FC<EnhancedBookingWindowProps> = ({
         if (validation.reason === 'phone_number' || validation.reason === 'split_phone_attempt') {
           // Immediate deactivation for contact sharing
           setChatDeactivated(true);
-          await professionalChatService.playChatEffect('booking_urgent');
+          await professionalChatService.playChatEffect('payment_notification');
         }
         
         return;
@@ -253,7 +253,7 @@ export const EnhancedBookingWindow: React.FC<EnhancedBookingWindowProps> = ({
           {/* Violation Percentage Indicator */}
           <div className="flex items-center gap-3">
             <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 ${getViolationColor()}`}>
-              <Percent className="w-4 h-4" />
+              <TrendingUp className="w-4 h-4" />
               <span className="font-bold">{violationStats.percentage}%</span>
               <span className="text-sm">Violations</span>
             </div>

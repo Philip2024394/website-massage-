@@ -16,13 +16,7 @@
  * ============================================================================
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState, useMemo } from 'react';
 import {
     CheckCircle2,
     AlertTriangle,
@@ -38,7 +32,151 @@ import {
     Shield,
     Zap
 } from 'lucide-react';
-import { adminAuditService } from '@/services/adminDashboardAuditService';
+import { adminAuditService } from '../../services/adminDashboardAuditService';
+
+// ============================================================================
+// 🎨 SIMPLE UI COMPONENTS
+// ============================================================================
+
+const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+    <div className={`bg-white rounded-lg shadow-md ${className}`}>{children}</div>
+);
+
+const CardHeader: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+    <div className={`px-6 py-4 border-b border-gray-200 ${className}`}>{children}</div>
+);
+
+const CardTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+    <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>{children}</h3>
+);
+
+const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+    <div className={`px-6 py-4 ${className}`}>{children}</div>
+);
+
+const Button: React.FC<{
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    variant?: 'default' | 'outline';
+    size?: 'sm' | 'md' | 'lg';
+    className?: string;
+}> = ({ children, onClick, disabled, variant = 'default', size = 'md', className = '' }) => {
+    const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+    const variantStyles = variant === 'outline' 
+        ? 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50' 
+        : 'bg-blue-600 text-white hover:bg-blue-700';
+    const sizeStyles = size === 'sm' ? 'px-3 py-1.5 text-sm' : 'px-4 py-2 text-base';
+    const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : '';
+    
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`${baseStyles} ${variantStyles} ${sizeStyles} ${disabledStyles} ${className}`}
+        >
+            {children}
+        </button>
+    );
+};
+
+const Badge: React.FC<{ children: React.ReactNode; className?: string; variant?: string }> = ({ 
+    children, 
+    className = '', 
+    variant = 'default' 
+}) => (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${className}`}>
+        {children}
+    </span>
+);
+
+const Progress: React.FC<{ value: number; className?: string }> = ({ value, className = '' }) => (
+    <div className={`w-full bg-gray-200 rounded-full ${className}`}>
+        <div 
+            className="bg-blue-600 h-full rounded-full transition-all duration-300"
+            style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+        />
+    </div>
+);
+
+const Alert: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+    <div className={`rounded-lg border p-4 ${className}`}>
+        {children}
+    </div>
+);
+
+const AlertDescription: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <div className="text-sm">{children}</div>
+);
+
+const Tabs: React.FC<{ 
+    children: React.ReactNode; 
+    value: string; 
+    onValueChange: (value: string) => void 
+}> = ({ children, value, onValueChange }) => {
+    return (
+        <div className="tabs-container">
+            {React.Children.map(children, child => {
+                if (React.isValidElement(child)) {
+                    return React.cloneElement(child as React.ReactElement<any>, {
+                        activeValue: value,
+                        onValueChange
+                    });
+                }
+                return child;
+            })}
+        </div>
+    );
+};
+
+const TabsList: React.FC<{ 
+    children: React.ReactNode;
+    className?: string;
+    activeValue?: string;
+    onValueChange?: (value: string) => void;
+}> = ({ children, className = '', activeValue, onValueChange }) => (
+    <div className={`inline-flex items-center justify-center rounded-lg bg-gray-100 p-1 ${className}`}>
+        {React.Children.map(children, child => {
+            if (React.isValidElement(child)) {
+                return React.cloneElement(child as React.ReactElement<any>, {
+                    activeValue,
+                    onValueChange
+                });
+            }
+            return child;
+        })}
+    </div>
+);
+
+const TabsTrigger: React.FC<{ 
+    value: string;
+    children: React.ReactNode;
+    className?: string;
+    activeValue?: string;
+    onValueChange?: (value: string) => void;
+}> = ({ value, children, className = '', activeValue, onValueChange }) => {
+    const isActive = value === activeValue;
+    
+    return (
+        <button 
+            onClick={() => onValueChange?.(value)}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all focus:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+                isActive ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+            } ${className}`}
+        >
+            {children}
+        </button>
+    );
+};
+
+const TabsContent: React.FC<{
+    value: string;
+    children: React.ReactNode;
+    activeValue?: string;
+}> = ({ value, children, activeValue }) => {
+    if (value !== activeValue) return null;
+    return <div className="mt-4">{children}</div>;
+};
 
 // ============================================================================
 // 🎯 TYPES AND INTERFACES
@@ -160,7 +298,7 @@ export const AdminAuditDashboard: React.FC = () => {
             
         } catch (error) {
             console.error('Audit failed:', error);
-            Alert('Audit failed to complete. Please check the console for details.');
+            alert('Audit failed to complete. Please check the console for details.');
         } finally {
             setIsRunningAudit(false);
         }

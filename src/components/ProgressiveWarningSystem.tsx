@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Ban, Shield, Percent, X, TrendingUp, Clock, Eye, EyeOff } from 'lucide-react';
+import { AlertTriangle, Ban, Shield, X, TrendingUp, Clock, Eye, EyeOff } from 'lucide-react';
 import { violationPercentageService, UserViolationProfile } from '../services/violationPercentageService';
 import { professionalChatService } from '../services/professionalChatNotificationService';
 
@@ -114,13 +114,13 @@ export const ProgressiveWarningSystem: React.FC<ProgressiveWarningSystemProps> =
     try {
       switch (severity) {
         case 'critical':
-          await professionalChatService.playChatEffect('booking_urgent');
+          await professionalChatService.playChatEffect('on_the_way');
           break;
         case 'danger':
           await professionalChatService.playChatEffect('payment_notification');
           break;
         case 'warning':
-          await professionalChatService.playChatEffect('user_away');
+          await professionalChatService.playChatEffect('typing_start');
           break;
         default:
           await professionalChatService.playChatEffect('message_sent');
@@ -218,7 +218,7 @@ export const ProgressiveWarningSystem: React.FC<ProgressiveWarningSystemProps> =
               {warningState.showPercentage && (
                 <div className="flex items-center gap-3 mb-2">
                   <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-white text-sm font-bold ${getPercentageColor()}`}>
-                    <Percent className="w-4 h-4" />
+                    <TrendingUp className="w-4 h-4" />
                     <span>{userProfile.violationPercentage}%</span>
                     <span className="text-xs">Violations</span>
                   </div>

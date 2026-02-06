@@ -199,15 +199,52 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             )}
 
             <div className="flex flex-col max-w-xs lg:max-w-md">
-              {/* Sender name (if not own message and not system) */}
-              {!isOwnMessage(message) && message.senderType !== 'system' && (
-                <div className="text-xs text-gray-500 mb-1 px-1">
-                  {message.senderName}
+              {/* Check if this is a rejection/busy message for special rendering */}
+              {message.senderType === 'system' && (message.content.includes('Booking rejected') || message.content.includes('therapist is busy')) ? (
+                <div style={{ maxWidth: '100%', textAlign: 'center' }}>
+                  <img 
+                    src="https://ik.imagekit.io/7grri5v7d/therapist%20is%20busy.png?updatedAt=1770373381563"
+                    alt="Therapist is busy - Finding alternative"
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                      display: 'block',
+                      margin: '0 auto',
+                      borderRadius: '16px'
+                    }}
+                  />
+                  <div className="text-xs text-gray-500 mt-2 opacity-70">
+                    {formatTime(message.timestamp)}
+                  </div>
                 </div>
-              )}
+              ) : message.senderType === 'system' && (message.content.includes('on the way') || message.content.includes('On the way') || message.content.includes('On The Way')) ? (
+                <div style={{ maxWidth: '100%', textAlign: 'center' }}>
+                  <img 
+                    src="https://ik.imagekit.io/7grri5v7d/therapist%20is%20on%20the%20way.png?updatedAt=1770373549529"
+                    alt="Therapist is on the way"
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                      display: 'block',
+                      margin: '0 auto',
+                      borderRadius: '16px'
+                    }}
+                  />
+                  <div className="text-xs text-gray-500 mt-2 opacity-70">
+                    {formatTime(message.timestamp)}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Sender name (if not own message and not system) */}
+                  {!isOwnMessage(message) && message.senderType !== 'system' && (
+                    <div className="text-xs text-gray-500 mb-1 px-1">
+                      {message.senderName}
+                    </div>
+                  )}
 
-              {/* Message bubble */}
-              <div className={`${style.bubble} rounded-2xl px-4 py-3`}>
+                  {/* Message bubble */}
+                  <div className={`${style.bubble} rounded-2xl px-4 py-3`}>
                 {/* Special rendering for discount/voucher messages */}
                 {message.content && /discount code|voucher code|discount/i.test(message.content) && /code[:\s]/i.test(message.content) ? (
                   <div className="flex flex-col items-center gap-2">
@@ -253,6 +290,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                   )}
                 </div>
               </div>
+              </>
+              )}
             </div>
           </div>
         );

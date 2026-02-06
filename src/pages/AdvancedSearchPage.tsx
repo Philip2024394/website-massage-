@@ -63,11 +63,11 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                     <ArrowLeft className="w-6 h-6" />
                 </button>
                 
-                <div className="text-center mb-8 -mt-10">
+                <div className="text-center mb-8">
                     <img 
-                        src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
-                        alt="IndaStreet Massage Logo" 
-                        className="w-60 h-60 object-contain mx-auto mb-4"
+                        src="https://ik.imagekit.io/7grri5v7d/location.png?updatedAt=1770372194065" 
+                        alt="Location Search" 
+                        className="w-full max-w-2xl h-auto object-contain mx-auto mb-6 rounded-lg"
                     />
                     <h2 className="text-2xl font-bold text-gray-900">
                         {currentLanguage === 'id' ? 'Pencarian Lanjutan' : 'Advanced Search'}

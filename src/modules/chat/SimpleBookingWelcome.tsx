@@ -66,13 +66,13 @@ export const SimpleBookingWelcome: React.FC<SimpleBookingWelcomeProps> = ({
         </div>
       </div>
 
-      {/* 2. Booking Details */}
-      <div className="mb-3 pb-3 border-b border-gray-300">
-        <p className="text-sm text-gray-700 font-medium">
-          📋 Booking Request Sent
+      {/* 2. Booking Details - Text Status */}
+      <div className="mb-3 pb-3 border-b border-gray-300 bg-green-50 rounded-lg p-3">
+        <p className="text-sm text-green-800 font-semibold text-center mb-1">
+          ✅ Booking Request Sent
         </p>
-        <p className="text-xs text-gray-600 mt-1">
-          Waiting for response...
+        <p className="text-xs text-green-600 text-center">
+          Waiting for therapist response...
         </p>
       </div>
 

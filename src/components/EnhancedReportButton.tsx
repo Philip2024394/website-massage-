@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Flag, AlertTriangle, Shield, CheckCircle, X, Eye, EyeOff } from 'lucide-react';
+import { AlertTriangle, Shield, CheckCircle, X, Eye, EyeOff } from 'lucide-react';
 import { chatFlagService } from '../lib/services/chatFlagService';
 import { chatModerationService, ContentFilterResult } from '../services/chatModerationService';
 import { professionalChatService } from '../services/professionalChatNotificationService';
@@ -160,7 +160,7 @@ export const EnhancedReportButton: React.FC<EnhancedReportButtonProps> = ({
         className={`p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors ${className}`}
         title="Report this chat"
       >
-        <Flag className="w-5 h-5" />
+        <AlertTriangle className="w-5 h-5" />
       </button>
 
       {/* Report Modal */}
@@ -281,7 +281,7 @@ export const EnhancedReportButton: React.FC<EnhancedReportButtonProps> = ({
                       </>
                     ) : (
                       <>
-                        <Flag className="w-4 h-4" />
+                        <AlertTriangle className="w-4 h-4" />
                         Submit Report 🚨
                       </>
                     )}

@@ -209,8 +209,9 @@ class AdminDashboardAuditSystem {
 
         for (const serviceTest of adminServices) {
             try {
-                if (serviceTest.service && typeof serviceTest.service.getAll === 'function') {
-                    await serviceTest.service.getAll();
+                const service = serviceTest.service as any;
+                if (service && typeof service.getAll === 'function') {
+                    await service.getAll();
                     this.addResult('BACKEND_INTEGRATION', `Service: ${serviceTest.name}`, 'PASS', 
                         'Service operational');
                 } else {

@@ -30,6 +30,16 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
   bookingCountdown,
   onCancelBooking
 }) => {
+  // Format countdown as MM:SS - SAFE VERSION with defensive guards
+  const formatCountdown = (seconds: number | null | undefined): string => {
+    if (seconds === null || seconds === undefined || !Number.isFinite(seconds) || seconds <= 0) {
+      return '--:--';
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const getStatusMessage = (status: string) => {
     const isBookNow = currentBooking.bookingType === 'book_now';
     const timerText = isBookNow ? '5 minutes' : '25 minutes';
@@ -56,18 +66,46 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
 
   return (
     <div className="bg-white border-b border-gray-200">
-      {/* Welcome Header with Countdown */}
+      {/* Welcome Header with Status and Countdown */}
       <div className="px-4 py-3 bg-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <h3 className="font-medium text-sm text-gray-800">Booking Request Sent</h3>
+        {/* Text Status */}
+        <div className="bg-green-50 rounded-lg p-3 mb-3 border-2 border-green-200">
+          <div className="text-center">
+            <p className="text-sm font-semibold text-green-800 mb-1">
+              ✅ Booking Request Sent
+            </p>
+            <p className="text-xs text-green-600">
+              Waiting for therapist to respond
+            </p>
           </div>
         </div>
+        
+        {/* 5-Minute Countdown Timer */}
+        {Number.isFinite(bookingCountdown) && bookingCountdown !== null && bookingCountdown > 0 && (
+          <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border-2 border-orange-300 mb-3 shadow-md">
+            <div className="text-center mb-2">
+              <p className="text-xs font-semibold text-orange-800 uppercase tracking-wide">
+                ⏰ Therapist Response Countdown
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-2 bg-white px-5 py-3 rounded-lg">
+              <Clock className="w-6 h-6 text-orange-600 animate-pulse" />
+              <span className="text-3xl font-bold text-orange-600 font-mono">
+                {formatCountdown(bookingCountdown)}
+              </span>
+            </div>
+            <div className="mt-2 text-center">
+              <p className="text-xs text-orange-700 font-medium">
+                Time remaining for therapist to respond
+              </p>
+            </div>
+          </div>
+        )}
         
         {/* Status Message */}
         <p className="text-gray-600 text-xs mt-2">
           {getStatusMessage(currentBooking.status)}
+        </p>
         </p>
         
         {/* Cancel Button - Only show before therapist accepts */}

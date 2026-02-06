@@ -318,16 +318,20 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
               id="bookingStatus"
               style={{
                 marginTop: '16px',
-                padding: '12px',
+                padding: '16px',
                 textAlign: 'center',
-                fontWeight: 600,
-                borderRadius: '8px',
-                color: '#1e8e3e',
-                backgroundColor: '#dcfce7',
-                border: '1px solid #86efac'
+                borderRadius: '12px',
+                backgroundColor: '#f0fdf4',
+                border: '2px solid #86efac',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
             >
-              ✅ Booking request sent to therapist
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#15803d', marginBottom: '4px' }}>
+                ✅ Booking Request Sent
+              </div>
+              <div style={{ fontSize: '12px', color: '#166534' }}>
+                Waiting for therapist to respond...
+              </div>
             </div>
           )}
 

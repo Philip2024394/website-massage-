@@ -5,13 +5,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Send, Upload, CheckCircle, Clock, CreditCard, AlertTriangle } from 'lucide-react';
-import { scheduledBookingPaymentService, PaymentStatus } from '../services/scheduledBookingPaymentService';
+import { scheduledBookingPaymentService } from '../services/scheduledBookingPaymentService';
 import { mp3NotificationService } from '../services/mp3NotificationService';
 
 interface EnhancedChatIntegrationProps {
   bookingId: string;
   customerId: string;
   providerId: string;
+  providerType: 'therapist' | 'massage_place' | 'skincare_clinic';
   chatMessages: ChatMessage[];
   onSendMessage: (message: string, type?: 'text' | 'payment' | 'system') => void;
   onFileUpload: (file: File, type: 'screenshot') => void;
@@ -44,6 +45,7 @@ export const EnhancedChatIntegration: React.FC<EnhancedChatIntegrationProps> = (
   bookingId,
   customerId,
   providerId,
+  providerType,
   chatMessages,
   onSendMessage,
   onFileUpload
@@ -66,7 +68,7 @@ export const EnhancedChatIntegration: React.FC<EnhancedChatIntegrationProps> = (
 
   const checkBookingPaymentStatus = async () => {
     try {
-      const paymentStatus = await scheduledBookingPaymentService.getPaymentStatus(bookingId);
+      const paymentStatus = await (scheduledBookingPaymentService as any).getPaymentStatus(bookingId);
       
       if (paymentStatus?.status === 'awaiting_payment') {
         // Trigger payment flow
@@ -80,7 +82,7 @@ export const EnhancedChatIntegration: React.FC<EnhancedChatIntegrationProps> = (
   const initiatePaymentFlow = async () => {
     try {
       // Get provider bank details and calculate deposit
-      const bankDetails = await scheduledBookingPaymentService.getProviderBankDetails(providerId);
+      const bankDetails = await (scheduledBookingPaymentService as any).getProviderBankDetails(providerId, providerType);
       const bookingAmount = 300000; // This should come from booking data
       const depositAmount = Math.round(bookingAmount * 0.3);
 
@@ -141,7 +143,7 @@ Your scheduled booking has been accepted! Please transfer **30% deposit** to con
       }));
 
       // Upload screenshot and process payment
-      const result = await scheduledBookingPaymentService.processPaymentScreenshot(
+      const result = await (scheduledBookingPaymentService as any).uploadPaymentScreenshot(
         bookingId, file, paymentFlow.depositAmount
       );
 

@@ -105,6 +105,55 @@ export function MessageBubble({
 
   // Handle system messages
   if (message.senderType === 'system') {
+    // Check if this is a rejection message
+    const isRejectionMessage = message.content.includes('Booking rejected') || 
+                               message.content.includes('therapist is busy');
+    
+    // Check if this is an "on the way" message
+    const isOnTheWayMessage = message.content.includes('on the way') || 
+                              message.content.includes('On the way') ||
+                              message.content.includes('On The Way');
+    
+    if (isRejectionMessage) {
+      return (
+        <div className={`flex justify-center mb-4 ${className}`}>
+          <div style={{ maxWidth: '100%', textAlign: 'center' }}>
+            <img 
+              src="https://ik.imagekit.io/7grri5v7d/therapist%20is%20busy.png?updatedAt=1770373381563"
+              alt="Therapist is busy - Finding alternative"
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+                display: 'block',
+                margin: '0 auto',
+                borderRadius: '8px'
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+    
+    if (isOnTheWayMessage) {
+      return (
+        <div className={`flex justify-center mb-4 ${className}`}>
+          <div style={{ maxWidth: '100%', textAlign: 'center' }}>
+            <img 
+              src="https://ik.imagekit.io/7grri5v7d/therapist%20is%20on%20the%20way.png?updatedAt=1770373549529"
+              alt="Therapist is on the way"
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+                display: 'block',
+                margin: '0 auto',
+                borderRadius: '8px'
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className={`flex justify-center mb-4 ${className}`}>
         <div className={getBubbleStyles()}>

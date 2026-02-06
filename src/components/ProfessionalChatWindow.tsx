@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Paperclip, Smile, Phone, Video, MoreVertical, Volume2, VolumeX } from 'lucide-react';
+import { Send, Link, MessageCircle, Phone, Play, Menu, Volume, VolumeOff } from 'lucide-react';
 import { ProfessionalChatMessage, TypingIndicator } from './ProfessionalChatMessage';
 import { NotificationBadge } from './NotificationBadge';
 import { UserStatusIndicator, UserStatusManager } from './UserStatusIndicator';
@@ -199,7 +199,7 @@ export const ProfessionalChatWindow: React.FC<ProfessionalChatWindowProps> = ({
               className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
               title={soundEnabled ? 'Mute sounds' : 'Enable sounds'}
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              {soundEnabled ? <Volume className="w-4 h-4" /> : <VolumeOff className="w-4 h-4" />}
             </button>
 
             <button className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors">
@@ -207,14 +207,14 @@ export const ProfessionalChatWindow: React.FC<ProfessionalChatWindowProps> = ({
             </button>
 
             <button className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors">
-              <Video className="w-4 h-4" />
+              <Play className="w-4 h-4" />
             </button>
 
             <button
               onClick={onClose}
               className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
             >
-              <MoreVertical className="w-4 h-4" />
+              <Menu className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -243,7 +243,7 @@ export const ProfessionalChatWindow: React.FC<ProfessionalChatWindowProps> = ({
         <div className="flex items-center gap-2">
           {/* Attachment Button */}
           <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <Paperclip className="w-4 h-4 text-gray-600" />
+            <Link className="w-4 h-4 text-gray-600" />
           </button>
 
           {/* Message Input */}
@@ -264,7 +264,7 @@ export const ProfessionalChatWindow: React.FC<ProfessionalChatWindowProps> = ({
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <Smile className="w-4 h-4 text-gray-600" />
+            <MessageCircle className="w-4 h-4 text-gray-600" />
           </button>
 
           {/* Send Button */}
