@@ -172,14 +172,21 @@ export interface BookingData {
 // Therapist info for chat
 export interface ChatTherapist {
   id: string; // Display name for easy debugging
+  $id?: string; // Appwrite document ID (optional for compatibility)
   name: string;
   image?: string;
+  mainImage?: string; // Main profile image
+  profileImage?: string; // Profile image
+  location?: string; // Location/address
+  city?: string; // City
   pricing?: Record<string, number>;
   // Add separate price fields to match Therapist interface
   price60?: string;
   price90?: string;
   price120?: string;
   whatsapp?: string;
+  phone?: string; // Phone number
+  whatsApp?: string; // Alternative spelling
   status?: string;
   availabilityStatus?: TherapistAvailabilityStatus | string; // AVAILABLE, BUSY, CLOSED, RESTRICTED
   duration?: number;
@@ -247,7 +254,8 @@ export interface ChatWindowState {
   connectionStatus: ConnectionStatus;
   // Booking workflow state
   currentBooking: BookingData | null;
-  // bookingCountdown removed - managed by useBookingTimer hook (single authority)
+  bookingCountdown?: number; // Optional countdown timer
+  currentUserId?: string; // Current user ID
   isTherapistView: boolean; // True if viewing as therapist
   bookingSource: 'share' | 'profile' | 'search' | null; // Track entry point for booking
   // 🆕 ELITE FIX: Facebook/Amazon Standard - Transparent degradation visibility
@@ -357,6 +365,7 @@ const initialState: ChatWindowState = {
   currentBooking: null,
   // bookingCountdown removed - managed by useBookingTimer hook
   isTherapistView: false,
+  bookingSource: null, // Track entry point for booking
   // 🆕 ELITE FIX: Initialize degradation tracking
   isAppwriteDegraded: false,
   degradationReason: null,
