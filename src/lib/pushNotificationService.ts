@@ -13,7 +13,7 @@ import { databases, ID, Query } from './appwrite';
 
 // VAPID public key (must match server-side private key)
 // Generated: 2026-01-06
-const VAPID_PUBLIC_KEY = 'BPTspdKAWyfj6KpJQMRh8HAzHWohXgqZX4htqP2C-ow9VdcGOW_VRUfdw5rVS8TtQjZuegvtwkehdyaKnZ57pKU';
+const VAPID_PUBLIC_KEY = (import.meta as any)?.env?.VITE_VAPID_PUBLIC_KEY || '';
 
 // Collection ID for push subscriptions (must exist in Appwrite)
 const PUSH_SUBSCRIPTIONS_COLLECTION_ID = 'push_subscriptions';
@@ -197,6 +197,11 @@ export async function subscribeToPush(
       return existingSubscription;
     }
 
+    // Validate VAPID key before subscribing
+    if (!VAPID_PUBLIC_KEY) {
+      throw new Error('VAPID public key not configured. Check VITE_VAPID_PUBLIC_KEY in environment variables.');
+    }
+    
     // Subscribe to push
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,

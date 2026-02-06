@@ -135,7 +135,7 @@
                         
                         // Test read access
                         try {
-                            const docs = await databases.listDocuments(DATABASE_ID, required.id, [], 1);
+                            const docs = await databases.listDocuments(DATABASE_ID, required.id, [Query.limit(1)]);
                             addResult(`&nbsp;&nbsp;&nbsp;🔓 Read access: OK (${docs.total} documents)`, 'success');
                         } catch (readError) {
                             addResult(`&nbsp;&nbsp;&nbsp;⚠️ Read access: ${readError.message}`, 'warning');

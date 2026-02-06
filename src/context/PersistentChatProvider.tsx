@@ -601,7 +601,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       // Test document access (which is what actually matters for chat functionality)
       try {
         console.log(`🔍 Testing document access: ${APPWRITE_CONFIG.collections.chatMessages}`);
-        const testQuery = await databases.listDocuments(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.chatMessages, [], 1);
+        const testQuery = await databases.listDocuments(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.chatMessages, [Query.limit(1)]);
         console.log(`✅ chat_messages DOCUMENT ACCESS: ${testQuery.total} total messages available`);
         
         // Test if we can query documents (this is what matters for chat)
@@ -643,7 +643,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       
       try {
         console.log(`🔍 Testing chat_sessions document access: ${APPWRITE_CONFIG.collections.chatSessions}`);
-        const testSessionQuery = await databases.listDocuments(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.chatSessions, [], 1);
+        const testSessionQuery = await databases.listDocuments(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.chatSessions, [Query.limit(1)]);
         console.log(`✅ chat_sessions DOCUMENT ACCESS: ${testSessionQuery.total} total sessions available`);
         
         console.log(`📋 Session document access validation: PASSED - Chat can manage sessions`);

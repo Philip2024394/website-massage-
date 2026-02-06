@@ -1,7 +1,7 @@
 // Direct Appwrite Infrastructure Test
 // This simulates the exact calls made during validation
 
-import { Client, Databases, Account } from 'appwrite';
+import { Client, Databases, Account, Query } from 'appwrite';
 
 // Initialize Appwrite client with the same config as the app
 const client = new Client()
@@ -34,7 +34,7 @@ async function testRealInfrastructure() {
     console.log(`📋 Available attributes: ${attributes.join(', ')}`);
     
     // Test basic query access
-    const testQuery = await databases.listDocuments(DATABASE_ID, CHAT_MESSAGES_COLLECTION, [], 1);
+    const testQuery = await databases.listDocuments(DATABASE_ID, CHAT_MESSAGES_COLLECTION, [Query.limit(1)]);
     console.log(`✅ chat_messages QUERY ACCESS: ${testQuery.total} total documents`);
     
   } catch (error) {
@@ -53,7 +53,7 @@ async function testRealInfrastructure() {
     console.log(`📋 Available attributes: ${attributes.join(', ')}`);
     
     // Test basic query access
-    const testQuery = await databases.listDocuments(DATABASE_ID, CHAT_SESSIONS_COLLECTION, [], 1);
+    const testQuery = await databases.listDocuments(DATABASE_ID, CHAT_SESSIONS_COLLECTION, [Query.limit(1)]);
     console.log(`✅ chat_sessions QUERY ACCESS: ${testQuery.total} total documents`);
     
   } catch (error) {

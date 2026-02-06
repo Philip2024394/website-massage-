@@ -131,10 +131,14 @@ export class BulletproofNotificationService {
             this.pushSubscription = await this.serviceWorkerRegistration.pushManager.getSubscription();
             
             if (!this.pushSubscription) {
+                // Get VAPID public key from environment
+                const vapidPublicKey = (import.meta as any)?.env?.VITE_VAPID_PUBLIC_KEY;
+                if (!vapidPublicKey) {
+                    throw new Error('VAPID public key not configured. Check VITE_VAPID_PUBLIC_KEY in environment variables.');
+                }
+                
                 // Create new subscription
-                const applicationServerKey = this.urlBase64ToUint8Array(
-                    'BEl62iUYgUivxIkv69yViEuiBIa40HI80NqIoj7ntT_UDlI9LdqPDp1x4yB9l6F2H3J8fPnLixchMuaNy7k6gH0' // Your VAPID public key
-                );
+                const applicationServerKey = this.urlBase64ToUint8Array(vapidPublicKey);
 
                 this.pushSubscription = await this.serviceWorkerRegistration.pushManager.subscribe({
                     userVisibleOnly: true,

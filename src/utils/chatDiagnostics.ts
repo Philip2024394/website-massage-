@@ -10,7 +10,7 @@
 
 import { serverEnforcedChatService } from '../lib/services/serverEnforcedChatService';
 import { bookingService } from '../lib/bookingService';
-import { databases, client } from '../lib/appwrite';
+import { databases, client, Query } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 export interface DiagnosticResult {
@@ -81,8 +81,7 @@ export async function runSystemDiagnostics(): Promise<SystemDiagnostics> {
     await databases.listDocuments(
       APPWRITE_CONFIG.databaseId,
       APPWRITE_CONFIG.collections.bookings,
-      [],
-      1 // Just get 1 document to test access
+      [Query.limit(1)] // Proper Query syntax for limiting results
     );
     results.push({
       service: 'Booking Collection',

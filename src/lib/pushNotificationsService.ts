@@ -46,7 +46,7 @@ interface AdminPaymentNotification {
 }
 
 class PushNotificationsService {
-  private vapidPublicKey: string = 'BA0Bp4ShvoJiYaX0wnRgmgwxh3PYBQWc7wg_b0sTW18NfaouhPrCSycDz-yiYOeo9tytbDKdyx60BZ3fDAV2cdQ'; // VAPID public key
+  private vapidPublicKey: string = (import.meta as any)?.env?.VITE_VAPID_PUBLIC_KEY || ''; // VAPID public key from environment
   private registration: ServiceWorkerRegistration | null = null;
   private permission: NotificationPermission = 'default';
   private isAdmin: boolean = false;
