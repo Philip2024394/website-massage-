@@ -34,9 +34,7 @@
     "hooks/**/*",
     "utils/**/*",
     "components/**/*",
-    "types/**/*",
-    "*.tsx",
-    "*.ts"
+    "types/**/*"
   ],
   "exclude": [
     "node_modules",
@@ -48,6 +46,8 @@
     "archived/**",
     "playwright-report/**",
     "test-results/**",
+    "*.tsx",
+    "*.ts",
     "e2e-tests/**"
   ]
 }
