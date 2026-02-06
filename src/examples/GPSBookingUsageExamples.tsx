@@ -12,7 +12,24 @@
 import { SimpleGPSUtils } from '../services/simpleGPSBookingIntegration';
 
 // ============================================================================
-// 🚀 EXAMPLE 1: ENHANCE ANY BOOKING WITH GPS (MAIN USAGE)
+// � PLACEHOLDER FUNCTIONS (Replace with your actual implementations)
+// ============================================================================
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const submitBookingToAppwrite = async (booking: any) => { /* Your implementation */ };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const sendMessageToTherapist = async (therapistId: string, message: string) => { /* Your implementation */ };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const displayTherapists = (therapists: any[]) => { /* Your implementation */ };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const createBookingObject = (therapist: any): any => ({ /* Your implementation */ });
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const submitBooking = async (booking: any) => { /* Your implementation */ };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const sendToTherapist = async (therapistId: string, message: string) => { /* Your implementation */ };
+
+// ============================================================================
+// �🚀 EXAMPLE 1: ENHANCE ANY BOOKING WITH GPS (MAIN USAGE)
 // ============================================================================
 
 export function ExampleBookingWithGPS() {
