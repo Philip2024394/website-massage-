@@ -832,7 +832,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     backgroundRepeat: 'no-repeat',
                     willChange: 'contents', // Hint browser to optimize layer
                     minHeight: '100dvh', // Dynamic viewport height for mobile
-                    minWidth: '100vw',
+                    minWidth: '100%',
                     position: 'fixed',
                     top: 0,
                     left: 0,
@@ -996,7 +996,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                          position: 'fixed', 
                          top: '0', 
                          left: '0', 
-                         width: '100vw', 
+                         width: '100%', 
                          height: "calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))",
                          zIndex: 9999
                      }}>

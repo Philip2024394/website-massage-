@@ -1,0 +1,260 @@
+/* 🚨 MOBILE OVERFLOW FIX 2026 - ROOT CAUSE ELIMINATION 🚨 */
+/* Following best practices: Fix overflow at element level, not scrollbar hiding */
+/* Created: February 6, 2026 */
+
+/* ============================================================================
+   1️⃣ GLOBAL HARD STOP (MANDATORY)
+   ============================================================================ */
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Root container must obey width limits */
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ============================================================================
+   2️⃣ KILL 100VW - THE BIGGEST OFFENDER
+   ============================================================================ */
+
+/* Never use width: 100vw on mobile - it causes horizontal overflow */
+@media (max-width: 768px) {
+  /* Override any 100vw usage with safe 100% */
+  *[style*="width: 100vw"],
+  *[style*="width:100vw"],
+  *[style*="minWidth: 100vw"],
+  *[style*="min-width: 100vw"] {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Fix common culprits */
+  .w-screen,
+  [class*="w-screen"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ============================================================================
+   3️⃣ IMAGE & MEDIA LOCKDOWN
+   ============================================================================ */
+
+/* Every image/video/iframe must obey container width */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Ensure background images don't cause overflow */
+*[style*="background-image"] {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ============================================================================
+   4️⃣ FLEXBOX SILENT OVERFLOW FIX
+   ============================================================================ */
+
+/* Flex children often push width invisibly */
+* {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Flex containers must contain their children */
+.flex,
+[class*="flex"] {
+  overflow: hidden;
+}
+
+/* ============================================================================
+   5️⃣ SLIDER / CAROUSEL FIX (VERY COMMON)
+   ============================================================================ */
+
+/* Sliders almost always cause overflow */
+.slider,
+.swiper,
+.carousel,
+.slick-slider,
+[class*="slider"],
+[class*="swiper"],
+[class*="carousel"] {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.slider *,
+.swiper *,
+.carousel *,
+[class*="slider"] *,
+[class*="swiper"] *,
+[class*="carousel"] * {
+  max-width: 100%;
+}
+
+/* If using Swiper specifically */
+.swiper-wrapper {
+  width: 100%;
+}
+
+/* ============================================================================
+   6️⃣ ABSOLUTE / FIXED ELEMENTS AUDIT
+   ============================================================================ */
+
+/* Position absolute/fixed elements must not overflow */
+@media (max-width: 768px) {
+  [style*="position: absolute"],
+  [style*="position: fixed"],
+  [style*="position:absolute"],
+  [style*="position:fixed"] {
+    max-width: 100vw;
+    left: 0;
+    right: 0;
+  }
+  
+  /* Ensure modals and overlays don't overflow */
+  .modal,
+  .overlay,
+  .popup,
+  [role="dialog"],
+  [class*="modal"],
+  [class*="overlay"],
+  [class*="popup"] {
+    max-width: 100vw;
+    left: 0;
+    right: 0;
+  }
+}
+
+/* ============================================================================
+   7️⃣ CONTAINER QUERY FIX
+   ============================================================================ */
+
+/* All containers must have proper box-sizing */
+* {
+  box-sizing: border-box;
+}
+
+/* Padding + width must work together */
+*[style*="padding"] {
+  box-sizing: border-box;
+}
+
+/* ============================================================================
+   8️⃣ MOBILE-ONLY KILL SWITCH (LAST RESORT)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  /* Force all page containers to respect viewport */
+  .page-container,
+  .landing-page-container,
+  .home-page-container,
+  .therapist-page-container,
+  [data-page],
+  main,
+  section {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Fix chat windows and modals */
+  .chat-window,
+  .persistent-chat,
+  [class*="chat-window"],
+  [class*="persistent-chat"] {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Fix forms and inputs */
+  form,
+  fieldset,
+  .form-container {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Fix grids that might overflow */
+  .grid,
+  [class*="grid"] {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+/* ============================================================================
+   9️⃣ SPECIFIC COMPONENT FIXES
+   ============================================================================ */
+
+/* Fix LoadingGate overflow (found in audit) */
+@media (max-width: 768px) {
+  .loading-gate,
+  [class*="loading"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Fix HomePage overflow issues */
+@media (max-width: 768px) {
+  .home-page-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .home-page-container * {
+    max-width: 100%;
+  }
+}
+
+/* Fix MainLandingPage overflow */
+@media (max-width: 768px) {
+  .landing-page-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .landing-page-container * {
+    max-width: 100%;
+  }
+}
+
+/* ============================================================================
+   🔟 TRANSFORM FIX (translateX can cause overflow)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  /* Ensure transforms don't push content outside viewport */
+  *[style*="transform"],
+  *[class*="translate"] {
+    max-width: 100vw;
+  }
+}
+
+/* ============================================================================
+   DEBUG HELPER (Remove in production)
+   ============================================================================ */
+
+/* Uncomment to highlight overflow-causing elements */
+/*
+@media (max-width: 768px) {
+  * {
+    outline: 1px solid rgba(255, 0, 0, 0.1);
+  }
+  
+  *:hover {
+    outline: 2px solid rgba(255, 0, 0, 0.5);
+  }
+}
+*/

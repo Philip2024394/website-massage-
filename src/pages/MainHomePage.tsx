@@ -1246,7 +1246,7 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="home-page-container scrollable min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-[100vw] ">
+        <div className="home-page-container scrollable min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full ">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
@@ -2443,7 +2443,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 
                 /* MOBILE VIEWPORT FIX - PREVENT HORIZONTAL OVERFLOW */
                 html, body {
-                    max-width: 100vw;
+                    max-width: 100%;
                     overflow-x: hidden;
                 }
                 
