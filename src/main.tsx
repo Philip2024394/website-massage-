@@ -16,6 +16,16 @@ import { registerSW } from 'virtual:pwa-register';
 // Initialize DOM error handler to prevent removeChild errors
 import './utils/domErrorHandler';
 
+// 🔒 MOBILE SCROLL: Set viewport height custom property for 100dvh fallback
+// Required for mobile-scroll-gold-standard.css to work correctly
+function setViewportHeight() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+setViewportHeight(); // Initial call
+window.addEventListener('resize', setViewportHeight);
+window.addEventListener('orientationchange', setViewportHeight);
+
 // Initialize version checking for cache busting
 import { initVersionCheck } from './lib/versionCheck';
 
