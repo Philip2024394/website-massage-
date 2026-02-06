@@ -164,6 +164,9 @@ class CommissionTrackingService {
     /**
      * Upload payment proof (member uploads via phone)
      * Account activates immediately after upload
+     * 
+     * 🔒 REQUIREMENT 3: PAYMENT PROOF SUBMISSION LOCK
+     * Prevents duplicate uploads while verification is pending
      */
     async uploadPaymentProof(
         commissionId: string,
@@ -171,6 +174,32 @@ class CommissionTrackingService {
         paymentMethod: string
     ): Promise<CommissionPayment> {
         try {
+            // ============================================================================
+            // 🚨 TESTING GATE REQUIREMENT 3: PAYMENT PROOF UPLOAD LOCK
+            // ============================================================================
+            
+            // Fetch current commission record to check status
+            const currentRecord = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                this.collectionId,
+                commissionId
+            ) as unknown as CommissionPayment;
+            
+            // BLOCK: If already awaiting verification
+            if (currentRecord.status === 'awaiting_verification') {
+                console.log(`🚫 [UPLOAD BLOCKED] Commission ${commissionId} already awaiting verification`);
+                throw new Error('Payment proof already submitted and awaiting admin verification. Please wait for approval.');
+            }
+            
+            // BLOCK: If already verified
+            if (currentRecord.status === 'verified') {
+                console.log(`🚫 [UPLOAD BLOCKED] Commission ${commissionId} already verified`);
+                throw new Error('This commission has already been verified. No further uploads are allowed.');
+            }
+            
+            // ALLOW: Only if status is 'pending', 'rejected', or 'overdue'
+            console.log(`✅ [UPLOAD ALLOWED] Commission ${commissionId} status: ${currentRecord.status}`);
+            
             // Verify storage bucket exists in config
             const bucketId = APPWRITE_CONFIG.bucketId; // Use main bucket or add payment_proofs to config
             if (!bucketId) {

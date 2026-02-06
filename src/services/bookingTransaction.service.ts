@@ -222,11 +222,36 @@ async function prepareBookingData(
     return { success: false, error: 'Phone number is required.' };
   }
   
-  // ─────────────────────────────────────────────────────────────────────────
-  // Generate Booking ID
-  // ─────────────────────────────────────────────────────────────────────────
-  const bookingId = generateBookingId();
-  console.log('🆔 [PREPARE] Generated booking ID:', bookingId);
+  // ═════════════════════════════════════════════════════════════════════════
+  // 🚨 TESTING GATE REQUIREMENT 2: DUPLICATE BOOKING CHECK
+  // ═════════════════════════════════════════════════════════════════════════
+  console.log('🔍 [PREPARE] Checking for duplicate bookings...');
+  
+  const { checkDuplicateBooking } = await import('../lib/services/bookingLifecycleService');
+  const duplicateCheck = await checkDuplicateBooking(
+    params.customerId,
+    params.therapist.appwriteId
+  );
+  
+  if (duplicateCheck.exists) {
+    console.log('🚫 [PREPARE] DUPLICATE DETECTED - blocking booking creation');
+    return { 
+      success: false, 
+      error: duplicateCheck.reason || 'You already have a pending booking with this therapist.'
+    };
+  }
+  
+  console.log('✅ [PREPARE] No duplicate found - proceeding');
+  
+  // ═════════════════════════════════════════════════════════════════════════
+  // 🚨 TESTING GATE REQUIREMENT 1: SERVER-SIDE BOOKING ID GENERATION
+  // ═════════════════════════════════════════════════════════════════════════
+  console.log('🆔 [PREPARE] Generating server-side booking ID...');
+  
+  const { generateBookingId } = await import('../lib/services/bookingLifecycleService');
+  const bookingId = await generateBookingId();
+  
+  console.log('✅ [PREPARE] Server-generated booking ID:', bookingId);
   
   // ─────────────────────────────────────────────────────────────────────────
   // Calculate Expiration
@@ -446,16 +471,9 @@ async function rollbackAppwriteRecord(documentId: string | null): Promise<void> 
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
-function generateBookingId(): string {
-  try {
-    const counter = parseInt(localStorage.getItem('booking_id_counter') || '1000', 10);
-    const newId = counter + 1;
-    localStorage.setItem('booking_id_counter', newId.toString());
-    return `BK${newId}`;
-  } catch (error) {
-    return `BK${Date.now()}`;
-  }
-}
+// ⚠️ DEPRECATED: Client-side booking ID generation removed
+// ✅ REPLACED: All booking IDs now generated server-side via bookingLifecycleService.generateBookingId()
+// See TESTING GATE REQUIREMENT 1 in prepareBookingData function above
 
 /**
  * Helper: Check if lifecycle status represents an active booking

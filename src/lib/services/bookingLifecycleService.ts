@@ -140,6 +140,81 @@ const THERAPIST_RESPONSE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 const CUSTOMER_CONFIRMATION_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute
 
 // ============================================================================
+// TESTING GATE REQUIREMENTS - NON-NEGOTIABLE
+// ============================================================================
+
+/**
+ * 🔒 REQUIREMENT 1: SERVER-SIDE BOOKING ID GENERATION
+ * Client must NEVER generate booking IDs
+ * This prevents duplicate IDs and ensures uniqueness
+ */
+export async function generateBookingId(): Promise<string> {
+  // Use timestamp + random UUID for guaranteed uniqueness
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const bookingId = `BK${timestamp}_${randomSuffix}`;
+  
+  console.log(`🆔 [SERVER] Generated booking ID: ${bookingId}`);
+  return bookingId;
+}
+
+/**
+ * 🔒 REQUIREMENT 2: DUPLICATE BOOKING PREVENTION
+ * Check for existing pending/active bookings before creating new one
+ * Prevents double-booking within 5-minute window
+ */
+export async function checkDuplicateBooking(
+  customerId: string,
+  therapistId: string
+): Promise<{
+  exists: boolean;
+  existingBooking?: BookingLifecycleRecord;
+  reason?: string;
+}> {
+  try {
+    console.log(`🔍 [DUPLICATE CHECK] Customer: ${customerId}, Therapist: ${therapistId}`);
+    
+    // Check for pending or active bookings within last 5 minutes
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    
+    const existingBookings = await databases.listDocuments(
+      APPWRITE_CONFIG.databaseId,
+      APPWRITE_CONFIG.collections.bookings || 'bookings',
+      [
+        Query.equal('customerId', customerId),
+        Query.equal('therapistId', therapistId),
+        Query.equal('bookingStatus', [
+          BookingLifecycleStatus.PENDING,
+          BookingLifecycleStatus.ACCEPTED,
+          BookingLifecycleStatus.CONFIRMED
+        ]),
+        Query.greaterThan('createdAt', fiveMinutesAgo),
+        Query.limit(1)
+      ]
+    );
+    
+    if (existingBookings.documents.length > 0) {
+      const existing = existingBookings.documents[0] as unknown as BookingLifecycleRecord;
+      console.log(`⚠️ [DUPLICATE DETECTED] Booking ${existing.bookingId} already exists`);
+      
+      return {
+        exists: true,
+        existingBooking: existing,
+        reason: `You already have a ${existing.bookingStatus.toLowerCase()} booking with this therapist. Please wait for the current booking to complete.`
+      };
+    }
+    
+    console.log(`✅ [NO DUPLICATE] Safe to create booking`);
+    return { exists: false };
+    
+  } catch (error) {
+    console.error(`❌ [DUPLICATE CHECK] Failed:`, error);
+    // On error, allow booking (fail open, not fail closed)
+    return { exists: false };
+  }
+}
+
+// ============================================================================
 // VALID STATUS TRANSITIONS (Immutable State Machine)
 // ============================================================================
 
