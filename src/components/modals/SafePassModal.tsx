@@ -126,20 +126,20 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                     </button>
                     
                     <div className="flex items-center gap-3">
-                        {/* Therapist Profile Image */}
+                        {/* Therapist Profile Image - Enlarged */}
                         <img
-                            src={therapistImage || 'https://via.placeholder.com/60'}
+                            src={therapistImage || 'https://via.placeholder.com/80'}
                             alt={therapistName}
-                            className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                            className="w-16 h-16 rounded-full border-3 border-white object-cover shadow-lg"
                             onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60';
+                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80';
                             }}
                         />
                         
                         <div className="flex-1">
-                            <h2 className="text-lg font-bold">{therapistName}</h2>
-                            <p className="text-orange-100 text-xs flex items-center gap-1">
-                                <Shield size={14} />
+                            <h2 className="text-xl font-bold">{therapistName}</h2>
+                            <p className="text-orange-100 text-sm flex items-center gap-1">
+                                <Shield size={16} />
                                 {t.issued} {formattedDate}
                             </p>
                         </div>

@@ -1140,7 +1140,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/safe%20pass%20hotel.png" 
                                 alt="SafePass Verified"
-                                className="w-24 h-auto object-contain"
+                                className="w-28 h-auto object-contain"
                                 loading="lazy"
                                 decoding="async"
                             />
