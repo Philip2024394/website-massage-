@@ -6,7 +6,9 @@ import TherapistPageHeader from '../../components/therapist/TherapistPageHeader'
 import { paymentConfirmationService } from '../../lib/appwriteService';
 import type { Therapist } from '../../types';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { paymentStatusHelp } from './constants/helpContent';
+import { paymentStatusHelp, dashboardHelp } from './constants/helpContent';
+import { TherapistHelpModal, HelpIcon } from '../../components/therapist/TherapistHelpModal';
+import { useHelpModal } from '../../hooks/useHelpModal';
 
 interface TherapistPaymentStatusProps {
     therapist: Therapist;
@@ -28,6 +30,9 @@ interface PaymentConfirmation {
 }
 
 const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapist, onBack }) => {
+    // Help modal state
+    const { isHelpOpen, currentHelpKey, openHelp, closeHelp } = useHelpModal();
+    
     const [payments, setPayments] = useState<PaymentConfirmation[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedProof, setSelectedProof] = useState<string | null>(null);
@@ -123,6 +128,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                 icon={<CreditCard className="w-6 h-6 text-orange-600" />}
                 actions={
                     <div className="flex items-center gap-2">
+                        <HelpIcon onClick={() => openHelp('uploadPaymentProof')} />
                         <HelpTooltip 
                             {...paymentStatusHelp.submitProof}
                             position="left"
@@ -317,9 +323,17 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                             />
                         </div>
                     </div>
-                )}
-            </div>
+                )}            </div>
         </div>
+        
+        {/* Therapist Help Modal */}
+        <TherapistHelpModal 
+            isOpen={isHelpOpen}
+            onClose={closeHelp}
+            helpKey={currentHelpKey}
+            content={dashboardHelp[currentHelpKey as keyof typeof dashboardHelp]}
+            language="id"
+        />
     );
 };
 

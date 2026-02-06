@@ -15,7 +15,9 @@ import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { analyticsService } from '../../lib/services/analyticsService';
 import { paymentService, bookingService } from '../../lib/appwriteService';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { earningsHelp } from './constants/helpContent';
+import { earningsHelp, dashboardHelp } from './constants/helpContent';
+import { TherapistHelpModal, HelpIcon } from '../../components/therapist/TherapistHelpModal';
+import { useHelpModal } from '../../hooks/useHelpModal';
 
 interface Payment {
   $id: string;
@@ -38,6 +40,9 @@ interface TherapistEarningsProps {
 }
 
 const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack, onNavigate, onLogout }) => {
+  // Help modal state
+  const { isHelpOpen, currentHelpKey, openHelp, closeHelp } = useHelpModal();
+  
   const language = 'id'; // Fixed Indonesian language
   const [payments, setPayments] = useState<Payment[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -460,6 +465,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
             <div className="flex items-center gap-2">
               <CheckCircle className="w-6 h-6 text-green-600" />
               <h3 className="text-sm font-bold text-gray-900">Total Earnings (Completed)</h3>
+              <HelpIcon onClick={() => openHelp('earningsCommission')} />
               <HelpTooltip {...earningsHelp.completedEarnings} position="bottom" size="sm" />
             </div>
             <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-bold rounded-full">
@@ -821,6 +827,15 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       </main>
     </div>
     </TherapistLayout>
+    
+    {/* Therapist Help Modal */}
+    <TherapistHelpModal 
+      isOpen={isHelpOpen}
+      onClose={closeHelp}
+      helpKey={currentHelpKey}
+      content={dashboardHelp[currentHelpKey as keyof typeof dashboardHelp]}
+      language="id"
+    />
   );
 };
 

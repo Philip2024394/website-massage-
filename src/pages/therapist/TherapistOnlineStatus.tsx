@@ -14,7 +14,9 @@ import { FloatingChatWindow } from '../../chat/FloatingChatWindow';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { onlineStatusHelp } from './constants/helpContent';
+import { onlineStatusHelp, dashboardHelp } from './constants/helpContent';
+import { TherapistHelpModal, HelpIcon } from '../../components/therapist/TherapistHelpModal';
+import { useHelpModal } from '../../hooks/useHelpModal';
 import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../../lib/toastUtils';
 import UniversalPWAInstall from '../../components/UniversalPWAInstall';
 
@@ -37,6 +39,9 @@ interface TherapistOnlineStatusProps {
 type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
 
 const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, onLogout, language: propLanguage = 'id' }) => {
+  // Help modal state
+  const { isHelpOpen, currentHelpKey, openHelp, closeHelp } = useHelpModal();
+  
   try {
     // Completely simplified static translations to prevent initialization errors
     const dict = {
@@ -979,6 +984,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.currentStatus}</h2>
+              <HelpIcon onClick={() => openHelp('onlineStatus')} />
               <HelpTooltip 
                 {...onlineStatusHelp.availabilityToggle}
                 position="right"
@@ -1356,6 +1362,15 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       </div>
     </div>
     </TherapistLayout>
+    
+    {/* Therapist Help Modal */}
+    <TherapistHelpModal 
+      isOpen={isHelpOpen}
+      onClose={closeHelp}
+      helpKey={currentHelpKey}
+      content={dashboardHelp[currentHelpKey as keyof typeof dashboardHelp]}
+      language="id"
+    />
     
     {/* Booking Request Floating Window - Shows countdown timer and accept/reject buttons */}
     <BookingRequestCard 

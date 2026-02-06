@@ -10,11 +10,85 @@ export interface HelpContent {
   title: string;
   content: string;
   benefits: string[];
+  bullets?: string[]; // Alternative to benefits for simpler formatting
 }
 
 export interface PageHelpContent {
   [featureKey: string]: HelpContent;
 }
+
+/**
+ * ============================================================================
+ * 🆘 CONTEXTUAL HELP TOPICS - GOLD STANDARD
+ * ============================================================================
+ * Added: 5 critical help topics based on common mistakes and support requests
+ * Language: Bahasa Indonesia (primary)
+ * Purpose: Reduce mistakes, improve booking response, prevent support tickets
+ * ============================================================================
+ */
+
+/**
+ * Dashboard Core Features Help
+ * Critical contextual help for main dashboard features
+ */
+export const dashboardHelp: PageHelpContent = {
+  onlineStatus: {
+    title: 'Status Online',
+    content: 'Saat status Anda Online, Anda dapat menerima booking.\n\nStatus Online akan otomatis berubah menjadi Offline setelah 12 jam.',
+    bullets: [
+      'Mengatur ulang status Online untuk memperpanjang waktu',
+      'Mengubah status ke Busy jika sedang tidak tersedia',
+      'Melewatkan atau menolak booking dapat menurunkan peringkat Anda'
+    ],
+    benefits: []
+  },
+  
+  bookingCountdown: {
+    title: 'Waktu Konfirmasi Booking',
+    content: 'Anda memiliki waktu terbatas untuk menerima booking.',
+    bullets: [
+      'Booking akan dialihkan ke terapis lain jika waktu habis',
+      'Peringkat respons Anda dapat terpengaruh',
+      'Selalu pastikan Anda siap sebelum mengatur status Online'
+    ],
+    benefits: []
+  },
+  
+  earningsCommission: {
+    title: 'Pendapatan & Komisi',
+    content: 'Setiap booking memiliki komisi platform.\n\nSetelah layanan selesai:',
+    bullets: [
+      'Unggah bukti pembayaran',
+      'Status akan menunggu verifikasi admin',
+      'Bukti pembayaran hanya dapat diunggah satu kali per booking'
+    ],
+    benefits: []
+  },
+  
+  uploadPaymentProof: {
+    title: 'Upload Bukti Pembayaran',
+    content: 'Pastikan bukti pembayaran:',
+    bullets: [
+      'Jelas dan dapat dibaca',
+      'Sesuai dengan booking yang dipilih',
+      'Bukti tidak dapat diubah setelah diunggah',
+      'Status menunggu verifikasi admin'
+    ],
+    benefits: []
+  },
+  
+  profileVisibility: {
+    title: 'Visibilitas Profil',
+    content: 'Profil Anda akan lebih sering muncul jika:',
+    bullets: [
+      'Respons cepat terhadap booking',
+      'Jarang melewatkan atau menolak booking',
+      'Status Online digunakan dengan benar',
+      'Performa yang baik meningkatkan peluang mendapatkan booking'
+    ],
+    benefits: []
+  }
+};
 
 /**
  * More Customers Help Content

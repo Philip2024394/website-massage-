@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Check, X, AlertTriangle, Volume, VolumeOff} from 'lucide-react';
 import { bookingAcknowledgmentService } from '../../lib/services/bookingAcknowledgmentService';
 import { bookingSoundService } from "../../services/bookingSound.service";
+import { TherapistHelpModal, HelpIcon } from '../therapist/TherapistHelpModal';
+import { useHelpModal } from '../../hooks/useHelpModal';
+import { dashboardHelp } from '../../pages/therapist/constants/helpContent';
 
 interface BookingRequest {
     $id: string;
@@ -26,6 +29,9 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
     therapistId,
     membershipTier 
 }) => {
+    // Help modal state
+    const { isHelpOpen, currentHelpKey, openHelp, closeHelp } = useHelpModal();
+    
     const [pendingBookings, setPendingBookings] = useState<BookingRequest[]>([]);
     const [timeRemaining, setTimeRemaining] = useState<{ [key: string]: number }>({});
     const [soundEnabled, setSoundEnabled] = useState(true);
@@ -254,6 +260,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
     // Expanded View - Full booking details
     return (
+        <>
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] ">
                 {/* Header with Close Button */}
@@ -316,9 +323,12 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-bold text-gray-900">
-                                🚨 NEW BOOKING REQUEST
-                            </h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-bold text-gray-900">
+                                    🚨 NEW BOOKING REQUEST
+                                </h3>
+                                <HelpIcon onClick={() => openHelp('bookingCountdown')} />
+                            </div>
                             <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-lg ${
                                 isExpiring ? 'bg-red-500 text-white animate-pulse' : 'bg-orange-500 text-white'
                             }`}>
@@ -414,6 +424,16 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                 </div>
             </div>
         </div>
+        
+        {/* Therapist Help Modal */}
+        <TherapistHelpModal 
+            isOpen={isHelpOpen}
+            onClose={closeHelp}
+            helpKey={currentHelpKey}
+            content={dashboardHelp[currentHelpKey as keyof typeof dashboardHelp]}
+            language="id"
+        />
+        </>
     );
 };
 
