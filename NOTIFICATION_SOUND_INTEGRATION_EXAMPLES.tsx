@@ -3,12 +3,22 @@
  * How to integrate PWA notification sound system into existing dashboards
  * 
  * COPY-PASTE READY CODE
+ * 
+ * NOTE: This is a documentation/example file. Some placeholder components are used
+ * for illustration purposes. Replace with your actual components when implementing.
  */
 
 import React, { useEffect } from 'react';
-import NotificationSoundSettings from '../components/NotificationSoundSettings';
-import IOSNotificationPrompt from '../components/IOSNotificationPrompt';
-import { pwaNotificationSoundHandler } from '../services/pwaNotificationSoundHandler';
+import NotificationSoundSettings from './src/components/NotificationSoundSettings';
+import IOSNotificationPrompt from './src/components/IOSNotificationPrompt';
+import { pwaNotificationSoundHandler } from './src/services/pwaNotificationSoundHandler';
+import { notificationSoundSettings } from './src/services/notificationSoundSettings';
+
+// Placeholder components for examples (replace with your actual components)
+const BookingsList = () => <div>Your BookingsList component</div>;
+const MessagesList = () => <div>Your MessagesList component</div>;
+const Sidebar: React.FC<{ children: React.ReactNode }> = ({ children }) => <div className="sidebar">{children}</div>;
+const BookingRequests = () => <div>Your BookingRequests component</div>;
 
 // =============================================================================
 // EXAMPLE 1: THERAPIST DASHBOARD INTEGRATION
