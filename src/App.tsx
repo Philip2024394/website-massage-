@@ -434,13 +434,11 @@ const App = () => {
         });
 
         // ===== WEBSOCKET/REALTIME CONNECTION INITIALIZATION =====
-        // Fix for WebSocket connection issues detected in diagnostic
+        // Disabled to prevent conflicts with EnterpriseWebSocketService
         const initializeRealtimeConnection = async () => {
-            // Skip realtime test in development mode to avoid false alarms
-            if (process.env.NODE_ENV === 'development') {
-                console.log('🔌 Skipping realtime connection test in development mode');
-                return;
-            }
+            // Skip all realtime tests - handled by EnterpriseWebSocketService
+            console.log('🔌 WebSocket connection handling delegated to EnterpriseWebSocketService');
+            return;
 
             try {
                 console.log('🔌 Testing realtime WebSocket connection...');

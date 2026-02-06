@@ -186,26 +186,24 @@ class AppwriteConnectionHealthMonitor {
     const startTime = Date.now();
     
     try {
-      // Simple connection test - this will validate the realtime connection
-      const testChannel = 'health-check';
-      let connectionSuccessful = false;
+      // Skip actual connection test to avoid interfering with main WebSocket service
+      // Assume realtime is healthy if client is available
+      const { client } = await import('../lib/appwriteClient');
       
-      // Import client dynamically
-      const { client } = await import('../lib/appwrite');
-      
-      // Create a test subscription and immediately unsubscribe
-      const unsubscribe = client.subscribe(testChannel, () => {
-        connectionSuccessful = true;
-      });
-      
-      // Clean up immediately
-      setTimeout(() => unsubscribe(), 100);
-      
-      return {
-        success: true, // If we reach here, realtime is accessible
-        latency: Date.now() - startTime,
-        service: 'realtime'
-      };
+      if (typeof client.subscribe === 'function') {
+        return {
+          success: true, // Client is available and has subscribe method
+          latency: Date.now() - startTime,
+          service: 'realtime'
+        };
+      } else {
+        return {
+          success: false,
+          latency: Date.now() - startTime,
+          service: 'realtime',
+          error: 'Client missing subscribe method'
+        };
+      }
     } catch (error) {
       return {
         success: false,

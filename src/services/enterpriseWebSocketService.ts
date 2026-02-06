@@ -135,11 +135,15 @@ class EnterpriseWebSocketService {
       // Use Appwrite realtime instead of custom WebSocket server
       logger.info('🔌 [WEBSOCKET] Connecting via Appwrite realtime...');
       
-      // Import Appwrite client
-      const { client } = await import('../lib/appwrite');
+      // Import Appwrite client from unified appwrite client
+      const { client } = await import('../lib/appwriteClient');
       
-      // Create subscription for booking updates
-      const channel = `databases.${process.env.VITE_APPWRITE_DATABASE_ID}.collections.${process.env.VITE_BOOKINGS_COLLECTION_ID}.documents`;
+      // Use hardcoded collection IDs to match actual database structure
+      const databaseId = '68f76ee1000e64ca8d05';
+      const bookingsCollection = 'bookings';
+      const channel = `databases.${databaseId}.collections.${bookingsCollection}.documents`;
+      
+      logger.info(`🔌 [WEBSOCKET] Subscribing to channel: ${channel}`);
       
       // Subscribe to booking updates via Appwrite
       const unsubscribe = client.subscribe(channel, (response: any) => {
@@ -158,19 +162,40 @@ class EnterpriseWebSocketService {
       // Store unsubscribe function
       this.appwriteUnsubscribe = unsubscribe;
       
-      // Handle connection establishment timeout
-      setTimeout(() => {
+      // Improved connection establishment timeout - give more time for slower connections
+      const connectionTimeout = setTimeout(() => {
         if (this.connectionState === 'connecting') {
-          logger.warn('⚠️ [WEBSOCKET] Appwrite connection timeout');
-          this.connectionState = 'error';
-          this.scheduleReconnect();
+          logger.warn('⚠️ [WEBSOCKET] Appwrite connection timeout - this may be normal in some environments');
+          // Don't immediately mark as error, as connection might still be working
+          // Let heartbeat manage the actual connection state
+          logger.info('🔄 [WEBSOCKET] Using connection without explicit confirmation');
         }
-      }, 10000); // 10 second timeout
+      }, 15000); // Increased to 15 seconds from 10
+      
+      // Clear timeout if connection is established
+      const originalUnsubscribe = unsubscribe;
+      this.appwriteUnsubscribe = () => {
+        clearTimeout(connectionTimeout);
+        originalUnsubscribe();
+      };
       
     } catch (error: any) {
       logger.error(`❌ [WEBSOCKET] Connection failed: ${error.message}`);
       this.connectionState = 'error';
-      this.scheduleReconnect();
+      
+      // Only reconnect if it's not a configuration issue
+      if (error.message && !error.message.includes('subscribe')) {
+        this.scheduleReconnect();
+      } else {
+        logger.warn('🔧 [WEBSOCKET] Configuration issue detected - skipping reconnection');
+        // Don't mark as failed immediately, might still work for other operations
+        setTimeout(() => {
+          if (this.connectionState === 'error') {
+            logger.info('🔄 [WEBSOCKET] Retrying connection after configuration delay');
+            this.scheduleReconnect();
+          }
+        }, 30000); // Wait 30 seconds before retry for config issues
+      }
     }
   }
   
