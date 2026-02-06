@@ -46,27 +46,27 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
     const openLightbox = (imageSrc: string, imageAlt: string) => {
         setSelectedImage({ src: imageSrc, alt: imageAlt });
         setIsLightboxOpen(true);
-        // Prevent body scroll when lightbox is open
-        document.body.style.overflow = 'hidden';
+        // Keep body scrollable on mobile
+        document.body.style.overflow = 'auto';
     };
 
     const closeLightbox = () => {
         setIsLightboxOpen(false);
         setSelectedImage(null);
         // Restore body scroll
-        document.body.style.overflow = 'unset';
+        document.body.style.overflow = 'auto';
     };
 
     const openMassageTypes = () => {
         setIsMassageTypesOpen(true);
         setExpandedCards({}); // Reset expansion state when opening modal
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = 'auto';
     };
 
     const closeMassageTypes = () => {
         setIsMassageTypesOpen(false);
         setExpandedCards({}); // Reset expansion state when closing modal
-        document.body.style.overflow = 'unset';
+        document.body.style.overflow = 'auto';
     };
 
     const toggleCardExpansion = (massageName: string) => {

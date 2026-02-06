@@ -1190,11 +1190,11 @@ body.elite-refresh-mode {
   }
 }
 
-/* Elite momentum prevention during pull */
+/* Elite momentum prevention during pull - MOBILE SAFE */
 .elite-pulling {
-  overflow: hidden !important;
-  touch-action: none !important;
-  -webkit-overflow-scrolling: auto !important;
+  overflow: auto !important;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 /* Elite smooth transitions */
