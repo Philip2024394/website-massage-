@@ -55,7 +55,7 @@ import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock } from 'lucide-react';
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
-import { dashboardHelp } from './constants/helpContent';
+import { profileEditHelp } from './constants/helpContent';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -1082,7 +1082,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-gray-900">Edit Profil</h2>
-                <HelpTooltip {...dashboardHelp.overview} position="bottom" size="sm" />
+                <HelpTooltip {...profileEditHelp.overview} position="bottom" size="sm" />
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
                 <Clock className="w-4 h-4 text-gray-500" />

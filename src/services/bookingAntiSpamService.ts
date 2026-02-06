@@ -160,16 +160,21 @@ class BookingRateLimitService {
     resetTime: Date;
   }>();
 
-  private static LIMITS = {
+  public static readonly LIMITS: {
+    BOOKINGS_PER_HOUR: number;
+    BOOKINGS_PER_DAY: number;
+    VERIFICATION_PER_HOUR: number;
+  } = {
     BOOKINGS_PER_HOUR: 3,        // Max 3 bookings per hour per phone
     BOOKINGS_PER_DAY: 10,        // Max 10 bookings per day per phone
     VERIFICATION_PER_HOUR: 5     // Max 5 SMS requests per hour per phone
   };
 
   /**
-   * 🚦 CHECK BOOKING RATE LIMIT
+   * 🚦 CHECK BOOKING RATE LIMIT  
    */
-  checkBookingLimit(phoneNumber: string): RateLimitResult {
+  static checkBookingLimit(phoneNumber: string): RateLimitResult {
+    const { BOOKINGS_PER_HOUR } = BookingRateLimitService.LIMITS;
     const cleanPhone = phoneNumber.replace(/\D/g, '');
     const key = `booking_${cleanPhone}`;
     const hourKey = `${key}_${Math.floor(Date.now() / (60 * 60 * 1000))}`;
@@ -184,14 +189,14 @@ class BookingRateLimitService {
       });
       return {
         allowed: true,
-        remainingRequests: this.LIMITS.BOOKINGS_PER_HOUR - 1
+        remainingRequests: BOOKINGS_PER_HOUR - 1
       };
     }
 
-    if (current.count >= this.LIMITS.BOOKINGS_PER_HOUR) {
+    if (current.count >= BOOKINGS_PER_HOUR) {
       return {
         allowed: false,
-        reason: `Too many booking attempts. Limit: ${this.LIMITS.BOOKINGS_PER_HOUR} per hour.`,
+        reason: `Too many booking attempts. Limit: ${BOOKINGS_PER_HOUR} per hour.`,
         resetTime: current.resetTime
       };
     }
@@ -199,14 +204,15 @@ class BookingRateLimitService {
     current.count++;
     return {
       allowed: true,
-      remainingRequests: this.LIMITS.BOOKINGS_PER_HOUR - current.count
+      remainingRequests: BOOKINGS_PER_HOUR - current.count
     };
   }
 
   /**
    * 📱 CHECK SMS RATE LIMIT
    */
-  checkSMSLimit(phoneNumber: string): RateLimitResult {
+  static checkSMSLimit(phoneNumber: string): RateLimitResult {
+    const { VERIFICATION_PER_HOUR } = BookingRateLimitService.LIMITS;
     const cleanPhone = phoneNumber.replace(/\D/g, '');
     const key = `sms_${cleanPhone}`;
     const hourKey = `${key}_${Math.floor(Date.now() / (60 * 60 * 1000))}`;
@@ -219,13 +225,13 @@ class BookingRateLimitService {
         count: 1,
         resetTime: new Date(now.getTime() + 60 * 60 * 1000)
       });
-      return { allowed: true, remainingRequests: this.LIMITS.VERIFICATION_PER_HOUR - 1 };
+      return { allowed: true, remainingRequests: VERIFICATION_PER_HOUR - 1 };
     }
 
-    if (current.count >= this.LIMITS.VERIFICATION_PER_HOUR) {
+    if (current.count >= VERIFICATION_PER_HOUR) {
       return {
         allowed: false,
-        reason: `Too many SMS requests. Limit: ${this.LIMITS.VERIFICATION_PER_HOUR} per hour.`,
+        reason: `Too many SMS requests. Limit: ${VERIFICATION_PER_HOUR} per hour.`,
         resetTime: current.resetTime
       };
     }
@@ -233,7 +239,7 @@ class BookingRateLimitService {
     current.count++;
     return {
       allowed: true,
-      remainingRequests: this.LIMITS.VERIFICATION_PER_HOUR - current.count
+      remainingRequests: VERIFICATION_PER_HOUR - current.count
     };
   }
 }
@@ -528,7 +534,6 @@ export interface BookingValidationResult {
 
 class BookingAntiSpamService {
   private phoneVerification = new PhoneVerificationService();
-  private rateLimiter = new BookingRateLimitService();
   private spamDetector = new SpamDetectionService();
   private geoValidator = new GeographicValidationService();
 
@@ -545,7 +550,7 @@ class BookingAntiSpamService {
     console.log('🛡️ [ANTI-SPAM] Starting comprehensive booking validation...');
 
     // STEP 1: Rate Limiting Check
-    const rateLimit = this.rateLimiter.checkBookingLimit(request.customerPhone);
+    const rateLimit = BookingRateLimitService.checkBookingLimit(request.customerPhone);
     if (!rateLimit.allowed) {
       errors.push(rateLimit.reason!);
       riskScore += 30;
@@ -605,7 +610,7 @@ class BookingAntiSpamService {
           }
         } else {
           // Send verification code
-          const smsRateLimit = this.rateLimiter.checkSMSLimit(request.customerPhone);
+          const smsRateLimit = BookingRateLimitService.checkSMSLimit(request.customerPhone);
           if (smsRateLimit.allowed) {
             const verificationResult = await this.phoneVerification.sendVerificationCode(request.customerPhone);
             verificationSent = !verificationResult.blocked;
@@ -643,7 +648,7 @@ class BookingAntiSpamService {
    * 📱 SEND VERIFICATION CODE
    */
   async sendVerificationCode(phoneNumber: string): Promise<PhoneVerificationResult> {
-    const rateLimit = this.rateLimiter.checkSMSLimit(phoneNumber);
+    const rateLimit = BookingRateLimitService.checkSMSLimit(phoneNumber);
     if (!rateLimit.allowed) {
       return {
         verified: false,

@@ -845,8 +845,8 @@ export const legalHelp: PageHelpContent = {
   }
 };
 
-// Dashboard Help (for profile editing page)
-export const dashboardHelp: PageHelpContent = {
+// Profile Edit Help (for profile editing page)
+export const profileEditHelp: PageHelpContent = {
   overview: {
     title: 'Edit Profil Terapis',
     content: 'Kelola profil Anda, ubah status ketersediaan, dan perbarui informasi layanan Anda. Profil lengkap meningkatkan kepercayaan pelanggan dan booking rate.',
