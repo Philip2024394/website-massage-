@@ -7,6 +7,9 @@
 /* Enhanced Navigation Styles */
 @import url('./src/styles/enhanced-navigation.css');
 
+/* CRITICAL: Emergency mobile scrolling fix - HIGHEST PRIORITY */
+@import url('./src/styles/emergency-mobile-scroll.css');
+
 /* CRITICAL: Mobile scrolling fix */
 @import url('./src/styles/mobile-scroll-fix.css');
 
