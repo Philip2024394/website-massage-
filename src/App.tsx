@@ -12,7 +12,7 @@ import AppRouter from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useAutoReviews } from './hooks/useAutoReviews';
 import { useMobileLock } from './hooks/useMobileLock';
-import { usePreventScroll } from './hooks/usePreventScroll';
+// ❌ REMOVED: usePreventScroll hook deleted (was blocking ALL touch scrolling globally)
 import { useMobileDetection } from './hooks/useMobileDetection';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';

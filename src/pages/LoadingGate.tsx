@@ -28,8 +28,8 @@ export default function LoadingGate() {
     sessionStorage.setItem("LOADING_LOCKED", "1");
     console.log("🔒 LoadingGate: Lock engaged");
     
-    // Block scroll on this page
-    document.body.style.overflow = "hidden";
+    // ✅ MOBILE SCROLL FIX: Use modal-open class instead of inline styles
+    document.body.classList.add('modal-open');
     
     const timer = setTimeout(() => {
       console.log("✅ LoadingGate: Timeout complete, redirecting to home");
@@ -39,7 +39,7 @@ export default function LoadingGate() {
 
     return () => {
       clearTimeout(timer);
-      document.body.style.overflow = "auto";
+      document.body.classList.remove('modal-open');
     };
   }, []);
 
