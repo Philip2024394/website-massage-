@@ -101,7 +101,7 @@ import {
   RealTimeNotificationEnhancer
 } from './chat';
 import { BookingProgress } from './BookingProgress';
-import { SimpleBookingWelcome } from '../modules/chat/SimpleBookingWelcome';
+import { BookingConfirmationContainer } from '../modules/chat/BookingConfirmationContainer';
 
 // ========================================================================
 // BOOKING RELIABILITY UTILITIES
@@ -1503,6 +1503,27 @@ export function PersistentChatWindow() {
     <StatusThemeProvider 
       initialStatus={chatState.currentBooking?.status as BookingProgressStep || 'requested'}
     >
+      {/* Booking Confirmation Container - Takes over entire screen when booking is active */}
+      {chatState.currentBooking && chatState.bookingCountdown && chatState.bookingCountdown > 0 && !chatState.isTherapistView && (
+        <BookingConfirmationContainer
+          therapistName={chatState.therapist?.name || 'Therapist'}
+          therapistImage={chatState.therapist?.mainImage || chatState.therapist?.profileImage}
+          bookingId={chatState.currentBooking.bookingId}
+          bookingDetails={{
+            customerName: chatState.currentBooking.customerName,
+            customerWhatsApp: chatState.currentBooking.customerWhatsApp,
+            massageFor: (chatState.currentBooking as any).massageFor,
+            locationType: chatState.currentBooking.locationType,
+            duration: chatState.currentBooking.duration,
+            price: chatState.currentBooking.price,
+            serviceType: chatState.currentBooking.serviceType || 'Professional Treatment'
+          }}
+          countdownSeconds={chatState.bookingCountdown}
+          onCancel={() => cancelBooking()}
+          showConfirmation={true}
+        />
+      )}
+
       {/* ⚠️ CRITICAL: Single div wrapper instead of fragment for stable React reconciliation */}
       <div className="chat-theme-wrapper">
         {/* CSS styles moved OUTSIDE main chat div to prevent DOM conflicts */}
@@ -1871,64 +1892,6 @@ export function PersistentChatWindow() {
         </div>
       )}
 
-      {/* Regular booking flow for customers */}
-      {chatState.currentBooking && (
-        <>
-          {(() => {
-            try {
-              return (
-                <SimpleBookingWelcome
-                  therapistName={chatState.therapist?.name || 'Therapist'}
-                  therapistImage={chatState.therapist?.mainImage || chatState.therapist?.profileImage}
-                  bookingCountdown={chatState.bookingCountdown}
-                  bookingId={chatState.currentBooking.bookingId}
-                  onCancelBooking={() => cancelBooking()}
-                />
-              );
-            } catch (error) {
-              // Fallback to simple text format
-              return (
-                <div style={{ 
-                  padding: '12px', 
-                  backgroundColor: '#f0f9ff', 
-                  borderBottom: '1px solid #ddd',
-                  fontSize: '14px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif'
-                }}>
-                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>
-                    📋 Booking Request Sent to {chatState.therapist?.name || 'Therapist'}
-                  </div>
-                  {chatState.currentBooking.bookingId && (
-                    <div style={{ fontSize: '12px', color: '#666', fontFamily: 'monospace' }}>
-                      ID: {chatState.currentBooking.bookingId}
-                    </div>
-                  )}
-                  {chatState.bookingCountdown && (
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                      ⏳ Waiting for response... ({Math.floor(chatState.bookingCountdown / 60)}:{String(chatState.bookingCountdown % 60).padStart(2, '0')})
-                    </div>
-                  )}
-                  <button 
-                    onClick={() => cancelBooking()}
-                    style={{
-                      marginTop: '8px',
-                      padding: '4px 12px',
-                      backgroundColor: '#ef4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '12px'
-                    }}
-                  >
-                    Cancel Booking
-                  </button>
-                </div>
-              );
-            }
-          })()}
-        </>
-      )}
       </>
 
       {/* Content area - SCROLLABLE for mobile booking forms */}
