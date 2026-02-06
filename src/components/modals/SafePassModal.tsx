@@ -153,7 +153,7 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                     {/* SafePass Card Image */}
                     <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
                         <img
-                            src="https://ik.imagekit.io/7grri5v7d/scaffolding_indastreetsssssss-removebg-preview.png?updatedAt=1768624889133"
+                            src="https://ik.imagekit.io/7grri5v7d/hotel%205.png"
                             alt="SafePass Card"
                             className="w-full max-w-md mx-auto rounded-lg shadow-lg"
                             loading="lazy"
