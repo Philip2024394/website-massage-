@@ -200,49 +200,49 @@ export const MultipleChatBadges: React.FC<MultipleChatBadgesProps> = ({
   };
 
   return (
-    <div className=\"space-y-2\">
+    <div className="space-y-2">
       {/* Total Badge Summary */}
       {getTotalBadges() > 0 && (
-        <div className=\"bg-red-50 border border-red-200 rounded-lg p-3 text-center\">
-          <div className=\"text-red-600 font-bold\">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+          <div className="text-red-600 font-bold">
             {getTotalBadges()} unread message{getTotalBadges() !== 1 ? 's' : ''}
           </div>
         </div>
       )}
 
       {/* Individual Chat Badges */}
-      <div className=\"space-y-1\">
+      <div className="space-y-1">
         {chatBadges.map(chat => (
           <div
             key={chat.chatId}
             className={`flex items-center justify-between p-3 rounded-lg border ${getChatTypeColor(chat.type)} cursor-pointer hover:shadow-sm transition-all`}
             onClick={() => onChatClick(chat.chatId)}
           >
-            <div className=\"flex items-center gap-3\">
+            <div className="flex items-center gap-3">
               {/* Avatar */}
               {chat.avatar ? (
                 <img
                   src={chat.avatar}
                   alt={chat.name}
-                  className=\"w-8 h-8 rounded-full\"
+                  className="w-8 h-8 rounded-full"
                 />
               ) : (
-                <div className=\"w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold\">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
                   {chat.name.charAt(0).toUpperCase()}
                 </div>
               )}
 
               {/* Chat Info */}
               <div>
-                <div className=\"font-medium text-gray-800\">{chat.name}</div>
-                <div className=\"text-xs text-gray-500 capitalize\">{chat.type}</div>
+                <div className="font-medium text-gray-800">{chat.name}</div>
+                <div className="text-xs text-gray-500 capitalize">{chat.type}</div>
               </div>
             </div>
 
             {/* Badge */}
             <NotificationBadge
               chatId={chat.chatId}
-              size=\"sm\"
+              size="sm"
               showZero={false}
             />
           </div>

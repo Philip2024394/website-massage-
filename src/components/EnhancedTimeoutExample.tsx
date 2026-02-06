@@ -107,11 +107,11 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
 
         {/* Countdown Display (only show when counting) */}
         {status === 'counting' && (
-          <div className=\"mb-4 p-4 border-2 border-blue-200 bg-blue-50 rounded-lg text-center\">
-            <div className=\"text-2xl font-bold text-blue-600 mb-2\">
+          <div className="mb-4 p-4 border-2 border-blue-200 bg-blue-50 rounded-lg text-center">
+            <div className="text-2xl font-bold text-blue-600 mb-2">
               {formattedTime}
             </div>
-            <div className=\"text-sm text-blue-700\">
+            <div className="text-sm text-blue-700">
               Waiting for {therapistName} to respond
             </div>
           </div>
@@ -125,7 +125,7 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
           status === 'cancelled' ? 'bg-gray-100 text-gray-800' :
           'bg-green-100 text-green-800'
         }`}>
-          <div className=\"font-medium\">
+          <div className="font-medium">
             {status === 'counting' && '⏳ Waiting for Response'}
             {status === 'expired' && '⏰ Time Expired'}
             {status === 'timeout_handled' && '📡 Broadcasting to All Providers'}
@@ -133,7 +133,7 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
             {status === 'idle' && '🔄 Ready to Start'}
           </div>
           {providerCount > 0 && (
-            <div className=\"text-xs mt-1\">
+            <div className="text-xs mt-1">
               {providerCount} providers found nearby
             </div>
           )}
@@ -164,28 +164,28 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
 
         {/* Action Buttons */}
         {!showTimeoutHandler && status !== 'cancelled' && (
-          <div className=\"space-y-2\">
+          <div className="space-y-2">
             {status === 'counting' && (
               <button
                 onClick={handleCancelAndBrowse}
-                className=\"w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors\"
+                className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
               >
                 Cancel & Browse Directory
               </button>
             )}
             
             {(status === 'expired' || status === 'timeout_handled') && (
-              <div className=\"space-y-2\">
+              <div className="space-y-2">
                 <button
                   onClick={retryWithLocation}
                   disabled={isHandlingTimeout}
-                  className=\"w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors\"
+                  className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
                 >
                   {isHandlingTimeout ? 'Finding Providers...' : 'Retry with Location'}
                 </button>
                 <button
                   onClick={handleCancelAndBrowse}
-                  className=\"w-full py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors\"
+                  className="w-full py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
                 >
                   Cancel & Browse Directory
                 </button>
@@ -195,7 +195,7 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
         )}
 
         {/* Helper Text */}
-        <div className=\"mt-4 text-xs text-gray-600 text-center\">
+        <div className="mt-4 text-xs text-gray-600 text-center">
           {status === 'counting' && `Provider has ${Math.ceil(timeLeft/60)} minutes to respond (${bookingType} booking)`}
           {status === 'expired' && 'Timer expired - looking for alternatives'}
           {status === 'timeout_handled' && `Broadcasting to nearby ${providerType}s`}
@@ -205,8 +205,8 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
 
       {/* Debug Information */}
       {process.env.NODE_ENV === 'development' && (
-        <div className=\"bg-gray-100 p-4 rounded-lg text-xs\">
-          <h3 className=\"font-bold mb-2\">Debug Info:</h3>
+        <div className="bg-gray-100 p-4 rounded-lg text-xs">
+          <h3 className="font-bold mb-2">Debug Info:</h3>
           <div>Status: {status}</div>
           <div>Time Left: {timeLeft}s</div>
           <div>Is Active: {isActive.toString()}</div>
