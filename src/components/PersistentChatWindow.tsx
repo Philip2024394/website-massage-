@@ -1667,19 +1667,7 @@ export function PersistentChatWindow() {
         </button>
       </div>
 
-      {/* 🌐 LANGUAGE CLARITY INDICATOR (Subtle UX) */}
-      {/* Shows when user switches language to clarify scope */}
-      <div className="px-4 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-        <div className="flex items-center justify-center gap-2 text-xs text-blue-700">
-          <span className="text-base">🌐</span>
-          <span className="font-medium">
-            {currentLanguage === 'id' 
-              ? 'Bahasa UI: Indonesia • Pesan chat tetap dalam bahasa asli'
-              : 'UI Language: English • Chat messages stay in original language'
-            }
-          </span>
-        </div>
-      </div>
+
 
       {/* 🚨 ERROR DISPLAY CONTAINER - Shows booking flow errors with detailed information */}
       {bookingError && (

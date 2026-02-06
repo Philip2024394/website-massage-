@@ -46,6 +46,14 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
 }) => {
   const [timeRemaining, setTimeRemaining] = useState(countdownSeconds);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🎯 BookingConfirmationContainer mounted');
+    console.log('📊 Initial countdown:', countdownSeconds, 'seconds');
+    console.log('👤 Therapist:', therapistName);
+    console.log('🔢 Booking ID:', bookingId || 'N/A');
+  }, []);
+
   // Lock body scroll when component mounts
   useEffect(() => {
     // Save current body styles
@@ -71,23 +79,29 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
     };
   }, []);
 
-  // Countdown timer
+  // Countdown timer - React implementation with proper dependencies
   useEffect(() => {
     if (timeRemaining <= 0) return;
+
+    console.log('⏱️ Starting countdown timer from', timeRemaining, 'seconds');
 
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
         const newTime = prev - 1;
         if (newTime <= 0) {
           clearInterval(timer);
+          console.log('⏰ Countdown expired');
           return 0;
         }
         return newTime;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [timeRemaining]);
+    return () => {
+      clearInterval(timer);
+      console.log('🛑 Countdown timer cleanup');
+    };
+  }, []); // Empty dependency - timer manages its own state
 
   // Format time as MM:SS
   const formatTime = (seconds: number): string => {
@@ -220,17 +234,6 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
               marginBottom: '16px'
             }}
           >
-            {bookingId && (
-              <p style={{ 
-                fontSize: '12px', 
-                color: '#6b7280',
-                fontFamily: 'monospace',
-                marginBottom: '12px'
-              }}>
-                <strong>Booking ID:</strong> {bookingId}
-              </p>
-            )}
-            
             {bookingDetails?.serviceType && (
               <p style={{ fontSize: '14px', marginBottom: '8px', color: '#374151' }}>
                 <strong>Service:</strong> {bookingDetails.serviceType}
@@ -274,15 +277,20 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
             )}
           </div>
 
-          {/* Countdown timer */}
+          {/* Countdown timer - MUST BE VISIBLE */}
           <div 
             className="booking-timer"
+            id="bookingTimer"
             style={{
-              marginTop: '16px',
+              display: 'block',
+              margin: '16px 0',
               padding: '12px',
               background: '#f7f7f7',
               borderRadius: '8px',
-              textAlign: 'center'
+              textAlign: 'center',
+              fontSize: '18px',
+              position: 'relative',
+              zIndex: 1
             }}
           >
             <div style={{ 
@@ -299,7 +307,7 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
               color: '#6b7280',
               display: 'block'
             }}>
-              {timeRemaining <= 0 ? 'Expired' : 'Waiting for therapist confirmation'}
+              {timeRemaining <= 0 ? 'Expired' : 'Waiting for therapist response'}
             </small>
           </div>
 
