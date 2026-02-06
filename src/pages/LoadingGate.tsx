@@ -57,7 +57,6 @@ export default function LoadingGate() {
         fontWeight: 600,
       }}
     >
-      Loading…
     </div>
   );
 }
