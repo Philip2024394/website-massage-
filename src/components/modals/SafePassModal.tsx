@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { X, Shield, Check, Home, Building, Hotel } from 'lucide-react';
+import { X, Shield, Check, Home, Building, Hotel, Dumbbell } from 'lucide-react';
 
 interface SafePassModalProps {
     isOpen: boolean;
@@ -33,6 +33,7 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
             verified: 'Terverifikasi untuk melayani di:',
             hotels: 'Hotel & Resort',
             villas: 'Villa & Apartemen',
+            gyms: 'Gym & Fitness',
             homes: 'Rumah Pribadi',
             cardTitle: 'Kartu SafePass Indastreet',
             cardDesc: 'Terapis ini membawa kartu identifikasi SafePass Indastreet yang dikeluarkan secara resmi untuk akses ke properti publik dan penginapan.',
@@ -52,9 +53,10 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
         },
         en: {
             issued: 'Issued:',
-            verified: 'Verified to serve at:',
+            verified: 'Verified to serve in:',
             hotels: 'Hotels & Resorts',
             villas: 'Villas & Apartments',
+            gyms: 'Gyms & Fitness Centers',
             homes: 'Private Homes',
             cardTitle: 'Indastreet SafePass Card',
             cardDesc: 'This therapist carries an officially issued Indastreet SafePass identification card for access to public establishments and accommodations.',
@@ -165,7 +167,7 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                             {t.verified}
                         </h3>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-gray-200">
                                 <Hotel className="text-gray-700" size={28} />
                                 <span className="font-semibold text-gray-900">{t.hotels}</span>
@@ -174,6 +176,11 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                             <div className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-gray-200">
                                 <Building className="text-gray-700" size={28} />
                                 <span className="font-semibold text-gray-900">{t.villas}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-gray-200">
+                                <Dumbbell className="text-gray-700" size={28} />
+                                <span className="font-semibold text-gray-900">{t.gyms}</span>
                             </div>
                             
                             <div className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-gray-200">
