@@ -1576,8 +1576,8 @@ export function PersistentChatWindow() {
         className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100%-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col animate-slide-up"
         style={{ 
           /* MOBILE SCROLL COMPLIANCE: Chat window with internal scrolling */
-          height: 'min(600px, calc(100vh - 60px))',
-          maxHeight: 'calc(100vh - 60px)',
+          height: 'min(600px, calc(100dvh - 60px))', // Fixed: iOS Safari viewport
+          maxHeight: 'calc(100dvh - 60px)', // Fixed: iOS Safari viewport
           fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >

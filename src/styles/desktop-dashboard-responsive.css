@@ -41,17 +41,25 @@
 
 /* Desktop: Expand to full app width */
 @media (min-width: 768px) {
-  .therapist-page-container {
-    width: 100%;
-    max-width: 1200px; /* Desktop app width like Facebook/Instagram */
-    margin: 0 auto; /* Center the app */
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .therapist-page-container,
+  [class*="dashboard"],
+  [class*="Dashboard"] {
+    width: 100% !important;
+    max-width: 1200px !important; /* Desktop app width like Facebook/Instagram */
+    margin: 0 auto !important; /* Center the app */
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
   
   .therapist-layout-content {
     padding: 2rem;
     max-width: none; /* ❌ Remove mobile constraint */
+  }
+  
+  /* P0 FIX: Ensure proper desktop dashboard centering */
+  .therapist-dashboard-container {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
   }
 }
 
@@ -66,7 +74,7 @@
  * 2. HERO SECTIONS - FULL WIDTH WITH INNER CONTAINERS
  * ============================================================================ */
 
-/* Hero sections should span full width but constrain inner content */
+/* Hero sections should span full width but not control page height */
 .hero,
 .hero-section,
 [class*="hero"],
@@ -75,6 +83,10 @@
   max-width: none !important;
   margin-left: auto;
   margin-right: auto;
+  /* CRITICAL P0 FIX: Prevent hero sections from controlling page height */
+  height: auto !important;
+  min-height: unset !important;
+  margin-bottom: 0 !important;
 }
 
 /* Inner content of hero sections should be contained */

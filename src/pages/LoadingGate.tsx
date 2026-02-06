@@ -47,7 +47,8 @@ export default function LoadingGate() {
     <div
       style={{
         backgroundColor: "#FF7A00",
-        height: "100vh",
+        height: "100dvh", // Fixed: iOS Safari viewport fix
+        minHeight: "calc(var(--vh, 1vh) * 100)", // Fallback for browsers without 100dvh
         width: "100%",
         display: "flex",
         alignItems: "center",

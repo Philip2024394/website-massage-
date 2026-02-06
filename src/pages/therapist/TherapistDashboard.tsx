@@ -57,6 +57,8 @@ import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError,
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { profileEditHelp } from './constants/helpContent';
 
+/* P0 FIX: App-sized dashboard layout for proper desktop/mobile rendering */
+
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
   onNavigateToStatus?: () => void;

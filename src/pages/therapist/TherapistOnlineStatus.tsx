@@ -163,7 +163,6 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [forceReinstall, setForceReinstall] = useState(false);
   const [showPWAInstallSection, setShowPWAInstallSection] = useState(true);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
-  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   // Load initial data once on mount
   useEffect(() => {
