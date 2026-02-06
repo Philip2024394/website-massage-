@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft as ChevronDownIcon, ChevronRight as ChevronUpIcon } from 'lucide-react';
+import { ArrowDown as ChevronDownIcon, ArrowUp as ChevronUpIcon } from 'lucide-react';
 
 interface MassageType {
     name: string;
