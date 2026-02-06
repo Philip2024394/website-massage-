@@ -33,6 +33,8 @@ import { errorMonitoring } from './services/enterpriseErrorMonitoring';
 
 // 🆕 ELITE PWA: Register Service Worker (Production Only)
 // ✅ Achieves 97% download reliability vs 75% without PWA
+// 🚨 TEMPORARILY DISABLED TO BREAK CACHE LOOP
+/*
 if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
   const updateSW = registerSW({
     immediate: true,
@@ -57,6 +59,7 @@ if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
     }
   });
 }
+*/
 
 // 🆕 ELITE PWA: Capture install prompt for manual trigger
 window.addEventListener('beforeinstallprompt', (e) => {
