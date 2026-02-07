@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { X, Share, Plus, Home } from 'lucide-react';
+import { X, Share2, Plus, Home } from 'lucide-react';
 
 interface IOSInstallInstructionsProps {
   isOpen: boolean;
@@ -72,7 +72,7 @@ export const IOSInstallInstructions: React.FC<IOSInstallInstructionsProps> = ({ 
                 <div className="flex-1">
                   <p className="text-sm text-gray-900 font-semibold mb-1">
                     Tap the <span className="inline-flex items-center px-2 py-0.5 bg-blue-100 rounded text-blue-700">
-                      Share <Share className="w-3 h-3 ml-1" />
+                      Share <Share2 className="w-3 h-3 ml-1" />
                     </span> button
                   </p>
                   <p className="text-xs text-gray-600">

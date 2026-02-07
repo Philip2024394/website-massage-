@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Link, MessageCircle, Phone, Play, Menu, Volume, VolumeOff } from 'lucide-react';
+import { Send, Link2, MessageCircle, Phone, Play, Menu, Volume2, VolumeX } from 'lucide-react';
 import { ProfessionalChatMessage, TypingIndicator } from './ProfessionalChatMessage';
 import { NotificationBadge } from './NotificationBadge';
 import { UserStatusIndicator, UserStatusManager } from './UserStatusIndicator';
@@ -55,7 +55,7 @@ export const ProfessionalChatWindow: React.FC<ProfessionalChatWindowProps> = ({
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -199,7 +199,7 @@ export const ProfessionalChatWindow: React.FC<ProfessionalChatWindowProps> = ({
               className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
               title={soundEnabled ? 'Mute sounds' : 'Enable sounds'}
             >
-              {soundEnabled ? <Volume className="w-4 h-4" /> : <VolumeOff className="w-4 h-4" />}
+              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
 
             <button className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors">

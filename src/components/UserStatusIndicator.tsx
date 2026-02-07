@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Circle, Smartphone, Monitor, Tablet, Wifi, WifiOff } from 'lucide-react';
+import { Disc, SmartphoneIcon, MonitorIcon, TabletIcon, Wifi, WifiOff } from 'lucide-react';
 import { professionalChatService, UserPresence } from '../services/professionalChatNotificationService';
 
 interface UserStatusIndicatorProps {
@@ -107,11 +107,11 @@ export const UserStatusIndicator: React.FC<UserStatusIndicatorProps> = ({
 
     switch (presence.deviceType) {
       case 'mobile':
-        return <Smartphone className={`${iconSize} ${iconColor}`} />;
+        return <SmartphoneIcon className={`${iconSize} ${iconColor}`} />;
       case 'tablet':
-        return <Tablet className={`${iconSize} ${iconColor}`} />;
+        return <TabletIcon className={`${iconSize} ${iconColor}`} />;
       case 'desktop':
-        return <Monitor className={`${iconSize} ${iconColor}`} />;
+        return <MonitorIcon className={`${iconSize} ${iconColor}`} />;
       default:
         return null;
     }
@@ -120,7 +120,7 @@ export const UserStatusIndicator: React.FC<UserStatusIndicatorProps> = ({
   if (!presence) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        <Circle className={`${getStatusSize()} text-gray-300`} />
+        <Disc className={`${getStatusSize()} text-gray-300`} />
         {showText && <span className="text-sm text-gray-500">Unknown</span>}
       </div>
     );

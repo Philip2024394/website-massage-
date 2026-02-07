@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Phone, Video, MoreVertical, Shield, AlertTriangle, CheckCircle, X, Eye } from 'lucide-react';
+import { Send, Phone, VideoIcon, MoreHorizontal, Shield, AlertTriangle, CheckCircle, X, Eye } from 'lucide-react';
 import { EnhancedReportButton, MessageFilterAlert } from './EnhancedReportButton';
 import { ProfessionalChatMessage } from './ProfessionalChatMessage';
 import { chatModerationService, ContentFilterResult } from '../services/chatModerationService';
@@ -217,7 +217,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
 
           {/* More Options */}
           <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            <MoreVertical className="w-5 h-5" />
+            <MoreHorizontal className="w-5 h-5" />
           </button>
         </div>
       </div>

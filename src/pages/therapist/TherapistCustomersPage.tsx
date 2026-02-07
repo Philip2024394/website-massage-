@@ -3,7 +3,7 @@
  * Clicking a customer navigates to Banner Discount page to send gift vouchers
  */
 import React, { useState, useEffect } from 'react';
-import { Users, Calendar, DollarSign, Gift, Search, ArrowRight as ChevronRightIcon } from 'lucide-react';
+import { Users, Calendar, DollarSign, Gift, Search, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { bookingService } from '../../lib/bookingService';
 import { showToast } from '../../utils/showToastPortal';

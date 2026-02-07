@@ -36,7 +36,7 @@ const iconButtons: IconButton[] = [
     label: 'Chat',
   },
   {
-    id: 'booking-details',
+    id: 'bookings',
     icon: Calendar,
     color: '#8B5CF6', // Purple
     label: 'Bookings',
@@ -144,14 +144,12 @@ export const FloatingIconButtons: React.FC<FloatingIconButtonsProps> = ({
               aria-label={button.label}
               title={button.label}
             >
-              <Icon
-                size={22}
-                strokeWidth={2}
-                style={{
-                  transition: 'transform 0.15s ease',
-                }}
-                className="group-hover:scale-110"
-              />
+              <div className="transition-transform duration-150 ease-in-out group-hover:scale-110">
+                <Icon
+                  size={22}
+                  strokeWidth={2}
+                />
+              </div>
 
               {/* Hover Glow Effect */}
               <div

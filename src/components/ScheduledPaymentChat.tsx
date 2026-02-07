@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { Upload, Camera, CreditCard, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, ImageIcon, CreditCard, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { BankDetails, PaymentConfirmationRequest } from '../services/scheduledBookingPaymentService';
 
 interface ScheduledPaymentChatProps {
@@ -245,7 +245,7 @@ export const ScheduledPaymentChat: React.FC<ScheduledPaymentChatProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            <Camera className="w-12 h-12 text-gray-400 mx-auto" />
+            <ImageIcon className="w-12 h-12 text-gray-400 mx-auto" />
             <div>
               <h4 className="font-semibold text-gray-800 mb-2">Upload Payment Screenshot</h4>
               <p className="text-gray-600 text-sm mb-4">

@@ -136,7 +136,8 @@ class MP3NotificationService {
     } catch (error) {
       // Silently handle audio decoding errors - notification sounds are optional
       // Only log in debug mode to avoid console noise
-      if (import.meta.env.DEV && (window as any).DEBUG_AUDIO) {
+      const isDev = process.env.NODE_ENV === 'development';
+      if (isDev && (window as any).DEBUG_AUDIO) {
         console.warn(`Could not load sound ${filename}:`, error);
       }
       return null;
