@@ -536,20 +536,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </svg>
                     {joinedDisplay}
                 </span>
-                {!readOnly && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setShowJoinPopup(true);
-                        }}
-                        className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
-                    >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Therapist Join Free
-                    </button>
-                )}
+                {/* Therapist Join Free button removed - only View Profile button should show on home cards */}
                 {readOnly && (
                     <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -604,18 +591,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </div>
                 )}
 
-                {/* Share Button - Bottom Right with stable positioning */}
-                {!readOnly && (
-                    <button
-                        onClick={handleShareClick}
-                        className="absolute bottom-3 right-3 w-11 h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
-                        title="Share this therapist"
-                        aria-label="Share profile"
-                        style={{ position: 'absolute', bottom: '12px', right: '12px', minWidth: '44px', minHeight: '44px' }}
-                    >
-                        <Share2 className="w-5 h-5 text-white" strokeWidth={2.5} />
-                    </button>
-                )}
+                {/* Share Button removed - only View Profile button should show on home cards */}
             </div>
 
             {/* Location display - right aligned with pin icon */}
@@ -757,30 +733,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <p className="text-xs text-gray-600 flex-shrink-0">
                         <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
                     </p>
-                    {/* SafePass Button - Only if verified by admin */}
-                    {(() => {
-                        const showSafePass = (therapist as any).hotelVillaSafePassStatus === 'active' || therapist.hasSafePassVerification;
-                        
-                        return showSafePass ? (
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    console.log('🛡️ Opening SafePass verification modal for:', therapist.name);
-                                    setShowSafePassModal(true);
-                                }}
-                                className="hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer relative z-10"
-                            >
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
-                                    alt="SafePass Verified"
-                                    className="w-12 h-12 object-contain"
-                                    loading="lazy"
-                                    decoding="async"
-                                />
-                            </button>
-                        ) : null;
-                    })()}
+                    {/* SafePass Button removed from home cards - SafePass badge will show on profile page only */}
                 </div>
             </div>
 
