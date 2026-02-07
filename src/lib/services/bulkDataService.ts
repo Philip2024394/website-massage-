@@ -7,7 +7,7 @@
  * @module bulkDataService
  */
 
-import { databases } from '../appwrite.config';
+import { databases } from '../appwrite';
 import { Query } from 'appwrite';
 import type { TherapistMenu, ShareLink } from '../../types';
 
@@ -42,6 +42,12 @@ export async function bulkFetchTherapistMenus(
   therapistIds: string[]
 ): Promise<BulkTherapistMenusResult> {
   if (therapistIds.length === 0) {
+    return { byTherapistId: new Map(), all: [] };
+  }
+
+  // 🛡️ SAFETY: Check if collection IDs are configured
+  if (!DATABASE_ID || !THERAPIST_MENUS_COLLECTION_ID) {
+    console.warn('⚠️ Database or collection IDs not configured, skipping bulk fetch');
     return { byTherapistId: new Map(), all: [] };
   }
 
@@ -103,6 +109,12 @@ export async function bulkFetchShareLinks(
   entityIds: string[]
 ): Promise<BulkShareLinksResult> {
   if (entityIds.length === 0) {
+    return { byEntityId: new Map(), all: [] };
+  }
+
+  // 🛡️ SAFETY: Check if collection IDs are configured
+  if (!DATABASE_ID || !SHARE_LINKS_COLLECTION_ID) {
+    console.warn('⚠️ Database or collection IDs not configured, skipping bulk fetch');
     return { byEntityId: new Map(), all: [] };
   }
 
