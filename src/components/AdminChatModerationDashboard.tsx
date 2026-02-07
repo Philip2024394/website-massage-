@@ -142,7 +142,7 @@ export const AdminChatModerationDashboard: React.FC<AdminDashboardProps> = ({
         setSelectedReport(null);
         
         // Play success sound
-        professionalChatService.playChatEffect('booking_accepted');
+        professionalChatService.playChatEffect('message_sent');
       } else {
         alert(`Action failed: Unable to update flag status`);
       }

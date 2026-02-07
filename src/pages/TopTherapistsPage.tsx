@@ -163,11 +163,6 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                     className="bg-white border-2 border-gray-100 rounded-2xl p-5 hover:border-orange-300 hover:shadow-lg transition-all duration-300"
                                 >
                                 <div className="flex items-center gap-4">
-                                    {/* Rank Badge */}
-                                    <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md bg-gradient-to-br from-yellow-400 to-yellow-600">
-                                        #{index + 1}
-                                    </div>
-
                                     {/* Profile Image with Loading State */}
                                     <div className="relative w-20 h-20 flex-shrink-0">
                                         {!isImageLoaded && (

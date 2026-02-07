@@ -81,7 +81,8 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                                 const hasVerifiedBadge = (therapist as any).verifiedBadge || therapist.isVerified;
                                 const hasBankDetails = therapist.bankName && therapist.accountName && therapist.accountNumber;
                                 const hasKtpUploaded = therapist.ktpPhotoUrl;
-                                const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                const hasSafePass = (therapist as any).hotelVillaSafePassStatus === 'active';
+                                const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded) || hasSafePass;
                                 
                                 // Use custom verified badge if provided, otherwise use default
                                 const badgeUrl = customVerifiedBadge || "https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565";
@@ -95,16 +96,6 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                                     />
                                 );
                             })()}
-                            
-                            {/* Hotel/Villa Safe Pass Badge */}
-                            {(therapist as any).hotelVillaSafePassStatus === 'active' && (
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/hotel%205.png"
-                                    alt="Hotel & Villa Safe Pass Certified"
-                                    className="w-5 h-5 flex-shrink-0 object-contain"
-                                    title="Hotel & Villa Safe Pass Certified"
-                                />
-                            )}
                             
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                                 {therapist.name}

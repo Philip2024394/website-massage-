@@ -40,9 +40,11 @@ const KTPValidationExample: React.FC = () => {
       <label className="block text-sm font-medium text-gray-700 mb-2">
         KTP Number (Indonesian National ID)
       </label>
+      {/* ✅ ALWAYS use type="text" for numeric data that can be large */}
+      {/* ✅ Shows numeric keyboard on mobile */}
       <input
-        type="text" {/* ✅ ALWAYS use type="text" for numeric data that can be large */}
-        inputMode="numeric" {/* ✅ Shows numeric keyboard on mobile */}
+        type="text"
+        inputMode="numeric"
         value={ktpNumber}
         onChange={handleKTPChange}
         placeholder="16 digits exactly"

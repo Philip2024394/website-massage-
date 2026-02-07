@@ -18,6 +18,16 @@ interface EnhancedChatIntegrationProps {
   onFileUpload: (file: File, type: 'screenshot') => void;
 }
 
+type PaymentStatus = 
+  | 'idle' 
+  | 'awaiting_payment'
+  | 'showing_bank_details' 
+  | 'waiting_screenshot' 
+  | 'confirming_payment' 
+  | 'completed'
+  | 'expired'
+  | 'cancelled';
+
 interface ChatMessage {
   id: string;
   senderId: string;

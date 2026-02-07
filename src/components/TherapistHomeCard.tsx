@@ -643,24 +643,14 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     {/* Name left aligned with offset */}
                     <div className="mb-2 ml-[75px]">
                         <div className="flex items-center gap-2">
-                            {/* Verified Badge */}
-                            {((therapist as any).verifiedBadge || therapist.isVerified) && (
+                            {/* Verified Badge - Auto-show for Safe Pass holders */}
+                            {((therapist as any).verifiedBadge || therapist.isVerified || (therapist as any).hotelVillaSafePassStatus === 'active') && (
                                 <img 
                                     src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
                                     alt="Verified"
                                     className="w-5 h-5 flex-shrink-0"
                                     title="Verified Therapist"
                                 />
-                            )}
-                            
-                            {/* Hotel/Villa Safe Pass Badge */}
-                            {(therapist as any).hotelVillaSafePassStatus === 'active' && (
-                                <div 
-                                    className="w-5 h-5 bg-blue-600 rounded-sm flex items-center justify-center flex-shrink-0"
-                                    title="Hotel & Villa Safe Pass Certified"
-                                >
-                                    <span className="text-white text-xs font-bold">🏨</span>
-                                </div>
                             )}
                             
                             {/* Preferred by Women Badge - Show if therapist accepts female clients */}
@@ -733,7 +723,24 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <p className="text-xs text-gray-600 flex-shrink-0">
                         <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
                     </p>
-                    {/* SafePass Button removed from home cards - SafePass badge will show on profile page only */}
+                    
+                    {/* SafePass Button - Show for Active SafePass holders */}
+                    {(therapist as any).hotelVillaSafePassStatus === 'active' && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowSafePassModal(true);
+                            }}
+                            className="p-0 bg-transparent hover:opacity-80 transition-opacity duration-200"
+                            title="View SafePass Certificate"
+                        >
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
+                                alt="SafePass"
+                                className="w-16 h-[48px]"
+                            />
+                        </button>
+                    )}
                 </div>
             </div>
 

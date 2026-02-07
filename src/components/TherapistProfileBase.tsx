@@ -297,6 +297,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         const isManuallyVerified = (therapist as any).isVerified || (therapist as any).verifiedBadge;
                         return Boolean(isManuallyVerified || (hasBankDetails && hasKtpUploaded));
                     })()}
+                    safePassStatus={(therapist as any).hotelVillaSafePassStatus}
                     verifiedDate={(therapist as any).verifiedAt}
                     mode={mode}
                     onViewAll={undefined} // Remove manage button - no valid route for regular users

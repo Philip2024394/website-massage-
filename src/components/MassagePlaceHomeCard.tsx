@@ -8,6 +8,7 @@ import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { Share2 } from 'lucide-react';
+import SafePassModal from './modals/SafePassModal';
 
 interface MassagePlaceHomeCardProps {
     place: Place;
@@ -43,6 +44,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
     // Share functionality state
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
+    const [showSafePassModal, setShowSafePassModal] = useState(false);
 
     // Handle share functionality
     const handleShareClick = (e: React.MouseEvent) => {
@@ -341,6 +343,24 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                     <p className="text-xs text-gray-600 flex-shrink-0">
                         <span className="font-bold">Area of Service:</span> {(place as any).services || 'All Massage Types'}
                     </p>
+                    
+                    {/* SafePass Button - Show for Active SafePass holders */}
+                    {(place as any).hotelVillaSafePassStatus === 'active' && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowSafePassModal(true);
+                            }}
+                            className="p-0 bg-transparent hover:opacity-80 transition-opacity duration-200 ml-2"
+                            title="View SafePass Certificate"
+                        >
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
+                                alt="SafePass"
+                                className="w-16 h-[48px]"
+                            />
+                        </button>
+                    )}
                     {(() => {
                         const languagesValue = (place as any).languages;
                         const languages = languagesValue 
@@ -535,6 +555,13 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                     type="place"
                 />
             )}
+
+            {/* SafePass Modal */}
+            <SafePassModal
+                isOpen={showSafePassModal}
+                onClose={() => setShowSafePassModal(false)}
+                therapist={place as any}
+            />
         </div>
     );
 };

@@ -7,6 +7,7 @@ interface IndastreetAchievementsProps {
   therapistName?: string;    // Real therapist name
   isVerified?: boolean;      // Real verification status
   verifiedDate?: string;     // Real verification date
+  safePassStatus?: string;   // Safe Pass status (active/inactive/pending)
   mode?: 'authenticated' | 'shared' | 'public';
   achievements?: TherapistAchievement[];
   onViewAll?: () => void;
@@ -18,6 +19,7 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
   therapistName = 'Therapist',
   isVerified = false,
   verifiedDate,
+  safePassStatus,
   mode = 'public',
   achievements = [],
   onViewAll,
@@ -124,10 +126,10 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
 
       {/* Verification and Safe Pass Containers */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-        {/* Verified Container */}
-        <div className={`p-4 rounded-lg border-2 backdrop-blur-md shadow-lg transition-all ${isVerified ? 'bg-white/80 bg-gradient-to-br from-white/90 to-black/10 border-white/60' : 'bg-white/60 bg-gradient-to-br from-white/70 to-black/20 border-white/40'}`}>
+        {/* Verified Container - Shows active for regular verification OR Safe Pass */}
+        <div className={`p-4 rounded-lg border-2 backdrop-blur-md shadow-lg transition-all ${(isVerified || safePassStatus === 'active') ? 'bg-white/80 bg-gradient-to-br from-white/90 to-black/10 border-white/60' : 'bg-white/60 bg-gradient-to-br from-white/70 to-black/20 border-white/40'}`}>
           <div className="flex items-center justify-center mb-2">
-            {isVerified ? (
+            {(isVerified || safePassStatus === 'active') ? (
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-sm">
                 <span className="text-white text-lg font-bold">✓</span>
               </div>
@@ -138,16 +140,16 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
             )}
           </div>
           <div className="text-center">
-            <h4 className={`font-bold text-sm ${isVerified ? 'text-green-700' : 'text-gray-600'}`}>
+            <h4 className={`font-bold text-sm ${(isVerified || safePassStatus === 'active') ? 'text-green-700' : 'text-gray-600'}`}>
               {language === 'id' ? 'Terverifikasi' : 'Verified'}
             </h4>
-            <p className={`text-xs ${isVerified ? 'text-green-600' : 'text-gray-500'}`}>
-              {isVerified 
+            <p className={`text-xs ${(isVerified || safePassStatus === 'active') ? 'text-green-600' : 'text-gray-500'}`}>
+              {(isVerified || safePassStatus === 'active')
                 ? (language === 'id' ? 'Bank & KTP Lengkap' : 'Bank & KTP Complete')
                 : (language === 'id' ? 'Data Bank/KTP Kurang' : 'Missing Bank/KTP')
               }
             </p>
-            {isVerified && verifiedDate && (
+            {(isVerified || safePassStatus === 'active') && verifiedDate && (
               <p className="text-xs text-gray-400 mt-1">
                 {language === 'id' ? 'Sejak' : 'Since'} {verifiedDate}
               </p>
@@ -155,10 +157,10 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
           </div>
         </div>
 
-        {/* Hotel-Villa Safe Pass Container */}
-        <div className={`p-4 rounded-lg border-2 backdrop-blur-md shadow-lg transition-all ${isVerified ? 'bg-white/80 bg-gradient-to-br from-white/90 to-black/10 border-white/60' : 'bg-white/60 bg-gradient-to-br from-white/70 to-black/20 border-white/40'}`}>
+        {/* Hotel-Villa Safe Pass Container - Shows active when Safe Pass is active */}
+        <div className={`p-4 rounded-lg border-2 backdrop-blur-md shadow-lg transition-all ${safePassStatus === 'active' ? 'bg-white/80 bg-gradient-to-br from-white/90 to-black/10 border-white/60' : 'bg-white/60 bg-gradient-to-br from-white/70 to-black/20 border-white/40'}`}>
           <div className="flex items-center justify-center mb-2">
-            {isVerified ? (
+            {safePassStatus === 'active' ? (
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
                 <span className="text-white text-lg">🏨</span>
               </div>
@@ -169,11 +171,11 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
             )}
           </div>
           <div className="text-center">
-            <h4 className={`font-bold text-sm ${isVerified ? 'text-blue-700' : 'text-gray-600'}`}>
+            <h4 className={`font-bold text-sm ${safePassStatus === 'active' ? 'text-blue-700' : 'text-gray-600'}`}>
               {language === 'id' ? 'Safe Pass Hotel-Villa' : 'Hotel-Villa Safe Pass'}
             </h4>
-            <p className={`text-xs ${isVerified ? 'text-blue-600' : 'text-gray-500'}`}>
-              {isVerified 
+            <p className={`text-xs ${safePassStatus === 'active' ? 'text-blue-600' : 'text-gray-500'}`}>
+              {safePassStatus === 'active'
                 ? (language === 'id' ? 'Tersertifikasi' : 'Certified')
                 : (language === 'id' ? 'Perlu Verifikasi' : 'Requires Verification')
               }

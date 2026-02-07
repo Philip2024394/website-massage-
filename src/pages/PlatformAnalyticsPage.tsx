@@ -183,7 +183,6 @@ const PlatformAnalyticsPage: React.FC = () => {
                                     {analytics.topTherapists.length > 0 ? analytics.topTherapists.map((therapist, idx) => (
                                         <div key={therapist.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                                             <div className="flex items-center gap-4 pb-20">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white font-bold">{idx + 1}</div>
                                                 <div><div className="font-semibold text-gray-900">{therapist.name}</div><div className="text-sm text-gray-500">{therapist.bookings} bookings • ⭐ {therapist.rating.toFixed(1)}</div></div>
                                             </div>
                                             <div className="text-right"><div className="font-bold text-green-600">{formatCurrency(therapist.revenue)}</div></div>
