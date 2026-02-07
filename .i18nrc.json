@@ -14,14 +14,13 @@
     "node_modules",
     "dist",
     ".vite",
-    "**/*.test.{ts,tsx}",
-    "**/index.ts"
+    "**/*.test.{ts,tsx}"
   ],
   "enablePathParsing": true,
   "pathMatcher": "{locale}",
   "keyMatcherRegex": "(?:i18n\\.t|useTranslations|t)\\(['\"]([\\w.]+)['\"]",
   "refactor": true,
-  "fullReload": false,
+  "fullReload": true,
   "displayLanguage": "en",
   "namespace": true,
   "sourceLanguage": "en",

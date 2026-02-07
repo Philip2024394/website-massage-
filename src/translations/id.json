@@ -1,0 +1,19 @@
+{
+  "therapistDashboard": {
+    "fileUploadSuccess": "File berhasil diupload!",
+    "fileUploadError": "Gagal mengupload file. Silakan coba lagi.",
+    "removeLetterError": "Gagal menghapus surat. Silakan coba lagi.",
+    "submitApplicationError": "Gagal mengirim aplikasi. Silakan coba lagi.",
+    "paymentSuccess": "Pembayaran berhasil! Aplikasi Anda akan segera ditinjau.",
+    "paymentError": "Pembayaran gagal. Silakan coba lagi.",
+    "pending": "Menunggu",
+    "rejected": "Ditolak",
+    "uploadLetter": "Upload Surat Permohonan",
+    "uploadLetterDesc": "Upload surat permohonan resmi dari hotel/villa yang meminta layanan spa Anda",
+    "uploadInProgress": "Mengupload...",
+    "selectFile": "Pilih File",
+    "supportedFormats": "Format yang didukung: PDF, DOC, DOCX (maks. 10MB)",
+    "processing": "Memproses...",
+    "payNow": "Bayar Sekarang"
+  }
+}

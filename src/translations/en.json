@@ -1,0 +1,19 @@
+{
+  "therapistDashboard": {
+    "fileUploadSuccess": "File uploaded successfully!",
+    "fileUploadError": "Failed to upload file. Please try again.",
+    "removeLetterError": "Failed to remove letter. Please try again.",
+    "submitApplicationError": "Failed to submit application. Please try again.",
+    "paymentSuccess": "Payment successful! Your application will be reviewed shortly.",
+    "paymentError": "Payment failed. Please try again.",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "uploadLetter": "Upload Request Letter",
+    "uploadLetterDesc": "Upload official request letter from the hotel/villa requesting your spa services",
+    "uploadInProgress": "Uploading...",
+    "selectFile": "Select File",
+    "supportedFormats": "Supported formats: PDF, DOC, DOCX (max. 10MB)",
+    "processing": "Processing...",
+    "payNow": "Pay Now"
+  }
+}
