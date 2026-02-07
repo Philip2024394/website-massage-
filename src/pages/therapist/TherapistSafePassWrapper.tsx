@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * Therapist SafePass Application Wrapper
  * Integrates with therapist authentication and data
@@ -38,7 +39,7 @@ const TherapistSafePassWrapper: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
             </div>
         );
@@ -46,7 +47,7 @@ const TherapistSafePassWrapper: React.FC = () => {
 
     if (!therapist) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Therapist Not Found</h2>
                     <p className="text-gray-600">Please log in to access SafePass application.</p>

@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fix)
 import React, { useState, useEffect, useRef } from 'react';
 import { FloatingChatWindow } from '../../chat';
 import { Therapist } from '../../types';
@@ -238,7 +239,7 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
       language={language}
       onLogout={onLogout}
     >
-    <main className="bg-gray-50 pb-20">
+    <main className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x', paddingBottom: 'max(env(safe-area-inset-bottom, 15px), 80px)' }}>
       <div className="max-w-sm mx-auto bg-white shadow-sm">
 
         {/* Content Area */}

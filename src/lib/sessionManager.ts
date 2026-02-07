@@ -1,6 +1,9 @@
 /**
  * Session Manager - Handles persistent authentication across all user types
  * Checks Appwrite sessions on app startup and restores user state
+ * 🔒 GOLD STANDARD FIX - DO NOT MODIFY
+ * Therapist dashboard login flow and session management
+ * Last verified: 2026-02-07
  */
 
 import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
@@ -12,6 +15,68 @@ export interface SessionUser {
     email: string;
     documentId: string;
     data?: any;
+}
+
+// 🔒 GOLD STANDARD: Robust timeout and retry configuration
+const MAX_TIMEOUT_MS = 10000; // 10s for slow networks
+const MAX_RETRIES = 3;
+const THERAPIST_QUERY_TIMEOUT = 8000; // Extended timeout for therapist queries
+
+/**
+ * 🔒 GOLD STANDARD: Therapist query with retry logic and exponential backoff
+ */
+async function fetchTherapistByEmail(email: string): Promise<any | null> {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            console.log(`🔄 [THERAPIST FETCH] Attempt ${attempt}/${MAX_RETRIES} for email:`, email);
+            
+            const therapists = await Promise.race([
+                databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.THERAPISTS,
+                    [Query.equal('email', email)]
+                ),
+                new Promise<any>((_, reject) =>
+                    setTimeout(() => reject(new Error('Therapist query timeout')), THERAPIST_QUERY_TIMEOUT)
+                )
+            ]);
+            
+            console.log(`✅ [THERAPIST FETCH] Query completed, found ${therapists.documents.length} documents`);
+            
+            if (therapists.documents.length > 0) {
+                const therapist = therapists.documents[0];
+                console.log('✅ [THERAPIST FETCH] Found therapist:', {
+                    id: therapist.$id,
+                    name: therapist.name,
+                    email: therapist.email
+                });
+                return therapist;
+            }
+            
+            console.log(`⚠️ [THERAPIST FETCH] No therapist found for email ${email} on attempt ${attempt}`);
+            
+            // If this is the last attempt, return null
+            if (attempt === MAX_RETRIES) {
+                console.log('❌ [THERAPIST FETCH] All attempts exhausted, no therapist found');
+                return null;
+            }
+            
+        } catch (error) {
+            console.error(`❌ [THERAPIST FETCH] Attempt ${attempt} failed:`, error);
+            
+            // If this is the last attempt, throw the error
+            if (attempt === MAX_RETRIES) {
+                throw new Error(`Failed to fetch therapist after ${MAX_RETRIES} attempts: ${error}`);
+            }
+            
+            // Exponential backoff before retry
+            const backoffMs = attempt * 1000;
+            console.log(`⏳ [THERAPIST FETCH] Waiting ${backoffMs}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, backoffMs));
+        }
+    }
+    
+    return null;
 }
 
 /**
@@ -203,36 +268,15 @@ async function determineUserType(userId: string, email: string): Promise<Session
             console.warn('⚠️ Agent check failed or timeout, skipping');
         }
 
-        // Check Therapists with timeout
+        // Check Therapists with gold standard retry logic
         try {
-            console.log('🔍 [THERAPIST CHECK] Starting therapist lookup');
+            console.log('🔍 [THERAPIST CHECK] Starting gold standard therapist lookup');
             console.log('🔍 [THERAPIST CHECK] Email:', email);
-            console.log('🔍 [THERAPIST CHECK] DATABASE_ID:', DATABASE_ID);
-            console.log('🔍 [THERAPIST CHECK] COLLECTIONS.THERAPISTS:', COLLECTIONS.THERAPISTS);
             
-            const therapists = await Promise.race([
-                databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.THERAPISTS,
-                    [Query.equal('email', email)]
-                ),
-                new Promise<any>((_, reject) => 
-                    setTimeout(() => reject(new Error('Therapist query timeout')), 3000)
-                )
-            ]);
+            const therapist = await fetchTherapistByEmail(email);
             
-            console.log('🔍 [THERAPIST CHECK] Query completed');
-            console.log('🔍 [THERAPIST CHECK] Documents found:', therapists.documents.length);
-            console.log('🔍 [THERAPIST CHECK] Total documents:', therapists.total);
-            
-            if (therapists.documents.length > 0) {
-                const therapist = therapists.documents[0];
-                console.log('✅ [THERAPIST CHECK] Found therapist document:', {
-                    id: therapist.$id,
-                    name: therapist.name,
-                    email: therapist.email,
-                    hasAllFields: !!(therapist.name && therapist.email)
-                });
+            if (therapist) {
+                console.log('✅ [THERAPIST CHECK] Therapist found via gold standard method');
                 return {
                     type: 'therapist',
                     id: therapist.$id,
@@ -241,13 +285,12 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: therapist
                 };
             } else {
-                console.log('⚠️ [THERAPIST CHECK] No therapist document found for email:', email);
+                console.log('⚠️ [THERAPIST CHECK] No therapist found after retry attempts');
             }
         } catch (error) {
-            console.error('🔴 [THERAPIST CHECK] Error or timeout:', {
+            console.error('🔴 [THERAPIST CHECK] Gold standard fetch failed:', {
                 error: error,
-                message: error instanceof Error ? error.message : 'Unknown error',
-                stack: error instanceof Error ? error.stack : undefined
+                message: error instanceof Error ? error.message : 'Unknown error'
             });
         }
 

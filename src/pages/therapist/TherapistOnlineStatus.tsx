@@ -19,6 +19,7 @@ import { TherapistHelpModal, HelpIcon } from '../../components/therapist/Therapi
 import { useHelpModal } from '../../hooks/useHelpModal';
 import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../../lib/toastUtils';
 import UniversalPWAInstall from '../../components/UniversalPWAInstall';
+import IOSInstallInstructions from '../../components/IOSInstallInstructions';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {

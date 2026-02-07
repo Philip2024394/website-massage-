@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fix)
 /**
  * TherapistAnalyticsPage - Comprehensive analytics dashboard
  * Shows bookings, earnings, ratings, and performance metrics
@@ -138,7 +139,7 @@ const TherapistAnalyticsPage: React.FC<TherapistAnalyticsPageProps> = ({
       onLogout={onLogout}
       language={language}
     >
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-6">
           <div className="flex items-center gap-3">

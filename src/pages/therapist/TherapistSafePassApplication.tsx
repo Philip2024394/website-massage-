@@ -1,3 +1,4 @@
+// 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 /**
  * Therapist SafePass Application Page
  * Allows therapists to apply for SafePass certification
@@ -244,7 +245,7 @@ const TherapistSafePassApplication: React.FC<TherapistSafePassApplicationProps> 
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
             </div>
         );
@@ -253,7 +254,7 @@ const TherapistSafePassApplication: React.FC<TherapistSafePassApplicationProps> 
     // Show status if application exists and is not rejected
     if (existingApplication && existingApplication.hotelVillaSafePassStatus !== 'rejected') {
         return (
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 p-6" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
                 <div className="max-w-3xl mx-auto">
                     <div className="flex items-center gap-3 mb-6">
                         <Shield className="w-8 h-8 text-orange-600" />
@@ -267,7 +268,7 @@ const TherapistSafePassApplication: React.FC<TherapistSafePassApplicationProps> 
 
     // Show application form
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 p-6" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
             <div className="max-w-3xl mx-auto">
                 <div className="flex items-center gap-3 mb-6">
                     <Shield className="w-8 h-8 text-orange-600" />

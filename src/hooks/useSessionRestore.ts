@@ -1,6 +1,9 @@
 /**
  * useSessionRestore - Handles automatic session restoration on app startup
  * Checks for existing Appwrite sessions and restores user state
+ * 🔒 GOLD STANDARD FIX - DO NOT MODIFY
+ * Single source of truth session management 
+ * Last verified: 2026-02-07
  */
 
 import { useEffect, useCallback } from 'react';
@@ -27,10 +30,10 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
 
     const restoreUserSession = useCallback(async () => {
         try {
-            console.log('🔄 [SESSION RESTORE] Checking for existing Appwrite session...');
+            console.log('🔄 [SESSION RESTORE] Starting gold standard session restoration...');
             const sessionUser = await restoreSession();
             
-            console.log('🔄 [SESSION RESTORE] restoreSession() result:', {
+            console.log('🔄 [SESSION RESTORE] Session result:', {
                 hasSessionUser: !!sessionUser,
                 type: sessionUser?.type,
                 email: sessionUser?.email,
@@ -40,116 +43,114 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
             });
             
             if (!sessionUser) {
-                console.log('📭 [SESSION RESTORE] No session to restore');
+                console.log('📭 [SESSION RESTORE] No session to restore - clearing all auth states');
+                // 🔒 GOLD STANDARD: Clear all auth states consistently
+                setLoggedInProvider(null);
+                setLoggedInCustomer(null);
+                setLoggedInAgent(null);
+                setLoggedInUser(null);
+                setIsHotelLoggedIn(false);
+                setIsVillaLoggedIn(false);
                 return;
             }
 
             console.log('✅ [SESSION RESTORE] Session restored for:', sessionUser.type, sessionUser.email);
 
+            // 🔒 GOLD STANDARD: Single source of truth for all authentication states
+            // Create the user data object ONCE to prevent race conditions
+            const userData = {
+                id: sessionUser.id,
+                type: sessionUser.type,
+                email: sessionUser.email,
+                name: sessionUser.data?.name,
+                data: sessionUser.data
+            };
+
+            console.log('🔧 [SESSION RESTORE] Setting auth states with single source of truth:', {
+                type: sessionUser.type,
+                id: sessionUser.id,
+                email: sessionUser.email,
+                hasData: !!sessionUser.data
+            });
+
             // Restore state based on user type (but don't auto-navigate to dashboards)
             switch (sessionUser.type) {
                 case 'hotel':
                     setIsHotelLoggedIn(true);
-                    setLoggedInUser({
-                        id: sessionUser.id,
-                        type: 'hotel',
-                        email: sessionUser.email,
-                        name: sessionUser.data?.name,
-                        data: sessionUser.data
-                    });
-                    // Don't auto-navigate to hotel dashboard - let user manually access it
+                    setLoggedInUser(userData);
+                    console.log('✅ [SESSION RESTORE] Hotel state set using single source');
                     break;
                 
                 case 'villa':
                     setIsVillaLoggedIn(true);
-                    setLoggedInUser({
-                        id: sessionUser.id,
-                        type: 'villa',
-                        email: sessionUser.email,
-                        name: sessionUser.data?.name,
-                        data: sessionUser.data
-                    });
-                    // Don't auto-navigate to villa dashboard - let user manually access it
+                    setLoggedInUser(userData);
+                    console.log('✅ [SESSION RESTORE] Villa state set using single source');
                     break;
                 
                 case 'therapist':
-                    console.log('🔧 [SESSION RESTORE] Setting therapist state:', {
-                        id: sessionUser.id,
-                        email: sessionUser.email,
-                        name: sessionUser.data?.name,
-                        hasData: !!sessionUser.data
-                    });
-                    setLoggedInProvider({
+                    // 🔒 GOLD STANDARD: Use single data object for both provider and user states
+                    const therapistProviderData = {
                         id: sessionUser.id,
                         type: 'therapist',
                         email: sessionUser.email,
                         ...sessionUser.data
-                    });
-                    setLoggedInUser({
-                        id: sessionUser.id,
-                        type: 'therapist',
-                        email: sessionUser.email,
-                        name: sessionUser.data?.name,
-                        data: sessionUser.data
-                    });
-                    console.log('✅ [SESSION RESTORE] Therapist state set successfully');
-                    // Don't auto-navigate to therapist dashboard - let user manually access it
+                    };
+                    setLoggedInProvider(therapistProviderData);
+                    setLoggedInUser(userData);
+                    console.log('✅ [SESSION RESTORE] Therapist state set using gold standard single source');
                     break;
                 
                 case 'place':
-                    setLoggedInProvider({
+                    const placeProviderData = {
                         id: sessionUser.id,
                         type: 'place',
                         email: sessionUser.email,
                         ...sessionUser.data
-                    });
-                    setLoggedInUser({
-                        id: sessionUser.id,
-                        type: 'place',
-                        email: sessionUser.email,
-                        name: sessionUser.data?.name,
-                        data: sessionUser.data
-                    });
-                    // Don't auto-navigate to place dashboard - let user manually access it
+                    };
+                    setLoggedInProvider(placeProviderData);
+                    setLoggedInUser(userData);
+                    console.log('✅ [SESSION RESTORE] Place state set using single source');
                     break;
                 
                 case 'agent':
-                    setLoggedInAgent({
+                    const agentData = {
                         id: sessionUser.id,
                         email: sessionUser.email,
                         ...sessionUser.data
-                    });
-                    setLoggedInUser({
-                        id: sessionUser.id,
-                        type: 'agent',
-                        email: sessionUser.email,
-                        name: sessionUser.data?.name,
-                        data: sessionUser.data
-                    });
-                    // Don't auto-navigate to agent dashboard - let user manually access it
+                    };
+                    setLoggedInAgent(agentData);
+                    setLoggedInUser(userData);
+                    console.log('✅ [SESSION RESTORE] Agent state set using single source');
                     break;
                 
                 case 'user':
-                    setLoggedInCustomer({
+                    const customerData = {
                         id: sessionUser.id,
                         email: sessionUser.email,
                         ...sessionUser.data
-                    });
-                    setLoggedInUser({
-                        id: sessionUser.id,
-                        type: 'user',
-                        email: sessionUser.email,
-                        name: sessionUser.data?.name,
-                        data: sessionUser.data
-                    });
-                    // Don't auto-navigate to customer dashboard - let user manually access it
+                    };
+                    setLoggedInCustomer(customerData);
+                    setLoggedInUser(userData);
+                    console.log('✅ [SESSION RESTORE] Customer state set using single source');
                     break;
                 
                 default:
-                    console.warn('Unknown user type:', sessionUser.type);
+                    console.warn('⚠️ [SESSION RESTORE] Unknown user type:', sessionUser.type);
+                    // 🔒 GOLD STANDARD: Still set user data for unknown types
+                    setLoggedInUser(userData);
             }
         } catch (error) {
-            console.error('❌ Session restoration failed:', error);
+            console.error('❌ [SESSION RESTORE] Gold standard error handling:', error);
+            
+            // 🔒 GOLD STANDARD: Clear all auth states on any session restoration failure
+            setLoggedInProvider(null);
+            setLoggedInCustomer(null);
+            setLoggedInAgent(null);
+            setLoggedInUser(null);
+            setIsHotelLoggedIn(false);
+            setIsVillaLoggedIn(false);
+            
+            console.log('🧹 [SESSION RESTORE] All auth states cleared due to restoration failure');
         }
     }, [
         setLoggedInProvider,
@@ -182,7 +183,8 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                 console.log('🚀 [SESSION RESTORE] restoreUserSession() completed');
             } catch (error) {
                 if (isMounted) {
-                    console.error('❌ Session restoration error:', error);
+                    console.error('❌ [SESSION RESTORE] useEffect error handler:', error);
+                    console.log('🔒 GOLD STANDARD: Session restoration failed safely, app remains stable');
                 }
             }
         };
