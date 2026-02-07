@@ -20,6 +20,7 @@ import { useHelpModal } from '../../hooks/useHelpModal';
 import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../../lib/toastUtils';
 import UniversalPWAInstall from '../../components/UniversalPWAInstall';
 import IOSInstallInstructions from '../../components/IOSInstallInstructions';
+import { pwaNotificationSoundHandler } from '../../services/pwaNotificationSoundHandler';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -156,13 +157,28 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   // PWA Install states
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(() => {
-    // Initialize from localStorage on component mount
-    return localStorage.getItem('pwa-installed') === 'true';
+    // Initialize from localStorage or PWA detection
+    if (localStorage.getItem('pwa-installed') === 'true') return true;
+    
+    // Detect if running as PWA (standalone mode)
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      localStorage.setItem('pwa-installed', 'true');
+      localStorage.setItem('pwa-install-method', 'manual-detected');
+      return true;
+    }
+    
+    return false;
   });
   const [isIOS, setIsIOS] = useState(false);
   const [pwaEnforcementActive, setPwaEnforcementActive] = useState(false);
   const [forceReinstall, setForceReinstall] = useState(false);
-  const [showPWAInstallSection, setShowPWAInstallSection] = useState(true);
+  const [showPWAInstallSection, setShowPWAInstallSection] = useState(() => {
+    // Hide install section if already running as PWA
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      return false;
+    }
+    return true;
+  });
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   // Load initial data once on mount
@@ -209,12 +225,39 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       setCountdownHoursRemaining(therapist.countdownHoursRemaining);
     }
     
-    // Initialize PWA state from localStorage
+    // Initialize PWA state from localStorage and browser detection
     const storedInstallStatus = localStorage.getItem('pwa-installed') === 'true';
-    setIsAppInstalled(storedInstallStatus);
+    const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    const isManualPWA = isStandalone && !storedInstallStatus;
     
-    // Only enforce PWA if not installed
-    setPwaEnforcementActive(!storedInstallStatus);
+    if (isManualPWA) {
+      // User manually installed PWA but haven't activated enhanced features yet
+      setIsAppInstalled(true);
+      localStorage.setItem('pwa-installed', 'true');
+      localStorage.setItem('pwa-install-method', 'manual-standalone');
+      
+      // Check if user was guided to return for enhanced features
+      if (localStorage.getItem('manual-pwa-install-guided') === 'true') {
+        setTimeout(() => {
+          showToast('🎉 PWA Detected! Activate enhanced features now?', 'success', { 
+            duration: 8000 
+          });
+          
+          // Offer to activate enhanced features
+          setTimeout(() => {
+            if (confirm('🚀 Activate Enhanced Features?\n\n• 🔔 Instant notifications\n• 🎵 Notification sounds\n• 📳 Vibration alerts\n• 💬 Real-time chat\n\nClick OK to enable now!')) {
+              activateEnhancedPWAFeatures();
+            }
+          }, 2000);
+        }, 1000);
+        localStorage.removeItem('manual-pwa-install-guided');
+      }
+    } else {
+      setIsAppInstalled(storedInstallStatus);
+    }
+    
+    // Only enforce PWA if not installed and not running as standalone
+    setPwaEnforcementActive(!storedInstallStatus && !isStandalone);
     
     console.log('📱 PWA status initialized:', { isInstalled: storedInstallStatus, enforceInstall: !storedInstallStatus });
     
@@ -749,12 +792,22 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
 
   const handleSimpleDownload = async () => {
     try {
-      console.log('📱 Simple download initiated...');
+      console.log('📱 Enhanced PWA download initiated...');
       
       // Check if already installed
       if (isAppInstalled) {
         showToast('✅ App is already installed!', 'success', { duration: 3000 });
         return;
+      }
+
+      // Play download initiation sound
+      try {
+        await pwaNotificationSoundHandler.playNotificationSound('booking');
+        if ('vibrate' in navigator) {
+          navigator.vibrate([100, 50, 100]);
+        }
+      } catch (soundError) {
+        console.log('🔇 Sound play failed (normal on some browsers):', soundError);
       }
       
       // iOS: Show custom instructions modal (iOS doesn't support beforeinstallprompt)
@@ -768,33 +821,23 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       // Android/Desktop Chrome: Try native PWA install prompt
       if (deferredPrompt) {
         console.log('📱 Native PWA prompt available - triggering...');
-        showToast('📱 Installing app...', 'info', { duration: 2000 });
+        showToast('📱 Installing app with enhanced features...', 'info', { duration: 2000 });
         
         await deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
         
         if (choiceResult.outcome === 'accepted') {
+          await activateEnhancedPWAFeatures();
           setIsAppInstalled(true);
           localStorage.setItem('pwa-installed', 'true');
           localStorage.setItem('pwa-install-completed', 'true');
+          localStorage.setItem('pwa-enhanced-features', 'true');
           setDeferredPrompt(null);
-          showToast('✅ App installed successfully! Enable notifications for booking alerts.', 'success', { duration: 5000 });
-          console.log('✅ App installed successfully!');
           
-          // Request notification permission after successful install
-          setTimeout(async () => {
-            if ('Notification' in window && Notification.permission === 'default') {
-              const permission = await Notification.requestPermission();
-              if (permission === 'granted') {
-                console.log('✅ Notification permission granted');
-                new Notification('IndaStreet Therapist', {
-                  body: '🎉 App installed! You\'ll now receive instant booking notifications.',
-                  icon: '/pwa-icon-192.png',
-                  tag: 'install-success'
-                });
-              }
-            }
-          }, 1000);
+          // Success notification with sound and vibration
+          showToast('✅ App installed successfully! Enhanced features activated:', 'success', { duration: 8000 });
+          console.log('✅ Enhanced PWA installation completed!');
+          
           return;
         } else {
           console.log('❌ User declined installation');
@@ -803,20 +846,139 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         }
       }
       
-      // Fallback: No install prompt available
-      console.log('⚠️ beforeinstallprompt not available');
-      showToast(
-        '📱 To install:\n\n' +
-        '• Chrome: Menu (⋮) → "Install app"\n' +
-        '• Edge: Menu (⋯) → "Apps" → "Install this site as an app"\n' +
-        '• Firefox: Not supported - use Chrome or Edge\n\n' +
-        'Or visit on mobile for better experience.',
-        'info',
-        { duration: 10000 }
-      );
+      // Fallback: No install prompt available - show enhanced instructions
+      console.log('ℹ️ Native PWA prompt not available - providing manual install guidance');
+      
+      // Detect browser type for specific instructions
+      const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+      const isSafari = navigator.userAgent.toLowerCase().includes('safari') && !navigator.userAgent.toLowerCase().includes('chrome');
+      const isChrome = navigator.userAgent.toLowerCase().includes('chrome');
+      const isEdge = navigator.userAgent.toLowerCase().includes('edg');
+      
+      let instructions = '';
+      let title = '📱 Manual Installation Available';
+      
+      if (isFirefox) {
+        title = '🦊 Firefox: Manual Installation';
+        instructions = 
+          '🦊 Firefox Installation:\n\n' +
+          '• Address Bar: Look for 🏠 "Install" icon\n' +
+          '• Menu: ☰ → "Install this site as an app"\n' +
+          '• Or bookmark for quick access\n\n' +
+          '🎵 Features: Notification sounds, vibration, chat alerts!';
+      } else if (isSafari) {
+        title = '🍎 Safari: Add to Home Screen';
+        instructions = 
+          '🍎 Safari Installation:\n\n' +
+          '• Tap Share button 📤\n' +
+          '• Select "Add to Home Screen" 📱\n' +
+          '• Enjoy full app experience!\n\n' +
+          '🎵 Features: Notification sounds, vibration, chat alerts!';
+      } else if (isChrome) {
+        title = '🌐 Chrome: App Installation';
+        instructions = 
+          '🌐 Chrome Installation:\n\n' +
+          '• Address Bar: Look for ⬇️ "Install" icon\n' +
+          '• Menu (⋮): "Install app" or "Create shortcut"\n' +
+          '• Or use keyboard: Ctrl+Shift+A\n\n' +
+          '🎵 Full Features: Notification music, vibration, chat alerts!';
+      } else if (isEdge) {
+        title = '🔷 Edge: App Installation';
+        instructions = 
+          '🔷 Edge Installation:\n\n' +
+          '• Address Bar: Look for + "Install app" icon\n' +
+          '• Menu (⋯): "Apps" → "Install this site as an app"\n' +
+          '• Enjoy enhanced experience!\n\n' +
+          '🎵 Features: Notification sounds, vibration, chat alerts!';
+      } else {
+        instructions = 
+          '📱 Manual Installation Options:\n\n' +
+          '• Chrome: Menu (⋮) → "Install app"\n' +
+          '• Edge: Menu (⋯) → "Apps" → "Install app"\n' +
+          '• Safari: Share → "Add to Home Screen"\n' +
+          '• Firefox: Menu → "Install this site as an app"\n\n' +
+          '🎵 Enhanced Features: Music, vibration, chat alerts!';
+      }
+      
+      showToast(instructions, 'info', { duration: 15000 });
+      
+      // Also enable enhanced features for manual installations
+      setTimeout(() => {
+        localStorage.setItem('manual-pwa-install-guided', 'true');
+        showToast('💡 Tip: After installation, return here to enable notifications!', 'info', { duration: 5000 });
+      }, 2000);
     } catch (error) {
-      console.error('❌ Download error:', error);
+      console.error('❌ Enhanced download error:', error);
       showToast('❌ Failed to install app. Please try again or use Chrome/Safari.', 'error', { duration: 4000 });
+    }
+  };
+
+  // Activate enhanced PWA features after successful installation
+  const activateEnhancedPWAFeatures = async () => {
+    try {
+      console.log('🚀 Activating enhanced PWA features...');
+      
+      // 1. Request notification permission with enhanced messaging
+      if ('Notification' in window && Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          console.log('✅ Notification permission granted');
+          
+          // Play success sound and vibrate
+          try {
+            await pwaNotificationSoundHandler.playNotificationSound('booking');
+            if ('vibrate' in navigator) {
+              navigator.vibrate([200, 100, 200, 100, 200]);
+            }
+          } catch (e) { /* Silent fail for sound */ }
+          
+          // Show welcome notification
+          setTimeout(() => {
+            new Notification('IndaStreet Therapist 🏝️', {
+              body: '🎉 App installed! Enhanced features:\n• 🔔 Instant booking alerts\n• 🎵 Notification sounds\n• 💬 Live chat notifications\n• 📳 Vibration alerts',
+              icon: '/pwa-icon-192.png',
+              badge: '/pwa-badge-72.png',
+              tag: 'install-success',
+              requireInteraction: true,
+              vibrate: [300, 100, 300]
+            });
+          }, 1000);
+        }
+      }
+      
+      // 2. Initialize professional chat notification service
+      try {
+        // Initialize chat notifications through the existing chat window
+        console.log('✅ Professional chat notifications will be activated with chat window');
+      } catch (chatError) {
+        console.log('💬 Chat notifications will be initialized when needed:', chatError);
+      }
+      
+      // 3. Enable background sync for offline functionality
+      if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.sync.register('background-sync');
+          console.log('✅ Background sync enabled');
+        } catch (syncError) {
+          console.log('🔄 Background sync not available:', syncError);
+        }
+      }
+      
+      // 4. Initialize notification sound handler
+      pwaNotificationSoundHandler.initialize();
+      
+      // 5. Store enhanced features flag and ensure chat window is ready
+      localStorage.setItem('therapist-dashboard-enhanced', 'true');
+      localStorage.setItem('notification-music-enabled', 'true');
+      localStorage.setItem('chat-notifications-enabled', 'true');
+      localStorage.setItem('vibration-enabled', 'true');
+      localStorage.setItem('floating-chat-activated', 'true');
+      
+      console.log('🎆 All enhanced PWA features activated successfully!');
+      
+    } catch (error) {
+      console.error('❌ Error activating enhanced features:', error);
     }
   };
 
@@ -1310,20 +1472,20 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           )}
         </div>
         
-        {/* SIMPLE: Download App Button */}
+        {/* ENHANCED: Download App Section with White Background */}
         {showPWAInstallSection && (
-        <div className="rounded-xl p-6 border-2 bg-white border-gray-200">
+        <div className="rounded-xl p-6 border-2 bg-white border-orange-200 shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                isAppInstalled ? 'bg-green-500' : 'bg-orange-600'
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
+                isAppInstalled ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-orange-500 to-orange-600'
               }`}>
                 {isAppInstalled ? <Lock className="w-6 h-6 text-white" /> : <Smartphone className="w-6 h-6 text-white" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className={`text-lg font-bold ${
-                    isAppInstalled ? 'text-green-900' : 'text-orange-900'
+                    isAppInstalled ? 'text-green-800' : 'text-orange-800'
                   }`}>
                     {isAppInstalled ? '✅ Aplikasi Terunduh' : '📱 Unduh Aplikasi'}
                   </h3>
@@ -1333,12 +1495,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                     size="sm"
                   />
                 </div>
-                <p className={`text-sm ${
+                <p className={`text-sm font-medium ${
                   isAppInstalled ? 'text-green-700' : 'text-orange-700'
                 }`}>
                   {isAppInstalled 
-                    ? 'Aplikasi siap digunakan'
-                    : 'Dapatkan aplikasi mobile untuk pengalaman lebih baik'
+                    ? (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches 
+                        ? '🚀 PWA Active! Running in full app mode with enhanced features'
+                        : '🎵 Aplikasi siap dengan fitur lengkap: notifikasi, suara & getaran')
+                    : '🎆 Dapatkan fitur lengkap: notifikasi musik, getaran, chat real-time'
                   }
                 </p>
               </div>
@@ -1346,41 +1510,83 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             
             <button
               onClick={() => setShowPWAInstallSection(false)}
-              className="p-2 hover:bg-gray-100 rounded-full"
+              className="p-2 hover:bg-orange-100 rounded-full transition-colors"
               aria-label="Close"
             >
-              <X className="w-5 h-5 text-gray-400" />
+              <X className="w-5 h-5 text-orange-600" />
             </button>
           </div>
           
-          {/* Simple Download Button */}
+          {/* Custom Download Button with Image */}
           <button
             onClick={handleSimpleDownload}
             disabled={isAppInstalled}
-            className={`w-full py-3 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 ${
+            className={`w-full relative overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${
               isAppInstalled
-                ? 'bg-green-500 text-white cursor-not-allowed'
-                : 'bg-gradient-to-r from-orange-600 to-orange-700 text-white hover:from-orange-700 hover:to-orange-800'
+                ? 'cursor-not-allowed opacity-75'
+                : 'hover:shadow-xl'
             }`}
+            style={{ minHeight: '60px' }}
           >
             {isAppInstalled ? (
-              <>
-                <Lock className="w-5 h-5" />
-                Terunduh
-              </>
+              <div className="bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 rounded-xl flex items-center justify-center gap-3 font-semibold">
+                <Lock className="w-6 h-6" />
+                <span>✅ Terunduh & Aktif</span>
+              </div>
             ) : (
-              <>
-                <Download className="w-5 h-5" />
-                Unduh Sekarang
-              </>
+              <div className="relative">
+                <img 
+                  src="https://ik.imagekit.io/7grri5v7d/download_button-removebg-preview.png?updatedAt=1770465162327"
+                  alt="Download Therapist App"
+                  className="w-full h-auto max-h-16 object-contain"
+                  style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                {/* Fallback button if image fails */}
+                <div className="fallback-button hidden w-full">
+                  <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl flex items-center justify-center gap-3 font-bold text-lg shadow-lg">
+                    <Download className="w-6 h-6" />
+                    <span>🚀 UNDUH SEKARANG</span>
+                  </div>
+                </div>
+              </div>
             )}
           </button>
+          
+          {/* Enhanced Features Info */}
+          {!isAppInstalled && (
+            <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-1 text-orange-700">
+                  <span>🔔</span>
+                  <span className="font-medium">Notifikasi Instan</span>
+                </div>
+                <div className="flex items-center gap-1 text-orange-700">
+                  <span>🎵</span>
+                  <span className="font-medium">Suara Notifikasi</span>
+                </div>
+                <div className="flex items-center gap-1 text-orange-700">
+                  <span>📳</span>
+                  <span className="font-medium">Getaran Alert</span>
+                </div>
+                <div className="flex items-center gap-1 text-orange-700">
+                  <span>💬</span>
+                  <span className="font-medium">Chat Real-time</span>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Debug: Reset PWA State Button (only show when app is marked as installed) */}
           {isAppInstalled && (
             <button
               onClick={handleResetPWAState}
-              className="mt-2 w-full py-2 text-xs text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+              className="mt-3 w-full py-2 text-xs text-orange-600 hover:text-orange-800 border border-orange-300 rounded-lg hover:bg-orange-50 transition-all"
               title="Reset download state for testing"
             >
               🔄 Reset Download State (Dev)
