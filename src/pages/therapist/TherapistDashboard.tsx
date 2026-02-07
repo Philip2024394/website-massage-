@@ -401,12 +401,55 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         
         setCoordinates(coords);
         setLocationSet(true);
+        
+        // 🌍 CRITICAL FIX: IMMEDIATELY SAVE GPS TO DATABASE
+        // "Set Location" button is the SINGLE SOURCE OF TRUTH for location
+        console.log('💾 Saving GPS location immediately to database...');
+        
+        try {
+            await therapistService.update(String(therapist.$id || therapist.id), {
+                geopoint: coords,
+                coordinates: JSON.stringify(coords),
+                city: derivedCity,
+                locationId: derivedCity,
+                location: derivedCity,
+                isLive: true // GPS location enables marketplace visibility
+            });
+            
+            console.log('✅ GPS location saved immediately to database');
+            console.log('✅ City assignment:', derivedCity);
+            
+            // Verify the save
+            setTimeout(async () => {
+                try {
+                    const updated = await therapistService.getById(String(therapist.$id || therapist.id));
+                    if (updated.city === derivedCity && updated.locationId === derivedCity) {
+                        console.log('✅ VERIFICATION PASSED: GPS location saved correctly');
+                    } else {
+                        console.error('❌ VERIFICATION FAILED:', {
+                            expected: derivedCity,
+                            savedCity: updated.city,
+                            savedLocationId: updated.locationId
+                        });
+                    }
+                } catch (verifyError) {
+                    console.warn('⚠️ Could not verify GPS save:', verifyError);
+                }
+            }, 1000);
+            
+        } catch (saveError) {
+            console.error('❌ Failed to save GPS to database:', saveError);
+            showToast('⚠️ GPS captured but not saved. Please try again or contact support.', 'error');
+            setGpsLoading(false);
+            return;
+        }
+        
         setGpsLoading(false);
         
         if (accuracy > 500) {
-          showToast(`⚠️ GPS accuracy is low (${Math.round(accuracy)}m). Consider moving to an open area for better accuracy.`, 'warning');
+            showToast(`⚠️ GPS accuracy is low (${Math.round(accuracy)}m). Consider moving to an open area for better accuracy.`, 'warning');
         } else {
-          showToast(`✅ GPS location captured! You will appear in ${derivedCity} searches.`, 'success');
+            showToast(`✅ GPS location saved! You are now live in ${derivedCity}.`, 'success');
         }
         
         console.log('✅ Location state updated successfully');

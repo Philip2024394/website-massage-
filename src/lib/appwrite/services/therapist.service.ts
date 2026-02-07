@@ -903,6 +903,49 @@ export const therapistService = {
                 }
             }
             
+            // 🌍 GPS AND LOCATION FIELDS (GPS-AUTHORITATIVE) - FIX FOR LOCATION AUDIT
+            // Critical: These fields must be saved to enable correct city-based filtering
+            if (data.geopoint) {
+                mappedData.geopoint = data.geopoint;
+                console.log('✅ GPS geopoint field will be saved:', data.geopoint);
+                
+                // Auto-derive city from geopoint if not explicitly provided
+                if (!data.city && !data.locationId) {
+                    try {
+                        const { deriveLocationIdFromGeopoint } = require('../../utils/geoDistance');
+                        const derivedCity = deriveLocationIdFromGeopoint(data.geopoint);
+                        mappedData.city = derivedCity;
+                        mappedData.locationId = derivedCity;
+                        console.log('✅ GPS-derived city will be saved:', derivedCity);
+                        
+                        // Update location field to match GPS-derived city (if not custom)
+                        if (!data.location || data.location === 'custom') {
+                            mappedData.location = derivedCity;
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Failed to derive city from geopoint:', e);
+                    }
+                }
+            }
+            
+            // Explicit city/locationId fields (GPS-derived from dashboard)
+            if (data.city) {
+                mappedData.city = data.city;
+                console.log('✅ City field will be saved:', data.city);
+            }
+            if (data.locationId) {
+                mappedData.locationId = data.locationId;
+                console.log('✅ LocationId field will be saved:', data.locationId);
+            }
+            
+            // Coordinates field (legacy format - both string and object supported)
+            if (data.coordinates) {
+                mappedData.coordinates = typeof data.coordinates === 'string' 
+                    ? data.coordinates 
+                    : JSON.stringify(data.coordinates);
+                console.log('✅ Coordinates field will be saved');
+            }
+            
             // Remove Appwrite metadata fields
             const { $id: _$id, $createdAt: _$createdAt, $updatedAt: _$updatedAt, $permissions: _$permissions, $databaseId: _$databaseId, $collectionId, ...cleanMappedData } = mappedData;
             

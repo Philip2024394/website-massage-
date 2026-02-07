@@ -985,6 +985,30 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         if (status === 'OK' && results[0]) {
                             setLocation(results[0].formatted_address);
                             setIsLocationManuallyEdited(false);
+                            
+                            // 🌍 CRITICAL FIX: IMMEDIATELY SAVE GPS TO DATABASE
+                            // "Set Location" button is the SINGLE SOURCE OF TRUTH for location
+                            console.log('💾 [PLACES] Saving GPS location immediately to database...');
+                            
+                            const derivedCity = deriveLocationIdFromGeopoint(latlng);
+                            console.log('🎯 [PLACES] GPS-derived city:', derivedCity);
+                            
+                            if (placeId) {
+                                placeService.update(String(placeId), {
+                                    geopoint: latlng,
+                                    coordinates: [latlng.lng, latlng.lat], // [lng, lat] format for places
+                                    city: derivedCity,
+                                    locationId: derivedCity,
+                                    location: results[0].formatted_address,
+                                    islive: true // GPS location enables marketplace visibility
+                                }).then(() => {
+                                    console.log('✅ [PLACES] GPS location saved immediately to database');
+                                    console.log('✅ [PLACES] City assignment:', derivedCity);
+                                }).catch((saveError) => {
+                                    console.error('❌ [PLACES] Failed to save GPS to database:', saveError);
+                                });
+                            }
+                            
                             // Mobile-friendly notification
                             if ('vibrate' in navigator) {
                                 navigator.vibrate(200);

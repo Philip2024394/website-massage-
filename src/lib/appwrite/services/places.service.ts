@@ -294,11 +294,45 @@ export const placesService = {
     },
     async update(id: string, data: any): Promise<any> {
         try {
+            // 🌍 GPS AND LOCATION FIELDS (GPS-AUTHORITATIVE) - FIX FOR LOCATION AUDIT
+            // Process GPS fields to ensure proper city assignment
+            const processedData = { ...data };
+            
+            if (data.geopoint) {
+                console.log('✅ [PLACES] GPS geopoint field will be saved:', data.geopoint);
+                
+                // Auto-derive city from geopoint if not explicitly provided
+                if (!data.city && !data.locationId) {
+                    try {
+                        const { deriveLocationIdFromGeopoint } = require('../../utils/geoDistance');
+                        const derivedCity = deriveLocationIdFromGeopoint(data.geopoint);
+                        processedData.city = derivedCity;
+                        processedData.locationId = derivedCity;
+                        console.log('✅ [PLACES] GPS-derived city will be saved:', derivedCity);
+                        
+                        // Update location field to match GPS-derived city
+                        if (!data.location) {
+                            processedData.location = derivedCity;
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ [PLACES] Failed to derive city from geopoint:', e);
+                    }
+                }
+            }
+            
+            // Handle coordinates field (legacy format - both string and object supported)
+            if (data.coordinates) {
+                processedData.coordinates = typeof data.coordinates === 'string' 
+                    ? data.coordinates 
+                    : JSON.stringify(data.coordinates);
+                console.log('✅ [PLACES] Coordinates field will be saved');
+            }
+            
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
                 id,
-                data
+                processedData
             );
             
             // 🚨 FRAUD PREVENTION: Check for duplicate accounts after update
