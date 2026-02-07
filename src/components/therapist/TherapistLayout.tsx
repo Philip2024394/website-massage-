@@ -1,4 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
+// 🔧 FIX: Reduced sidebar header padding p-6 → p-4 for cleaner spacing
+// 🔧 FIX: Optimized main content bottom padding from 80px to 60px, wrapper from 60px to 40px
 /**
  * ============================================================================
  * �️ SEALED THERAPIST OPERATIONAL DASHBOARD (STOD) - TIER 1 PROTECTED
@@ -566,8 +568,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         aria-hidden={!isSidebarOpen}
       >
         <div className="flex flex-col h-full">
-          {/* Sidebar Header */}
-          <div className="p-6 border-b border-black">
+          {/* Sidebar Header - Reduced padding for cleaner layout */}
+          <div className="p-4 border-b border-black">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold">
                 <span className="text-black">Inda</span>
@@ -741,11 +743,11 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Main Content - Natural scrolling following global standards */}
+      {/* Main Content - Optimized padding for cleaner layout */}
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
-          paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 80px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 10px), 60px)',
           flex: '1 1 auto',
           overflowY: 'auto',
           overflowX: 'hidden',
@@ -757,7 +759,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         <div 
           className="therapist-content-wrapper"
           style={{
-            paddingBottom: '60px',
+            paddingBottom: '40px',
             minHeight: '100%'
           }}
         >

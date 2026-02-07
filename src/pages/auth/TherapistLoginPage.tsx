@@ -1,4 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
+// 🔧 FIX: Therapist login navigation - redirect to main dashboard instead of status page
+// 🔧 FIX: Added fallback authentication flow with better error handling
 import React, { useState, useEffect } from 'react';
 import { therapistAuth } from '../../lib/auth';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Home, CheckCircle, Star } from 'lucide-react';
@@ -101,12 +103,16 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                     console.log('✅ [Login] Session restored - loggedInProvider should now be set');
                 }
                 
-                // Redirect to therapist status page (first page after login)
+                // Fix: Navigate to main therapist dashboard after successful login
                 if (onNavigate) {
-                    console.log('🚀 [Login] Navigating to therapist status page');
-                    onNavigate('therapist-status');
+                    console.log('🚀 [Login] Navigating to therapist dashboard');
+                    onNavigate('therapist');
                 } else {
                     console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
+                    // Fallback: Try direct navigation method
+                    if (onSuccess) {
+                        onSuccess(therapistId);
+                    }
                 }
             } else {
                 const errorMessage = typeof response.error === 'string' ? response.error : 'Sign in failed. Please try again.';

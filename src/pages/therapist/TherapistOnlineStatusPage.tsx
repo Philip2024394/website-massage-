@@ -1,4 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (7 fixes)
+// 🔧 FIX: Optimized card padding p-6 → p-4 for better mobile experience
+// 🚫 PROTECTED: Therapist online status core functionality remains unchanged
 // @ts-expect-error - React 19 type compatibility issue with lucide-react icons, will be resolved in future version
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
@@ -1034,7 +1036,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
     >
     <div className="max-w-sm mx-auto px-4 py-4 space-y-6">
         {/* Current Status Display */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.currentStatus}</h2>
@@ -1384,7 +1386,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         
         {/* SIMPLE: Download App Button - Mobile Safe Area */}
         {showPWAInstallSection && (
-        <div className="rounded-xl p-6 border-2 bg-white border-gray-200" 
+        <div className="rounded-xl p-4 border-2 bg-white border-gray-200" 
              style={{ marginBottom: 'max(env(safe-area-inset-bottom, 20px), 40px)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
@@ -1485,7 +1487,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         onLogout={onLogout}
       >
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50">
-          <div className="text-center p-6">
+          <div className="text-center p-4">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">Component Error</h2>
             <p className="text-gray-600 mb-4">Unable to load component.</p>

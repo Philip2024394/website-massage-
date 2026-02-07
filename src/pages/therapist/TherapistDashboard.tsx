@@ -1,4 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
+// 🔧 FIX: Reduced excessive padding px-4 py-6 → px-2 py-3 for cleaner layout
+// 🔧 FIX: Optimized bottom spacing paddingBottom 80px → 60px, marginBottom 60px → 50px
 /**
  * ============================================================================
  * 🔒 HARD LOCK: THERAPIST DASHBOARD - STABLE PROFILE MANAGEMENT
@@ -1032,8 +1034,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         style={{ 
           WebkitOverflowScrolling: 'touch', 
           touchAction: 'pan-y pan-x',
-          paddingBottom: 'max(env(safe-area-inset-bottom, 30px), 80px)',
-          marginBottom: 'max(env(safe-area-inset-bottom, 20px), 60px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 15px), 60px)',
+          marginBottom: 'max(env(safe-area-inset-bottom, 10px), 50px)',
           minHeight: 0,
           flex: '1 1 auto'
         }}
@@ -1060,10 +1062,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       )}
 
       {/* Main Content */}
-      <main className="w-full px-4 py-6">
+      <main className="w-full px-2 py-3">
 
           {/* 🆕 ELITE FIX: Therapist Connection Status Indicator (Facebook/Amazon Standard) */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
@@ -1098,12 +1100,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                       showToast('📱 To install: Use browser menu → "Install App"', 'info');
                     }
                   }}
-                  className="text-xs bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1.5 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-1.5 shadow-sm"
+                  className="text-xs bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-1 shadow-sm"
                   title="Install as mobile app for 97% reliability"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m0 0l-4-4m4 4l4-4" />
-                  </svg>
+                  <img 
+                    src="https://ik.imagekit.io/7grri5v7d/download_button-removebg-preview.png" 
+                    alt="Download" 
+                    className="w-3.5 h-3.5" 
+                  />
                   Install App
                 </button>
                 <button
