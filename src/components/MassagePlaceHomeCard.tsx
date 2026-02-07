@@ -357,7 +357,9 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
                                 alt="SafePass"
-                                className="w-16 h-[48px]"
+                                className="w-14 h-14 object-contain"
+                                loading="lazy"
+                                decoding="async"
                             />
                         </button>
                     )}

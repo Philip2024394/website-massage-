@@ -95,13 +95,16 @@ const BankAccountValidationExample: React.FC = () => {
       <label className="block text-sm font-medium text-gray-700 mb-2">
         Bank Account Number
       </label>
+      {/* ✅ NEVER use type="number" for account numbers */}
+      {/* ✅ Mobile optimization */}
+      {/* ✅ Allow space for separators */}
       <input
-        type="text" {/* ✅ NEVER use type="number" for account numbers */}
-        inputMode="numeric" {/* ✅ Mobile optimization */}
+        type="text"
+        inputMode="numeric"
         value={bankAccount}
         onChange={handleBankAccountChange}
         placeholder="1234 5678 9012 3456"
-        maxLength={30} {/* ✅ Allow space for separators */}
+        maxLength={30}
         className={`w-full px-3 py-2 border rounded-lg font-mono ${
           validation?.isValid === false ? 'border-red-500 bg-red-50' : 'border-gray-300'
         }`}
