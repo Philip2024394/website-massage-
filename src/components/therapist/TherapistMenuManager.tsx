@@ -626,7 +626,7 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
                           {isEditing ? (
                             <input
                               type="number"
-                              value={price || 0}
+                              value={Number(price) || 0}
                               onChange={(e) => updateEditingService(service.id, { 
                                 [priceKey]: parseInt(e.target.value) 
                               })}
@@ -636,7 +636,7 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
                             <div className={`text-sm font-bold ${
                               service.isDefault ? 'text-blue-600' : 'text-orange-600'
                             }`}>
-                              Rp {((price || 0) * 1000).toLocaleString('id-ID')}
+                              Rp {((Number(price) || 0) * 1000).toLocaleString('id-ID')}
                             </div>
                           )}
                         </div>

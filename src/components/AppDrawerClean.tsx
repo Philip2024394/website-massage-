@@ -190,7 +190,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
       <div className="fixed inset-0" role="dialog" aria-modal="true" style={{ zIndex: 99999 }}>
         <div 
           className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           aria-hidden="true" 
         />
         <div 
@@ -213,6 +216,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
             contain: 'layout style paint',
             transform: isOpen ? 'translate3d(0, 0, 0)' : 'translate3d(100%, 0, 0)'
           }}
+          onClick={(e) => e.stopPropagation()}
           aria-labelledby="drawer-title"
           aria-describedby="drawer-description"
         >
@@ -328,7 +332,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     <span className="text-sm text-gray-700 font-medium block">
                       {language === 'id' ? 'Kota Saat Ini' : 'Current City'}
                     </span>
-                    <span className="text-xs text-teal-600 font-semibold">{city}</span>
+                    <span className="text-xs text-teal-600 font-semibold">{city || (language === 'id' ? 'Semua Indonesia' : 'All Indonesia')}</span>
                   </div>
                 </button>
                 

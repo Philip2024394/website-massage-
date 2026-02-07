@@ -173,7 +173,6 @@ export interface BookingData {
 export interface ChatTherapist {
   id: string; // Display name for easy debugging
   $id?: string; // Appwrite document ID (optional for compatibility - legacy field)
-  appwriteId?: string; // Appwrite document ID (preferred - used for booking creation)
   name: string;
   image?: string;
   mainImage?: string; // Main profile image

@@ -27,7 +27,7 @@ export { default as BookingMenuSlider } from './BookingMenuSlider';
 
 // Chat Components
 export { default as PersistentChatWindow } from './PersistentChatWindow';
-export { default as ModernChatWindow } from './ModernChatWindow';
+export { ModernChatWindow } from './ModernChatWindow';
 
 // Card Components
 export { default as TherapistCard } from './TherapistCard';
@@ -35,7 +35,7 @@ export { default as TherapistHomeCard } from './TherapistHomeCard';
 export { default as MassagePlaceCard } from './MassagePlaceCard';
 
 // Modal Components
-export { default as ReviewModal } from './ReviewModal';
+export { ReviewModal } from './ReviewModal';
 export { default as SocialSharePopup } from './SocialSharePopup';
 export { default as AnonymousReviewModal } from './AnonymousReviewModal';
 
@@ -45,7 +45,7 @@ export { default as CustomCheckbox } from './CustomCheckbox';
 export { default as PasswordInput } from './PasswordInput';
 
 // Layout Components
-export { default as Header } from './Header';
+// export { default as Header } from './Header'; // TODO: Header.tsx is empty
 export { default as Footer } from './Footer';
 export { default as TopNav } from './TopNav';
 

@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 /**
  * 🚀 BULK DATA SERVICE - Eliminate N+1 Queries
  * 

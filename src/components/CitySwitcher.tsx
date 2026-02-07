@@ -48,7 +48,7 @@ export const CitySwitcher: React.FC<CitySwitcherProps> = ({ onClose }) => {
       </div>
 
       <div className="mb-2 text-sm text-gray-500">
-        {currentLabel}: <span className="font-semibold text-teal-600">{currentCity}</span>
+        {currentLabel}: <span className="font-semibold text-teal-600">{currentCity || (language === 'id' ? 'Belum Dipilih' : 'Not Selected')}</span>
       </div>
 
       <div className="max-h-96  space-y-1">

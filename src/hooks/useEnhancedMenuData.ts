@@ -112,9 +112,22 @@ export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataRes
     }
   }, [therapistId]);
   
-  // Initial load
+  // 🎯 GOLD STANDARD: Initial load with unmount cleanup
   useEffect(() => {
-    loadMenu();
+    let isMounted = true;
+    
+    const loadWithCleanup = async () => {
+      if (isMounted) {
+        await loadMenu();
+      }
+    };
+    
+    loadWithCleanup();
+    
+    return () => {
+      isMounted = false;
+      console.log('⚠️ useEnhancedMenuData: Component unmounting, cleaning up');
+    };
   }, [loadMenu]);
   
   // Refresh menu

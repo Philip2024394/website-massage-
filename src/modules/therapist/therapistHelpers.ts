@@ -24,10 +24,15 @@ export const formatPrice = (price: number | string): string => {
 };
 
 /**
- * Format countdown timer display
+ * Format countdown timer display (MM:SS format)
  */
 export const formatCountdownDisplay = (time: string): string => {
-    return time || '~1h';
+    const seconds = parseInt(time, 10);
+    if (isNaN(seconds) || seconds <= 0) return '~1h';
+    
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 
 /**

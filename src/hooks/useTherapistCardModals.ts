@@ -65,6 +65,11 @@ export function useTherapistCardModals() {
             else modalManager.closeModal('share');
         },
         setShowPriceListModal: (show: boolean) => {
+            // 🎯 GOLD STANDARD: Guard against state changes during transitions
+            if (modalManager.isTransitioning) {
+                console.warn('⚠️ Price modal state change blocked during transition');
+                return;
+            }
             if (show) modalManager.openPriceListModal();
             else modalManager.closeModal('price-list');
         },

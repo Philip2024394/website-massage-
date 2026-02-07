@@ -89,6 +89,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     // Chat integration hook for menu harga bookings
     const { openBookingWithService } = usePersistentChatIntegration(therapist);
 
+    // � LOCKED BEHAVIOR:
+    // Menu slider may ONLY open from therapist profile page.
+    // Home page and listing triggers are explicitly forbidden.
+    // TherapistPriceListModal is rendered below but has NO triggers on home page.
+
     // Handle booking type selection from slider
     const handleBookingTypeSelect = useCallback((type: HomePageBookingType, selectedTherapist: Therapist) => {
         console.log('🏠 HomePageBookingSlider selection:', {
@@ -139,8 +144,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         setSelectedDuration(duration);
     };
     
+    // 🔒 MODAL STATE PROTECTION: Track if menu has been loaded to prevent re-renders from closing modal
+    const [menuLoadedOnce, setMenuLoadedOnce] = useState(false);
+    
     // Load menu data on component mount for service name display
     useEffect(() => {
+        // 🛡️ CRITICAL: DO NOT tie menu data loading to modal open/close state
+        // Menu data changes must NEVER affect modal visibility
         const loadMenu = async () => {
             // 🚀 PERFORMANCE: Use prefetched data if available
             if (prefetchedMenu !== undefined) {
@@ -148,13 +158,16 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     try {
                         const parsed = JSON.parse(prefetchedMenu.menuData);
                         setMenuData(Array.isArray(parsed) ? parsed : []);
+                        setMenuLoadedOnce(true);
                         console.log('🚀 Using prefetched menu for', therapist.name, ':', parsed.length, 'items');
                     } catch (error) {
                         console.warn('Failed to parse prefetched menu:', error);
                         setMenuData([]);
+                        setMenuLoadedOnce(true);
                     }
                 } else {
                     setMenuData([]);
+                    setMenuLoadedOnce(true);
                 }
                 return; // Skip DB query
             }
@@ -169,21 +182,28 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     if (menuDoc?.menuData) {
                         const parsed = JSON.parse(menuDoc.menuData);
                         setMenuData(Array.isArray(parsed) ? parsed : []);
+                        setMenuLoadedOnce(true);
                         console.log('🏠 Menu data loaded for', therapist.name, ':', parsed.length, 'items');
                     } else {
                         setMenuData([]);
+                        setMenuLoadedOnce(true);
                     }
                 } catch (error: any) {
                     console.log('🏠 Menu collection not available for', therapist.name, '- using default pricing');
                     setMenuData([]);
+                    setMenuLoadedOnce(true);
                 }
             } catch (outerError) {
                 setMenuData([]);
+                setMenuLoadedOnce(true);
             }
         };
         
-        loadMenu();
-    }, [therapist, prefetchedMenu]);
+        // 🛡️ PROTECTION: Only load menu once to prevent re-renders from affecting modal state
+        if (!menuLoadedOnce) {
+            loadMenu();
+        }
+    }, [therapist.$id, therapist.id, prefetchedMenu, menuLoadedOnce]);
 
     // Generate share URL
     useEffect(() => {
@@ -796,6 +816,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
             {/* View Profile Button */}
             <div className="px-4 pb-4">
+                {/* 🔒 LOCKED: NO price modal triggers allowed on home page cards */}
                 <button 
                     onClick={() => onClick(therapist)}
                     disabled={readOnly}
@@ -829,7 +850,10 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 onNavigate={onNavigate}
             />
 
-            {/* Price List Modal/Slider - Exact same as profile page */}
+            {/* 🔒 LOCKED BEHAVIOR: Price List Modal
+                This modal component exists for technical reasons but has NO triggers on home page.
+                Menu slider entry point = PROFILE PAGE ONLY.
+                Home page cards, search results, and listings are FORBIDDEN from opening this modal. */}
             <TherapistPriceListModal
                 showPriceListModal={showPriceModal}
                 setShowPriceListModal={setShowPriceModal}

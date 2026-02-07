@@ -310,12 +310,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         }
     }, [showPriceListModal]);
 
-    // Clean up modal state when component unmounts
+    // LOCKED RULE: Only cleanup on actual unmount, not on re-renders
+    // This prevents modal from closing when parent re-renders due to async data loading
     useEffect(() => {
         return () => {
             setShowPriceListModal(false);
         };
-    }, [setShowPriceListModal]);
+    }, []); // ✅ Empty deps = cleanup only fires on component unmount
     
     // Keep price cells stable (no auto-animating highlight)
     useEffect(() => {

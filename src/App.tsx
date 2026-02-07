@@ -715,6 +715,11 @@ const App = () => {
         };
     }, [state.page, state.setPage]);
 
+    // LOCKED RULE:
+    // Page state must not change due to data loading (therapist_menus, share_links).
+    // UI overlays (menu slider) must survive data hydration.
+    // Only call setPage() if not already on the target page.
+    // Parse URL and sync state once on mount, then only when data array changes
     // Detect direct path navigation for accept-booking links and membership page
     useEffect(() => {
         try {
@@ -804,7 +809,12 @@ const App = () => {
                     );
                     if (found) {
                         state.setSelectedTherapist(found);
-                        state.setPage('therapist-profile');
+                        // LOCKED RULE: Only set page if not already on therapist-profile
+                        // UI overlays (menu slider) must survive data hydration
+                        if (state.page !== 'therapist-profile') {
+                            console.trace('📍 [PAGE STATE CHANGE TRIGGERED] Setting page to therapist-profile');
+                            state.setPage('therapist-profile');
+                        }
                     }
                 } else if (match) {
                     // Store for later when therapists are loaded - but only if not going to home
@@ -898,6 +908,10 @@ const App = () => {
         return () => window.removeEventListener('hashchange', handleHashChange);
     }, [state.setPage]);
 
+    // LOCKED RULE:
+    // Deeplink processing must not reset page state if already on target page.
+    // UI overlays (menu slider) must survive therapist/place data hydration.
+    // Only call setPage() if the current page is different from the target.
     // Navigate to deep-linked profile once data is available (requires state)
     useEffect(() => {
         try {
@@ -951,7 +965,12 @@ const App = () => {
                     console.log('🚀 [DEEPLINK] Auto-navigating to therapist profile:', found.name);
                     state.setSelectedTherapist(found);
                     const target = (targetPage === 'shared-therapist-profile') ? 'shared-therapist-profile' : 'therapistProfile';
-                    state.setPage(target as any);
+                    // LOCKED RULE: Only set page if not already on target page
+                    // UI overlays (menu slider) must survive data hydration
+                    if (state.page !== target) {
+                        console.trace('📍 [PAGE STATE CHANGE TRIGGERED] Setting page to', target);
+                        state.setPage(target as any);
+                    }
                     sessionStorage.removeItem('pending_deeplink');
                     console.log('🗑️ [DEEPLINK] Cleared pending deeplink');
                 }
@@ -959,7 +978,11 @@ const App = () => {
                 const found = state.places.find((pl: any) => ((pl.id ?? pl.$id ?? '').toString() === idStr));
                 if (found) {
                     state.setSelectedPlace(found);
-                    state.setPage('massage-place-profile');
+                    // LOCKED RULE: Only set page if not already on massage-place-profile
+                    if (state.page !== 'massage-place-profile') {
+                        console.trace('📍 [PAGE STATE CHANGE TRIGGERED] Setting page to massage-place-profile');
+                        state.setPage('massage-place-profile');
+                    }
                     sessionStorage.removeItem('pending_deeplink');
                 }
             }

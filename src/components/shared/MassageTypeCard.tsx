@@ -68,7 +68,10 @@ export const MassageTypeCard: React.FC<MassageTypeCardProps> = ({
                 
                 {/* Popularity Badge */}
                 <button
-                    onClick={onPopularityClick}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onPopularityClick?.();
+                    }}
                     className="absolute top-2 left-2 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1 hover:bg-black/50 transition-colors cursor-pointer"
                     aria-label={`${massage.popularity} stars`}
                 >
@@ -97,7 +100,10 @@ export const MassageTypeCard: React.FC<MassageTypeCardProps> = ({
                 {/* Read More Button */}
                 {massage.fullDescription && (
                     <button 
-                        onClick={onToggleExpanded}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleExpanded();
+                        }}
                         className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors mb-3 flex items-center gap-1"
                     >
                         {expanded ? (
@@ -161,7 +167,10 @@ export const MassageTypeCard: React.FC<MassageTypeCardProps> = ({
                     <div className="flex gap-3 text-xs mt-3 pt-3 border-t border-gray-100">
                         {/* Find Therapists - Left */}
                         <button 
-                            onClick={() => onFindTherapists?.(massage.name)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onFindTherapists?.(massage.name);
+                            }}
                             className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
                         >
                             Find Therapists →
@@ -172,7 +181,10 @@ export const MassageTypeCard: React.FC<MassageTypeCardProps> = ({
                         
                         {/* Find Massage Places - Right with circular icon */}
                         <button 
-                            onClick={() => onFindPlaces?.(massage.name)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onFindPlaces?.(massage.name);
+                            }}
                             className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
                         >
                             <span className="flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full">

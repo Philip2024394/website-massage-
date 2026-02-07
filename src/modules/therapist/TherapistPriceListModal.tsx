@@ -13,11 +13,9 @@
  * - Mobile-optimized responsive design
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { StarIcon } from '../../components/therapist/TherapistIcons';
-import ServiceBadges from '../../components/badges/ServiceBadges';
 import { useCompatibleMenuData } from '../../hooks/useEnhancedMenuData';
-import '../../styles/badges.css';
 
 interface TherapistPriceListModalProps {
     showPriceListModal: boolean;
@@ -65,8 +63,27 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
     showBadges = true,
     badgesRefreshKey = Date.now().toString() // Dynamic refresh key for session-based badge updates
 }) => {
-    // 🎯 RESOLVE THERAPIST DOCUMENT ID (3-tier fallback for Appwrite compatibility)
-    const therapistDocumentId = therapist?.appwriteId || therapist?.$id || therapist?.id?.toString() || '';
+    // 🎯 CRITICAL DEBUG: Log EVERY render
+    console.log('🔄 [PriceListModal] RENDER', {
+        showPriceListModal,
+        therapistName: therapist?.name,
+        timestamp: new Date().toISOString()
+    });
+
+    // 🔍 DEBUG: Component lifecycle
+    React.useEffect(() => {
+        console.log('🟢 [PriceListModal] MOUNTED');
+        return () => {
+            console.log('🔴 [PriceListModal] UNMOUNTED');
+            console.log('   🚨 If modal was open, unmount destroyed it!');
+        };
+    }, []);
+
+    // 🎯 GOLD STANDARD: Stabilize therapist ID with useMemo to prevent cascading re-renders
+    const therapistDocumentId = useMemo(() => 
+        therapist?.appwriteId || therapist?.$id || therapist?.id?.toString() || '',
+        [therapist?.appwriteId, therapist?.$id, therapist?.id]
+    );
     
     console.log('🔍 [PriceListModal] Resolving therapist ID:', {
         appwriteId: therapist?.appwriteId,
@@ -128,33 +145,29 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
         }
     };
 
-    // Log enhanced menu status
+    // 🎯 GOLD STANDARD: Log modal state changes without causing re-render cascades
+    // Only depend on modal visibility to prevent excessive re-renders during menu loading
     useEffect(() => {
         if (showPriceListModal) {
             console.log('═'.repeat(80));
             console.log(`📋 Price Modal opened for therapist ${therapist?.name}:`);
-            console.log('🔍 FULL THERAPIST OBJECT:', JSON.stringify(therapist, null, 2));
             console.log('🔍 THERAPIST ID FIELDS:', {
                 id: therapist?.id,
                 appwriteId: therapist?.appwriteId,
                 $id: therapist?.$id,
-                name: therapist?.name
+                name: therapist?.name,
+                resolvedId: therapistDocumentId
             });
-            console.log('📋 MENU LOADING STATE:', {
+            console.log('📋 INITIAL MENU STATE:', {
                 hasEnhancedMenu: hasAnyMenu,
                 isDefaultMenu,
-                serviceCount: activeMenuData.length,
-                enhancedServiceCount: enhancedMenu?.totalServices || 0,
-                resolvedTherapistId: therapistDocumentId,
-                isLoading: enhancedMenu?.isLoading,
-                error: enhancedMenu?.error
+                serviceCount: activeMenuData.length
             });
-            console.log('📋 MENU DATA:', activeMenuData);
             console.log('═'.repeat(80));
         } else {
             console.log('🔴 Price Modal CLOSED (showPriceListModal = false)');
         }
-    }, [showPriceListModal, therapistDocumentId, hasAnyMenu, isDefaultMenu, activeMenuData.length, enhancedMenu?.totalServices, enhancedMenu?.isLoading, enhancedMenu?.error]);
+    }, [showPriceListModal]); // ✅ Only depend on modal state to prevent re-render loops
 
     console.log('🔍 [PriceListModal] Render check:', {
         showPriceListModal,
@@ -167,7 +180,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
         <div
             className="fixed inset-0 z-[10000] bg-black bg-opacity-50 transition-opacity duration-300"
             onClick={() => {
-                console.log('🔴 Modal backdrop clicked - closing');
+                console.trace('🔴 [PriceListModal] CLOSING - Backdrop clicked');
                 setShowPriceListModal(false);
             }}
         >
@@ -224,7 +237,11 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                     <div className="flex items-center gap-2 text-[11px] sm:text-xs text-orange-800 font-semibold">
                         <span className="hidden sm:inline">Estimated Arrival • ~1 hour</span>
                         <span className="sm:hidden">Estimated Arrival • ~1h</span>
-                        <span className="px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+                        <span className="px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6l4 2"/>
+                            </svg>
                             {formatCountdown(arrivalCountdown)}
                         </span>
                     </div>
@@ -234,22 +251,14 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                 <div className="flex-1 p-4 max-h-[70vh] ">
                     {activeMenuData.length > 0 ? (
                         <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                            {/* Header - Enhanced with menu status */}
+                            {/* Header */}
                             <div className="text-center p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
                                 <h2 className="text-xl font-bold text-gray-900 mb-2">
-                                    {isDefaultMenu ? 'Default Menu' : 'Massage Menu'}
+                                    Massage Menu
                                 </h2>
                                 <p className="text-gray-600">
-                                    {isDefaultMenu 
-                                        ? 'Auto-generated services - fully bookable & customizable'
-                                        : 'Select service and duration, then choose your booking option'
-                                    }
+                                    Select service and duration, then choose your booking option
                                 </p>
-                                {isDefaultMenu && (
-                                    <div className="mt-2 text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block">
-                                        🎲 {activeMenuData.length} personalized services
-                                    </div>
-                                )}
                             </div>
 
                             {/* Service Cards - Enhanced with badge integration */}
@@ -262,27 +271,10 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                         <div key={service.id || index} className={`relative bg-white rounded-xl border-2 p-4 transition-all ${
                                             isRowSelected ? 'border-orange-400 shadow-lg bg-orange-50' : 'border-gray-200 hover:border-orange-300'
                                         }`}>
-                                            {/* Dynamic Service Badges with Enhanced Data */}
-                                            {showBadges && (
-                                                <ServiceBadges
-                                                    serviceId={service.id || `${therapist.id}-service-${index}`}
-                                                    serviceName={service.serviceName || service.name || 'Service'}
-                                                    refreshKey={badgesRefreshKey}
-                                                    animate={true}
-                                                    maxBadges={2}
-                                                    className="badge-container-top-right"
-                                                />
-                                            )}
-
-                                            {/* 1️⃣ MAIN MENU NAME (ENHANCED WITH STATUS) */}
+                                            {/* 1️⃣ MAIN MENU NAME */}
                                             <div className="mb-4 text-center">
                                                 <h3 className="text-lg font-bold text-gray-900 mb-1">
                                                     {service.serviceName || service.name || 'Service'}
-                                                    {isDefaultMenu && (
-                                                        <span className="ml-2 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
-                                                            Default
-                                                        </span>
-                                                    )}
                                                 </h3>
                                                 {service.description && (
                                                     <p className="text-sm text-gray-600">

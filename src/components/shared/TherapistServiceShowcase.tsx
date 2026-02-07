@@ -43,6 +43,27 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
     const [isMassageTypesOpen, setIsMassageTypesOpen] = useState(false);
     const [expandedCards, setExpandedCards] = useState<{ [key: string]: boolean }>({});
 
+    // 🎯 CRITICAL DEBUG: Log EVERY render to catch state resets
+    console.log('🔄 TherapistServiceShowcase RENDER');
+    console.log('   isMassageTypesOpen:', isMassageTypesOpen);
+    console.log('   Therapist ID:', (therapist as any).id || (therapist as any).$id);
+    console.log('   Therapist Name:', therapist.name);
+
+    // 🔍 DEBUG: Component mount/unmount tracking
+    React.useEffect(() => {
+        console.log('🟢 TherapistServiceShowcase MOUNTED');
+        return () => {
+            console.log('🔴 TherapistServiceShowcase UNMOUNTED');
+            console.log('   🚨 If slider was open, unmount destroyed it!');
+        };
+    }, []);
+
+    // 🔍 DEBUG: Track therapist prop changes (could cause re-render)
+    React.useEffect(() => {
+        console.log('👤 Therapist prop changed');
+        console.log('   This re-render could be the cause if it happens when slider opens');
+    }, [therapist]);
+
     const openLightbox = (imageSrc: string, imageAlt: string) => {
         setSelectedImage({ src: imageSrc, alt: imageAlt });
         setIsLightboxOpen(true);
@@ -58,12 +79,14 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
     };
 
     const openMassageTypes = () => {
+        console.log('✅ openMassageTypes() called at', new Date().toISOString());
         setIsMassageTypesOpen(true);
         setExpandedCards({}); // Reset expansion state when opening modal
         document.body.style.overflow = 'auto';
     };
 
     const closeMassageTypes = () => {
+        console.trace('🚨 closeMassageTypes() called at', new Date().toISOString());
         setIsMassageTypesOpen(false);
         setExpandedCards({}); // Reset expansion state when closing modal
         document.body.style.overflow = 'auto';
@@ -86,13 +109,20 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                if (isLightboxOpen) closeLightbox();
-                if (isMassageTypesOpen) closeMassageTypes();
+                if (isLightboxOpen) {
+                    closeLightbox();
+                }
+                if (isMassageTypesOpen) {
+                    console.trace('🔑 ESC key - closing slider');
+                    closeMassageTypes();
+                }
             }
         };
         
         window.addEventListener('keydown', handleEscape);
-        return () => window.removeEventListener('keydown', handleEscape);
+        return () => {
+            window.removeEventListener('keydown', handleEscape);
+        };
     }, [isLightboxOpen, isMassageTypesOpen]);
 
     return (
@@ -245,12 +275,15 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
             {isMassageTypesOpen && (
                 <div 
                     className="fixed inset-0 bg-white z-[9999] overflow-y-auto animate-slideUp"
-                    onClick={closeMassageTypes}
                 >
                     {/* Close Button */}
                     <button
                         className="fixed top-4 right-4 z-10 p-2 bg-orange-500 rounded-full shadow-lg hover:bg-orange-600 transition-colors"
-                        onClick={closeMassageTypes}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            console.trace('❌ X button - closing slider');
+                            closeMassageTypes();
+                        }}
                         aria-label="Close massage types"
                     >
                         <X size={24} strokeWidth={2} className="text-black" />

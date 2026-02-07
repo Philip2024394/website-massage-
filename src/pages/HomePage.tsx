@@ -379,6 +379,9 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // 🚀 PERFORMANCE: Bulk prefetch therapist menu and share link data
     // This eliminates N+1 queries by fetching all data in 2 queries instead of 2*N queries
+    // 🔒 MODAL PROTECTION: Track prefetch to prevent re-fetching from closing open modals
+    const hasPrefetched = useRef(false);
+    
     useEffect(() => {
         const prefetch = async () => {
             if (!therapists || therapists.length === 0) {
@@ -386,20 +389,31 @@ const HomePage: React.FC<HomePageProps> = ({
                 return;
             }
 
+            // 🛡️ CRITICAL: Only prefetch once to prevent modal closures from data reloading
+            // Modal state must remain independent of data loading
+            if (hasPrefetched.current) {
+                console.log('⏩ Skipping prefetch - already completed');
+                return;
+            }
+
             console.log(`🚀 Prefetching data for ${therapists.length} therapists...`);
             try {
                 const data = await prefetchTherapistCardData(therapists);
                 setPrefetchedData(data);
+                hasPrefetched.current = true; // 🔒 Mark as prefetched
                 console.log(`✅ Prefetch complete - ${data.menus.size} menus, ${data.shareLinks.size} share links`);
             } catch (error) {
                 console.error('❌ Prefetch failed:', error);
                 // Set empty data so cards can still render (will fall back to individual queries)
                 setPrefetchedData({ menus: new Map(), shareLinks: new Map() });
+                hasPrefetched.current = true; // 🔒 Mark as attempted to prevent infinite retry
             }
         };
 
         prefetch();
-    }, [therapists, selectedCity]); // Re-prefetch when therapists or city changes
+        // 🛡️ PROTECTION: Removed selectedCity from dependencies to prevent re-fetch when city changes
+        // Menu data is city-independent, so we don't need to re-fetch
+    }, [therapists.length]); // Only re-fetch if therapist count changes
 
     // Add has-footer class for proper CSS support
     useEffect(() => {
