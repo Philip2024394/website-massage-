@@ -53,6 +53,7 @@ import TherapistHotelVillaSafePassPage from '../../pages/therapist/TherapistHote
 import TherapistCustomersPage from '../../pages/therapist/TherapistCustomersPage';
 import TherapistAnalyticsPage from '../../pages/therapist/TherapistAnalyticsPage';
 import BannerDiscountPage from '../../pages/therapist/BannerDiscountPage.tsx';
+import TherapistSafePassWrapper from '../../pages/therapist/TherapistSafePassWrapper';
 
 export const therapistRoutes = {
   dashboard: {
@@ -173,6 +174,12 @@ export const therapistRoutes = {
     path: '/therapist/hotel-villa-safe-pass',
     component: TherapistHotelVillaSafePassPage,
     name: 'therapist-hotel-villa-safe-pass',
+    requiresAuth: true
+  },
+  safePassApplication: {
+    path: '/therapist/safepass-apply',
+    component: TherapistSafePassWrapper,
+    name: 'therapist-safepass-apply',
     requiresAuth: true
   },
   customers: {

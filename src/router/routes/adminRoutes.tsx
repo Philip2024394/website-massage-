@@ -12,6 +12,8 @@ import { lazy } from 'react';
 // NEWEST Admin Dashboard with full Appwrite integration and commission flow
 const AdminDashboard = lazy(() => import('../../../apps/admin-dashboard/src/pages/AdminDashboard'));
 const AdminLiveListings = lazy(() => import('../../pages/AdminLiveListings'));
+const AdminSafePassManagement = lazy(() => import('../../pages/admin/AdminSafePassManagement'));
+const AdminSafePassManagementAll = lazy(() => import('../../pages/admin/AdminSafePassManagementAll'));
 
 export const adminRoutes = {
   // Main Admin Dashboard - NEWEST VERSION with Appwrite + Commission Flow
@@ -92,6 +94,24 @@ export const adminRoutes = {
     path: '/admin/settings',
     component: AdminDashboard,
     name: 'admin-settings',
+    requiresAuth: true,
+    requiresAdmin: true
+  },
+  
+  // SafePass Management - Applications
+  safePass: {
+    path: '/admin/safepass',
+    component: AdminSafePassManagement,
+    name: 'admin-safepass',
+    requiresAuth: true,
+    requiresAdmin: true
+  },
+  
+  // SafePass Management - All Entities (Therapists + Places)
+  safePassAll: {
+    path: '/admin/safepass/all',
+    component: AdminSafePassManagementAll,
+    name: 'admin-safepass-all',
     requiresAuth: true,
     requiresAdmin: true
   },

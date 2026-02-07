@@ -1662,6 +1662,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language || 'id'
             });
         
+        // SafePass Application (New System)
+        case 'therapist-safepass-apply':
+            console.log('[ROUTE RESOLVE] therapist-safepass-apply → TherapistSafePassWrapper');
+            return renderRoute(therapistRoutes.safePassApplication.component, {
+                onBack: () => props.onNavigate?.('therapist-dashboard')
+            });
+        
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'schedule':
         case 'therapist-schedule':
@@ -1686,6 +1693,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'place-dashboard':
             return renderRoute(authRoutes.placeLogin.component, {
                 redirectToDashboard: true
+            });
+        
+        // Place SafePass Application
+        case 'place-safepass-apply':
+            console.log('[ROUTE RESOLVE] place-safepass-apply → PlaceSafePassWrapper');
+            return renderRoute(placeRoutes.safePassApplication.component, {
+                onBack: () => props.onNavigate?.('place-dashboard')
             });
 
         // ===== ADMIN ROUTES (PROTECTED BY ROLE-BASED ACCESS CONTROL) =====
@@ -1738,6 +1752,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'admin-settings':
             return renderRoute(adminRoutes.settings.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+        
+        case 'admin-safepass':
+            return renderRoute(adminRoutes.safePass.component, {
                 onNavigateHome: () => props.onNavigate('home')
             });
         

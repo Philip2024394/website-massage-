@@ -76,7 +76,8 @@ export const adminTherapistService = {
                 'name', 'description', 'location', 'phone', 'email', 'whatsappNumber',
                 'status', 'isVerified', 'profileImage', 'images', 'specialties', 'services',
                 'availability', 'experience', 'price60', 'price90', 'price120', 'ktpVerified',
-                'bankName', 'accountName', 'accountNumber', 'ktpPhotoUrl'
+                'bankName', 'accountName', 'accountNumber', 'ktpPhotoUrl', 'hotelVillaSafePassStatus',
+                'hasSafePassVerification'
             ];
             
             for (const key of allowedFields) {
