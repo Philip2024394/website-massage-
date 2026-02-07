@@ -1,0 +1,81 @@
+# IndaStreet - Global Massage & Wellness Directory
+# https://www.indastreetmassage.com/robots.txt
+
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /therapists
+Allow: /spas
+Allow: /services
+Allow: /massage-types
+Allow: /facials
+Allow: /facial-types
+Allow: /join-indastreet
+Allow: /join-indastreet-partners
+Allow: /partners
+Allow: /how-it-works
+Allow: /blog
+Allow: /about
+Allow: /contact
+Allow: /privacy-policy
+Allow: /service-terms
+
+# Country-specific pages
+Allow: /id
+Allow: /id/*
+Allow: /ph
+Allow: /ph/*
+Allow: /gb
+Allow: /gb/*
+Allow: /us
+Allow: /us/*
+Allow: /au
+Allow: /au/*
+Allow: /de
+Allow: /de/*
+
+# Disallow admin and portal areas
+Disallow: /admin
+Disallow: /therapist-portal
+Disallow: /spa-portal
+Disallow: /hotel-portal
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+
+# Sitemaps
+Sitemap: https://www.indastreetmassage.com/sitemap.xml
+Sitemap: https://www.indastreetmassage.com/sitemap-global.xml
+
+# RSS Feeds
+Sitemap: https://www.indastreetmassage.com/rss.xml
+Sitemap: https://www.indastreetmassage.com/rss-global.xml
+
+# Crawl-delay for polite bots
+Crawl-delay: 1
+
+# Google
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+# Social Media Crawlers
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: Pinterestbot
+Allow: /
+

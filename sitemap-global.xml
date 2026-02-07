@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ========================================
+       GLOBAL HOMEPAGE - All Countries
+       ======================================== -->
+  <url>
+    <loc>https://www.indastreetmassage.com/</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/?lang=id" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.indastreetmassage.com/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="tl" href="https://www.indastreetmassage.com/?lang=tl" />
+  </url>
+
+  <!-- ========================================
+       INDONESIA 🇮🇩 - Main Pages
+       ======================================== -->
+  <url>
+    <loc>https://www.indastreetmassage.com/id</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://www.indastreetmassage.com/id" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/id?lang=en" />
+  </url>
+
+  <!-- Indonesia - Major Cities -->
+  <url>
+    <loc>https://www.indastreetmassage.com/id/jakarta</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/bali/canggu</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/bali/seminyak</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/id/bali/ubud</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ========================================
+       PHILIPPINES 🇵🇭 - Main Pages
+       ======================================== -->
+  <url>
+    <loc>https://www.indastreetmassage.com/ph</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tl" href="https://www.indastreetmassage.com/ph" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/ph?lang=en" />
+  </url>
+
+  <!-- Philippines - Major Cities -->
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/manila</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/makati</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/cebu-city</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/ph/boracay</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ========================================
+       UNITED KINGDOM 🇬🇧 - Main Pages
+       ======================================== -->
+  <url>
+    <loc>https://www.indastreetmassage.com/gb</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en-GB" href="https://www.indastreetmassage.com/gb" />
+  </url>
+
+  <!-- UK - Major Cities -->
+  <url>
+    <loc>https://www.indastreetmassage.com/gb/london</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/gb/london/westminster</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/gb/manchester</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/gb/birmingham</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/gb/edinburgh</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ========================================
+       UNITED STATES 🇺🇸 - Main Pages
+       ======================================== -->
+  <url>
+    <loc>https://www.indastreetmassage.com/us</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://www.indastreetmassage.com/us" />
+  </url>
+
+  <!-- US - Major Cities -->
+  <url>
+    <loc>https://www.indastreetmassage.com/us/new-york-city</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/manhattan</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/los-angeles</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/chicago</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/miami</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/us/san-francisco</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ========================================
+       AUSTRALIA 🇦🇺 - Main Pages
+       ======================================== -->
+  <url>
+    <loc>https://www.indastreetmassage.com/au</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en-AU" href="https://www.indastreetmassage.com/au" />
+  </url>
+
+  <!-- Australia - Major Cities -->
+  <url>
+    <loc>https://www.indastreetmassage.com/au/sydney</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/au/melbourne</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/au/brisbane</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/au/perth</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ========================================
+       GERMANY 🇩🇪 - Main Pages
+       ======================================== -->
+  <url>
+    <loc>https://www.indastreetmassage.com/de</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.indastreetmassage.com/de" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.indastreetmassage.com/de?lang=en" />
+  </url>
+
+  <!-- Germany - Major Cities -->
+  <url>
+    <loc>https://www.indastreetmassage.com/de/berlin</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/de/munich</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/de/hamburg</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/de/frankfurt</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ========================================
+       SERVICE PAGES - Global
+       ======================================== -->
+  <url>
+    <loc>https://www.indastreetmassage.com/massage-therapists</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/massage-spa</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/facial-spa</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.indastreetmassage.com/beauty-services</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
