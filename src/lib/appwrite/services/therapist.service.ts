@@ -262,7 +262,59 @@ export const therapistService = {
                 };
             });
             
-            return therapistsWithImages;
+            // 🛡️ SAFEPASS INTEGRATION - Load SafePass data and join with therapists
+            try {
+                console.log('🛡️ [SAFEPASS] Loading SafePass data for', therapistsWithImages.length, 'therapists');
+                
+                // Load all active SafePass records for therapists
+                const safePassResponse = await rateLimitedDb.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    'safepass', // SafePass collection ID
+                    [
+                        Query.equal('entityType', 'therapist'),
+                        Query.limit(500)
+                    ]
+                );
+                
+                console.log('🛡️ [SAFEPASS] Found', safePassResponse.documents.length, 'SafePass records');
+                
+                // Create a map of entityId -> SafePass record for quick lookup
+                const safePassMap = new Map();
+                safePassResponse.documents.forEach((sp: any) => {
+                    safePassMap.set(sp.entityId, sp);
+                });
+                
+                // Enrich therapists with SafePass data
+                const therapistsWithSafePass = therapistsWithImages.map((therapist: any) => {
+                    const therapistId = (therapist as any).$id || therapist.id;
+                    const safePassRecord = safePassMap.get(therapistId);
+                    
+                    if (safePassRecord) {
+                        const isActive = safePassRecord.hotelVillaSafePassStatus === 'active';
+                        const hasSafePassVerification = safePassRecord.hasSafePassVerification === true;
+                        
+                        if (isActive || hasSafePassVerification) {
+                            console.log(`🛡️ [SAFEPASS] ✅ ${therapist.name} has active SafePass`);
+                        }
+                        
+                        return {
+                            ...therapist,
+                            hotelVillaSafePassStatus: safePassRecord.hotelVillaSafePassStatus,
+                            hasSafePassVerification: safePassRecord.hasSafePassVerification,
+                            safePassActivatedDate: safePassRecord.activatedDate,
+                            safePassExpiresDate: safePassRecord.expiresDate
+                        };
+                    }
+                    
+                    return therapist;
+                });
+                
+                return therapistsWithSafePass;
+            } catch (safePassError) {
+                console.error('⚠️ [SAFEPASS] Failed to load SafePass data:', safePassError);
+                // Return therapists without SafePass data if loading fails
+                return therapistsWithImages;
+            }
         } catch (error: unknown) {
             const err = error as Error; console.error('❌ [CRITICAL] Therapist fetch failed:', err);
             console.error('🔍 [ERROR DETAILS] Message:', (error as Error).message);
