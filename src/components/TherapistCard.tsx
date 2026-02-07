@@ -232,7 +232,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const { settings: bookNowConfig } = useUIConfig('book_now_behavior');
     const { settings: scheduleConfig } = useUIConfig('schedule_behavior');
     
-    // Custom hooks for state and calculations - ✅ FIXED: Proper destructuring
+    // Custom hooks for state and calculations - ✅ FIXED: Proper destructuring + Modal Management
     const {
         showBusyModal,
         setShowBusyModal,
@@ -253,7 +253,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         showJoinPopup,
         setShowJoinPopup,
         termsAccepted,
-        setTermsAccepted
+        setTermsAccepted,
+        // Enhanced modal management functions
+        handleBookNowClick,
+        closeAllModals
     } = useTherapistCardModals();
     
     // SafePass modal state
@@ -1316,6 +1319,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 openBookingWithService={openBookingWithService}
                 chatLang={chatLang}
                 showBookingButtons={true}
+                handleBookNowClick={handleBookNowClick}
+                closeAllModals={closeAllModals}
             />
             
             <SafePassModal

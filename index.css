@@ -13,6 +13,12 @@
 /* 📱 MOBILE SCROLL GOLD STANDARD - Facebook/Instagram Behavior ONLY */
 @import url('./src/styles/mobile-scroll-gold-standard.css');
 
+/* 🎨 MODAL TRANSITION ANIMATIONS - Smooth UX for booking interface */
+@import url('./src/styles/modal-transitions.css');
+
+/* 🏷️ DYNAMIC SERVICE BADGES - Randomized badges for therapist menu sliders */
+@import url('./src/styles/badges.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

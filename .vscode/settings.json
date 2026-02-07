@@ -174,6 +174,24 @@
   "scss.lint.enabled": false,
   "less.lint.enabled": false,
   "json.validate.enable": false,
+  
+  // Tailwind CSS IntelliSense and validation settings
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore", 
+  "css.customData": [".vscode/tailwind.json"],
+  "css.validate": false,
+  "scss.validate": false,
+  
+  // i18n-ally extension settings
+  "i18n-ally.localesPaths": [
+    "src/translations"
+  ],
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.displayLanguage": "en",
+  "i18n-ally.enabledFrameworks": ["general"],
+  "i18n-ally.extract.keygenStyle": "camelCase",
+  
   "git.decorations.enabled": false,
   "scm.diffDecorations": "none"
 }

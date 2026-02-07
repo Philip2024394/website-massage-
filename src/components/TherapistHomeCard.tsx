@@ -41,6 +41,9 @@ interface TherapistHomeCardProps {
     selectedCity?: string; // Add selectedCity prop for area display
     t?: any; // Add translations prop
     avatarOffsetPx?: number; // Fine-tune avatar overlap in pixels
+    // 🚀 PERFORMANCE: Prefetched data to eliminate N+1 queries
+    prefetchedMenu?: any; // Pre-loaded menu data from bulk fetch
+    prefetchedShareLink?: any; // Pre-loaded share link from bulk fetch
 }
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -58,7 +61,10 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     onNavigate, // Add navigation prop
     selectedCity, // Add selectedCity prop
     t, // Add translations prop
-    avatarOffsetPx = 0
+    avatarOffsetPx = 0,
+    // 🚀 PERFORMANCE: Prefetched data props
+    prefetchedMenu,
+    prefetchedShareLink
 }) => {
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -136,6 +142,24 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     // Load menu data on component mount for service name display
     useEffect(() => {
         const loadMenu = async () => {
+            // 🚀 PERFORMANCE: Use prefetched data if available
+            if (prefetchedMenu !== undefined) {
+                if (prefetchedMenu?.menuData) {
+                    try {
+                        const parsed = JSON.parse(prefetchedMenu.menuData);
+                        setMenuData(Array.isArray(parsed) ? parsed : []);
+                        console.log('🚀 Using prefetched menu for', therapist.name, ':', parsed.length, 'items');
+                    } catch (error) {
+                        console.warn('Failed to parse prefetched menu:', error);
+                        setMenuData([]);
+                    }
+                } else {
+                    setMenuData([]);
+                }
+                return; // Skip DB query
+            }
+
+            // Fallback: Fetch from DB if not prefetched
             try {
                 const therapistId = String(therapist.$id || therapist.id);
                 console.log('🏠 Loading menu data for TherapistHomeCard:', therapist.name, therapistId);
@@ -159,11 +183,26 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         };
         
         loadMenu();
-    }, [therapist]);
+    }, [therapist, prefetchedMenu]);
 
     // Generate share URL
     useEffect(() => {
         const generateShareUrl = async () => {
+            // 🚀 PERFORMANCE: Use prefetched share link if available
+            if (prefetchedShareLink !== undefined) {
+                if (prefetchedShareLink) {
+                    const shortUrl = `https://www.indastreetmassage.com/share/${prefetchedShareLink.shortId}`;
+                    setShortShareUrl(shortUrl);
+                    console.log('🚀 Using prefetched share link for', therapist.name);
+                } else {
+                    // No share link exists - use fallback URL
+                    const fullUrl = generateShareableURL(therapist);
+                    setShortShareUrl(fullUrl);
+                }
+                return; // Skip DB query
+            }
+
+            // Fallback: Fetch from DB if not prefetched
             try {
                 const therapistId = String((therapist as any).id || (therapist as any).$id || '');
                 if (!therapistId) return;
@@ -187,7 +226,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         };
 
         generateShareUrl();
-    }, [therapist]);
+    }, [therapist, prefetchedShareLink]);
 
     // 🌍 DISTANCE CALCULATION for display
     const calculateDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {

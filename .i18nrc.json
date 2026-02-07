@@ -1,6 +1,10 @@
 {
   "localeStructure": "file",
   "localesFolder": "./src/translations",
+  "localesPaths": [
+    "./src/translations/*.json",
+    "./src/translations/*.ts"
+  ],
   "include": [
     "lib/**/*.{ts,tsx}",
     "pages/**/*.{ts,tsx}",
@@ -18,9 +22,11 @@
   ],
   "enablePathParsing": true,
   "pathMatcher": "{locale}",
-  "keyMatcherRegex": "(?:i18n\\.t|useTranslations|t)\\(['\"]([\\w.]+)['\"]",
+  "keyMatcherRegex": "(?:(?:i18n|translations|t)\\.t|t)\\s*\\(\\s*['\"]([\\w.]+)['\"]",
   "refactor": true,
   "fullReload": true,
+  "forceEnable": true,
+  "enabledParsers": ["ts", "tsx", "js", "jsx", "json"],
   "displayLanguage": "en",
   "namespace": true,
   "sourceLanguage": "en",

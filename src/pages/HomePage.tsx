@@ -38,6 +38,9 @@ import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
 
+// 🚀 PERFORMANCE: Bulk data fetching to eliminate N+1 queries
+import { prefetchTherapistCardData } from '../lib/services/bulkDataService';
+
 // Custom hooks for logic extraction
 import { useHomePageState } from '../hooks/useHomePageState';
 import { useHomePageLocation } from '../hooks/useHomePageLocation';
@@ -238,6 +241,12 @@ const HomePage: React.FC<HomePageProps> = ({
     const [selectedMassageType, setSelectedMassageType] = useState<string>('');
     const [selectedSpecialFeature, setSelectedSpecialFeature] = useState<string>('');
     const [priceRange, setPriceRange] = useState<[number, number]>([100000, 450000]);
+
+    // 🚀 PERFORMANCE: Prefetched bulk data for therapist cards (eliminates N+1 queries)
+    const [prefetchedData, setPrefetchedData] = useState<{
+        menus: Map<string, any>;
+        shareLinks: Map<string, any>;
+    } | null>(null);
     
     const {
         previewTherapistId,
@@ -367,6 +376,30 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         setActiveTab('home');
     }, []); // Run once when component mounts
+
+    // 🚀 PERFORMANCE: Bulk prefetch therapist menu and share link data
+    // This eliminates N+1 queries by fetching all data in 2 queries instead of 2*N queries
+    useEffect(() => {
+        const prefetch = async () => {
+            if (!therapists || therapists.length === 0) {
+                console.log('⏩ Skipping prefetch - no therapists');
+                return;
+            }
+
+            console.log(`🚀 Prefetching data for ${therapists.length} therapists...`);
+            try {
+                const data = await prefetchTherapistCardData(therapists);
+                setPrefetchedData(data);
+                console.log(`✅ Prefetch complete - ${data.menus.size} menus, ${data.shareLinks.size} share links`);
+            } catch (error) {
+                console.error('❌ Prefetch failed:', error);
+                // Set empty data so cards can still render (will fall back to individual queries)
+                setPrefetchedData({ menus: new Map(), shareLinks: new Map() });
+            }
+        };
+
+        prefetch();
+    }, [therapists, selectedCity]); // Re-prefetch when therapists or city changes
 
     // Add has-footer class for proper CSS support
     useEffect(() => {
@@ -2064,6 +2097,9 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     selectedCity={selectedCity}
                                     t={t}
                                     avatarOffsetPx={8}
+                                    // 🚀 PERFORMANCE: Pass prefetched data to eliminate N+1 queries
+                                    prefetchedMenu={prefetchedData?.menus.get(String(therapist.$id || therapist.id))}
+                                    prefetchedShareLink={prefetchedData?.shareLinks.get(String(therapist.$id || therapist.id))}
                                     onClick={(selectedTherapist) => {
                                         console.log('🎯 TherapistHomeCard onClick - selectedCity being passed:', selectedCity);
                                         // Set selected therapist and navigate to profile page with URL update

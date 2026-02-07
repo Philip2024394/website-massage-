@@ -16,6 +16,9 @@ interface BookingActionsProps {
   onIncrementAnalytics: (type: string) => void;
   setBookingsCount: (count: (prev: number) => number) => void;
   onNavigate?: (page: string) => void;
+  // Enhanced modal management support
+  closeAllModals?: () => Promise<void>;
+  handleBookNowClick?: (options?: { modalType?: any; onAfterClose?: () => void }) => Promise<void>;
 }
 
 export const TherapistBookingActions: React.FC<BookingActionsProps> = ({
@@ -26,9 +29,11 @@ export const TherapistBookingActions: React.FC<BookingActionsProps> = ({
   onScheduleClick,
   onIncrementAnalytics,
   setBookingsCount,
-  onNavigate
+  onNavigate,
+  closeAllModals,
+  handleBookNowClick
 }) => {
-  const handleBookNowClick = (e: React.MouseEvent) => {
+  const handleBookNowClickEnhanced = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -41,14 +46,24 @@ export const TherapistBookingActions: React.FC<BookingActionsProps> = ({
       (e.target as HTMLElement).removeAttribute('data-clicking');
     });
     
-    console.log('🟢 Book Now button clicked - opening PERSISTENT CHAT');
+    console.log('🟢 Book Now button clicked - Enhanced Modal Management');
     
-    // 🔒 OPEN PERSISTENT CHAT - Facebook Messenger style
-    // This chat window will NEVER disappear once opened
-    onBookNowClick(therapist);
-    
-    onIncrementAnalytics('bookings');
-    setBookingsCount(prev => prev + 1);
+    // 🎯 ENHANCED MODAL MANAGEMENT
+    if (handleBookNowClick && closeAllModals) {
+      await handleBookNowClick({
+        onAfterClose: () => {
+          // Execute booking after modals are closed
+          onBookNowClick(therapist);
+          onIncrementAnalytics('bookings');
+          setBookingsCount(prev => prev + 1);
+        }
+      });
+    } else {
+      // Fallback to legacy behavior
+      onBookNowClick(therapist);
+      onIncrementAnalytics('bookings');
+      setBookingsCount(prev => prev + 1);
+    }
   };
 
   const handleScheduleClick = (e: React.MouseEvent) => {
@@ -93,8 +108,8 @@ export const TherapistBookingActions: React.FC<BookingActionsProps> = ({
       {/* Main booking buttons */}
       <div className="grid grid-cols-2 gap-2 px-4 pb-2 mt-2">
         <button 
-          onClick={handleBookNowClick}
-          className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"
+          onClick={handleBookNowClickEnhanced}
+          className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95 book-now-btn"
         >
           <MessageCircle className="w-4 h-4"/>
           <span className="text-sm">{bookNowText}</span>

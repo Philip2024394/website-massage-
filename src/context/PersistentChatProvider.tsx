@@ -172,7 +172,8 @@ export interface BookingData {
 // Therapist info for chat
 export interface ChatTherapist {
   id: string; // Display name for easy debugging
-  $id?: string; // Appwrite document ID (optional for compatibility)
+  $id?: string; // Appwrite document ID (optional for compatibility - legacy field)
+  appwriteId?: string; // Appwrite document ID (preferred - used for booking creation)
   name: string;
   image?: string;
   mainImage?: string; // Main profile image
@@ -1012,17 +1013,27 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   ) => {
     console.log('💬 Opening chat with pre-selected service:', therapist.name, service, options);
     
-    // 🔒 CRITICAL VALIDATION: Block if therapist.appwriteId is missing
-    if (!therapist.appwriteId) {
-      const errorMsg = `❌ CRITICAL: Cannot open chat - therapist.appwriteId is missing for ${therapist.name}. ` +
-        `This is a data integrity issue. Therapist must have valid Appwrite document ID before booking can proceed.`;
+    // 🔒 CRITICAL VALIDATION: Resolve therapist document ID with fallback chain
+    const therapistDocumentId = therapist.appwriteId || therapist.$id || therapist.id;
+    
+    if (!therapistDocumentId) {
+      const errorMsg = `❌ CRITICAL: Cannot open chat - no valid ID found for ${therapist.name}. ` +
+        `Checked appwriteId, $id, and id fields - all missing. ` +
+        `This is a data integrity issue. Therapist must have valid identifier before booking can proceed.`;
       console.error('═'.repeat(80));
       console.error(errorMsg);
       console.error('Therapist object:', therapist);
       console.error('═'.repeat(80));
       throw new Error(errorMsg);
     }
-    console.log('✅ VALIDATION PASSED: therapist.appwriteId present:', therapist.appwriteId);
+    
+    console.log('✅ VALIDATION PASSED: therapist document ID resolved:', therapistDocumentId);
+    console.log('📋 ID resolution chain:', {
+      appwriteId: therapist.appwriteId,
+      $id: therapist.$id,
+      id: therapist.id,
+      resolved: therapistDocumentId
+    });
     
     // ⚠️⚠️⚠️ WARNING: DO NOT REMOVE OR MODIFY THIS LINE ⚠️⚠️⚠️
     // 🔒 CRITICAL: Notify AppStateContext that chat window is visible
@@ -1048,6 +1059,18 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const draftBookingId = generateDraftBookingId();
     console.log('🆔 Auto-created booking ID:', draftBookingId);
     
+    // 🔒 ENSURE therapist object has appwriteId field set with resolved ID
+    const therapistWithResolvedId: ChatTherapist = {
+      ...therapist,
+      appwriteId: therapistDocumentId // Ensure appwriteId is set for booking creation
+    };
+    
+    console.log('✅ Therapist object prepared with resolved ID:', {
+      name: therapistWithResolvedId.name,
+      id: therapistWithResolvedId.id,
+      appwriteId: therapistWithResolvedId.appwriteId
+    });
+    
     // ⚠️⚠️⚠️ WARNING: CRITICAL CODE SECTION - DO NOT MODIFY ⚠️⚠️⚠️
     // This setChatState call opens the chat window after "Order Now" click
     // Took multiple days to get working correctly. See CRITICAL_CHAT_WINDOW_PROTECTION.md
@@ -1056,7 +1079,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       ...prev,
       isOpen: true,           // ⚠️ PROTECTED: Must be true or chat won't open
       isMinimized: false,     // ⚠️ PROTECTED: Must be false or chat opens minimized
-      therapist,
+      therapist: therapistWithResolvedId, // Use therapist with resolved appwriteId
       bookingMode: isScheduled ? 'schedule' : 'price', // Schedule mode for scheduled bookings, price mode for immediate
       bookingStep: isScheduled ? 'datetime' : 'confirmation', // For scheduled: go to datetime selection, for immediate: skip to confirmation
       selectedDuration: service.duration,
@@ -1083,10 +1106,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
     // Load existing messages
     if (currentUserId) {
-      // ✅ FIX: Use ONLY appwriteId for database queries - no fallbacks
-      // Validation above ensures appwriteId is always present
-      const therapistIdForQuery = therapist.appwriteId;
-      console.log('🔍 DEBUGGING: Loading messages (service) with therapistId:', therapistIdForQuery);
+      // ✅ Use resolved document ID for database queries
+      const therapistIdForQuery = therapistDocumentId;
+      console.log('🔍 DEBUGGING: Loading messages (service) with resolved therapistId:', therapistIdForQuery);
       
       const messages = await loadMessages(therapistIdForQuery);
       if (messages.length > 0) {
@@ -1527,10 +1549,21 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const duration = bookingData.duration || chatState.selectedDuration || 60;
     const totalPrice = bookingData.totalPrice || (bookingData as any).price || 0;
     
+    // 🔒 CRITICAL: Resolve therapist document ID with proper fallback chain
+    const therapistDocumentId = therapist.appwriteId || therapist.$id || therapist.id;
+    
+    if (!therapistDocumentId) {
+      console.error('❌ CRITICAL: No valid therapist ID found:', therapist);
+      addSystemNotification('❌ Invalid therapist data. Please refresh and try again.');
+      return false;
+    }
+    
+    console.log('✅ Therapist Document ID resolved:', therapistDocumentId);
+    
     const transactionParams: BookingTransactionParams = {
       therapist: {
         id: therapist.id,
-        appwriteId: therapist.appwriteId,
+        appwriteId: therapistDocumentId, // Use resolved document ID
         name: therapist.name || ''
       },
       customerId: currentUserId || 'guest',

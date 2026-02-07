@@ -1,6 +1,24 @@
 # CODEOWNERS establishes protected ownership of critical files.
 # Changes to these files should go through PR review to avoid accidental regressions.
 
+# 🔒 CORE SYSTEM LOCK - MAXIMUM PROTECTION
+# These files contain business-critical functionality that drives revenue and UX
+CORE_SYSTEM_LOCK.md @Philip2024394
+LOCK_QUICK_REFERENCE.md @Philip2024394
+SEO_SYSTEM_LOCK.md @Philip2024394
+src/config/coreSystemProtection.ts @Philip2024394
+
+# 🔒 DEFAULT MENU SYSTEM (REVENUE CRITICAL)
+src/services/defaultMenuService.ts @Philip2024394
+src/services/enhancedMenuDataService.ts @Philip2024394
+src/hooks/useEnhancedMenuData.ts @Philip2024394
+src/components/therapist/TherapistMenuManager.tsx @Philip2024394
+
+# 🔒 SEO SYSTEM ARCHITECTURE (ORGANIC TRAFFIC CRITICAL)  
+src/components/therapist/profile/** @Philip2024394
+src/pages/therapist/profile/** @Philip2024394
+src/utils/seo/** @Philip2024394
+
 # Core runtime & routing
 App.tsx @Philip2024394
 AppRouter.tsx @Philip2024394

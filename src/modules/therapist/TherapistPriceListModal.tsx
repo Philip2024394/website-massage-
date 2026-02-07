@@ -13,8 +13,11 @@
  * - Mobile-optimized responsive design
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StarIcon } from '../../components/therapist/TherapistIcons';
+import ServiceBadges from '../../components/badges/ServiceBadges';
+import { useCompatibleMenuData } from '../../hooks/useEnhancedMenuData';
+import '../../styles/badges.css';
 
 interface TherapistPriceListModalProps {
     showPriceListModal: boolean;
@@ -23,7 +26,8 @@ interface TherapistPriceListModalProps {
     displayRating: string;
     arrivalCountdown: string;
     formatCountdown: (time: string) => string;
-    menuData: any[];
+    // Legacy menuData prop - now optional as we load from enhanced service  
+    menuData?: any[];
     selectedServiceIndex: number | null;
     selectedDuration: '60' | '90' | '120' | null;
     handleSelectService: (index: number, duration: '60' | '90' | '120') => void;
@@ -31,7 +35,13 @@ interface TherapistPriceListModalProps {
     setSelectedDuration: (duration: '60' | '90' | '120') => void;
     openBookingWithService: (therapist: any, service: any, options?: { bookingType?: 'immediate' | 'scheduled' }) => void;
     chatLang: string;
-    showBookingButtons?: boolean; // Control whether to show booking buttons (profile) or just prices (home)
+    showBookingButtons?: boolean;
+    // Enhanced modal management
+    handleBookNowClick?: (options?: { modalType?: any; onAfterClose?: () => void }) => Promise<void>;
+    closeAllModals?: () => Promise<void>;
+    // Enhanced badge system
+    showBadges?: boolean;
+    badgesRefreshKey?: string; // For dynamic badge updates per session
 }
 
 const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
@@ -41,7 +51,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
     displayRating,
     arrivalCountdown,
     formatCountdown,
-    menuData,
+    menuData: legacyMenuData, // Legacy prop, now optional
     selectedServiceIndex,
     selectedDuration,
     handleSelectService,
@@ -49,8 +59,108 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
     setSelectedDuration,
     openBookingWithService,
     chatLang,
-    showBookingButtons = true // Default true for profile page, false for home page
+    showBookingButtons = true,
+    handleBookNowClick,
+    closeAllModals,
+    showBadges = true,
+    badgesRefreshKey = Date.now().toString() // Dynamic refresh key for session-based badge updates
 }) => {
+    // 🎯 RESOLVE THERAPIST DOCUMENT ID (3-tier fallback for Appwrite compatibility)
+    const therapistDocumentId = therapist?.appwriteId || therapist?.$id || therapist?.id?.toString() || '';
+    
+    console.log('🔍 [PriceListModal] Resolving therapist ID:', {
+        appwriteId: therapist?.appwriteId,
+        $id: therapist?.$id,
+        id: therapist?.id,
+        resolved: therapistDocumentId,
+        source: therapist?.appwriteId ? 'appwriteId' : therapist?.$id ? '$id' : therapist?.id ? 'id' : 'NONE'
+    });
+
+    // 🎯 ENHANCED MENU DATA INTEGRATION
+    const {
+        menuData: enhancedMenuData,
+        enhancedMenuData: enhancedMenu,
+        isDefaultMenu,
+        hasAnyMenu
+    } = useCompatibleMenuData(therapistDocumentId);
+
+    // Use enhanced menu data if available, fallback to legacy prop
+    const activeMenuData = hasAnyMenu ? enhancedMenuData : (legacyMenuData || []);
+    
+    // Track booking events for badge updates
+    const handleServiceBooking = async (service: any, bookingType: 'immediate' | 'scheduled') => {
+        try {
+            // 🔍 DIAGNOSTIC: Log therapist data structure
+            console.log('📋 [PriceListModal] handleServiceBooking called with:', {
+                therapistId: therapist?.id,
+                therapistAppwriteId: therapist?.appwriteId,
+                therapist$id: therapist?.$id,
+                therapistName: therapist?.name,
+                serviceId: service.id,
+                serviceName: service.serviceName,
+                bookingType,
+                fullTherapist: therapist
+            });
+
+            // 🔒 CRITICAL: Ensure therapist has at least one valid ID field
+            const therapistDocumentId = therapist?.appwriteId || therapist?.$id || therapist?.id?.toString();
+            
+            if (!therapistDocumentId) {
+                const errorMsg = '❌ BLOCKED: Therapist has no valid ID field. Cannot proceed with booking.';
+                console.error(errorMsg, therapist);
+                alert('⚠️ Unable to create booking: Therapist data is incomplete. Please refresh the page and try again.');
+                return;
+            }
+            
+            console.log('✅ [PriceListModal] Therapist ID resolved:', therapistDocumentId);
+
+            // Track the booking for badge system
+            if (enhancedMenu?.markServiceBooked && service.id) {
+                await enhancedMenu.markServiceBooked(service.id);
+            }
+            
+            // Continue with original booking flow
+            openBookingWithService(therapist, service, { bookingType });
+        } catch (error) {
+            console.error('❌ Error in handleServiceBooking:', error);
+            // Show user-friendly error
+            alert('⚠️ Unable to create booking. Please try again or refresh the page.');
+        }
+    };
+
+    // Log enhanced menu status
+    useEffect(() => {
+        if (showPriceListModal) {
+            console.log('═'.repeat(80));
+            console.log(`📋 Price Modal opened for therapist ${therapist?.name}:`);
+            console.log('🔍 FULL THERAPIST OBJECT:', JSON.stringify(therapist, null, 2));
+            console.log('🔍 THERAPIST ID FIELDS:', {
+                id: therapist?.id,
+                appwriteId: therapist?.appwriteId,
+                $id: therapist?.$id,
+                name: therapist?.name
+            });
+            console.log('📋 MENU LOADING STATE:', {
+                hasEnhancedMenu: hasAnyMenu,
+                isDefaultMenu,
+                serviceCount: activeMenuData.length,
+                enhancedServiceCount: enhancedMenu?.totalServices || 0,
+                resolvedTherapistId: therapistDocumentId,
+                isLoading: enhancedMenu?.isLoading,
+                error: enhancedMenu?.error
+            });
+            console.log('📋 MENU DATA:', activeMenuData);
+            console.log('═'.repeat(80));
+        } else {
+            console.log('🔴 Price Modal CLOSED (showPriceListModal = false)');
+        }
+    }, [showPriceListModal, therapistDocumentId, hasAnyMenu, isDefaultMenu, activeMenuData.length, enhancedMenu?.totalServices, enhancedMenu?.isLoading, enhancedMenu?.error]);
+
+    console.log('🔍 [PriceListModal] Render check:', {
+        showPriceListModal,
+        willRender: showPriceListModal ? 'YES' : 'NO (returning null)'
+    });
+
     if (!showPriceListModal) return null;
 
     return (
@@ -122,33 +232,73 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
 
                 {/* Price List Content - Natural scrolling */}
                 <div className="flex-1 p-4 max-h-[70vh] ">
-                    {menuData.length > 0 ? (
+                    {activeMenuData.length > 0 ? (
                         <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                            {/* Header - Clean & Simple */}
+                            {/* Header - Enhanced with menu status */}
                             <div className="text-center p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
-                                <h2 className="text-xl font-bold text-gray-900 mb-2">Massage Menu</h2>
-                                <p className="text-gray-600">Select service and duration, then choose your booking option</p>
+                                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                                    {isDefaultMenu ? 'Default Menu' : 'Massage Menu'}
+                                </h2>
+                                <p className="text-gray-600">
+                                    {isDefaultMenu 
+                                        ? 'Auto-generated services - fully bookable & customizable'
+                                        : 'Select service and duration, then choose your booking option'
+                                    }
+                                </p>
+                                {isDefaultMenu && (
+                                    <div className="mt-2 text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block">
+                                        🎲 {activeMenuData.length} personalized services
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Service Cards - Clean UI Structure */}
+                            {/* Service Cards - Enhanced with badge integration */}
                             <div className="space-y-6">
-                                {menuData.map((service: any, index: number) => {
+                                {activeMenuData.map((service: any, index: number) => {
                                     const isRowSelected = selectedServiceIndex === index;
                                     const availableDurations = ['60', '90', '120'].filter(duration => service[`price${duration}`]);
 
                                     return (
-                                        <div key={index} className={`bg-white rounded-xl border-2 p-4 transition-all ${
+                                        <div key={service.id || index} className={`relative bg-white rounded-xl border-2 p-4 transition-all ${
                                             isRowSelected ? 'border-orange-400 shadow-lg bg-orange-50' : 'border-gray-200 hover:border-orange-300'
                                         }`}>
-                                            {/* 1️⃣ MAIN MENU NAME (MANDATORY, ALWAYS FIRST) */}
+                                            {/* Dynamic Service Badges with Enhanced Data */}
+                                            {showBadges && (
+                                                <ServiceBadges
+                                                    serviceId={service.id || `${therapist.id}-service-${index}`}
+                                                    serviceName={service.serviceName || service.name || 'Service'}
+                                                    refreshKey={badgesRefreshKey}
+                                                    animate={true}
+                                                    maxBadges={2}
+                                                    className="badge-container-top-right"
+                                                />
+                                            )}
+
+                                            {/* 1️⃣ MAIN MENU NAME (ENHANCED WITH STATUS) */}
                                             <div className="mb-4 text-center">
                                                 <h3 className="text-lg font-bold text-gray-900 mb-1">
                                                     {service.serviceName || service.name || 'Service'}
+                                                    {isDefaultMenu && (
+                                                        <span className="ml-2 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                                                            Default
+                                                        </span>
+                                                    )}
                                                 </h3>
                                                 {service.description && (
                                                     <p className="text-sm text-gray-600">
                                                         {service.description}
                                                     </p>
+                                                )}
+                                                {/* Enhanced service info */}
+                                                {enhancedMenu?.menuLoadResult && (
+                                                    <div className="text-xs text-gray-500 mt-2">
+                                                        Category: {service.category?.replace('_', ' ') || 'General'}
+                                                        {service.popularity && (
+                                                            <span className="ml-2">
+                                                                • {'★'.repeat(service.popularity)}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
 
@@ -194,28 +344,49 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                     ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-lg'
                                                                     : 'bg-orange-500 text-white hover:bg-orange-600'
                                                             }`}
-                                                            onClick={(e) => {
+                                                            onClick={async (e) => {
                                                                 e.stopPropagation();
                                                                 
                                                                 if (isRowSelected && selectedDuration) {
                                                                     const priceNum = Number(service[`price${selectedDuration}`]);
                                                                     
                                                                     if (!isNaN(priceNum) && priceNum > 0) {
-                                                                        console.log('🚀 PRICE SLIDER → Book Now with service:', {
+                                                                        console.log('🚀 PRICE SLIDER → Book Now with service (Enhanced):', {
                                                                             serviceName: service.serviceName,
                                                                             duration: selectedDuration,
-                                                                            price: priceNum * 1000
+                                                                            price: priceNum * 1000,
+                                                                            serviceId: service.id,
+                                                                            isDefault: isDefaultMenu
                                                                         });
 
-                                                                        openBookingWithService(therapist, {
-                                                                            serviceName: service.serviceName,
+                                                                        const serviceData = {
+                                                                            id: service.id,
+                                                                            serviceName: service.serviceName || service.name,
                                                                             duration: parseInt(selectedDuration),
                                                                             price: priceNum * 1000
-                                                                        });
+                                                                        };
 
-                                                                        setShowPriceListModal(false);
-                                                                        setSelectedServiceIndex(null);
-                                                                        setSelectedDuration(null);
+                                                                        // 🎯 ENHANCED MODAL MANAGEMENT WITH BOOKING TRACKING
+                                                                        // Close price list and any other modals before opening booking
+                                                                        if (handleBookNowClick) {
+                                                                            await handleBookNowClick({
+                                                                                onAfterClose: async () => {
+                                                                                    // Execute booking with enhanced tracking after modals are closed
+                                                                                    await handleServiceBooking(serviceData, 'immediate');
+                                                                                    
+                                                                                    // Reset selection state
+                                                                                    setSelectedServiceIndex(null);
+                                                                                    setSelectedDuration(null);
+                                                                                }
+                                                                            });
+                                                                        } else {
+                                                                            // Fallback to legacy behavior with enhanced tracking
+                                                                            await handleServiceBooking(serviceData, 'immediate');
+
+                                                                            setShowPriceListModal(false);
+                                                                            setSelectedServiceIndex(null);
+                                                                            setSelectedDuration(null);
+                                                                        }
                                                                     }
                                                                 } else if (availableDurations.length > 0) {
                                                                     // Auto-select first available duration
@@ -236,39 +407,40 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                     ? 'border-blue-500 bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
                                                                     : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50'
                                                             }`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                
-                                                                if (isRowSelected && selectedDuration) {
-                                                                    const priceNum = Number(service[`price${selectedDuration}`]);
-                                                                    
-                                                                    if (!isNaN(priceNum) && priceNum > 0) {
-                                                                        console.log('📅 PRICE SLIDER → Schedule with service:', {
-                                                                            serviceName: service.serviceName,
-                                                                            duration: selectedDuration,
-                                                                            price: priceNum * 1000
-                                                                        });
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                
+                                                if (isRowSelected && selectedDuration) {
+                                                    const priceNum = Number(service[`price${selectedDuration}`]);
+                                                    
+                                                    if (!isNaN(priceNum) && priceNum > 0) {
+                                                        console.log('📅 PRICE SLIDER → Schedule with service:', {
+                                                            serviceName: service.serviceName,
+                                                            duration: selectedDuration,
+                                                            price: priceNum * 1000,
+                                                            serviceId: service.id,
+                                                            isDefault: isDefaultMenu
+                                                        });
 
-                                                                        openBookingWithService(therapist, {
-                                                                            serviceName: service.serviceName,
-                                                                            duration: parseInt(selectedDuration),
-                                                                            price: priceNum * 1000
-                                                                        }, { 
-                                                                            bookingType: 'scheduled',
-                                                                            requireDeposit: true,
-                                                                            depositPercentage: 30
-                                                                        });
+                                                        const serviceData = {
+                                                            id: service.id,
+                                                            serviceName: service.serviceName || service.name,
+                                                            duration: parseInt(selectedDuration),
+                                                            price: priceNum * 1000
+                                                        };
 
-                                                                        setShowPriceListModal(false);
-                                                                        setSelectedServiceIndex(null);
-                                                                        setSelectedDuration(null);
-                                                                    }
-                                                                } else if (availableDurations.length > 0) {
-                                                                    // Auto-select first available duration
-                                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
-                                                                    handleSelectService(index, firstDuration);
-                                                                }
-                                                            }}
+                                                        await handleServiceBooking(serviceData, 'scheduled');
+
+                                                        setShowPriceListModal(false);
+                                                        setSelectedServiceIndex(null);
+                                                        setSelectedDuration(null);
+                                                    }
+                                                } else if (availableDurations.length > 0) {
+                                                    // Auto-select first available duration
+                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                    handleSelectService(index, firstDuration);
+                                                }
+                                            }}
                                                         >
                                                             {isRowSelected && selectedDuration 
                                                                 ? (chatLang === 'id' ? '📅 Schedule' : '📅 Schedule')
@@ -284,155 +456,48 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                             </div>
                         </div>
                     ) : (
-                        // Fallback pricing when menu data fails to load - use therapist's built-in pricing
-                        <div className="bg-white rounded-xl border-2 border-gray-200 p-4">
-                            {/* 1️⃣ MAIN MENU NAME (MANDATORY, ALWAYS FIRST) */}
-                            <div className="mb-4 text-center">
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">
-                                    Traditional Massage
+                        // Fallback when no menu data available (should be rare with default menu system)
+                        <div className="relative bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 p-8 text-center">
+                            <div className="text-center">
+                                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span className="text-2xl">🍃</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                    Setting Up Your Menu
                                 </h3>
-                                <p className="text-sm text-gray-600">
-                                    Traditional therapeutic massage
+                                <p className="text-gray-600 mb-4">
+                                    {enhancedMenu?.isLoading 
+                                        ? 'Loading your personalized service menu...'
+                                        : 'We\'re preparing a customized menu of massage services for you.'
+                                    }
                                 </p>
-                            </div>
-
-                            {/* 2️⃣ PRICE OPTIONS CONTAINER (UNDER MENU NAME) */}
-                            <div className="mb-6">
-                                <div className="flex flex-wrap justify-center gap-3">
-                                    {['60', '90', '120'].map((duration) => {
-                                        const priceKey = `price${duration}` as keyof typeof therapist;
-                                        const price = therapist[priceKey];
-                                        const isSelected = selectedServiceIndex === 0 && selectedDuration === duration;
-                                        
-                                        if (!price) return null;
-                                        
-                                        return (
-                                            <button
-                                                key={duration}
-                                                onClick={() => {
-                                                    setSelectedServiceIndex(0);
-                                                    setSelectedDuration(duration as '60' | '90' | '120');
-                                                }}
-                                                className={`flex-1 min-w-[100px] max-w-[140px] px-4 py-3 rounded-xl border-2 transition-all ${
-                                                    isSelected
-                                                        ? 'border-orange-500 bg-orange-500 text-white shadow-lg transform scale-105'
-                                                        : 'border-orange-200 bg-white text-gray-800 hover:border-orange-400 hover:bg-orange-50'
-                                                }`}
-                                            >
-                                                <div className="text-center">
-                                                    <div className="text-sm font-semibold mb-1">
-                                                        {duration} min
-                                                    </div>
-                                                    <div className="text-sm font-bold">
-                                                        Rp {(Number(price) * 1000).toLocaleString('id-ID')}
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* 3️⃣ ACTION AREA (BOTTOM, CLEAR & SEPARATE) */}
-                            {showBookingButtons && (
-                                <div className="border-t border-gray-200 pt-4">
-                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                        <button
-                                            className={`px-6 py-3 font-semibold rounded-lg transition-all duration-200 ${
-                                                selectedServiceIndex === 0 && selectedDuration
-                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-lg'
-                                                    : 'bg-orange-500 text-white hover:bg-orange-600'
-                                            }`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                
-                                                // Get available durations from therapist pricing
-                                                const availableDurations: string[] = [];
-                                                if (therapist.price60) availableDurations.push('60');
-                                                if (therapist.price90) availableDurations.push('90');
-                                                if (therapist.price120) availableDurations.push('120');
-                                                
-                                                if (selectedServiceIndex === 0 && selectedDuration) {
-                                                    const priceKey = `price${selectedDuration}` as keyof typeof therapist;
-                                                    const servicePrice = Number(therapist[priceKey]) * 1000;
-                                                    const serviceDuration = parseInt(selectedDuration);
-                                                    
-                                                    console.log('🚀 IMMEDIATE BOOKING → Opening booking chat (No Deposit Required)');
-                                                    
-                                                    // Close the price list modal
-                                                    setShowPriceListModal(false);
-                                                    
-                                                    // Open chat with immediate booking - NO DEPOSIT
-                                                    openBookingWithService(therapist, {
-                                                        serviceName: 'Traditional Massage',
-                                                        duration: serviceDuration,
-                                                        price: servicePrice
-                                                    });
-                                                } else if (availableDurations.length > 0) {
-                                                    // Auto-select first available duration
-                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
-                                                    setSelectedServiceIndex(0);
-                                                    setSelectedDuration(firstDuration);
-                                                }
-                                            }}
-                                        >
-                                            {selectedServiceIndex === 0 && selectedDuration 
-                                                ? (chatLang === 'id' ? '✓ Book Now' : '✓ Book Now')
-                                                : (chatLang === 'id' ? 'Book Now' : 'Book Now')
-                                            }
-                                        </button>
-                                        
-                                        <button
-                                            className={`px-6 py-3 font-semibold rounded-lg border-2 transition-all duration-200 ${
-                                                selectedServiceIndex === 0 && selectedDuration
-                                                    ? 'border-blue-500 bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
-                                                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50'
-                                            }`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                
-                                                // Get available durations from therapist pricing
-                                                const availableDurations: string[] = [];
-                                                if (therapist.price60) availableDurations.push('60');
-                                                if (therapist.price90) availableDurations.push('90');
-                                                if (therapist.price120) availableDurations.push('120');
-                                                
-                                                if (selectedServiceIndex === 0 && selectedDuration) {
-                                                    const priceKey = `price${selectedDuration}` as keyof typeof therapist;
-                                                    const servicePrice = Number(therapist[priceKey]) * 1000;
-                                                    const serviceDuration = parseInt(selectedDuration);
-                                                    
-                                                    console.log('🚀 SCHEDULED BOOKING → Opening booking chat with deposit requirement');
-                                                    
-                                                    // Close the price list modal
-                                                    setShowPriceListModal(false);
-                                                    
-                                                    // Open chat with scheduled booking requiring 30% deposit
-                                                    openBookingWithService(therapist, {
-                                                        serviceName: 'Traditional Massage',
-                                                        duration: serviceDuration,
-                                                        price: servicePrice
-                                                    }, { 
-                                                        bookingType: 'scheduled',
-                                                        requireDeposit: true,
-                                                        depositPercentage: 30
-                                                    });
-                                                } else if (availableDurations.length > 0) {
-                                                    // Auto-select first available duration
-                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
-                                                    setSelectedServiceIndex(0);
-                                                    setSelectedDuration(firstDuration);
-                                                }
-                                            }}
-                                        >
-                                            {selectedServiceIndex === 0 && selectedDuration 
-                                                ? (chatLang === 'id' ? '📅 Schedule' : '📅 Schedule')
-                                                : (chatLang === 'id' ? 'Schedule' : 'Schedule')
-                                            }
-                                        </button>
+                                {enhancedMenu?.error && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                        <p className="text-red-700 text-sm">{enhancedMenu.error}</p>
                                     </div>
+                                )}
+                                <div className="flex justify-center gap-3">
+                                    <button
+                                        onClick={() => enhancedMenu?.refreshMenu?.()}
+                                        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                                    >
+                                        {enhancedMenu?.isLoading ? 'Loading...' : 'Refresh Menu'}
+                                    </button>
+                                    <button
+                                        onClick={() => setShowPriceListModal(false)}
+                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                                    >
+                                        Close
+                                    </button>
                                 </div>
-                            )}
+                                
+                                {/* Show loading spinner */}
+                                {enhancedMenu?.isLoading && (
+                                    <div className="mt-6">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>

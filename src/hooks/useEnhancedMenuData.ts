@@ -1,0 +1,318 @@
+/**
+ * 🔒 CORE SYSTEM LOCK - ENHANCED MENU DATA HOOKS
+ * ===============================================
+ * 
+ * 🔒 LOCKED FUNCTIONALITY (DO NOT MODIFY):
+ * - Menu data loading and state management logic
+ * - Badge system integration and session consistency
+ * - Default/real menu detection and switching logic
+ * - Service data transformation and caching
+ * - Real-time data updates and synchronization
+ * - Error handling and loading state management
+ * 
+ * ⚠️ BUSINESS IMPACT: SYSTEM INTEGRITY CRITICAL
+ * This hook manages:
+ * - All therapist menu data loading and state
+ * - Badge refresh and session management
+ * - Integration between default services and real services
+ * - Component state consistency across UI updates
+ * - Data persistence and localStorage synchronization
+ * 
+ * 🔒 PROTECTION LEVEL: HIGH - DATA MANAGEMENT LAYER
+ */
+
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import EnhancedMenuDataService, { MenuService, MenuLoadResult } from '../services/enhancedMenuDataService';
+import { useBadgeSession } from './useBadgeSession';
+
+interface UseEnhancedMenuDataResult {
+  // Menu data
+  menuData: MenuService[];
+  menuLoadResult: MenuLoadResult | null;
+  isLoading: boolean;
+  error: string | null;
+  
+  // Status flags
+  hasDefaultMenu: boolean;
+  hasRealMenu: boolean;
+  totalServices: number;
+  
+  // Badge system integration
+  badgeRefreshKey: string;
+  refreshBadges: () => void;
+  
+  // Service management
+  addService: (service: Partial<MenuService>) => Promise<void>;
+  updateService: (serviceId: string, updates: Partial<MenuService>) => Promise<void>;
+  deleteService: (serviceId: string) => Promise<void>;
+  
+  // Booking integration
+  markServiceBooked: (serviceId: string) => Promise<void>;
+  
+  // Menu management
+  refreshMenu: () => Promise<void>;
+  clearDefaultAssignments: () => void;
+  exportMenu: () => string;
+  importMenu: (data: string) => boolean;
+}
+
+/**
+ * 🎯 ENHANCED MENU DATA HOOK
+ * Provides comprehensive menu management with default fallback and badge integration
+ */
+export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataResult {
+  const [menuLoadResult, setMenuLoadResult] = useState<MenuLoadResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Badge system integration
+  const { refreshKey: badgeRefreshKey, refreshBadges } = useBadgeSession();
+  
+  // Load menu data
+  const loadMenu = useCallback(async () => {
+    if (!therapistId) {
+      console.warn('⚠️ useEnhancedMenuData: No therapist ID provided, cannot load menu');
+      setError('Therapist ID is required');
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log(`📋 useEnhancedMenuData: Loading enhanced menu for therapist: ${therapistId}`);
+      
+      const result = await EnhancedMenuDataService.getTherapistMenu(therapistId);
+      
+      console.log(`✅ useEnhancedMenuData: Menu loaded successfully:`, {
+        therapistId,
+        totalServices: result.totalCount,
+        hasReal: result.hasReal,
+        hasDefaults: result.hasDefaults,
+        services: result.services.map(s => s.name)
+      });
+      
+      setMenuLoadResult(result);
+      
+    } catch (err) {
+      console.error('❌ useEnhancedMenuData: Error loading menu:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load menu');
+      
+      // Provide empty fallback
+      setMenuLoadResult({
+        services: [],
+        hasDefaults: false,
+        hasReal: false,
+        totalCount: 0,
+        lastUpdated: new Date()
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [therapistId]);
+  
+  // Initial load
+  useEffect(() => {
+    loadMenu();
+  }, [loadMenu]);
+  
+  // Refresh menu
+  const refreshMenu = useCallback(async () => {
+    await loadMenu();
+    refreshBadges(); // Also refresh badges
+  }, [loadMenu, refreshBadges]);
+  
+  // Add new service
+  const addService = useCallback(async (service: Partial<MenuService>) => {
+    try {
+      console.log('➕ Adding new service:', service.name);
+      
+      await EnhancedMenuDataService.saveService(therapistId, {
+        ...service,
+        isDefault: false, // New services are always real/custom
+        isNew: true,
+        dateAdded: new Date()
+      });
+      
+      await refreshMenu();
+      
+    } catch (err) {
+      console.error('❌ Error adding service:', err);
+      setError(err instanceof Error ? err.message : 'Failed to add service');
+    }
+  }, [therapistId, refreshMenu]);
+  
+  // Update existing service
+  const updateService = useCallback(async (serviceId: string, updates: Partial<MenuService>) => {
+    try {
+      console.log('✏️ Updating service:', serviceId);
+      
+      const currentService = menuLoadResult?.services.find(s => s.id === serviceId);
+      if (!currentService) {
+        throw new Error('Service not found');
+      }
+      
+      await EnhancedMenuDataService.saveService(therapistId, {
+        ...currentService,
+        ...updates,
+        lastModified: new Date(),
+        isCustomized: currentService.isDefault // Mark as customized if it was a default
+      });
+      
+      await refreshMenu();
+      
+    } catch (err) {
+      console.error('❌ Error updating service:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update service');
+    }
+  }, [therapistId, menuLoadResult, refreshMenu]);
+  
+  // Delete service
+  const deleteService = useCallback(async (serviceId: string) => {
+    try {
+      console.log('🗑️ Deleting service:', serviceId);
+      
+      const success = await EnhancedMenuDataService.deleteService(therapistId, serviceId);
+      
+      if (!success) {
+        throw new Error('Failed to delete service');
+      }
+      
+      await refreshMenu();
+      
+    } catch (err) {
+      console.error('❌ Error deleting service:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete service');
+    }
+  }, [therapistId, refreshMenu]);
+  
+  // Mark service as booked (for badge updates)
+  const markServiceBooked = useCallback(async (serviceId: string) => {
+    try {
+      await EnhancedMenuDataService.markServiceBooked(therapistId, serviceId);
+      
+      // Refresh quietly (don't show loading state)
+      const result = await EnhancedMenuDataService.getTherapistMenu(therapistId);
+      setMenuLoadResult(result);
+      
+    } catch (err) {
+      console.error('❌ Error marking service as booked:', err);
+      // Don't set error state for this operation
+    }
+  }, [therapistId]);
+  
+  // Clear default assignments
+  const clearDefaultAssignments = useCallback(() => {
+    EnhancedMenuDataService.clearDefaultAssignments();
+    refreshMenu();
+  }, [refreshMenu]);
+  
+  // Export menu
+  const exportMenu = useCallback(() => {
+    return EnhancedMenuDataService.exportTherapistMenu(therapistId);
+  }, [therapistId]);
+  
+  // Import menu
+  const importMenu = useCallback((data: string) => {
+    const success = EnhancedMenuDataService.importTherapistMenu(therapistId, data);
+    if (success) {
+      refreshMenu();
+    }
+    return success;
+  }, [therapistId, refreshMenu]);
+  
+  // Derived state
+  const derivedState = useMemo(() => {
+    const services = menuLoadResult?.services || [];
+    
+    return {
+      menuData: services,
+      hasDefaultMenu: menuLoadResult?.hasDefaults || false,
+      hasRealMenu: menuLoadResult?.hasReal || false,
+      totalServices: menuLoadResult?.totalCount || 0
+    };
+  }, [menuLoadResult]);
+  
+  return {
+    // Menu data
+    ...derivedState,
+    menuLoadResult,
+    isLoading,
+    error,
+    
+    // Badge system integration
+    badgeRefreshKey,
+    refreshBadges,
+    
+    // Service management
+    addService,
+    updateService,
+    deleteService,
+    
+    // Booking integration
+    markServiceBooked,
+    
+    // Menu management
+    refreshMenu,
+    clearDefaultAssignments,
+    exportMenu,
+    importMenu
+  };
+}
+
+/**
+ * 🔗 COMPATIBILITY HOOK
+ * Provides backward compatibility with existing useTherapistCardState
+ */
+export function useCompatibleMenuData(therapistId: string) {
+  console.log('🔍 useCompatibleMenuData called with therapistId:', therapistId);
+  
+  const enhancedMenuData = useEnhancedMenuData(therapistId);
+  
+  // Transform to legacy format
+  const legacyFormat = useMemo(() => {
+    const transformed = enhancedMenuData.menuData.map(service => ({
+      id: service.id,
+      serviceName: service.name,
+      description: service.description,
+      price60: service.price60.toString(),
+      price90: service.price90.toString(),
+      price120: service.price120.toString(),
+      // Legacy compatibility fields
+      name: service.name,
+      min60: '60', // Default minimum duration
+      min90: '90',
+      min120: '120'
+    }));
+    
+    console.log('🔍 useCompatibleMenuData transformed:', {
+      therapistId,
+      originalCount: enhancedMenuData.menuData.length,
+      transformedCount: transformed.length,
+      services: transformed.map(s => s.serviceName)
+    });
+    
+    return transformed;
+  }, [enhancedMenuData.menuData, therapistId]);
+  
+  return {
+    // Legacy format for existing components
+    menuData: legacyFormat,
+    
+    // Enhanced functionality exposed
+    enhancedMenuData,
+    
+    // Status helpers
+    isDefaultMenu: enhancedMenuData.hasDefaultMenu && !enhancedMenuData.hasRealMenu,
+    hasAnyMenu: enhancedMenuData.totalServices > 0,
+    
+    // Quick actions
+    refreshMenu: enhancedMenuData.refreshMenu,
+    addService: enhancedMenuData.addService,
+    updateService: enhancedMenuData.updateService,
+    deleteService: enhancedMenuData.deleteService
+  };
+}
+
+export default useEnhancedMenuData;

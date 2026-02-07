@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-02-02T11:21:34.090Z",
+  "timestamp": "2026-02-07T18:15:05.990Z",
   "passed": [
     {
       "category": "Bookings",
       "test": "CREATE operation",
-      "details": "ID: 698088be0005c033e7b1"
+      "details": "ID: 69878129003e0470a12b"
     },
     {
       "category": "Bookings",
       "test": "READ operation",
-      "details": "Retrieved booking 698088be0005c033e7b1"
+      "details": "Retrieved booking 69878129003e0470a12b"
     },
     {
       "category": "Bookings",
@@ -29,7 +29,7 @@
     {
       "category": "Real Booking",
       "test": "Order Now simulation",
-      "details": "Booking 698088bf0009b2ab1472 created"
+      "details": "Booking 6987812b00063bdca31d created"
     },
     {
       "category": "Real Booking",
@@ -54,7 +54,7 @@
     {
       "category": "Performance",
       "test": "Query speed",
-      "details": "194ms (excellent)"
+      "details": "196ms (excellent)"
     },
     {
       "category": "Error Handling",
@@ -71,7 +71,7 @@
     {
       "category": "Messages",
       "test": "CREATE operation",
-      "details": "Invalid document structure: Missing required attribute \"isSystemMessage\" (400)"
+      "details": "No permissions provided for action 'create' (401)"
     },
     {
       "category": "Chat Sessions",

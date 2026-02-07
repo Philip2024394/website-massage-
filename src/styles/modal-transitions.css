@@ -1,0 +1,265 @@
+/**
+ * 🎨 MODAL TRANSITION ANIMATIONS
+ * 
+ * Smooth CSS animations for modal manager transitions
+ * Provides professional UX when switching between modals
+ */
+
+/* Modal fade and slide animations */
+.modal-enter {
+  @apply opacity-0 translate-y-4 scale-95;
+  transition: all 200ms ease-out;
+}
+
+.modal-enter-active {
+  @apply opacity-100 translate-y-0 scale-100;
+}
+
+.modal-exit {
+  @apply opacity-100 translate-y-0 scale-100;
+  transition: all 200ms ease-in;
+}
+
+.modal-exit-active {
+  @apply opacity-0 translate-y-4 scale-95;
+}
+
+/* Enhanced slider animations */
+.slider-enter {
+  @apply opacity-0 translate-y-full;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slider-enter-active {
+  @apply opacity-100 translate-y-0;
+}
+
+.slider-exit {
+  @apply opacity-100 translate-y-0;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slider-exit-active {
+  @apply opacity-0 translate-y-full;
+}
+
+/* Price list modal specific animations */
+.price-modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center;
+  animation: fadeIn 200ms ease-out;
+}
+
+.price-modal-content {
+  @apply w-full max-w-md bg-white rounded-t-3xl shadow-2xl;
+  animation: slideUp 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom;
+}
+
+.price-modal-closing .price-modal-overlay {
+  animation: fadeOut 200ms ease-in;
+}
+
+.price-modal-closing .price-modal-content {
+  animation: slideDown 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Schedule booking modal animations */
+.schedule-modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4;
+  animation: fadeIn 200ms ease-out;
+}
+
+.schedule-modal-content {
+  @apply w-full max-w-lg bg-white rounded-2xl shadow-2xl;
+  animation: scaleIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+
+.schedule-modal-closing .schedule-modal-overlay {
+  animation: fadeOut 200ms ease-in;
+}
+
+.schedule-modal-closing .schedule-modal-content {
+  animation: scaleOut 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Booking popup modal animations - highest priority */
+.booking-modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4;
+  animation: fadeIn 250ms ease-out;
+}
+
+.booking-modal-content {
+  @apply w-full max-w-2xl bg-white rounded-3xl shadow-2xl;
+  animation: bounceIn 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: center;
+}
+
+.booking-modal-closing .booking-modal-overlay {
+  animation: fadeOut 200ms ease-in;
+}
+
+.booking-modal-closing .booking-modal-content {
+  animation: bounceOut 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Button transition enhancements */
+.book-now-btn {
+  @apply transition-all duration-200 ease-in-out;
+  transform: translateZ(0); /* Hardware acceleration */
+}
+
+.book-now-btn:hover {
+  @apply shadow-lg;
+  transform: translateY(-1px) scale(1.02);
+}
+
+.book-now-btn:active {
+  @apply shadow-md;
+  transform: translateY(0) scale(0.98);
+}
+
+.book-now-btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+  transform: none !important;
+}
+
+/* Smooth loading states */
+.modal-transitioning {
+  @apply pointer-events-none;
+}
+
+.modal-transitioning * {
+  @apply transition-opacity duration-200;
+  opacity: 0.7;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to { 
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleOut {
+  from { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  to { 
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .price-modal-content,
+  .schedule-modal-content,
+  .booking-modal-content {
+    @apply mx-4 my-4;
+  }
+  
+  .booking-modal-content {
+    @apply max-w-none;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter,
+  .modal-enter-active,
+  .modal-exit,
+  .modal-exit-active,
+  .slider-enter,
+  .slider-enter-active,
+  .slider-exit,
+  .slider-exit-active {
+    transition: none;
+  }
+  
+  .price-modal-overlay,
+  .price-modal-content,
+  .schedule-modal-overlay,
+  .schedule-modal-content,
+  .booking-modal-overlay,
+  .booking-modal-content {
+    animation: none;
+  }
+  
+  .book-now-btn:hover,
+  .book-now-btn:active {
+    transform: none;
+  }
+}
