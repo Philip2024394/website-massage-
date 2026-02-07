@@ -372,7 +372,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     console.log('🔧 Geolocation options:', geoOptions);
     
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         console.log('✅ GPS position received:', position);
         const accuracy = position.coords.accuracy;
         console.log(`📍 GPS accuracy: ${accuracy}m`);

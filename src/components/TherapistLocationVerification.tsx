@@ -197,7 +197,7 @@ const TherapistLocationVerification: React.FC<TherapistLocationVerificationProps
             className={`flex-1 py-4 px-6 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
               bookingData.proximityStatus === 'verified'
                 ? 'bg-green-500 hover:bg-green-600 text-white'
-                : bookingData.proximityStatus === 'needs_check'
+                : bookingData.proximityStatus === 'warning'
                 ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
                 : 'bg-gray-300 hover:bg-gray-400 text-gray-700'
             }`}

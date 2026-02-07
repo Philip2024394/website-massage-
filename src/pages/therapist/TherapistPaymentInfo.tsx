@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2, Clock, HelpCircle } from 'lucide-react';
 import { KTP_VERIFICATION_STATES, VERIFICATION_BADGE_BOOKING_INCREASE_PERCENTAGE } from '../../constants/businessLogic';
+import { validateBankAccount, sanitizeBankAccountInput } from '../../utils/goldStandardValidation';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { therapistService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
@@ -656,14 +657,16 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   value={accountNumber}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d\s]/g, '');
-                    setAccountNumber(value);
+                    // ✅ Use gold-standard validation for consistent behavior
+                    const sanitized = sanitizeBankAccountInput(e.target.value);
+                    setAccountNumber(sanitized);
                   }}
-                  placeholder="contoh: 1234 5678 9012 3456 (boleh pakai spasi)"
+                  placeholder="contoh: 1234 5678 9012 3456 (10-20 digit, boleh pakai spasi)"
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors font-mono"
-                  maxLength={20}
+                  maxLength={30}
                 />
                 <p className="text-xs text-gray-500 mt-2">Masukkan nomor rekening - lihat format pada kartu di atas</p>
               </div>

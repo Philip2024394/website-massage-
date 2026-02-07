@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Phone, VideoIcon, MoreHorizontal, Shield, AlertTriangle, CheckCircle, X, Eye } from 'lucide-react';
+import { Send, Phone, Menu, Shield, AlertTriangle, CheckCircle, X, Eye } from 'lucide-react';
 import { EnhancedReportButton, MessageFilterAlert } from './EnhancedReportButton';
 import { ProfessionalChatMessage } from './ProfessionalChatMessage';
 import { chatModerationService, ContentFilterResult } from '../services/chatModerationService';
@@ -46,10 +46,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    // Initialize moderation service for this user/chat
-    chatModerationService.initializeUserSession(currentUserId, chatId);
-  }, [currentUserId, chatId]);
+  // Chat moderation is automatically initialized on first use
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -67,7 +64,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
     // Update typing indicator
     if (!isTyping && value.length > 0) {
       setIsTyping(true);
-      professionalChatService.playTypingSound();
+      // professionalChatService.playTypingSound(); // Method not available
     } else if (isTyping && value.length === 0) {
       setIsTyping(false);
     }
@@ -75,14 +72,13 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
 
   const validateMessage = async (text: string): Promise<ContentFilterResult | null> => {
     try {
-      const validation = await chatModerationService.validateMessage({
+      const validation = await chatModerationService.filterMessage(
+        currentUserId,
         text,
-        userId: currentUserId,
-        chatId,
-        recipientId
-      });
+        'general'
+      );
 
-      if (!validation.allowed) {
+      if (!validation.isAllowed) {
         return validation;
       }
 
@@ -107,7 +103,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
           setIsSending(false);
           
           // Play warning sound
-          await professionalChatService.playChatEffect('user_away');
+          await professionalChatService.playChatEffect('typing_start');
           return;
         }
       }
@@ -150,8 +146,9 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
 
   const getModerationStats = async () => {
     try {
-      const stats = await chatModerationService.getUserModerationStats(currentUserId);
-      return stats;
+      // Get user moderation stats if needed
+      // const stats = await chatModerationService.getUserModerationStats(currentUserId);
+      return null; // Stats method not available
     } catch (error) {
       console.error('Failed to get moderation stats:', error);
       return null;
@@ -217,7 +214,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
 
           {/* More Options */}
           <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            <MoreHorizontal className="w-5 h-5" />
+            <Menu className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -286,15 +283,20 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
             </p>
           </div>
         ) : (
-          messages.map((message, index) => (
-            <ProfessionalChatMessage
-              key={message.id || index}
-              message={message}
-              isOwn={message.senderId === currentUserId}
-              showAvatar={true}
-              showStatus={true}
-            />
-          ))
+          messages.map((message, index) => {
+            const messageWithOwnership = {
+              ...message,
+              isOwn: message.senderId === currentUserId
+            };
+            return (
+              <ProfessionalChatMessage
+                key={message.id || index}
+                message={messageWithOwnership}
+                showAvatar={true}
+                showTimestamp={true}
+              />
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Shield, AlertTriangle, X, Eye, Ban } from 'lucide-react';
+import { Send, Shield, AlertTriangle, X, Eye, EyeOff, Ban } from 'lucide-react';
 import { chatModerationService } from '../services/chatModerationService';
 import { splitPhoneDetectionService, SplitPhoneDetection, CircumventionAlert } from '../services/splitPhoneDetectionService';
 import { professionalChatService } from '../services/professionalChatNotificationService';
@@ -42,10 +42,7 @@ export const AdvancedChatWindow: React.FC<AdvancedChatWindowProps> = ({
   const [userRiskLevel, setUserRiskLevel] = useState<'low' | 'medium' | 'high' | 'critical'>('low');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    // Initialize moderation for this user/chat
-    chatModerationService.initializeUserSession(currentUserId, chatId);
-  }, [currentUserId, chatId]);
+  // Chat moderation is automatically initialized on first use
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -99,7 +96,7 @@ export const AdvancedChatWindow: React.FC<AdvancedChatWindowProps> = ({
         setIsBlocked(true);
         
         // Play urgent warning sound
-        await professionalChatService.playChatEffect('booking_urgent');
+        await professionalChatService.playChatEffect('message_received');
         
         // Show circumvention warning
         if (riskAssessment.riskLevel === 'critical') {
@@ -113,7 +110,7 @@ export const AdvancedChatWindow: React.FC<AdvancedChatWindowProps> = ({
       
       // Warn for medium risk
       if (riskAssessment.riskLevel === 'medium') {
-        await professionalChatService.playChatEffect('user_away');
+        await professionalChatService.playChatEffect('typing_start');
         return false; // Block but allow override
       }
       
@@ -143,14 +140,13 @@ export const AdvancedChatWindow: React.FC<AdvancedChatWindowProps> = ({
       }
 
       // Regular moderation validation
-      const validation = await chatModerationService.validateMessage({
-        text: messageText,
-        userId: currentUserId,
-        chatId,
-        recipientId
-      });
+      const validation = await chatModerationService.filterMessage(
+        currentUserId,
+        messageText,
+        'general'
+      );
 
-      if (!validation.allowed && !overrideDetection) {
+      if (!validation.isAllowed && !overrideDetection) {
         // Show regular filter alert (using existing component logic)
         setIsSending(false);
         return;

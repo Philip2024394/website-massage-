@@ -3,7 +3,7 @@
  * Clicking a customer navigates to Banner Discount page to send gift vouchers
  */
 import React, { useState, useEffect } from 'react';
-import { Users, Calendar, DollarSign, Gift, Search, ChevronRight as ChevronRightIcon } from 'lucide-react';
+import { Users, Calendar, DollarSign, Gift, Search, X } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import { bookingService } from '../../lib/bookingService';
 import { showToast } from '../../utils/showToastPortal';
@@ -54,7 +54,7 @@ const TherapistCustomersPage: React.FC<TherapistCustomersPageProps> = ({
       setLoading(true);
       
       // Fetch all bookings for this therapist
-      const allBookings = await bookingService.getBookingsByProviderId(therapist.$id);
+      const allBookings = await bookingService.getProviderBookings(therapist.$id);
       
       // Group bookings by customer
       const customerMap = new Map<string, CustomerData>();
@@ -270,7 +270,7 @@ const TherapistCustomersPage: React.FC<TherapistCustomersPageProps> = ({
                     </div>
 
                     {/* Arrow */}
-                    <ChevronRightIcon className="w-6 h-6 text-gray-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-all" />
+                    <X className="w-6 h-6 text-gray-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-all" />
                   </div>
 
                   {/* Send Gift CTA */}

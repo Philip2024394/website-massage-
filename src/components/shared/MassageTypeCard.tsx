@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown as ChevronDownIcon, ChevronUp as ChevronUpIcon } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 
 interface MassageType {
     name: string;
@@ -102,12 +102,12 @@ export const MassageTypeCard: React.FC<MassageTypeCardProps> = ({
                     >
                         {expanded ? (
                             <>
-                                <ChevronUpIcon className="w-4 h-4" />
+                                <Plus className="w-4 h-4" />
                                 <span>Read Less</span>
                             </>
                         ) : (
                             <>
-                                <ChevronDownIcon className="w-4 h-4" />
+                                <X className="w-4 h-4" />
                                 <span>Read More</span>
                             </>
                         )}

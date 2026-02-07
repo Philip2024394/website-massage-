@@ -13,15 +13,15 @@ import type {
 } from '../types/safepass.types';
 
 const client = new Client()
-    .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://syd.cloud.appwrite.io/v1')
-    .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID || '68f23b11000d25eb3664');
+    .setEndpoint((import.meta as any).env.VITE_APPWRITE_ENDPOINT || 'https://syd.cloud.appwrite.io/v1')
+    .setProject((import.meta as any).env.VITE_APPWRITE_PROJECT_ID || '68f23b11000d25eb3664');
 
 const databases = new Databases(client);
 const storage = new Storage(client);
 
-const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || '68f76ee1000e64ca8d05';
+const DATABASE_ID = (import.meta as any).env.VITE_APPWRITE_DATABASE_ID || '68f76ee1000e64ca8d05';
 const SAFEPASS_COLLECTION_ID = 'safepass'; // New collection
-const STORAGE_BUCKET_ID = import.meta.env.VITE_APPWRITE_BUCKET_ID || 'default';
+const STORAGE_BUCKET_ID = (import.meta as any).env.VITE_APPWRITE_BUCKET_ID || 'default';
 
 class SafePassService {
     /**
@@ -75,7 +75,7 @@ class SafePassService {
                 file
             );
 
-            const fileUrl = `${import.meta.env.VITE_APPWRITE_ENDPOINT}/storage/buckets/${STORAGE_BUCKET_ID}/files/${response.$id}/view?project=${import.meta.env.VITE_APPWRITE_PROJECT_ID}`;
+            const fileUrl = `${(import.meta as any).env.VITE_APPWRITE_ENDPOINT}/storage/buckets/${STORAGE_BUCKET_ID}/files/${response.$id}/view?project=${(import.meta as any).env.VITE_APPWRITE_PROJECT_ID}`;
             
             return fileUrl;
         } catch (error) {

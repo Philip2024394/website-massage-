@@ -63,7 +63,7 @@ const TherapistAnalyticsPage: React.FC<TherapistAnalyticsPageProps> = ({
       setLoading(true);
       
       // Fetch all bookings for this therapist
-      const allBookings = await bookingService.getBookingsByProviderId(therapist.$id);
+      const allBookings = await bookingService.getProviderBookings(therapist.$id);
       
       // Calculate analytics
       const now = new Date();

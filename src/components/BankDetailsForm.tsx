@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, User, CreditCard, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
 import PaymentCard from './PaymentCard';
+import { validateBankDetails, sanitizeBankAccountInput, sanitizeAccountHolderInput, type ValidationResult } from '../utils/goldStandardValidation';
 
 interface BankDetails {
     bankName: string;
@@ -59,32 +60,28 @@ const BankDetailsForm: React.FC<BankDetailsFormProps> = ({
     ];
 
     const validateForm = (): boolean => {
+        // Use gold-standard validation
+        const validation = validateBankDetails({
+            bankName: formData.bankName,
+            accountNumber: formData.accountNumber,
+            accountHolderName: formData.accountHolderName
+        });
+
         const newErrors: Partial<BankDetails> = {};
-
-        if (!formData.bankName.trim()) {
-            newErrors.bankName = 'Bank name is required';
+        
+        // Map validation results to form errors
+        if (!validation.bankName.isValid) {
+            newErrors.bankName = validation.bankName.errors[0];
         }
-
-        if (!formData.accountHolderName.trim()) {
-            newErrors.accountHolderName = 'Account holder name is required';
-        } else if (formData.accountHolderName.trim().length < 3) {
-            newErrors.accountHolderName = 'Name must be at least 3 characters';
+        if (!validation.accountHolderName.isValid) {
+            newErrors.accountHolderName = validation.accountHolderName.errors[0];
         }
-
-        if (!formData.accountNumber.trim()) {
-            newErrors.accountNumber = 'Account number is required';
-        } else {
-            // Remove spaces and check if it's all digits
-            const cleanNumber = formData.accountNumber.replace(/\s/g, '');
-            if (!/^\d+$/.test(cleanNumber)) {
-                newErrors.accountNumber = 'Account number must contain only digits';
-            } else if (cleanNumber.length < 10 || cleanNumber.length > 20) {
-                newErrors.accountNumber = 'Account number must be 10-20 digits';
-            }
+        if (!validation.accountNumber.isValid) {
+            newErrors.accountNumber = validation.accountNumber.errors[0];
         }
 
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        return validation.isAllValid;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -204,7 +201,10 @@ const BankDetailsForm: React.FC<BankDetailsFormProps> = ({
                             <input
                                 type="text"
                                 value={formData.accountHolderName}
-                                onChange={(e) => setFormData({ ...formData, accountHolderName: e.target.value.toUpperCase() })}
+                                onChange={(e) => {
+                                    const sanitized = sanitizeAccountHolderInput(e.target.value).toUpperCase();
+                                    setFormData({ ...formData, accountHolderName: sanitized });
+                                }}
                                 placeholder="JOHN DOE"
                                 className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-orange-500 transition-all uppercase ${
                                     errors.accountHolderName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
@@ -226,15 +226,14 @@ const BankDetailsForm: React.FC<BankDetailsFormProps> = ({
                                 type="text"
                                 value={formData.accountNumber}
                                 onChange={(e) => {
-                                    // Only allow digits and spaces
-                                    const value = e.target.value.replace(/[^\d\s]/g, '');
-                                    setFormData({ ...formData, accountNumber: value });
+                                    const sanitized = sanitizeBankAccountInput(e.target.value);
+                                    setFormData({ ...formData, accountNumber: sanitized });
                                 }}
                                 placeholder="1234 5678 9012 3456"
                                 className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-orange-500 font-mono text-lg transition-all ${
                                     errors.accountNumber ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
                                 }`}
-                                maxLength={24} // Max 20 digits + 4 spaces
+                                maxLength={30}
                             />
                             <p className="text-xs text-gray-500 mt-1">Enter your bank account number (10-20 digits)</p>
                             {errors.accountNumber && (

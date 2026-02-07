@@ -411,7 +411,7 @@ export function PersistentChatWindow() {
   const handleAcceptBooking = async (bookingId: string) => {
     try {
       await therapistNotificationService.acceptBooking(bookingId);
-      await acceptBooking(bookingId);
+      await acceptBooking();
       
       // Remove from notifications
       setBookingNotifications(prev => prev.filter(n => n.bookingId !== bookingId));
@@ -426,7 +426,7 @@ export function PersistentChatWindow() {
   const handleDeclineBooking = async (bookingId: string) => {
     try {
       await therapistNotificationService.rejectBooking(bookingId);
-      await rejectBooking(bookingId);
+      await rejectBooking();
       
       // Remove from notifications
       setBookingNotifications(prev => prev.filter(n => n.bookingId !== bookingId));
@@ -495,7 +495,7 @@ export function PersistentChatWindow() {
   useEffect(() => {
     // Only run countdown if booking is pending/requested and waiting for therapist response
     if (chatState.currentBooking && 
-        (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') &&
+        (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'waiting_others') &&
         therapistResponseCountdown > 0) {
       const timer = setInterval(() => {
         setTherapistResponseCountdown(prev => {
@@ -515,7 +515,7 @@ export function PersistentChatWindow() {
   // Reset countdown timer when a new booking is created
   useEffect(() => {
     if (chatState.currentBooking && 
-        (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested')) {
+        (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'waiting_others')) {
       console.log('🔄 Resetting countdown timer for new booking:', chatState.currentBooking.id);
       setTherapistResponseCountdown(300); // Reset to 5 minutes
     }
@@ -965,7 +965,7 @@ export function PersistentChatWindow() {
                 customerWhatsApp: fullWhatsApp,
                 customerName: customerForm.name,
                 // massageFor: customerForm.massageFor, // ❌ REMOVED: Not in Appwrite schema
-                locationType: customerForm.locationType,
+                locationType: customerForm.locationType as 'home' | 'hotel' | 'villa',
                 address: scheduledLocationText, // ✅ Same as location
                 roomNumber: customerForm.roomNumber || undefined,
               });
@@ -1038,7 +1038,7 @@ export function PersistentChatWindow() {
                 // ✅ SIMPLIFIED: Location details using simple text field
                 locationZone: customerForm.location || 'Bali',
                 location: locationText, // ✅ Simple location text from user input
-                locationType: customerForm.locationType,
+                locationType: customerForm.locationType as 'home' | 'hotel' | 'villa',
                 address: locationText, // ✅ Same as location
                 hotelVillaName: customerForm.hotelVillaName,
                 roomNumber: customerForm.roomNumber,
@@ -1058,7 +1058,7 @@ export function PersistentChatWindow() {
               
               // Execute booking with timeout and retry logic
               const bookingResult = await withRetry(
-                () => createBooking(bookingPayload),
+                async () => createBooking(bookingPayload),
                 3, // maxRetries
                 1000, // baseDelayMs (1s, 2s, 4s backoff)
                 5000 // timeoutMs per attempt
@@ -1204,7 +1204,7 @@ export function PersistentChatWindow() {
                 
                 // Location Info (REQUIRED for Appwrite)
                 location: customerForm.location || 'Customer Location',
-                locationType: customerForm.locationType,
+                locationType: customerForm.locationType as 'home' | 'hotel' | 'villa',
                 address: customerForm.location,
                 
                 // Optional Location Details
@@ -1478,7 +1478,7 @@ export function PersistentChatWindow() {
       location: booking.locationZone,
       coordinates: booking.coordinates,
       totalPrice: booking.totalPrice,
-      bookingType: booking.bookingType as 'book_now' | 'scheduled',
+      bookingType: booking.bookingType as unknown as 'book_now' | 'scheduled',
       discountCode: booking.discountCode,
       discountPercentage: booking.discountPercentage,
       originalPrice: booking.originalPrice,
@@ -1513,7 +1513,7 @@ export function PersistentChatWindow() {
             massageFor: (chatState.currentBooking as any).massageFor,
             locationType: chatState.currentBooking.locationType,
             duration: chatState.currentBooking.duration,
-            price: chatState.currentBooking.price,
+            price: getPrice(chatState.currentBooking.duration || 60),
             serviceType: chatState.currentBooking.serviceType || 'Professional Treatment'
           }}
           countdownSeconds={timerState.remainingSeconds}
@@ -2898,7 +2898,7 @@ export function PersistentChatWindow() {
           {chatState.currentBooking && (
               <>
                 {/* Removed duplicate waiting message - shown in BookingWelcomeBanner above */}
-                {false && (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && (
+                {false && (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'waiting_others') && (
                   <div className="mx-4 mb-4 p-4 rounded-xl border-2 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                     <div className="text-center">
                       <div className="w-16 h-16 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
@@ -2997,7 +2997,7 @@ export function PersistentChatWindow() {
                 )}
 
                 {/* Therapist Accepted Status */}
-                {(chatState.currentBooking.status === 'accepted' || chatState.currentBooking.status === 'confirmed') && (
+                {(chatState.currentBooking.status === 'therapist_accepted' || chatState.currentBooking.status === 'user_confirmed') && (
                   <TherapistAcceptanceUI
                     therapist={{
                       id: therapist.id,
@@ -3019,7 +3019,7 @@ export function PersistentChatWindow() {
                 )}
 
                 {/* On The Way Status */}
-                {chatState.currentBooking.status === 'en_route' && (
+                {chatState.currentBooking.status === 'on_the_way' && (
                   <OnTheWayStatusUI
                     therapist={{
                       id: therapist.id,
@@ -3044,7 +3044,7 @@ export function PersistentChatWindow() {
                 )}
 
                 {/* Arrival Confirmation */}
-                {chatState.currentBooking.status === 'arrived' && (
+                {chatState.currentBooking.status === 'user_confirmed' && (
                   <ArrivalConfirmationUI
                     therapist={{
                       id: therapist.id,
@@ -3067,7 +3067,7 @@ export function PersistentChatWindow() {
                 )}
 
                 {/* Service Timer for in-progress sessions */}
-                {chatState.currentBooking.status === 'in_progress' && (
+                {chatState.currentBooking.status === 'completed' && (
                   <EnhancedTimerComponent
                     type="service"
                     initialSeconds={(selectedDuration || 60) * 60}

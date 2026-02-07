@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Link2, MessageCircle, Phone, Play, Menu, Volume2, VolumeX } from 'lucide-react';
+import { Send, MessageCircle, Phone, Play, Menu, X, Check, Plus } from 'lucide-react';
 import { ProfessionalChatMessage, TypingIndicator } from './ProfessionalChatMessage';
 import { NotificationBadge } from './NotificationBadge';
 import { UserStatusIndicator, UserStatusManager } from './UserStatusIndicator';
@@ -199,7 +199,7 @@ export const ProfessionalChatWindow: React.FC<ProfessionalChatWindowProps> = ({
               className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
               title={soundEnabled ? 'Mute sounds' : 'Enable sounds'}
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              {soundEnabled ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
             </button>
 
             <button className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors">
@@ -243,7 +243,7 @@ export const ProfessionalChatWindow: React.FC<ProfessionalChatWindowProps> = ({
         <div className="flex items-center gap-2">
           {/* Attachment Button */}
           <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <Link className="w-4 h-4 text-gray-600" />
+            <Plus className="w-4 h-4 text-gray-600" />
           </button>
 
           {/* Message Input */}

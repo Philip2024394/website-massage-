@@ -264,11 +264,16 @@ const BankDetailsManagementPage: React.FC = () => {
                                     Balance (Optional)
                                 </label>
                                 <input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={formData.balance}
-                                    onChange={(e) => setFormData({ ...formData, balance: parseFloat(e.target.value) || 0 })}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={formData.balance === 0 ? '' : formData.balance.toString()}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/[^0-9.]/g, '');
+                                        const numValue = value === '' ? 0 : parseFloat(value);
+                                        if (!isNaN(numValue)) {
+                                            setFormData({ ...formData, balance: numValue });
+                                        }
+                                    }}
                                     placeholder="e.g., 1000000"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 />
