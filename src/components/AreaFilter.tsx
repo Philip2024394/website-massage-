@@ -16,15 +16,24 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
   onAreaChange,
   className = '',
 }) => {
-  const { language } = useLanguageContext();
-  const areas = getServiceAreasForCity(city);
-  
-  // Check if this is Canggu for special orange highlighting
-  const isCanggu = city.toLowerCase() === 'canggu';
-  
-  if (areas.length === 0) {
-    return null;
-  }
+  try {
+    const context = useLanguageContext();
+    const language = context?.language || 'en';
+    
+    // Defensive: Ensure city is valid
+    if (!city || typeof city !== 'string') {
+      console.warn('AreaFilter: Invalid city provided:', city);
+      return null;
+    }
+    
+    const areas = getServiceAreasForCity(city);
+    
+    // Check if this is Canggu for special orange highlighting
+    const isCanggu = city.toLowerCase() === 'canggu';
+    
+    if (!areas || areas.length === 0) {
+      return null;
+    }
 
   const handleAreaClick = (areaId: string) => {
     // Toggle: if same area clicked, clear filter; otherwise set new area
@@ -41,12 +50,18 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
 
   // Get area name based on language
   const getAreaName = (area: ServiceArea): string => {
-    return language === 'id' ? area.nameId : area.name;
+    try {
+      if (!area) return '';
+      return language === 'id' ? (area.nameId || area.name) : area.name;
+    } catch (error) {
+      console.error('AreaFilter: Error getting area name:', error);
+      return area?.name || '';
+    }
   };
 
   // Separate popular and other areas
-  const popularAreas = areas.filter(a => a.popular);
-  const otherAreas = areas.filter(a => !a.popular);
+  const popularAreas = (areas || []).filter(a => a && a.popular);
+  const otherAreas = (areas || []).filter(a => a && !a.popular);
 
   return (
     <div className={`relative ${className}`}>
@@ -163,6 +178,14 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
       </div>
     </div>
   );
+  } catch (error) {
+    console.error('AreaFilter: Component crashed:', error);
+    return (
+      <div className={`relative ${className} p-4 bg-red-50 border border-red-200 rounded-xl`}>
+        <p className="text-sm text-red-600">Unable to load location filter</p>
+      </div>
+    );
+  }
 };
 
 export default AreaFilter;

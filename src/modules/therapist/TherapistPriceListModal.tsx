@@ -161,7 +161,13 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
             console.log('📋 INITIAL MENU STATE:', {
                 hasEnhancedMenu: hasAnyMenu,
                 isDefaultMenu,
-                serviceCount: activeMenuData.length
+                serviceCount: activeMenuData.length,
+                services: activeMenuData.map((s: any) => ({
+                    name: s.serviceName || s.name,
+                    has60: !!s.price60,
+                    has90: !!s.price90,
+                    has120: !!s.price120
+                }))
             });
             console.log('═'.repeat(80));
         } else {
@@ -248,7 +254,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                 </div>
 
                 {/* Price List Content - Natural scrolling */}
-                <div className="flex-1 p-4 max-h-[70vh] ">
+                <div className="flex-1 p-4 max-h-[70vh] overflow-y-auto">
                     {activeMenuData.length > 0 ? (
                         <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                             {/* Header */}
