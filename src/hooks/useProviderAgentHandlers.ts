@@ -1,6 +1,7 @@
 import type { Therapist, Place, Agent, AvailabilityStatus } from '../types';
 import type { Page, LoggedInProvider } from '../types/pageTypes';
 import { therapistService, placesService, agentService, adminMessageService, notificationService } from '../lib/appwriteService';
+import { logger } from '../utils/logger';
 
 // Toast notification utility refactored to use dedicated overlay root (portal container)
 const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
@@ -42,7 +43,7 @@ const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'suc
             }, 320);
         }, 4000);
     } catch (err) {
-        console.warn('Toast notification failed to append:', err);
+        logger.warn('Toast notification failed to append:', err);
     }
 };
 
@@ -77,16 +78,16 @@ export const useProviderAgentHandlers = ({
 }: UseProviderAgentHandlersProps) => {
 
     const handleTherapistStatusChange = async (status: string) => {
-        console.log('🚀 ========== DEBUG: THERAPIST STATUS CHANGE START ==========');
-        console.log('📊 Input status:', status, 'Type:', typeof status);
-        console.log('🔍 loggedInProvider exists:', !!loggedInProvider);
-        console.log('🔍 loggedInProvider type:', loggedInProvider?.type);
-        console.log('🔍 loggedInProvider id:', loggedInProvider?.id);
-        console.log('🔍 loggedInProvider $id:', (loggedInProvider as any)?.$id);
+        logger.debug('🚀 DEBUG: Therapist status change start', { status, statusType: typeof status });
+        logger.debug('Provider validation:', {
+            exists: !!loggedInProvider,
+            type: loggedInProvider?.type,
+            id: loggedInProvider?.id,
+            $id: (loggedInProvider as any)?.$id
+        });
         
         if (!loggedInProvider || loggedInProvider.type !== 'therapist') {
-            console.error('❌ VALIDATION FAILED: No logged in therapist provider');
-            console.error('❌ loggedInProvider full object:', JSON.stringify(loggedInProvider, null, 2));
+            logger.error('❌ Validation failed: No logged in therapist provider', loggedInProvider);
             throw new Error('No logged in therapist provider');
         }
         
@@ -94,61 +95,57 @@ export const useProviderAgentHandlers = ({
         let documentId = '';
         
         try {
-            console.log('🔄 STARTING therapist status update to:', status);
-            console.log('🔍 Full logged in provider data:', JSON.stringify(loggedInProvider, null, 2));
+            logger.debug('Starting therapist status update', { status, provider: loggedInProvider });
             
             // Enhanced debugging for ID resolution
             const providerData = loggedInProvider as any;
-            console.log('🔍 ID Resolution Debug:');
-            console.log('  - providerData.id:', providerData.id, 'Type:', typeof providerData.id);
-            console.log('  - providerData.$id:', providerData.$id, 'Type:', typeof providerData.$id);
-            console.log('  - providerData.therapistId:', providerData.therapistId, 'Type:', typeof providerData.therapistId);
+            logger.debug('ID resolution debug:', {
+                'providerData.id': providerData.id,
+                'providerData.$id': providerData.$id,
+                'providerData.therapistId': providerData.therapistId
+            });
             
             // Appwrite uses $id as document ID, not the id field
             // Try multiple ID strategies to find the correct document ID
             let documentId = '';
             
             if (providerData.$id) {
-                // Appwrite document ID
                 documentId = providerData.$id;
-                console.log('✅ Using Appwrite document ID ($id):', documentId);
+                logger.debug('Using Appwrite document ID ($id):', documentId);
             } else if (providerData.therapistId) {
-                // Custom therapistId field
                 documentId = providerData.therapistId;
-                console.log('✅ Using therapistId field:', documentId);
+                logger.debug('Using therapistId field:', documentId);
             } else {
-                // Fallback to regular id
                 documentId = typeof loggedInProvider.id === 'string' 
                     ? loggedInProvider.id 
                     : loggedInProvider.id.toString();
-                console.log('✅ Using fallback id:', documentId);
+                logger.debug('Using fallback id:', documentId);
             }
             
-            console.log('📋 Final document ID for update:', documentId);
+            logger.debug('Final document ID for update:', documentId);
             
             // Test: Try to get existing therapist first to verify document exists
             try {
-                console.log('🔍 Testing: Attempting to fetch existing therapist data...');
+                logger.debug('Fetching existing therapist data for validation...');
                 const existingTherapist = await therapistService.getById(documentId);
-                console.log('✅ Found existing therapist:', existingTherapist ? 'YES' : 'NO');
                 if (existingTherapist) {
-                    console.log('📋 Current therapist data:', {
+                    logger.debug('Found existing therapist:', {
                         name: existingTherapist.name,
                         currentStatus: existingTherapist.status,
                         currentAvailability: existingTherapist.availability
                     });
                 }
             } catch (fetchError) {
-                console.error('❌ Could not fetch existing therapist:', fetchError);
+                logger.error('Could not fetch existing therapist:', fetchError);
                 throw new Error(`Therapist profile not found with ID: ${documentId}. ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
             }
             
             // Update status directly using therapistService
-            console.log('🚀 ATTEMPTING STATUS UPDATE...');
-            console.log('📊 Update parameters:');
-            console.log('  - Document ID:', documentId);
-            console.log('  - Status value:', status);
-            console.log('  - Status type:', typeof status);
+            logger.debug('Attempting status update...', {
+                documentId,
+                status,
+                statusType: typeof status
+            });
             
             // Based on your Appwrite data, update status, availability, and isOnline fields
             // Note: All fields are optional in Appwrite to avoid conflicts with existing documents
@@ -162,15 +159,15 @@ export const useProviderAgentHandlers = ({
                 availability: capitalizedStatus as AvailabilityStatus,  // Backup field expects capitalized: 'Available', 'Busy', 'Offline'
                 isOnline: status !== 'Offline'  // Set isOnline based on status (true for Available/Busy, false for Offline)
             };
-            console.log('  - Update object:', updateData);
+            logger.debug('Update object:', updateData);
             
             const updateResult = await therapistService.update(documentId, updateData);
             
-            console.log('✅ THERAPIST STATUS UPDATE SUCCESS!');
-            console.log('✅ Update result:', updateResult);
-            console.log('✅ Result $id:', updateResult?.$id);
-            console.log('✅ Result status:', updateResult?.status);
-            console.log('✅ Result availability:', updateResult?.availability);
+            logger.debug('Therapist status update success', {
+                $id: updateResult?.$id,
+                status: updateResult?.status,
+                availability: updateResult?.availability
+            });
             
             // Update local state - map through current therapists and update the matching one
             const updatedTherapists = therapists.map((t: Therapist) => {
@@ -181,7 +178,7 @@ export const useProviderAgentHandlers = ({
                 const isMatch = tId === documentId || tAppwriteId === documentId;
                 
                 if (isMatch) {
-                    console.log('🔄 Updating local state for therapist:', t.name, 'from', t.status, 'to', status);
+                    logger.debug('Updating local state for therapist:', { name: t.name, from: t.status, to: status });
                 }
                 
                 return isMatch 
@@ -189,24 +186,19 @@ export const useProviderAgentHandlers = ({
                     : t;
             });
             
-            console.log('📊 Local therapists state updated, count:', updatedTherapists.length);
+            logger.debug('Local therapists state updated, count:', updatedTherapists.length);
             setTherapists(updatedTherapists);
             
         } catch (error) {
-            console.error('❌ ========== THERAPIST STATUS UPDATE FAILED ==========');
-            console.error('❌ Error type:', typeof error);
-            console.error('❌ Error object:', error);
-            console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error');
-            console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
-            try {
-                console.error('❌ Attempted document ID:', documentId);
-            } catch {
-                console.error('❌ Document ID not accessible in this scope');
-            }
-            console.error('❌ Attempted status:', status);
-            console.error('❌ loggedInProvider at error time:', JSON.stringify(loggedInProvider, null, 2));
-            console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-            console.error('❌ Full error object:', JSON.stringify(error, null, 2));
+            logger.error('Therapist status update failed:', {
+                error,
+                errorType: typeof error,
+                message: error instanceof Error ? error.message : 'Unknown error',
+                stack: error instanceof Error ? error.stack : 'No stack',
+                documentId,
+                status,
+                provider: loggedInProvider
+            });
             
             // More specific error message based on error type
             let errorMessage = 'Failed to update status. Please try again.';
@@ -235,8 +227,7 @@ export const useProviderAgentHandlers = ({
             
             // Validate profilePicture length (max 512 chars for Appwrite)
             const profilePicture = therapistData.profilePicture || '';
-            console.log('💾 Saving therapist profile with profilePicture:', profilePicture);
-            console.log('📏 ProfilePicture length:', profilePicture.length);
+            logger.debug('Saving therapist profile', { profilePictureLength: profilePicture.length });
             
             if (profilePicture.length > 512) {
                 showToast('Profile picture URL is too long. Saving other data without profile picture.', 'warning');
@@ -248,16 +239,16 @@ export const useProviderAgentHandlers = ({
             let existingTherapist: any = null;
             try {
                 existingTherapist = await therapistService.getById(therapistId);
-                console.log('📖 Found existing therapist profile:', existingTherapist);
+                logger.debug('Found existing therapist profile:', existingTherapist);
             } catch {
-                console.log('📝 No existing profile found, will create new one');
+                logger.debug('No existing profile found, will create new one');
             }
 
             // Helper function to ensure JSON strings are compact and under 255 chars
             const compactJsonString = (value: any, fieldName: string, fallback: string = '[]'): string => {
                 const jsonString = typeof value === 'string' ? value : JSON.stringify(value);
                 if (jsonString.length > 255) {
-                    console.warn(`⚠️ ${fieldName} string too long (${jsonString.length} chars), using fallback`);
+                    logger.warn(`${fieldName} string too long (${jsonString.length} chars), using fallback`);
                     return fallback;
                 }
                 return jsonString;
@@ -266,7 +257,7 @@ export const useProviderAgentHandlers = ({
             // Prepare pricing string with 255-character validation
             let pricingString = typeof therapistData.pricing === 'string' ? therapistData.pricing : JSON.stringify(therapistData.pricing);
             if (pricingString.length > 255) {
-                console.warn('⚠️ Therapist pricing string too long, creating compact version');
+                logger.warn('Therapist pricing string too long, creating compact version');
                 try {
                     const parsed = JSON.parse(pricingString);
                     // Create a minimal pricing object with only the essential fields
@@ -276,9 +267,9 @@ export const useProviderAgentHandlers = ({
                         "120": parsed["120"] || parsed[120] || 0
                     };
                     pricingString = JSON.stringify(compactPricing);
-                    console.log('✅ Created compact therapist pricing:', pricingString);
+                    logger.debug('Created compact therapist pricing:', pricingString);
                 } catch {
-                    console.error('❌ Failed to create compact pricing, using default');
+                    logger.error('Failed to create compact pricing, using default');
                     pricingString = '{"60":0,"90":0,"120":0}';
                 }
             }
@@ -372,53 +363,56 @@ export const useProviderAgentHandlers = ({
                 // createdAt: existingTherapist?.createdAt || new Date().toISOString() // Removed - not in collection schema
             };
             
-            console.log('💾 Saving therapist data:', {
+            logger.debug('Saving therapist data:', {
                 name: updateData.name,
-                profilePicture: updateData.profilePicture?.substring(0, 50) + '...',
-                mainImage: updateData.mainImage?.substring(0, 50) + '...',
+                profilePicturePreview: updateData.profilePicture?.substring(0, 50),
+                mainImagePreview: updateData.mainImage?.substring(0, 50),
                 location: updateData.location
             });
             
-            console.log('🎯 DISCOUNT DEBUG - Handler mapping discount fields:', {
-                inputDiscountPercentage: (therapistData as any).discountPercentage,
-                inputDiscountDuration: (therapistData as any).discountDuration,
-                inputDiscountEndTime: (therapistData as any).discountEndTime,
-                inputIsDiscountActive: (therapistData as any).isDiscountActive,
-                mappedDiscountPercentage: updateData.discountPercentage,
-                mappedDiscountDuration: updateData.discountDuration,
-                mappedDiscountEndTime: updateData.discountEndTime,
-                mappedIsDiscountActive: updateData.isDiscountActive
+            logger.debug('Discount field mapping:', {
+                input: {
+                    discountPercentage: (therapistData as any).discountPercentage,
+                    discountDuration: (therapistData as any).discountDuration,
+                    discountEndTime: (therapistData as any).discountEndTime,
+                    isDiscountActive: (therapistData as any).isDiscountActive
+                },
+                mapped: {
+                    discountPercentage: updateData.discountPercentage,
+                    discountDuration: updateData.discountDuration,
+                    discountEndTime: updateData.discountEndTime,
+                    isDiscountActive: updateData.isDiscountActive
+                }
             });
             
             // 🔒 ONE CARD PER THERAPIST POLICY
             // Each therapist can only have ONE card but can edit it unlimited times
             if (existingTherapist) {
-                console.log('✏️ Updating your existing therapist profile (1 card per therapist policy)');
-                console.log('🔄 You can save/edit this card as many times as needed');
+                logger.debug('Updating existing therapist profile (1 card per therapist policy)');
                 await therapistService.update(therapistId, updateData);
             } else {
-                console.log('➕ Creating your therapist profile (you can only create 1 card, but edit it unlimited times)');
+                logger.debug('Creating new therapist profile (1 card policy, unlimited edits)');
                 const createData = {
                     ...updateData,
                     isLive: true, // 🔄 CHANGED: Now goes live immediately
                     email: `therapist${therapistId}@indostreet.com`,
                 };
                 await therapistService.create(createData);
-                console.log('📝 Your therapist card has been created. You can now edit and save it as many times as you want.');
+                logger.debug('Therapist card created successfully (can be edited unlimited times)');
             }
             
-            console.log('✅ Therapist profile saved successfully');
+            logger.debug('Therapist profile saved successfully');
             
             // Create default Silver membership if this is a new therapist
             if (!existingTherapist) {
                 try {
-                    console.log('💳 Creating default Silver membership for new therapist...');
+                    logger.debug('Creating default Silver membership for new therapist...');
                     const { membershipPackageService } = await import('../lib/appwriteService');
                     const userId = loggedInProvider.id as string;
                     await membershipPackageService.createDefaultMembership(userId, therapistId, 'therapist');
-                    console.log('✅ Default Silver membership created');
+                    logger.debug('Default Silver membership created');
                 } catch (membershipError) {
-                    console.error('⚠️ Failed to create membership (non-blocking):', membershipError);
+                    logger.error('Failed to create membership (non-blocking):', membershipError);
                     // Don't fail profile save if membership creation fails
                 }
             }
@@ -454,16 +448,16 @@ export const useProviderAgentHandlers = ({
             }
             
             setTherapists(updatedTherapists);
-            console.log('🔄 Updated therapists state with new data');
+            logger.debug('Updated therapists state with new data');
             
             // Refresh data from database to ensure consistency across the app
             if (refreshData) {
                 try {
-                    console.log('🔄 Refreshing data from database to sync live site...');
+                    logger.debug('Refreshing data from database to sync live site...');
                     await refreshData();
-                    console.log('✅ Data refresh completed - live site should show updated info');
+                    logger.debug('Data refresh completed - live site should show updated info');
                 } catch (refreshError) {
-                    console.warn('⚠️ Failed to refresh data after save:', refreshError);
+                    logger.warn('Failed to refresh data after save:', refreshError);
                     // Don't fail the save operation if refresh fails
                 }
             }
@@ -482,15 +476,15 @@ export const useProviderAgentHandlers = ({
                         submittedAt: new Date().toISOString()
                     })
                 });
-                console.log('✅ Admin notification created for therapist profile review');
+                logger.debug('Admin notification created for therapist profile review');
             } catch (notificationError) {
-                console.warn('⚠️ Failed to create admin notification:', notificationError);
+                logger.warn('Failed to create admin notification:', notificationError);
                 // Don't fail the entire save operation if notification fails
             }
             
             showToast('Profile saved successfully! Your profile is now live and visible to customers.', 'success');
         } catch (error: any) {
-            console.error('❌ Save error:', error);
+            logger.error('Save error:', error);
             showToast('Error saving profile: ' + (error.message || 'Unknown error. Please try again.'), 'error');
         }
     };
@@ -499,9 +493,10 @@ export const useProviderAgentHandlers = ({
         if (!loggedInProvider) return;
         
         try {
-            console.log('🔧 DEBUG: Starting place profile save...');
-            console.log('🔧 DEBUG: loggedInProvider:', loggedInProvider);
-            console.log('🔧 DEBUG: places array length:', places.length);
+            logger.debug('Starting place profile save', {
+                provider: loggedInProvider,
+                placesCount: places.length
+            });
             
             const updateData: any = {
                 ...placeData,
@@ -528,24 +523,24 @@ export const useProviderAgentHandlers = ({
             
             if (currentPlace) {
                 placeDocumentId = (currentPlace as any).$id || currentPlace.id;
-                console.log('🔍 Found place in current data:', placeDocumentId);
+                logger.debug('Found place in current data:', placeDocumentId);
             } else {
                 // If not found in current data, try to find by email from session cache
                 const sessionData = JSON.parse(localStorage.getItem('app_session') || '{}');
-                console.log('🔧 DEBUG: session data:', sessionData);
+                logger.debug('Session data:', sessionData);
                 if (sessionData.documentId) {
                     placeDocumentId = sessionData.documentId;
-                    console.log('🔍 Using document ID from session cache:', placeDocumentId);
+                    logger.debug('Using document ID from session cache:', placeDocumentId);
                 } else {
                     // Try querying Appwrite by provider id attribute
-                    console.log('🔎 Looking up place document by provider id...');
+                    logger.debug('Looking up place document by provider id...');
                     const remotePlace = await placesService.getByProviderId(String(loggedInProvider.id));
                     if (remotePlace) {
                         placeDocumentId = remotePlace.$id;
-                        console.log('✅ Found remote place document by provider id:', placeDocumentId);
+                        logger.debug('Found remote place document by provider id:', placeDocumentId);
                     } else {
                         // As a final fallback, we'll attempt creation below if update fails
-                        console.log('⚠️ No existing place document found by provider id');
+                        logger.warn('No existing place document found by provider id');
                     }
                 }
             }
@@ -554,17 +549,15 @@ export const useProviderAgentHandlers = ({
             // Each massage place can only have ONE card but can edit it unlimited times
             let savedDoc: any | null = null;
             if (placeDocumentId) {
-                console.log('✏️ Updating your existing massage place profile (1 card per place policy)');
-                console.log('🔄 You can save/edit this card as many times as needed');
-                console.log('💾 Update data:', updateData);
+                logger.debug('Updating existing massage place profile (1 card per place policy)', { updateData });
                 try {
                     savedDoc = await placesService.update(placeDocumentId, updateData);
-                    console.log('✅ Massage place profile saved successfully via update');
+                    logger.debug('Massage place profile saved successfully via update');
                 } catch (err: any) {
                     const msg = (err && (err.message || err.code || '')) || '';
                     const isNotFound = String(msg).toLowerCase().includes('not found') || String(err?.code || '').includes('404');
                     if (isNotFound) {
-                        console.warn('⚠️ Document not found on update, creating new document instead...');
+                        logger.warn('Document not found on update, creating new document instead...');
                         savedDoc = await placesService.update(loggedInProvider.id.toString(), {
                             ...updateData,
                             id: loggedInProvider.id,
@@ -577,13 +570,13 @@ export const useProviderAgentHandlers = ({
                         // Cache for future saves
                         const session = JSON.parse(localStorage.getItem('app_session') || '{}');
                         localStorage.setItem('app_session', JSON.stringify({ ...session, documentId: placeDocumentId }));
-                        console.log('✅ Massage place profile created successfully with new ID:', placeDocumentId);
+                        logger.debug('Massage place profile created successfully with new ID:', placeDocumentId);
                     } else {
                         throw err;
                     }
                 }
             } else {
-                console.log('➕ Creating your massage place profile (you can only create 1 card, but edit it unlimited times)');
+                logger.debug('Creating massage place profile (1 card policy, unlimited edits)');
                 savedDoc = await placesService.update(loggedInProvider.id.toString(), {
                     ...updateData,
                     id: loggedInProvider.id,
@@ -595,19 +588,19 @@ export const useProviderAgentHandlers = ({
                 placeDocumentId = savedDoc.$id;
                 const session = JSON.parse(localStorage.getItem('app_session') || '{}');
                 localStorage.setItem('app_session', JSON.stringify({ ...session, documentId: placeDocumentId }));
-                console.log('📝 Your massage place card has been created. You can now edit and save it as many times as you want.');
+                logger.debug('Massage place card created successfully (can be edited unlimited times)');
             }
             
             // Create default Silver membership if this is a new place
             if (!savedDoc) {
                 try {
-                    console.log('💳 Creating default Silver membership for new massage place...');
+                    logger.debug('Creating default Silver membership for new massage place...');
                     const { membershipPackageService } = await import('../lib/appwriteService');
                     const userId = loggedInProvider.id as string;
                     await membershipPackageService.createDefaultMembership(userId, placeDocumentId || '', 'massage_place');
-                    console.log('✅ Default Silver membership created');
+                    logger.debug('Default Silver membership created');
                 } catch (membershipError) {
-                    console.error('⚠️ Failed to create membership (non-blocking):', membershipError);
+                    logger.error('Failed to create membership (non-blocking):', membershipError);
                     // Don't fail profile save if membership creation fails
                 }
             }
@@ -642,16 +635,16 @@ export const useProviderAgentHandlers = ({
             ];
             
             setPlaces(finalPlaces);
-            console.log('🔄 Updated places state with new data');
+            logger.debug('Updated places state with new data');
             
             // Refresh data from database to ensure consistency across the app
             if (refreshData) {
                 try {
-                    console.log('🔄 Refreshing data from database to sync live site...');
+                    logger.debug('Refreshing data from database to sync live site...');
                     await refreshData();
-                    console.log('✅ Data refresh completed - live site should show updated info');
+                    logger.debug('Data refresh completed - live site should show updated info');
                 } catch (refreshError) {
-                    console.warn('⚠️ Failed to refresh data after save:', refreshError);
+                    logger.warn('Failed to refresh data after save:', refreshError);
                     // Don't fail the save operation if refresh fails
                 }
             }
@@ -670,15 +663,15 @@ export const useProviderAgentHandlers = ({
                         submittedAt: new Date().toISOString()
                     })
                 });
-                console.log('✅ Admin notification created for profile approval');
+                logger.debug('Admin notification created for profile approval');
             } catch (notificationError) {
-                console.warn('⚠️ Failed to create admin notification:', notificationError);
+                logger.warn('Failed to create admin notification:', notificationError);
                 // Don't fail the entire save operation if notification fails
             }
             
             showToast('Profile saved successfully! Your profile is now live and visible to customers.', 'success');
         } catch (error: any) {
-            console.error('❌ Save error:', error);
+            logger.error('Save error:', error);
             showToast('Error saving profile: ' + (error.message || 'Unknown error. Please try again.'), 'error');
         }
     };
@@ -697,7 +690,7 @@ export const useProviderAgentHandlers = ({
             
             return { success: true, message: `Registration successful! Your agent code is: ${agentCode}. Please save it for future reference.` };
         } catch (error: any) {
-            console.error('Agent registration error:', error);
+            logger.error('Agent registration error:', error);
             return { success: false, message: error.message || 'Registration failed' };
         }
     };
@@ -715,7 +708,7 @@ export const useProviderAgentHandlers = ({
             try {
                 await agentService.update(agentData.$id, { lastLogin: new Date().toISOString() });
             } catch (updateError) {
-                console.error('Failed to update last login time', updateError);
+                logger.error('Failed to update last login time', updateError);
             }
         
             setLoggedInAgent(agentData);
@@ -729,7 +722,7 @@ export const useProviderAgentHandlers = ({
 
             return { success: true, message: '' };
         } catch (error: any) {
-            console.error('Agent login error:', error);
+            logger.error('Agent login error:', error);
             return { success: false, message: error.message || 'Login failed' };
         }
     };
@@ -746,7 +739,7 @@ export const useProviderAgentHandlers = ({
             localStorage.setItem('loggedInAgent', JSON.stringify(updatedAgent));
             setPage('agentDashboard');
         } catch (error: any) {
-            console.error('Accept terms error:', error);
+            logger.error('Accept terms error:', error);
             showToast('Could not accept terms: ' + (error.message || 'Unknown error'), 'error');
         }
     };
@@ -762,7 +755,7 @@ export const useProviderAgentHandlers = ({
             
             // Log if invalid fields were filtered out
             if (status || availability) {
-                console.warn('⚠️ Filtered out invalid Agent fields:', { status, availability });
+                logger.warn('Filtered out invalid Agent fields:', { status, availability });
             }
             
             await agentService.update(agentId, validAgentData);
@@ -772,7 +765,7 @@ export const useProviderAgentHandlers = ({
             localStorage.setItem('loggedInAgent', JSON.stringify(updatedAgent));
             showToast('Profile saved successfully!', 'success');
         } catch (error: any) {
-            console.error('Save agent profile error:', error);
+            logger.error('Save agent profile error:', error);
             showToast('Error saving profile: ' + (error.message || 'Unknown error'), 'error');
         }
     };
@@ -801,7 +794,7 @@ export const useProviderAgentHandlers = ({
             const messages = await adminMessageService.getMessages(agentId);
             setAdminMessages(messages);
         } catch (error) {
-            console.error('Error sending admin message:', error);
+            logger.error('Error sending admin message:', error);
             showToast('Failed to send message. Please try again.', 'error');
         }
     };
@@ -824,7 +817,7 @@ export const useProviderAgentHandlers = ({
             const updatedMessages = await adminMessageService.getMessages(agentId);
             setAdminMessages(updatedMessages);
         } catch (error) {
-            console.error('Error marking messages as read:', error);
+            logger.error('Error marking messages as read:', error);
         }
     };
 
