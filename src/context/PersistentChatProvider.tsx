@@ -87,6 +87,7 @@ import {
   isBookingActive, 
   BookingTransactionParams 
 } from '../services/bookingTransaction.service';
+import { logger } from '../utils/logger';
 
 // Re-export lifecycle status for UI components
 export { BookingLifecycleStatus, BookingType, TherapistAvailabilityStatus };
@@ -381,11 +382,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       const persistedBooking = localStorage.getItem('active_booking_state');
       if (persistedBooking) {
         const parsed = JSON.parse(persistedBooking);
-        console.log('📦 Restored active booking from localStorage:', parsed.bookingId);
+        logger.debug('Restored active booking from localStorage', { bookingId: parsed.bookingId });
         return parsed;
       }
     } catch (error) {
-      console.error('❌ Failed to load persisted booking state:', error);
+      logger.error('Failed to load persisted booking state', error);
     }
     return null;
   };
@@ -404,10 +405,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       
       // Track isOpen changes
       if (prev.isOpen !== newState.isOpen) {
-        console.log('🔍 [STATE] isOpen changed:', prev.isOpen, '→', newState.isOpen);
+        logger.debug('[STATE] isOpen changed', { from: prev.isOpen, to: newState.isOpen });
         if (!newState.isOpen) {
-          console.log('🚨 [STATE] Chat is being CLOSED!');
-          console.log('📍 [STATE] Call stack:', new Error().stack);
+          logger.warn('[STATE] Chat is being CLOSED');
+          logger.debug('[STATE] Call stack', { stack: new Error().stack });
         }
       }
       
@@ -443,30 +444,30 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Get or create user ID on mount
   useEffect(() => {
-    console.log('🔐 PersistentChat: Initializing user ID...');
+    logger.debug('PersistentChat: Initializing user ID');
     const initUser = async () => {
       try {
-        console.log('🔐 Attempting to get authenticated user...');
+        logger.debug('Attempting to get authenticated user');
         const user = await account.get();
         setCurrentUserId(user.$id);
         setCurrentUserName(user.name || 'Customer');
         setIsGuestUser(false);
-        console.log('✅ PersistentChat: User authenticated:', user.$id);
+        logger.info('PersistentChat: User authenticated', { userId: user.$id });
       } catch (error) {
-        console.log('👤 No authenticated user, creating anonymous ID for guest...');
+        logger.debug('No authenticated user, creating anonymous ID for guest');
         // Create anonymous ID for guests
         let anonId = localStorage.getItem('persistent_chat_user_id');
         if (!anonId) {
           anonId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           localStorage.setItem('persistent_chat_user_id', anonId);
-          console.log('✨ Created new anonymous ID:', anonId);
+          logger.debug('Created new anonymous ID', { anonId });
         } else {
-          console.log('♻️ Reusing existing anonymous ID:', anonId);
+          logger.debug('Reusing existing anonymous ID', { anonId });
         }
         setCurrentUserId(anonId);
         setCurrentUserName('Guest');
         setIsGuestUser(true);
-        console.log('✅ PersistentChat: Using anonymous ID:', anonId);
+        logger.info('PersistentChat: Using anonymous ID', { anonId });
       }
     };
     initUser();
@@ -476,20 +477,18 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   // TIMER EXPIRATION HANDLER (Lifecycle-Driven)
   // ═══════════════════════════════════════════════════════════════════════
   const handleTimerExpiration = useCallback(async (event: TimerExpirationEvent) => {
-    console.log(`⏰ [EXPIRATION] Timer expired: ${event.phase}`);
-    console.log(`   Booking ID: ${event.bookingId}`);
-    console.log(`   Lifecycle: ${event.lifecycleStatus}`);
+    logger.info('[EXPIRATION] Timer expired', { phase: event.phase, bookingId: event.bookingId, lifecycle: event.lifecycleStatus });
     
     if (event.phase === 'THERAPIST_RESPONSE') {
       // PENDING → EXPIRED (therapist didn't respond)
       if (event.lifecycleStatus === BookingLifecycleStatus.PENDING) {
-        console.log('⏰ [EXPIRATION] Therapist timeout - transitioning to EXPIRED');
+        logger.info('[EXPIRATION] Therapist timeout - transitioning to EXPIRED');
         
         if (event.documentId) {
           try {
             await bookingLifecycleService.expireBooking(event.documentId, 'Therapist timeout');
           } catch (error) {
-            console.error('❌ [EXPIRATION] Failed to expire booking:', error);
+            logger.error('[EXPIRATION] Failed to expire booking', error);
           }
         }
         
@@ -509,19 +508,19 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         
         addSystemNotification(`⚠️ ${message}`);
       } else {
-        console.warn(`⚠️ [EXPIRATION] Cannot expire THERAPIST_RESPONSE - unexpected status: ${event.lifecycleStatus}`);
+        logger.warn('[EXPIRATION] Cannot expire THERAPIST_RESPONSE - unexpected status', { status: event.lifecycleStatus });
       }
       
     } else if (event.phase === 'CUSTOMER_CONFIRMATION') {
       // ACCEPTED → EXPIRED (customer didn't confirm)
       if (event.lifecycleStatus === BookingLifecycleStatus.ACCEPTED) {
-        console.log('⏰ [EXPIRATION] Customer timeout - transitioning to EXPIRED');
+        logger.info('[EXPIRATION] Customer timeout - transitioning to EXPIRED');
         
         if (event.documentId) {
           try {
             await bookingLifecycleService.expireBooking(event.documentId, 'Customer confirmation timeout');
           } catch (error) {
-            console.error('❌ [EXPIRATION] Failed to expire booking:', error);
+            logger.error('[EXPIRATION] Failed to expire booking', error);
           }
         }
         
@@ -538,7 +537,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           '❌ Booking expired - confirmation not received in time.'
         );
       } else {
-        console.warn(`⚠️ [EXPIRATION] Cannot expire CUSTOMER_CONFIRMATION - unexpected status: ${event.lifecycleStatus}`);
+        logger.warn('[EXPIRATION] Cannot expire CUSTOMER_CONFIRMATION - unexpected status', { status: event.lifecycleStatus });
       }
     }
   }, []);
@@ -546,7 +545,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   // Register expiration handler on mount
   useEffect(() => {
     setExpirationHandler(handleTimerExpiration);
-    console.log('✅ [TIMER] Expiration handler registered');
+    logger.info('[TIMER] Expiration handler registered');
   }, [handleTimerExpiration, setExpirationHandler]);
   
   // ═══════════════════════════════════════════════════════════════════════
@@ -560,7 +559,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         lifecycleStatus: chatState.currentBooking.lifecycleStatus,
         isActive: isBookingActive(chatState.currentBooking.lifecycleStatus)
       });
-      console.log('🔄 [TIMER] Booking state ref updated:', chatState.currentBooking.bookingId);
+      logger.debug('[TIMER] Booking state ref updated', { bookingId: chatState.currentBooking.bookingId });
     } else {
       updateBookingStateRef({
         bookingId: null,
@@ -568,109 +567,107 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         lifecycleStatus: null,
         isActive: false
       });
-      console.log('🔄 [TIMER] Booking state ref cleared');
+      logger.debug('[TIMER] Booking state ref cleared');
     }
   }, [chatState.currentBooking, updateBookingStateRef]);
 
   // Subscribe to real-time messages with comprehensive infrastructure validation
   useEffect(() => {
-    console.log('🔌 PersistentChat: Starting realtime subscription setup...');
+    logger.debug('PersistentChat: Starting realtime subscription setup');
     
     // Validate infrastructure prerequisites
     const validateInfrastructure = async () => {
-      console.log('📊 Infrastructure Validation:');
-      console.log(`   - currentUserId: ${currentUserId ? '✅ ' + currentUserId : '❌ Missing'}`);
-      console.log(`   - CHAT_MESSAGES_COLLECTION: ${APPWRITE_CONFIG.collections.chatMessages ? '✅ ' + APPWRITE_CONFIG.collections.chatMessages : '❌ Missing'}`);
-      console.log(`   - CHAT_SESSIONS_COLLECTION: ${APPWRITE_CONFIG.collections.chatSessions ? '✅ ' + APPWRITE_CONFIG.collections.chatSessions : '❌ Missing'}`);
-      console.log(`   - DATABASE_ID: ${APPWRITE_CONFIG.databaseId}`);
-      console.log(`   - Appwrite Endpoint: https://syd.cloud.appwrite.io/v1`);
-      console.log(`   - Project ID: 68f23b11000d25eb3664`);
+      logger.debug('Infrastructure Validation', {
+        currentUserId: currentUserId || 'Missing',
+        chatMessagesCollection: APPWRITE_CONFIG.collections.chatMessages || 'Missing',
+        chatSessionsCollection: APPWRITE_CONFIG.collections.chatSessions || 'Missing',
+        databaseId: APPWRITE_CONFIG.databaseId,
+        endpoint: 'https://syd.cloud.appwrite.io/v1',
+        projectId: '68f23b11000d25eb3664'
+      });
 
       if (!currentUserId) {
-        console.warn('⚠️ No user ID - skipping realtime subscription');
-        console.warn('💡 Both authenticated users and guests need realtime for chat');
+        logger.warn('No user ID - skipping realtime subscription');
+        logger.info('Both authenticated users and guests need realtime for chat');
         return false;
       }
       
       if (!APPWRITE_CONFIG.collections.chatMessages) {
-        console.error('❌ FATAL: CHAT_MESSAGES_COLLECTION is undefined!');
-        console.error('🔧 Check APPWRITE_CONFIG.collections.chatMessages configuration');
+        logger.error('FATAL: CHAT_MESSAGES_COLLECTION is undefined');
+        logger.error('Check APPWRITE_CONFIG.collections.chatMessages configuration');
         return false;
       }
       
       // Test document access (which is what actually matters for chat functionality)
       try {
-        console.log(`🔍 Testing document access: ${APPWRITE_CONFIG.collections.chatMessages}`);
+        logger.debug('Testing document access', { collection: APPWRITE_CONFIG.collections.chatMessages });
         const testQuery = await databases.listDocuments(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.chatMessages, [Query.limit(1)]);
-        console.log(`✅ chat_messages DOCUMENT ACCESS: ${testQuery.total} total messages available`);
+        logger.info('chat_messages DOCUMENT ACCESS', { totalMessages: testQuery.total });
         
-        // Test if we can query documents (this is what matters for chat)
-        console.log(`📋 Document access validation: PASSED - Chat can query messages`);
-        console.log(`🔍 Collection ready for realtime messaging and document operations`);
-        console.log('📋 Schema validation: PASSED - Collection ready for realtime messaging');
-        
+        logger.info('Document access validation: PASSED - Chat can query messages');
+        logger.debug('Collection ready for realtime messaging and document operations');
+        logger.info('Schema validation: PASSED - Collection ready for realtime messaging');
         
       } catch (error: any) {
-        console.error('═'.repeat(80));
-        console.error('🚨 CHAT_MESSAGES COLLECTION ACCESS FAILED');
-        console.error(`Error Code: ${error.code} | Message: ${error.message}`);
-        console.error(`Collection ID Attempted: ${APPWRITE_CONFIG.collections.chatMessages}`);
+        logger.error('CHAT_MESSAGES COLLECTION ACCESS FAILED', {
+          code: error.code,
+          message: error.message,
+          collectionId: APPWRITE_CONFIG.collections.chatMessages
+        });
         
         if (error.code === 404) {
-          console.error('🎯 ANALYSIS: chat_messages collection missing or incorrect collection ID');
+          logger.error('ANALYSIS: chat_messages collection missing or incorrect collection ID');
         } else if (error.code === 401) {
-          console.error('🚨 DOCUMENT ACCESS ISSUE');
-          console.error('🎯 ROOT CAUSE: Guests missing document read permissions');
-          console.error('📋 ERROR: User (role: guests) missing document access');
-          console.error('🔧 REQUIRED FIX IN APPWRITE CONSOLE:');
-          console.error('   1. Navigate to Database → Collections → chat_messages');
-          console.error('   2. Go to Settings → Permissions');  
-          console.error('   3. Ensure "Any" role has "Read" permission for DOCUMENTS');
-          console.error('   4. Save changes');
-          console.error('⚠️  WITHOUT THIS FIX: Chat cannot access message documents');
+          logger.error('DOCUMENT ACCESS ISSUE: Guests missing document read permissions');
+          logger.error('ROOT CAUSE: User (role: guests) missing document access');
+          logger.error('REQUIRED FIX IN APPWRITE CONSOLE:');
+          logger.error('  1. Navigate to Database → Collections → chat_messages');
+          logger.error('  2. Go to Settings → Permissions');
+          logger.error('  3. Ensure "Any" role has "Read" permission for DOCUMENTS');
+          logger.error('  4. Save changes');
+          logger.error('WITHOUT THIS FIX: Chat cannot access message documents');
         } else if (error.code === 403) {
-          console.error('🎯 ANALYSIS: Insufficient permissions for document access');
+          logger.error('ANALYSIS: Insufficient permissions for document access');
         }
-        console.error('═'.repeat(80));
         return false;
       }
       
       // Test chat_sessions collection (session management)
       if (!APPWRITE_CONFIG.collections.chatSessions) {
-        console.error('❌ FATAL: CHAT_SESSIONS_COLLECTION is undefined!');
+        logger.error('FATAL: CHAT_SESSIONS_COLLECTION is undefined');
         return false;
       }
       
       try {
-        console.log(`🔍 Testing chat_sessions document access: ${APPWRITE_CONFIG.collections.chatSessions}`);
+        logger.debug('Testing chat_sessions document access', { collection: APPWRITE_CONFIG.collections.chatSessions });
         const testSessionQuery = await databases.listDocuments(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.chatSessions, [Query.limit(1)]);
-        console.log(`✅ chat_sessions DOCUMENT ACCESS: ${testSessionQuery.total} total sessions available`);
+        logger.info('chat_sessions DOCUMENT ACCESS', { totalSessions: testSessionQuery.total });
         
-        console.log(`📋 Session document access validation: PASSED - Chat can manage sessions`);
+        logger.info('Session document access validation: PASSED - Chat can manage sessions');
         
       } catch (error: any) {
-        console.error('═'.repeat(80));
-        console.error('🚨 CHAT_SESSIONS COLLECTION ACCESS FAILED');
-        console.error(`Error Code: ${error.code} | Message: ${error.message}`);
-        console.error(`Collection ID Attempted: ${APPWRITE_CONFIG.collections.chatSessions}`);
+        logger.error('CHAT_SESSIONS COLLECTION ACCESS FAILED', {
+          code: error.code,
+          message: error.message,
+          collectionId: APPWRITE_CONFIG.collections.chatSessions
+        });
         
         if (error.code === 404) {
-          console.error('🎯 ANALYSIS: chat_sessions collection missing - need to create it');
-          console.error('🔧 ACTION: Create chat_sessions collection with provided schema');
+          logger.error('ANALYSIS: chat_sessions collection missing - need to create it');
+          logger.error('ACTION: Create chat_sessions collection with provided schema');
         } else if (error.code === 401) {
-          console.error('🚨 CRITICAL INFRASTRUCTURE ISSUE IDENTIFIED');
-          console.error('🎯 ROOT CAUSE: Guests missing collection read permissions');
-          console.error('📋 ERROR: User (role: guests) missing scopes (["collections.read"])');
-          console.error('🔧 REQUIRED FIX IN APPWRITE CONSOLE:');
-          console.error('   1. Navigate to Database → Collections → chat_sessions');
-          console.error('   2. Go to Settings → Permissions');
-          console.error('   3. Add "Any" role with "Read" permission');
-          console.error('   4. Save changes');
-          console.error('⚠️  WITHOUT THIS FIX: Session management will remain broken');
+          logger.error('CRITICAL INFRASTRUCTURE ISSUE IDENTIFIED');
+          logger.error('ROOT CAUSE: Guests missing collection read permissions');
+          logger.error('ERROR: User (role: guests) missing scopes (["collections.read"])');
+          logger.error('REQUIRED FIX IN APPWRITE CONSOLE:');
+          logger.error('  1. Navigate to Database → Collections → chat_sessions');
+          logger.error('  2. Go to Settings → Permissions');
+          logger.error('  3. Add "Any" role with "Read" permission');
+          logger.error('  4. Save changes');
+          logger.error('WITHOUT THIS FIX: Session management will remain broken');
         } else if (error.code === 403) {
-          console.error('🎯 ANALYSIS: Insufficient permissions for session management');
+          logger.error('ANALYSIS: Insufficient permissions for session management');
         }
-        console.error('═'.repeat(80));
         return false;
       }
       
@@ -682,8 +679,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const setupStableConnection = async () => {
       const isValid = await validateInfrastructure();
       if (!isValid) {
-        console.warn('⚠️ Infrastructure validation failed - continuing with limited functionality');
-        console.warn('💡 Chat will work but realtime messaging may be limited');
+        logger.warn('Infrastructure validation failed - continuing with limited functionality');
+        logger.info('Chat will work but realtime messaging may be limited');
         // 🆕 ELITE FIX: Surface degradation to user with transparent messaging
         setChatState(prev => ({ 
           ...prev, 
@@ -698,13 +695,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         }));
         // Continue setup even if validation fails
       }
-
-      console.log('🔌 Initializing connection stability service...');
       
       try {
         // Initialize connection stability service (non-blocking)
+        logger.debug('Initializing connection stability service');
         connectionStabilityService.initialize().catch(err => {
-          console.warn('⚠️ Connection stability service failed to initialize:', err);
+          logger.warn('Connection stability service failed to initialize', err);
           // 🆕 ELITE FIX: Surface initialization failure to user
           setChatState(prev => ({
             ...prev,
@@ -715,7 +711,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         
         // Listen for connection status changes
         connectionStabilityService.addConnectionListener((status: ConnectionStatus) => {
-          console.log('🔄 Connection status update:', status);
+          logger.debug('Connection status update', status);
           setChatState(prev => ({
             ...prev,
             connectionStatus: status
@@ -731,7 +727,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           subscriptionRef.current = connectionStabilityService.subscribeToMessages(
             chatRoomId,
             (payload: any) => {
-              console.log('💬 Stable message received:', payload);
+              logger.debug('Stable message received', payload);
 
               // Check if this message involves the current user
               const isOurMessage = payload.senderId === currentUserId || payload.recipientId === currentUserId;
@@ -770,24 +766,21 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
                     };
                   });
 
-                  console.log('✅ Message added via stable connection:', newMessage.$id);
+                  logger.info('Message added via stable connection', { messageId: newMessage.$id });
                 }
               }
             },
             (error: any) => {
-              console.error('❌ Stable message subscription error:', error);
+              logger.error('Stable message subscription error', error);
               // Connection service will handle reconnection automatically
             }
           );
         }
 
-        console.log('✅ Connection stability service initialized successfully!');
+        logger.info('Connection stability service initialized successfully');
 
       } catch (error: any) {
-        console.error('═'.repeat(80));
-        console.error('🚨 CRITICAL: Connection stability service initialization FAILED');
-        console.error('═'.repeat(80));
-        console.error('Error Details:', {
+        logger.error('CRITICAL: Connection stability service initialization FAILED', {
           message: error.message,
           code: error.code,
           type: error.type,
@@ -803,7 +796,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           } 
         }));
         setIsConnected(false);
-        console.error('❌ PersistentChat: Stable connection setup failed:', error);
+        logger.error('PersistentChat: Stable connection setup failed', error);
       }
     };
     
@@ -814,7 +807,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       if (subscriptionRef.current) {
         subscriptionRef.current();
         subscriptionRef.current = null;
-        console.log('🔌 PersistentChat: Unsubscribed from stable connection');
+        logger.debug('PersistentChat: Unsubscribed from stable connection');
       }
       
       // Clean up connection stability service on unmount
@@ -827,7 +820,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     if (!currentUserId || !APPWRITE_CONFIG.collections.chatMessages) return [];
 
     try {
-      console.log('📥 Loading chat history with:', therapistId);
+      logger.debug('Loading chat history', { therapistId });
       
       const response = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
@@ -863,11 +856,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         isSystemMessage: doc.isSystemMessage || false,
       }));
 
-      console.log(`📥 Loaded ${messages.length} messages from history`);
+      logger.info('Loaded messages from history', { count: messages.length });
       return messages;
 
     } catch (error) {
-      console.error('❌ Failed to load messages:', error);
+      logger.error('Failed to load messages', error);
       return [];
     }
   }, [currentUserId]);
@@ -884,20 +877,17 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     
     // 🔒 CRITICAL VALIDATION: Block if therapist.appwriteId is missing
     if (!therapist.appwriteId) {
-      const errorMsg = `❌ CRITICAL: Cannot open chat - therapist.appwriteId is missing for ${therapist.name}. ` +
+      const errorMsg = `CRITICAL: Cannot open chat - therapist.appwriteId is missing for ${therapist.name}. ` +
         `This is a data integrity issue. Therapist must have valid Appwrite document ID before booking can proceed.`;
-      console.error('═'.repeat(80));
-      console.error(errorMsg);
-      console.error('Therapist object:', therapist);
-      console.error('═'.repeat(80));
+      logger.error(errorMsg, { therapist });
       throw new Error(errorMsg);
     }
-    console.log('✅ VALIDATION PASSED: therapist.appwriteId present:', therapist.appwriteId);
+    logger.info('VALIDATION PASSED: therapist.appwriteId present', { appwriteId: therapist.appwriteId });
     
     // 🔒 CRITICAL: Notify AppStateContext that chat window is visible
     // This prevents landing page redirects during booking flow
     setIsChatWindowVisible(true);
-    console.log('📋 AppStateContext notified: chat window is now visible');
+    logger.debug('AppStateContext notified: chat window is now visible');
     
     // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during booking
     setIsLocked(true);
@@ -911,19 +901,20 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     
     // Set temporary placeholder - actual ID generated by server during booking creation
     const draftBookingId = `DRAFT_${Date.now()}`;
-    console.log('🆔 Temporary draft ID (server will generate real ID):', draftBookingId);
+    logger.debug('Temporary draft ID (server will generate real ID)', { draftBookingId });
     
     // Generate chatRoomId using standardized service
     const chatRoomId = currentUserId ? 
       chatDataFlowService.generateConversationId(currentUserId, therapist.id) : 
       `guest_${Date.now()}_${therapist.id}`;
-    console.log('💬 Chat room ID:', chatRoomId);
+    logger.debug('Chat room ID generated', { chatRoomId });
     
     // Set initial state with booking ID and chatRoomId
     setChatState(prev => {
-      console.log('🔍 DEBUGGING: Setting chat state');
-      console.log('🔍 DEBUGGING: Previous therapist in state:', prev.therapist?.name, prev.therapist?.id);
-      console.log('🔍 DEBUGGING: New therapist being set:', therapist.name, therapist.id);
+      logger.debug('Setting chat state with new therapist', {
+        previous: { name: prev.therapist?.name, id: prev.therapist?.id },
+        new: { name: therapist.name, id: therapist.id }
+      });
       
       const newState = {
         ...prev,
@@ -947,7 +938,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         } as BookingData,
       };
       
-      console.log('🔍 DEBUGGING: New state therapist:', newState.therapist?.name, newState.therapist?.id);
+      logger.debug('New state therapist set', { name: newState.therapist?.name, id: newState.therapist?.id });
       return newState;
     });
 
@@ -956,7 +947,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       // ✅ FIX: Use ONLY appwriteId for database queries - no fallbacks
       // Validation above ensures appwriteId is always present
       const therapistIdForQuery = therapist.appwriteId;
-      console.log('🔍 DEBUGGING: Loading messages with therapistId:', therapistIdForQuery);
+      logger.debug('Loading messages with therapistId', { therapistId: therapistIdForQuery });
       
       const messages = await loadMessages(therapistIdForQuery);
       if (messages.length > 0) {
@@ -971,8 +962,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           
           // 🔓 UNLOCK CHAT when there's existing conversation
           setIsLocked(false);
-          console.log('🔓 Chat unlocked - existing conversation loaded');
-          console.log('📋 BookingStep:', newState.bookingStep, prev.currentBooking ? '(has booking)' : '(no booking)');
+          logger.debug('Chat unlocked - existing conversation loaded', {
+            bookingStep: newState.bookingStep,
+            hasBooking: !!prev.currentBooking
+          });
           
           return newState;
         });
