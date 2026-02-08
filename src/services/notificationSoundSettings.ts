@@ -56,9 +56,9 @@ class NotificationSoundSettingsService {
     try {
       this.settings.lastUpdated = new Date().toISOString();
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings));
-      console.log('✅ Notification sound settings saved:', this.settings);
+      logger.debug('✅ Notification sound settings saved:', this.settings);
     } catch (error) {
-      console.error('Failed to save notification sound settings:', error);
+      logger.error('Failed to save notification sound settings:', error);
     }
   }
 
@@ -82,7 +82,7 @@ class NotificationSoundSettingsService {
   setSoundEnabled(enabled: boolean): void {
     this.settings.enabled = enabled;
     this.saveSettings();
-    console.log(`🔔 Notification sound ${enabled ? 'enabled' : 'disabled'}`);
+    logger.debug(`🔔 Notification sound ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -98,7 +98,7 @@ class NotificationSoundSettingsService {
   setVolume(volume: number): void {
     this.settings.volume = Math.max(0, Math.min(1, volume));
     this.saveSettings();
-    console.log(`🔊 Notification volume set to ${Math.round(this.settings.volume * 100)}%`);
+    logger.debug(`🔊 Notification volume set to ${Math.round(this.settings.volume * 100)}%`);
   }
 
   /**
@@ -114,7 +114,7 @@ class NotificationSoundSettingsService {
   setVibrationEnabled(enabled: boolean): void {
     this.settings.vibrationEnabled = enabled;
     this.saveSettings();
-    console.log(`📳 Vibration ${enabled ? 'enabled' : 'disabled'}`);
+    logger.debug(`📳 Vibration ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -123,7 +123,7 @@ class NotificationSoundSettingsService {
   resetToDefaults(): void {
     this.settings = { ...DEFAULT_SETTINGS };
     this.saveSettings();
-    console.log('🔄 Notification sound settings reset to defaults');
+    logger.debug('🔄 Notification sound settings reset to defaults');
   }
 
   /**

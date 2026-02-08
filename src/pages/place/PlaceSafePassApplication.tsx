@@ -5,8 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Shield, Upload, CheckCircle, Clock, XCircle, FileText, AlertCircle, Info, Building } from 'lucide-react';
-import safePassService from '../../services/safePassService';
-import type { SafePassApplication } from '../../types/safepass.types';
+import safePassService from '../../services/safePassService';import { logger } from '../../utils/logger';import type { SafePassApplication } from '../../types/safepass.types';
 
 interface PlaceSafePassApplicationProps {
     placeId: string;

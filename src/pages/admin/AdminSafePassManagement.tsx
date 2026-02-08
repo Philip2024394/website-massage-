@@ -18,6 +18,7 @@ import {
     Eye
 } from 'lucide-react';
 import safePassService from '../../services/safePassService';
+import { logger } from '../../utils/logger';
 import type { SafePassApplication, SafePassStats } from '../../types/safepass.types';
 
 const AdminSafePassManagement: React.FC = () => {
@@ -47,7 +48,7 @@ const AdminSafePassManagement: React.FC = () => {
             setStats(statsData);
             setApplications(appsData);
         } catch (error) {
-            console.error('Error loading SafePass data:', error);
+            logger.error('Error loading SafePass data:', error);
         } finally {
             setLoading(false);
         }
@@ -107,7 +108,7 @@ const AdminSafePassManagement: React.FC = () => {
             await loadData();
             closeModal();
         } catch (error) {
-            console.error('Error processing action:', error);
+            logger.error('Error processing action:', error);
             alert('Error processing action. Please try again.');
         } finally {
             setProcessing(false);
