@@ -7,6 +7,7 @@ import { bookingSoundService } from "../../services/bookingSound.service";
 import { TherapistHelpModal, HelpIcon } from '../therapist/TherapistHelpModal';
 import { useHelpModal } from '../../hooks/useHelpModal';
 import { dashboardHelp } from '../../pages/therapist/constants/helpContent';
+import { logger } from '../../utils/logger';
 
 interface BookingRequest {
     $id: string;
@@ -98,9 +99,9 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             
             // If there are pending bookings, fetch them
             // This would be implemented with proper Appwrite query
-            console.log('Loading pending bookings for:', therapistId);
+            logger.debug('Loading pending bookings for:', therapistId);
         } catch (error) {
-            console.error('Error loading pending bookings:', error);
+            logger.error('Error loading pending bookings:', error);
         }
     };
 
@@ -124,7 +125,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
     const playNotificationSound = () => {
         if (notificationAudio.current && soundEnabled) {
             notificationAudio.current.play().catch(err => {
-                console.error('Error playing notification:', err);
+                logger.error('Error playing notification:', err);
             });
             setAudioPlaying(true);
         }
@@ -160,7 +161,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             // Show success message
             alert('✅ Booking accepted! Customer has been notified.');
         } catch (error: any) {
-            console.error('Error accepting booking:', error);
+            logger.error('Error accepting booking:', error);
             
             if (error.message?.includes('PAYMENT_REQUIRED')) {
                 alert('❌ Cannot accept booking: You must pay your previous booking commission first.');
@@ -191,7 +192,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             
             alert('✅ Booking rejected. It will be offered to other therapists.');
         } catch (error) {
-            console.error('Error rejecting booking:', error);
+            logger.error('Error rejecting booking:', error);
             alert('❌ Error rejecting booking. Please try again.');
         } finally {
             setProcessing(null);

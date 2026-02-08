@@ -5,6 +5,7 @@ import { BookingStatus } from '../types';
 import { BookingCard } from '../therapist-dashboard';
 import { client, DATABASE_ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { logger } from '../../utils/logger';
 
 interface BookingsPanelProps {
     bookings?: Booking[];
@@ -33,11 +34,11 @@ export const BookingsPanel: React.FC<BookingsPanelProps> = ({
     // ============================================================================
     useEffect(() => {
         if (!therapistId) {
-            console.log('⚠️ [BOOKINGS PANEL] No therapist ID, skipping real-time sync');
+            logger.debug('⚠️ [BOOKINGS PANEL] No therapist ID, skipping real-time sync');
             return;
         }
 
-        console.log('🔄 [BOOKINGS PANEL] Starting real-time sync for therapist:', therapistId);
+        logger.debug('🔄 [BOOKINGS PANEL] Starting real-time sync for therapist:', therapistId);
 
         try {
             const channelName = `databases.${DATABASE_ID}.collections.${APPWRITE_CONFIG.collections.bookings}.documents`;
@@ -50,7 +51,7 @@ export const BookingsPanel: React.FC<BookingsPanelProps> = ({
                     return;
                 }
 
-                console.log('📥 [BOOKINGS PANEL] Booking update received:', {
+                logger.debug('📥 [BOOKINGS PANEL] Booking update received:', {
                     bookingId: booking.$id,
                     status: booking.bookingStatus || booking.status,
                     event: response.events[0]
@@ -86,15 +87,15 @@ export const BookingsPanel: React.FC<BookingsPanelProps> = ({
                 }
             });
 
-            console.log('✅ [BOOKINGS PANEL] Real-time sync active');
+            logger.debug('✅ [BOOKINGS PANEL] Real-time sync active');
 
             return () => {
-                console.log('🔌 [BOOKINGS PANEL] Unsubscribing from real-time sync');
+                logger.debug('🔌 [BOOKINGS PANEL] Unsubscribing from real-time sync');
                 unsubscribe();
             };
 
         } catch (error) {
-            console.error('❌ [BOOKINGS PANEL] Failed to subscribe to booking updates:', error);
+            logger.error('❌ [BOOKINGS PANEL] Failed to subscribe to booking updates:', error);
         }
     }, [therapistId]);
 

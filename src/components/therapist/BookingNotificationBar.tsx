@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, X, Eye, CheckCircle } from 'lucide-react';
 import BookingBadge from './BookingBadge';
+import { logger } from '../../utils/logger';
 
 interface BookingNotificationBarProps {
   onViewBooking: (bookingId: string) => void;
@@ -69,7 +70,7 @@ const BookingNotificationBar: React.FC<BookingNotificationBarProps> = ({
         setIsVisible(recent.length > 0);
       }
     } catch (error) {
-      console.warn('Failed to load booking notifications:', error);
+      logger.warn('Failed to load booking notifications:', error);
     }
   };
 
