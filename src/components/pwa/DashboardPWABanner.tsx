@@ -38,7 +38,7 @@ export const DashboardPWABanner: React.FC = () => {
     const installCompleted = localStorage.getItem('pwa-dashboard-installed') === 'true';
     
     if (isStandalone || isIOSWebApp || installCompleted) {
-      console.log('[Dashboard PWA] Already installed, not showing banner');
+      logger.debug('[Dashboard PWA] Already installed, not showing banner');
       return;
     }
 
@@ -47,7 +47,7 @@ export const DashboardPWABanner: React.FC = () => {
     if (dismissedTime) {
       const sevenDays = 7 * 24 * 60 * 60 * 1000;
       if (Date.now() - parseInt(dismissedTime) < sevenDays) {
-        console.log('[Dashboard PWA] Banner dismissed recently, not showing');
+        logger.debug('[Dashboard PWA] Banner dismissed recently, not showing');
         return;
       }
     }
@@ -59,7 +59,7 @@ export const DashboardPWABanner: React.FC = () => {
     // 🔒 GOLD STANDARD RULE: Capture beforeinstallprompt (Android/Chrome)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      console.log('[Dashboard PWA] Install prompt available');
+      logger.debug('[Dashboard PWA] Install prompt available');
       setDeferredPrompt(e as PWAInstallPromptEvent);
       setShowBanner(true);
     };
@@ -96,36 +96,36 @@ export const DashboardPWABanner: React.FC = () => {
     }
 
     if (!deferredPrompt) {
-      console.log('[Dashboard PWA] No install prompt available');
+      logger.debug('[Dashboard PWA] No install prompt available');
       return;
     }
 
     try {
       setIsInstalling(true);
-      console.log('[Dashboard PWA] Showing install prompt');
+      logger.debug('[Dashboard PWA] Showing install prompt');
       
       await deferredPrompt.prompt();
       const choiceResult = await deferredPrompt.userChoice;
       
       if (choiceResult.outcome === 'accepted') {
-        console.log('[Dashboard PWA] Installation accepted');
+        logger.debug('[Dashboard PWA] Installation accepted');
         localStorage.setItem('pwa-dashboard-installed', 'true');
         setShowBanner(false);
       } else {
-        console.log('[Dashboard PWA] Installation dismissed');
+        logger.debug('[Dashboard PWA] Installation dismissed');
         setIsInstalling(false);
       }
       
       setDeferredPrompt(null);
     } catch (error) {
-      console.error('[Dashboard PWA] Install error:', error);
+      logger.error('[Dashboard PWA] Install error:', error);
       setIsInstalling(false);
     }
   };
 
   // 🔒 GOLD STANDARD RULE: Handle dismiss with 7-day timeout
   const handleDismiss = () => {
-    console.log('[Dashboard PWA] Banner dismissed by user');
+    logger.debug('[Dashboard PWA] Banner dismissed by user');
     localStorage.setItem('pwa-dashboard-dismissed', Date.now().toString());
     setShowBanner(false);
   };
