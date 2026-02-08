@@ -22,6 +22,7 @@ import { customerGPSService, CustomerGPSUtils } from '../services/customerGPSCol
 import { bookingGPSIntegration, BookingGPSUtils } from '../services/bookingFlowGPSIntegration';
 import TherapistLocationVerification from '../components/TherapistLocationVerification';
 import type { GPSEnhancedBookingData } from '../services/bookingFlowGPSIntegration';
+import { logger } from '../utils/logger';
 
 // Mock therapist data (replace with your actual therapist data)
 const MOCK_THERAPISTS = [
@@ -68,16 +69,16 @@ const GPSBookingDemo: React.FC = () => {
   const loadGPSStats = () => {
     const stats = bookingGPSIntegration.getBookingGPSStats();
     setGpsStats(stats);
-    console.log('📊 GPS Stats:', stats);
+    logger.debug('📊 GPS Stats:', stats);
   };
 
   const loadNearbyTherapists = async () => {
     try {
       const nearby = await bookingGPSIntegration.findNearbyTherapists(MOCK_THERAPISTS);
       setNearbyTherapists(nearby);
-      console.log('🔍 Found nearby therapists:', nearby.length);
+      logger.debug('🔍 Found nearby therapists:', nearby.length);
     } catch (error) {
-      console.error('Failed to load nearby therapists:', error);
+      logger.error('Failed to load nearby therapists:', error);
     }
   };
 
@@ -87,14 +88,14 @@ const GPSBookingDemo: React.FC = () => {
     try {
       const gpsData = await customerGPSService.collectForBooking();
       if (gpsData) {
-        console.log('✅ GPS collected:', gpsData);
+        logger.debug('✅ GPS collected:', gpsData);
         loadGPSStats();
         loadNearbyTherapists();
       } else {
         alert('Unable to get your location. Please enable location services.');
       }
     } catch (error) {
-      console.error('GPS collection failed:', error);
+      logger.error('GPS collection failed:', error);
       alert('Location collection failed: ' + (error as Error).message);
     } finally {
       setIsCollectingGPS(false);
@@ -115,30 +116,30 @@ const GPSBookingDemo: React.FC = () => {
         setBookingData(result.bookingData);
         setSelectedTherapist(therapist);
         setBookingStep('verification');
-        console.log('✅ GPS Booking created:', result.bookingData);
+        logger.debug('✅ GPS Booking created:', result.bookingData);
       } else {
         alert('Booking failed: ' + result.error);
       }
     } catch (error) {
-      console.error('Book now failed:', error);
+      logger.error('Book now failed:', error);
       alert('Booking failed. Please try again.');
     }
   };
 
   // 🏠 DEMO: Therapist accepts booking
   const handleAcceptBooking = () => {
-    console.log('✅ Booking accepted by therapist');
+    logger.debug('✅ Booking accepted by therapist');
     setBookingStep('complete');
     
     // Here you would integrate with your existing chat system
     if (bookingData) {
       const message = BookingGPSUtils.createBookingMessage(bookingData);
-      console.log('📝 Booking message for chat:', message);
+      logger.debug('📝 Booking message for chat:', message);
     }
   };
 
   const handleDeclineBooking = () => {
-    console.log('❌ Booking declined by therapist');
+    logger.debug('❌ Booking declined by therapist');
     setBookingStep('form');
     setBookingData(null);
     setSelectedTherapist(null);

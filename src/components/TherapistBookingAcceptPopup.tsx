@@ -8,6 +8,7 @@ import { playSound, playSequence } from '../lib/notificationSounds';
 import { broadcastDecline } from '../lib/bookingAssignment';
 import { bookingSoundService } from '../services/bookingSound.service';
 import { TherapistOnTheWayButton } from './TherapistOnTheWayButton';
+import { logger } from '../utils/logger';
 
 interface TherapistBookingAcceptPopupProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
     setIsAccepting(true);
 
     try {
-      console.log('🔒 [POPUP] Accepting booking via SINGLE SOURCE OF TRUTH:', bookingId);
+      logger.debug('🔒 [POPUP] Accepting booking via SINGLE SOURCE OF TRUTH:', bookingId);
       
       // Import booking service
       const { bookingService } = await import('../lib/appwriteService');
@@ -81,15 +82,15 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
         therapistName
       );
       
-      console.log('✅ [POPUP] Booking accepted and commission created:', result.commission.$id);
-      console.log(`   Commission: ${result.commission.commissionAmount} IDR (30%)`);
-      console.log(`   Payment Deadline: ${result.commission.paymentDeadline}`);
+      logger.debug('✅ [POPUP] Booking accepted and commission created:', result.commission.$id);
+      logger.debug(`   Commission: ${result.commission.commissionAmount} IDR (30%)`);
+      logger.debug(`   Payment Deadline: ${result.commission.paymentDeadline}`);
       
       // Keep existing status update for backward compatibility
       if (APPWRITE_CONFIG.collections.bookings && APPWRITE_CONFIG.collections.bookings !== '') {
         // Status already updated by acceptance function - this is redundant but safe
       } else {
-        console.warn('⚠️ Bookings collection disabled');
+        logger.warn('⚠️ Bookings collection disabled');
       }
 
       // For therapists: set Busy only for immediate bookings or when scheduled time is imminent
@@ -118,12 +119,12 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
         }
       }
 
-      console.log('✅ Booking accepted:', bookingId);
+      logger.debug('✅ Booking accepted:', bookingId);
       
       // STEP 4: CHAT SESSION CREATION VALIDATION
-      console.log('[BOOKING ACCEPT] Creating chat session for booking:', bookingId);
-      console.log('[BOOKING ACCEPT] Buyer ID: customer (derived from booking)');
-      console.log('[BOOKING ACCEPT] Therapist ID:', therapistId);
+      logger.debug('[BOOKING ACCEPT] Creating chat session for booking:', bookingId);
+      logger.debug('[BOOKING ACCEPT] Buyer ID: customer (derived from booking)');
+      logger.debug('[BOOKING ACCEPT] Therapist ID:', therapistId);
       
       try {
         // Create chat session with validated payload
@@ -135,13 +136,13 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
           createdAt: new Date().toISOString()
         };
         
-        console.log('[BOOKING ACCEPT] Chat session payload:', chatSessionPayload);
-        console.log('[BOOKING ACCEPT] STEP 4 VALIDATION:');
-        console.log('[BOOKING ACCEPT]   - buyerId:', chatSessionPayload.buyerId ? '✅' : '❌');
-        console.log('[BOOKING ACCEPT]   - therapistId:', chatSessionPayload.therapistId ? '✅' : '❌');
-        console.log('[BOOKING ACCEPT]   - bookingId:', chatSessionPayload.bookingId ? '✅' : '❌');
-        console.log('[BOOKING ACCEPT]   - status:', chatSessionPayload.status === 'pending' ? '✅' : '❌');
-        console.log('[BOOKING ACCEPT]   - createdAt:', chatSessionPayload.createdAt ? '✅' : '❌');
+        logger.debug('[BOOKING ACCEPT] Chat session payload:', chatSessionPayload);
+        logger.debug('[BOOKING ACCEPT] STEP 4 VALIDATION:');
+        logger.debug('[BOOKING ACCEPT]   - buyerId:', chatSessionPayload.buyerId ? '✅' : '❌');
+        logger.debug('[BOOKING ACCEPT]   - therapistId:', chatSessionPayload.therapistId ? '✅' : '❌');
+        logger.debug('[BOOKING ACCEPT]   - bookingId:', chatSessionPayload.bookingId ? '✅' : '❌');
+        logger.debug('[BOOKING ACCEPT]   - status:', chatSessionPayload.status === 'pending' ? '✅' : '❌');
+        logger.debug('[BOOKING ACCEPT]   - createdAt:', chatSessionPayload.createdAt ? '✅' : '❌');
         
         // Create chat session in Appwrite
         if (APPWRITE_CONFIG.collections.chatSessions && APPWRITE_CONFIG.collections.chatSessions !== '') {
@@ -152,13 +153,13 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
             chatSessionPayload
           );
           
-          console.log('[BOOKING ACCEPT] ✅ Chat session created:', chatSession.$id);
-          console.log('[BOOKING ACCEPT] Therapist can now access chat for this booking');
+          logger.debug('[BOOKING ACCEPT] ✅ Chat session created:', chatSession.$id);
+          logger.debug('[BOOKING ACCEPT] Therapist can now access chat for this booking');
         } else {
-          console.warn('[BOOKING ACCEPT] ⚠️ Chat sessions collection disabled');
+          logger.warn('[BOOKING ACCEPT] ⚠️ Chat sessions collection disabled');
         }
       } catch (chatError: any) {
-        console.error('[BOOKING ACCEPT] ❌ Failed to create chat session:', {
+        logger.error('[BOOKING ACCEPT] ❌ Failed to create chat session:', {
           message: chatError?.message,
           code: chatError?.code,
           type: chatError?.type,
@@ -181,7 +182,7 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
       // }, 2000);
 
     } catch (error) {
-      console.error('Error accepting booking:', error);
+      logger.error('Error accepting booking:', error);
       alert('Failed to accept booking. Please try again.');
       setIsAccepting(false);
     }
