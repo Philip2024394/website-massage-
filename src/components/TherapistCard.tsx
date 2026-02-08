@@ -36,6 +36,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
+import { logger } from '../utils/logger';
 import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
@@ -221,7 +222,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const t = _t;
     
     // Debug custom verified badge
-    console.log('🔍 TherapistCard Debug:', {
+    logger.debug('🔍 TherapistCard Debug:', {
         therapistName: therapist.name,
         isVerified: therapist.isVerified,
         customVerifiedBadge: customVerifiedBadge,
@@ -302,11 +303,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // Debug modal state changes
     useEffect(() => {
-        console.log('🔄 MODAL STATE CHANGED:', showPriceListModal);
+        logger.debug('🔄 MODAL STATE CHANGED:', showPriceListModal);
         if (showPriceListModal) {
-            console.log('✅ Modal is now OPEN');
-            console.log('🔍 Current location:', window.location.href);
-            console.log('🔍 Session storage:', sessionStorage.getItem('has_entered_app'));
+            logger.debug('✅ Modal is now OPEN');
+            logger.debug('🔍 Current location:', window.location.href);
+            logger.debug('🔍 Session storage:', sessionStorage.getItem('has_entered_app'));
         }
     }, [showPriceListModal]);
 
@@ -389,7 +390,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         const fetchOrCreateShortLink = async () => {
             try {
                 const therapistId = String(therapist.$id || therapist.id);
-                console.log('🔍 Fetching/creating share link for therapist:', therapistId, therapist.name);
+                logger.debug('🔍 Fetching/creating share link for therapist:', therapistId, therapist.name);
                 
                 // Try to get existing share link or create new one
                 const result = await getOrCreateShareLink(
@@ -399,10 +400,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     therapist.location
                 );
                 
-                console.log('✅ Share link obtained:', result.url);
+                logger.debug('✅ Share link obtained:', result.url);
                 setShortShareUrl(result.url);
             } catch (error) {
-                console.error('❌ Failed to fetch/create share link:', error);
+                logger.error('❌ Failed to fetch/create share link:', error);
                 devWarn('Failed to fetch/create share link:', error);
                 // Fall back to old URL if share link creation fails
                 setShortShareUrl(generateShareableURL(therapist));
@@ -454,7 +455,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 }
             }
         } catch (e) {
-            console.warn('Failed to parse therapist coordinates:', e);
+            logger.warn('Failed to parse therapist coordinates:', e);
         }
         
         if (!therapistCoords) return null;
@@ -563,7 +564,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Special handling for showcase profiles - they should always be busy outside of Yogyakarta
     if ((therapist as any).isShowcaseProfile) {
         validStatus = AvailabilityStatus.Busy;
-        console.log(`🎭 Showcase profile ${therapist.name} forced to Busy status in ${(therapist as any).showcaseCity}`);
+        logger.debug(`🎭 Showcase profile ${therapist.name} forced to Busy status in ${(therapist as any).showcaseCity}`);
     } else if (statusStr === 'Available' || statusStr === AvailabilityStatus.Available) {
         validStatus = AvailabilityStatus.Available;
     } else if (statusStr === 'Busy' || statusStr === AvailabilityStatus.Busy || statusStr === 'busy') {
@@ -617,57 +618,57 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 // Always load menu data to determine service name for pricing display
                 if (true) {
                     const therapistId = String(therapist.$id || therapist.id);
-                    console.log('🍽️ Loading menu for therapist:', therapistId);
-                    console.log('🔍 Therapist name:', therapist.name);
-                    console.log('🔍 Therapist $id:', therapist.$id);
-                    console.log('🔍 Therapist id:', therapist.id);
+                    logger.debug('🍽️ Loading menu for therapist:', therapistId);
+                    logger.debug('🔍 Therapist name:', therapist.name);
+                    logger.debug('🔍 Therapist $id:', therapist.$id);
+                    logger.debug('🔍 Therapist id:', therapist.id);
                     
                     try {
                         // 🛡️ MENU DATA LOADING - Depends on therapist_menus collection
                         // If collection ID has spaces, this will fail with 400/404 errors
                         // See THERAPIST_MENU_SYSTEM_SAFEGUARDS.md for requirements
                         const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
-                        console.log('📄 Menu document received:', menuDoc);
-                        console.log('📄 Menu document ID:', menuDoc?.$id);
-                        console.log('📄 Menu document therapistId:', menuDoc?.therapistId);
-                        console.log('📄 Menu document menuData length:', menuDoc?.menuData?.length);
+                        logger.debug('📄 Menu document received:', menuDoc);
+                        logger.debug('📄 Menu document ID:', menuDoc?.$id);
+                        logger.debug('📄 Menu document therapistId:', menuDoc?.therapistId);
+                        logger.debug('📄 Menu document menuData length:', menuDoc?.menuData?.length);
                         
                         if (menuDoc?.menuData) {
-                            console.log('📄 Raw menuData:', menuDoc.menuData);
+                            logger.debug('📄 Raw menuData:', menuDoc.menuData);
                             const parsed = JSON.parse(menuDoc.menuData);
-                            console.log('📄 Parsed menuData:', parsed);
+                            logger.debug('📄 Parsed menuData:', parsed);
                             setMenuData(Array.isArray(parsed) ? parsed : []);
-                            console.log('✅ Menu items loaded:', parsed.length);
+                            logger.info('✅ Menu items loaded:', parsed.length);
                         } else {
-                            console.log('ℹ️ No menu data found - using fallback pricing');
-                            console.log('ℹ️ menuDoc is:', menuDoc);
+                            logger.info('ℹ️ No menu data found - using fallback pricing');
+                            logger.debug('ℹ️ menuDoc is:', menuDoc);
                             setMenuData([]);
                         }
                     } catch (error: any) {
-                        console.log('ℹ️ Menu collection not available - using fallback pricing:', error.message);
-                        console.error('❌ Full error:', error);
-                        console.error('❌ Error stack:', error.stack);
-                        console.error('❌ Error code:', error.code);
-                        console.error('❌ Error type:', error.type);
-                        console.log('🔍 Therapist details for debugging:');
-                        console.log('   - Name:', therapist.name);
-                        console.log('   - ID:', therapistId);
-                        console.log('   - $id:', therapist.$id);
-                        console.log('   - id:', therapist.id);
+                        logger.info('ℹ️ Menu collection not available - using fallback pricing:', error.message);
+                        logger.error('❌ Full error:', error);
+                        logger.error('❌ Error stack:', error.stack);
+                        logger.error('❌ Error code:', error.code);
+                        logger.error('❌ Error type:', error.type);
+                        logger.debug('🔍 Therapist details for debugging:');
+                        logger.debug('   - Name:', therapist.name);
+                        logger.debug('   - ID:', therapistId);
+                        logger.debug('   - $id:', therapist.$id);
+                        logger.debug('   - id:', therapist.id);
                         
                         // Don't treat this as an error - just use fallback pricing
                         setMenuData([]);
                     }
                 }
             } catch (outerError) {
-                console.error('❌ Outer error in loadMenu:', outerError);
+                logger.error('❌ Outer error in loadMenu:', outerError);
                 setMenuData([]);
             }
         };
         
         loadMenu().catch(error => {
-            console.error('❌ Unhandled promise rejection:', error);
-            console.error('❌ Promise error stack:', error instanceof Error ? error.stack : 'No stack');
+            logger.error('❌ Unhandled promise rejection:', error);
+            logger.error('❌ Promise error stack:', error instanceof Error ? error.stack : 'No stack');
         });
     }, [therapist]); // Load menu data when therapist changes, not just when modal opens
 
