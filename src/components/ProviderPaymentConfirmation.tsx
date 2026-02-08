@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, Clock, DollarSign } from 'lucide-react';
 import { PaymentScreenshot } from '../services/scheduledBookingPaymentService';
+import { logger } from '../utils/logger';
 
 interface ProviderPaymentConfirmationProps {
   providerId: string;
@@ -44,7 +45,7 @@ export const ProviderPaymentConfirmation: React.FC<ProviderPaymentConfirmationPr
   const loadPendingPayments = async () => {
     // This would fetch pending payment screenshots for the provider
     // For now, using mock data structure
-    console.log('Loading pending payments for provider:', providerId);
+    logger.debug('Loading pending payments for provider:', providerId);
   };
 
   const handleConfirmation = async (screenshotId: string, confirmed: boolean) => {
@@ -61,7 +62,7 @@ export const ProviderPaymentConfirmation: React.FC<ProviderPaymentConfirmationPr
       playNotificationSound(confirmed ? 'success' : 'error');
       
     } catch (error) {
-      console.error('Payment confirmation failed:', error);
+      logger.error('Payment confirmation failed:', error);
     } finally {
       setIsProcessing(false);
       setSelectedScreenshot('');
@@ -70,7 +71,7 @@ export const ProviderPaymentConfirmation: React.FC<ProviderPaymentConfirmationPr
 
   const playNotificationSound = (type: 'success' | 'error') => {
     const audio = new Audio(`/sounds/payment_${type}.mp3`);
-    audio.play().catch(console.error);
+    audio.play().catch(err => logger.error('Audio play failed:', err));
   };
 
   const formatCurrency = (amount: number) => {

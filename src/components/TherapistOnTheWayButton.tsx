@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Car, MapPin, Clock, CheckCircle, Navigation, Phone } from 'lucide-react';
 import { therapistOnTheWayService, OnTheWayStatus } from '../services/therapistOnTheWayService';
+import { logger } from '../utils/logger';
 
 interface TherapistOnTheWayButtonProps {
   bookingId: string;
@@ -57,7 +58,7 @@ export const TherapistOnTheWayButton: React.FC<TherapistOnTheWayButtonProps> = (
       onStatusUpdate?.(journey);
 
     } catch (error) {
-      console.error('Failed to start journey:', error);
+      logger.error('Failed to start journey:', error);
       alert('❌ Failed to notify customer. Please try again.');
     } finally {
       setIsStartingJourney(false);
@@ -76,7 +77,7 @@ export const TherapistOnTheWayButton: React.FC<TherapistOnTheWayButtonProps> = (
         onStatusUpdate?.(updatedJourney);
       }
     } catch (error) {
-      console.error('Failed to confirm arrival:', error);
+      logger.error('Failed to confirm arrival:', error);
       alert('❌ Failed to confirm arrival. Please try again.');
     }
   };
@@ -93,7 +94,7 @@ export const TherapistOnTheWayButton: React.FC<TherapistOnTheWayButtonProps> = (
         onStatusUpdate?.(updatedJourney);
       }
     } catch (error) {
-      console.error('Failed to update arrival time:', error);
+      logger.error('Failed to update arrival time:', error);
     }
   };
 

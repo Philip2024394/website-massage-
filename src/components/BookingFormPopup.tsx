@@ -10,6 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Home, Building2, X } from 'lucide-react';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
+import { logger } from '../utils/logger';
 
 interface BookingFormPopupProps {
     isOpen: boolean;
@@ -55,13 +56,13 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
 }) => {
     // 🔥 CRITICAL: Check isOpen FIRST before ANY other logic
     if (!isOpen) {
-        console.log('🚫 BookingFormPopup: isOpen=false, not rendering');
+        logger.debug('🚫 BookingFormPopup: isOpen=false, not rendering');
         return null;
     }
 
     // 🔥 CRITICAL GUARD: CRASH if no therapist context
     if (!therapistId || !therapistName) {
-        console.error('🚨🚨🚨 FATAL: BookingFormPopup rendered WITHOUT therapist context!', {
+        logger.error('🚨🚨🚨 FATAL: BookingFormPopup rendered WITHOUT therapist context!', {
             therapistId,
             therapistName,
             isOpen
@@ -70,7 +71,7 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
         throw new Error(`🚨 BOOKING MODAL BLOCKED: Missing therapist context (ID: ${therapistId}, Name: ${therapistName})`);
     }
 
-    console.log('✅ BookingFormPopup mounting with valid therapist:', {
+    logger.debug('✅ BookingFormPopup mounting with valid therapist:', {
         therapistId,
         therapistName,
         isOpen
@@ -82,7 +83,7 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
             isOpen === true, 
             '🚨 ASSERTION FAILED: Booking modal opened but isOpen !== true'
         );
-        console.log('✅ ASSERTION PASSED: Booking modal opened via user action (isOpen=true)');
+        logger.debug('✅ ASSERTION PASSED: Booking modal opened via user action (isOpen=true)');
     }, [isOpen]);
 
     const [customerName, setCustomerName] = useState('');
@@ -178,16 +179,16 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
                         const formattedAddress = data.results[0].formatted_address;
                         setAddress(formattedAddress);
                         
-                        console.log('📍 Location set from Google:', formattedAddress);
+                        logger.debug('📍 Location set from Google:', formattedAddress);
                     }
                 } catch (geocodeError) {
-                    console.error('Geocoding error:', geocodeError);
+                    logger.error('Geocoding error:', geocodeError);
                 }
                 
                 setGettingLocation(false);
             },
             (error) => {
-                console.error('Geolocation error:', error);
+                logger.error('Geolocation error:', error);
                 alert(t.locationError);
                 setGettingLocation(false);
             },

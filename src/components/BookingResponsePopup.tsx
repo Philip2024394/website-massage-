@@ -5,6 +5,7 @@ import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { notificationSound } from '../lib/notificationSound';
 import { InlineLoadingSkeleton } from './LoadingSkeletons';
+import { logger } from '../utils/logger';
 
 interface BookingResponsePopupProps {
   isOpen: boolean;
@@ -73,7 +74,7 @@ const BookingResponsePopup: React.FC<BookingResponsePopupProps> = ({
         setHasExpired(true);
       }
     } catch (error) {
-      console.error('Error fetching booking:', error);
+      logger.error('Error fetching booking:', error);
       alert('Failed to load booking details');
       onClose();
     } finally {
@@ -104,7 +105,7 @@ const BookingResponsePopup: React.FC<BookingResponsePopupProps> = ({
       alert('✅ Booking Accepted! Customer will be notified.');
       onClose();
     } catch (error) {
-      console.error('Error accepting booking:', error);
+      logger.error('Error accepting booking:', error);
       alert('Failed to accept booking. Please try again.');
     } finally {
       setIsResponding(false);
@@ -134,7 +135,7 @@ const BookingResponsePopup: React.FC<BookingResponsePopupProps> = ({
       alert('❌ Booking Rejected. Sending to next available provider...');
       onClose();
     } catch (error) {
-      console.error('Error rejecting booking:', error);
+      logger.error('Error rejecting booking:', error);
       alert('Failed to reject booking. Please try again.');
     } finally {
       setIsResponding(false);
@@ -154,7 +155,7 @@ const BookingResponsePopup: React.FC<BookingResponsePopupProps> = ({
         }
       );
     } catch (error) {
-      console.error('Error auto-rejecting booking:', error);
+      logger.error('Error auto-rejecting booking:', error);
     }
   };
 
