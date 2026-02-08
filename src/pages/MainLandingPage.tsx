@@ -15,6 +15,7 @@ import { loadLanguageResources } from '../lib/i18n';
 import { ipGeolocationService } from '../lib/ipGeolocationService';
 import { isPWA, shouldAllowRedirects } from '../utils/pwaDetection';
 import CountryRedirectNotice from '../components/CountryRedirectNotice';
+import { logger } from '../utils/logger';
 import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
 
@@ -373,7 +374,7 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
 };
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, onLanguageSelect, handleLanguageSelect, language = 'id', onLanguageChange }) => {
-    console.log('🎬 LandingPage component mounted');
+    logger.debug('🎬 LandingPage component mounted');
     // Removed unused imageLoaded state that caused unnecessary re-renders
     const [currentLanguage, setCurrentLanguage] = useState<Language>(language);
     const defaultLanguage: Language = 'id';
@@ -383,7 +384,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     // Enhanced PWA install handling
     useEffect(() => {
         const handlePWAInstallReady = () => {
-            console.log('🚀 PWA install capability detected on landing page');
+            logger.debug('🚀 PWA install capability detected on landing page');
         };
         
         window.addEventListener('pwa-install-available', handlePWAInstallReady);
@@ -410,7 +411,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
 
     // Handle language change
     const handleLanguageToggle = (newLang: Language) => {
-        console.log('🌐 Language changed to:', newLang);
+        logger.debug('🌐 Language changed to:', newLang);
         setCurrentLanguage(newLang);
         
         if (onLanguageChange) {
@@ -438,15 +439,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         const detectCountry = async () => {
             // Skip if country already detected
             if (countryCode && countryCode !== 'ID') {
-                console.log('✅ Country already detected:', countryCode);
+                logger.debug('✅ Country already detected:', countryCode);
                 return;
             }
             
             try {
                 // IP-based detection happens automatically via CityContext
-                console.log('🌍 IP detection initiated by CityContext');
+                logger.debug('🌍 IP detection initiated by CityContext');
             } catch (error) {
-                console.warn('⚠️ IP detection skipped:', error);
+                logger.warn('⚠️ IP detection skipped:', error);
             }
         };
         
@@ -457,11 +458,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     useEffect(() => {
         const initializeGPS = async () => {
             try {
-                console.log('📍 Starting silent GPS collection on landing page...');
+                logger.debug('📍 Starting silent GPS collection on landing page...');
                 await customerGPSService.autoCollectOnEntry();
-                console.log('✅ GPS auto-collection completed');
+                logger.debug('✅ GPS auto-collection completed');
             } catch (error) {
-                console.log('📍 GPS auto-collection failed (this is normal):', error);
+                logger.debug('📍 GPS auto-collection failed (this is normal):', error);
             }
         };
         
@@ -479,7 +480,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         
         // If no city selected, do nothing (button should be disabled)
         if (!selectedCity) {
-            console.log('⚠️ No city selected - cannot proceed');
+            logger.warn('⚠️ No city selected - cannot proceed');
             return;
         }
         
@@ -488,7 +489,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         try {
             // First, try the provided callback
             if (enterAppCallback) {
-                console.log('🚀 Using provided enterApp callback');
+                logger.debug('🚀 Using provided enterApp callback');
                 const userLocation = await locationService.requestLocationWithFallback();
                 if (!isMountedRef.current) return;
                 await enterAppCallback(defaultLanguage, userLocation);
@@ -496,7 +497,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             }
             
             // Fallback: Direct navigation to home page
-            console.log('🚀 Using fallback navigation to home');
+            logger.debug('🚀 Using fallback navigation to home');
             
             // If we have an onNavigate prop, use it
             if (selectLanguage || (window as any).setPage) {
@@ -510,12 +511,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 
                 // Navigate to home page
                 if ((window as any).setPage) {
-                    console.log('🚀 Navigating to home via global setPage');
+                    logger.debug('🚀 Navigating to home via global setPage');
                     (window as any).setPage('home');
                 } else {
                     // Final fallback - redirect via URL (ONLY in browser mode)
                     if (shouldAllowRedirects()) {
-                        console.log('🚀 Fallback: Redirecting to /home');
+                        logger.debug('🚀 Fallback: Redirecting to /home');
                         window.location.href = '/home';
                     }
                 }
@@ -524,16 +525,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             
             // Final fallback - URL redirect (ONLY in browser mode)
             if (shouldAllowRedirects()) {
-                console.log('🚀 Final fallback: URL redirect');
+                logger.debug('🚀 Final fallback: URL redirect');
                 window.location.href = '/home';
             }
             
         } catch (error) {
-            console.error('❌ Failed to handle enter click:', error);
+            logger.error('❌ Failed to handle enter click:', error);
             
             // Emergency fallback (ONLY in browser mode)
             if (shouldAllowRedirects()) {
-                console.log('🚀 Emergency fallback: Direct URL navigation');
+                logger.debug('🚀 Emergency fallback: Direct URL navigation');
                 window.location.href = '/home';
             }
         } finally {
@@ -549,12 +550,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         setSelectedCity(city.name);
         setCity(city.name);
         
-        console.log('📍 City selected:', city.name, 'in country:', city.country);
+        logger.debug('📍 City selected:', city.name, 'in country:', city.country);
         
         // Auto-set language based on city's country
         const selectedCountryInfo = COUNTRIES.find(c => c.code === city.country);
         if (selectedCountryInfo && selectedCountryInfo.language !== currentLanguage) {
-            console.log('🌍 Auto-switching to country language:', selectedCountryInfo.language);
+            logger.debug('🌍 Auto-switching to country language:', selectedCountryInfo.language);
             
             try {
                 const newLang = selectedCountryInfo.language;
@@ -565,9 +566,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 // Change language
                 handleLanguageToggle(newLang as Language);
                 
-                console.log('✅ Language auto-switched to:', newLang);
+                logger.debug('✅ Language auto-switched to:', newLang);
             } catch (error) {
-                console.warn('⚠️ Language auto-switch failed, using English:', error);
+                logger.warn('⚠️ Language auto-switch failed, using English:', error);
                 handleLanguageToggle('en');
             }
         }
@@ -575,14 +576,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         // Update country in context
         setCountry(city.country, false);
         
-        console.log('📍 Navigating to home page...');
+        logger.debug('📍 Navigating to home page...');
         
         // Small delay to show selection feedback
         setTimeout(async () => {
             try {
                 // Try the provided callback first
                 if (enterAppCallback) {
-                    console.log('🚀 Using provided enterApp callback');
+                    logger.debug('🚀 Using provided enterApp callback');
                     const userLocation = await locationService.requestLocationWithFallback();
                     await enterAppCallback(defaultLanguage, userLocation);
                     return;
@@ -595,14 +596,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     }
                     
                     if ((window as any).setPage) {
-                        console.log('🚀 Navigating to home via global setPage');
+                        logger.debug('🚀 Navigating to home via global setPage');
                         (window as any).setPage('home');
                         // Scroll to top to show therapist cards immediately
                         setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                     } else {
                         // Redirect via URL (ONLY in browser mode)
                         if (shouldAllowRedirects()) {
-                            console.log('🚀 Redirecting to /home');
+                            logger.debug('🚀 Redirecting to /home');
                             window.location.href = '/home';
                         }
                     }

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { logger } from '../utils/logger';
 import type { Place, Therapist, Booking, Notification, AdminMessage, UserLocation, ChatRoom } from '../types';
 
 type Language = 'en' | 'id';
@@ -104,32 +105,32 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         
         // Handle dynamic routes - convert URL patterns to page names
         if (hash.startsWith('/therapist-profile/')) {
-            console.log('🔗 Initial URL detected: therapist profile ->', hash);
+            logger.debug('🔗 Initial URL detected: therapist profile ->', hash);
             return 'shared-therapist-profile';
         } else if (hash.startsWith('/share/therapist/') || hash.startsWith('/shared/therapist')) {
-            console.log('🔗 Initial URL detected: share therapist ->', hash);
+            logger.debug('🔗 Initial URL detected: share therapist ->', hash);
             return 'shared-therapist-profile';
         } else if (hash.startsWith('/profile/therapist/')) {
-            console.log('🔗 Initial URL detected: authenticated therapist profile ->', hash);
+            logger.debug('🔗 Initial URL detected: authenticated therapist profile ->', hash);
             return 'therapist-profile';
         } else if (hash.startsWith('/profile/place/')) {
-            console.log('🔗 Initial URL detected: place profile ->', hash);
+            logger.debug('🔗 Initial URL detected: place profile ->', hash);
             return 'massage-place-profile';
         } else if (hash.startsWith('/share/place/')) {
-            console.log('🔗 Initial URL detected: share place ->', hash);
+            logger.debug('🔗 Initial URL detected: share place ->', hash);
             return 'share-place';
         } else if (hash.startsWith('/share/facial/')) {
-            console.log('🔗 Initial URL detected: share facial ->', hash);
+            logger.debug('🔗 Initial URL detected: share facial ->', hash);
             return 'share-facial';
         } else if (hash.startsWith('/accept-booking/')) {
-            console.log('🔗 Initial URL detected: accept booking ->', hash);
+            logger.debug('🔗 Initial URL detected: accept booking ->', hash);
             return 'accept-booking';
         } else if (hash.startsWith('/decline-booking/')) {
-            console.log('🔗 Initial URL detected: decline booking ->', hash);
+            logger.debug('🔗 Initial URL detected: decline booking ->', hash);
             return 'decline-booking';
         }
         
-        console.log('🔗 Initializing page from URL hash:', hash);
+        logger.debug('🔗 Initializing page from URL hash:', hash);
         return hash;
     };
     
@@ -145,13 +146,13 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
 
     // Wrapper for setLanguage to persist to localStorage
     const setLanguage = useCallback((newLanguage: Language) => {
-        console.log('🌐 Language changing from', language, 'to', newLanguage);
+        logger.debug('🌐 Language changing from', language, 'to', newLanguage);
         _setLanguage(newLanguage);
         try {
             localStorage.setItem('app_language', newLanguage);
-            console.log('✅ Language saved to localStorage:', newLanguage);
+            logger.debug('✅ Language saved to localStorage:', newLanguage);
         } catch (error) {
-            console.error('❌ Failed to save language to localStorage:', error);
+            logger.error('❌ Failed to save language to localStorage:', error);
         }
     }, [language]);
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
@@ -177,12 +178,12 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
 
     // Wrapper to log all page changes and sync with URL hash
     const setPage = useCallback((newPage: string) => {
-        console.log('📍 setPage called:', newPage, 'Current page:', page, 'Chat visible:', isChatWindowVisible);
+        logger.debug('📍 setPage called:', newPage, 'Current page:', page, 'Chat visible:', isChatWindowVisible);
         
         // 🔒 CRITICAL: Allow ALL page state changes during active booking flow
         // Don't block ANY navigation when user is in booking chat
         if (isChatWindowVisible) {
-            console.log('📋 Chat window active - ALLOWING ALL navigation during booking (including landing)');
+            logger.debug('📋 Chat window active - ALLOWING ALL navigation during booking (including landing)');
             _setPage(newPage);
             // Don't change URL hash during active booking
             return;
@@ -194,30 +195,30 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         const isComingFromApp = page && page !== 'landing'; // User is navigating FROM another page
         
         if (newPage === 'landing' && hasEntered === 'true' && isComingFromApp) {
-            console.log('🚫 Blocked navigation to landing - user navigating from within app');
+            logger.debug('🚫 Blocked navigation to landing - user navigating from within app');
             return;
         }
         
         if (newPage === 'landing') {
-            console.log('🏠 Landing page allowed - direct access or explicit navigation');
+            logger.debug('🏠 Landing page allowed - direct access or explicit navigation');
         }
         
         // Prevent infinite loops by checking if we're already on that page
         if (newPage === page) {
-            console.log('📍 Already on page:', newPage, 'skipping...');
+            logger.debug('📍 Already on page:', newPage, 'skipping...');
             return;
         }
         
-        console.log('📍 Updating page state to:', newPage);
+        logger.debug('📍 Updating page state to:', newPage);
         _setPage(newPage);
         
         // Sync page state with URL hash AFTER state update to prevent conflicts
         setTimeout(() => {
             if (newPage !== 'landing') {
-                console.log('📍 Setting hash to:', `#${newPage}`);
+                logger.debug('📍 Setting hash to:', `#${newPage}`);
                 window.location.hash = `#${newPage}`;
             } else {
-                console.log('📍 Clearing hash for landing page');
+                logger.debug('📍 Clearing hash for landing page');
                 window.location.hash = '';
             }
         }, 0);
@@ -231,11 +232,11 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         // ✅ FIXED: Only auto-redirect if user navigated to landing AFTER entering app
         // Allow direct landing page access (empty hash or explicit #landing)
         if (page === 'landing' && hasEntered === 'true' && hash && hash !== 'landing') {
-            console.log('🔄 Initial check: User already entered app, redirecting to home');
+            logger.debug('🔄 Initial check: User already entered app, redirecting to home');
             window.location.hash = '#home';
             _setPage('home');
         } else {
-            console.log('🏠 Landing page access allowed - direct navigation or first visit');
+            logger.debug('🏠 Landing page access allowed - direct navigation or first visit');
         }
     }, []); // Run only once on mount
 
@@ -244,7 +245,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         const handleHashChange = () => {
             // 🔒 CRITICAL: Block hash changes during active booking to prevent redirect
             if (isChatWindowVisible) {
-                console.log('🔒 Booking active - ignoring hash change to prevent interruption');
+                logger.debug('🔒 Booking active - ignoring hash change to prevent interruption');
                 return;
             }
             
@@ -270,7 +271,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
                 newPage = 'decline-booking';
             }
             
-            console.log('🔗 Hash processing:', {
+            logger.debug('🔗 Hash processing:', {
                 originalHash: hash,
                 resolvedPage: newPage,
                 currentPage: page
@@ -282,18 +283,18 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
             const isExplicitLandingRequest = hash === '' || hash === 'landing';
             
             if (newPage === 'landing' && hasEntered === 'true' && !isExplicitLandingRequest && page !== 'landing') {
-                console.log('🚫 Prevented return to landing from internal navigation - forcing home');
+                logger.debug('🚫 Prevented return to landing from internal navigation - forcing home');
                 window.location.hash = '#home';
                 _setPage('home');
                 return;
             }
             
             if (isExplicitLandingRequest) {
-                console.log('🏠 Landing page explicitly requested - allowing access');
+                logger.debug('🏠 Landing page explicitly requested - allowing access');
             }
             
             if (newPage !== page) {
-                console.log('🔗 Hash changed, updating page to:', newPage);
+                logger.debug('🔗 Hash changed, updating page to:', newPage);
                 _setPage(newPage);
             }
         };
