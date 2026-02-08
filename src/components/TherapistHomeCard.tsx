@@ -28,6 +28,7 @@ import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { Share2 } from 'lucide-react';
+import { logger } from '../utils/logger';
 import SafePassModal from './modals/SafePassModal';
 import HomePageBookingSlider, { HomePageBookingType } from './HomePageBookingSlider';
 
@@ -96,7 +97,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     // Handle booking type selection from slider
     const handleBookingTypeSelect = useCallback((type: HomePageBookingType, selectedTherapist: Therapist) => {
-        console.log('🏠 HomePageBookingSlider selection:', {
+        logger.debug('🏠 HomePageBookingSlider selection:', {
             type: type.id,
             therapist: selectedTherapist.name,
             requiresVerification: type.requiresVerification
@@ -139,7 +140,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     // Handle service selection in price slider
     const handleSelectService = (index: number, duration: '60' | '90' | '120') => {
-        console.log('💰 Service selected:', { index, duration });
+        logger.debug('💰 Service selected:', { index, duration });
         setSelectedServiceIndex(index);
         setSelectedDuration(duration);
     };
@@ -159,9 +160,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         const parsed = JSON.parse(prefetchedMenu.menuData);
                         setMenuData(Array.isArray(parsed) ? parsed : []);
                         setMenuLoadedOnce(true);
-                        console.log('🚀 Using prefetched menu for', therapist.name, ':', parsed.length, 'items');
+                        logger.debug('🚀 Using prefetched menu for', therapist.name, ':', parsed.length, 'items');
                     } catch (error) {
-                        console.warn('Failed to parse prefetched menu:', error);
+                        logger.warn('Failed to parse prefetched menu:', error);
                         setMenuData([]);
                         setMenuLoadedOnce(true);
                     }
@@ -175,7 +176,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             // Fallback: Fetch from DB if not prefetched
             try {
                 const therapistId = String(therapist.$id || therapist.id);
-                console.log('🏠 Loading menu data for TherapistHomeCard:', therapist.name, therapistId);
+                logger.debug('🏠 Loading menu data for TherapistHomeCard:', therapist.name, therapistId);
                 
                 try {
                     const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
@@ -183,13 +184,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         const parsed = JSON.parse(menuDoc.menuData);
                         setMenuData(Array.isArray(parsed) ? parsed : []);
                         setMenuLoadedOnce(true);
-                        console.log('🏠 Menu data loaded for', therapist.name, ':', parsed.length, 'items');
+                        logger.debug('🏠 Menu data loaded for', therapist.name, ':', parsed.length, 'items');
                     } else {
                         setMenuData([]);
                         setMenuLoadedOnce(true);
                     }
                 } catch (error: any) {
-                    console.log('🏠 Menu collection not available for', therapist.name, '- using default pricing');
+                    logger.debug('🏠 Menu collection not available for', therapist.name, '- using default pricing');
                     setMenuData([]);
                     setMenuLoadedOnce(true);
                 }
@@ -213,7 +214,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 if (prefetchedShareLink) {
                     const shortUrl = `https://www.indastreetmassage.com/share/${prefetchedShareLink.shortId}`;
                     setShortShareUrl(shortUrl);
-                    console.log('🚀 Using prefetched share link for', therapist.name);
+                    logger.debug('🚀 Using prefetched share link for', therapist.name);
                 } else {
                     // No share link exists - use fallback URL
                     const fullUrl = generateShareableURL(therapist);
@@ -238,7 +239,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     setShortShareUrl(fullUrl);
                 }
             } catch (error) {
-                console.error('Error generating share URL:', error);
+                logger.error('Error generating share URL:', error);
                 // Fallback to regular URL
                 const fullUrl = generateShareableURL(therapist);
                 setShortShareUrl(fullUrl);
@@ -286,7 +287,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 }
             }
         } catch (e) {
-            console.warn('Failed to parse therapist coordinates:', e);
+            logger.warn('Failed to parse therapist coordinates:', e);
         }
         
         if (!therapistCoords) return null;
@@ -306,7 +307,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     
     // Get display name for the therapist's actual location area with service areas
     const getLocationAreaDisplayName = () => {
-        console.log('🏠 TherapistHomeCard getLocationAreaDisplayName:', {
+        logger.debug('🏠 TherapistHomeCard getLocationAreaDisplayName:', {
             therapistName: therapist.name,
             selectedCity,
             therapistLocation: therapist.location,
@@ -454,7 +455,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
                 // Use menu pricing if it's cheaper than default pricing
                 if (menuPricing["60"] < defaultPricing["60"] && menuPricing["60"] > 0) {
-                    console.log('🏠 Using cheaper menu pricing for', therapist.name, ':', menuPricing);
+                    logger.debug('🏠 Using cheaper menu pricing for', therapist.name, ':', menuPricing);
                     return menuPricing;
                 }
             }
@@ -482,7 +483,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     // Determine service name based on menu data
     const getServiceName = (): string => {
-        console.log(`🏠 Determining service name for ${therapist.name}:`, { 
+        logger.debug(`🏠 Determining service name for ${therapist.name}:`, { 
             hasMenuData: !!menuData, 
             menuLength: menuData?.length || 0
         });
@@ -514,7 +515,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             const serviceName = cheapestService.name || cheapestService.serviceName || cheapestService.title;
             const firstWord = serviceName.split(' ')[0];
             const result = `${firstWord} Massage`;
-            console.log(`🏠 Generated service name for ${therapist.name}: "${result}"`);
+            logger.debug(`🏠 Generated service name for ${therapist.name}: "${result}"`);
             return result;
         }
 
@@ -576,7 +577,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     // 🧱 MOBILE STABILITY CHECK - This should log identical values on every refresh
     if (process.env.NODE_ENV === 'development') {
-        console.log('📱 TherapistHomeCard render:', {
+        logger.debug('📱 TherapistHomeCard render:', {
             id: therapist.$id || therapist.id,
             name: therapist.name,
             status: statusStyle.label,
