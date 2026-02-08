@@ -16,6 +16,7 @@ import {
   sanitizeAccountHolderInput,
   type ValidationResult 
 } from '../utils/goldStandardValidation';
+import { logger } from '../utils/logger';
 
 // ============================================================================
 // EXAMPLE 1: INDIVIDUAL FIELD VALIDATION
@@ -161,7 +162,7 @@ const CompleteBankDetailsExample: React.FC = () => {
     
     if (validation.isAllValid) {
       // ✅ All validation passed - safe to submit
-      console.log('✅ Form is valid - submitting:', {
+      logger.debug('✅ Form is valid - submitting:', {
         bankName: validation.bankName.cleaned,
         accountHolderName: validation.accountHolderName.cleaned,
         accountNumber: validation.accountNumber.cleaned,
@@ -170,7 +171,7 @@ const CompleteBankDetailsExample: React.FC = () => {
       
       // TODO: Submit to backend
     } else {
-      console.log('❌ Validation failed:', validation.allErrors);
+      logger.warn('❌ Validation failed:', validation.allErrors);
     }
   };
   

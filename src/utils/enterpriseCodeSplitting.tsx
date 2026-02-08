@@ -85,7 +85,7 @@ class EnterpriseCodeSplitting {
           loadTime: Math.round(loadTime)
         });
 
-        console.log(`📦 Code split component loaded: ${chunkName} (${Math.round(loadTime)}ms)`);
+        logger.info(`📦 Code split component loaded: ${chunkName} (${Math.round(loadTime)}ms)`);
         
         return module;
 
@@ -104,7 +104,7 @@ class EnterpriseCodeSplitting {
           error: String(error)
         });
 
-        console.error(`❌ Code split loading failed: ${chunkName}`, error);
+        logger.error(`❌ Code split loading failed: ${chunkName}`, error);
         throw error;
       }
     };
@@ -142,7 +142,7 @@ class EnterpriseCodeSplitting {
         
         if (attempt < maxRetries) {
           const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
-          console.warn(`⚠️ Import attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+          logger.warn(`⚠️ Import attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
@@ -164,9 +164,9 @@ class EnterpriseCodeSplitting {
     
     try {
       await importFn();
-      console.log(`🚀 Preloaded component: ${chunkName}`);
+      logger.debug(`🚀 Preloaded component: ${chunkName}`);
     } catch (error) {
-      console.warn(`⚠️ Preload failed for ${chunkName}:`, error);
+      logger.warn(`⚠️ Preload failed for ${chunkName}:`, error);
       this.preloadCache.delete(chunkName);
     }
   }
@@ -301,9 +301,9 @@ export const preloadRoutes = async (routes: Array<{
 
   try {
     await Promise.allSettled(preloadPromises);
-    console.log(`🚀 Preloaded ${routes.length} route components`);
+    logger.info(`🚀 Preloaded ${routes.length} route components`);
   } catch (error) {
-    console.warn('⚠️ Some route preloading failed:', error);
+    logger.warn('⚠️ Some route preloading failed:', error);
   }
 };
 

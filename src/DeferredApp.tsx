@@ -1,6 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
+import { logger } from './utils/logger';
 
 /**
  * 🚀 DEFERRED APP - INSTANT LOADING VERSION
@@ -19,12 +20,12 @@ const DeferredApp: React.FC = () => {
     // Load full app with proper error handling
     const loadTimer = setTimeout(async () => {
       try {
-        console.log('🚀 DeferredApp: Starting to load full App.tsx...');
+        logger.debug('🚀 DeferredApp: Starting to load full App.tsx...');
         const module = await loadFullApp();
-        console.log('✅ DeferredApp: Full App.tsx loaded successfully');
+        logger.info('✅ DeferredApp: Full App.tsx loaded successfully');
         setFullApp(() => module.default);
       } catch (error) {
-        console.error('❌ DeferredApp: Failed to load full app:', error);
+        logger.error('❌ DeferredApp: Failed to load full app:', error);
         // Show error instead of reloading to prevent infinite reload loop
         setFullApp(() => () => (
           <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center p-4" style={{ backgroundColor: '#f97316' }}>
