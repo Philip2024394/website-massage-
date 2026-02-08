@@ -17,7 +17,7 @@ import { useMobileDetection } from './hooks/useMobileDetection';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 
 // 🚀 PERFORMANCE: Lazy load chat window (380kB) - only loads when chat is opened
 const FloatingChatWindow = lazy(() => import('./chat').then(module => ({ default: module.FloatingChatWindow })));
@@ -69,6 +69,9 @@ import { AdminErrorNotification } from './components/AdminErrorNotification';
 const App = () => {
     logger.debug('App.tsx: App component rendering');
     
+    // Store booking expiration service in ref for access throughout component
+    const bookingExpirationServiceRef = useRef<any>(null);
+    
     // 🚀 PERFORMANCE: Initialize heavy enterprise services after first render
     useEffect(() => {
         // Lazy load enterprise services after UI is interactive
@@ -83,7 +86,9 @@ const App = () => {
                 
                 // Load booking expiration service
                 const bookingService = await loadBookingExpirationService();
-                logger.debug('Booking expiration service loaded (lazy)');
+                bookingExpirationServiceRef.current = bookingService;
+                bookingService.start();
+                logger.debug('Booking expiration service loaded and started (lazy)');
             } catch (error) {
                 logger.error('Failed to lazy-load enterprise services', { error });
             }
@@ -432,7 +437,6 @@ const App = () => {
 
         // REMOVED: restoreChatSession call - no longer using global ChatWindow
         void initializeAppwriteSession();
-        bookingExpirationService.start();
 
         // 🔍 FACEBOOK AI COMPLIANCE - Initialize booking flow monitoring
         if (typeof window !== 'undefined') {
@@ -520,7 +524,9 @@ const App = () => {
         void initializeRealtimeConnection();
 
         return () => {
-            bookingExpirationService.stop();
+            if (bookingExpirationServiceRef.current) {
+                bookingExpirationServiceRef.current.stop();
+            }
         };
     }, [state.page]); // Re-run when page changes to allow restoration on non-landing pages
 
