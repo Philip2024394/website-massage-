@@ -8,17 +8,12 @@
     <link rel="dns-prefetch" href="//syd.cloud.appwrite.io">
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="//unpkg.com">
-    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
     
-    <!-- 🚀 CRITICAL PERFORMANCE: Preload essential resources for instant landing page -->
+    <!-- 🚀 CRITICAL PERFORMANCE: Minimal preload for fastest initial load -->
+    <!-- REMOVED: MainLandingPage, app context - defer until after critical render -->
     <link rel="preload" href="/src/index.tsx" as="script">
-    <link rel="preload" href="/src/App.tsx" as="script">
-    <link rel="preload" href="/src/pages/MainLandingPage.tsx" as="script">
-    <link rel="preload" href="/src/context/AppStateContext.tsx" as="script">
     <link rel="preconnect" href="https://syd.cloud.appwrite.io" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     
     <!-- ✅ Cache control managed by Netlify headers, not meta tags -->
     

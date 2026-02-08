@@ -17,12 +17,12 @@ import { useMobileDetection } from './hooks/useMobileDetection';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 
-// Direct import instead of lazy loading to fix loading issues
-import { FloatingChatWindow } from './chat';
-// const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
-import { bookingExpirationService } from './services/bookingExpirationService';
+// 🚀 PERFORMANCE: Lazy load chat window (380kB) - only loads when chat is opened
+const FloatingChatWindow = lazy(() => import('./chat').then(module => ({ default: module.FloatingChatWindow })));
+// 🚀 PERFORMANCE: Defer booking expiration service - non-critical for initial load
+const loadBookingExpirationService = () => import('./services/bookingExpirationService').then(m => m.bookingExpirationService);
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
 // import './utils/disableLocalStorage';
 // (Former cleanupLocalStorage import removed as localStorage persisted data is no longer used)
@@ -30,8 +30,9 @@ import './lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './context/LanguageContext';
 import { CityProvider, useCityContext } from './context/CityContext';
 import { AuthProvider } from './context/AuthContext';
-import { agentShareAnalyticsService } from './lib/appwriteService';
-import { analyticsService, AnalyticsEventType } from './services/analyticsService';
+// 🚀 PERFORMANCE: Lazy load analytics - non-critical for initial load
+const loadAgentShareAnalytics = () => import('./lib/appwriteService').then(m => m.agentShareAnalyticsService);
+const loadAnalyticsService = () => import('./services/analyticsService').then(m => ({ analyticsService: m.analyticsService, AnalyticsEventType: m.AnalyticsEventType }));
 import type { Therapist, Place, Analytics } from './types';
 import './lib/notificationSound'; // Initialize notification sound system
 import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
@@ -54,7 +55,8 @@ import { PersistentChatProvider } from './context/PersistentChatProvider';
 import { LoadingProvider } from './context/LoadingContext';
 import { EnterpriseLoader } from './components/EnterpriseLoader';
 import { AppLoadingManager } from './components/AppLoadingManager';
-import PersistentChatWindowSafe from './components/PersistentChatWindowSafe';
+// 🚀 PERFORMANCE: Lazy load chat window component (part of 380kB chat bundle)
+const PersistentChatWindowSafe = lazy(() => import('./components/PersistentChatWindowSafe'));
 import { PWAStateManager } from './components/PWAStateManager';
 
 // 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring
@@ -73,13 +75,21 @@ const App = () => {
             try {
                 await import('./services/enterpriseInitService');
                 console.log('✅ Enterprise services initialized (lazy)');
+                
+                // Load analytics services after enterprise init
+                await loadAnalyticsService();
+                console.log('✅ Analytics services loaded (lazy)');
+                
+                // Load booking expiration service
+                const bookingService = await loadBookingExpirationService();
+                console.log('✅ Booking expiration service loaded (lazy)');
             } catch (error) {
                 console.error('❌ Failed to lazy-load enterprise services:', error);
             }
         };
         
-        // Delay initialization until after first paint
-        const timer = setTimeout(initializeEnterpriseServices, 100);
+        // Delay initialization until after first paint (200ms for faster perceived load)
+        const timer = setTimeout(initializeEnterpriseServices, 200);
         return () => clearTimeout(timer);
     }, []);
     
@@ -1513,7 +1523,9 @@ const App = () => {
                 This renders at ROOT level, OUTSIDE all other components.
                 It will NEVER disappear once opened. 
                 NOTE: Using PersistentChatWindowSafe wrapper to bypass Babel JSX parsing errors */}
-            <PersistentChatWindowSafe />
+            <Suspense fallback={null}>
+                <PersistentChatWindowSafe />
+            </Suspense>
 
             {/* 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring */}
             {process.env.NODE_ENV !== 'production' && (
