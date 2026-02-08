@@ -1,5 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useRef, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { createPortal } from 'react-dom';
 import { INDONESIAN_CITIES_CATEGORIZED, CityLocation } from '../constants/indonesianCities';
 import { citiesService } from '../lib/citiesService';
@@ -87,14 +88,14 @@ const CityLocationDropdown = ({
       const missingCoords = allCities.filter(city => !city.coordinates || !city.coordinates.lat || !city.coordinates.lng);
       
       if (missingLocationId.length > 0) {
-        console.error('❌ DEV ERROR: Cities missing locationId:', missingLocationId.map(c => c.name));
+        logger.error('❌ DEV ERROR: Cities missing locationId:', missingLocationId.map(c => c.name));
       }
       if (missingCoords.length > 0) {
-        console.error('❌ DEV ERROR: Cities missing coordinates:', missingCoords.map(c => c.name));
+        logger.error('❌ DEV ERROR: Cities missing coordinates:', missingCoords.map(c => c.name));
       }
       
       if (missingLocationId.length === 0 && missingCoords.length === 0) {
-        console.log('✅ DEV CHECK: All', allCities.length, 'cities have valid locationId and coordinates');
+        logger.debug('✅ DEV CHECK: All', allCities.length, 'cities have valid locationId and coordinates');
       }
     }
   }, []);
@@ -103,18 +104,18 @@ const CityLocationDropdown = ({
   useEffect(() => {
     const loadCities = async () => {
       try {
-        console.log('🏙️ Loading cities from Appwrite...');
+        logger.debug('🏙️ Loading cities from Appwrite...');
         const categorizedCities = await citiesService.getCitiesByCategory();
         setCities(categorizedCities);
-        console.log('✅ Cities loaded from Appwrite:', categorizedCities.length, 'categories');
+        logger.debug('✅ Cities loaded from Appwrite:', categorizedCities.length, 'categories');
         
         // Load popular custom locations
-        console.log('📍 Loading popular custom locations...');
+        logger.debug('📍 Loading popular custom locations...');
         const popularLocations = await getPopularCustomLocations(5); // Min 5 therapists
         setPopularCustomLocations(popularLocations);
-        console.log('✅ Popular custom locations loaded:', popularLocations.length);
+        logger.debug('✅ Popular custom locations loaded:', popularLocations.length);
       } catch (error) {
-        console.error('❌ Failed to load cities, using static fallback:', error);
+        logger.error('❌ Failed to load cities, using static fallback:', error);
         // Keep static fallback data
       } finally {
         setLoading(false);
@@ -175,12 +176,12 @@ const CityLocationDropdown = ({
     } 
     // Handle popular custom location selection
     else if ('customCity' in city) {
-      console.log(`📍 Popular custom location selected: ${city.customCity} (${city.count} therapists)`);
+      logger.debug(`📍 Popular custom location selected: ${city.customCity} (${city.count} therapists)`);
       onCityChange(city.locationId);
       
       // Auto-populate with custom location center coordinates
       if (onCoordinatesChange && city.centerCoordinates) {
-        console.log(`📍 Auto-populating center coordinates for ${city.customCity}:`, city.centerCoordinates);
+        logger.debug(`📍 Auto-populating center coordinates for ${city.customCity}:`, city.centerCoordinates);
         onCoordinatesChange({
           lat: city.centerCoordinates.lat,
           lng: city.centerCoordinates.lng
@@ -191,19 +192,19 @@ const CityLocationDropdown = ({
     else {
       // 🔒 STRICT: locationId must come from data, no runtime fallback
       if (!city.locationId) {
-        console.error('❌ City missing locationId:', city.name);
+        logger.error('❌ City missing locationId:', city.name);
         if (import.meta.env.DEV) {
           alert(`⚠️ DEV ERROR: City "${city.name}" is missing locationId in indonesianCities.ts`);
         }
         return; // Don't proceed without locationId
       }
       
-      console.log(`🎯 City selected: ${city.name} → locationId: ${city.locationId}`);
+      logger.debug(`🎯 City selected: ${city.name} → locationId: ${city.locationId}`);
       onCityChange(city.locationId);
       
       // 📍 NEW: Auto-populate coordinates from city data (convenience feature)
       if (onCoordinatesChange && city.coordinates) {
-        console.log(`📍 Auto-populating coordinates for ${city.name}:`, city.coordinates);
+        logger.debug(`📍 Auto-populating coordinates for ${city.name}:`, city.coordinates);
         onCoordinatesChange({
           lat: city.coordinates.lat,
           lng: city.coordinates.lng
@@ -305,7 +306,7 @@ const CityLocationDropdown = ({
           type="button"
           onClick={() => {
             if (!disabled) {
-              console.log('🔽 Dropdown clicked, current isOpen:', isOpen);
+              logger.debug('🔽 Dropdown clicked, current isOpen:', isOpen);
               setIsOpen(!isOpen);
             }
           }}
