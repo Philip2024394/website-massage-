@@ -321,38 +321,39 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     loadFreshStatus();
   }, []); // Run once on mount
 
-  // Auto-offline timer - check every minute if it's time to go offline
-  useEffect(() => {
-    const checkAutoOffline = () => {
-      if (!autoOfflineTime || status === 'offline') return;
-      
-      const now = new Date();
-      const [hours, minutes] = autoOfflineTime.split(':').map(Number);
-      const targetTime = new Date();
-      targetTime.setHours(hours, minutes, 0, 0);
-      
-      // Check if current time matches or passed the auto-offline time
-      if (now >= targetTime) {
-        const lastCheck = localStorage.getItem('lastAutoOfflineCheck');
-        const today = now.toDateString();
-        
-        // Only auto-offline once per day at the specified time
-        if (lastCheck !== today) {
-          devLog('⏰ Auto-offline time reached:', autoOfflineTime);
-          handleStatusChange('offline');
-          localStorage.setItem('lastAutoOfflineCheck', today);
-        }
-      }
-    };
-    
-    // Check immediately on mount
-    checkAutoOffline();
-    
-    // Then check every minute
-    const interval = setInterval(checkAutoOffline, 60000);
-    
-    return () => clearInterval(interval);
-  }, [autoOfflineTime, status]);
+  // ❌ DISABLED: Auto-offline timer (THERAPIST_AUTO_OFFLINE_TIMER_DISABLED.md)
+  // Therapists now control their status manually - no automatic deactivation
+  // useEffect(() => {
+  //   const checkAutoOffline = () => {
+  //     if (!autoOfflineTime || status === 'offline') return;
+  //     
+  //     const now = new Date();
+  //     const [hours, minutes] = autoOfflineTime.split(':').map(Number);
+  //     const targetTime = new Date();
+  //     targetTime.setHours(hours, minutes, 0, 0);
+  //     
+  //     // Check if current time matches or passed the auto-offline time
+  //     if (now >= targetTime) {
+  //       const lastCheck = localStorage.getItem('lastAutoOfflineCheck');
+  //       const today = now.toDateString();
+  //       
+  //       // Only auto-offline once per day at the specified time
+  //       if (lastCheck !== today) {
+  //         devLog('⏰ Auto-offline time reached:', autoOfflineTime);
+  //         handleStatusChange('offline');
+  //         localStorage.setItem('lastAutoOfflineCheck', today);
+  //       }
+  //     }
+  //   };
+  //   
+  //   // Check immediately on mount
+  //   checkAutoOffline();
+  //   
+  //   // Then check every minute
+  //   const interval = setInterval(checkAutoOffline, 60000);
+  //   
+  //   return () => clearInterval(interval);
+  // }, [autoOfflineTime, status]);
 
   // PWA Install functionality with enhanced enforcement
   useEffect(() => {
@@ -399,105 +400,108 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     };
   }, []);
 
-  // 12-hour countdown timer - update every minute when available
-  useEffect(() => {
-    if (!therapist?.$id) return;
-    
-    const updateCountdownTimer = async () => {
-      // Only count down when status is available
-      if (status !== 'available' || !availableStartTime) return;
-      
-      const now = new Date();
-      const startTime = new Date(availableStartTime);
-      
-      // Calculate hours elapsed since becoming available
-      const hoursElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-      const hoursRemaining = Math.max(0, 12 - hoursElapsed);
-      
-      setCountdownHoursRemaining(hoursRemaining);
-      
-      // Auto-change to busy when timer reaches 0
-      if (hoursRemaining <= 0 && status === 'available') {
-        console.log('⏰ 12-hour timer expired - changing status to busy');
-        try {
-          await therapistService.update(therapist.$id, {
-            status: 'busy',
-            availability: 'busy',
-            availableStartTime: null,
-            countdownHoursRemaining: 0
-          });
-          setStatus('busy');
-          setAvailableStartTime(null);
-          setBusyStartTime(now.toISOString());
-        } catch (error) {
-          console.error('Failed to auto-change status to busy:', error);
-        }
-        return;
-      }
-      
-      // Update database every 5 minutes to reduce writes
-      const minutesElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60);
-      if (Math.floor(minutesElapsed) % 5 === 0) {
-        try {
-          await therapistService.update(therapist.$id, {
-            countdownHoursRemaining: hoursRemaining,
-            lastTimerUpdate: now.toISOString()
-          });
-          devLog('⏱️ Updated countdown timer:', hoursRemaining.toFixed(2), 'hours remaining');
-        } catch (error) {
-          console.error('Failed to update countdown timer:', error);
-        }
-      }
-    };
-    
-    // Update immediately on mount if available
-    if (status === 'available' && availableStartTime) {
-      updateCountdownTimer();
-    }
-    
-    // Then update every minute while available
-    const interval = setInterval(() => {
-      if (status === 'available' && availableStartTime) {
-        updateCountdownTimer();
-      }
-    }, 60000); // Every 1 minute
-    
-    return () => clearInterval(interval);
-  }, [therapist?.$id, status, availableStartTime]);
+  // ❌ DISABLED: 12-hour countdown timer (THERAPIST_AUTO_OFFLINE_TIMER_DISABLED.md)
+  // Therapists can now stay "Available" indefinitely until they manually change status
+  // No automatic transition from Available → Busy after 12 hours
+  // useEffect(() => {
+  //   if (!therapist?.$id) return;
+  //   
+  //   const updateCountdownTimer = async () => {
+  //     // Only count down when status is available
+  //     if (status !== 'available' || !availableStartTime) return;
+  //     
+  //     const now = new Date();
+  //     const startTime = new Date(availableStartTime);
+  //     
+  //     // Calculate hours elapsed since becoming available
+  //     const hoursElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+  //     const hoursRemaining = Math.max(0, 12 - hoursElapsed);
+  //     
+  //     setCountdownHoursRemaining(hoursRemaining);
+  //     
+  //     // Auto-change to busy when timer reaches 0
+  //     if (hoursRemaining <= 0 && status === 'available') {
+  //       console.log('⏰ 12-hour timer expired - changing status to busy');
+  //       try {
+  //         await therapistService.update(therapist.$id, {
+  //           status: 'busy',
+  //           availability: 'busy',
+  //           availableStartTime: null,
+  //           countdownHoursRemaining: 0
+  //         });
+  //         setStatus('busy');
+  //         setAvailableStartTime(null);
+  //         setBusyStartTime(now.toISOString());
+  //       } catch (error) {
+  //         console.error('Failed to auto-change status to busy:', error);
+  //       }
+  //       return;
+  //     }
+  //     
+  //     // Update database every 5 minutes to reduce writes
+  //     const minutesElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60);
+  //     if (Math.floor(minutesElapsed) % 5 === 0) {
+  //       try {
+  //         await therapistService.update(therapist.$id, {
+  //           countdownHoursRemaining: hoursRemaining,
+  //           lastTimerUpdate: now.toISOString()
+  //         });
+  //         devLog('⏱️ Updated countdown timer:', hoursRemaining.toFixed(2), 'hours remaining');
+  //       } catch (error) {
+  //         console.error('Failed to update countdown timer:', error);
+  //       }
+  //     }
+  //   };
+  //   
+  //   // Update immediately on mount if available
+  //   if (status === 'available' && availableStartTime) {
+  //     updateCountdownTimer();
+  //   }
+  //   
+  //   // Then update every minute while available
+  //   const interval = setInterval(() => {
+  //     if (status === 'available' && availableStartTime) {
+  //       updateCountdownTimer();
+  //     }
+  //   }, 60000); // Every 1 minute
+  //   
+  //   return () => clearInterval(interval);
+  // }, [therapist?.$id, status, availableStartTime]);
 
-  // Monitor busy time limit for non-premium accounts (3 hours max)
-  useEffect(() => {
-    if (!therapist?.$id || isPremium || status !== 'busy' || !busyStartTime) return;
-    
-    const checkBusyTimeLimit = async () => {
-      const startTime = new Date(busyStartTime);
-      const now = new Date();
-      const minutesElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60);
-      const hoursElapsed = minutesElapsed / 60;
-      const hoursRemaining = Math.max(0, 3 - hoursElapsed);
-      
-      // Round up to nearest hour for display (so it shows 3h, 2h, 1h)
-      const displayHours = Math.ceil(hoursRemaining);
-      setBusyTimeRemaining(displayHours);
-      
-      // If 3 hours exceeded, auto-reset to offline
-      if (hoursElapsed >= 3) {
-        devLog('⏰ Pro account busy time limit (3h) exceeded - auto-resetting to offline');
-        await handleStatusChange('offline');
-        // All accounts have unlimited busy time (premium feature)
-        setBusyStartTime(null);
-        setBusyTimeRemaining(null);
-      }
-    };
-    
-    // Check immediately
-    checkBusyTimeLimit();
-    
-    // Then check every minute
-    const interval = setInterval(checkBusyTimeLimit, 60000);
-    
-    return () => clearInterval(interval);
-  }, [therapist?.$id, isPremium, status, busyStartTime]);
+  // ❌ DISABLED: Busy time limit monitoring (THERAPIST_AUTO_OFFLINE_TIMER_DISABLED.md)
+  // Therapists can now stay "Busy" indefinitely - no automatic transition to Offline
+  // useEffect(() => {
+  //   if (!therapist?.$id || isPremium || status !== 'busy' || !busyStartTime) return;
+  //   
+  //   const checkBusyTimeLimit = async () => {
+  //     const startTime = new Date(busyStartTime);
+  //     const now = new Date();
+  //     const minutesElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60);
+  //     const hoursElapsed = minutesElapsed / 60;
+  //     const hoursRemaining = Math.max(0, 3 - hoursElapsed);
+  //     
+  //     // Round up to nearest hour for display (so it shows 3h, 2h, 1h)
+  //     const displayHours = Math.ceil(hoursRemaining);
+  //     setBusyTimeRemaining(displayHours);
+  //     
+  //     // If 3 hours exceeded, auto-reset to offline
+  //     if (hoursElapsed >= 3) {
+  //       devLog('⏰ Pro account busy time limit (3h) exceeded - auto-resetting to offline');
+  //       await handleStatusChange('offline');
+  //       // All accounts have unlimited busy time (premium feature)
+  //       setBusyStartTime(null);
+  //       setBusyTimeRemaining(null);
+  //     }
+  //   };
+  //   
+  //   // Check immediately
+  //   checkBusyTimeLimit();
+  //   
+  //   // Then check every minute
+  //   const interval = setInterval(checkBusyTimeLimit, 60000);
+  //   
+  //   return () => clearInterval(interval);
+  // }, [therapist?.$id, isPremium, status, busyStartTime]);
 
   const handleStatusChange = async (newStatus: OnlineStatus) => {
     // Prevent multiple rapid clicks
@@ -524,45 +528,21 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                                newStatus === 'active' ? AvailabilityStatus.Available : // Treat 'active' as Available
                                AvailabilityStatus.Offline;
       
-      // Track busy start time for non-premium accounts
+      // ❌ DISABLED: Timer logic removed (THERAPIST_AUTO_OFFLINE_TIMER_DISABLED.md)
+      // Therapists now control status manually - no automatic timer tracking
       const now = new Date().toISOString();
-      const busyStartTimeValue = newStatus === 'busy' && !isPremium ? now : null;
       
-      // Handle 12-hour countdown timer
-      let availableStartTimeValue = null;
-      let countdownHoursRemainingValue = 12;
+      // No busy time tracking - therapists stay busy indefinitely until manual change
+      // No countdown timer - therapists stay available indefinitely until manual change
       
-      if (newStatus === 'available') {
-        // ALWAYS reset 12-hour countdown timer to full 12 hours when becoming available
-        // This applies whether coming from busy, offline, or any other status
-        availableStartTimeValue = now;
-        countdownHoursRemainingValue = 12;
-        setAvailableStartTime(now);
-        setCountdownHoursRemaining(12);
-        
-        devLog('⏰ 12-hour countdown timer RESET to full 12 hours - therapist now available');
-        devLog('📅 Timer start time:', now);
-      } else {
-        // Clear available start time for other statuses (busy/offline)
-        setAvailableStartTime(null);
-        
-        if (newStatus === 'busy') {
-          devLog('🟡 Status changed to BUSY - timer paused until available again');
-        } else if (newStatus === 'offline') {
-          devLog('⚫ Status changed to OFFLINE - timer paused until available again');
-        }
-      }
+      devLog(`✅ Status changed to ${newStatus.toUpperCase()} - manual control only, no timers`)
       
       const updateData = {
         status: properStatusValue,
         availability: properStatusValue, // Use same proper enum value
         isLive: newStatus !== 'offline', // Show Available and Busy on home page, hide only Offline
         isOnline: newStatus !== 'offline',
-        // 12-hour countdown timer fields
-        availableStartTime: availableStartTimeValue,
-        countdownHoursRemaining: countdownHoursRemainingValue,
-        // Track busy start time for 3-hour limit on Pro accounts
-        busyStartTime: busyStartTimeValue,
+        // ❌ Timer fields removed - manual status control only
         // Clear conflicting timestamp fields based on new status
         busyUntil: newStatus === 'available' ? null : undefined,
         bookedUntil: newStatus === 'available' ? null : undefined,
@@ -570,14 +550,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         available: newStatus === 'available' ? now : ''
       };
       
-      // Update local state for busy timer
-      if (newStatus === 'busy' && !isPremium) {
-        setBusyStartTime(now);
-        setBusyTimeRemaining(3);
-      } else if (newStatus !== 'busy') {
-        setBusyStartTime(null);
-        setBusyTimeRemaining(null);
-      }
+      // ❌ Busy timer removed - therapists control their status manually
       
       devLog('📤 Update data:', updateData);
       
@@ -608,14 +581,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       // The status is already saved to Appwrite and displayed correctly
       // Parent will refresh on next page load if needed
       
-      // Show toast notification with timer information
+      // Show toast notification (timer information removed)
       const statusMessages = {
         available: language === 'id' 
-          ? '✅ Anda sekarang TERSEDIA untuk booking • Timer dimulai: 12 jam' 
-          : '✅ You are now AVAILABLE for bookings • Timer started: 12 hours',
+          ? '✅ Anda sekarang TERSEDIA untuk booking' 
+          : '✅ You are now AVAILABLE for bookings',
         active: language === 'id' 
-          ? '✅ Anda sekarang AKTIF dan siap untuk booking • Timer dimulai: 12 jam' 
-          : '✅ You are now ACTIVE and ready for bookings • Timer started: 12 hours',
+          ? '✅ Anda sekarang AKTIF dan siap untuk booking' 
+          : '✅ You are now ACTIVE and ready for bookings',
         busy: language === 'id' 
           ? '🟡 Status diset ke SIBUK - pelanggan masih bisa melihat profil Anda' 
           : '🟡 Status set to BUSY - customers can still view your profile',

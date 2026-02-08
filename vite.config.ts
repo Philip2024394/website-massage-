@@ -17,16 +17,16 @@ const _isAdminMode = process.env.VITE_PORT === '3004' || process.argv.includes('
 export default defineConfig({
   plugins: [
     react(),
-    // 🆕 ELITE PWA PLUGIN: 97% Download Success Rate + Offline Support
+    // 🆕 GOLD STANDARD PWA PLUGIN: Store-ready, state-safe installation
     VitePWA({
-      registerType: 'autoUpdate', // Changed to autoUpdate to force immediate cache refresh
+      registerType: 'autoUpdate', // Auto-update service worker
       injectRegister: 'auto',
       workbox: {
-        cleanupOutdatedCaches: true, // Force cleanup of old caches
-        skipWaiting: true, // Immediately activate new service worker
-        clientsClaim: true, // Take control of all clients immediately
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
-        // 🔒 CRITICAL: Appwrite removed from cache - NetworkOnly for booking integrity
+        // 🔒 GOLD STANDARD RULE: NEVER cache booking/auth/API calls
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/ik\.imagekit\.io\/.*/i,
@@ -42,37 +42,9 @@ export default defineConfig({
         ]
       },
       
-      manifest: {
-        name: 'IndaStreet Massage - Therapist & Place',
-        short_name: 'IndaStreet',
-        description: 'Professional massage booking platform with instant notifications',
-        theme_color: '#f97316',
-        background_color: '#111827',
-        display: 'standalone',
-        scope: '/',
-        start_url: '/', // Consistent boot path for web and PWA
-        orientation: 'portrait-primary',
-        icons: [
-          {
-            src: 'https://ik.imagekit.io/7grri5v7d/indastreet_massage_button-removebg-preview.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: 'https://ik.imagekit.io/7grri5v7d/indastreet_massage_button-removebg-preview.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: 'https://ik.imagekit.io/7grri5v7d/indastreet_massage_button-removebg-preview.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'maskable'
-          }
-        ]
-      },
+      // 🔒 GOLD STANDARD RULE: Use public/manifest.json as single source of truth
+      // Manifest settings are defined in public/manifest.json - DO NOT duplicate here
+      manifest: false, // Use public/manifest.json instead
       
       devOptions: {
         enabled: true,

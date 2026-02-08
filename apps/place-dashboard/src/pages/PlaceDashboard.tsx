@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../src/types';
 import { BookingStatus, HotelVillaServiceStatus } from '../../../../src/types';
-import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download } from 'lucide-react';
+import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, MapPin } from 'lucide-react';
 import { useLanguage } from '../../../../src/hooks/useLanguage';
 
 // PWA Install interface
@@ -22,13 +22,6 @@ import HotelVillaOptIn from '../../../../src/components/HotelVillaOptIn';
 import { placeService, imageUploadService } from '../../../../src/lib/appwriteService';
 import { sanitizePlacePayload } from '../../../../src/schemas/placeSchema';
 import LoadingSpinner from '../../../../src/components/LoadingSpinner';
-import UserSolidIcon from '../../../../src/components/icons/UserSolidIcon';
-import DocumentTextIcon from '../../../../src/components/icons/DocumentTextIcon';
-import PhoneIcon from '../../../../src/components/icons/PhoneIcon';
-import CurrencyRpIcon from '../../../../src/components/icons/CurrencyRpIcon';
-import MapPinIcon from '../../../../src/components/icons/MapPinIcon';
-import CityLocationDropdown from '../../../../src/components/CityLocationDropdown';
-import ClockIcon from '../../../../src/components/icons/ClockIcon';
 import NotificationBell from '../../../../src/components/NotificationBell';
 import CustomCheckbox from '../../../../src/components/CustomCheckbox';
 import ValidationPopup from '../../../../src/components/ValidationPopup';
@@ -184,7 +177,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
-    const [selectedCity, setSelectedCity] = useState<string>('all');
 
     // Debug function to check location system status
     const debugLocationSystem = () => {
@@ -380,13 +372,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setAdditionalServices(typeof servicesRaw === 'string' ? JSON.parse(servicesRaw) : servicesRaw || []);
             
             setYearsEstablished((placeData as any).yearsEstablished || placeData.yearsEstablished || 1);
-            // Load saved city if present
-            try {
-                const savedCity = (placeData as any).city;
-                if (savedCity && typeof savedCity === 'string') {
-                    setSelectedCity(savedCity);
-                }
-            } catch {}
+            // GPS coordinates are loaded from placeData above
+            // City is derived from coordinates, not manually selected
         } catch (_e) {
             console.error('Error parsing place data:', _e);
         }
@@ -570,9 +557,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         
         if (!name || name.trim() === '') missingFields.push('• Business/Place Name');
         if (!contactNumber || contactNumber.trim() === '') missingFields.push('• Contact Number');
-        // Require either city or full address
-        if ((selectedCity === 'all') && (!location || location.trim() === '')) {
-            missingFields.push('• City/Location (choose a city or enter full address)');
+        // GPS location is optional but recommended
+        if (!location || location.trim() === '') {
+            missingFields.push('• Address (click "Set Location" to use GPS)');
         }
         if (!description || description.trim() === '') missingFields.push('• Business Description');
         if (!mainImage || mainImage.trim() === '') missingFields.push('• Main Business Photo');
@@ -638,16 +625,16 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Pricing
             pricing: JSON.stringify(pricing),
             
-            // 🌍 GPS-AUTHORITATIVE LOCATION (if coordinates available)
+            // 🌍 GPS-ONLY LOCATION (coordinates are authoritative)
             location,
             coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
             // Derive city from GPS coordinates if available
             city: coordinates && coordinates.lat && coordinates.lng 
                 ? deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng })
-                : (selectedCity !== 'all' ? selectedCity : null),
+                : null,
             locationId: coordinates && coordinates.lat && coordinates.lng
                 ? deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng })
-                : (selectedCity !== 'all' ? selectedCity : null),
+                : null,
             
             // Hours
             openingtime: openingTime,
@@ -1622,20 +1609,25 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         <div>
                             <label className="block text-sm font-medium text-gray-900 mb-2">{t?.locationLabel || 'Location'}</label>
                             <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
-                                {/* City / Tourist Location */}
-                                <div className="mb-4">
-                                    <CityLocationDropdown
-                                        selectedCity={selectedCity}
-                                        onCityChange={setSelectedCity}
-                                        placeholder="Select Your City/Location"
-                                        label="🏙️ City / Tourist Location"
-                                        showLabel={true}
-                                        includeAll={false}
-                                        className="w-full"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Choose your city or tourist area (e.g., Depok West Java). When setting location below, ensure it's within your selected city area.
-                                    </p>
+                                {/* GPS-Only Location Display */}
+                                <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-xl p-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <MapPin className="h-5 w-5 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold text-gray-900 mb-1">
+                                                Current City: {coordinates && coordinates.lat && coordinates.lng && deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng }) ? (
+                                                    <span className="text-blue-700 uppercase">{deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng })}</span>
+                                                ) : (
+                                                    <span className="text-gray-400">Not set - Click "Set Location" below</span>
+                                                )}
+                                            </p>
+                                            <p className="text-xs text-gray-600 leading-relaxed">
+                                                Your location is determined by GPS coordinates only. Use the "Set Location" button below to update.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="relative mb-3">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1661,7 +1653,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         location ? 'bg-green-500 hover:bg-green-600' : 'bg-brand-orange hover:bg-orange-600'
                                     }`}
                                 >
-                                    <MapPinIcon className="w-5 h-5" />
+                                    <MapPin className="w-5 h-5" />
                                     <span className="font-semibold">{location ? 'Location Set ✓' : 'Set Location from Device (optional)'}</span>
                                 </Button>
                                 {location && (

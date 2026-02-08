@@ -44,7 +44,6 @@ import type { Therapist } from '../../types';
 import { therapistService, imageUploadService } from '../../lib/appwriteService';
 import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '../../utils/clientPreferencesUtils';
 import { showToast } from '../../utils/showToastPortal';
-import CityLocationDropdown from '../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../constants/indonesianCities';
 import { extractLocationId, normalizeLocationForSave, assertValidLocationData } from '../../utils/locationNormalizationV2';
 import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoint } from '../../utils/geoDistance';
@@ -149,19 +148,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     return [];
   });
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string>(() => {
-    // 🔒 PRODUCTION HARDENING: Use centralized locationId extraction
-    const locationId = therapist ? extractLocationId(therapist) : '';
-    console.log('🔍 LOCATION ID LOAD (normalized):', locationId);
-    return locationId;
-  });
   
   // Get country from context (selected on landing page)
   const { country, countryCode } = useCityContext();
-  
-  // Custom location state
-  const [customCity, setCustomCity] = useState<string>(therapist?.customCity || '');
-  const [customArea, setCustomArea] = useState<string>(therapist?.customArea || '');
   
   // Location state
   const [locationSet, setLocationSet] = useState(false);
@@ -310,10 +299,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           }
         }
         
-        // Handle location/city
-        const locationId = extractLocationId(latestData);
-        if (locationId) setSelectedCity(locationId);
-        
       } catch (error) {
         console.error('❌ Failed to load latest therapist data:', error);
       }
@@ -339,7 +324,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // Reset profileSaved when any form field changes
   useEffect(() => {
     setProfileSaved(false);
-  }, [name, whatsappNumber, description, selectedCity, selectedMassageTypes, selectedGlobe, price60, price90, price120, yearsOfExperience, clientPreferences]);
+  }, [name, whatsappNumber, description, selectedMassageTypes, selectedGlobe, price60, price90, price120, yearsOfExperience, clientPreferences]);
 
   const handleSetLocation = () => {
     console.log('🔘 Location button clicked');
@@ -590,35 +575,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         return;
       }
       
-      // STEP 3: Auto-derive city from GPS (GPS IS SOURCE OF TRUTH)
+      // STEP 3: Auto-derive city from GPS (GPS IS ONLY SOURCE OF TRUTH)
       const derivedLocationId = deriveLocationIdFromGeopoint(geopoint);
-      console.log('🏷️ GPS-derived city (AUTHORITATIVE):', derivedLocationId);
-      
-      // STEP 3.5: Handle custom locations
-      const isCustomLocation = selectedCity === 'custom';
-      if (isCustomLocation) {
-        // Validate custom location fields
-        if (!customCity.trim()) {
-          showToast('❌ Please enter a city name for custom location', 'error');
-          setSaving(false);
-          return;
-        }
-        
-        if (!coordinates) {
-          showToast('❌ GPS location is required for custom locations', 'error');
-          setSaving(false);
-          return;
-        }
-        
-        console.log('📍 Custom location:', { customCity, customArea, coordinates });
-      }
-      
-      // STEP 4: GPS city ALWAYS wins - make dropdown match GPS-derived city
-      if (!isCustomLocation && derivedLocationId && derivedLocationId !== selectedCity) {
-        console.log(`🔄 GPS IS AUTHORITATIVE: Syncing dropdown "${selectedCity}" → GPS-derived "${derivedLocationId}"`);
-        // Update dropdown to match GPS - ensuring consistency
-        setSelectedCity(derivedLocationId);
-      }
+      console.log('🏷️ GPS-derived city (ONLY SOURCE):', derivedLocationId);
       
       console.log('✅ Geopoint validation passed');
 
@@ -633,19 +592,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         clientPreferences: clientPreferences,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
-        serviceAreas: isCustomLocation ? JSON.stringify([]) : JSON.stringify(selectedServiceAreas), // No service areas for custom
+        serviceAreas: JSON.stringify(selectedServiceAreas),
         country: country || 'Indonesia', // Save country from context
         
-        // Custom location fields
-        isCustomLocation: isCustomLocation,
-        customCity: isCustomLocation ? customCity.trim() : '',
-        customArea: isCustomLocation ? customArea.trim() : '',
-        
-        // 🌍 GPS-AUTHORITATIVE FIELDS (SOURCE OF TRUTH) - ALL FIELDS DERIVED FROM GPS
+        // 🌍 GPS-ONLY FIELDS (SINGLE SOURCE OF TRUTH) - ALL FROM GPS COORDINATES
         geopoint: geopoint,                    // Primary: lat/lng coordinates
-        city: isCustomLocation ? 'custom' : derivedLocationId, // GPS-derived city
-        locationId: isCustomLocation ? 'custom' : derivedLocationId, // GPS-derived locationId
-        location: isCustomLocation ? 'custom' : derivedLocationId, // GPS-derived location (overrides dropdown)
+        city: derivedLocationId,               // GPS-derived city
+        locationId: derivedLocationId,         // GPS-derived locationId
+        location: derivedLocationId,           // GPS-derived location
         coordinates: JSON.stringify(geopoint), // Legacy: serialized coordinates
         
         // 🚨 ENFORCEMENT: Cannot go live without GPS
@@ -763,7 +717,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // Form validation for save button - GPS is MANDATORY
   const canSave = name.trim() && 
                   /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && 
-                  selectedCity !== 'all' &&
                   coordinates && coordinates.lat && coordinates.lng; // GPS is MANDATORY
 
   // Handle "Go Live" button click
@@ -1366,93 +1319,39 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            {/* City/Tourist Location */}
+            {/* GPS-Only Location Display */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Location * {country && `(${country})`}
+                📍 Your Location * {country && `(${country})`}
               </label>
               
-              {/* Info Box: GPS adalah Sumber Utama */}
-              <div className="mb-3 bg-blue-50 border border-blue-300 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">ℹ️</span>
+              {/* Read-only location display */}
+              <div className="mb-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-white" />
+                  </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-blue-900">
-                      <strong>Penting:</strong> Lokasi GPS Anda (diatur di bawah) menentukan kota Anda secara otomatis. Dropdown ini hanya untuk referensi - GPS adalah sumber yang sah.
+                    <p className="text-sm font-bold text-gray-900 mb-1">
+                      Current City: {coordinates && deriveLocationIdFromGeopoint(coordinates) ? (
+                        <span className="text-blue-700 uppercase">{deriveLocationIdFromGeopoint(coordinates)}</span>
+                      ) : (
+                        <span className="text-gray-400">Not set - Click "Set Location" below</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      Your location is determined by GPS coordinates only. Use the "Set Location" button below to update.
                     </p>
                   </div>
                 </div>
               </div>
               
-              <CityLocationDropdown
-                selectedCity={selectedCity}
-                onCityChange={(city) => {
-                  setSelectedCity(city);
-                  setSelectedServiceAreas([]); // Reset areas when city changes
-                }}
-                placeholder={`Select City in ${country || 'Indonesia'}`}
-                showLabel={false}
-                includeAll={false}
-                className="w-full"
-                country={country} // Pass country filter
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Select your city or choose "Custom Location" for unlisted areas. GPS will auto-set this when you save.
-              </p>
-            </div>
-
-            {/* Custom Location Inputs - Show when "custom" is selected */}
-            {selectedCity === 'custom' && (
-              <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-4 space-y-4">
-                <div className="flex items-start gap-2 mb-3">
-                  <span className="text-2xl">📍</span>
-                  <div>
-                    <p className="text-sm font-bold text-orange-900 mb-1">Custom Location Selected</p>
-                    <p className="text-xs text-orange-800">
-                      Enter your city and area details below. GPS location is required for custom locations.
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
-                    City/District Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={customCity}
-                    onChange={(e) => setCustomCity(e.target.value)}
-                    placeholder="e.g., Tangerang, Cikarang, Bogor"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter the name of your city or district
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
-                    Area/Neighborhood (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={customArea}
-                    onChange={(e) => setCustomArea(e.target.value)}
-                    placeholder="e.g., BSD City, Jababeka, Sentul City"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter your specific area or neighborhood (optional)
-                  </p>
-                </div>
-
-                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
-                  <p className="text-xs font-medium text-yellow-900">
-                    ⚠️ <strong>Important:</strong> Custom locations require GPS verification below. Your exact location ensures customers can find and filter you correctly.
-                  </p>
-                </div>
+              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3">
+                <p className="text-xs font-medium text-yellow-900">
+                  ⚠️ <strong>Important:</strong> Custom locations require GPS verification below. Your exact location ensures customers can find and filter you correctly.
+                </p>
               </div>
-            )}
+            </div>
 
             {/* Lokasi GPS - WAJIB */}
             <div>
@@ -1533,15 +1432,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               )}
             </div>
 
-            {/* Service Areas - Show when city is set */}
-            {selectedCity && selectedCity !== 'all' && (() => {
-              const availableAreas = getServiceAreasForCity(selectedCity);
+            {/* Service Areas - Show when GPS location is set */}
+            {coordinates && (() => {
+              const currentCity = deriveLocationIdFromGeopoint(coordinates);
+              const availableAreas = getServiceAreasForCity(currentCity);
               if (availableAreas.length === 0) return null;
               
               return (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Service Areas in {selectedCity} *
+                    Service Areas in {currentCity} *
                   </label>
                   <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 mb-3">
                     <p className="text-sm text-blue-800">
@@ -1767,7 +1667,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 <ul className="text-sm text-red-600 space-y-1">
                   {!name.trim() && <li>• Full name</li>}
                   {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
-                  {selectedCity === 'all' && <li>• City/Location</li>}
+                  {!coordinates && <li>• GPS Location (click "Set Location" button)</li>}
                   {(!coordinates || !coordinates.lat || !coordinates.lng) && <li>• GPS Location (click SET GPS LOCATION button)</li>}
                 </ul>
               </div>
@@ -1824,7 +1724,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     const missingFields: string[] = [];
                     if (!name.trim()) missingFields.push('First Name');
                     if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
-                    if (selectedCity === 'all') missingFields.push('Location');
+                    if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location');
                     showToast(`⚠️ Please complete all required fields: ${missingFields.join(', ')}`, 'error');
                     return;
                   }

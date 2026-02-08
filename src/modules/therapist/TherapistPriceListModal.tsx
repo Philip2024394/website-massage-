@@ -400,10 +400,10 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                         </button>
                                                         
                                                         <button
-                                                            className={`px-6 py-3 font-semibold rounded-lg border-2 transition-all duration-200 ${
+                                                            className={`px-6 py-3 font-semibold rounded-lg border-2 transition-all duration-200 flex items-center justify-center gap-2 ${
                                                                 isRowSelected && selectedDuration
-                                                                    ? 'border-blue-500 bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
-                                                                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50'
+                                                                    ? 'border-green-500 bg-green-500 text-white hover:bg-green-600 shadow-lg'
+                                                                    : 'border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                             }`}
                                             onClick={async (e) => {
                                                 e.stopPropagation();
@@ -440,10 +440,24 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                 }
                                             }}
                                                         >
-                                                            {isRowSelected && selectedDuration 
-                                                                ? (chatLang === 'id' ? '📅 Schedule' : '📅 Schedule')
-                                                                : (chatLang === 'id' ? 'Schedule' : 'Schedule')
-                                                            }
+                                                            {isRowSelected && selectedDuration ? (
+                                                                <>
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                    {chatLang === 'id' ? 'Schedule' : 'Schedule'}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth={2}/>
+                                                                        <line x1="16" y1="2" x2="16" y2="6" strokeWidth={2}/>
+                                                                        <line x1="8" y1="2" x2="8" y2="6" strokeWidth={2}/>
+                                                                        <line x1="3" y1="10" x2="21" y2="10" strokeWidth={2}/>
+                                                                    </svg>
+                                                                    {chatLang === 'id' ? 'Schedule' : 'Schedule'}
+                                                                </>
+                                                            )}
                                                         </button>
                                                     </div>
                                                 </div>

@@ -49,6 +49,22 @@ export const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
     // Default to Available instead of Offline to prevent therapists going offline on refresh
     const currentStatus = (therapist as any).availability || therapist.status || AvailabilityStatus.Available;
     
+    // 🎭 80% OFFLINE → BUSY DISPLAY RULE (THERAPIST_AUTO_OFFLINE_TIMER_DISABLED.md)
+    // Show 80% of offline therapists as "Busy" to customers (UI-only, non-persistent)
+    // This improves marketplace appearance while respecting therapist's actual offline status
+    if (currentStatus === AvailabilityStatus.Offline || String(currentStatus).toLowerCase() === 'offline') {
+        // Use therapist ID hash for deterministic 80/20 split (same therapist always shows same status)
+        const therapistId = (therapist as any).$id || therapist.id || '';
+        const hash = therapistId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const shouldShowAsBusy = (hash % 100) < 80; // 80% will show as busy
+        
+        if (shouldShowAsBusy) {
+            // Show as Busy in UI (actual status remains Offline in database)
+            return AvailabilityStatus.Busy;
+        }
+        // Remaining 20% show actual Offline status
+    }
+    
     // Debug status in development mode (reduced verbosity)
     if (process.env.NODE_ENV === 'development' && therapist.name && therapist.name.toLowerCase().includes('budi')) {
         devLog(`🔍 ${therapist.name} getDisplayStatus: ${currentStatus}`);

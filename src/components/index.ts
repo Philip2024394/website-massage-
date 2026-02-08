@@ -49,7 +49,12 @@ export { default as PasswordInput } from './PasswordInput';
 export { default as Footer } from './Footer';
 export { default as TopNav } from './TopNav';
 
-// PWA Components
+// PWA Components (GOLD STANDARD)
+export { default as PWAInstallRouter } from './pwa/PWAInstallRouter';
+export { default as MainAppPWABanner } from './pwa/MainAppPWABanner';
+export { default as DashboardPWABanner } from './pwa/DashboardPWABanner';
+
+// Legacy PWA Components (deprecated - use PWAInstallRouter instead)
 export { default as PWAInstallBanner } from './PWAInstallBanner';
 export { default as UniversalPWAInstall } from './UniversalPWAInstall';
 
