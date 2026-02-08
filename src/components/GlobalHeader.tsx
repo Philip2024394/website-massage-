@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { logger } from '../utils/logger';
 import BurgerMenuIcon from './icons/BurgerMenuIcon';
 import { useLanguage } from '../hooks/useLanguage';
 import type { Page } from '../types/pageTypes';
@@ -45,7 +46,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
   const hasPageHeader = useHasPageHeader([page]);
   const { language, setLanguage } = useLanguage();
 
-  console.log('🔍 GlobalHeader render check:', { 
+  logger.debug('🔍 GlobalHeader render check:', { 
     page, 
     isStandalone, 
     hasPageHeader, 
@@ -75,14 +76,14 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
             onClick={() => {
               try {
-                console.log('🍔 GlobalHeader burger menu clicked!');
-                console.log('🍔 Dispatching customer_dashboard_open_drawer event');
+                logger.debug('🍔 GlobalHeader burger menu clicked!');
+                logger.debug('🍔 Dispatching customer_dashboard_open_drawer event');
                 window.dispatchEvent(new CustomEvent('customer_dashboard_open_drawer'));
-                console.log('🍔 Dispatching toggleDrawer event');
+                logger.debug('🍔 Dispatching toggleDrawer event');
                 window.dispatchEvent(new CustomEvent('toggleDrawer'));
-                console.log('🍔 Both events dispatched successfully');
+                logger.debug('🍔 Both events dispatched successfully');
               } catch (error) {
-                console.error('🍔 Error dispatching drawer events:', error);
+                logger.error('🍔 Error dispatching drawer events:', error);
               }
             }}
           >
@@ -95,10 +96,10 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
             onClick={() => {
               try {
-                console.log('🏠 GlobalHeader logo clicked - navigating to landing page');
+                logger.debug('🏠 GlobalHeader logo clicked - navigating to landing page');
                 window.dispatchEvent(new CustomEvent('navigateToLanding'));
               } catch (error) {
-                console.error('🏠 Error navigating to landing:', error);
+                logger.error('🏠 Error navigating to landing:', error);
               }
             }}
           >
@@ -116,9 +117,9 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             <button
               onClick={() => {
                 const timestamp = new Date().toISOString();
-                console.log(`🇮🇩 GlobalHeader [${timestamp}]: ID button clicked, current language:`, language);
+                logger.debug(`🇮🇩 GlobalHeader [${timestamp}]: ID button clicked, current language:`, language);
                 setLanguage('id');
-                console.log(`🇮🇩 GlobalHeader [${timestamp}]: setLanguage("id") called`);
+                logger.debug(`🇮🇩 GlobalHeader [${timestamp}]: setLanguage("id") called`);
               }}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                 language === 'id' 
@@ -135,9 +136,9 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             <button
               onClick={() => {
                 const timestamp = new Date().toISOString();
-                console.log(`🇬🇧 GlobalHeader [${timestamp}]: GB button clicked, current language:`, language);
+                logger.debug(`🇬🇧 GlobalHeader [${timestamp}]: GB button clicked, current language:`, language);
                 setLanguage('gb');
-                console.log(`🇬🇧 GlobalHeader [${timestamp}]: setLanguage("gb") called`);
+                logger.debug(`🇬🇧 GlobalHeader [${timestamp}]: setLanguage("gb") called`);
               }}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                 language === 'gb' || language === 'en'

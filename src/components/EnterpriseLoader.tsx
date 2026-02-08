@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { logger } from '../utils/logger';
 import { useLoading } from '../context/LoadingContext';
 import { SkeletonLoader, PageSkeleton } from './ui/SkeletonLoader';
 
@@ -38,13 +39,13 @@ export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
   // 🔥 P0 FIX: Fail-safe timeout - loader must NEVER be infinite
   useEffect(() => {
     if (variant === 'global' && loading.global) {
-      console.log('⏱️ [FAIL-SAFE] Starting 8-second timeout for global loader');
+      logger.debug('⏱️ [FAIL-SAFE] Starting 8-second timeout for global loader');
       
       const timeoutId = setTimeout(() => {
-        console.error('🚨 [FAIL-SAFE] Global loader timeout after 8 seconds!');
-        console.error('🚨 [FAIL-SAFE] Loading state:', { loading, progress });
-        console.error('🚨 [FAIL-SAFE] This indicates a blocking error during app bootstrap');
-        console.error('🚨 [FAIL-SAFE] Check console for errors above');
+        logger.error('🚨 [FAIL-SAFE] Global loader timeout after 8 seconds!');
+        logger.error('🚨 [FAIL-SAFE] Loading state:', { loading, progress });
+        logger.error('🚨 [FAIL-SAFE] This indicates a blocking error during app bootstrap');
+        logger.error('🚨 [FAIL-SAFE] Check console for errors above');
         setHasTimeout(true);
         setShowErrorUI(true);
       }, 8000);

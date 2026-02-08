@@ -4,6 +4,7 @@
  */
 
 import React, { Component, ReactNode, useState, useEffect } from 'react'
+import { logger } from '../utils/logger'
 import { BookingError, BookingErrorCode } from '../src/types/booking.types'
 
 interface ErrorBoundaryState {
@@ -38,7 +39,7 @@ export class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBounda
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('🚨 Chat Error Boundary caught error:', error, errorInfo)
+    logger.error('🚨 Chat Error Boundary caught error:', error, errorInfo)
     
     this.setState({
       error,
@@ -61,10 +62,10 @@ export class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBounda
         url: window.location.href
       }
       
-      console.error('📊 Error Report:', errorReport)
+      logger.error('📊 Error Report:', errorReport)
       
     } catch (reportingError) {
-      console.error('❌ Failed to log error:', reportingError)
+      logger.error('❌ Failed to log error:', reportingError)
     }
   }
 
@@ -140,7 +141,7 @@ export const useErrorHandler = () => {
       message = error
     }
 
-    console.error('🚨 Error:', message)
+    logger.error('🚨 Error:', message)
     setError(message)
     setIsVisible(true)
 
@@ -270,7 +271,7 @@ export const useRetry = (maxAttempts = 3, initialDelay = 1000) => {
         if (attempt > 0) {
           setIsRetrying(true)
           const delay = initialDelay * Math.pow(2, attempt - 1)
-          console.log(`🔄 Retrying operation (attempt ${attempt}/${maxAttempts}) after ${delay}ms...`)
+          logger.debug(`🔄 Retrying operation (attempt ${attempt}/${maxAttempts}) after ${delay}ms...`)
           await new Promise(resolve => setTimeout(resolve, delay))
         }
 
@@ -281,7 +282,7 @@ export const useRetry = (maxAttempts = 3, initialDelay = 1000) => {
 
       } catch (error) {
         lastError = error as Error
-        console.warn(`❌ Attempt ${attempt + 1} failed:`, error)
+        logger.warn(`❌ Attempt ${attempt + 1} failed:`, error)
         
         if (attempt === maxAttempts) {
           setIsRetrying(false)
