@@ -702,7 +702,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 }
             }, 1000);
         } catch (error) {
-            console.error('Error submitting review:', error);
+            logger.error('Error submitting review:', error);
             throw error;
         }
     };
@@ -861,24 +861,24 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const isValidUrl = typeof displayImage === 'string' && /^https?:\/\/.+/.test(displayImage);
     const isSvgPlaceholder = typeof displayImage === 'string' && displayImage.startsWith('data:image/svg+xml');
     
-    console.log('%c🖼️ [TherapistCard] Image Debug', 'background: #9C27B0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
-    console.log('Therapist:', therapist.name);
-    console.log('mainImage (1st priority - BANNER):', (therapist as any).mainImage || 'NOT SET', mainImageRaw ? '✅ VALID' : '❌ INVALID/EMPTY');
-    console.log('profileImageUrl (2nd priority):', (therapist as any).profileImageUrl || 'NOT SET', profileImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
-    console.log('profileImage (3rd priority):', therapist.profileImage || 'NOT SET', profileImage ? '✅ VALID' : '❌ INVALID/EMPTY');
-    console.log('profilePicture (4th priority - PHOTO):', (therapist as any).profilePicture || 'NOT SET', profilePicture ? '✅ VALID' : '❌ INVALID/EMPTY');
-    console.log('Selected mainImage:', mainImage || 'NONE - using fallback');
-    console.log('Final displayImage:', displayImage);
-    console.log('displayImage TYPE:', typeof displayImage);
-    console.log('Using fallback?', !mainImage ? '✅ YES (SharedProfile pool)' : '❌ NO');
-    console.log('Is Valid URL?', isValidUrl ? '✅ YES' : '❌ NO');
-    console.log('Is SVG Placeholder?', isSvgPlaceholder ? '⚠️ YES (GRAY BOX)' : '✅ NO');
-    console.log('Display Image Length:', displayImage?.length || 0);
+    logger.debug('%c🖼️ [TherapistCard] Image Debug', 'background: #9C27B0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
+    logger.debug('Therapist:', therapist.name);
+    logger.debug('mainImage (1st priority - BANNER):', (therapist as any).mainImage || 'NOT SET', mainImageRaw ? '✅ VALID' : '❌ INVALID/EMPTY');
+    logger.debug('profileImageUrl (2nd priority):', (therapist as any).profileImageUrl || 'NOT SET', profileImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
+    logger.debug('profileImage (3rd priority):', therapist.profileImage || 'NOT SET', profileImage ? '✅ VALID' : '❌ INVALID/EMPTY');
+    logger.debug('profilePicture (4th priority - PHOTO):', (therapist as any).profilePicture || 'NOT SET', profilePicture ? '✅ VALID' : '❌ INVALID/EMPTY');
+    logger.debug('Selected mainImage:', mainImage || 'NONE - using fallback');
+    logger.debug('Final displayImage:', displayImage);
+    logger.debug('displayImage TYPE:', typeof displayImage);
+    logger.debug('Using fallback?', !mainImage ? '✅ YES (SharedProfile pool)' : '❌ NO');
+    logger.debug('Is Valid URL?', isValidUrl ? '✅ YES' : '❌ NO');
+    logger.debug('Is SVG Placeholder?', isSvgPlaceholder ? '⚠️ YES (GRAY BOX)' : '✅ NO');
+    logger.debug('Display Image Length:', displayImage?.length || 0);
     
     if (isSvgPlaceholder) {
-        console.error('%c❌ SVG PLACEHOLDER DETECTED!', 'background: red; color: white; padding: 4px 8px; font-weight: bold;');
-        console.error('This will show as gray box with text/number');
-        console.error('mainImage should be Appwrite or ImageKit URL, not SVG data URL');
+        logger.error('%c❌ SVG PLACEHOLDER DETECTED!', 'background: red; color: white; padding: 4px 8px; font-weight: bold;');
+        logger.error('This will show as gray box with text/number');
+        logger.error('mainImage should be Appwrite or ImageKit URL, not SVG data URL');
     }
 
     const openWhatsApp = () => {
@@ -896,7 +896,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('🎯 PRICE SLIDER → handleBookingClick triggered', {
+        logger.debug('🎯 PRICE SLIDER → handleBookingClick triggered', {
             status,
             selectedDuration,
             selectedServiceIndex,
@@ -906,7 +906,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         if (status === 'available') {
             // Set booking source to track price slider bookings
             setPriceSliderBookingSource('price-slider');
-            console.log('✅ Opening PERSISTENT CHAT with pre-selected duration:', selectedDuration);
+            logger.debug('✅ Opening PERSISTENT CHAT with pre-selected duration:', selectedDuration);
             
             // 🔒 OPEN PERSISTENT CHAT - Facebook Messenger style
             // This chat window will NEVER disappear once opened
@@ -1134,7 +1134,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('🛡️ Opening SafePass verification modal for:', therapist.name);
+                                logger.debug('🛡️ Opening SafePass verification modal for:', therapist.name);
                                 setShowSafePassModal(true);
                             }}
                             className="hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer relative z-10"
@@ -1178,7 +1178,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 translatedDescriptionLength={translatedDescription.length}
                 menuData={menuData}
                 onPriceClick={() => {
-                    console.log('💰 Price grid clicked - opening price modal');
+                    logger.debug('💰 Price grid clicked - opening price modal');
                     setShowPriceListModal(true);
                 }}
             />
@@ -1188,10 +1188,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 therapist={therapist}
                 onBookNow={async () => {
                     if (onQuickBookWithChat) {
-                        console.log('📤 [SHARED PROFILE] Using onQuickBookWithChat handler');
+                        logger.debug('📤 [SHARED PROFILE] Using onQuickBookWithChat handler');
                         onQuickBookWithChat();
                     } else {
-                        console.log('💬 [BOOK NOW] Opening persistent chat window...');
+                        logger.debug('💬 [BOOK NOW] Opening persistent chat window...');
                         openBookingChat(therapist);
                     }
                     onIncrementAnalytics('bookings');
@@ -1223,7 +1223,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     }
                 }}
                 onPriceSlider={() => {
-                    console.log('💰 [PRICE SLIDER] Opening price modal...');
+                    logger.debug('💰 [PRICE SLIDER] Opening price modal...');
                     setShowPriceListModal(true);
                 }}
                 hasScheduledBookings={!!(therapist.bankName && therapist.accountNumber && therapist.accountName)}
