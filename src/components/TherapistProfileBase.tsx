@@ -206,13 +206,13 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     } : null;
 
     // Hero image logic - only for shared mode
-    // Priority: profilePicture > profileImageUrl > profileImage > mainImage (match TopTherapistsPage)
+    // Priority: mainImage > profileImageUrl > profileImage > profilePicture (banner image first)
     // Skip data: base64 URLs
     const therapistHeroImageUrl = mode === 'shared' ? (
-        ((therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null) ||
+        ((therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null) ||
         ((therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null) ||
         (therapist.profileImage && !therapist.profileImage.startsWith('data:') ? therapist.profileImage : null) ||
-        ((therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null) ||
+        ((therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null) ||
         ((therapist as any).heroImageUrl && !(therapist as any).heroImageUrl.startsWith('data:') ? (therapist as any).heroImageUrl : null)
     ) : null;
     const fallbackHeroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || "a" as string));
@@ -320,10 +320,10 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         providerName={(therapist as any).name}
                         providerType={'therapist'}
                         providerImage={
-                            ((therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null) ||
+                            ((therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null) ||
                             ((therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null) ||
                             (therapist.profileImage && !therapist.profileImage.startsWith('data:') ? therapist.profileImage : null) ||
-                            ((therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null)
+                            ((therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null)
                         }
                         onNavigate={onNavigate}
                     />
