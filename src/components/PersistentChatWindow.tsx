@@ -63,6 +63,7 @@
  */
 
 import React, { useState, useRef, useEffect, useLayoutEffect, memo } from 'react';
+import { logger } from '../utils/logger';
 import { usePersistentChat, ChatMessage, BookingStep, validateMessage } from '../context/PersistentChatProvider';
 import { MessageCircle, X, Send, Clock, MapPin, User, Phone, Check, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
 import CustomDatePicker from './CustomDatePicker';
@@ -143,7 +144,7 @@ async function withRetry<T>(
     const attemptStart = Date.now();
     
     try {
-      console.log(`🔄 [ORDER_NOW_MONITOR] Booking attempt #${attempt} start: ${new Date(attemptStart).toISOString()}`);
+      logger.debug(`🔄 [ORDER_NOW_MONITOR] Booking attempt #${attempt} start: ${new Date(attemptStart).toISOString()}`);
       
       const result = await withTimeout(operation(), timeoutMs);
       const duration = Date.now() - attemptStart;
@@ -162,7 +163,7 @@ async function withRetry<T>(
         throw new Error(`Booking creation failed - got result: ${JSON.stringify(result)}`);
       }
       
-      console.log(`✅ [ORDER_NOW_MONITOR] Booking attempt #${attempt} SUCCESS | Duration: ${duration}ms`);
+      logger.debug(`✅ [ORDER_NOW_MONITOR] Booking attempt #${attempt} SUCCESS | Duration: ${duration}ms`);
       
       return {
         success: true,
@@ -174,7 +175,7 @@ async function withRetry<T>(
       lastError = error as Error;
       const duration = Date.now() - attemptStart;
       
-      console.error(`❌ [ORDER_NOW_MONITOR] Booking attempt #${attempt} FAILED | Duration: ${duration}ms | Error: ${lastError.message}`);
+      logger.error(`❌ [ORDER_NOW_MONITOR] Booking attempt #${attempt} FAILED | Duration: ${duration}ms | Error: ${lastError.message}`);
       
       // 🔒 CRITICAL: Only retry transient errors (network, timeout, server errors, rate limits)
       // DO NOT retry validation errors (400), auth errors (401), permission errors (403), not found (404)
@@ -189,9 +190,9 @@ async function withRetry<T>(
         lastError.message.includes('Rate limit');
       
       if (!isTransientError) {
-        console.error(`🚫 [ORDER_NOW_MONITOR] Non-retryable error detected (status: ${errorStatus})`);
-        console.error(`   → This is a validation/client error, not a transient failure`);
-        console.error(`   → Stopping retries immediately to prevent unnecessary API calls`);
+        logger.error(`🚫 [ORDER_NOW_MONITOR] Non-retryable error detected (status: ${errorStatus})`);
+        logger.error(`   → This is a validation/client error, not a transient failure`);
+        logger.error(`   → Stopping retries immediately to prevent unnecessary API calls`);
         return {
           success: false,
           error: lastError,
@@ -203,7 +204,7 @@ async function withRetry<T>(
       // Don't delay after the last attempt
       if (attempt < maxRetries) {
         const delayMs = baseDelayMs * Math.pow(2, attempt - 1);
-        console.log(`⏳ [ORDER_NOW_MONITOR] Retrying in ${delayMs}ms...`);
+        logger.debug(`⏳ [ORDER_NOW_MONITOR] Retrying in ${delayMs}ms...`);
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
     }
@@ -211,7 +212,7 @@ async function withRetry<T>(
   
   // All retries failed
   const totalDuration = Date.now() - startTime;
-  console.error(`💥 [ORDER_NOW_MONITOR] All ${maxRetries} booking attempts FAILED | Total duration: ${totalDuration}ms`);
+  logger.error(`💥 [ORDER_NOW_MONITOR] All ${maxRetries} booking attempts FAILED | Total duration: ${totalDuration}ms`);
   
   return {
     success: false,
@@ -295,14 +296,14 @@ export function PersistentChatWindow() {
         }
       } catch (error) {
         // CRITICAL ERROR - Log and prevent render
-        console.error('═'.repeat(80));
-        console.error('🚨 BOOKING VALIDATION FAILED - CHAT CANNOT RENDER 🚨');
-        console.error('═'.repeat(80));
-        console.error(error);
-        console.error('═'.repeat(80));
+        logger.error('═'.repeat(80));
+        logger.error('🚨 BOOKING VALIDATION FAILED - CHAT CANNOT RENDER 🚨');
+        logger.error('═'.repeat(80));
+        logger.error(error);
+        logger.error('═'.repeat(80));
         
         // Booking is being created - BookingWelcomeBanner will show the countdown
-        console.log('⏳ Booking creation in progress - countdown will appear when ready');
+        logger.debug('⏳ Booking creation in progress - countdown will appear when ready');
       }
     }
   }, [chatState.isOpen, chatState.currentBooking, timerState.remainingSeconds, chatState.bookingStep, closeChat]);
@@ -312,8 +313,8 @@ export function PersistentChatWindow() {
   // Note: This warning appears when loading old messages without an active booking
   React.useEffect(() => {
     if (chatState.isOpen && !chatState.currentBooking && chatState.bookingStep === 'chat') {
-      console.log('🔒 [GUARD] Chat in "chat" step without active booking - likely old messages');
-      console.log('💡 [INFO] This is normal when viewing message history. Order Now flow will create new booking.');
+      logger.debug('🔒 [GUARD] Chat in "chat" step without active booking - likely old messages');
+      logger.debug('💡 [INFO] This is normal when viewing message history. Order Now flow will create new booking.');
     }
   }, [chatState.isOpen, chatState.currentBooking, chatState.bookingStep]);
   
@@ -357,11 +358,11 @@ export function PersistentChatWindow() {
   // 🔔 Initialize therapist notification system
   useEffect(() => {
     if (chatState.isTherapistView) {
-      console.log('🔔 Initializing therapist notifications');
+      logger.debug('🔔 Initializing therapist notifications');
       
       // Subscribe to booking notifications
       const unsubscribe = therapistNotificationService.onBookingNotification((notification) => {
-        console.log('📨 New booking notification received:', notification);
+        logger.debug('📨 New booking notification received:', notification);
         setBookingNotifications(prev => [...prev, notification]);
         
         // Auto-open chat if enabled
@@ -373,7 +374,7 @@ export function PersistentChatWindow() {
       // Listen for chat window open events
       const handleOpenChat = (event: CustomEvent) => {
         const { bookingId, customerId, customerName, booking } = event.detail;
-        console.log('🎯 Opening chat for booking:', bookingId);
+        logger.debug('🎯 Opening chat for booking:', bookingId);
         
         // Note: setChatState not available in context
         // Chat state management handled by PersistentChatProvider
@@ -404,7 +405,7 @@ export function PersistentChatWindow() {
   useEffect(() => {
     // Sync to HTML attribute for CSS selectors if needed
     document.documentElement.setAttribute('data-lang', currentLanguage);
-    console.log('🌐 [CHAT UI] Language:', currentLanguage === 'id' ? 'Indonesian' : 'English');
+    logger.debug('🌐 [CHAT UI] Language:', currentLanguage === 'id' ? 'Indonesian' : 'English');
   }, [currentLanguage]);
 
   // Handle therapist booking responses
@@ -418,7 +419,7 @@ export function PersistentChatWindow() {
       
       addSystemNotification('✅ Booking accepted successfully!');
     } catch (error) {
-      console.error('Failed to accept booking:', error);
+      logger.error('Failed to accept booking:', error);
       addSystemNotification('❌ Failed to accept booking. Please try again.');
     }
   };
@@ -433,7 +434,7 @@ export function PersistentChatWindow() {
       
       addSystemNotification('📝 Booking declined.');
     } catch (error) {
-      console.error('Failed to decline booking:', error);
+      logger.error('Failed to decline booking:', error);
       addSystemNotification('❌ Failed to decline booking. Please try again.');
     }
   };
@@ -516,7 +517,7 @@ export function PersistentChatWindow() {
   useEffect(() => {
     if (chatState.currentBooking && 
         (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'waiting_others')) {
-      console.log('🔄 Resetting countdown timer for new booking:', chatState.currentBooking.id);
+      logger.debug('🔄 Resetting countdown timer for new booking:', chatState.currentBooking.id);
       setTherapistResponseCountdown(300); // Reset to 5 minutes
     }
   }, [chatState.currentBooking?.id]); // Only reset when booking ID changes (new booking)
@@ -545,7 +546,7 @@ export function PersistentChatWindow() {
   React.useEffect(() => {
     if (!chatState.isOpen) return; // Skip if chat is closed
     
-    console.log('🎨 [BOOKING STEP CHANGED]', {
+    logger.debug('🎨 [BOOKING STEP CHANGED]', {
       newStep: bookingStep,
       shouldShowChat: bookingStep === 'chat',
       shouldShowDetails: bookingStep === 'details',
@@ -563,8 +564,8 @@ export function PersistentChatWindow() {
 
   // Get price for duration - consistent with TherapistCard pricing logic
   const getPrice = (minutes: number) => {
-    console.log('🔍 [PRICING DEBUG] Getting price for', minutes, 'minutes');
-    console.log('🔍 [PRICING DEBUG] Therapist object:', {
+    logger.debug('🔍 [PRICING DEBUG] Getting price for', minutes, 'minutes');
+    logger.debug('🔍 [PRICING DEBUG] Therapist object:', {
       name: therapist.name,
       price60: therapist.price60,
       price90: therapist.price90,
@@ -579,13 +580,13 @@ export function PersistentChatWindow() {
       (therapist.price120 && parseInt(therapist.price120) > 0)
     );
 
-    console.log('🔍 [PRICING DEBUG] Has valid separate fields:', hasValidSeparateFields);
+    logger.debug('🔍 [PRICING DEBUG] Has valid separate fields:', hasValidSeparateFields);
 
     if (hasValidSeparateFields) {
       const priceField = `price${minutes}` as keyof typeof therapist;
       const price = therapist[priceField];
       const finalPrice = price ? parseInt(price as string) * 1000 : 0;
-      console.log('✅ [PRICING DEBUG] Using separate field:', priceField, '=', price, '→', finalPrice);
+      logger.debug('✅ [PRICING DEBUG] Using separate field:', priceField, '=', price, '→', finalPrice);
       return finalPrice;
     }
 
@@ -593,7 +594,7 @@ export function PersistentChatWindow() {
     const pricing = therapist.pricing || {};
     const basePrice = pricing[minutes.toString()] || pricing['60'] || 0;
     const finalPrice = basePrice * 1000; // Multiply by 1000 to match TherapistCard format
-    console.log('✅ [PRICING DEBUG] Using pricing object:', pricing, '→', basePrice, '→', finalPrice);
+    logger.debug('✅ [PRICING DEBUG] Using pricing object:', pricing, '→', basePrice, '→', finalPrice);
     return finalPrice;
   };
 
@@ -609,7 +610,7 @@ export function PersistentChatWindow() {
     }
     
     // Duration info will be shown in BookingWelcomeBanner - no need for system message
-    console.log(`⏱️ Duration selected: ${minutes} minutes - ${formatPrice(getPrice(minutes))}`);
+    logger.debug(`⏱️ Duration selected: ${minutes} minutes - ${formatPrice(getPrice(minutes))}`);
   };
 
   // Handle datetime selection
@@ -669,36 +670,36 @@ export function PersistentChatWindow() {
     
     // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during Order Now booking
     lockChat();
-    console.log('🔒 Chat locked for Order Now form submission');
+    logger.debug('🔒 Chat locked for Order Now form submission');
     
-    console.log('═══════════════════════════════════════════');
-    console.log('🚀 [ORDER NOW] Form submission started');
-    console.log('Current URL:', window.location.href);
-    console.log('Current booking step:', chatState.bookingStep);
-    console.log('Chat is open:', chatState.isOpen);
-    console.log('Chat is locked:', isLocked);
-    console.log('✅ [PROTECTION] Chat locked during order process');
-    console.log('🔌 [CONNECTION] Real-time connected:', isConnected);
-    console.log('📡 [CONNECTION] Testing chat connectivity...');
+    logger.debug('═══════════════════════════════════════════');
+    logger.debug('🚀 [ORDER NOW] Form submission started');
+    logger.debug('Current URL:', window.location.href);
+    logger.debug('Current booking step:', chatState.bookingStep);
+    logger.debug('Chat is open:', chatState.isOpen);
+    logger.debug('Chat is locked:', isLocked);
+    logger.debug('✅ [PROTECTION] Chat locked during order process');
+    logger.debug('🔌 [CONNECTION] Real-time connected:', isConnected);
+    logger.debug('📡 [CONNECTION] Testing chat connectivity...');
     
     // Test real-time connection before proceeding
     if (!isConnected) {
-      console.warn('⚠️ [CONNECTION] Chat not connected to real-time - proceeding anyway');
+      logger.warn('⚠️ [CONNECTION] Chat not connected to real-time - proceeding anyway');
       // BookingWelcomeBanner will show the status - no need for system message
     }
     
-    console.log('Customer form data:', {
+    logger.debug('Customer form data:', {
       name: customerForm.name,
       whatsApp: customerForm.whatsApp,
       locationType: customerForm.locationType
     });
-    console.log('Form validation state:', {
+    logger.debug('Form validation state:', {
       hasName: !!customerForm.name,
       hasWhatsApp: !!customerForm.whatsApp,
       hasLocationType: !!customerForm.locationType,
       clientMismatchError: !!clientMismatchError
     });
-    console.log('═══════════════════════════════════════════');
+    logger.debug('═══════════════════════════════════════════');
     
     // ⚠️ CRITICAL CHECK: Validate if button should work
     // Enhanced validation with WhatsApp length check (8-15 digits)
@@ -707,11 +708,11 @@ export function PersistentChatWindow() {
     
     // ✅ FIXED: Removed massageFor validation (field not in Appwrite schema)
     if (!isNameValid || !isWhatsAppValid || !!clientMismatchError || !customerForm.locationType) {
-      console.error('❌ [ORDER NOW] Button should be disabled! Missing required fields:');
-      console.error('- Name:', !isNameValid ? 'MISSING/INVALID' : 'OK');
-      console.error('- WhatsApp:', !isWhatsAppValid ? `MISSING/INVALID (length: ${customerForm.whatsApp?.length || 0})` : 'OK');
-      console.error('- Location Type:', !customerForm.locationType ? 'MISSING' : 'OK');
-      console.error('- Client Mismatch:', !!clientMismatchError ? 'ERROR' : 'OK');
+      logger.error('❌ [ORDER NOW] Button should be disabled! Missing required fields:');
+      logger.error('- Name:', !isNameValid ? 'MISSING/INVALID' : 'OK');
+      logger.error('- WhatsApp:', !isWhatsAppValid ? `MISSING/INVALID (length: ${customerForm.whatsApp?.length || 0})` : 'OK');
+      logger.error('- Location Type:', !customerForm.locationType ? 'MISSING' : 'OK');
+      logger.error('- Client Mismatch:', !!clientMismatchError ? 'ERROR' : 'OK');
       
       // 🚨 Set error state for display
       setBookingError({
@@ -900,49 +901,49 @@ export function PersistentChatWindow() {
 
     try {
       setIsSending(true);
-      console.log('═══════════════════════════════════════════');
-      console.log('📤 PRE-SEND VALIDATION');
-      console.log('═══════════════════════════════════════════');
-      console.log('✓ Customer Name:', customerForm.name);
-      console.log('✓ Customer WhatsApp:', `${customerForm.countryCode}${customerForm.whatsApp}`);
-      console.log('✓ Treatment For:', customerForm.massageFor);
-      console.log('✓ Location Type:', customerForm.locationType);
-      console.log('✓ Location:', customerForm.location);
-      console.log('✓ Coordinates:', customerForm.coordinates);
-      console.log('✓ Selected Duration:', selectedDuration);
-      console.log('✓ Original Price:', originalPrice);
-      console.log('✓ Discounted Price:', discountedPrice);
-      console.log('✓ Therapist:', therapist?.name, therapist?.id);
-      console.log('✓ Therapist Pricing:', therapist?.pricing);
-      console.log('✓ Booking Message Length:', bookingMessage.length, 'chars');
-      console.log('═══════════════════════════════════════════');
-      console.log('📤 Sending booking message...');
+      logger.debug('═══════════════════════════════════════════');
+      logger.debug('📤 PRE-SEND VALIDATION');
+      logger.debug('═══════════════════════════════════════════');
+      logger.debug('✓ Customer Name:', customerForm.name);
+      logger.debug('✓ Customer WhatsApp:', `${customerForm.countryCode}${customerForm.whatsApp}`);
+      logger.debug('✓ Treatment For:', customerForm.massageFor);
+      logger.debug('✓ Location Type:', customerForm.locationType);
+      logger.debug('✓ Location:', customerForm.location);
+      logger.debug('✓ Coordinates:', customerForm.coordinates);
+      logger.debug('✓ Selected Duration:', selectedDuration);
+      logger.debug('✓ Original Price:', originalPrice);
+      logger.debug('✓ Discounted Price:', discountedPrice);
+      logger.debug('✓ Therapist:', therapist?.name, therapist?.id);
+      logger.debug('✓ Therapist Pricing:', therapist?.pricing);
+      logger.debug('✓ Booking Message Length:', bookingMessage.length, 'chars');
+      logger.debug('═══════════════════════════════════════════');
+      logger.debug('📤 Sending booking message...');
       
       try {
         const result = await sendMessage(bookingMessage);
-        console.log('═══════════════════════════════════════════');
-        console.log('📤 [RESULT CHECK] Message sent result:', result);
-        console.log('📤 [RESULT CHECK] result type:', typeof result);
-        console.log('📤 [RESULT CHECK] result.sent value:', result.sent);
-        console.log('📤 [RESULT CHECK] result.sent type:', typeof result.sent);
-        console.log('📤 [RESULT CHECK] result.sent === true:', result.sent === true);
-        console.log('📤 [RESULT CHECK] Boolean(result.sent):', Boolean(result.sent));
-        console.log('📤 [RESULT CHECK] Full result object:', JSON.stringify(result, null, 2));
-        console.log('═══════════════════════════════════════════');
+        logger.debug('═══════════════════════════════════════════');
+        logger.debug('📤 [RESULT CHECK] Message sent result:', result);
+        logger.debug('📤 [RESULT CHECK] result type:', typeof result);
+        logger.debug('📤 [RESULT CHECK] result.sent value:', result.sent);
+        logger.debug('📤 [RESULT CHECK] result.sent type:', typeof result.sent);
+        logger.debug('📤 [RESULT CHECK] result.sent === true:', result.sent === true);
+        logger.debug('📤 [RESULT CHECK] Boolean(result.sent):', Boolean(result.sent));
+        logger.debug('📤 [RESULT CHECK] Full result object:', JSON.stringify(result, null, 2));
+        logger.debug('═══════════════════════════════════════════');
         
         if (result.sent) {
-          console.log('✅ Message sent successfully, creating booking...');
+          logger.debug('✅ Message sent successfully, creating booking...');
           // Check if this is a scheduled booking (requires 30% deposit)
           const isScheduledBooking = !!(selectedDate && selectedTime);
           
           if (isScheduledBooking) {
             // Create scheduled booking with deposit requirement
-            console.log('📅 Creating scheduled booking...');
+            logger.debug('📅 Creating scheduled booking...');
             
             // ✅ SIMPLIFIED: Use the location text field directly
             const scheduledLocationText = customerForm.location?.trim() || 'Location provided in chat';
             
-            console.log('🔍 Scheduled Simple Location Debug:', {
+            logger.debug('🔍 Scheduled Simple Location Debug:', {
               locationType: customerForm.locationType,
               locationText: scheduledLocationText,
               originalLocation: customerForm.location
