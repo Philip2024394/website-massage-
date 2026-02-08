@@ -117,7 +117,7 @@ export const TherapistPerformanceDashboard: React.FC<{ therapistId: string }> = 
       setData(mockData);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to load performance data:', error);
+      logger.error('Failed to load performance data:', error);
       setLoading(false);
     }
   };

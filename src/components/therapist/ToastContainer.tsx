@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Info, AlertTriangle, X, Loader2 } from 'lucide-react';
+import { logger } from '../../utils/logger';
 
 interface Toast {
   id: number;
@@ -28,7 +29,7 @@ export default function ToastContainer() {
   useEffect(() => {
     const handleToast = (event: CustomEvent) => {
       const { message, type, duration = 4000, action, persistent = false } = event.detail;
-      console.log('🍞 ToastContainer received:', message, type);
+      logger.debug('🍞 ToastContainer received:', message, type);
       const id = Date.now();
       
       setToasts(prev => [...prev, { id, message, type, duration, action, persistent }]);
@@ -55,7 +56,7 @@ export default function ToastContainer() {
       ));
     };
 
-    console.log('🍞 Enhanced ToastContainer mounted and listening');
+    logger.debug('🍞 Enhanced ToastContainer mounted and listening');
     window.addEventListener('show-toast' as any, handleToast);
     window.addEventListener('show-confirmation-toast' as any, handleConfirmationToast);
     window.addEventListener('update-toast' as any, handleUpdateToast);

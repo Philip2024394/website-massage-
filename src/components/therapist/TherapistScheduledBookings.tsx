@@ -71,7 +71,7 @@ const TherapistScheduledBookings: React.FC<TherapistScheduledBookingsProps> = ({
       );
       setBookings(bookingsData);
     } catch (error) {
-      console.error('Failed to load scheduled bookings:', error);
+      logger.error('Failed to load scheduled bookings:', error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ const TherapistScheduledBookings: React.FC<TherapistScheduledBookingsProps> = ({
       const upcoming = await scheduledBookingPaymentService.getUpcomingBookingsForReminders();
       setUpcomingNotifications(upcoming.filter(b => b.therapistId === therapistId));
     } catch (error) {
-      console.error('Failed to check upcoming notifications:', error);
+      logger.error('Failed to check upcoming notifications:', error);
     }
   };
 
@@ -103,7 +103,7 @@ const TherapistScheduledBookings: React.FC<TherapistScheduledBookingsProps> = ({
         : `Deposit disetujui! ${formatPrice(booking.depositAmount)} telah dikirim ke rekening bank Anda.`
       );
     } catch (error) {
-      console.error('Failed to approve deposit:', error);
+      logger.error('Failed to approve deposit:', error);
       alert(language === 'en' 
         ? 'Failed to approve deposit. Please try again.'
         : 'Gagal menyetujui deposit. Silakan coba lagi.'
@@ -136,7 +136,7 @@ const TherapistScheduledBookings: React.FC<TherapistScheduledBookingsProps> = ({
         : 'Tidak datang dilaporkan. Deposit pelanggan telah hangus.'
       );
     } catch (error) {
-      console.error('Failed to report no-show:', error);
+      logger.error('Failed to report no-show:', error);
       alert(language === 'en'
         ? 'Failed to report no-show. Please try again.'
         : 'Gagal melaporkan tidak datang. Silakan coba lagi.'

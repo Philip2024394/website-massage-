@@ -1,5 +1,6 @@
 import type { Therapist, AvailabilityStatus } from '../types';
 import BusyCountdownTimer from '../BusyCountdownTimer';
+import { logger } from '../../utils/logger';
 
 interface TherapistStatusBadgeProps {
   displayStatus: AvailabilityStatus;
@@ -59,7 +60,7 @@ const TherapistStatusBadge = ({
               <BusyCountdownTimer
                 endTime={therapist.busyUntil}
                 onExpired={() => {
-                  console.log('Busy period ended – therapist should be available.');
+                  logger.debug('Busy period ended – therapist should be available.');
                 }}
               />
             </div>
