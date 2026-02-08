@@ -89,6 +89,7 @@ class EnterpriseDatabaseService {
     timestamp: Date;
     filters?: Record<string, any>;
   }> = [];
+  private initialized = false;
 
   // Performance thresholds
   private thresholds = {
@@ -99,9 +100,24 @@ class EnterpriseDatabaseService {
   };
 
   constructor() {
+    // 🔒 CRITICAL FIX: Defer initialization to prevent TDZ errors in minified bundle
+    // Constructor must complete before calling methods that reference 'this'
+    queueMicrotask(() => {
+      this.initialize();
+    });
+  }
+
+  /**
+   * 🆕 LAZY INITIALIZATION: Called after constructor completes
+   * Prevents Temporal Dead Zone errors in production minified bundle
+   */
+  private initialize(): void {
+    if (this.initialized) return;
+    
     this.initializeCriticalIndexes();
     this.initializeConnectionPools();
     this.startOptimizationMonitoring();
+    this.initialized = true;
     logger.info('🏢 Enterprise database service initialized');
   }
 
@@ -275,6 +291,9 @@ class EnterpriseDatabaseService {
     filters?: Record<string, any>;
     resultCount?: number;
   }): void {
+    // 🛡️ GUARD: Ensure initialization complete before recording
+    if (!this.initialized) return;
+
     const queryRecord = {
       collection: params.collection,
       operation: params.operation,
