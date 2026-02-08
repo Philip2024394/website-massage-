@@ -57,6 +57,9 @@ import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, H
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { profileEditHelp } from './constants/helpContent';
+import { client, databases, DATABASE_ID } from '../../lib/appwrite';
+import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
+import { bookingSoundService } from '../../services/bookingSound.service';
 
 /* P0 FIX: App-sized dashboard layout for proper desktop/mobile rendering */
 
@@ -222,6 +225,114 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       setSelectedGlobe(prev => ['id', ...prev.filter(c => c !== 'id')].slice(0, 3));
     }
   }, []);
+
+  // ============================================================================
+  // 🔔 CRITICAL: REAL-TIME BOOKING NOTIFICATIONS FOR THERAPIST
+  // ============================================================================
+  // Subscribe to Appwrite bookings collection for real-time notifications
+  // When new booking arrives → play sound → show notification → update UI
+  // ============================================================================
+  useEffect(() => {
+    if (!therapist?.$id && !therapist?.id) {
+      console.log('⚠️ [BOOKING SUBSCRIPTION] No therapist ID, skipping subscription');
+      return;
+    }
+
+    const therapistId = String(therapist.$id || therapist.id);
+    console.log('🔔 [BOOKING SUBSCRIPTION] Starting real-time booking subscription for therapist:', therapistId);
+
+    try {
+      // Subscribe to bookings collection for this therapist
+      const channelName = `databases.${DATABASE_ID}.collections.${APPWRITE_CONFIG.collections.bookings}.documents`;
+      
+      console.log('📡 [BOOKING SUBSCRIPTION] Subscribing to:', channelName);
+
+      const unsubscribe = client.subscribe(channelName, (response: any) => {
+        console.log('📨 [BOOKING SUBSCRIPTION] Real-time event received:', response);
+
+        // Check if this is a new booking document creation
+        if (response.events.includes('databases.*.collections.*.documents.*.create')) {
+          const booking = response.payload;
+          
+          console.log('📋 [BOOKING SUBSCRIPTION] New booking created:', {
+            bookingId: booking.$id,
+            therapistId: booking.therapistId,
+            customerName: booking.customerName,
+            status: booking.bookingStatus || booking.status
+          });
+
+          // Check if this booking is for current therapist
+          if (booking.therapistId === therapistId || booking.providerId === therapistId) {
+            console.log('🎯 [BOOKING SUBSCRIPTION] Booking is for current therapist!');
+            
+            // Dispatch custom event to BookingRequestCard component
+            const event = new CustomEvent('playBookingNotification', {
+              detail: {
+                bookingId: booking.$id || booking.bookingId,
+                therapistId: therapistId,
+                customerName: booking.customerName || booking.userName,
+                duration: booking.duration || booking.serviceDuration,
+                location: booking.locationZone || booking.customerLocation,
+                bookingType: booking.bookingType === 'SCHEDULED' ? 'scheduled' : 'immediate'
+              }
+            });
+            
+            window.dispatchEvent(event);
+            
+            // Also start sound service directly for redundancy
+            try {
+              bookingSoundService.startBookingAlert(booking.$id || booking.bookingId, 'pending');
+              console.log('🔊 [BOOKING SUBSCRIPTION] Sound alert started for booking:', booking.$id);
+            } catch (soundError) {
+              console.error('❌ [BOOKING SUBSCRIPTION] Failed to start sound:', soundError);
+            }
+
+            // Show browser toast notification
+            showToast(`🔔 New Booking from ${booking.customerName || 'Customer'}`, 'success');
+          } else {
+            console.log('⏭️ [BOOKING SUBSCRIPTION] Booking is for different therapist, ignoring');
+          }
+        }
+
+        // Handle booking status updates (accept, decline, expire)
+        if (response.events.includes('databases.*.collections.*.documents.*.update')) {
+          const booking = response.payload;
+          
+          if (booking.therapistId === therapistId || booking.providerId === therapistId) {
+            console.log('🔄 [BOOKING SUBSCRIPTION] Booking updated:', {
+              bookingId: booking.$id,
+              status: booking.bookingStatus || booking.status
+            });
+
+            // If booking was accepted/declined/expired, stop sound
+            const finalStatuses = ['ACCEPTED', 'DECLINED', 'EXPIRED', 'CONFIRMED', 'COMPLETED'];
+            if (finalStatuses.includes(booking.bookingStatus) || finalStatuses.includes(booking.status)) {
+              try {
+                bookingSoundService.stopBookingAlert(booking.$id || booking.bookingId);
+                console.log('🔇 [BOOKING SUBSCRIPTION] Sound stopped for booking:', booking.$id);
+              } catch (soundError) {
+                console.error('❌ [BOOKING SUBSCRIPTION] Failed to stop sound:', soundError);
+              }
+
+              // Dispatch stop event
+              window.dispatchEvent(new Event('stopBookingNotification'));
+            }
+          }
+        }
+      });
+
+      console.log('✅ [BOOKING SUBSCRIPTION] Real-time subscription active');
+
+      // Cleanup subscription on unmount
+      return () => {
+        console.log('🔌 [BOOKING SUBSCRIPTION] Unsubscribing from real-time notifications');
+        unsubscribe();
+      };
+
+    } catch (error) {
+      console.error('❌ [BOOKING SUBSCRIPTION] Failed to subscribe to bookings:', error);
+    }
+  }, [therapist?.$id, therapist?.id]);
 
   // Fixed Indonesian language - no language selection for therapist dashboard
 
