@@ -8,6 +8,7 @@ import {
   Clock, Shield, AlertTriangle, Ban, X, CheckCircle, 
   Phone, MessageSquare, Eye, EyeOff, TrendingUp 
 } from 'lucide-react';
+import { logger } from '@/lib/logger.production';
 import { chatModerationService } from '../services/chatModerationService';
 import { professionalChatService } from '../services/professionalChatNotificationService';
 
@@ -75,7 +76,7 @@ export const EnhancedBookingWindow: React.FC<EnhancedBookingWindowProps> = ({
         showViolationWarning(violations);
       }
     } catch (error) {
-      console.error('Failed to load violation stats:', error);
+      logger.error('Failed to load violation stats:', error);
     }
   };
 

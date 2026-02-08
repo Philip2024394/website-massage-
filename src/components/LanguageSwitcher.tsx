@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { logger } from '@/lib/logger.production';
 import { useLanguage } from '../hooks/useLanguage';
 
 interface LanguageSwitcherProps {
@@ -48,7 +49,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       {/* Indonesian Flag Button */}
       <button
         onClick={() => {
-          console.log('🇮🇩 Language switcher: Switching to Indonesian');
+          logger.debug('🇮🇩 Language switcher: Switching to Indonesian');
           setLanguage('id');
         }}
         className={`flex items-center gap-1 ${classes.button} rounded-full font-medium transition-all duration-200 ${
@@ -66,7 +67,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       {/* GB/English Flag Button */}
       <button
         onClick={() => {
-          console.log('🇬🇧 Language switcher: Switching to English');
+          logger.debug('🇬🇧 Language switcher: Switching to English');
           setLanguage('gb');
         }}
         className={`flex items-center gap-1 ${classes.button} rounded-full font-medium transition-all duration-200 ${

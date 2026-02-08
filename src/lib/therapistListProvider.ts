@@ -3,6 +3,8 @@
  * Dynamically fetches Yogyakarta therapists for review initialization
  */
 
+import { logger } from '@/lib/logger.production';
+
 // Cached list of Yogyakarta therapists to avoid repeated fetches
 let cachedYogyaTherapists: Array<{ id: string; name: string }> | null = null;
 
@@ -19,14 +21,14 @@ export function getYogyakartaTherapists(): Array<{ id: string; name: string }> {
     // Try to get therapists from window context (populated by App.tsx)
     if (typeof window !== 'undefined' && (window as any).__YOGYAKARTA_THERAPISTS__) {
         cachedYogyaTherapists = (window as any).__YOGYAKARTA_THERAPISTS__;
-        console.log(`✅ Loaded ${cachedYogyaTherapists?.length || 0} Yogyakarta therapists from global context`);
+        logger.debug(`✅ Loaded ${cachedYogyaTherapists?.length || 0} Yogyakarta therapists from global context`);
         return cachedYogyaTherapists || [];
     }
     
     // 🚨 CRITICAL FIX: Return empty array instead of fallback to prevent overriding real data
     // Fallback should only be used if Appwrite fetch fails completely
-    console.log(`⚠️ No Yogyakarta therapists loaded yet - returning empty array`);
-    console.log('💡 Therapists will be populated when updateYogyakartaTherapists() is called with fetched data');
+    logger.debug(`⚠️ No Yogyakarta therapists loaded yet - returning empty array`);
+    logger.debug('💡 Therapists will be populated when updateYogyakartaTherapists() is called with fetched data');
     return [];
 }
 
@@ -52,8 +54,8 @@ export function updateYogyakartaTherapists(therapists: any[]) {
         (window as any).__YOGYAKARTA_THERAPISTS__ = yogyaTherapists;
     }
     
-    console.log(`✅ Updated Yogyakarta therapists cache: ${yogyaTherapists.length} therapists`);
-    yogyaTherapists.forEach(t => console.log(`   - ${t.name} (${t.id})`));
+    logger.debug(`✅ Updated Yogyakarta therapists cache: ${yogyaTherapists.length} therapists`);
+    yogyaTherapists.forEach(t => logger.debug(`   - ${t.name} (${t.id})`));
     
     return yogyaTherapists;
 }

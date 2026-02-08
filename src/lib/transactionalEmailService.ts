@@ -11,6 +11,7 @@
  * - Protects commission by preventing bypass
  */
 
+import { logger } from '@/lib/logger.production';
 import { Client, Account } from 'appwrite';
 
 interface BookingEmailData {
@@ -46,12 +47,12 @@ export class TransactionalEmailService {
       //   html: emailContent
       // });
       
-      console.log(`📧 Booking notification email prepared for ${data.therapistEmail}`);
-      console.log('Email content:', emailContent);
+      logger.debug(`📧 Booking notification email prepared for ${data.therapistEmail}`);
+      logger.debug('Email content:', emailContent);
       
       return true;
     } catch (error) {
-      console.error('Failed to send booking notification email:', error);
+      logger.error('Failed to send booking notification email:', error);
       return false;
     }
   }
@@ -347,11 +348,11 @@ export class TransactionalEmailService {
       `.trim();
 
       // TODO: Send actual email
-      console.log(`📧 Booking accepted email prepared for ${data.therapistEmail}`);
+      logger.debug(`📧 Booking accepted email prepared for ${data.therapistEmail}`);
       
       return true;
     } catch (error) {
-      console.error('Failed to send booking accepted email:', error);
+      logger.error('Failed to send booking accepted email:', error);
       return false;
     }
   }
@@ -453,11 +454,11 @@ export class TransactionalEmailService {
       `.trim();
 
       // TODO: Send actual email
-      console.log(`📧 Booking expired email prepared for ${data.therapistEmail}`);
+      logger.debug(`📧 Booking expired email prepared for ${data.therapistEmail}`);
       
       return true;
     } catch (error) {
-      console.error('Failed to send booking expired email:', error);
+      logger.error('Failed to send booking expired email:', error);
       return false;
     }
   }
