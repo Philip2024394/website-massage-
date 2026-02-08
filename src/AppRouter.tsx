@@ -262,11 +262,21 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
         const fetchTherapist = async () => {
             try {
                 setLoading(true);
-                logger.debug('[FETCH] Loading therapist from Appwrite:', therapistId);
+                
+                // CRITICAL FIX: Extract actual document ID (remove name suffix if present)
+                // URL may be: "692467a3001f6f05aaa1-budi" but Appwrite ID is: "692467a3001f6f05aaa1"
+                const cleanId = therapistId.includes('-') ? therapistId.split('-')[0] : therapistId;
+                
+                logger.debug('[FETCH] Loading therapist from Appwrite:', { 
+                    originalId: therapistId, 
+                    cleanId,
+                    hasNameSuffix: therapistId.includes('-')
+                });
+                
                 const fetchedTherapist = await databases.getDocument(
                     DATABASE_ID, 
                     COLLECTIONS.THERAPISTS, 
-                    therapistId
+                    cleanId
                 );
                 
                 // Apply official images
@@ -872,15 +882,23 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 pathForId = hashForId.substring(1); // Remove # to get /therapist-profile/123
             }
             
-            const pathMatch = pathForId.match(/\/therapist-profile\/([a-z0-9]+)/);
+            // UPDATED: Support both URL patterns:
+            // 1. /therapist-profile/[id] (hash router)
+            // 2. /profile/therapist/[id] (SEO-friendly URLs)
+            const pathMatch = pathForId.match(/\/(?:therapist-profile|profile\/therapist)\/([a-z0-9-]+)/);
             if (pathMatch) {
                 const urlId = pathMatch[1];
                 logger.debug('  - Extracted ID:', urlId);
                 
+                // Extract actual ID (may include name, e.g., "692467a3001f6f05aaa1-budi")
+                // Try exact match first, then match by ID prefix
+                const idWithoutName = urlId.split('-')[0]; // Get ID before first hyphen
+                
                 // Try to find in memory first (fast path)
-                const foundTherapist = props.therapists.find((t: any) => 
-                    (t.$id || t.id || '').toString() === urlId
-                );
+                const foundTherapist = props.therapists.find((t: any) => {
+                    const therapistId = (t.$id || t.id || '').toString();
+                    return therapistId === urlId || therapistId === idWithoutName || therapistId.startsWith(urlId);
+                });
                 
                 if (foundTherapist) {
                     logger.debug('  Found in memory:', foundTherapist.name);
@@ -917,7 +935,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         t: props.t
                     });
                 } else {
-                    logger.debug('  Not in memory, fetching from Appwrite...');
+                    logger.warn('  Not in memory, attempting Appwrite fetch...', {
+                        searchedId: urlId,
+                        idPrefix: urlId.split('-')[0],
+                        availableIds: props.therapists.slice(0, 5).map((t: any) => ({
+                            id: t.$id || t.id,
+                            name: t.name
+                        })),
+                        totalTherapists: props.therapists.length
+                    });
                     // Fallback: Render a wrapper that fetches from Appwrite
                     return <TherapistProfileWithFetch 
                         therapistId={urlId} 
