@@ -196,12 +196,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true, // Enable for debugging TDZ issues
+    sourcemap: process.env.NODE_ENV === 'production' ? false : true, // Disable sourcemaps in prod for smaller bundles
     minify: 'esbuild',
     // ✅ BROWSER COMPATIBILITY: ES2019 supports 95%+ of browsers (2026)
     // Includes: Chrome 73+, Firefox 63+, Safari 12.1+, Edge 79+
     target: ['es2019', 'chrome73', 'firefox63', 'safari12.1', 'edge79'],
-    chunkSizeWarningLimit: 2000, // Increased from 1000 to suppress warnings for large chunks
+    chunkSizeWarningLimit: 500, // 🚀 INDONESIA OPTIMIZATION: Target max 500KB per chunk for 3G
     commonjsOptions: {
       exclude: ['apps/**/*'] // Exclude dashboard apps from root build
     },
@@ -215,58 +215,101 @@ export default defineConfig({
         entryFileNames: 'assets/[name].[hash].js',
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]',
+        
+        // 🚀 INDONESIA OPTIMIZATION: Aggressive code splitting for 3G/weak 4G
         manualChunks: (id) => {
-          // Critical path optimization - separate core from everything else
+          // Critical path optimization for slow networks
           
-          // Priority 1: Critical React core (loads first)
+          // Priority 1: Critical React core (minimal, loads first)
           if (id.includes('node_modules')) {
             if (id.includes('react/') || id.includes('react-dom/') || id.includes('scheduler')) {
               return 'vendor-react';
             }
             
-            // Priority 2: Core utilities needed for initial render
+            // Priority 2: Appwrite SDK (API calls)
             if (id.includes('appwrite')) {
               return 'vendor-appwrite';
             }
             
-            // Priority 3: UI essentials
+            // Priority 3: Router (needed for SPA)
+            if (id.includes('react-router-dom')) {
+              return 'vendor-router';
+            }
+            
+            // Priority 4: Icons (lazy load, not critical)
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
             }
             
-            // Priority 4: All other vendor code (deferred)
+            // Priority 5: UI libraries (lazy load)
+            if (id.includes('framer-motion') || id.includes('react-hot-toast')) {
+              return 'vendor-ui';
+            }
+            
+            // Priority 6: All other vendor code (deferred)
             return 'vendor-misc';
           }
           
-          // Priority 1: Core services needed for app bootstrap
-          if (id.includes('lib/appwriteService') || 
-              id.includes('services/') && (id.includes('authService') || id.includes('analyticsService'))) {
-            return 'services-core';
+          // 🎯 CRITICAL PATH: Core app functionality (< 100KB)
+          if (id.includes('lib/appwrite') || id.includes('context/') || id.includes('App.tsx')) {
+            return 'core-app';
           }
           
-          // Priority 2: Home page components (critical path)
-          if (id.includes('pages/HomePage') || 
-              id.includes('components/TherapistHomeCard') ||
-              id.includes('components/MassagePlaceHomeCard')) {
-            return 'pages-home';
+          // 🏠 HOME PAGE: Split into smaller chunks for faster TTI
+          if (id.includes('pages/HomePage')) {
+            return 'page-home';
           }
           
-          // Priority 3: Auth and profile pages (needed early)
+          if (id.includes('components/TherapistHomeCard') || 
+              id.includes('components/MassagePlaceHomeCard') ||
+              id.includes('components/FacialPlaceHomeCard')) {
+            return 'components-home-cards';
+          }
+          
+          // 💬 CHAT: Heavy component, load only when needed
+          if (id.includes('PersistentChatWindow') || id.includes('chat/')) {
+            return 'feature-chat';
+          }
+          
+          // 🔐 AUTH: Separate chunk for login/register
           if (id.includes('pages/auth/') || id.includes('AuthPage')) {
             return 'pages-auth';
           }
           
-          // Priority 4: Dashboard pages (deferred until needed)
-          if (id.includes('pages/') && id.includes('Dashboard')) {
-            return 'pages-dashboards';
+          // 📊 DASHBOARDS: Heavy, rarely accessed on mobile
+          if (id.includes('Dashboard') && !id.includes('node_modules')) {
+            if (id.includes('therapist')) return 'dashboard-therapist';
+            if (id.includes('place')) return 'dashboard-place';
+            if (id.includes('admin')) return 'dashboard-admin';
+            return 'dashboard-misc';
           }
           
-          // Priority 5: Job and admin pages (rarely accessed)
-          if (id.includes('pages/') && (id.includes('Job') || id.includes('Admin'))) {
+          // 📸 MEDIA: Images, videos, heavy UI
+          if (id.includes('ImageUpload') || id.includes('VideoPlayer') || id.includes('Gallery')) {
+            return 'feature-media';
+          }
+          
+          // 📋 FORMS: Booking forms, profile editors
+          if (id.includes('BookingForm') || id.includes('ProfileEditor')) {
+            return 'feature-forms';
+          }
+          
+          // 🗺️ MAPS: Google Maps (heavy!)
+          if (id.includes('GoogleMap') || id.includes('maps')) {
+            return 'feature-maps';
+          }
+          
+          // 💼 JOBS: Rarely accessed
+          if (id.includes('Job') && !id.includes('node_modules')) {
             return 'pages-jobs';
           }
           
-          // Default: Everything else
+          // 📄 OTHER PAGES: Blog, legal, etc.
+          if (id.includes('pages/') && !id.includes('HomePage')) {
+            return 'pages-misc';
+          }
+          
+          // Default: Small utilities stay in main bundle
           return undefined;
         },
       },

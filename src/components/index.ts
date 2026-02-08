@@ -44,6 +44,9 @@ export { default as ToggleSwitch } from './ToggleSwitch';
 export { default as CustomCheckbox } from './CustomCheckbox';
 export { default as PasswordInput } from './PasswordInput';
 
+// Performance Components (INDONESIA OPTIMIZATION)
+export { LazyImage, NetworkAwareLazyImage, LazyBackground } from './LazyImage';
+
 // Layout Components
 // export { default as Header } from './Header'; // TODO: Header.tsx is empty
 export { default as Footer } from './Footer';
