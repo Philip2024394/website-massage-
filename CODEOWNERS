@@ -1,6 +1,22 @@
 # CODEOWNERS establishes protected ownership of critical files.
 # Changes to these files should go through PR review to avoid accidental regressions.
 
+# 🔒 PRODUCTION LOCK - LANDING & LOADING PAGES (HARD LOCK)
+# Changes to these files risk full app outage - DO NOT MODIFY without owner approval
+PRODUCTION_LOCK_LANDING_LOADING.md @Philip2024394
+PRODUCTION_LOCK_QUICK_REF.md @Philip2024394
+validate-production-lock.ps1 @Philip2024394
+install-production-lock.ps1 @Philip2024394
+src/pages/MainLandingPage.tsx @Philip2024394
+src/pages/LandingPage.tsx @Philip2024394
+src/pages/LoadingGate.tsx @Philip2024394
+src/pages/HomePage.tsx @Philip2024394
+src/App.tsx @Philip2024394
+src/AppRouter.tsx @Philip2024394
+src/context/LoadingContext.tsx @Philip2024394
+src/services/customerGPSCollectionService.ts @Philip2024394
+src/services/simpleGPSBookingIntegration.ts @Philip2024394
+
 # 🔒 CORE SYSTEM LOCK - MAXIMUM PROTECTION
 # These files contain business-critical functionality that drives revenue and UX
 CORE_SYSTEM_LOCK.md @Philip2024394
