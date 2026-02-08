@@ -843,10 +843,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return `${priceInThousands}k`;
     };
     
-    // Get main image from therapist data - use mainImage for background, profilePicture for overlay
-    const mainImage = (therapist as any).mainImage || therapist.profileImage;
+    // Get main image from therapist data - MATCH TopTherapistsPage priority order
+    // Priority: profilePicture > profileImageUrl > profileImage > mainImage
+    const mainImage = (therapist as any).profilePicture || 
+                      (therapist as any).profileImageUrl || 
+                      therapist.profileImage || 
+                      (therapist as any).mainImage;
     
-    // Use therapist's mainImage or shared profile image pool (better than gray placeholders)
+    // Use therapist's image or shared profile image pool (better than gray placeholders)
     const displayImage = mainImage || getRandomSharedProfileImage();
     
     // ✅ VALIDATE: Ensure displayImage is a valid URL string

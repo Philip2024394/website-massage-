@@ -206,8 +206,9 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     } : null;
 
     // Hero image logic - only for shared mode
+    // Priority: profilePicture > profileImageUrl > profileImage > mainImage (match TopTherapistsPage)
     const therapistHeroImageUrl = mode === 'shared' ? 
-        ((therapist as any).heroImageUrl || (therapist as any).mainImage || therapist.profileImage || (therapist as any).profilePicture) : null;
+        ((therapist as any).profilePicture || (therapist as any).profileImageUrl || therapist.profileImage || (therapist as any).mainImage || (therapist as any).heroImageUrl) : null;
     const fallbackHeroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || "a" as string));
     const heroImageRaw = therapistHeroImageUrl || fallbackHeroImage;
     
@@ -312,7 +313,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         providerId={(therapist as any).id || (therapist as any).$id}
                         providerName={(therapist as any).name}
                         providerType={'therapist'}
-                        providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                        providerImage={(therapist as any).profilePicture || (therapist as any).profileImageUrl || therapist.profileImage || (therapist as any).mainImage}
                         onNavigate={onNavigate}
                     />
                 </div>
