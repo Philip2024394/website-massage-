@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Search, Loader, MapPin as MapPinIcon, CheckCircle, AlertCircle } from 'lucide-react';
 import { locationService, LocationOption, DetectedLocation } from '../lib/locationService';
+import { logger } from '../utils/logger';
 
 interface LocationSelectorProps {
   selectedLocation?: LocationOption | null;
@@ -75,7 +76,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       }
     } catch (error) {
       setGpsError('Location detection failed. Please select manually.');
-      console.error('GPS detection error:', error);
+      logger.error('GPS detection error:', error);
     } finally {
       setIsDetecting(false);
     }

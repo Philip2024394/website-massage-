@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { locationService } from '../services/locationService';
 import { deviceService } from '../services/deviceService';
 import type { UserLocation } from '../types';
+import { logger } from '../utils/logger';
 
 interface MobileLocationDetectorProps {
   onLocationDetected: (location: UserLocation) => void;
@@ -42,7 +43,7 @@ const MobileLocationDetector: React.FC<MobileLocationDetectorProps> = ({
   }, [autoDetectOnMount, deviceInfo.supportsGPS, deviceInfo.type]);
 
   const handleLocationDetection = async () => {
-    console.log('📱 Starting location detection for device:', deviceInfo);
+    logger.debug('📱 Starting location detection for device:', deviceInfo);
     
     setIsDetecting(true);
     setLocationStatus('detecting');
@@ -64,7 +65,7 @@ const MobileLocationDetector: React.FC<MobileLocationDetectorProps> = ({
         maximumAge: deviceInfo.type === 'mobile' ? 60000 : 300000
       });
 
-      console.log('✅ Location detected successfully:', location);
+      logger.info('✅ Location detected successfully:', location);
       
       setLocationStatus('success');
       onLocationDetected(location);
@@ -75,7 +76,7 @@ const MobileLocationDetector: React.FC<MobileLocationDetectorProps> = ({
       }
 
     } catch (error: any) {
-      console.error('❌ Location detection failed:', error);
+      logger.error('❌ Location detection failed:', error);
       
       const errorMsg = getLocationErrorMessage(error);
       setErrorMessage(errorMsg);

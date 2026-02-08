@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './MusicPlayer.css';
+import { logger } from '../utils/logger';
 
 interface MusicPlayerProps {
   autoPlay?: boolean;
@@ -28,7 +29,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
             sessionStorage.setItem('musicHasPlayed', 'true');
           })
           .catch((error) => {
-            console.log('Auto-play was prevented:', error);
+            logger.debug('Auto-play was prevented:', error);
             // Auto-play was prevented, user needs to interact first
           });
       }
@@ -50,7 +51,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
             sessionStorage.setItem('musicHasPlayed', 'true');
           })
           .catch((error) => {
-            console.error('Failed to play audio:', error);
+            logger.error('Failed to play audio:', error);
           });
       }
     }

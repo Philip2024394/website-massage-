@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, AlertCircle, RefreshCw, Wifi, MessageCircle, Calendar, Activity } from 'lucide-react';
+import { logger } from '../utils/logger';
 
 interface IntegrationStatus {
     mainApp: 'connected' | 'disconnected' | 'error';
@@ -42,7 +43,7 @@ const IntegrationStatusPage: React.FC<{
         setLoading(true);
         
         try {
-            console.log('🔍 Checking integration status for:', therapistId);
+            logger.debug('🔍 Checking integration status for:', therapistId);
             
             // Import integration service
             const { bookingFlowIntegration } = await import('../lib/services/bookingFlowIntegration.service');
@@ -60,10 +61,10 @@ const IntegrationStatusPage: React.FC<{
             });
             
             setLastUpdate(new Date());
-            console.log('✅ Integration status updated:', health);
+            logger.info('✅ Integration status updated:', health);
             
         } catch (error) {
-            console.error('❌ Failed to check integration status:', error);
+            logger.error('❌ Failed to check integration status:', error);
             
             setStatus({
                 mainApp: 'error',

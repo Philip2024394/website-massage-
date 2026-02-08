@@ -13,6 +13,8 @@
  * ✅ Mobile-first responsive design
  */
 
+import { logger } from '../utils/logger';
+
 import React, { useMemo } from 'react';
 import { Check, Clock, AlertCircle } from 'lucide-react';
 
@@ -241,7 +243,7 @@ export function MessageBubble({
             className="text-xs text-red-500 hover:text-red-700 mt-1 px-1"
             onClick={() => {
               // Handle retry logic - could emit event to parent
-              console.log('Retry message:', message.$id);
+              logger.debug('Retry message:', message.$id);
             }}
           >
             Tap to retry

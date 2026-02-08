@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Check, Phone, Star, AlertTriangle, Shield, Ban, User } from 'lucide-react';
+import { logger } from '../utils/logger';
 import { chatFlagService, FlagReason, ReporterRole } from '../lib/services/chatFlagService';
 
 /**
@@ -104,7 +105,7 @@ const InlineReportForm: React.FC<InlineReportFormProps> = ({
       
       onSuccess();
     } catch (error) {
-      console.error('Failed to submit report:', error);
+      logger.error('Failed to submit report:', error);
       alert('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -310,7 +311,7 @@ export function FlagIcon({
         const alreadyReported = await chatFlagService.hasUserFlagged(chatRoomId, reporterId);
         setHasReported(alreadyReported);
       } catch (error) {
-        console.error('Failed to check report status:', error);
+        logger.error('Failed to check report status:', error);
         // Fail open - allow reporting if check fails
       } finally {
         setIsCheckingStatus(false);
