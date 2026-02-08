@@ -17,6 +17,18 @@ src/context/LoadingContext.tsx @Philip2024394
 src/services/customerGPSCollectionService.ts @Philip2024394
 src/services/simpleGPSBookingIntegration.ts @Philip2024394
 
+# 🔒 PRODUCTION LOCK - THERAPIST SYSTEM (ADMIN UNLOCK REQUIRED)
+# Revenue-critical therapist dashboard and auth - Requires ADMIN_UNLOCK_THERAPIST.flag
+PRODUCTION_LOCK_THERAPIST.md @Philip2024394
+ADMIN_UNLOCK_THERAPIST.flag.template @Philip2024394
+src/pages/auth/TherapistLoginPage.tsx @Philip2024394
+src/pages/therapist/TherapistDashboardPage.tsx @Philip2024394
+src/components/therapist/TherapistLayout.tsx @Philip2024394
+src/components/TherapistDashboardGuard.tsx @Philip2024394
+src/pages/therapist/TherapistBookingsPage.tsx @Philip2024394
+src/pages/therapist/CommissionPayment.tsx @Philip2024394
+src/pages/therapist/MyBookings.tsx @Philip2024394
+
 # 🔒 CORE SYSTEM LOCK - MAXIMUM PROTECTION
 # These files contain business-critical functionality that drives revenue and UX
 CORE_SYSTEM_LOCK.md @Philip2024394

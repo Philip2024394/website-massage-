@@ -1,3 +1,23 @@
+/**
+ * 🔒 PRODUCTION LOCK — THERAPIST SYSTEM (ADMIN CONTROLLED)
+ *
+ * This file is LIVE and revenue-critical.
+ * UI and auth flow are locked.
+ *
+ * FORBIDDEN:
+ * - Changing auth flow or validation
+ * - Changing UI layout or render order
+ * - Adding new effects or hooks
+ * - Modifying navigation logic
+ *
+ * ALLOWED (via services only):
+ * - Data updates through auth service
+ * - Status messages and translations
+ *
+ * 🔑 Admin unlock required: ADMIN_UNLOCK_THERAPIST.flag
+ * Unauthorized edits cause production instability.
+ */
+
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // 🔧 FIX: Therapist login navigation - redirect to main dashboard instead of status page
 // 🔧 FIX: Added fallback authentication flow with better error handling

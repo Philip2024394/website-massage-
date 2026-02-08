@@ -28,6 +28,10 @@ esbuild
 .env
 .env.local
 .env.production
+
+# 🔒 Production Lock Admin Unlocks (CRITICAL: Never commit actual flags)
+ADMIN_UNLOCK_THERAPIST.flag
+ADMIN_UNLOCK_*.flag
 .env.development
 .env.vapid
 

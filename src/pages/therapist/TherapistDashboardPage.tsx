@@ -1,3 +1,24 @@
+/**
+ * 🔒 PRODUCTION LOCK — THERAPIST SYSTEM (ADMIN CONTROLLED)
+ *
+ * This file is LIVE and revenue-critical.
+ * UI, layout, and data flow are locked.
+ *
+ * FORBIDDEN:
+ * - Changing layouts or render order
+ * - Refactoring hooks or state management
+ * - Adding new effects or lifecycle logic
+ * - Modifying form initialization
+ * - Direct database calls
+ *
+ * ALLOWED (via services only):
+ * - Data updates through service layer
+ * - Styling and translations
+ *
+ * 🔑 Admin unlock required: ADMIN_UNLOCK_THERAPIST.flag
+ * Unauthorized edits cause production instability.
+ */
+
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 /**
  * ============================================================================

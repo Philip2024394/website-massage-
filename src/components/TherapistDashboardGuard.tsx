@@ -1,3 +1,21 @@
+/**
+ * 🔒 PRODUCTION LOCK — THERAPIST SYSTEM (ADMIN CONTROLLED)
+ *
+ * This file is LIVE and revenue-critical.
+ * Error boundary logic is locked.
+ *
+ * FORBIDDEN:
+ * - Changing error handling logic
+ * - Modifying retry behavior
+ * - Changing fallback UI
+ *
+ * ALLOWED:
+ * - Error messages and translations
+ * - Fallback UI styling
+ *
+ * 🔑 Admin unlock required: ADMIN_UNLOCK_THERAPIST.flag
+ */
+
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * 🏢 ENTERPRISE THERAPIST DASHBOARD GUARD

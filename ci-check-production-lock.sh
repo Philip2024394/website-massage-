@@ -21,6 +21,17 @@ LOCKED_FILES=(
     "src/services/simpleGPSBookingIntegration.ts"
 )
 
+# Define therapist locked files (require admin unlock)
+THERAPIST_LOCKED_FILES=(
+    "src/pages/auth/TherapistLoginPage.tsx"
+    "src/pages/therapist/TherapistDashboardPage.tsx"
+    "src/components/therapist/TherapistLayout.tsx"
+    "src/components/TherapistDashboardGuard.tsx"
+    "src/pages/therapist/TherapistBookingsPage.tsx"
+    "src/pages/therapist/CommissionPayment.tsx"
+    "src/pages/therapist/MyBookings.tsx"
+)
+
 # Get changed files compared to main branch
 # Works with: GitHub Actions, GitLab CI, Netlify, Vercel
 if [ -n "$GITHUB_BASE_REF" ]; then
@@ -45,6 +56,20 @@ for file in "${LOCKED_FILES[@]}"; do
     fi
 done
 
+# Check for therapist violations (require admin unlock)
+THERAPIST_VIOLATIONS=()
+for file in "${THERAPIST_LOCKED_FILES[@]}"; do
+    if echo "$CHANGED_FILES" | grep -q "^$file$"; then
+        THERAPIST_VIOLATIONS+=("$file")
+    fi
+done
+
+# Check if admin unlock flag exists
+ADMIN_UNLOCK_EXISTS=false
+if [ -f "ADMIN_UNLOCK_THERAPIST.flag" ]; then
+    ADMIN_UNLOCK_EXISTS=true
+fi
+
 # Report results
 if [ ${#VIOLATIONS[@]} -gt 0 ]; then
     echo ""
@@ -56,7 +81,45 @@ if [ ${#VIOLATIONS[@]} -gt 0 ]; then
     for violation in "${VIOLATIONS[@]}"; do
         echo "  🔒 $violation"
     done
+    echo "
+elif [ ${#THERAPIST_VIOLATIONS[@]} -gt 0 ] && [ "$ADMIN_UNLOCK_EXISTS" = false ]; then
     echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🚫 CI FAILED: THERAPIST SYSTEM LOCK VIOLATION"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "The following therapist files have been modified without admin unlock:"
+    for violation in "${THERAPIST_VIOLATIONS[@]}"; do
+        echo "  🔒 $violation"
+    done
+    echo ""
+    echo "⚠️  Therapist dashboard and login are revenue-critical systems."
+    echo "    Changes require explicit admin unlock flag."
+    echo ""
+    echo "Required file: ADMIN_UNLOCK_THERAPIST.flag"
+    echo ""
+    echo "📋 Required actions:"
+    echo "  1. Review: PRODUCTION_LOCK_THERAPIST.md"
+    echo "  2. Open GitHub Issue requesting admin unlock"
+    echo "  3. Tag @Philip2024394 for approval"
+    echo "  4. Wait for unlock flag to be created"
+    echo "  5. Retry deployment after flag is present"
+    echo ""
+    echo "🚫 Deployment blocked to protect production stability."
+    echo ""
+    exit 1
+elif [ ${#THERAPIST_VIOLATIONS[@]} -gt 0 ] && [ "$ADMIN_UNLOCK_EXISTS" = true ]; then
+    echo ""
+    echo "✅ CI: Admin unlock detected - Therapist changes allowed"
+    echo ""
+    echo "Modified therapist files:"
+    for violation in "${THERAPIST_VIOLATIONS[@]}"; do
+        echo "  📝 $violation"
+    done
+    echo ""
+    echo "⚠️  REMINDER: Remove ADMIN_UNLOCK_THERAPIST.flag after deployment!"
+    echo ""
+    exit 0"
     echo "⚠️  These files are under PRODUCTION LOCK to prevent app outages."
     echo ""
     echo "Landing and loading pages were previously crashing."

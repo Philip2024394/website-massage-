@@ -1,0 +1,39 @@
+# 🔑 ADMIN UNLOCK - THERAPIST SYSTEM
+# This flag permits modifications to locked therapist files
+
+# ⚠️ DO NOT COMMIT THIS FILE ACCIDENTALLY
+# Remove this flag immediately after changes are complete
+
+# Unlock Configuration
+ADMIN_UNLOCK=true
+SCOPE=THERAPIST_DASHBOARD
+ISSUED_BY=@Philip2024394
+DEVELOPER=YourGitHubUsername
+DATE=2026-02-09
+EXPIRES=2026-02-10
+
+# Change Details
+REASON=Brief description of why changes are needed
+FILES=TherapistDashboardPage.tsx, CommissionPayment.tsx
+ISSUE=GitHub Issue #123
+EMERGENCY=false
+
+# Approval
+APPROVED_BY=@Philip2024394
+APPROVAL_DATE=2026-02-09
+
+# Instructions
+# 1. Only create this file after owner approval
+# 2. Fill in all fields above
+# 3. Make ONLY the approved changes
+# 4. Remove this file immediately after completion
+#    git rm ADMIN_UNLOCK_THERAPIST.flag
+#    git commit -m "Remove admin unlock - changes complete"
+# 5. Verify lock is re-engaged
+
+# Emergency Usage
+# If using for emergency (production down):
+# - Set EMERGENCY=true
+# - Fill in REASON with emergency details
+# - Notify owner IMMEDIATELY
+# - Document in PRODUCTION_LOCK_THERAPIST.md audit trail

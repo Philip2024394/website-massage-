@@ -1,3 +1,24 @@
+/**
+ * 🔒 PRODUCTION LOCK — THERAPIST SYSTEM (ADMIN CONTROLLED)
+ *
+ * This file is LIVE and revenue-critical.
+ * Layout, navigation, and mounting behavior are locked.
+ *
+ * FORBIDDEN:
+ * - Changing layout structure
+ * - Modifying navigation routing
+ * - Changing sidebar menu structure
+ * - Adding conditional redirects
+ * - Modifying component lifecycle
+ *
+ * ALLOWED:
+ * - Menu labels and translations
+ * - Styling, colors, animations
+ * - UI elements (badges, tooltips)
+ *
+ * 🔑 Admin unlock required: ADMIN_UNLOCK_THERAPIST.flag
+ * Unauthorized edits cause production instability.
+ */
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 // 🔧 FIX: Reduced sidebar header padding p-6 → p-4 for cleaner spacing
 // 🔧 FIX: Optimized main content bottom padding from 80px to 60px, wrapper from 60px to 40px
