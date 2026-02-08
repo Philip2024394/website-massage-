@@ -7,6 +7,7 @@
 
 import React, { Component } from 'react';
 import { authService } from '../lib/appwriteService';
+import { logger } from '../utils/logger';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -48,7 +49,7 @@ class TherapistRouteGuard extends Component<RouteGuardProps, RouteGuardState> {
       if (this.props.requiresAuth) {
         const user = await authService.getCurrentUser();
         if (!user) {
-          console.warn('🔒 [ROUTE GUARD] Authentication required but user not found');
+          logger.warn('🔒 [ROUTE GUARD] Authentication required but user not found');
           this.setState({ 
             isAuthValid: false, 
             error: 'Authentication required',
@@ -68,7 +69,7 @@ class TherapistRouteGuard extends Component<RouteGuardProps, RouteGuardState> {
       });
       
     } catch (error) {
-      console.error('🚨 [ROUTE GUARD] Route validation failed:', error);
+      logger.error('🚨 [ROUTE GUARD] Route validation failed:', error);
       this.handleRouteError(error as Error);
     }
   };
@@ -78,7 +79,7 @@ class TherapistRouteGuard extends Component<RouteGuardProps, RouteGuardState> {
     // In production, this could ping endpoints, check component availability, etc.
     return new Promise((resolve) => {
       setTimeout(() => {
-        console.log(`✅ [ROUTE GUARD] Route "${this.props.routeName}" is healthy`);
+        logger.debug(`✅ [ROUTE GUARD] Route "${this.props.routeName}" is healthy`);
         resolve(true);
       }, 500);
     });
@@ -88,7 +89,7 @@ class TherapistRouteGuard extends Component<RouteGuardProps, RouteGuardState> {
     this.retryCount++;
     
     if (this.retryCount <= this.maxRetries) {
-      console.log(`🔄 [ROUTE GUARD] Retrying route validation (${this.retryCount}/${this.maxRetries})`);
+      logger.debug(`🔄 [ROUTE GUARD] Retrying route validation (${this.retryCount}/${this.maxRetries})`);
       setTimeout(() => this.validateRoute(), 1000 * this.retryCount);
     } else {
       this.setState({ 
@@ -101,7 +102,7 @@ class TherapistRouteGuard extends Component<RouteGuardProps, RouteGuardState> {
 
   private handleFallback = () => {
     const fallbackRoute = this.props.fallbackRoute || '/dashboard/therapist';
-    console.log(`🔀 [ROUTE GUARD] Redirecting to fallback: ${fallbackRoute}`);
+    logger.info(`🔀 [ROUTE GUARD] Redirecting to fallback: ${fallbackRoute}`);
     window.location.href = fallbackRoute;
   };
 

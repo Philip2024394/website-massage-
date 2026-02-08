@@ -214,7 +214,7 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
               customerAddress={location || 'Customer Location'}
               isBookingAccepted={bookingAccepted}
               onStatusUpdate={(status) => {
-                console.log('Journey status updated:', status);
+                logger.debug('Journey status updated:', status);
               }}
             />
             
@@ -370,7 +370,7 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
                     // Sequence sound to indicate broadcast chain
                     void playSequence(['bookingBroadcast']);
                   } catch (e) {
-                    console.warn('Decline broadcast failed', e);
+                    logger.warn('Decline broadcast failed', e);
                   } finally {
                     onClose();
                   }

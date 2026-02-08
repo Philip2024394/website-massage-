@@ -1,6 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React from 'react';
 import type { Language } from '../types/pageTypes';
+import { logger } from '../utils/logger';
 
 interface SimpleTestPageProps {
     language: Language;
@@ -8,8 +9,8 @@ interface SimpleTestPageProps {
 }
 
 const SimpleTestPage: React.FC<SimpleTestPageProps> = ({ language, translations }) => {
-    console.log('🧪 SimpleTestPage: Current language:', language);
-    console.log('🧪 SimpleTestPage: Translations:', translations);
+    logger.debug('🧪 SimpleTestPage: Current language:', language);
+    logger.debug('🧪 SimpleTestPage: Translations:', translations);
 
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-blue-50 to-indigo-100 p-8">

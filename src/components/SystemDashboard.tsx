@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { analyticsService } from '../lib/analyticsService';
 import { healthMonitoringService } from '../lib/healthMonitoringService';
 import { automatedBackupService } from '../lib/automatedBackupService';
+import { logger } from '../utils/logger';
 
 /**
  * 📊 System Analytics & Monitoring Dashboard
@@ -85,7 +86,7 @@ const SystemDashboard: React.FC = () => {
 
             setBackupHistory(backupData);
         } catch (error) {
-            console.error('Failed to load dashboard data:', error);
+            logger.error('Failed to load dashboard data:', error);
         } finally {
             setLoading(false);
         }
@@ -97,7 +98,7 @@ const SystemDashboard: React.FC = () => {
             const healthReport = await healthMonitoringService.performHealthCheck();
             setHealthDetails(healthReport);
         } catch (error) {
-            console.error('Health check failed:', error);
+            logger.error('Health check failed:', error);
         } finally {
             setLoading(false);
         }
@@ -109,7 +110,7 @@ const SystemDashboard: React.FC = () => {
             await automatedBackupService.performBackup();
             await loadDashboardData(); // Refresh data after backup
         } catch (error) {
-            console.error('Backup failed:', error);
+            logger.error('Backup failed:', error);
         } finally {
             setLoading(false);
         }

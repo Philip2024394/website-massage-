@@ -1,6 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState, useEffect } from 'react';
 import { autoTranslationService, ALL_LANGUAGES, BASIC_LANGUAGES, TRANSLATION_SCOPES } from '../lib/autoTranslationService';
+import { logger } from '../utils/logger';
 
 interface TranslationManagerProps {
     onClose?: () => void;
@@ -27,7 +28,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ onClose }) => {
             const translationStats = await autoTranslationService.getTranslationStats();
             setStats(translationStats);
         } catch (error) {
-            console.error('Error loading translation stats:', error);
+            logger.error('Error loading translation stats:', error);
         }
     };
 
