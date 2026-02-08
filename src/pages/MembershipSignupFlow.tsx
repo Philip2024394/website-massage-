@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, ArrowLeft, Upload, Clock, AlertTriangle, User, Building2, Sparkles } from 'lucide-react';
 import { membershipSignupService, type PlanType, type PortalType, type MembershipSignup } from '../lib/services/membershipSignup.service';
+import { InputValidator } from '../lib/inputValidator.production';
 
 type Step = 'plan' | 'terms' | 'portal' | 'account' | 'profile' | 'payment';
 
@@ -15,6 +16,22 @@ interface FormData {
     confirmPassword: string;
     name: string;
     whatsapp: string;
+}
+
+interface ValidationErrors {
+    name?: string;
+    email?: string;
+    whatsapp?: string;
+    password?: string;
+    confirmPassword?: string;
+}
+
+interface TouchedFields {
+    name?: boolean;
+    email?: boolean;
+    whatsapp?: boolean;
+    password?: boolean;
+    confirmPassword?: boolean;
 }
 
 const STEPS: { id: Step; title: string; description: string }[] = [
@@ -47,6 +64,8 @@ const MembershipSignupFlow: React.FC = () => {
     const [memberId, setMemberId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+    const [touchedFields, setTouchedFields] = useState<TouchedFields>({});
     const [paymentDeadline, setPaymentDeadline] = useState<string | null>(null);
     const [countdown, setCountdown] = useState({ hours: 5, minutes: 0, seconds: 0, expired: false });
 
@@ -152,17 +171,69 @@ const MembershipSignupFlow: React.FC = () => {
         }
     };
 
+    // Validation helper functions
+    const validateField = (field: string, value: string): string | null => {
+        switch (field) {
+            case 'name':
+                return InputValidator.validateText(value, 2, 100);
+            case 'email':
+                return InputValidator.validateEmail(value);
+            case 'whatsapp':
+                return InputValidator.validatePhone(value);
+            case 'password':
+                return InputValidator.validatePassword(value);
+            case 'confirmPassword':
+                if (value !== formData.password) {
+                    return 'Passwords do not match';
+                }
+                return null;
+            default:
+                return null;
+        }
+    };
+
+    const handleFieldBlur = (field: string) => {
+        setTouchedFields(prev => ({ ...prev, [field]: true }));
+        const error = validateField(field, formData[field as keyof FormData] as string);
+        setValidationErrors(prev => ({ ...prev, [field]: error }));
+    };
+
+    const handleFieldChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        // Only validate if field was already touched
+        if (touchedFields[field]) {
+            const error = validateField(field, value);
+            setValidationErrors(prev => ({ ...prev, [field]: error }));
+        }
+    };
+
     const handleAccountCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!signupId) return;
 
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
+        // Validate all fields
+        const fields = ['name', 'email', 'whatsapp', 'password', 'confirmPassword'];
+        const errors: ValidationErrors = {};
+        let hasErrors = false;
 
-        if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters');
+        fields.forEach(field => {
+            const error = validateField(field, formData[field as keyof FormData] as string);
+            if (error) {
+                errors[field] = error;
+                hasErrors = true;
+            }
+        });
+
+        if (hasErrors) {
+            setValidationErrors(errors);
+            setTouchedFields({
+                name: true,
+                email: true,
+                whatsapp: true,
+                password: true,
+                confirmPassword: true
+            });
+            setError('Please fix validation errors before continuing');
             return;
         }
 
@@ -347,6 +418,10 @@ const MembershipSignupFlow: React.FC = () => {
                         onSubmit={handleAccountCreate}
                         onBack={goBack}
                         loading={loading}
+                        validationErrors={validationErrors}
+                        touchedFields={touchedFields}
+                        onFieldChange={handleFieldChange}
+                        onFieldBlur={handleFieldBlur}
                     />
                 )}
 
@@ -669,7 +744,11 @@ const AccountCreationStep: React.FC<{
     onSubmit: (e: React.FormEvent) => void;
     onBack: () => void;
     loading: boolean;
-}> = ({ formData, setFormData, onSubmit, onBack, loading }) => (
+    validationErrors: ValidationErrors;
+    touchedFields: TouchedFields;
+    onFieldChange: (field: string, value: string) => void;
+    onFieldBlur: (field: string) => void;
+}> = ({ formData, setFormData, onSubmit, onBack, loading, validationErrors, touchedFields, onFieldChange, onFieldBlur }) => (
     <form onSubmit={onSubmit} className="space-y-6 max-w-md mx-auto">
         <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Create Account</h1>
@@ -682,11 +761,19 @@ const AccountCreationStep: React.FC<{
                 <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => onFieldChange('name', e.target.value)}
+                    onBlur={() => onFieldBlur('name')}
                     required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                        touchedFields.name && validationErrors.name
+                            ? 'border-red-500 focus:border-red-500'
+                            : 'border-gray-200 focus:border-orange-500'
+                    }`}
                     placeholder="Your full name"
                 />
+                {touchedFields.name && validationErrors.name && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
+                )}
             </div>
 
             <div>
@@ -694,11 +781,19 @@ const AccountCreationStep: React.FC<{
                 <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) => onFieldChange('email', e.target.value)}
+                    onBlur={() => onFieldBlur('email')}
                     required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                        touchedFields.email && validationErrors.email
+                            ? 'border-red-500 focus:border-red-500'
+                            : 'border-gray-200 focus:border-orange-500'
+                    }`}
                     placeholder="your@email.com"
                 />
+                {touchedFields.email && validationErrors.email && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+                )}
             </div>
 
             <div>
@@ -706,11 +801,19 @@ const AccountCreationStep: React.FC<{
                 <input
                     type="tel"
                     value={formData.whatsapp}
-                    onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
+                    onChange={(e) => onFieldChange('whatsapp', e.target.value)}
+                    onBlur={() => onFieldBlur('whatsapp')}
                     required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                        touchedFields.whatsapp && validationErrors.whatsapp
+                            ? 'border-red-500 focus:border-red-500'
+                            : 'border-gray-200 focus:border-orange-500'
+                    }`}
                     placeholder="+62 812 3456 7890"
                 />
+                {touchedFields.whatsapp && validationErrors.whatsapp && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.whatsapp}</p>
+                )}
             </div>
 
             <div>
@@ -718,12 +821,20 @@ const AccountCreationStep: React.FC<{
                 <input
                     type="password"
                     value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    onChange={(e) => onFieldChange('password', e.target.value)}
+                    onBlur={() => onFieldBlur('password')}
                     required
                     minLength={8}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                        touchedFields.password && validationErrors.password
+                            ? 'border-red-500 focus:border-red-500'
+                            : 'border-gray-200 focus:border-orange-500'
+                    }`}
                     placeholder="Min. 8 characters"
                 />
+                {touchedFields.password && validationErrors.password && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+                )}
             </div>
 
             <div>
@@ -731,11 +842,19 @@ const AccountCreationStep: React.FC<{
                 <input
                     type="password"
                     value={formData.confirmPassword}
-                    onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    onChange={(e) => onFieldChange('confirmPassword', e.target.value)}
+                    onBlur={() => onFieldBlur('confirmPassword')}
                     required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                        touchedFields.confirmPassword && validationErrors.confirmPassword
+                            ? 'border-red-500 focus:border-red-500'
+                            : 'border-gray-200 focus:border-orange-500'
+                    }`}
                     placeholder="Confirm password"
                 />
+                {touchedFields.confirmPassword && validationErrors.confirmPassword && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
+                )}
             </div>
         </div>
 
