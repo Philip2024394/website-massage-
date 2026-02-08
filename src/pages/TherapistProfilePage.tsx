@@ -15,6 +15,7 @@ import { Building, Sparkles } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import MusicPlayer from '../components/MusicPlayer';
+import { logger } from '../utils/logger';
 
 interface TherapistProfilePageProps {
     therapist: any;

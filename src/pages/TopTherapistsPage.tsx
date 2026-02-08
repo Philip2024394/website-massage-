@@ -6,6 +6,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { ArrowLeft, Star, Calendar, Eye } from 'lucide-react';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import FloatingPageFooter from '../components/FloatingPageFooter';
+import { logger } from '../utils/logger';
 
 interface TopTherapistsPageProps {
     t: any;
