@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState, useEffect } from 'react';
 import { systemHealthService } from '../../lib/systemHealthService';
+import { logger } from '../../utils/logger';
 
 interface SystemHealthIndicatorProps {
     memberId: string;
@@ -89,7 +90,7 @@ export default function SystemHealthIndicator({ memberId }: SystemHealthIndicato
                 alert('❌ Please enable notifications in your browser settings.');
             }
         } catch (error) {
-            console.error('Failed to request notification permission:', error);
+            logger.error('Failed to request notification permission:', error);
         }
     };
 

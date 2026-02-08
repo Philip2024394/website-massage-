@@ -4,6 +4,7 @@ import { isDiscountActive } from '../../utils/therapistCardHelpers';
 import { Share2 } from 'lucide-react';
 import { getRandomTherapistImage } from '../../utils/therapistImageUtils';
 import { devLog } from '../../utils/devMode';
+import { logger } from '../../utils/logger';
 
 interface TherapistCardHeaderProps {
     therapist: Therapist;
@@ -40,7 +41,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                     width="400"
                     height="192"
                     onError={(e) => {
-                        console.error('🖼️ Main image failed to load:', displayImage);
+                        logger.error('🖼️ Main image failed to load:', displayImage);
                         // Fallback to a working ImageKit URL
                         (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
                     }}

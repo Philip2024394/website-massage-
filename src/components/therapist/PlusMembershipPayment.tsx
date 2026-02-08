@@ -13,6 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Upload, CheckCircle, AlertCircle, Crown } from 'lucide-react';
 import { paymentConfirmationService } from '../../lib/appwriteService';
+import { logger } from '../../utils/logger';
 
 interface PlusMembershipPaymentProps {
     therapistId: string;
@@ -66,7 +67,7 @@ export const PlusMembershipPayment: React.FC<PlusMembershipPaymentProps> = ({
             );
             setPaymentStatus(latestPayment);
         } catch (error) {
-            console.error('Error loading payment status:', error);
+            logger.error('Error loading payment status:', error);
         } finally {
             setLoadingStatus(false);
         }
@@ -110,7 +111,7 @@ export const PlusMembershipPayment: React.FC<PlusMembershipPaymentProps> = ({
                 onPaymentSubmitted();
             }
         } catch (error) {
-            console.error('Error submitting payment:', error);
+            logger.error('Error submitting payment:', error);
             alert('Failed to submit payment proof. Please try again.');
         } finally {
             setUploading(false);

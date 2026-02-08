@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import EnterpriseTherapistPWAInstaller from '../../lib/components/EnterpriseTherapistPWAInstaller';
+import { logger } from '../../utils/logger';
 
 interface PWAInstallPromptProps {
   dashboardName?: string;
@@ -15,13 +16,13 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
   const [showError, setShowError] = useState(false);
 
   const handleSuccess = () => {
-    console.log('✅ [ENTERPRISE PWA] Installation successful');
+    logger.debug('✅ [ENTERPRISE PWA] Installation successful');
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 5000);
   };
 
   const handleError = (error: string) => {
-    console.error('❌ [ENTERPRISE PWA] Installation failed:', error);
+    logger.error('❌ [ENTERPRISE PWA] Installation failed:', error);
     setShowError(true);
     setTimeout(() => setShowError(false), 5000);
   };

@@ -11,6 +11,7 @@
 
 import React, { useState } from 'react';
 import './TherapistRegistrationWithTerms.css';
+import { logger } from '../../utils/logger';
 
 interface RegistrationFormData {
   name: string;
@@ -80,7 +81,7 @@ export const TherapistRegistrationWithTerms: React.FC = () => {
         status: 'active'
       };
 
-      console.log('Creating therapist account:', therapistData);
+      logger.debug('Creating therapist account:', therapistData);
 
       // await databases.createDocument('therapists', ID.unique(), therapistData);
 
@@ -89,7 +90,7 @@ export const TherapistRegistrationWithTerms: React.FC = () => {
       // Redirect to dashboard
       window.location.href = '/?page=therapist-dashboard';
     } catch (error) {
-      console.error('Registration failed:', error);
+      logger.error('Registration failed:', error);
       alert('Registration failed. Please try again.');
     }
   };

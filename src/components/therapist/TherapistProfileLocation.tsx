@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '../../utils/logger';
 import { Save, MapPin, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import LocationSelector from '../therapist/LocationSelector';
 import { LocationOption } from '../../lib/locationService';
@@ -61,7 +62,7 @@ const TherapistProfileLocation: React.FC<TherapistProfileLocationProps> = ({
       setTimeout(() => setSaveStatus('idle'), 3000);
       
     } catch (error) {
-      console.error('Error saving location:', error);
+      logger.error('Error saving location:', error);
       setSaveStatus('error');
       
       // Clear error status after 5 seconds
