@@ -18,8 +18,8 @@ import { DeviceStylesProvider } from './src/components/DeviceAware';
 import BookingStatusTracker from './src/components/BookingStatusTracker';
 import { useState, useEffect, lazy, Suspense } from 'react';
 
-// Temporarily disabled lazy loading to fix AsyncMode error
-const FloatingChatWindow = lazy(() => import('./src/chat').then(m => ({ default: m.FloatingChatWindow })));
+// Fixed lazy loading to prevent ReferenceError in bundled code
+const FloatingChatWindow = lazy(() => import('./src/chat/FloatingChatWindow'));
 // const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
 import { bookingExpirationService } from './src/services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence

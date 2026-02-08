@@ -606,7 +606,7 @@
           var hasImages = root.querySelectorAll('img').length > 0;
           var hasButtons = root.querySelectorAll('button, .btn, [role="button"], .cta-button').length > 2;
           
-          // Must have at least 3 strong indicators of real landing page content
+          // Must have at least 2 strong indicators of real landing page content (lowered from 4 to prevent getting stuck)
           var contentScore = 0;
           if (hasMainContent) contentScore += 2;
           if (hasProviderCards) contentScore += 2; 
@@ -617,8 +617,8 @@
           if (hasImages) contentScore += 1;
           if (hasButtons) contentScore += 1;
           
-          console.log('[SPLASH] Content detection - Score:', contentScore, 'Required: 4');
-          return contentScore >= 4;
+          console.log('[SPLASH] Content detection - Score:', contentScore, 'Required: 2');
+          return contentScore >= 2;
         }
         
         // Wait for React content with enhanced landing page detection
