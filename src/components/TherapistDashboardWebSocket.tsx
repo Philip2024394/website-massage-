@@ -18,6 +18,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { enterpriseWebSocketService, useWebSocketConnection, WebSocketMessage } from '../services/enterpriseWebSocketService';
 import { enterpriseScheduledReminderService } from '../services/enterpriseScheduledReminderService';
+import { logger } from '../utils/logger';
 import { bookingSoundService } from '../services/bookingSound.service';
 import { appDownloadPromptManager } from '../components/AppDownloadPrompt';
 
@@ -52,7 +53,7 @@ export const TherapistDashboardWebSocket: React.FC<TherapistDashboardWebSocketPr
   useEffect(() => {
     if (!lastMessage || !isActive) return;
 
-    console.log('🔔 [DASHBOARD_WS] Processing message:', lastMessage);
+    logger.debug('🔔 [DASHBOARD_WS] Processing message:', lastMessage);
 
     switch (lastMessage.type) {
       case 'NEW_BOOKING':
@@ -74,7 +75,7 @@ export const TherapistDashboardWebSocket: React.FC<TherapistDashboardWebSocketPr
   }, [lastMessage, isActive]);
 
   const handleNewBooking = useCallback(async (booking: any) => {
-    console.log('🆕 [NEW_BOOKING] Therapist dashboard processing new booking:', booking);
+    logger.info('🆕 [NEW_BOOKING] Therapist dashboard processing new booking:', booking);
     
     try {
       // Update booking list
@@ -105,15 +106,15 @@ export const TherapistDashboardWebSocket: React.FC<TherapistDashboardWebSocketPr
         });
       }
       
-      console.log('✅ [NEW_BOOKING] Processed successfully');
+      logger.info('✅ [NEW_BOOKING] Processed successfully');
       
     } catch (error) {
-      console.error('❌ [NEW_BOOKING] Processing failed:', error);
+      logger.error('❌ [NEW_BOOKING] Processing failed:', error);
     }
   }, [onNewBooking]);
 
   const handleBookingUpdate = useCallback(async (update: any) => {
-    console.log('🔄 [BOOKING_UPDATE] Processing update:', update);
+    logger.debug('🔄 [BOOKING_UPDATE] Processing update:', update);
     
     try {
       // Update booking in list
@@ -139,15 +140,15 @@ export const TherapistDashboardWebSocket: React.FC<TherapistDashboardWebSocketPr
         await bookingSoundService.playBookingCancellation();
       }
       
-      console.log('✅ [BOOKING_UPDATE] Processed successfully');
+      logger.info('✅ [BOOKING_UPDATE] Processed successfully');
       
     } catch (error) {
-      console.error('❌ [BOOKING_UPDATE] Processing failed:', error);
+      logger.error('❌ [BOOKING_UPDATE] Processing failed:', error);
     }
   }, [onBookingUpdate]);
 
   const handleScheduledReminder = useCallback(async (reminder: any) => {
-    console.log('⏰ [SCHEDULED_REMINDER] Processing reminder:', reminder);
+    logger.debug('⏰ [SCHEDULED_REMINDER] Processing reminder:', reminder);
     
     try {
       // Notify parent component
@@ -187,15 +188,15 @@ export const TherapistDashboardWebSocket: React.FC<TherapistDashboardWebSocketPr
         detail: reminder
       }));
       
-      console.log('✅ [SCHEDULED_REMINDER] Processed successfully');
+      logger.info('✅ [SCHEDULED_REMINDER] Processed successfully');
       
     } catch (error) {
-      console.error('❌ [SCHEDULED_REMINDER] Processing failed:', error);
+      logger.error('❌ [SCHEDULED_REMINDER] Processing failed:', error);
     }
   }, [onReminderReceived]);
 
   const handleSystemAlert = useCallback(async (alert: any) => {
-    console.log('🚨 [SYSTEM_ALERT] Processing alert:', alert);
+    logger.warn('🚨 [SYSTEM_ALERT] Processing alert:', alert);
     
     try {
       // Play system alert sound
@@ -212,10 +213,10 @@ export const TherapistDashboardWebSocket: React.FC<TherapistDashboardWebSocketPr
         });
       }
       
-      console.log('✅ [SYSTEM_ALERT] Processed successfully');
+      logger.info('✅ [SYSTEM_ALERT] Processed successfully');
       
     } catch (error) {
-      console.error('❌ [SYSTEM_ALERT] Processing failed:', error);
+      logger.error('❌ [SYSTEM_ALERT] Processing failed:', error);
     }
   }, []);
 
@@ -256,7 +257,7 @@ export const CustomerWebSocket: React.FC<CustomerWebSocketProps> = ({
   useEffect(() => {
     if (!lastMessage || !isActive) return;
 
-    console.log('📱 [CUSTOMER_WS] Processing message:', lastMessage);
+    logger.debug('📱 [CUSTOMER_WS] Processing message:', lastMessage);
 
     switch (lastMessage.type) {
       case 'BOOKING_UPDATE':
@@ -270,7 +271,7 @@ export const CustomerWebSocket: React.FC<CustomerWebSocketProps> = ({
   }, [lastMessage, isActive]);
 
   const handleBookingUpdate = useCallback(async (update: any) => {
-    console.log('🔄 [CUSTOMER_BOOKING_UPDATE] Processing update:', update);
+    logger.debug('🔄 [CUSTOMER_BOOKING_UPDATE] Processing update:', update);
     
     try {
       onBookingUpdate?.(update);
@@ -291,12 +292,12 @@ export const CustomerWebSocket: React.FC<CustomerWebSocketProps> = ({
       }
       
     } catch (error) {
-      console.error('❌ [CUSTOMER_BOOKING_UPDATE] Processing failed:', error);
+      logger.error('❌ [CUSTOMER_BOOKING_UPDATE] Processing failed:', error);
     }
   }, [onBookingUpdate]);
 
   const handleCustomerReminder = useCallback(async (reminder: any) => {
-    console.log('⏰ [CUSTOMER_REMINDER] Processing reminder:', reminder);
+    logger.debug('⏰ [CUSTOMER_REMINDER] Processing reminder:', reminder);
     
     try {
       onReminderReceived?.(reminder);
@@ -329,7 +330,7 @@ export const CustomerWebSocket: React.FC<CustomerWebSocketProps> = ({
       }
       
     } catch (error) {
-      console.error('❌ [CUSTOMER_REMINDER] Processing failed:', error);
+      logger.error('❌ [CUSTOMER_REMINDER] Processing failed:', error);
     }
   }, [onReminderReceived]);
 
@@ -345,7 +346,7 @@ export const BookingWindowAutoUpdate: React.FC<{
 }> = ({ onRefresh }) => {
   useEffect(() => {
     const handleRefresh = () => {
-      console.log('🔄 [AUTO_UPDATE] Refreshing booking window...');
+      logger.debug('🔄 [AUTO_UPDATE] Refreshing booking window...');
       onRefresh?.();
       
       // Trigger refresh of all booking-related components
