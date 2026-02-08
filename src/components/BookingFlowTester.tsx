@@ -77,7 +77,7 @@ const BookingFlowTester: React.FC<BookingFlowTesterProps> = ({
     ];
 
     try {
-      console.log('🧪 Starting comprehensive booking flow test...');
+      logger.debug('🧪 Starting comprehensive booking flow test...');
 
       let results: TestResult[] = [];
       let testIndex = 0;
@@ -102,7 +102,7 @@ const BookingFlowTester: React.FC<BookingFlowTesterProps> = ({
         unsubscribe = bookingService.subscribeToProviderBookings(
           therapistId,
           (newBooking: any) => {
-            console.log('🔔 Booking subscription received:', newBooking);
+            logger.debug('🔔 Booking subscription received:', newBooking);
             subscriptionReceived = true;
           }
         );
@@ -437,10 +437,10 @@ const BookingFlowTester: React.FC<BookingFlowTesterProps> = ({
       setTestResults(results);
       
       const passed = results.filter(r => r.success).length;
-      console.log(`🧪 Comprehensive booking flow test completed: ${passed}/${results.length} tests passed`);
+      logger.debug(`🧪 Comprehensive booking flow test completed: ${passed}/${results.length} tests passed`);
       
     } catch (error) {
-      console.error('❌ Comprehensive test failed:', error);
+      logger.error('❌ Comprehensive test failed:', error);
       setTestResults([{
         testName: 'Complete Test Suite',
         success: false,

@@ -65,7 +65,7 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
 
   // DEBUG: Log when component mounts
   useEffect(() => {
-    console.log('🎯 [BookingCountdown] Component mounted:', {
+    logger.debug('🎯 [BookingCountdown] Component mounted:', {
       deadline,
       role,
       bookingId,
@@ -81,7 +81,7 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
       const now = Date.now();
       const timeLeft = Math.max(0, deadlineTime - now);
       
-      console.log('⏰ [BookingCountdown] Tick:', {
+      logger.debug('⏰ [BookingCountdown] Tick:', {
         deadlineTime,
         now,
         timeLeft,
@@ -92,7 +92,7 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
 
       // Auto-expire when countdown reaches 0
       if (timeLeft === 0 && onExpire) {
-        console.log('⏰ [BookingCountdown] EXPIRED - calling onExpire');
+        logger.debug('⏰ [BookingCountdown] EXPIRED - calling onExpire');
         onExpire();
       }
     };

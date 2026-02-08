@@ -23,6 +23,7 @@ import { Shield, AlertTriangle, CheckCircle, Clock, MapPin, Phone } from 'lucide
 import { bookingAntiSpamService, type BookingValidationRequest } from '../services/bookingAntiSpamService';
 import PhoneVerificationModal from './PhoneVerificationModal';
 import { SimpleGPSUtils } from '../services/simpleGPSBookingIntegration';
+import { logger } from '../utils/logger';
 
 interface AntiSpamBookingProps {
   // Therapist/Service data
@@ -154,7 +155,7 @@ export const AntiSpamBookingComponent: React.FC<AntiSpamBookingProps> = ({
       setWarnings(result.warnings);
       
     } catch (error) {
-      console.warn('Quick validation failed:', error);
+      logger.warn('Quick validation failed:', error);
     }
   };
 
@@ -198,7 +199,7 @@ export const AntiSpamBookingComponent: React.FC<AntiSpamBookingProps> = ({
       await createBooking();
 
     } catch (error) {
-      console.error('Validation failed:', error);
+      logger.error('Validation failed:', error);
       setErrors(['Validation failed. Please try again.']);
     } finally {
       setIsValidating(false);
@@ -235,13 +236,13 @@ export const AntiSpamBookingComponent: React.FC<AntiSpamBookingProps> = ({
         deviceFingerprint: await generateDeviceFingerprint()
       };
 
-      console.log('🛡️ [PROTECTED BOOKING] Creating validated booking:', finalBookingData);
+      logger.debug('🛡️ [PROTECTED BOOKING] Creating validated booking:', finalBookingData);
 
       // Complete the booking
       onBookingComplete(finalBookingData);
 
     } catch (error) {
-      console.error('Booking creation failed:', error);
+      logger.error('Booking creation failed:', error);
       setErrors(['Booking creation failed. Please try again.']);
     } finally {
       setIsBooking(false);
