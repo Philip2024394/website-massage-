@@ -4,6 +4,7 @@
  */
 
 import { Client, Databases, Storage, ID, Query } from 'appwrite';
+import { logger } from '../utils/logger';
 import type { 
     SafePassApplication, 
     SafePassSubmissionData, 
@@ -59,7 +60,7 @@ class SafePassService {
 
             return response as SafePassApplication;
         } catch (error) {
-            console.error('Error submitting SafePass application:', error);
+            logger.error('Error submitting SafePass application:', error);
             throw error;
         }
     }
@@ -79,7 +80,7 @@ class SafePassService {
             
             return fileUrl;
         } catch (error) {
-            console.error('Error uploading SafePass letter:', error);
+            logger.error('Error uploading SafePass letter:', error);
             throw error;
         }
     }
@@ -97,7 +98,7 @@ class SafePassService {
 
             return response as SafePassApplication;
         } catch (error) {
-            console.error('Error fetching SafePass application:', error);
+            logger.error('Error fetching SafePass application:', error);
             return null;
         }
     }
@@ -124,7 +125,7 @@ class SafePassService {
 
             return null;
         } catch (error) {
-            console.error('Error fetching SafePass application by entity:', error);
+            logger.error('Error fetching SafePass application by entity:', error);
             return null;
         }
     }
@@ -151,7 +152,7 @@ class SafePassService {
 
             return response.documents as SafePassApplication[];
         } catch (error) {
-            console.error('Error listing SafePass applications:', error);
+            logger.error('Error listing SafePass applications:', error);
             return [];
         }
     }
@@ -193,7 +194,7 @@ class SafePassService {
 
             return response as SafePassApplication;
         } catch (error) {
-            console.error('Error approving SafePass application:', error);
+            logger.error('Error approving SafePass application:', error);
             throw error;
         }
     }
@@ -222,7 +223,7 @@ class SafePassService {
 
             return response as SafePassApplication;
         } catch (error) {
-            console.error('Error activating SafePass:', error);
+            logger.error('Error activating SafePass:', error);
             throw error;
         }
     }
@@ -245,7 +246,7 @@ class SafePassService {
 
             return response as SafePassApplication;
         } catch (error) {
-            console.error('Error revoking SafePass:', error);
+            logger.error('Error revoking SafePass:', error);
             throw error;
         }
     }
@@ -267,7 +268,7 @@ class SafePassService {
 
             return stats;
         } catch (error) {
-            console.error('Error fetching SafePass stats:', error);
+            logger.error('Error fetching SafePass stats:', error);
             return {
                 total: 0,
                 pending: 0,
@@ -294,7 +295,7 @@ class SafePassService {
 
             return response as SafePassApplication;
         } catch (error) {
-            console.error('Error updating SafePass status:', error);
+            logger.error('Error updating SafePass status:', error);
             throw error;
         }
     }
@@ -312,7 +313,7 @@ class SafePassService {
 
             return true;
         } catch (error) {
-            console.error('Error deleting SafePass application:', error);
+            logger.error('Error deleting SafePass application:', error);
             return false;
         }
     }
