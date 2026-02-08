@@ -1,6 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // Component Error Boundary specifically for icon-related errors
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { logger } from '../utils/logger';
 import { AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -30,11 +31,11 @@ export class IconErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Icon Error Boundary caught an error:', error, errorInfo);
+    logger.error('Icon Error Boundary caught an error:', error, errorInfo);
     
     // Log specific information for debugging
     if (this.props.componentName) {
-      console.error(`Error in component: ${this.props.componentName}`);
+      logger.error(`Error in component: ${this.props.componentName}`);
     }
   }
 

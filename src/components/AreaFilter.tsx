@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin } from 'lucide-react';
 import { getServiceAreasForCity, ServiceArea } from '../constants/serviceAreas';
 import { useLanguageContext } from '../context/LanguageContext';
+import { logger } from '../utils/logger';
 
 interface AreaFilterProps {
   city: string;
@@ -22,7 +23,7 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
     
     // Defensive: Ensure city is valid
     if (!city || typeof city !== 'string') {
-      console.warn('AreaFilter: Invalid city provided:', city);
+      logger.warn('AreaFilter: Invalid city provided:', city);
       return null;
     }
     
@@ -54,7 +55,7 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
       if (!area) return '';
       return language === 'id' ? (area.nameId || area.name) : area.name;
     } catch (error) {
-      console.error('AreaFilter: Error getting area name:', error);
+      logger.error('AreaFilter: Error getting area name:', error);
       return area?.name || '';
     }
   };
@@ -179,7 +180,7 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
     </div>
   );
   } catch (error) {
-    console.error('AreaFilter: Component crashed:', error);
+    logger.error('AreaFilter: Component crashed:', error);
     return (
       <div className={`relative ${className} p-4 bg-red-50 border border-red-200 rounded-xl`}>
         <p className="text-sm text-red-600">Unable to load location filter</p>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Language } from '../types/pageTypes';
 import { vscodeTranslateService } from '../lib/vscodeTranslateService';
+import { logger } from '../utils/logger';
 
 interface SimpleLanguageSelectorProps {
     currentLanguage: Language;
@@ -21,7 +22,7 @@ const SimpleLanguageSelector: React.FC<SimpleLanguageSelectorProps> = ({
     const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
     const handleLanguageSelect = (lang: Language) => {
-        console.log('🌐 SimpleLanguageSelector: Changing language to:', lang);
+        logger.debug('🌐 SimpleLanguageSelector: Changing language to:', lang);
         
         // Activate VS Code Google Translate for selected language
         vscodeTranslateService.activateOnLanguageChange(lang as 'en' | 'id');
