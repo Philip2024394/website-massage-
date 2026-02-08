@@ -96,7 +96,7 @@ const DateChangeRequestModal: React.FC<DateChangeRequestModalProps> = ({
             await onSubmitRequest(requestData);
             onClose();
         } catch (error) {
-            console.error('Error submitting date change request:', error);
+            logger.error('Error submitting date change request:', error);
         } finally {
             setIsSubmitting(false);
         }

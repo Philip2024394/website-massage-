@@ -52,7 +52,7 @@ const DistanceDisplay: React.FC<DistanceDisplayProps> = ({
           setTravelTime(result.durationText || enhancedDistanceService.formatTravelTime(result.duration));
         }
       } catch (error) {
-        console.error('Error calculating distance:', error);
+        logger.error('Error calculating distance:', error);
         setHasError(true);
         setDistance('Distance unavailable');
         setTravelTime('');

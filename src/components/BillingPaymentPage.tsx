@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { leadBillingService } from '../lib/appwriteService';
+import { logger } from '../utils/logger';
 
 interface BillingPageProps {
     providerId: string;
@@ -77,7 +78,7 @@ export default function BillingPaymentPage({
 
             setLoading(false);
         } catch (error) {
-            console.error('Error loading billing:', error);
+            logger.error('Error loading billing:', error);
             setLoading(false);
         }
     };

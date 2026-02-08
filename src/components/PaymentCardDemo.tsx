@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import PaymentCard from './PaymentCard';
 import BankDetailsForm from './BankDetailsForm';
+import { logger } from '../utils/logger';
 
 /**
  * Demo component showing the complete payment card flow
@@ -18,7 +19,7 @@ const PaymentCardDemo: React.FC = () => {
     const [demoStep, setDemoStep] = useState<'card' | 'form' | 'chat'>('card');
 
     const handleSaveBankDetails = async (details: typeof bankDetails) => {
-        console.log('💾 Saving bank details:', details);
+        logger.debug('💾 Saving bank details:', details);
         setBankDetails(details);
         setShowForm(false);
         // In real app, this would save to database

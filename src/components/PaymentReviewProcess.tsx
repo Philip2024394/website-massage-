@@ -18,6 +18,7 @@ import {
   Info
 } from 'lucide-react';
 import { showToast } from '../utils/showToastPortal';
+import { logger } from '../utils/logger';
 
 interface PaymentReviewProcessProps {
   onSubmit: (file: File, additionalData?: any) => Promise<void>;
@@ -279,7 +280,7 @@ const PaymentReviewProcess: React.FC<PaymentReviewProcessProps> = ({
       }, 1000);
 
     } catch (error: any) {
-      console.error('Payment proof submission error:', error);
+      logger.error('Payment proof submission error:', error);
       showToast('❌ ' + currentLabels.errors.uploadFailed, 'error');
     }
   };

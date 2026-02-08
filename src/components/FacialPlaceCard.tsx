@@ -142,7 +142,7 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                 }
             }, 1000);
         } catch (error) {
-            console.error('Error submitting review:', error);
+            logger.error('Error submitting review:', error);
             throw error;
         }
     };
@@ -230,7 +230,7 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
 
 
     const handleViewDetails = () => {
-        console.log('🏨 FacialPlaceCard - View Details clicked:', {
+        logger.debug('🏨 FacialPlaceCard - View Details clicked:', {
             place: place,
             placeName: place.name,
             placeId: place.id || (place as any).$id,
@@ -242,10 +242,10 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
         onSelectPlace(place);
         
         if (onNavigate) {
-            console.log('🏨 Navigating to facial-place-profile');
+            logger.debug('🏨 Navigating to facial-place-profile');
             onNavigate('facial-place-profile');
         } else {
-            console.error('❌ onNavigate is not defined!');
+            logger.error('❌ onNavigate is not defined!');
         }
     };
 
