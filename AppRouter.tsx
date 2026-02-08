@@ -19,6 +19,7 @@ import { BookingStatus } from './src/types';
 import LoadingSpinner from './src/components/LoadingSpinner';
 import { SkeletonLoader } from './src/components/SkeletonLoader';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from './src/lib/appwrite';
+import { ProductionErrorBoundary } from './src/components/ProductionErrorBoundary';
 
 // Error Boundary for lazy loading failures
 class LazyLoadErrorBoundary extends React.Component<
@@ -454,6 +455,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     />
                 {/* </Suspense> */}
             </LazyLoadErrorBoundary>
+        );
+    };
+
+    /**
+     * Render critical route with double error boundary protection
+     * Used for booking, payment, and chat routes where failures = revenue loss
+     */
+    const renderCriticalRoute = (Component: React.ComponentType<any>, componentProps: any = {}, routeName?: string) => {
+        console.log('🛡️ [renderCriticalRoute] Wrapping with ProductionErrorBoundary:', routeName || page);
+        
+        return (
+            <ProductionErrorBoundary>
+                {renderRoute(Component, componentProps, routeName)}
+            </ProductionErrorBoundary>
         );
     };
 
@@ -1186,10 +1201,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             // Redirect to home - chat will open via openChat event
             console.log('[ROUTE] chat-room accessed - redirecting to home');
             props.setPage('home');
-            return renderRoute(publicRoutes.home.component);
+            return renderCriticalRoute(publicRoutes.home.component);
         
         case 'booking':
-            return renderRoute(BookingPage);
+            return renderCriticalRoute(BookingPage);
         
         case 'membership':
             return renderRoute(MembershipPage);
@@ -1247,7 +1262,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
             
         case 'booking-quick':
-            return renderRoute(BookingPage, {
+            return renderCriticalRoute(BookingPage, {
                 quickMode: true,
                 source: 'floating-button'
             });
@@ -1299,7 +1314,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(EmployerInfoPage);
         
         case 'payment-info':
-            return renderRoute(PaymentInfoPage);
+            return renderCriticalRoute(PaymentInfoPage);
 
         // ===== GENERIC DASHBOARD ROUTE - Redirects to appropriate dashboard =====
         case 'dashboard':
@@ -1486,7 +1501,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'payment':
         case 'therapist-payment':
             console.log('[ROUTE RESOLVE] therapist-payment → TherapistPaymentInfo');
-            return renderRoute(therapistRoutes.payment.component, {
+            return renderCriticalRoute(therapistRoutes.payment.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
@@ -1497,7 +1512,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'payment-status':
         case 'therapist-payment-status':
             console.log('[ROUTE RESOLVE] payment-status/therapist-payment-status → TherapistPaymentStatus');
-            const paymentStatusComponent = renderRoute(therapistRoutes.paymentStatus.component, {
+            const paymentStatusComponent = renderCriticalRoute(therapistRoutes.paymentStatus.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
