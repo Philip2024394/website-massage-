@@ -50,6 +50,7 @@ import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoin
 import { getServiceAreasForCity } from '../../constants/serviceAreas';
 import { useCityContext } from '../../context/CityContext';
 import { locations } from '../../../locations';
+import { logger } from '../../utils/logger';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import ProPlanWarnings from '../../components/therapist/ProPlanWarnings';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
@@ -104,7 +105,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateHome,
   language = 'id' // Fixed Indonesian language for therapist dashboard
 }) => {
-  console.log('🎨 TherapistPortalPage rendering with therapist:', therapist);
+  logger.debug('TherapistPortalPage rendering', { therapist: therapist?.name || 'null' });
   
   const [saving, setSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
@@ -181,7 +182,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
-      console.warn('Failed to parse service areas:', e);
+      logger.warn('Failed to parse service areas:', e);
     }
     return [];
   });
@@ -234,27 +235,27 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // ============================================================================
   useEffect(() => {
     if (!therapist?.$id && !therapist?.id) {
-      console.log('⚠️ [BOOKING SUBSCRIPTION] No therapist ID, skipping subscription');
+      logger.debug('No therapist ID, skipping booking subscription');
       return;
     }
 
     const therapistId = String(therapist.$id || therapist.id);
-    console.log('🔔 [BOOKING SUBSCRIPTION] Starting real-time booking subscription for therapist:', therapistId);
+    logger.debug('Starting real-time booking subscription for therapist:', therapistId);
 
     try {
       // Subscribe to bookings collection for this therapist
       const channelName = `databases.${DATABASE_ID}.collections.${APPWRITE_CONFIG.collections.bookings}.documents`;
       
-      console.log('📡 [BOOKING SUBSCRIPTION] Subscribing to:', channelName);
+      logger.debug('Subscribing to booking channel:', channelName);
 
       const unsubscribe = client.subscribe(channelName, (response: any) => {
-        console.log('📨 [BOOKING SUBSCRIPTION] Real-time event received:', response);
+        logger.debug('Real-time booking event received:', response.events);
 
         // Check if this is a new booking document creation
         if (response.events.includes('databases.*.collections.*.documents.*.create')) {
           const booking = response.payload;
           
-          console.log('📋 [BOOKING SUBSCRIPTION] New booking created:', {
+          logger.debug('New booking created:', {
             bookingId: booking.$id,
             therapistId: booking.therapistId,
             customerName: booking.customerName,
@@ -263,7 +264,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
           // Check if this booking is for current therapist
           if (booking.therapistId === therapistId || booking.providerId === therapistId) {
-            console.log('🎯 [BOOKING SUBSCRIPTION] Booking is for current therapist!');
+            logger.debug('Booking is for current therapist - triggering notification');
             
             // Dispatch custom event to BookingRequestCard component
             const event = new CustomEvent('playBookingNotification', {
@@ -282,15 +283,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             // Also start sound service directly for redundancy
             try {
               bookingSoundService.startBookingAlert(booking.$id || booking.bookingId, 'pending');
-              console.log('🔊 [BOOKING SUBSCRIPTION] Sound alert started for booking:', booking.$id);
+              logger.debug('Sound alert started for booking:', booking.$id);
             } catch (soundError) {
-              console.error('❌ [BOOKING SUBSCRIPTION] Failed to start sound:', soundError);
+              logger.error('Failed to start booking sound:', soundError);
             }
 
             // Show browser toast notification
             showToast(`🔔 New Booking from ${booking.customerName || 'Customer'}`, 'success');
           } else {
-            console.log('⏭️ [BOOKING SUBSCRIPTION] Booking is for different therapist, ignoring');
+            logger.debug('Booking is for different therapist, ignoring');
           }
         }
 
@@ -299,7 +300,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           const booking = response.payload;
           
           if (booking.therapistId === therapistId || booking.providerId === therapistId) {
-            console.log('🔄 [BOOKING SUBSCRIPTION] Booking updated:', {
+            logger.debug('Booking updated:', {
               bookingId: booking.$id,
               status: booking.bookingStatus || booking.status
             });
@@ -309,9 +310,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             if (finalStatuses.includes(booking.bookingStatus) || finalStatuses.includes(booking.status)) {
               try {
                 bookingSoundService.stopBookingAlert(booking.$id || booking.bookingId);
-                console.log('🔇 [BOOKING SUBSCRIPTION] Sound stopped for booking:', booking.$id);
+                logger.debug('Sound stopped for booking:', booking.$id);
               } catch (soundError) {
-                console.error('❌ [BOOKING SUBSCRIPTION] Failed to stop sound:', soundError);
+                logger.error('Failed to stop booking sound:', soundError);
               }
 
               // Dispatch stop event
@@ -321,16 +322,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         }
       });
 
-      console.log('✅ [BOOKING SUBSCRIPTION] Real-time subscription active');
+      logger.debug('Real-time booking subscription active');
 
       // Cleanup subscription on unmount
       return () => {
-        console.log('🔌 [BOOKING SUBSCRIPTION] Unsubscribing from real-time notifications');
+        logger.debug('Unsubscribing from real-time booking notifications');
         unsubscribe();
       };
 
     } catch (error) {
-      console.error('❌ [BOOKING SUBSCRIPTION] Failed to subscribe to bookings:', error);
+      logger.error('Failed to subscribe to bookings:', error);
     }
   }, [therapist?.$id, therapist?.id]);
 
@@ -350,10 +351,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       
       try {
         const therapistId = String(therapist.$id || therapist.id);
-        console.log('🔄 Loading latest therapist data from database...', therapistId);
+        logger.debug('Loading latest therapist data from database', therapistId);
         
         const latestData = await therapistService.getById(therapistId);
-        console.log('✅ Latest therapist data loaded:', latestData);
+        logger.debug('Latest therapist data loaded', { name: latestData.name });
         
         // Update form fields with latest data
         if (latestData.name) setName(latestData.name);
@@ -368,7 +369,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         // Load profile picture
         if (latestData.profilePicture) {
           setProfileImageDataUrl(latestData.profilePicture);
-          console.log('✅ Profile picture loaded:', latestData.profilePicture);
+          logger.debug('Profile picture loaded');
         }
         
         // Handle Globe
@@ -379,7 +380,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               : latestData.Globe;
             if (Array.isArray(langs)) setSelectedGlobe(langs.slice(0, 3));
           } catch (e) {
-            console.warn('Failed to parse Globe:', e);
+            logger.warn('Failed to parse Globe:', e);
           }
         }
         
@@ -391,7 +392,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               : latestData.massageTypes;
             if (Array.isArray(types)) setSelectedMassageTypes(types.slice(0, 5));
           } catch (e) {
-            console.warn('Failed to parse massage types:', e);
+            logger.warn('Failed to parse massage types:', e);
           }
         }
         
@@ -406,12 +407,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               setLocationSet(true);
             }
           } catch (e) {
-            console.warn('Failed to parse coordinates:', e);
+            logger.warn('Failed to parse coordinates:', e);
           }
         }
         
       } catch (error) {
-        console.error('❌ Failed to load latest therapist data:', error);
+        logger.error('Failed to load latest therapist data:', error);
       }
     };
     
@@ -425,10 +426,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       if (packageStr) {
         const pkg = JSON.parse(packageStr);
         setSelectedPackage(pkg);
-        console.log('📦 Package detected from registration:', pkg);
+        logger.debug('📦 Package detected from registration', { pkg });
       }
     } catch (error) {
-      console.error('❌ Error parsing package details:', error);
+      logger.error('❌ Error parsing package details', { error });
     }
   }, []);
 
@@ -438,11 +439,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   }, [name, whatsappNumber, description, selectedMassageTypes, selectedGlobe, price60, price90, price120, yearsOfExperience, clientPreferences]);
 
   const handleSetLocation = () => {
-    console.log('🔘 Location button clicked');
+    logger.debug('🔘 Location button clicked');
     
     // Prevent multiple simultaneous requests
     if (gpsLoading) {
-      console.log('⏳ GPS request already in progress');
+      logger.debug('⏳ GPS request already in progress');
       return;
     }
     
@@ -453,41 +454,41 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     const compatCheck = checkGeolocationSupport();
     
     if (!compatCheck.supported) {
-      console.error('❌ Browser compatibility issue:', compatCheck.error);
+      logger.error('❌ Browser compatibility issue', { error: compatCheck.error });
       showToast(`❌ ${compatCheck.error}`, 'error');
       return;
     }
     
     const { browserInfo } = compatCheck;
-    console.log('✅ Browser supported:', browserInfo.name, browserInfo.version);
+    logger.debug('✅ Browser supported', { browser: browserInfo.name, version: browserInfo.version });
 
     setGpsLoading(true);
     showToast('📍 Getting your GPS location... Please allow location access', 'info');
-    console.log('📍 Requesting GPS location...');
+    logger.debug('📍 Requesting GPS location');
     
     // ✅ USE BROWSER-OPTIMIZED GEOLOCATION OPTIONS
     const geoOptions = getGeolocationOptions(browserInfo);
-    console.log('🔧 Geolocation options:', geoOptions);
+    logger.debug('🔧 Geolocation options', { geoOptions });
     
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        console.log('✅ GPS position received:', position);
+        logger.debug('✅ GPS position received', { position });
         const accuracy = position.coords.accuracy;
-        console.log(`📍 GPS accuracy: ${accuracy}m`);
+        logger.debug('📍 GPS accuracy', { accuracy: `${accuracy}m` });
         
         const coords = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
         
-        console.log('📍 Raw coordinates:', coords);
+        logger.debug('📍 Raw coordinates', { coords });
         
         // Validate GPS coordinates are within Indonesia
         const validation = validateTherapistGeopoint({ geopoint: coords });
-        console.log('🔍 Validation result:', validation);
+        logger.debug('🔍 Validation result', { validation });
         
         if (!validation.isValid) {
-          console.error('❌ GPS validation failed:', validation.error);
+          logger.error('❌ GPS validation failed', { error: validation.error });
           showToast(`❌ GPS location invalid: ${validation.error}`, 'error');
           setGpsLoading(false);
           return;
@@ -495,14 +496,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         
         // Derive city from GPS coordinates
         const derivedCity = deriveLocationIdFromGeopoint(coords);
-        console.log(`🎯 GPS-derived city: ${derivedCity}`);
+        logger.debug('🎯 GPS-derived city', { derivedCity });
         
         setCoordinates(coords);
         setLocationSet(true);
         
         // 🌍 CRITICAL FIX: IMMEDIATELY SAVE GPS TO DATABASE
         // "Set Location" button is the SINGLE SOURCE OF TRUTH for location
-        console.log('💾 Saving GPS location immediately to database...');
+        logger.debug('💾 Saving GPS location immediately to database');
         
         try {
             await therapistService.update(String(therapist.$id || therapist.id), {
@@ -514,29 +515,29 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 isLive: true // GPS location enables marketplace visibility
             });
             
-            console.log('✅ GPS location saved immediately to database');
-            console.log('✅ City assignment:', derivedCity);
+            logger.debug('✅ GPS location saved immediately to database');
+            logger.debug('✅ City assignment', { derivedCity });
             
             // Verify the save
             setTimeout(async () => {
                 try {
                     const updated = await therapistService.getById(String(therapist.$id || therapist.id));
                     if (updated.city === derivedCity && updated.locationId === derivedCity) {
-                        console.log('✅ VERIFICATION PASSED: GPS location saved correctly');
+                        logger.debug('✅ VERIFICATION PASSED: GPS location saved correctly');
                     } else {
-                        console.error('❌ VERIFICATION FAILED:', {
+                        logger.error('❌ VERIFICATION FAILED', {
                             expected: derivedCity,
                             savedCity: updated.city,
                             savedLocationId: updated.locationId
                         });
                     }
                 } catch (verifyError) {
-                    console.warn('⚠️ Could not verify GPS save:', verifyError);
+                    logger.warn('⚠️ Could not verify GPS save', { verifyError });
                 }
             }, 1000);
             
         } catch (saveError) {
-            console.error('❌ Failed to save GPS to database:', saveError);
+            logger.error('❌ Failed to save GPS to database', { saveError });
             showToast('⚠️ GPS captured but not saved. Please try again or contact support.', 'error');
             setGpsLoading(false);
             return;
@@ -550,24 +551,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             showToast(`✅ GPS location saved! You are now live in ${derivedCity}.`, 'success');
         }
         
-        console.log('✅ Location state updated successfully');
+        logger.debug('✅ Location state updated successfully');
       },
       (error) => {
         setGpsLoading(false);
-        console.error('❌ GPS error occurred:', error);
-        console.error('Error code:', error.code);
-        console.error('Error message:', error.message);
+        logger.error('❌ GPS error occurred', { error, code: error.code, message: error.message });
         
         // ✅ USE BROWSER-SPECIFIC ERROR FORMATTING
         const errorMessage = formatGeolocationError(error, browserInfo);
-        console.error('📱 Formatted error:', errorMessage);
+        logger.error('📱 Formatted error', { errorMessage });
         
         showToast(`❌ ${errorMessage}`, 'error');
       },
       geoOptions
     );
     
-    console.log('⏳ Waiting for GPS response...');
+    logger.debug('⏳ Waiting for GPS response');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -607,17 +606,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   };
 
   const handleSaveProfile = async () => {
-    console.log('🚀 handleSaveProfile called');
+    logger.debug('🚀 handleSaveProfile called');
     if (!therapist) {
-      console.error('❌ No therapist data found');
+      logger.error('❌ No therapist data found');
       showToast('❌ Error: Therapist data not loaded', 'error');
       return;
     }
-    console.log('📝 Starting save with therapist:', therapist.$id || therapist.id);
-    console.log('👤 Therapist name:', therapist.name);
-    console.log('📧 Therapist email:', therapist.email);
-    console.log('🔍 Full therapist object keys:', Object.keys(therapist));
-    console.log('🎯 Using ID for update:', String(therapist.$id || therapist.id));
+    logger.debug('📝 Starting save with therapist', {
+      id: therapist.$id || therapist.id,
+      name: therapist.name,
+      email: therapist.email,
+      keys: Object.keys(therapist),
+      updateId: String(therapist.$id || therapist.id)
+    });
     setSaving(true);
     
     try {
@@ -655,18 +656,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       // Upload profile image to Appwrite Storage if changed
       let profilePictureUrl = therapist.profilePicture;
       if (profileImageDataUrl && profileImageDataUrl.startsWith('data:')) {
-        console.log('📤 Uploading profile image to Appwrite Storage...');
+        logger.debug('📤 Uploading profile image to Appwrite Storage');
         try {
           profilePictureUrl = await imageUploadService.uploadProfileImage(profileImageDataUrl);
-          console.log('✅ Profile image uploaded:', profilePictureUrl);
+          logger.debug('✅ Profile image uploaded', { profilePictureUrl });
         } catch (uploadError) {
-          console.error('❌ Failed to upload profile image:', uploadError);
+          logger.error('❌ Failed to upload profile image', { uploadError });
           showToast('⚠️ Image upload failed, saving without image', 'error');
         }
       }
 
       // 🌍 VALIDASI LOKASI GPS - WAJIB UNTUK ONLINE
-      console.log('🌍 Memvalidasi persyaratan GPS WAJIB...');
+      logger.debug('🌍 Memvalidasi persyaratan GPS WAJIB');
       
       // LANGKAH 1: Koordinat GPS SANGAT DIPERLUKAN
       if (!coordinates || !coordinates.lat || !coordinates.lng) {
@@ -676,7 +677,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       }
       
       const geopoint = { lat: coordinates.lat, lng: coordinates.lng };
-      console.log('📍 GPS coordinates for save:', geopoint);
+      logger.debug('📍 GPS coordinates for save', { geopoint });
       
       // STEP 2: Validate GPS is within Indonesia bounds
       const validation = validateTherapistGeopoint({ geopoint });
@@ -688,9 +689,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       
       // STEP 3: Auto-derive city from GPS (GPS IS ONLY SOURCE OF TRUTH)
       const derivedLocationId = deriveLocationIdFromGeopoint(geopoint);
-      console.log('🏷️ GPS-derived city (ONLY SOURCE):', derivedLocationId);
+      logger.debug('🏷️ GPS-derived city (ONLY SOURCE)', { derivedLocationId });
       
-      console.log('✅ Geopoint validation passed');
+      logger.debug('✅ Geopoint validation passed');
 
       const updateData: any = {
         name: name.trim(),
@@ -726,16 +727,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       }
 
       const savedTherapist = await therapistService.update(String(therapist.$id || therapist.id), updateData);
-      console.log('✅ Profile saved to Appwrite:', savedTherapist);
+      logger.debug('✅ Profile saved to Appwrite', { savedTherapist });
       
       // 🌍 GEO-BASED VERIFICATION
       const savedGeopoint = extractGeopoint(savedTherapist);
       if (savedGeopoint && 
           Math.abs(savedGeopoint.lat - geopoint.lat) < 0.001 && 
           Math.abs(savedGeopoint.lng - geopoint.lng) < 0.001) {
-        console.log('✅ GEOPOINT SAVE VERIFIED:', savedGeopoint);
+        logger.debug('✅ GEOPOINT SAVE VERIFIED', { savedGeopoint });
       } else {
-        console.error('❌ GEOPOINT SAVE FAILED!', {
+        logger.error('❌ GEOPOINT SAVE FAILED', {
           expected: geopoint,
           saved: savedGeopoint
         });
@@ -743,9 +744,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       
       // Verify locationId and city
       if (savedTherapist.locationId === derivedLocationId && savedTherapist.city === derivedLocationId) {
-        console.log('✅ LOCATION ID & CITY SAVE VERIFIED:', derivedLocationId);
+        logger.debug('✅ LOCATION ID & CITY SAVE VERIFIED', { derivedLocationId });
       } else {
-        console.error('❌ LOCATION SAVE FAILED!', {
+        logger.error('❌ LOCATION SAVE FAILED', {
           expected: derivedLocationId,
           savedLocationId: savedTherapist.locationId,
           savedCity: savedTherapist.city
@@ -753,11 +754,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       }
 
       // Wait a moment for database to fully commit changes
-      console.log('⏳ Waiting for database to commit changes...');
+      logger.debug('⏳ Waiting for database to commit changes');
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Auto-translate profile data to both Globe
-      console.log('🌐 Auto-translating profile data...');
+      logger.debug('🌐 Auto-translating profile data');
       try {
         const { adminTranslationService } = await import('../../lib/translationService');
         
@@ -776,12 +777,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         );
         
         if (translationResult.success) {
-          console.log('✅ Auto-translation completed successfully');
+          logger.debug('✅ Auto-translation completed successfully');
         } else {
-          console.warn('⚠️ Auto-translation failed:', translationResult.error);
+          logger.warn('⚠️ Auto-translation failed', { error: translationResult.error });
         }
       } catch (translationError) {
-        console.error('❌ Translation error (non-blocking):', translationError);
+        logger.error('❌ Translation error (non-blocking)', { translationError });
       }
 
       // Update local state with saved data to reflect changes immediately
@@ -793,31 +794,31 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       setPrice120(String(savedTherapist.price120 || price120));
       
       // Fire refresh event for other components (like main app)
-      console.log('🔔 Dispatching refreshTherapistData event...');
+      logger.debug('🔔 Dispatching refreshTherapistData event');
       window.dispatchEvent(new CustomEvent('refreshTherapistData', { detail: 'profile-updated' }));
       
       // Also dispatch a custom event to refresh the parent App.tsx user state
-      console.log('🔔 Dispatching therapist data refresh for parent app...');
+      logger.debug('🔔 Dispatching therapist data refresh for parent app');
       window.dispatchEvent(new CustomEvent('therapistProfileUpdated', { 
         detail: { therapistId: savedTherapist.$id, updatedData: savedTherapist } 
       }));
       
-      console.log('🎉 About to show success toast...');
+      logger.debug('🎉 About to show success toast');
       
       // 🚨 DATABASE ENFORCEMENT: Warn about geopoint requirement
       if (!geopoint || !geopoint.lat || !geopoint.lng) {
         showToast('⚠️ Profile saved but NOT LIVE: GPS location required for marketplace visibility', 'warning');
-        console.warn('🚨 PRODUCTION SAFETY: Therapist saved with isLive=false due to missing geopoint');
+        logger.warn('🚨 PRODUCTION SAFETY: Therapist saved with isLive=false due to missing geopoint');
       } else {
         showToast('✅ Profile saved and LIVE! Visit the main homepage to see your card.', 'success');
-        console.log('✅ isLive set to true - visible on HomePage at https://www.indastreetmassage.com');
+        logger.debug('✅ isLive set to true - visible on HomePage at https://www.indastreetmassage.com');
       }
       
       // Don't auto-navigate away from profile page after saving
       // Let user stay on profile to continue editing if needed
       // User can click "Home" button in navbar to see their live card
     } catch (e: any) {
-      console.error('❌ Failed to save profile:', e);
+      logger.error('❌ Failed to save profile', { error: e, message: e?.message });
       const errorMessage = e?.message || e?.toString() || 'Failed to save profile';
       showToast(`❌ Error: ${errorMessage}`, 'error');
     } finally {
@@ -867,7 +868,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         setTimeout(() => onNavigateToStatus(), 1500);
       }
     } catch (error: any) {
-      console.error('❌ Failed to activate profile:', error);
+      logger.error('❌ Failed to activate profile', { error, message: error?.message });
       showToast('❌ Failed to activate profile. Please try again.', 'error');
     } finally {
       setSaving(false);
@@ -899,7 +900,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         setShowPaymentModal(true);
       }, 1000);
     } catch (error: any) {
-      console.error('❌ Failed to activate profile:', error);
+      logger.error('❌ Failed to activate profile', { error, message: error?.message });
       showToast('❌ Failed to activate profile. Please try again.', 'error');
     } finally {
       setSaving(false);
@@ -945,13 +946,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     setUploadingPayment(true);
     try {
       // Upload payment proof to Appwrite Storage
-      console.log('📤 Uploading payment proof...');
+      logger.debug('📤 Uploading payment proof');
       const paymentProofUrl = await imageUploadService.uploadProfileImage(paymentProofPreview!);
-      console.log('✅ Payment proof uploaded:', paymentProofUrl);
+      logger.debug('✅ Payment proof uploaded', { paymentProofUrl });
 
       // TODO: Create payment submission record in database
       // This will be reviewed by admin later
-      console.log('💰 Creating payment submission record...');
+      logger.debug('💰 Creating payment submission record');
       // const paymentSubmission = await paymentService.createSubmission({
       //   therapistId: therapist.$id,
       //   membershipPlan: 'plus',
@@ -974,7 +975,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         setTimeout(() => onNavigateToStatus(), 1500);
       }
     } catch (error: any) {
-      console.error('❌ Payment submission failed:', error);
+      logger.error('❌ Payment submission failed', { error, message: error?.message });
       showToast('❌ Failed to submit payment. Please try again.', 'error');
     } finally {
       setUploadingPayment(false);
@@ -983,8 +984,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
   // Navigation handler for TherapistLayout menu
   const handleNavigate = (pageId: string) => {
-    console.log('[NAV CLICK] TherapistDashboard \u2192', pageId);
-    console.log('[NAV CLICK] Available handlers:', {
+    logger.debug('[NAV CLICK] TherapistDashboard navigation', { pageId });
+    logger.debug('[NAV CLICK] Available handlers', {
       onNavigateToMenu: !!onNavigateToMenu,
       onNavigateToStatus: !!onNavigateToStatus,
       onNavigateToBookings: !!onNavigateToBookings,
@@ -1000,71 +1001,71 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     });
     switch (pageId) {
       case 'status':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToStatus()');
+        logger.debug('[NAV CLICK] Calling onNavigateToStatus()');
         onNavigateToStatus?.();
         break;
       case 'schedule':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToSchedule()');
+        logger.debug('[NAV CLICK] Calling onNavigateToSchedule()');
         onNavigateToSchedule?.();
         break;
       case 'dashboard':
-        console.log('[NAV CLICK] \u2192 Already on dashboard');
+        logger.debug('[NAV CLICK] Already on dashboard');
         // Already on dashboard, do nothing or refresh
         break;
       case 'bookings':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToBookings()');
+        logger.debug('[NAV CLICK] Calling onNavigateToBookings()');
         onNavigateToBookings?.();
         break;
       case 'earnings':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToEarnings()');
+        logger.debug('[NAV CLICK] Calling onNavigateToEarnings()');
         onNavigateToEarnings?.();
         break;
       case 'payment':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToPayment()');
+        logger.debug('[NAV CLICK] Calling onNavigateToPayment()');
         onNavigateToPayment?.();
         break;
       case 'payment-status':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToPaymentStatus()');
+        logger.debug('[NAV CLICK] Calling onNavigateToPaymentStatus()');
         onNavigateToPaymentStatus?.();
         break;
       case 'commission-payment':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToCommission()');
+        logger.debug('[NAV CLICK] Calling onNavigateToCommission()');
         onNavigateToCommission?.();
         break;
       case 'custom-menu':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToMenu()');
+        logger.debug('[NAV CLICK] Calling onNavigateToMenu()');
         if (onNavigateToMenu) {
           onNavigateToMenu();
         } else {
-          console.error('[NAV CLICK] \u274c onNavigateToMenu handler is undefined!');
+          logger.error('[NAV CLICK] onNavigateToMenu handler is undefined');
         }
         break;
       case 'chat':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToChat()');
+        logger.debug('[NAV CLICK] Calling onNavigateToChat()');
         onNavigateToChat?.();
         break;
       case 'notifications':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToNotifications()');
+        logger.debug('[NAV CLICK] Calling onNavigateToNotifications()');
         onNavigateToNotifications?.();
         break;
       case 'calendar':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToCalendar()');
+        logger.debug('[NAV CLICK] Calling onNavigateToCalendar()');
         onNavigateToCalendar?.();
         break;
       case 'legal':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToLegal()');
+        logger.debug('[NAV CLICK] Calling onNavigateToLegal()');
         onNavigateToLegal?.();
         break;
       case 'how-it-works':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToHowItWorks()');
+        logger.debug('[NAV CLICK] Calling onNavigateToHowItWorks()');
         onNavigateToHowItWorks?.();
         break;
       case 'logout':
-        console.log('[NAV CLICK] \u2192 Calling onLogout()');
+        logger.debug('[NAV CLICK] Calling onLogout()');
         onLogout?.();
         break;
       default:
-        console.warn('[NAV CLICK] \u26a0\ufe0f Unknown navigation:', pageId);
+        logger.warn('[NAV CLICK] Unknown navigation', { pageId });
     }
   };
 
@@ -1239,7 +1240,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <button
                 onClick={() => {
                   // Status change logic would go here
-                  console.log('Status: Available');
+                  logger.debug('Status changed', { status: 'Available' });
                 }}
                 className={`p-4 rounded-xl border-2 transition-all ${
                   therapist?.status === 'Available' || therapist?.availability === 'Available'
@@ -1258,7 +1259,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               {/* Busy */}
               <button
                 onClick={() => {
-                  console.log('Status: Busy');
+                  logger.debug('Status changed', { status: 'Busy' });
                 }}
                 className={`p-4 rounded-xl border-2 transition-all ${
                   therapist?.status === 'Busy' || therapist?.availability === 'Busy'
@@ -1277,7 +1278,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               {/* Offline */}
               <button
                 onClick={() => {
-                  console.log('Status: Offline');
+                  logger.debug('Status changed', { status: 'Offline' });
                 }}
                 className={`p-4 rounded-xl border-2 transition-all ${
                   therapist?.status === 'Offline' || therapist?.availability === 'Offline'
