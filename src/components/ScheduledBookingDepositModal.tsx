@@ -12,6 +12,7 @@
 
 import React, { useState } from 'react';
 import { X, Upload, AlertTriangle, Shield, CreditCard, Clock, CheckCircle } from 'lucide-react';
+import { logger } from '../utils/logger';
 
 interface ScheduledBookingDepositModalProps {
   isOpen: boolean;
@@ -80,7 +81,7 @@ const ScheduledBookingDepositModal: React.FC<ScheduledBookingDepositModalProps> 
       setUploading(true);
       await onSubmitPayment(paymentProof, paymentMethod, paymentNotes);
     } catch (error) {
-      console.error('Failed to submit payment:', error);
+      logger.error('Failed to submit payment:', error);
     } finally {
       setUploading(false);
     }

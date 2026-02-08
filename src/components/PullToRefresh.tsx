@@ -1,5 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'react';
+import { logger } from '../utils/logger';
 
 interface PullToRefreshProps {
   children: ReactNode;
@@ -47,7 +48,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
       setHasError(false);
       await fn();
     } catch (error) {
-      console.error('PullToRefresh: Error occurred:', error);
+      logger.error('PullToRefresh: Error occurred:', error);
       setHasError(true);
       // Auto-recovery after 2 seconds in elite mode
       if (eliteMode) {

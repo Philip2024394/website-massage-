@@ -18,6 +18,7 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { useLanguage } from '../hooks/useLanguage';
 import { translations } from '../translations';
 import { showToast } from '../utils/showToastPortal';
+import { logger } from '../utils/logger';
 import { createChatRoom, sendSystemMessage, sendWelcomeMessage, sendBookingReceivedMessage } from '../lib/chatService';
 import { commissionTrackingService } from '../lib/services/commissionTrackingService';
 import { useBookingForm } from '../booking/useBookingForm';
@@ -135,7 +136,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   const ratingValue = typeof providerRating === 'number' && providerRating > 0 ? providerRating.toFixed(1) : null;
 
   // Debug pricing values
-  console.log('📊 ScheduleBookingPopup pricing debug:', {
+  logger.debug('📊 ScheduleBookingPopup pricing debug:', {
     therapistName,
     receivedPricing: pricing,
     discountPercentage,
@@ -218,7 +219,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         onClose();
       }
     } catch (error) {
-      console.error('Error confirming deposit:', error);
+      logger.error('Error confirming deposit:', error);
       showToast('❌ Failed to process deposit', 'error');
     }
   };
@@ -296,7 +297,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                     setSelectedDuration(option.minutes as 60 | 90 | 120);
                     
                     // NEW: Open chat window immediately after duration selection
-                    console.log('🚀 Duration selected, opening booking chat...');
+                    logger.debug('🚀 Duration selected, opening booking chat...');
                     // 🔒 CRITICAL: Must provide appwriteId for booking integrity
                     // Note: If therapistId is not a valid Appwrite document ID, this will fail validation
                     openBookingChat({
@@ -584,11 +585,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
           onSubmitRequest={async (requestData) => {
             try {
               // Handle date change request submission
-              console.log('Date change request:', requestData);
+              logger.debug('Date change request:', requestData);
               showToast('✅ Date change request submitted', 'success');
               setShowDateChangeModal(false);
             } catch (error) {
-              console.error('Error submitting date change request:', error);
+              logger.error('Error submitting date change request:', error);
               showToast('❌ Failed to submit request', 'error');
             }
           }}

@@ -5,6 +5,7 @@ import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { useLanguageContext } from '../context/LanguageContext';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { Share2 } from 'lucide-react';
+import { logger } from '../utils/logger';
 
 interface PlaceCardProps {
     place: Place;
@@ -95,7 +96,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
     const handleBooking = (e: React.MouseEvent) => {
         e.stopPropagation();
         
-        console.log('🏢 Opening booking for place:', place.name);
+        logger.debug('🏬 Opening booking for place:', place.name);
         
         // 🔒 CRITICAL: Use appwriteId (Appwrite document ID), not id
         openBookingChat({

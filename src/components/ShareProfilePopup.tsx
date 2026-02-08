@@ -16,6 +16,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Copy, Check, Share2 } from 'lucide-react';
 import { shareTrackingService, ShareChainData } from '../services/shareTrackingService';
+import { logger } from '../utils/logger';
 
 interface ShareProfilePopupProps {
   memberId: string;
@@ -33,7 +34,7 @@ export default function ShareProfilePopup({ memberId, memberName, memberType = '
     const chainData = shareTrackingService.parseShareChainFromUrl();
     if (chainData) {
       setShareChain(chainData);
-      console.log('📊 Detected sharing chain:', chainData);
+      logger.debug('📊 Detected sharing chain:', chainData);
     }
   }, []);
   
@@ -42,8 +43,8 @@ export default function ShareProfilePopup({ memberId, memberName, memberType = '
   const LIVE_SITE = 'https://www.indastreetmassage.com';
   const profileUrl = `${LIVE_SITE}/share/${memberId}`;
   
-  console.log('📤 Share popup opened for member:', memberId);
-  console.log('🔗 Profile URL generated (simple format):', profileUrl);
+  logger.debug('📤 Share popup opened for member:', memberId);
+  logger.debug('🔗 Profile URL generated (simple format):', profileUrl);
 
   const handleCopyLink = async () => {
     try {
@@ -58,7 +59,7 @@ export default function ShareProfilePopup({ memberId, memberName, memberType = '
       
       await navigator.clipboard.writeText(trackableUrl);
       setCopied(true);
-      console.log('📋 Trackable profile link copied:', trackableUrl);
+      logger.debug('📋 Trackable profile link copied:', trackableUrl);
       
       // Track copy action with chain data
       await shareTrackingService.trackProfileShareWithChain({
@@ -73,7 +74,7 @@ export default function ShareProfilePopup({ memberId, memberName, memberType = '
       // Reset copied state after 2 seconds
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy link:', error);
+      logger.error('Failed to copy link:', error);
       // Fallback for older browsers
       const trackableUrl = shareTrackingService.generateTrackableUrl(
         memberType,

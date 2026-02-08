@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Button from './Button';
 import { COUNTRIES } from "../../countries";
+import { logger } from '../utils/logger';
 
 import type { ReviewStatus } from '../types';
 
@@ -55,7 +56,7 @@ const RatingModal: React.FC<RatingModalProps> = ({ onClose, onSubmit, itemName, 
         const fullWhatsappNumber = `${countryCode}${whatsapp.replace(/^0+/, '')}`;
 
         // Mock implementation - replace with your actual data storage logic
-        console.log('Rating submitted:', {
+        logger.debug('Rating submitted:', {
             providerId: itemId,
             providerType: itemType,
             providerName: itemName,
