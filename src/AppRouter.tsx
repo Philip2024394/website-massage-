@@ -42,13 +42,13 @@ class LazyLoadErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // TEMPORARY DIAGNOSTIC LOGGING - ISOLATION MODE
-    console.error('🚨 [LazyLoadErrorBoundary] ERROR CAUGHT:');
-    console.error('📛 Error Message:', error?.message);
-    console.error('📛 Error Name:', error?.name);
-    console.error('📛 Error Stack:', error?.stack);
-    console.error('📛 Component Stack:', errorInfo?.componentStack);
-    console.error('📛 Full Error Object:', error);
-    console.error('📛 Full ErrorInfo Object:', errorInfo);
+    logger.error('[LazyLoadErrorBoundary] ERROR CAUGHT');
+    logger.error('Error Message:', error?.message);
+    logger.error('Error Name:', error?.name);
+    logger.error('Error Stack:', error?.stack);
+    logger.error('Component Stack:', errorInfo?.componentStack);
+    logger.error('Full Error Object:', error);
+    logger.error('Full ErrorInfo Object:', errorInfo);
     
     logger.error('[LAZY LOAD ERROR]', error, errorInfo);
         if (typeof window !== 'undefined') {
@@ -262,7 +262,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
         const fetchTherapist = async () => {
             try {
                 setLoading(true);
-                console.log('🔍 [FETCH] Loading therapist from Appwrite:', therapistId);
+                logger.debug('[FETCH] Loading therapist from Appwrite:', therapistId);
                 const fetchedTherapist = await databases.getDocument(
                     DATABASE_ID, 
                     COLLECTIONS.THERAPISTS, 
@@ -276,11 +276,11 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
                     mainImage: OFFICIAL_MAIN_IMAGE
                 };
                 
-                console.log('✅ [FETCH] Therapist loaded:', therapistWithImages.name);
+                logger.debug('[FETCH] Therapist loaded:', therapistWithImages.name);
                 setTherapist(therapistWithImages);
                 setError(null);
             } catch (err: any) {
-                console.error('❌ [FETCH] Failed to load therapist:', err);
+                logger.error('[FETCH] Failed to load therapist:', err);
                 setError(err.message || 'Failed to load profile');
             } finally {
                 setLoading(false);
@@ -387,7 +387,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
      */
     const renderRoute = (Component: React.ComponentType<any>, componentProps: any = {}, routeName?: string) => {
         // DEBUG TRACE: Log renderRoute entry
-        console.log('🔵 [renderRoute ENTRY]', {
+        logger.debug('[renderRoute ENTRY]', {
             routeName: routeName || page,
             hasComponent: !!Component,
             componentType: typeof Component,
@@ -398,7 +398,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         const ErrorFallback = () => {
             // DEBUG TRACE: Log ErrorFallback render
-            console.log('🔴 [ErrorFallback RENDERED] Route failed, displaying error UI', {
+            logger.error('[ErrorFallback RENDERED] Route failed, displaying error UI', {
                 routeName: routeName || page,
                 windowError: (typeof window !== 'undefined' && (window as any).__lazyErrorMessage) || 'No error message',
                 timestamp: new Date().toISOString()
@@ -447,7 +447,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         };
 
         // DEBUG TRACE: Log before rendering Component
-        console.log('🟢 [renderRoute] About to render Component', {
+        logger.debug('[renderRoute] About to render Component', {
             routeName: routeName || page,
             componentName: Component?.name,
             willRenderComponent: true,
@@ -474,11 +474,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
      * Route matcher - Enterprise pattern for clean routing
      * 🚀 WRAPPED: With enterprise page loading system
      */
-    console.log('[ROUTER] Resolving page:', page, '| Type:', typeof page);
+    logger.debug('[ROUTER] Resolving page:', page, '| Type:', typeof page);
     
     // ⚠️ CRITICAL: LoadingGate must be completely isolated - NO WRAPPERS
     if (page === 'loading') {
-        console.log('🔄 [ROUTER] Rendering isolated LoadingGate (no providers, no loaders)');
+        logger.debug('[ROUTER] Rendering isolated LoadingGate (no providers, no loaders)');
         return <LoadingGate />;
     }
     
@@ -660,7 +660,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     if (dashboardUrl) {
                         window.location.href = dashboardUrl;
                     } else {
-                        console.error('Unknown user type:', userType);
+                        logger.error('Unknown user type:', userType);
                     }
                 },
                 onBack: () => props.onNavigate('home'),
@@ -671,19 +671,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(authRoutes.signin.component, {
                 mode: 'signin',
                 onAuthSuccess: async (userType: string) => {
-                    console.log('✅ Sign in successful - navigating to dashboard for:', userType);
+                    logger.info('Sign in successful - navigating to dashboard for:', userType);
                     
                     // Restore user session to populate loggedInUser state
                     if (props.restoreUserSession) {
-                        console.log('🔄 Restoring user session after sign-in...');
+                        logger.debug('Restoring user session after sign-in...');
                         await props.restoreUserSession();
-                        console.log('✅ User session restored');
+                        logger.debug('User session restored');
                     }
                     
                     // Check for PWA redirect flag
                     const pwaRedirect = sessionStorage.getItem('pwa-redirect-after-login');
                     if (pwaRedirect) {
-                        console.log('🏠 PWA redirect detected - navigating to:', pwaRedirect);
+                        logger.info('PWA redirect detected - navigating to:', pwaRedirect);
                         sessionStorage.removeItem('pwa-redirect-after-login');
                         props.onNavigate(pwaRedirect as Page);
                         return;
@@ -700,7 +700,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     if (dashboardPage) {
                         props.onNavigate(dashboardPage as Page);
                     } else {
-                        console.error('Unknown user type:', userType);
+                        logger.error('Unknown user type:', userType);
                         props.onNavigate('home');
                     }
                 },
@@ -753,13 +753,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(authRoutes.signup.component, {
                 mode: 'signup',
                 onAuthSuccess: async (userType: string) => {
-                    console.log('✅ Signup successful - navigating to dashboard for:', userType);
+                    logger.info('Signup successful - navigating to dashboard for:', userType);
                     
                     // Restore user session to populate loggedInUser state
                     if (props.restoreUserSession) {
-                        console.log('🔄 Restoring user session after signup...');
+                        logger.debug('Restoring user session after signup...');
                         await props.restoreUserSession();
-                        console.log('✅ User session restored');
+                        logger.debug('User session restored');
                     }
                     
                     // Navigate within React app instead of external redirect
@@ -773,7 +773,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     if (dashboardPage) {
                         props.onNavigate(dashboardPage as Page);
                     } else {
-                        console.error('Unknown user type:', userType);
+                        logger.error('Unknown user type:', userType);
                         props.onNavigate('home');
                     }
                 },
@@ -861,9 +861,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // ===== PROFILE ROUTES =====
         case 'therapist-profile':
-            console.log('🔧 [TherapistProfile] Unified profile route');
-            console.log('  - selectedTherapist:', props.selectedTherapist);
-            console.log('  - URL:', window.location.href);
+            logger.debug('[TherapistProfile] Unified profile route');
+            logger.debug('  - selectedTherapist:', props.selectedTherapist);
+            logger.debug('  - URL:', window.location.href);
             
             // Parse ID from hash URL (/#/therapist-profile/123) or pathname
             let pathForId = window.location.pathname;
@@ -875,7 +875,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             const pathMatch = pathForId.match(/\/therapist-profile\/([a-z0-9]+)/);
             if (pathMatch) {
                 const urlId = pathMatch[1];
-                console.log('  - Extracted ID:', urlId);
+                logger.debug('  - Extracted ID:', urlId);
                 
                 // Try to find in memory first (fast path)
                 const foundTherapist = props.therapists.find((t: any) => 
@@ -883,7 +883,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 );
                 
                 if (foundTherapist) {
-                    console.log('  ✅ Found in memory:', foundTherapist.name);
+                    logger.debug('  Found in memory:', foundTherapist.name);
                     return renderRoute(profileRoutes.therapistProfile.component, {
                         therapist: foundTherapist,
                         onBack: () => props.setPage?.('home'),
@@ -917,7 +917,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         t: props.t
                     });
                 } else {
-                    console.log('  🔍 Not in memory, fetching from Appwrite...');
+                    logger.debug('  Not in memory, fetching from Appwrite...');
                     // Fallback: Render a wrapper that fetches from Appwrite
                     return <TherapistProfileWithFetch 
                         therapistId={urlId} 
@@ -964,11 +964,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             }
             
             // No therapist data available - show error page
-            console.log('❌ [TherapistProfile] No therapist data available');
-            console.log('  - selectedTherapist:', props.selectedTherapist);
-            console.log('  - URL path:', window.location.pathname);
-            console.log('  - URL hash:', window.location.hash);
-            console.log('  - Route issue: No therapist ID in URL or selectedTherapist missing');
+            logger.error('[TherapistProfile] No therapist data available');
+            logger.error('  - selectedTherapist:', props.selectedTherapist);
+            logger.error('  - URL path:', window.location.pathname);
+            logger.error('  - URL hash:', window.location.hash);
+            logger.error('  - Route issue: No therapist ID in URL or selectedTherapist missing');
             
             return (
                 <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
@@ -994,17 +994,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // NEW: Simple share routes
         case 'share-therapist':
-            console.log('🔧 [ShareTherapist] Rendering new share page');
-            console.log('  - Therapists available:', props.therapists?.length || 0);
-            console.log('  - URL:', window.location.href);
+            logger.debug('[ShareTherapist] Rendering new share page');
+            logger.debug('  - Therapists available:', props.therapists?.length || 0);
+            logger.debug('  - URL:', window.location.href);
             return renderRoute(profileRoutes.shareTherapist.component);
         
         case 'share-place':
-            console.log('🔧 [SharePlace] Rendering share page');
+            logger.debug('[SharePlace] Rendering share page');
             return renderRoute(profileRoutes.sharePlace.component);
         
         case 'share-facial':
-            console.log('🔧 [ShareFacial] Rendering share page');
+            logger.debug('[ShareFacial] Rendering share page');
             return renderRoute(profileRoutes.shareFacial.component);
         
         // 🔒 PROTECTED ROUTE - PRODUCTION CRITICAL 🔒
@@ -1012,18 +1012,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // ⚠️ DO NOT MODIFY - This route handles ALL /therapist-profile/:id URLs
         // ⚠️ Used by thousands of shared links in production
         case 'shared-therapist-profile':
-            console.log('\n' + '🔧'.repeat(50));
-            console.log('🔧 [ROUTER] Route matched: shared-therapist-profile');
-            console.log('🔧'.repeat(50));
-            console.log('📍 Current path:', window.location.pathname);
-            console.log('🔗 Full URL:', window.location.href);
-            console.log('📦 Route name:', page);
-            console.log('👤 Has loggedInCustomer:', !!props.loggedInCustomer);
-            console.log('📍 Has userLocation:', !!props.userLocation);
-            console.log('🌐 Language:', props.language);
-            console.log('🔧'.repeat(50));
-            console.log('🚀 [ROUTER] Rendering SharedTherapistProfile component...');
-            console.log('🔧'.repeat(50) + '\n');
+            logger.debug('[ROUTER] Route matched: shared-therapist-profile');
+            logger.debug('Current path:', window.location.pathname);
+            logger.debug('Full URL:', window.location.href);
+            logger.debug('Route name:', page);
+            logger.debug('Has loggedInCustomer:', !!props.loggedInCustomer);
+            logger.debug('Has userLocation:', !!props.userLocation);
+            logger.debug('Language:', props.language);
+            logger.debug('[ROUTER] Rendering SharedTherapistProfile component...');
             
             // Restore full shared profile UI (direct import, non-lazy)
             return (
@@ -1038,9 +1034,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             );
         
         case 'massage-place-profile':
-            console.log('🔧 [MassagePlaceProfile] Rendering massage place profile page');
-            console.log('  - selectedPlace:', props.selectedPlace);
-            console.log('  - URL path:', window.location.pathname);
+            logger.debug('[MassagePlaceProfile] Rendering massage place profile page');
+            logger.debug('  - selected Place:', props.selectedPlace);
+            logger.debug('  - URL path:', window.location.pathname);
             
             // Check if accessing via URL with ID parameter
             const placePathMatch = window.location.pathname.match(/\/profile\/place\/(\d+-[\w-]+)/);
@@ -1100,8 +1096,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         case 'facial-place-profile':
-            console.log('🔧 [FacialPlaceProfile] Rendering facial place profile page');
-            console.log('  - selectedPlace:', props.selectedPlace);
+            logger.debug('[FacialPlaceProfile] Rendering facial place profile page');
+            logger.debug('  - selectedPlace:', props.selectedPlace);
             
             return renderRoute(profileRoutes.facialPlace.component, {
                 place: props.selectedPlace,
@@ -1135,7 +1131,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(profileRoutes.placeDetail.component);
 
         case 'therapistStatus': {
-            console.log('🔴 [ROUTE DEBUG] therapistStatus case matched - THIS SHOULD NOT HAPPEN FOR therapist-status');
+            logger.error('[ROUTE DEBUG] therapistStatus case matched - THIS SHOULD NOT HAPPEN FOR therapist-status');
             const therapistProfile = resolveTherapistProfile();
             return renderRoute(TherapistStatusPage, {
                 therapist: therapistProfile,
@@ -1255,7 +1251,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'notifications':
             // Redirect therapists to proper dashboard notifications page
             if (props.user && (props.user as any).type === 'therapist') {
-                console.log('[ROUTE] notifications → redirecting therapist to therapist-notifications');
+                logger.debug('[ROUTE] notifications → redirecting therapist to therapist-notifications');
                 props.setPage('therapist-notifications');
                 return renderRoute(therapistRoutes.notifications.component, {
                     therapist: props.user,
@@ -1269,7 +1265,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'chat-room':
             // Chat room is handled by App.tsx activeChat state
             // Redirect to home - chat will open via openChat event
-            console.log('[ROUTE] chat-room accessed - redirecting to home');
+            logger.debug('[ROUTE] chat-room accessed - redirecting to home');
             props.setPage('home');
             return renderRoute(publicRoutes.home.component);
         
@@ -1451,9 +1447,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist':
         case 'therapistDashboard':
         case 'therapist-dashboard':
-            console.log('🔷 [SWITCH CASE] therapist-dashboard MATCHED - REDIRECTING TO STATUS');
-            console.log('✅ [FIRST PAGE] Showing Online Status as first page');
-            console.log('🔍 [DEBUG] therapist data:', props.loggedInProvider);
+            logger.debug('[SWITCH CASE] therapist-dashboard MATCHED - REDIRECTING TO STATUS');
+            logger.debug('[FIRST PAGE] Showing Online Status as first page');
+            logger.debug('[DEBUG] therapist data:', props.loggedInProvider);
             // Redirect to status page instead of dashboard (First page after login)
             return renderRoute(therapistRoutes.status.component, {
                 therapist: props.loggedInProvider || props.user,
@@ -1465,10 +1461,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'status':
         case 'therapist-status':
-            console.log('🔵 [ROUTE DEBUG] therapist-status case matched!');
-            console.log('✅ [FIRST PAGE] Therapist Online Status Page');
-            console.log('🔍 [DEBUG] therapist data:', props.loggedInProvider);
-            console.log('[ROUTE RESOLVE] therapist-status → TherapistOnlineStatus');
+            logger.debug('[ROUTE DEBUG] therapist-status case matched!');
+            logger.debug('[FIRST PAGE] Therapist Online Status Page');
+            logger.debug('[DEBUG] therapist data:', props.loggedInProvider);
+            logger.debug('[ROUTE RESOLVE] therapist-status → TherapistOnlineStatus');
             return renderRoute(therapistRoutes.status.component, {
                 therapist: props.loggedInProvider || props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1479,8 +1475,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'bookings':
         case 'therapist-bookings':
-            console.log('[ROUTE RESOLVE] therapist-bookings → TherapistBookings');
-            console.log('[ROUTER OK] therapist-bookings', '/dashboard/therapist/bookings');
+            logger.debug('[ROUTE RESOLVE] therapist-bookings → TherapistBookings');
+            logger.debug('[ROUTER OK] therapist-bookings', '/dashboard/therapist/bookings');
             return renderRoute(therapistRoutes.bookings.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
@@ -1491,7 +1487,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'earnings':
         case 'therapist-earnings':
-            console.log('[ROUTE RESOLVE] therapist-earnings → TherapistEarnings');
+            logger.debug('[ROUTE RESOLVE] therapist-earnings → TherapistEarnings');
             return renderRoute(therapistRoutes.earnings.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1502,7 +1498,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'chat':
         case 'therapist-chat':
-            console.log('[ROUTE RESOLVE] therapist-chat → TherapistChat');
+            logger.debug('[ROUTE RESOLVE] therapist-chat → TherapistChat');
             return renderRoute(therapistRoutes.chat.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1512,7 +1508,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'therapist-notifications':
-            console.log('[ROUTE RESOLVE] therapist-notifications → TherapistNotifications');
+            logger.debug('[ROUTE RESOLVE] therapist-notifications → TherapistNotifications');
             return renderRoute(therapistRoutes.notifications.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1523,7 +1519,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'legal':
         case 'therapist-legal':
-            console.log('[ROUTE RESOLVE] therapist-legal → TherapistLegal');
+            logger.debug('[ROUTE RESOLVE] therapist-legal → TherapistLegal');
             return renderRoute(therapistRoutes.legal.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1533,7 +1529,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'therapist-how-it-works':
-            console.log('[ROUTE RESOLVE] therapist-how-it-works → HowItWorksPage');
+            logger.debug('[ROUTE RESOLVE] therapist-how-it-works → HowItWorksPage');
             return renderRoute(therapistRoutes.howItWorks.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1544,7 +1540,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'calendar':
         case 'therapist-calendar':
-            console.log('[ROUTE RESOLVE] therapist-calendar → TherapistCalendar');
+            logger.debug('[ROUTE RESOLVE] therapist-calendar → TherapistCalendar');
             return renderRoute(therapistRoutes.calendar.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1555,7 +1551,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'payment':
         case 'therapist-payment':
-            console.log('[ROUTE RESOLVE] therapist-payment → TherapistPaymentInfo');
+            logger.debug('[ROUTE RESOLVE] therapist-payment → TherapistPaymentInfo');
             return renderRoute(therapistRoutes.payment.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1566,33 +1562,33 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'payment-status':
         case 'therapist-payment-status':
-            console.log('[ROUTE RESOLVE] payment-status/therapist-payment-status → TherapistPaymentStatus');
+            logger.debug('[ROUTE RESOLVE] payment-status/therapist-payment-status → TherapistPaymentStatus');
             const paymentStatusComponent = renderRoute(therapistRoutes.paymentStatus.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
-            console.log('[ROUTER OK] ✅ payment-status component bound successfully');
+            logger.debug('[ROUTER OK] payment-status component bound successfully');
             return paymentStatusComponent;
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'custom-menu':
         case 'therapist-menu':
-            console.log('[ROUTE RESOLVE] custom-menu/therapist-menu → TherapistMenu');
+            logger.debug('[ROUTE RESOLVE] custom-menu/therapist-menu → TherapistMenu');
             const menuComponent = renderRoute(therapistRoutes.menu.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
-            console.log('[ROUTER OK] ✅ therapist-menu component bound successfully');
+            logger.debug('[ROUTER OK] therapist-menu component bound successfully');
             return menuComponent;
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'commission-payment':
         case 'therapist-commission':
-            console.log('[ROUTE RESOLVE] therapist-commission → CommissionPayment');
+            logger.debug('[ROUTE RESOLVE] therapist-commission → CommissionPayment');
             return renderRoute(therapistRoutes.commission.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1602,7 +1598,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'send-discount':
-            console.log('[ROUTE RESOLVE] send-discount → SendDiscountPage');
+            logger.debug('[ROUTE RESOLVE] send-discount → SendDiscountPage');
             return renderRoute(therapistRoutes.sendDiscount.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
@@ -1613,7 +1609,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Customers List with booking history)
         case 'customers':
         case 'therapist-customers':
-            console.log('[ROUTE RESOLVE] customers → TherapistCustomersPage');
+            logger.debug('[ROUTE RESOLVE] customers → TherapistCustomersPage');
             return renderRoute(therapistRoutes.customers.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
@@ -1623,7 +1619,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Guide page for getting more customers)
         case 'more-customers':
-            console.log('[ROUTE RESOLVE] more-customers → MoreCustomersPage');
+            logger.debug('[ROUTE RESOLVE] more-customers → MoreCustomersPage');
             return renderRoute(therapistRoutes.moreCustomers.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
@@ -1634,7 +1630,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Dedicated Analytics Page)
         case 'analytics':
         case 'therapist-analytics':
-            console.log('[ROUTE RESOLVE] analytics → TherapistAnalyticsPage');
+            logger.debug('[ROUTE RESOLVE] analytics → TherapistAnalyticsPage');
             return renderRoute(therapistRoutes.analytics.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
@@ -1645,7 +1641,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Banner Discount / Voucher System)
         case 'banner-discount':
         case 'therapist-banner-discount':
-            console.log('[ROUTE RESOLVE] banner-discount → BannerDiscountPage');
+            logger.debug('[ROUTE RESOLVE] banner-discount → BannerDiscountPage');
             return renderRoute(therapistRoutes.bannerDiscount.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('customers'),
@@ -1655,7 +1651,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Therapist-specific)
         case 'therapist-hotel-villa-safe-pass':
-            console.log('[ROUTE RESOLVE] therapist-hotel-villa-safe-pass → TherapistHotelVillaSafePassPage');
+            logger.debug('[ROUTE RESOLVE] therapist-hotel-villa-safe-pass → TherapistHotelVillaSafePassPage');
             return renderRoute(therapistRoutes.hotelVillaSafePass.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
@@ -1664,7 +1660,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // SafePass Application (New System)
         case 'therapist-safepass-apply':
-            console.log('[ROUTE RESOLVE] therapist-safepass-apply → TherapistSafePassWrapper');
+            logger.debug('[ROUTE RESOLVE] therapist-safepass-apply → TherapistSafePassWrapper');
             return renderRoute(therapistRoutes.safePassApplication.component, {
                 onBack: () => props.onNavigate?.('therapist-dashboard')
             });
@@ -1672,8 +1668,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'schedule':
         case 'therapist-schedule':
-            console.log('[ROUTE RESOLVE] therapist-schedule → TherapistSchedule');
-            console.log('[ROUTER OK] therapist-schedule', '/dashboard/therapist/schedule');
+            logger.debug('[ROUTE RESOLVE] therapist-schedule → TherapistSchedule');
+            logger.debug('[ROUTER OK] therapist-schedule', '/dashboard/therapist/schedule');
             return renderRoute(therapistRoutes.schedule.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
@@ -1697,7 +1693,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // Place SafePass Application
         case 'place-safepass-apply':
-            console.log('[ROUTE RESOLVE] place-safepass-apply → PlaceSafePassWrapper');
+            logger.debug('[ROUTE RESOLVE] place-safepass-apply → PlaceSafePassWrapper');
             return renderRoute(placeRoutes.safePassApplication.component, {
                 onBack: () => props.onNavigate?.('place-dashboard')
             });
@@ -1770,10 +1766,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // ===== FALLBACK =====
         // 🚫 DO NOT REDIRECT — FAIL VISIBLE
         default:
-            console.error('[ROUTE RESOLVE] ❌ Unknown route:', page);
-            console.error('[ROUTE RESOLVE] ❌ Route type:', typeof page);
-            console.error('[ROUTE RESOLVE] ❌ props.currentPage:', props.currentPage);
-            console.error('[ROUTE RESOLVE] ❌ All props keys:', Object.keys(props));
+            logger.error('[ROUTE RESOLVE] Unknown route:', page);
+            logger.error('[ROUTE RESOLVE] Route type:', typeof page);
+            logger.error('[ROUTE RESOLVE] props.currentPage:', props.currentPage);
+            logger.error('[ROUTE RESOLVE] All props keys:', Object.keys(props));
             return (
                 <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
                     <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
