@@ -867,13 +867,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Open chat with therapist
   const openChat = useCallback(async (therapist: ChatTherapist, mode: 'book' | 'schedule' | 'price' = 'book', source: 'share' | 'profile' | 'search' | null = null) => {
-    console.log('💬 Opening chat with:', therapist.name, 'mode:', mode, 'source:', source);
+    logger.debug('💬 Opening chat with:', therapist.name, 'mode:', mode, 'source:', source);
     if (source === 'share') {
-      console.log('📤 SHARED LINK BOOKING: Direct provider booking (no broadcast)');
+      logger.debug('📤 SHARED LINK BOOKING: Direct provider booking (no broadcast)');
     }
-    console.log('� DEBUGGING: Previous therapist:', chatState.therapist?.name, chatState.therapist?.id);
-    console.log('🔍 DEBUGGING: New therapist:', therapist.name, therapist.id);
-    console.log('�🔒 Locking chat to prevent accidental closure during booking');
+    logger.debug('� DEBUGGING: Previous therapist:', chatState.therapist?.name, chatState.therapist?.id);
+    logger.debug('🔍 DEBUGGING: New therapist:', therapist.name, therapist.id);
+    logger.debug('�🔒 Locking chat to prevent accidental closure during booking');
     
     // 🔒 CRITICAL VALIDATION: Block if therapist.appwriteId is missing
     if (!therapist.appwriteId) {
@@ -1003,7 +1003,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     service: { serviceName: string; duration: number; price: number },
     options?: { isScheduled?: boolean; depositRequired?: boolean; depositPercentage?: number }
   ) => {
-    console.log('💬 Opening chat with pre-selected service:', therapist.name, service, options);
+    logger.debug('💬 Opening chat with pre-selected service:', therapist.name, service, options);
     
     // 🔒 CRITICAL VALIDATION: Resolve therapist document ID with fallback chain
     const therapistDocumentId = therapist.appwriteId || therapist.$id || therapist.id;
@@ -1012,15 +1012,15 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       const errorMsg = `❌ CRITICAL: Cannot open chat - no valid ID found for ${therapist.name}. ` +
         `Checked appwriteId, $id, and id fields - all missing. ` +
         `This is a data integrity issue. Therapist must have valid identifier before booking can proceed.`;
-      console.error('═'.repeat(80));
-      console.error(errorMsg);
-      console.error('Therapist object:', therapist);
-      console.error('═'.repeat(80));
+      logger.error('═'.repeat(80));
+      logger.error(errorMsg);
+      logger.error('Therapist object:', therapist);
+      logger.error('═'.repeat(80));
       throw new Error(errorMsg);
     }
     
-    console.log('✅ VALIDATION PASSED: therapist document ID resolved:', therapistDocumentId);
-    console.log('📋 ID resolution chain:', {
+    logger.info('✅ VALIDATION PASSED: therapist document ID resolved:', therapistDocumentId);
+    logger.debug('📋 ID resolution chain:', {
       appwriteId: therapist.appwriteId,
       $id: therapist.$id,
       id: therapist.id,
@@ -1032,7 +1032,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // This line took DAYS to implement correctly. Removing it will break chat window.
     // See CRITICAL_CHAT_WINDOW_PROTECTION.md for details
     setIsChatWindowVisible(true);
-    console.log('📋 AppStateContext notified: chat window opening with service');
+    logger.debug('📋 AppStateContext notified: chat window opening with service');
     
     const isScheduled = options?.isScheduled || false;
     
@@ -1049,7 +1049,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     };
     
     const draftBookingId = generateDraftBookingId();
-    console.log('🆔 Auto-created booking ID:', draftBookingId);
+    logger.debug('🆔 Auto-created booking ID:', draftBookingId);
     
     // 🔒 ENSURE therapist object has appwriteId field set with resolved ID
     const therapistWithResolvedId: ChatTherapist = {
@@ -1057,7 +1057,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       appwriteId: therapistDocumentId // Ensure appwriteId is set for booking creation
     };
     
-    console.log('✅ Therapist object prepared with resolved ID:', {
+    logger.debug('✅ Therapist object prepared with resolved ID:', {
       name: therapistWithResolvedId.name,
       id: therapistWithResolvedId.id,
       appwriteId: therapistWithResolvedId.appwriteId
@@ -1100,7 +1100,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     if (currentUserId) {
       // ✅ Use resolved document ID for database queries
       const therapistIdForQuery = therapistDocumentId;
-      console.log('🔍 DEBUGGING: Loading messages (service) with resolved therapistId:', therapistIdForQuery);
+      logger.debug('🔍 DEBUGGING: Loading messages (service) with resolved therapistId:', therapistIdForQuery);
       
       const messages = await loadMessages(therapistIdForQuery);
       if (messages.length > 0) {
@@ -1112,7 +1112,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         
         // 🔓 UNLOCK CHAT if there's existing conversation
         setIsLocked(false);
-        console.log('🔓 Chat unlocked - existing conversation in service booking');
+        logger.debug('🔓 Chat unlocked - existing conversation in service booking');
       }
     }
 
@@ -1132,7 +1132,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Minimize chat - reset booking flow to duration selection
   const minimizeChat = useCallback(() => {
-    console.log('➖ Minimizing chat - resetting to duration selection');
+    logger.debug('➖ Minimizing chat - resetting to duration selection');
     setChatState(prev => ({ 
       ...prev, 
       isMinimized: true,
@@ -1153,13 +1153,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     
     // 🔒 Notify AppStateContext that chat window is no longer blocking navigation
     setIsChatWindowVisible(false);
-    console.log('🔓 Chat unlocked - minimized and reset');
-    console.log('📋 AppStateContext notified: chat window is now hidden');
+    logger.debug('🔓 Chat unlocked - minimized and reset');
+    logger.debug('📋 AppStateContext notified: chat window is now hidden');
   }, []);
 
   // Maximize chat
   const maximizeChat = useCallback(() => {
-    console.log('➕ Maximizing chat');
+    logger.debug('➕ Maximizing chat');
     setChatState(prev => ({ ...prev, isMinimized: false }));
   }, []);
 
@@ -1167,39 +1167,39 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   // Close chat (only if unlocked AND no active booking)
   // Guards below prevent closing during booking - DO NOT REMOVE
   const closeChat = useCallback(() => {
-    console.log('🔍 closeChat() called - Checking conditions...');
-    console.log('  - Current booking:', !!chatState.currentBooking);
-    console.log('  - Booking step:', chatState.bookingStep);
-    console.log('  - Is locked:', isLocked);
-    console.log('📍 CALL STACK:', new Error().stack);
+    logger.debug('🔍 closeChat() called - Checking conditions...');
+    logger.debug('  - Current booking:', !!chatState.currentBooking);
+    logger.debug('  - Booking step:', chatState.bookingStep);
+    logger.debug('  - Is locked:', isLocked);
+    logger.debug('📍 CALL STACK:', new Error().stack);
     
     // CRITICAL: Don't close if there's an active booking or booking in progress
     // SPECIAL: 'details' step is critical for Order Now flow - never close during this step
     if (chatState.currentBooking || (chatState.bookingStep !== 'duration' && chatState.bookingStep !== 'chat')) {
-      console.log('🔒 Chat has active booking or critical booking step, minimizing instead of closing');
-      console.log('🔒 Critical steps that prevent closure: details, datetime, confirmation');
+      logger.info('🔒 Chat has active booking or critical booking step, minimizing instead of closing');
+      logger.info('🔒 Critical steps that prevent closure: details, datetime, confirmation');
       setChatState(prev => ({ ...prev, isMinimized: true }));
       // Still notify AppStateContext that chat is minimized
       setIsChatWindowVisible(false);
-      console.log('📋 AppStateContext notified: chat minimized but not closed');
+      logger.debug('📋 AppStateContext notified: chat minimized but not closed');
       return;
     }
     
     if (isLocked) {
-      console.log('🔒 Chat is locked, minimizing instead');
+      logger.info('🔒 Chat is locked, minimizing instead');
       setChatState(prev => ({ ...prev, isMinimized: true }));
       // Still notify AppStateContext that chat is minimized
       setIsChatWindowVisible(false);
-      console.log('📋 AppStateContext notified: locked chat minimized');
+      logger.debug('📋 AppStateContext notified: locked chat minimized');
       return;
     }
     
-    console.log('❌ CRITICAL: Closing chat - THIS SHOULD NOT HAPPEN DURING BOOKING');
+    logger.warn('❌ CRITICAL: Closing chat - THIS SHOULD NOT HAPPEN DURING BOOKING');
     setChatState(initialState);
     setIsLocked(false);
     // Notify AppStateContext that chat is fully closed
     setIsChatWindowVisible(false);
-    console.log('📋 AppStateContext notified: chat fully closed');
+    logger.debug('📋 AppStateContext notified: chat fully closed');
   }, [isLocked, chatState.currentBooking, chatState.bookingStep]);
 
   // Lock chat
@@ -1214,13 +1214,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Set booking step
   const setBookingStep = useCallback((step: BookingStep) => {
-    console.log('📋 [setBookingStep] Setting step to:', step);
+    logger.debug('📋 [setBookingStep] Setting step to:', step);
     
     // ✅ FIX: Use functional update to ensure we get latest state
     setChatState(prev => {
-      console.log('📋 [setBookingStep] INSIDE setChatState - prev.bookingStep:', prev.bookingStep);
-      console.log('📋 [setBookingStep] INSIDE setChatState - prev.isOpen:', prev.isOpen);
-      console.log('📋 [setBookingStep] INSIDE setChatState - prev.therapist:', prev.therapist?.name);
+      logger.debug('📋 [setBookingStep] INSIDE setChatState - prev.bookingStep:', prev.bookingStep);
+      logger.debug('📋 [setBookingStep] INSIDE setChatState - prev.isOpen:', prev.isOpen);
+      logger.debug('📋 [setBookingStep] INSIDE setChatState - prev.therapist:', prev.therapist?.name);
       
       const newState = { 
         ...prev, 
@@ -1248,17 +1248,17 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
             bookingId: prev.currentBooking.bookingId,
           };
           localStorage.setItem('active_booking_state', JSON.stringify(bookingState));
-          console.log('💾 Persisted booking state at step:', step);
+          logger.debug('💾 Persisted booking state at step:', step);
         } catch (error) {
-          console.error('❌ Failed to persist booking state:', error);
+          logger.error('❌ Failed to persist booking state:', error);
         }
       } else if (step === 'duration') {
         // Clear persisted state when returning to initial step
         localStorage.removeItem('active_booking_state');
-        console.log('🧹 Cleared persisted booking state');
+        logger.debug('🧹 Cleared persisted booking state');
       }
       
-      console.log('📋 [setBookingStep] NEW State:', {
+      logger.debug('📋 [setBookingStep] NEW State:', {
         bookingStep: newState.bookingStep,
         isOpen: newState.isOpen,
         isMinimized: newState.isMinimized,
@@ -1270,10 +1270,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     
     // 🔓 UNLOCK CHAT when entering normal chat mode
     if (step === 'chat') {
-      console.log('🔓 Unlocking chat and notifying AppStateContext...');
+      logger.debug('🔓 Unlocking chat and notifying AppStateContext...');
       setIsLocked(false);
       setIsChatWindowVisible(true);
-      console.log('✅ Chat unlocked and AppStateContext notified');
+      logger.debug('✅ Chat unlocked and AppStateContext notified');
     }
   }, [setIsChatWindowVisible, setIsLocked]);
 
@@ -1309,38 +1309,38 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Send message - Simple and reliable implementation
   const sendMessage = useCallback(async (messageContent: string): Promise<{ sent: boolean; warning?: string }> => {
-    console.log('═══════════════════════════════════════════');
-    console.log('💬 [RELIABLE CHAT] Sending message');
-    console.log('═══════════════════════════════════════════');
-    console.log('Current User ID:', currentUserId || '⚠️ Guest (not logged in)');
-    console.log('Current User Name:', currentUserName || 'Guest');
-    console.log('User Type:', isGuestUser ? '👤 GUEST' : '🔐 AUTHENTICATED');
-    console.log('Message Content Length:', messageContent?.trim()?.length || 0);
-    console.log('Therapist:', chatState.therapist?.name || '❌ MISSING', chatState.therapist?.id || '');
-    console.log('═══════════════════════════════════════════');
+    logger.debug('═══════════════════════════════════════════');
+    logger.debug('💬 [RELIABLE CHAT] Sending message');
+    logger.debug('═══════════════════════════════════════════');
+    logger.debug('Current User ID:', currentUserId || '⚠️ Guest (not logged in)');
+    logger.debug('Current User Name:', currentUserName || 'Guest');
+    logger.debug('User Type:', isGuestUser ? '👤 GUEST' : '🔐 AUTHENTICATED');
+    logger.debug('Message Content Length:', messageContent?.trim()?.length || 0);
+    logger.debug('Therapist:', chatState.therapist?.name || '❌ MISSING', chatState.therapist?.id || '');
+    logger.debug('═══════════════════════════════════════════');
     
     // Basic validation
     if (!messageContent.trim()) {
-      console.error('❌ [RELIABLE] Empty message blocked');
+      logger.error('❌ [RELIABLE] Empty message blocked');
       return { sent: false, warning: 'Message cannot be empty' };
     }
     
     if (messageContent.trim().length > 2000) {
-      console.error('❌ [RELIABLE] Message too long');
+      logger.error('❌ [RELIABLE] Message too long');
       return { sent: false, warning: 'Message too long (max 2000 characters)' };
     }
     
     if (!chatState.therapist?.id) {
-      console.error('❌ [RELIABLE] No recipient - message blocked');
+      logger.error('❌ [RELIABLE] No recipient - message blocked');
       return { sent: false, warning: 'No therapist selected for conversation' };
     }
     
     // Guest user handling
     if (isGuestUser) {
-      console.log('🔧 [RELIABLE] Processing guest message...');
+      logger.debug('🔧 [RELIABLE] Processing guest message...');
       // Ensure guest ID is valid and persistent
       if (!currentUserId || !currentUserId.startsWith('guest_')) {
-        console.error('❌ [RELIABLE] Invalid guest ID');
+        logger.error('❌ [RELIABLE] Invalid guest ID');
         return { sent: false, warning: 'Guest session invalid. Please refresh the page.' };
       }
     }
@@ -1349,13 +1349,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // Generate conversation room ID using standardized service
     const roomId = chatDataFlowService.generateConversationId(currentUserId, therapist.id);
     
-    console.log('📤 [RELIABLE] Sending to:', therapist.name);
+    logger.debug('📤 [RELIABLE] Sending to:', therapist.name);
 
     const startTime = performance.now();
 
     try {
       // 🏆 PRIMARY: Simple and reliable chat service
-      console.log('💬 [RELIABLE] Using reliable chat service...');
+      logger.debug('💬 [RELIABLE] Using reliable chat service...');
       
       const chatResult = await chatService.sendMessage({
         conversationId: roomId,
@@ -1372,8 +1372,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       const latency = performance.now() - startTime;
       
       if (chatResult.success) {
-        console.log('✅ [RELIABLE] Message sent successfully!');
-        console.log(`   ⚡ Latency: ${latency.toFixed(2)}ms`);
+        logger.info('✅ [RELIABLE] Message sent successfully!');
+        logger.debug(`   ⚡ Latency: ${latency.toFixed(2)}ms`);
         
         // Add to local state for immediate UI update
         const newMessage: ChatMessage = {
@@ -1396,14 +1396,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           messages: [...prev.messages, newMessage]
         }));
 
-        console.log('✅ [RELIABLE] Local UI updated');
+        logger.debug('✅ [RELIABLE] Local UI updated');
         return { sent: true };
       } else {
-        console.error('⚠️ [RELIABLE] Service failed:', chatResult.error);
+        logger.error('⚠️ [RELIABLE] Service failed:', chatResult.error);
       }
       
       // This should almost never happen with 100% Facebook standard
-      console.log('� [FALLBACK] Attempting server-enforced service...');
+      logger.debug('� [FALLBACK] Attempting server-enforced service...');
       
       // Prepare traditional server request for emergency fallback
       const serverRequest: SendMessageRequest = {
@@ -1419,11 +1419,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
       // 🆕 ELITE FIX: Server-enforced fallback (Layer 2 only)
       try {
-        console.log('🔄 [FALLBACK] Server-enforced service...');
+        logger.debug('🔄 [FALLBACK] Server-enforced service...');
         const response = await serverEnforcedChatService.sendMessage(serverRequest);
         
         if (response.success && !response.isRestricted && !response.isViolation) {
-          console.log('✅ [FALLBACK] Server-enforced service succeeded');
+          logger.info('✅ [FALLBACK] Server-enforced service succeeded');
           
           // Add to local state
           const newMessage: ChatMessage = {
@@ -1458,12 +1458,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         }
         
       } catch (serverError) {
-        console.error('❌ [FALLBACK] Server-enforced service failed:', serverError);
+        logger.error('❌ [FALLBACK] Server-enforced service failed:', serverError);
       }
       
       // 🆕 ELITE FIX: Simplified fallback - Facebook/Amazon Standard (2 layers max)
       // If both primary and server-enforced fail, report critical failure
-      console.error('🚨 [CRITICAL] Both primary and fallback services failed');
+      logger.error('🚨 [CRITICAL] Both primary and fallback services failed');
       return { 
         sent: false, 
         warning: 'Unable to send message. Please check your connection and try again.' 
@@ -1471,7 +1471,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       
     } catch (error) {
       const latency = performance.now() - startTime;
-      console.error('🚨 [100% FACEBOOK] Critical error after', latency.toFixed(2), 'ms:', error);
+      logger.error('🚨 [100% FACEBOOK] Critical error after', latency.toFixed(2), 'ms:', error);
       
       return { 
         sent: false, 
@@ -1514,7 +1514,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   // ATOMIC BOOKING CREATION (Transaction-Style with Rollback)
   // ═══════════════════════════════════════════════════════════════════════
   const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
-    console.log('🔒 [TRANSACTION] Starting atomic booking creation');
+    logger.debug('🔒 [TRANSACTION] Starting atomic booking creation');
     
     // ═══════════════════════════════════════════════════════════════════════
     // Prepare transaction parameters
@@ -1545,12 +1545,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const therapistDocumentId = therapist.appwriteId || therapist.$id || therapist.id;
     
     if (!therapistDocumentId) {
-      console.error('❌ CRITICAL: No valid therapist ID found:', therapist);
+      logger.error('❌ CRITICAL: No valid therapist ID found:', therapist);
       addSystemNotification('❌ Invalid therapist data. Please refresh and try again.');
       return false;
     }
     
-    console.log('✅ Therapist Document ID resolved:', therapistDocumentId);
+    logger.debug('✅ Therapist Document ID resolved:', therapistDocumentId);
     
     const transactionParams: BookingTransactionParams = {
       therapist: {
@@ -1579,7 +1579,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       originalPrice: bookingData.originalPrice,
     };
     
-    console.log('📦 [TRANSACTION] Parameters prepared:', {
+    logger.debug('📦 [TRANSACTION] Parameters prepared:', {
       therapistId: transactionParams.therapist.id,
       customerName: transactionParams.customerName,
       duration: transactionParams.duration,
@@ -1592,13 +1592,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const result = await executeBookingTransaction(transactionParams);
     
     if (!result.success) {
-      console.error('❌ [TRANSACTION] Booking creation failed:', result.error);
+      logger.error('❌ [TRANSACTION] Booking creation failed:', result.error);
       addSystemNotification(`❌ ${result.error}`);
       // Chat remains LOCKED - no partial state
       return false;
     }
     
-    console.log('✅ [TRANSACTION] Transaction succeeded, committing state...');
+    logger.info('✅ [TRANSACTION] Transaction succeeded, committing state...');
     
     // ═══════════════════════════════════════════════════════════════════════
     // COMMIT (Single atomic state update - NO FAILURES BEYOND THIS POINT)
@@ -1612,7 +1612,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       // NO bookingCountdown - managed by timer hook
     }));
     
-    console.log('✅ [COMMIT] State updated with booking:', booking.bookingId);
+    logger.debug('✅ [COMMIT] State updated with booking:', booking.bookingId);
     
     // ═══════════════════════════════════════════════════════════════════════
     // Update booking state ref IMMEDIATELY (timer needs latest state)
@@ -1623,20 +1623,20 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       lifecycleStatus: lifecycleStatus,
       isActive: isBookingActive(lifecycleStatus)
     });
-    console.log('🔄 [COMMIT] Booking state ref updated immediately after commit');
+    logger.debug('🔄 [COMMIT] Booking state ref updated immediately after commit');
     
     // ═══════════════════════════════════════════════════════════════════════
     // Start timer BEFORE unlock (ensures timer is active when UI becomes interactive)
     // ═══════════════════════════════════════════════════════════════════════
     startTimer(timerPhase, booking.bookingId);
-    console.log(`⏱️ [TIMER] Started ${timerPhase} timer for booking ${booking.bookingId}`);
+    logger.debug(`⏱️ [TIMER] Started ${timerPhase} timer for booking ${booking.bookingId}`);
     
     // ═══════════════════════════════════════════════════════════════════════
     // Unlock chat ONLY after timer is started
     // ═══════════════════════════════════════════════════════════════════════
     setIsLocked(false);
     setIsChatWindowVisible(true);
-    console.log('🔓 [COMMIT] Chat unlocked after timer start');
+    logger.debug('🔓 [COMMIT] Chat unlocked after timer start');
     
     // Success notification
     if (bookingData.discountCode) {
@@ -1645,7 +1645,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       addSystemNotification('✅ Booking request sent to therapist');
     }
     
-    console.log('✅ [TRANSACTION] Booking creation complete');
+    logger.info('✅ [TRANSACTION] Booking creation complete');
     return true;
     
   }, [
@@ -1688,7 +1688,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       try {
         await bookingLifecycleService.acceptBooking(currentBooking.documentId);
       } catch (error) {
-        console.error('❌ [BookingLifecycle] Failed to accept booking:', error);
+        logger.error('❌ [BookingLifecycle] Failed to accept booking:', error);
       }
     }
     
@@ -1710,7 +1710,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         lifecycleStatus: BookingLifecycleStatus.ACCEPTED,
         isActive: true // ACCEPTED is still active
       });
-      console.log('🔄 [LIFECYCLE] Booking state ref updated: PENDING → ACCEPTED');
+      logger.debug('🔄 [LIFECYCLE] Booking state ref updated: PENDING → ACCEPTED');
     }
     
     // Notify user
@@ -1725,14 +1725,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       // Inject bank card details as system message
       setTimeout(() => {
         addSystemNotification(bankCardMessage);
-        console.log('💳 [SecureBankCard] Auto-injected bank details for scheduled booking');
+        logger.debug('💳 [SecureBankCard] Auto-injected bank details for scheduled booking');
       }, 500); // Small delay for better UX
     }
     
     // Start customer confirmation timer (1 minute)
     if (currentBooking?.bookingId) {
       startTimer('CUSTOMER_CONFIRMATION', currentBooking.bookingId);
-      console.log('⏱️ [TIMER] Started CUSTOMER_CONFIRMATION timer (60s)');
+      logger.debug('⏱️ [TIMER] Started CUSTOMER_CONFIRMATION timer (60s)');
     }
   }, [chatState.therapist, chatState.currentBooking, startTimer, addSystemNotification, setChatState, updateBookingStateRef]);
 
@@ -1745,7 +1745,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       try {
         await bookingLifecycleService.declineBooking(currentBooking.documentId, 'Therapist declined');
       } catch (error) {
-        console.error('❌ [BookingLifecycle] Failed to decline booking:', error);
+        logger.error('❌ [BookingLifecycle] Failed to decline booking:', error);
       }
     }
     
@@ -1766,7 +1766,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         lifecycleStatus: BookingLifecycleStatus.DECLINED,
         isActive: false // DECLINED is inactive - timer will stop
       });
-      console.log('🔄 [LIFECYCLE] Booking state ref updated: → DECLINED');
+      logger.debug('🔄 [LIFECYCLE] Booking state ref updated: → DECLINED');
     }
     
     addSystemNotification('❌ Booking rejected. Your request is being sent to other available therapists.');
@@ -1781,7 +1781,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       try {
         await bookingLifecycleService.confirmBooking(currentBooking.documentId);
       } catch (error) {
-        console.error('❌ [BookingLifecycle] Failed to confirm booking:', error);
+        logger.error('❌ [BookingLifecycle] Failed to confirm booking:', error);
       }
     }
     
@@ -1803,7 +1803,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         lifecycleStatus: BookingLifecycleStatus.CONFIRMED,
         isActive: false // CONFIRMED is inactive - timer stops
       });
-      console.log('🔄 [LIFECYCLE] Booking state ref updated: ACCEPTED → CONFIRMED');
+      logger.debug('🔄 [LIFECYCLE] Booking state ref updated: ACCEPTED → CONFIRMED');
     }
     
     const therapistName = chatState.therapist?.name || 'Therapist';
@@ -1819,7 +1819,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       try {
         await bookingLifecycleService.declineBooking(currentBooking.documentId, 'Cancelled by user');
       } catch (error) {
-        console.error('❌ [BookingLifecycle] Failed to cancel booking:', error);
+        logger.error('❌ [BookingLifecycle] Failed to cancel booking:', error);
       }
     }
     
@@ -1841,7 +1841,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         lifecycleStatus: BookingLifecycleStatus.DECLINED,
         isActive: false // DECLINED is inactive - timer will stop
       });
-      console.log('🔄 [LIFECYCLE] Booking state ref updated: → CANCELLED/DECLINED');
+      logger.debug('🔄 [LIFECYCLE] Booking state ref updated: → CANCELLED/DECLINED');
     }
   }, [chatState.currentBooking, addSystemNotification, setChatState, updateBookingStateRef]);
 
@@ -1863,7 +1863,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     }));
     
     // No ref update needed - lifecycle status unchanged (still CONFIRMED)
-    console.log('🚗 [OPERATIONAL] Therapist on the way (lifecycle: CONFIRMED)');
+    logger.debug('🚗 [OPERATIONAL] Therapist on the way (lifecycle: CONFIRMED)');
     
     addSystemNotification(`🚗 ${therapistName} is on the way!`);
   }, [chatState.therapist, chatState.currentBooking, addSystemNotification, setChatState]);
@@ -1879,9 +1879,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     if (currentBooking?.documentId) {
       try {
         await bookingLifecycleService.completeBooking(currentBooking.documentId);
-        console.log(`💰 [BookingLifecycle] Commission recorded - Admin: ${currentBooking.adminCommission} IDR | Provider: ${currentBooking.providerPayout} IDR`);
+        logger.info(`💰 [BookingLifecycle] Commission recorded - Admin: ${currentBooking.adminCommission} IDR | Provider: ${currentBooking.providerPayout} IDR`);
       } catch (error) {
-        console.error('❌ [BookingLifecycle] Failed to complete booking:', error);
+        logger.error('❌ [BookingLifecycle] Failed to complete booking:', error);
       }
     }
     
@@ -1903,7 +1903,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         lifecycleStatus: BookingLifecycleStatus.COMPLETED,
         isActive: false // No active timer for COMPLETED
       });
-      console.log('🔄 [LIFECYCLE] Booking state ref updated: → COMPLETED');
+      logger.debug('🔄 [LIFECYCLE] Booking state ref updated: → COMPLETED');
     }
     
     addSystemNotification(`✨ Service completed!\n\n⏱️ Total session: ${totalTime} minutes\n   • Massage: ${duration} min\n   • Travel time: 30-60 min\n\n💳 PAYMENT OPTIONS:\n💵 Cash - Pay directly to therapist\n🏦 Bank Transfer - Use bank details in chat\n\n⚠️ IndaStreet suggests using bank details shared in this chat window to prevent any misunderstanding. If bank details not shared, please request therapist to post them in chat.`);
@@ -1921,7 +1921,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       if (bankCard && secureBankCardService.isValidBankCard(bankCard)) {
         const secureMessage = secureBankCardService.formatSystemMessage(bankCard, bookingAmount);
         addSystemNotification(secureMessage);
-        console.log('💳 [SecureBankCard] Displayed masked bank card details');
+        logger.debug('💳 [SecureBankCard] Displayed masked bank card details');
       } else {
         addSystemNotification('💳 Bank card details are not properly configured. Please contact the therapist.');
       }
