@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'react';
+import { logger } from '../utils/logger';
 
 interface PullToRefreshProps {
   children: ReactNode;
@@ -47,7 +48,7 @@ const ElitePullToRefresh: React.FC<PullToRefreshProps> = ({
       setHasError(false);
       await fn();
     } catch (error) {
-      console.error('ElitePullToRefresh: Error occurred:', error);
+      logger.error('ElitePullToRefresh: Error occurred:', error);
       setHasError(true);
       // Auto-recovery after 2 seconds in elite mode
       if (eliteMode) {
@@ -75,7 +76,7 @@ const ElitePullToRefresh: React.FC<PullToRefreshProps> = ({
   const preventMomentumScrolling = useCallback((prevent: boolean) => {
     // COMPLIANCE: Never manipulate body/html overflow - violates ONE SCROLL AUTHORITY rule
     // Global CSS architecture handles all mobile scroll behavior
-    console.log(`🚫 SCROLL VIOLATION PREVENTED: PullToRefresh attempted ${prevent ? 'disable' : 'enable'} body scroll`);
+    logger.debug(`🚫 SCROLL VIOLATION PREVENTED: PullToRefresh attempted ${prevent ? 'disable' : 'enable'} body scroll`);
     
     if (eliteMode && 'ontouchstart' in window) {
       // Only set touch-action on the component itself, not body/html

@@ -22,6 +22,7 @@ import { modernChatService, ChatMessage } from '../lib/services/modernChatServic
 import { ChatInput } from './ChatInput';
 import { MessageList, groupMessagesByDate, DateSeparator } from './MessageBubble';
 import { TypingIndicator, BubbleTypingIndicator, TypingUser } from './TypingIndicator';
+import { logger } from '../utils/logger';
 
 // ============================================================================
 // TYPES
@@ -108,7 +109,7 @@ export function ModernChatWindow({
       await modernChatService.markMessagesAsRead(chatRoomId, currentUserId);
       
     } catch (err: any) {
-      console.error('Failed to load messages:', err);
+      logger.error('Failed to load messages:', err);
       setError(err.message || 'Failed to load messages');
     } finally {
       setLoading(false);
@@ -151,7 +152,7 @@ export function ModernChatWindow({
       );
       
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logger.error('Failed to send message:', error);
       
       // Mark optimistic message as failed
       setOptimisticMessages(prev =>
@@ -187,13 +188,13 @@ export function ModernChatWindow({
   useEffect(() => {
     if (!isOpen || !chatRoomId) return;
     
-    console.log('🔔 Setting up real-time subscriptions for:', chatRoomId);
+    logger.debug('🔔 Setting up real-time subscriptions for:', chatRoomId);
     
     // Subscribe to messages
     const unsubscribeMessages = modernChatService.subscribeToMessages(
       chatRoomId,
       (newMessage) => {
-        console.log('📨 New message received:', newMessage);
+        logger.debug('📨 New message received:', newMessage);
         setMessages(prev => {
           // Avoid duplicates
           if (prev.find(msg => msg.$id === newMessage.$id)) {
@@ -206,7 +207,7 @@ export function ModernChatWindow({
         setTimeout(scrollToBottom, 100);
       },
       (updatedMessage) => {
-        console.log('🔄 Message updated:', updatedMessage);
+        logger.debug('🔄 Message updated:', updatedMessage);
         setMessages(prev =>
           prev.map(msg => msg.$id === updatedMessage.$id ? updatedMessage : msg)
         );
@@ -218,7 +219,7 @@ export function ModernChatWindow({
       chatRoomId,
       currentUserId,
       (typing) => {
-        console.log('⌨️  Typing update:', typing);
+        logger.debug('⌨️  Typing update:', typing);
         const typingUsers = typing.map(t => ({
           userId: t.userId,
           role: t.role,
@@ -229,7 +230,7 @@ export function ModernChatWindow({
     );
     
     return () => {
-      console.log('🔌 Cleaning up chat subscriptions');
+      logger.debug('🔌 Cleaning up chat subscriptions');
       unsubscribeMessages();
       unsubscribeTyping();
     };

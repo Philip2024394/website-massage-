@@ -3,6 +3,7 @@ import { Star, MessageSquare } from 'lucide-react';
 import { getReviewsForProfile } from '../lib/hybridReviewService';
 import { isSeedReview } from '../lib/seedReviews';
 import { useLanguageContext } from '../context/LanguageContext';
+import { logger } from '../utils/logger';
 
 // Avatar pool for review displays
 const REVIEW_AVATARS = [
@@ -148,15 +149,15 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
                 
                 setReviews(formattedReviews);
                 setHasRealReviews(result.hasRealReviews);
-                console.log(`✅ Loaded ${formattedReviews.length} reviews (${result.hasRealReviews ? 'with' : 'no'} real reviews)`);
+                logger.debug(`✅ Loaded ${formattedReviews.length} reviews (${result.hasRealReviews ? 'with' : 'no'} real reviews)`);
             } else {
                 // For general/location-based reviews, fetch all approved
                 // This is used on homepage or location pages
                 setReviews([]);
-                console.log('ℹ️ No providerId specified, skipping review fetch');
+                logger.debug('ℹ️ No providerId specified, skipping review fetch');
             }
         } catch (err) {
-            console.error('❌ Error fetching reviews:', err);
+            logger.error('❌ Error fetching reviews:', err);
             // On error, don't clear reviews - keep what we have
         } finally {
             if (isMountedRef.current) {
@@ -177,7 +178,7 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
         if (reviews.length === 0) return;
         
         const rotationInterval = setInterval(() => {
-            console.log('🔄 Rotating seed reviews (5-minute refresh)');
+            logger.debug('🔄 Rotating seed reviews (5-minute refresh)');
             fetchReviews();
         }, 5 * 60 * 1000); // 5 minutes
 

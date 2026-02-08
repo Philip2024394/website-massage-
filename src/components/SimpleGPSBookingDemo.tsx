@@ -16,6 +16,7 @@
 import React, { useState, useEffect } from 'react';
 import { customerGPSService } from '../services/customerGPSCollectionService';
 import { SimpleGPSUtils } from '../services/simpleGPSBookingIntegration';
+import { logger } from '../utils/logger';
 
 export const SimpleGPSBookingDemo: React.FC = () => {
   const [gpsStatus, setGpsStatus] = useState('checking');
@@ -66,8 +67,8 @@ export const SimpleGPSBookingDemo: React.FC = () => {
       // 🎯 ENHANCE WITH GPS (ONE LINE):
       const gpsBooking = SimpleGPSUtils.enhanceBooking(normalBooking, therapistData);
       
-      console.log('📍 Original booking:', normalBooking);
-      console.log('✨ GPS-enhanced booking:', gpsBooking);
+      logger.debug('📍 Original booking:', normalBooking);
+      logger.debug('✨ GPS-enhanced booking:', gpsBooking);
       
       // 🎯 CREATE THERAPIST MESSAGE:
       const message = SimpleGPSUtils.createMessage(gpsBooking);
@@ -76,11 +77,11 @@ export const SimpleGPSBookingDemo: React.FC = () => {
       setBookingStatus('completed');
       
       // In real app, you'd send to Appwrite and WhatsApp
-      console.log('📱 Sending to therapist WhatsApp:', message);
+      logger.debug('📱 Sending to therapist WhatsApp:', message);
       
     } catch (error) {
       setBookingStatus('error');
-      console.error('Booking error:', error);
+      logger.error('Booking error:', error);
     }
   };
 
