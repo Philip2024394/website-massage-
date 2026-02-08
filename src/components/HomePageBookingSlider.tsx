@@ -11,6 +11,7 @@
 import React, { useState, useCallback } from 'react';
 import { Zap, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
 import type { Therapist } from '../types';
+import { logger } from '../utils/logger';
 
 export interface HomePageBookingType {
   id: 'book-now' | 'scheduled';
@@ -93,7 +94,7 @@ export const HomePageBookingSlider: React.FC<HomePageBookingSliderProps> = ({
 
     // If scheduled booking and not verified, show warning but still allow selection
     if (type.id === 'scheduled' && !verificationStatus.isFullyVerified) {
-      console.log('⚠️ Scheduled booking selected for unverified therapist:', {
+      logger.debug('⚠️ Scheduled booking selected for unverified therapist:', {
         therapist: therapist.name,
         missing: verificationStatus.missingRequirements
       });

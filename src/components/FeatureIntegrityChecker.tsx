@@ -27,6 +27,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   CheckCircle, XCircle, AlertTriangle, RefreshCw, FileText, Navigation, Layers, Zap, Users, MessageCircle, Settings, Globe, Phone, Computer, Database, Shield, Activity} from 'lucide-react';
+import { logger } from '../utils/logger';
 
 export interface FeatureIntegrityProps {
   onVerificationComplete?: (results: VerificationResults) => void;
@@ -458,7 +459,7 @@ export const FeatureIntegrityChecker: React.FC<FeatureIntegrityProps> = ({
     if (isVerifying) return;
     
     setIsVerifying(true);
-    console.log('🔍 Starting feature integrity verification...');
+    logger.debug('🔍 Starting feature integrity verification...');
     
     try {
       const [pages, components, navigation, features, integrations] = await Promise.all([
@@ -528,10 +529,10 @@ export const FeatureIntegrityChecker: React.FC<FeatureIntegrityProps> = ({
       // Report errors
       results.errors.forEach(error => onFeatureError?.(error));
       
-      console.log('✅ Verification completed:', overall, 'Issues:', allIssues.length);
+      logger.debug('✅ Verification completed:', overall, 'Issues:', allIssues.length);
       
     } catch (error) {
-      console.error('🔥 Verification failed:', error);
+      logger.error('🔥 Verification failed:', error);
       
       const errorResults: VerificationResults = {
         overall: 'fail',

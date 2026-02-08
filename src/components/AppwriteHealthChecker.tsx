@@ -145,7 +145,7 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
       };
     } catch (error) {
       const latency = Date.now() - startTime;
-      console.error('🔥 Database connection failed:', error);
+      logger.error('🔥 Database connection failed:', error);
       
       return {
         status: 'fail',
@@ -190,7 +190,7 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
       const latency = Date.now() - startTime;
       const errorMessage = error?.message || 'Unknown error';
       
-      console.error(`🔥 Collection ${collectionName} access failed:`, error);
+      logger.error(`🔥 Collection ${collectionName} access failed:`, error);
       
       // Determine severity based on error type
       let status: HealthCheck['status'] = 'fail';
@@ -238,7 +238,7 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
       }
     } catch (error) {
       const latency = Date.now() - startTime;
-      console.error('🔥 Authentication check failed:', error);
+      logger.error('🔥 Authentication check failed:', error);
       
       return {
         status: 'fail',
@@ -266,7 +266,7 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
       };
     } catch (error) {
       const latency = Date.now() - startTime;
-      console.error('🔥 Real-time connection check failed:', error);
+      logger.error('🔥 Real-time connection check failed:', error);
       
       return {
         status: 'warn',
@@ -321,7 +321,7 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
     if (isChecking) return;
     
     setIsChecking(true);
-    console.log('🏥 Starting Appwrite health check...');
+    logger.debug('🏥 Starting Appwrite health check...');
     
     const checkStartTime = Date.now();
     const errors: HealthError[] = [];
@@ -427,10 +427,10 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
       // Report errors
       errors.forEach(error => onErrorDetected?.(error));
 
-      console.log('✅ Health check completed:', overall, 'Errors:', errors.length);
+      logger.debug('✅ Health check completed:', overall, 'Errors:', errors.length);
       
     } catch (error) {
-      console.error('🔥 Health check failed:', error);
+      logger.error('🔥 Health check failed:', error);
       
       const criticalError = createHealthError(
         'connection',

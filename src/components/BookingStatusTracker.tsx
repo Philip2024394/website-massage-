@@ -5,6 +5,7 @@ import { showToast } from '../utils/showToastPortal';
 import { databases, client } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { bookingSoundService } from '../services/bookingSound.service';
+import { logger } from '../utils/logger';
 
 interface BookingStatusTrackerProps {
   isOpen: boolean;
@@ -57,9 +58,9 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
     try {
       const audio = new Audio(`/${type}-notification.mp3`);
       audio.volume = 0.7;
-      audio.play().catch(e => console.log('Audio play failed:', e));
+      audio.play().catch(e => logger.debug('Audio play failed:', e));
     } catch (error) {
-      console.log('Audio not available:', error);
+      logger.debug('Audio not available:', error);
     }
   };
 
@@ -112,7 +113,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
     const unsubscribe = client.subscribe(
       `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.bookings}.documents.${bookingId}`,
       (response: any) => {
-        console.log('📡 Booking status update received:', response);
+        logger.debug('📡 Booking status update received:', response);
         
         const updatedBooking = response.payload;
         
@@ -193,7 +194,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
     
     try {
       // Update therapist status to busy (replace with real Appwrite update)
-      console.log('Setting therapist status to busy:', acceptedTherapist.therapistId);
+      logger.debug('Setting therapist status to busy:', acceptedTherapist.therapistId);
       // CRITICAL: Stop notifications on accept
       if (bookingId) {
         stopContinuousNotifications(bookingId);
@@ -216,7 +217,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
       }, 3000);
       
     } catch (error) {
-      console.error('Error confirming booking:', error);
+      logger.error('Error confirming booking:', error);
     }
   };
 

@@ -11,6 +11,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Calendar, Clock, Zap, Users, MapPin, DollarSign } from 'lucide-react';
+import { logger } from '../utils/logger';
 
 export interface BookingType {
   id: 'book-now' | 'scheduled';
@@ -254,7 +255,7 @@ export const useBookingTypeSelection = (initialType: 'book-now' | 'scheduled' = 
     setSelectedType(type);
     
     // Log selection for analytics
-    console.log(`📋 Booking type selected: ${type.id} (${type.title})`);
+    logger.debug(`📋 Booking type selected: ${type.id} (${type.title})`);
     
     // Track custom metric for enterprise monitoring
     if (typeof window !== 'undefined' && (window as any).enterprisePerformanceService) {
@@ -273,11 +274,11 @@ export const useBookingTypeSelection = (initialType: 'book-now' | 'scheduled' = 
   const startBookingFlow = useCallback(() => {
     setIsBookingFlowActive(true);
     
-    console.log(`🚀 Starting booking flow for: ${selectedType?.title}`);
+    logger.debug(`🚀 Starting booking flow for: ${selectedType?.title}`);
     
     // Initialize enterprise booking flow
     if (typeof window !== 'undefined' && (window as any).enterpriseBookingFlowService) {
-      (window as any).enterpriseBookingFlowService.initialize().catch(console.error);
+      (window as any).enterpriseBookingFlowService.initialize().catch(err => logger.error('Booking flow init error:', err));
     }
   }, [selectedType]);
 
