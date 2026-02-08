@@ -3,6 +3,7 @@
  * Provides location services specifically optimized for hotel/villa guests
  */
 
+import { logger } from '@/lib/logger.production';
 import { locationService } from '../services/locationService';
 import { enhancedDistanceService } from './googleMapsDistanceService';
 import type { UserLocation } from '../types';
@@ -30,17 +31,17 @@ export class LiveMenuLocationManager {
    * Initialize location for live menu with venue as primary reference
    */
   async initializeLiveMenuLocation(options: LocationManagerOptions): Promise<UserLocation> {
-    console.log('🏨 Initializing Live Menu location system...');
+    logger.debug('🏨 Initializing Live Menu location system...');
 
     // Set venue location as primary reference
     if (options.venueLocation) {
       this.venueLocation = options.venueLocation;
-      console.log('🏨 Venue location set:', this.venueLocation);
+      logger.debug('🏨 Venue location set:', this.venueLocation);
     }
 
     // Try to get guest's current location for more accurate distances
     try {
-      console.log('📱 Attempting to get guest location for precise distances...');
+      logger.debug('📱 Attempting to get guest location for precise distances...');
       const guestLocation = await locationService.getCurrentLocation({
         enableHighAccuracy: true,
         timeout: 10000, // Shorter timeout for guests
@@ -48,20 +49,20 @@ export class LiveMenuLocationManager {
       });
       
       this.guestLocation = guestLocation;
-      console.log('✅ Guest location obtained:', guestLocation);
+      logger.debug('✅ Guest location obtained:', guestLocation);
       return guestLocation;
       
     } catch (error) {
-      console.log('⚠️ Guest location unavailable, using venue location:', error);
+      logger.debug('⚠️ Guest location unavailable, using venue location:', error);
       
       // Fallback to venue location if guest denies permission
       if (this.venueLocation) {
-        console.log('🏨 Using venue location as fallback');
+        logger.debug('🏨 Using venue location as fallback');
         return this.venueLocation;
       }
       
       // Final fallback to default location
-      console.log('🌍 Using default location fallback');
+      logger.debug('🌍 Using default location fallback');
       return locationService.getDefaultLocation();
     }
   }
@@ -72,16 +73,16 @@ export class LiveMenuLocationManager {
    */
   getBestLocationForDistances(): UserLocation {
     if (this.guestLocation) {
-      console.log('📱 Using guest location for distances');
+      logger.debug('📱 Using guest location for distances');
       return this.guestLocation;
     }
     
     if (this.venueLocation) {
-      console.log('🏨 Using venue location for distances');
+      logger.debug('🏨 Using venue location for distances');
       return this.venueLocation;
     }
     
-    console.log('🌍 Using default location for distances');
+    logger.debug('🌍 Using default location for distances');
     return locationService.getDefaultLocation();
   }
 
@@ -95,8 +96,8 @@ export class LiveMenuLocationManager {
     const { radiusKm = 15, includeOutsideRadius = true } = options;
     const referenceLocation = this.getBestLocationForDistances();
 
-    console.log(`📏 Calculating distances from:`, referenceLocation);
-    console.log(`🎯 Search radius: ${radiusKm}km`);
+    logger.debug(`📏 Calculating distances from:`, referenceLocation);
+    logger.debug(`🎯 Search radius: ${radiusKm}km`);
 
 const providersWithDistance: any[] = [];
 
@@ -108,7 +109,7 @@ const providersWithDistance: any[] = [];
           : provider.coordinates;
 
         if (!coords || typeof coords.lat !== 'number' || typeof coords.lng !== 'number') {
-          console.warn(`❌ Invalid coordinates for provider ${provider.id}`);
+          logger.warn(`❌ Invalid coordinates for provider ${provider.id}`);
           continue;
         }
 
@@ -130,14 +131,14 @@ const providersWithDistance: any[] = [];
         }
 
       } catch (error) {
-        console.error(`❌ Distance calculation failed for provider ${provider.id}:`, error);
+        logger.error(`❌ Distance calculation failed for provider ${provider.id}:`, error);
       }
     }
 
     // Sort by distance (closest first)
     providersWithDistance.sort((a, b) => (a as any).distance as any - (b as any).distance as any);
 
-    console.log(`✅ Distance calculation complete: ${providersWithDistance.length} providers within ${radiusKm}km`);
+    logger.debug(`✅ Distance calculation complete: ${providersWithDistance.length} providers within ${radiusKm}km`);
     return providersWithDistance;
   }
 
@@ -152,7 +153,7 @@ const providersWithDistance: any[] = [];
       });
       return true;
     } catch (error) {
-      console.log('Guest declined location permission:', error);
+      logger.debug('Guest declined location permission:', error);
       return false;
     }
   }

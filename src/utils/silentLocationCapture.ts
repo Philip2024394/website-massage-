@@ -12,6 +12,7 @@
  * IP-based location intentionally disabled due to inaccuracy in Indonesia.
  */
 
+import { logger } from '@/lib/logger.production';
 import { getCustomerLocation } from '../lib/nearbyProvidersService';
 
 export interface CapturedLocation {
@@ -30,12 +31,12 @@ const CAPTURE_EXPIRY_HOURS = 24; // Location expires after 24 hours
  */
 export const captureSilentLocation = async (): Promise<CapturedLocation | null> => {
   try {
-    console.log('🌍 Facebook-style: Silently capturing location...');
+    logger.debug('🌍 Facebook-style: Silently capturing location...');
     
     // Check if we already have a recent capture
     const existing = getStoredLocation();
     if (existing && !isLocationExpired(existing)) {
-      console.log('✓ Using cached location:', existing);
+      logger.debug('✓ Using cached location:', existing);
       return existing;
     }
     
@@ -54,9 +55,9 @@ export const captureSilentLocation = async (): Promise<CapturedLocation | null> 
       // Store in localStorage
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(captured));
-        console.log('💾 Location stored for chat system');
+        logger.debug('💾 Location stored for chat system');
       } catch (e) {
-        console.warn('Failed to store location:', e);
+        logger.warn('Failed to store location:', e);
       }
       
       return captured;
@@ -64,7 +65,7 @@ export const captureSilentLocation = async (): Promise<CapturedLocation | null> 
     
     return null;
   } catch (error) {
-    console.log('ℹ️ Silent location capture failed (normally):', error instanceof Error ? error.message : error);
+    logger.debug('ℹ️ Silent location capture failed (normally):', error instanceof Error ? error.message : error);
     return null;
   }
 };
@@ -79,7 +80,7 @@ export const getStoredLocation = (): CapturedLocation | null => {
       return JSON.parse(stored);
     }
   } catch (e) {
-    console.warn('Failed to retrieve stored location:', e);
+    logger.warn('Failed to retrieve stored location:', e);
   }
   return null;
 };
@@ -150,7 +151,7 @@ export const enhanceLocation = async (
       timestamp: new Date().toISOString()
     };
   } catch (error) {
-    console.warn('Location enhancement failed:', error);
+    logger.warn('Location enhancement failed:', error);
     return {
       lat: location.lat,
       lng: location.lng,
@@ -167,8 +168,8 @@ export const enhanceLocation = async (
 export const clearStoredLocation = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
-    console.log('🗑️ Stored location cleared');
+    logger.debug('🗑️ Stored location cleared');
   } catch (e) {
-    console.warn('Failed to clear location:', e);
+    logger.warn('Failed to clear location:', e);
   }
 };

@@ -4,6 +4,8 @@
  * No Google Maps API required - uses browser geolocation + curated city list
  */
 
+import { logger } from '@/lib/logger.production';
+
 export interface LocationOption {
   id: string;
   name: string;
@@ -126,13 +128,13 @@ class LocationService {
   async detectCurrentLocation(): Promise<DetectedLocation | null> {
     return new Promise((resolve) => {
       if (!("geolocation" in navigator)) {
-        console.warn('🌍 Geolocation not supported');
+        logger.warn('🌍 Geolocation not supported');
         resolve(null);
         return;
       }
 
       const timeoutId = setTimeout(() => {
-        console.warn('🌍 Geolocation timeout');
+        logger.warn('🌍 Geolocation timeout');
         resolve(null);
       }, 10000); // 10 second timeout
 
@@ -141,7 +143,7 @@ class LocationService {
           clearTimeout(timeoutId);
           const { latitude, longitude, accuracy } = position.coords;
           
-          console.log('🌍 GPS detected:', { latitude, longitude, accuracy });
+          logger.debug('🌍 GPS detected:', { latitude, longitude, accuracy });
           
           // Find nearest city
           const nearestCity = this.findNearestCity(latitude, longitude);
@@ -171,7 +173,7 @@ class LocationService {
         },
         (error) => {
           clearTimeout(timeoutId);
-          console.warn('🌍 Geolocation error:', error.message);
+          logger.warn('🌍 Geolocation error:', error.message);
           resolve(null);
         },
         {

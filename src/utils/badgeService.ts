@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger.production';
 import { notificationService } from '../lib/appwriteService';
 
 /**
@@ -25,16 +26,16 @@ export const badgeService = {
             try {
                 if (count > 0) {
                     await (navigator as any).setAppBadge(count);
-                    console.log(`✅ Home screen badge set to ${count}`);
+                    logger.debug(`✅ Home screen badge set to ${count}`);
                 } else {
                     await (navigator as any).clearAppBadge();
-                    console.log('✅ Home screen badge cleared');
+                    logger.debug('✅ Home screen badge cleared');
                 }
             } catch (error) {
-                console.error('❌ Error setting home screen badge:', error);
+                logger.error('❌ Error setting home screen badge:', error);
             }
         } else {
-            console.log('⚠️ Badge API not supported on this device/browser');
+            logger.debug('⚠️ Badge API not supported on this device/browser');
         }
     },
 
@@ -45,9 +46,9 @@ export const badgeService = {
         if ('clearAppBadge' in navigator) {
             try {
                 await (navigator as any).clearAppBadge();
-                console.log('✅ Home screen badge cleared');
+                logger.debug('✅ Home screen badge cleared');
             } catch (error) {
-                console.error('❌ Error clearing home screen badge:', error);
+                logger.error('❌ Error clearing home screen badge:', error);
             }
         }
     },
@@ -61,7 +62,7 @@ export const badgeService = {
             const unreadCount = await this.getUnreadCount();
             await this.setBadge(unreadCount);
         } catch (error) {
-            console.error('❌ Error updating badge:', error);
+            logger.error('❌ Error updating badge:', error);
         }
     },
 
@@ -75,17 +76,17 @@ export const badgeService = {
             const providerId = localStorage.getItem('providerId');
 
             if (!providerId) {
-                console.log('⚠️ No provider logged in, badge count = 0');
+                logger.debug('⚠️ No provider logged in, badge count = 0');
                 return 0;
             }
 
             // Get unread notifications from Appwrite
             const unread = await notificationService.getUnread(providerId);
-            console.log(`📊 Unread notifications: ${unread.length}`);
+            logger.debug(`📊 Unread notifications: ${unread.length}`);
             
             return unread.length;
         } catch (error) {
-            console.error('❌ Error getting unread count:', error);
+            logger.error('❌ Error getting unread count:', error);
             return 0;
         }
     },
@@ -104,11 +105,11 @@ export const badgeService = {
      */
     async init(): Promise<void> {
         if (!this.isSupported()) {
-            console.log('⚠️ Badge API not supported - using fallback notification methods');
+            logger.debug('⚠️ Badge API not supported - using fallback notification methods');
             return;
         }
 
-        console.log('✅ Badge API supported - initializing...');
+        logger.debug('✅ Badge API supported - initializing...');
         
         // Set initial badge count
         await this.updateBadge();
@@ -126,11 +127,11 @@ export const badgeService = {
         // Clear badge when app comes to foreground
         document.addEventListener('visibilitychange', async () => {
             if (document.visibilityState === 'visible') {
-                console.log('📱 App visible - updating badge...');
+                logger.debug('📱 App visible - updating badge...');
                 await this.updateBadge();
             }
         });
 
-        console.log('✅ Badge service initialized');
+        logger.debug('✅ Badge service initialized');
     }
 };

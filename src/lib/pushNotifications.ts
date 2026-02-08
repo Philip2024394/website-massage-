@@ -1,6 +1,8 @@
 // Push Notifications using Service Worker + Push API
 // This enables notifications even when phone is locked or app is closed
 
+import { logger } from '@/lib/logger.production';
+
 class PushNotificationManager {
   private swRegistration: ServiceWorkerRegistration | null = null;
   private isSupported: boolean = false;
@@ -12,7 +14,7 @@ class PushNotificationManager {
   private checkSupport(): void {
     this.isSupported = 'serviceWorker' in navigator && 'PushManager' in window;
     if (!this.isSupported) {
-      console.warn('⚠️ Push notifications not supported on this device');
+      logger.warn('⚠️ Push notifications not supported on this device');
     }
   }
 
@@ -25,12 +27,12 @@ class PushNotificationManager {
     try {
       // Register service worker
       this.swRegistration = await navigator.serviceWorker.register('/sw.js');
-      console.log('✅ Service Worker registered:', this.swRegistration);
+      logger.debug('✅ Service Worker registered:', this.swRegistration);
 
       // Request notification permission
       await this.requestPermission();
     } catch (error) {
-      console.error('❌ Failed to initialize push notifications:', error);
+      logger.error('❌ Failed to initialize push notifications:', error);
     }
   }
 
@@ -44,15 +46,15 @@ class PushNotificationManager {
       const permission = await Notification.requestPermission();
       
       if (permission === 'granted') {
-        console.log('✅ Notification permission granted');
+        logger.debug('✅ Notification permission granted');
         await this.subscribeToPushNotifications();
         return true;
       } else {
-        console.warn('⚠️ Notification permission denied');
+        logger.warn('⚠️ Notification permission denied');
         return false;
       }
     } catch (error) {
-      console.error('❌ Failed to request permission:', error);
+      logger.error('❌ Failed to request permission:', error);
       return false;
     }
   }
@@ -77,11 +79,11 @@ class PushNotificationManager {
         
         if (vapidKey) {
           options.applicationServerKey = this.urlBase64ToUint8Array(vapidKey);
-          console.log('✅ VAPID key configured for push notifications');
+          logger.debug('✅ VAPID key configured for push notifications');
         } else {
           // Only log in development - VAPID is optional for testing
           if (import.meta.env.DEV) {
-            console.info('ℹ️ Push notifications will work without VAPID key (testing mode)');
+            logger.info('ℹ️ Push notifications will work without VAPID key (testing mode)');
           }
         }
         
@@ -91,9 +93,9 @@ class PushNotificationManager {
       // Save subscription to Appwrite (for sending notifications later)
       await this.saveSubscriptionToServer(subscription);
       
-      console.log('✅ Push subscription created:', subscription);
+      logger.debug('✅ Push subscription created:', subscription);
     } catch (error) {
-      console.error('❌ Failed to subscribe to push notifications:', error);
+      logger.error('❌ Failed to subscribe to push notifications:', error);
     }
   }
 
@@ -113,9 +115,9 @@ class PushNotificationManager {
       // Store in localStorage for now (you can save to Appwrite user preferences)
       localStorage.setItem('push_subscription', JSON.stringify(subscriptionData));
       
-      console.log('✅ Push subscription saved');
+      logger.debug('✅ Push subscription saved');
     } catch (error) {
-      console.error('❌ Failed to save subscription:', error);
+      logger.error('❌ Failed to save subscription:', error);
     }
   }
 
@@ -155,9 +157,9 @@ class PushNotificationManager {
         }
       }
 
-      console.log('✅ Booking notification sent');
+      logger.debug('✅ Booking notification sent');
     } catch (error) {
-      console.error('❌ Failed to send notification:', error);
+      logger.error('❌ Failed to send notification:', error);
     }
   }
 
