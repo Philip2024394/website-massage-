@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { Clock, X } from 'lucide-react';
 
 // CSS for forcing visibility with !important declarations

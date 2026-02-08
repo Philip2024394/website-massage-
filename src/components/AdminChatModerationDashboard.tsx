@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { 
   Shield, AlertCircle as FlagIcon, AlertTriangle, Eye, EyeOff, CheckCircle, X, 
   Settings as MoreHorizontalIcon, Filter, Search, Calendar, Download,

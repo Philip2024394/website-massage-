@@ -14,6 +14,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { pwaNotificationSoundHandler } from '../services/pwaNotificationSoundHandler';
 
 interface IOSNotificationPromptProps {

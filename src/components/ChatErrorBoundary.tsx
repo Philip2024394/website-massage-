@@ -1,4 +1,5 @@
 import React, { Component, ReactNode } from 'react';
+import { logger } from '../utils/logger';
 import { chatTranslationService } from '../services/chatTranslationService';
 
 interface ErrorBoundaryState {

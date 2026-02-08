@@ -37,6 +37,7 @@ import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
+import { logger } from '../utils/logger';
 
 // 🚀 PERFORMANCE: Bulk data fetching to eliminate N+1 queries
 import { prefetchTherapistCardData } from '../lib/services/bulkDataService';
@@ -159,7 +160,7 @@ const HomePage: React.FC<HomePageProps> = ({
     // Use the page prop from the routing system instead of React Router DOM
     // This prevents HomePage from rendering on therapist profile routes and causing permission errors
     if (page !== 'home' && page !== 'landing') {
-        console.warn('🚫 HomePage: Blocked render outside home route. Current page:', page);
+        logger.warn('HomePage: Blocked render outside home route. Current page:', { page });
         return null;
     }
     
@@ -167,14 +168,14 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         const locked = sessionStorage.getItem("LOADING_LOCKED");
         if (locked) {
-            console.log("🔓 HomePage: Clearing LoadingGate lock");
+            logger.debug("HomePage: Clearing LoadingGate lock");
             sessionStorage.removeItem("LOADING_LOCKED");
         }
     }, []);
     
-    console.log('🔍 [STAGE 4 - HomePage] Component rendering');
-    console.log('🔍 [STAGE 4] Therapists prop received:', therapists?.length || 0);
-    console.log('🔍 [STAGE 4] First 3 therapist names:', therapists?.slice(0, 3).map(t => t.name) || []);
+    logger.debug('[STAGE 4 - HomePage] Component rendering');
+    logger.debug('[STAGE 4] Therapists prop received:', { count: therapists?.length || 0 });
+    logger.debug('[STAGE 4] First 3 therapist names:', { names: therapists?.slice(0, 3).map(t => t.name) || [] });
     
     // Custom hooks for logic extraction
     const translationsObject = useHomePageTranslations(t);
@@ -211,14 +212,14 @@ const HomePage: React.FC<HomePageProps> = ({
     // Sync selectedCity with CityContext city
     useEffect(() => {
         if (contextCity && contextCity !== selectedCity) {
-            console.log('🔄 Syncing selectedCity with CityContext:', { contextCity, currentSelectedCity: selectedCity });
+            logger.debug('Syncing selectedCity with CityContext:', { contextCity, currentSelectedCity: selectedCity });
             setSelectedCity(contextCity);
         }
     }, [contextCity]);
     
     // Debug log for selectedCity changes
     useEffect(() => {
-        console.log('🏠 HomePage selectedCity changed:', { selectedCity, contextCity });
+        logger.debug('HomePage selectedCity changed:', { selectedCity, contextCity });
     }, [selectedCity, contextCity]);
     
     // Female therapist filter state
@@ -275,7 +276,7 @@ const HomePage: React.FC<HomePageProps> = ({
             // Check if we already have stored location
             const existing = getStoredLocation();
             if (existing) {
-                console.log('✓ Using existing location capture:', existing);
+                logger.debug('Using existing location capture:', existing);
                 if (!userLocation && onSetUserLocation) {
                     onSetUserLocation({
                         lat: existing.lat,
@@ -290,7 +291,7 @@ const HomePage: React.FC<HomePageProps> = ({
             // Capture new location silently
             const captured = await captureSilentLocation();
             if (captured) {
-                console.log('✓ New location captured:', captured);
+                logger.debug('New location captured:', captured);
                 if (!userLocation && onSetUserLocation) {
                     onSetUserLocation({
                         lat: captured.lat,
@@ -355,12 +356,12 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         const initGoogleMaps = async () => {
             try {
-                console.log('🗺️ Initializing Google Maps for city location system...');
+                logger.debug('Initializing Google Maps for city location system...');
                 await initializeGoogleMaps();
                 setMapsApiLoaded(true);
-                console.log('✅ Google Maps initialized successfully for city filtering');
+                logger.debug('Google Maps initialized successfully for city filtering');
             } catch (error) {
-                console.warn('⚠️ Google Maps failed to load, using fallback location matching:', error);
+                logger.warn('Google Maps failed to load, using fallback location matching:', { error });
             }
         };
         initGoogleMaps();
@@ -385,25 +386,25 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         const prefetch = async () => {
             if (!therapists || therapists.length === 0) {
-                console.log('⏩ Skipping prefetch - no therapists');
+                logger.debug('Skipping prefetch - no therapists');
                 return;
             }
 
             // 🛡️ CRITICAL: Only prefetch once to prevent modal closures from data reloading
             // Modal state must remain independent of data loading
             if (hasPrefetched.current) {
-                console.log('⏩ Skipping prefetch - already completed');
+                logger.debug('Skipping prefetch - already completed');
                 return;
             }
 
-            console.log(`🚀 Prefetching data for ${therapists.length} therapists...`);
+            logger.debug(`Prefetching data for ${therapists.length} therapists...`);
             try {
                 const data = await prefetchTherapistCardData(therapists);
                 setPrefetchedData(data);
                 hasPrefetched.current = true; // 🔒 Mark as prefetched
-                console.log(`✅ Prefetch complete - ${data.menus.size} menus, ${data.shareLinks.size} share links`);
+                logger.debug(`Prefetch complete - ${data.menus.size} menus, ${data.shareLinks.size} share links`);
             } catch (error) {
-                console.error('❌ Prefetch failed:', error);
+                logger.error('Prefetch failed:', { error });
                 // Set empty data so cards can still render (will fall back to individual queries)
                 setPrefetchedData({ menus: new Map(), shareLinks: new Map() });
                 hasPrefetched.current = true; // 🔒 Mark as attempted to prevent infinite retry
@@ -438,13 +439,13 @@ const HomePage: React.FC<HomePageProps> = ({
         const loadMapsAPI = () => {
             const apiKey = getStoredGoogleMapsApiKey();
             if (!apiKey) {
-                console.warn('⚠️ Google Maps API key not configured');
+                logger.warn('Google Maps API key not configured');
                 return;
             }
 
-            console.log('🗺️ Loading Google Maps API for location autocomplete...');
+            logger.debug('Loading Google Maps API for location autocomplete');
             loadGoogleMapsScript(() => {
-                console.log('✅ Google Maps API loaded for HomePage');
+                logger.debug('Google Maps API loaded for HomePage');
                 setMapsApiLoaded(true);
             });
         };
@@ -468,7 +469,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 const place = autocomplete.getPlace();
                 
                 if (!place.geometry || !place.geometry.location) {
-                    console.warn('No location details available for selected place');
+                    logger.warn('No location details available for selected place');
                     return;
                 }
 
@@ -476,7 +477,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 const lng = place.geometry.location.lng();
                 const address = place.formatted_address || place.name || 'Selected location';
 
-                console.log('✅ Location selected from autocomplete:', { address, lat, lng });
+                logger.debug('Location selected from autocomplete', { address, lat, lng });
 
                 // Update user location
                 if (onSetUserLocation) {
@@ -489,9 +490,9 @@ const HomePage: React.FC<HomePageProps> = ({
             });
 
             autocompleteRef.current = autocomplete;
-            console.log('✅ Google Maps Autocomplete initialized');
+            logger.debug('Google Maps Autocomplete initialized');
         } catch (error) {
-            console.error('❌ Failed to initialize autocomplete:', error);
+            logger.error('Failed to initialize autocomplete', { error });
         }
     }, [mapsApiLoaded, onSetUserLocation]);
 
@@ -533,13 +534,13 @@ const HomePage: React.FC<HomePageProps> = ({
             });
             handleCloseRatingModal();
         } catch (error) {
-            console.error('Error submitting review:', error);
+            logger.error('Error submitting review', { error });
         }
     };
 
     // Function to show custom orange location modal
     const handleLocationRequest = () => {
-        console.log('📍 Showing custom orange location modal...');
+        logger.debug('Showing custom orange location modal');
         setIsLocationModalOpen(true);
     };
 
@@ -547,10 +548,10 @@ const HomePage: React.FC<HomePageProps> = ({
     const handleLocationAllow = async () => {
         setIsLocationModalOpen(false);
         try {
-            console.log('📍 User allowed location, requesting via browser API...');
+            logger.debug('User allowed location, requesting via browser API');
             const location = await getCustomerLocation();
             
-            console.log('✅ Location detected:', location);
+            logger.debug('Location detected', { location });
             
             // Use Google Maps Geocoding to get address from coordinates
             let address = 'Current location';
@@ -572,9 +573,9 @@ const HomePage: React.FC<HomePageProps> = ({
                     });
                     
                     address = result.formatted_address || 'Current location';
-                    console.log('✅ Reverse geocoded address:', address);
+                    logger.debug('Reverse geocoded address', { address });
                 } catch (geoError) {
-                    console.warn('⚠️ Reverse geocoding failed, using default address:', geoError);
+                    logger.warn('Reverse geocoding failed, using default address', { geoError });
                 }
             }
             
@@ -591,7 +592,7 @@ const HomePage: React.FC<HomePageProps> = ({
             setAutoDetectedLocation(location);
             
         } catch (error) {
-            console.log('❌ Location detection failed:', error);
+            logger.warn('Location detection failed', { error });
             // Show a user-friendly error message
             alert('Unable to detect location. Please enable location permissions in your browser and try again.');
         }
@@ -599,7 +600,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Function to handle when user denies location in custom modal
     const handleLocationDeny = () => {
-        console.log('📍 User denied location access');
+        logger.debug('User denied location access');
         setIsLocationModalOpen(false);
         // App continues with default location (Jakarta, Indonesia)
     };
@@ -615,7 +616,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 }, 1000);
             }
         } catch (error) {
-            console.warn('HomePage location modal effect warning (safe to ignore in React 19):', error);
+            logger.warn('HomePage location modal effect warning (safe to ignore in React 19)', { error });
         }
     }, [loggedInProvider, _loggedInAgent, loggedInCustomer, userLocation, autoDetectedLocation]);
 
@@ -634,7 +635,7 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         // INTENTIONALLY EMPTY - no automatic location detection
         // Users must explicitly choose their city or enable GPS manually
-        console.log('ℹ️ Automatic location detection disabled - users must select city manually');
+        logger.debug('Automatic location detection disabled - users must select city manually');
     }, [loggedInProvider, _loggedInAgent, autoDetectedLocation, isLocationDetecting, userLocation, onSetUserLocation]);
 
     // ⚠️ AUTO-DETECT CITY INTENTIONALLY DISABLED
@@ -647,7 +648,7 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         // INTENTIONALLY EMPTY - no auto city detection from GPS coordinates
         // GPS is ONLY used for distance calculations, NOT for setting browsing city
-        console.log('ℹ️ Auto city detection disabled - user must select city via CitySelectionPage');
+        logger.debug('Auto city detection disabled - user must select city via CitySelectionPage');
     }, [userLocation]);
 
     // Map postal codes to cities for automatic detection
@@ -697,7 +698,7 @@ const HomePage: React.FC<HomePageProps> = ({
         
         // Debug logging for featured sample detection
         if (isFeatured) {
-            console.log(`🎯 FEATURED SAMPLE DETECTED: ${type} "${provider.name}" - will show in ALL Indonesian cities including Yogyakarta, Jakarta, Bali, etc.`);
+            logger.debug(`Featured sample detected: ${type} "${provider.name}" - will show in ALL Indonesian cities`);
         }
         
         return isFeatured;
@@ -729,12 +730,12 @@ const HomePage: React.FC<HomePageProps> = ({
         // ✅ NEW LOGIC: Show therapists by default, only hide if explicitly disabled
         // If isLive is explicitly false AND status is offline/empty, then hide
         if (normalizedLiveFlag === false && (normalizedStatus === 'offline' || normalizedStatus === '')) {
-            console.log(`🚫 Hiding therapist ${therapist.name}: isLive=false AND status=${normalizedStatus}`);
+            logger.debug(`Hiding therapist ${therapist.name}: isLive=false AND status=${normalizedStatus}`);
             return false;
         }
         
         // Show in all other cases
-        console.log(`✅ Showing therapist ${therapist.name}: isLive=${normalizedLiveFlag}, status=${normalizedStatus}`);
+        logger.debug(`Showing therapist ${therapist.name}: isLive=${normalizedLiveFlag}, status=${normalizedStatus}`);
         return true;
     };
 
@@ -760,27 +761,27 @@ const HomePage: React.FC<HomePageProps> = ({
                        location.includes('jogja');
             });
         
-        console.log(`🔍 Found ${yogyaTherapists.length} Yogyakarta therapists for showcase generation`);
+        logger.debug(`Found ${yogyaTherapists.length} Yogyakarta therapists for showcase generation`);
         
         // If we have less than 5 Yogyakarta therapists, duplicate them to reach 5
         let expandedTherapists = [...yogyaTherapists];
         if (yogyaTherapists.length > 0 && yogyaTherapists.length < 5) {
-            console.log(`⚠️ Only ${yogyaTherapists.length} Yogyakarta therapists available, expanding to 5...`);
+            logger.debug(`Only ${yogyaTherapists.length} Yogyakarta therapists available, expanding to 5`);
             
             // Keep duplicating until we have at least 5
             while (expandedTherapists.length < 5) {
                 expandedTherapists = [...expandedTherapists, ...yogyaTherapists];
             }
             expandedTherapists = expandedTherapists.slice(0, 5); // Take exactly 5
-            console.log(`✅ Expanded to ${expandedTherapists.length} therapists for showcase`);
+            logger.debug(`Expanded to ${expandedTherapists.length} therapists for showcase`);
         }
         
         // Shuffle and take random 5 - different for each city
         const shuffled = shuffleArray([...expandedTherapists]);
         const selectedTherapists = shuffled.slice(0, 5);
         
-        console.log(`🎭 Selected ${selectedTherapists.length} therapists for showcase in ${targetCity}:`, 
-                   selectedTherapists.map((t: any) => t.name));
+        logger.debug(`Selected ${selectedTherapists.length} therapists for showcase in ${targetCity}`, 
+                   { therapistNames: selectedTherapists.map((t: any) => t.name) });
         
         // Create showcase versions with busy status and target city location
         // CRITICAL: Preserve original Appwrite $id for share links to work
@@ -800,7 +801,7 @@ const HomePage: React.FC<HomePageProps> = ({
             // Keep all other properties (name, image, rating, reviews, etc.) the same
         }));
         
-        console.log(`🎭 Created ${showcaseProfiles.length} showcase profiles from Yogyakarta for city: ${targetCity}`);
+        logger.debug(`Created ${showcaseProfiles.length} showcase profiles from Yogyakarta for city: ${targetCity}`);
         
         return showcaseProfiles;
     };
@@ -811,8 +812,8 @@ const HomePage: React.FC<HomePageProps> = ({
             const locationToUse = autoDetectedLocation || userLocation;
             
             // Location filtering enabled with city-based matching
-            console.log('🌍 Location filtering enabled - using city-based filtering');
-            console.log('📊 Data counts:', {
+            logger.debug('Location filtering enabled - using city-based filtering');
+            logger.debug('Data counts', {
                 totalTherapists: therapists?.length || 0,
                 totalPlaces: places?.length || 0,
                 liveTherapists: therapists?.filter((t: any) => t.isLive)?.length || 0,
@@ -858,7 +859,7 @@ const HomePage: React.FC<HomePageProps> = ({
             // 🔧 DISABLE GPS filtering for "All Indonesia" - show all therapists nationwide
             if (false && locationToUse && selectedCity === 'all') {
                 try {
-                    console.log('🔍 Filtering providers by GPS location (25km radius):', locationToUse);
+                    logger.debug('Filtering providers by GPS location (25km radius)', { location: locationToUse });
                     
                     // Get location coordinates
                     // 🔧 DEV-ONLY: Use override location if set, otherwise use real location
@@ -868,14 +869,16 @@ const HomePage: React.FC<HomePageProps> = ({
                     const coords = (isDev && devLocationOverride) ? { lat: devLocationOverride?.lat || 0, lng: devLocationOverride?.lng || 0 } : realCoords;
 
                     if (coords && coords.lat !== undefined && coords.lng !== undefined) {
-                        console.log('📍 Using coordinates:', coords);
+                        logger.debug('Using coordinates', { coords });
 
                         // Find ALL nearby therapists and places (25km radius) - NO status filtering for homepage
                         const nearbyTherapistsResult = await findAllNearbyTherapists(coords as { lat: number; lng: number }, 25);
                         const nearbyPlacesResult = await findAllNearbyPlaces(coords as { lat: number; lng: number }, 25);
                         
-                        console.log(`✅ Found ${nearbyTherapistsResult.length} nearby therapists within 25km`);
-                        console.log(`✅ Found ${nearbyPlacesResult.length} nearby places within 25km`);
+                        logger.debug('Found nearby providers', {
+                            therapists: nearbyTherapistsResult.length,
+                            places: nearbyPlacesResult.length
+                        });
                         
                         // Always include featured samples (Budi) regardless of location
                         const featuredTherapists = therapists.filter((t: any) => isFeaturedSample(t, 'therapist'));
@@ -907,7 +910,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         return;
                     }
                 } catch (error) {
-                    console.error('❌ Location filtering error:', error);
+                    logger.error('Location filtering error', { error });
                     // Fallback to showing all providers
                 }
             }
@@ -938,7 +941,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // Always show featured sample therapists (like Budi) in ALL cities
             if (isFeaturedSample(t, 'therapist')) {
-                console.log(`✅ Including featured therapist "${t.name}" in city "${selectedCity}" (Budi shows everywhere in Indonesia)`);
+                logger.debug(`Including featured therapist "${t.name}" in city "${selectedCity}" (shows everywhere in Indonesia)`);
                 return true;
             }
             
@@ -950,7 +953,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // If therapist has no city data, exclude them
             if (!therapistCity) {
-                console.log(`❌ EXCLUDED: "${t.name}" has no city data`);
+                logger.debug(`Excluded therapist "${t.name}" - no city data`);
                 return false;
             }
             
@@ -970,7 +973,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // Match if both are in Bali region
             if (isBaliTherapist && isBaliUser) {
-                console.log(`✅ INCLUDED: "${t.name}" (${therapistCity}) matches Bali region with user in ${selectedCity}`);
+                logger.debug(`Included therapist "${t.name}" (${therapistCity}) matches Bali region with user in ${selectedCity}`);
                 return true;
             }
             
@@ -978,9 +981,9 @@ const HomePage: React.FC<HomePageProps> = ({
             const matches = normalizedTherapistCity === normalizedSelectedCity;
             
             if (matches) {
-                console.log(`✅ INCLUDED: "${t.name}" matches city "${selectedCity}"`);
+                logger.debug(`Included therapist "${t.name}" matches city "${selectedCity}"`);
             } else {
-                console.log(`❌ EXCLUDED: "${t.name}" (city: "${therapistCity}") does not match "${selectedCity}"`);
+                logger.debug(`Excluded therapist "${t.name}" (city: "${therapistCity}") does not match "${selectedCity}"`);
             }
             
             return matches;
@@ -998,10 +1001,10 @@ const HomePage: React.FC<HomePageProps> = ({
                 if (showcaseProfiles.length > 0) {
                     // Add showcase profiles to the list (they'll appear as busy)
                     finalTherapistList = [...filteredTherapists, ...showcaseProfiles];
-                    console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} (no real therapists in city)`);
+                    logger.debug(`Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} (no real therapists in city)`);
                 }
             } else {
-                console.log(`✅ ${selectedCity} has ${realTherapistsInCity.length} real therapist(s), skipping showcase profiles`);
+                logger.debug(`${selectedCity} has ${realTherapistsInCity.length} real therapist(s), skipping showcase profiles`);
             }
         }
         
@@ -1023,7 +1026,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // If place has no city data, exclude them
             if (!placeCity) {
-                console.log(`❌ EXCLUDED PLACE: "${p.name}" has no city data`);
+                logger.debug(`Excluded place "${p.name}" - no city data`);
                 return false;
             }
             
@@ -1035,9 +1038,9 @@ const HomePage: React.FC<HomePageProps> = ({
             const matches = normalizedPlaceCity === normalizedSelectedCity;
             
             if (matches) {
-                console.log(`✅ INCLUDED PLACE: "${p.name}" matches city "${selectedCity}"`);
+                logger.debug(`Included place "${p.name}" matches city "${selectedCity}"`);
             } else {
-                console.log(`❌ EXCLUDED PLACE: "${p.name}" (city: "${placeCity}") does not match "${selectedCity}"`);
+                logger.debug(`Excluded place "${p.name}" (city: "${placeCity}") does not match "${selectedCity}"`);
             }
             
             return matches;
@@ -1061,7 +1064,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // If hotel has no city data, exclude it
             if (!hotelCity) {
-                console.log(`❌ EXCLUDED HOTEL: "${h.name}" has no city data`);
+                logger.debug(`Excluded hotel "${h.name}" - no city data`);
                 return false;
             }
             
@@ -1073,55 +1076,59 @@ const HomePage: React.FC<HomePageProps> = ({
             const matches = normalizedHotelCity === normalizedSelectedCity;
             
             if (matches) {
-                console.log(`✅ INCLUDED HOTEL: "${h.name}" matches city "${selectedCity}"`);
+                logger.debug(`Included hotel "${h.name}" matches city "${selectedCity}"`);
             } else {
-                console.log(`❌ EXCLUDED HOTEL: "${h.name}" (city: "${hotelCity}") does not match "${selectedCity}"`);
+                logger.debug(`Excluded hotel "${h.name}" (city: "${hotelCity}") does not match "${selectedCity}"`);
             }
             
             return matches;
         });
         
-        console.log('🏠 [HomePage RENDER] Provider Display Debug (Location-Filtered 25km radius):');
-        console.log('🔍 [STAGE 5 - HomePage Filters] Filter analysis:');
-        console.log('  📊 Total therapists prop:', therapists.length);
-        console.log('  📍 Nearby therapists (location-filtered):', nearbyTherapists.length);
-        console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
-        console.log('  🎯 Final filtered therapists:', finalTherapistList.length);
-        console.log('🔍 [STAGE 5] Filter breakdown:', {
+        logger.debug('[HomePage RENDER] Provider Display Debug (Location-Filtered 25km radius)');
+        logger.debug('[STAGE 5 - HomePage Filters] Filter analysis', {
+            totalTherapistsProp: therapists.length,
+            nearbyTherapists: nearbyTherapists.length,
+            liveNearbyTherapists: liveTherapists.length,
+            finalFilteredTherapists: finalTherapistList.length
+        });
+        logger.debug('[STAGE 5] Filter breakdown', {
             input: therapists.length,
             afterLocation: nearbyTherapists.length,
             afterLiveFilter: liveTherapists.length,
             final: finalTherapistList.length,
             reduction: therapists.length - finalTherapistList.length
         });
-        console.log('  🏨 Final filtered hotels (location):', filteredHotels.length);
-        console.log('  📍 Auto-detected location:', autoDetectedLocation);
-        console.log('  🏙️ Selected city:', selectedCity);
+        logger.debug('Filtered hotels and location info', {
+            filteredHotels: filteredHotels.length,
+            autoDetectedLocation,
+            selectedCity
+        });
         const missingCoords = therapists.filter((t: any)=>!t.coordinates).length;
-        console.log('  ⚠️ Therapists missing coordinates:', missingCoords);
+        logger.debug('Therapists missing coordinates', { count: missingCoords });
         
         // Also log places
         const livePlacesCount = nearbyPlaces.filter((p: any) => p.isLive === true).length;
-        console.log('  🏢 Total places prop:', places.length);
-        console.log('  📍 Nearby places (location-filtered):', nearbyPlaces.length);
-        const missingPlaceCoords = places.filter((p: any)=>!p.coordinates).length;
-        console.log('  ⚠️ Places missing coordinates:', missingPlaceCoords);
-        console.log('  🔴 Live nearby places:', livePlacesCount);
+        logger.debug('Places filtering info', {
+            totalPlacesProp: places.length,
+            nearbyPlaces: nearbyPlaces.length,
+            liveNearbyPlaces: livePlacesCount,
+            placesMissingCoords: places.filter((p: any)=>!p.coordinates).length
+        });
         
-        // Also log hotels 
+        // Also log hotels
         const liveHotelsCount = nearbyHotels.filter((h: any) => h.isLive === true).length;
-        console.log('  🏨 Total hotels prop:', hotels.length);
-        console.log('  📍 Nearby hotels (location-filtered):', nearbyHotels.length);
-        const missingHotelCoords = hotels.filter((h: any)=>!h.coordinates).length;
-        console.log('  ⚠️ Hotels missing coordinates:', missingHotelCoords);
-        console.log('  🔴 Live nearby hotels:', liveHotelsCount);
+        logger.debug('Hotels filtering info', {
+            totalHotelsProp: hotels.length,
+            nearbyHotels: nearbyHotels.length,
+            liveNearbyHotels: liveHotelsCount,
+            hotelsMissingCoords: hotels.filter((h: any)=>!h.coordinates).length
+        });
         
         // 🔧 DEV-ONLY: Diagnostic assertions
         if (isDev) {
-            console.assert(
-                therapists.length === 0 || nearbyTherapists.length > 0,
-                '⚠️ WARNING: Therapists exist in DB but 0 after location filtering. Check coordinates or location matching.'
-            );
+            if (therapists.length > 0 && nearbyTherapists.length === 0) {
+                logger.warn('Warning: Therapists exist in DB but 0 after location filtering. Check coordinates or location matching.');
+            }
             
             const currentCoords = (isDev && devLocationOverride) 
                 ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng }
@@ -1136,10 +1143,9 @@ const HomePage: React.FC<HomePageProps> = ({
                         const dlng = currentCoords.lng - coords.longitude;
                         return Math.sqrt(dlat * dlat + dlng * dlng) * 111;
                     }));
-                    console.assert(
-                        minDist <= 15,
-                        `⚠️ WARNING: User location is ${minDist.toFixed(1)}km from nearest therapist cluster. Consider location override.`
-                    );
+                    if (minDist > 15) {
+                        logger.warn(`Warning: User location is ${minDist.toFixed(1)}km from nearest therapist cluster. Consider location override.`);
+                    }
                 }
             }
         }
@@ -1159,12 +1165,12 @@ const HomePage: React.FC<HomePageProps> = ({
 
         // Listen for drawer toggle events from footer - React 19 concurrent rendering safe
         const handleToggleDrawer = () => {
-            console.log('🍔 toggleDrawer event received, current isMenuOpen:', isMenuOpen);
+            logger.debug('toggleDrawer event received', { currentIsMenuOpen: isMenuOpen });
             setIsMenuOpen(prev => !prev);
         };
 
         const handleCustomerDashboardDrawer = () => {
-            console.log('🍔 customer_dashboard_open_drawer event received, current isMenuOpen:', isMenuOpen);
+            logger.debug('customer_dashboard_open_drawer event received', { currentIsMenuOpen: isMenuOpen });
             setIsMenuOpen(true);
         };
         
@@ -1178,10 +1184,10 @@ const HomePage: React.FC<HomePageProps> = ({
                 window.addEventListener('customer_dashboard_open_drawer', handleCustomerDashboardDrawer);
                 listenersAdded.push(['customer_dashboard_open_drawer', handleCustomerDashboardDrawer]);
                 
-                console.log('🍔 Added event listeners for drawer events');
+                logger.debug('Added event listeners for drawer events');
             }
         } catch (error) {
-            console.warn('Event listener setup warning (safe to ignore):', error);
+            logger.warn('Event listener setup warning (safe to ignore)', { error });
         }
         
         return () => {
@@ -1193,7 +1199,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     }
                 } catch (error) {
                     // Suppress DOM manipulation errors during React 19 concurrent rendering
-                    console.warn('Event listener cleanup warning (safe to ignore in React 19):', error);
+                    logger.warn('Event listener cleanup warning (safe to ignore in React 19)', { error });
                 }
             });
         };
@@ -1298,7 +1304,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 language={language}
                 onLanguageChange={onLanguageChange}
                 onMenuClick={() => {
-                    console.log('🍔 UniversalHeader burger menu clicked in HomePage!');
+                    logger.debug('UniversalHeader burger menu clicked in HomePage');
                     setIsMenuOpen(true);
                 }}
             />
@@ -1309,7 +1315,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     isHome={true}
                     isOpen={isMenuOpen}
                     onClose={() => {
-                        console.log('🍔 AppDrawer onClose called');
+                        logger.debug('AppDrawer onClose called');
                         setIsMenuOpen(false);
                     }}
                     t={translationsObject}
@@ -1428,7 +1434,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             {/* Facial Button */}
                             <button
                                 onClick={() => {
-                                    console.log('🏨 Facial button clicked - switching to facials tab');
+                                    logger.debug('Facial button clicked - switching to facials tab');
                                     setActiveTab('facials');
                                 }}
                                 className="px-4 py-2.5 rounded-lg transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm bg-orange-500 text-white hover:bg-orange-600 flex-shrink-0"
@@ -1489,7 +1495,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                         return c;
                                     }
                                 } catch (e) {
-                                    console.warn("Invalid coordinates for therapist", t.$id, ":", t.coordinates);
+                                    logger.warn('Invalid coordinates for therapist', { therapistId: t.$id, coordinates: t.coordinates });
                                 }
                                 return null;
                             };
@@ -1506,46 +1512,48 @@ const HomePage: React.FC<HomePageProps> = ({
                                 return R * c;
                             };
 
-console.log('🔧 [DEBUG] Therapist filtering analysis:', {
-                totalTherapists: therapists?.length || 0,
-                therapistsArray: therapists?.slice(0, 5).map((t: any) => ({
-                    name: t.name,
-                    isLive: t.isLive,
-                    status: t.status,
-                    id: t.$id || t.id
-                })) || [],
-                selectedCity: selectedCity,
-                autoDetectedLocation: !!autoDetectedLocation,
-                userLocation: !!userLocation
-            });
+                            logger.debug('Therapist filtering analysis', {
+                                totalTherapists: therapists?.length || 0,
+                                therapistsArray: therapists?.slice(0, 5).map((t: any) => ({
+                                    name: t.name,
+                                    isLive: t.isLive,
+                                    status: t.status,
+                                    id: t.$id || t.id
+                                })) || [],
+                                selectedCity: selectedCity,
+                                autoDetectedLocation: !!autoDetectedLocation,
+                                userLocation: !!userLocation
+                            });
 
-            // TEMPORARY DEBUG: Show first therapist regardless of live status
-            if (therapists && therapists.length > 0) {
-                console.log('🔧 [DEBUG] First therapist raw data:', therapists[0]);
-            }
+                            // TEMPORARY DEBUG: Show first therapist regardless of live status
+                            if (therapists && therapists.length > 0) {
+                                logger.debug('First therapist raw data', { therapist: therapists[0] });
+                            }
 
-            // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
-            // 🌍 STEP 1: Calculate distances for all therapists with valid geopoints
-            
-            // 🔍 DEBUG: Log therapist data to understand filtering issues
-            console.log(`🔍 [DEBUG] Total therapists received:`, therapists?.length || 0);
-            if (therapists && therapists.length > 0) {
-                console.log(`🔍 [DEBUG] First 3 therapists data:`, therapists.slice(0, 3).map((t: any) => ({
-                    name: t.name,
-                    id: t.$id || t.id,
-                    hasCoordinates: !!t.coordinates,
-                    hasGeopoint: !!t.geopoint,
-                    coordinates: t.coordinates,
-                    geopoint: t.geopoint,
-                    location: t.location,
-                    city: t.city,
-                    isLive: t.isLive,
-                    status: t.status,
-                    availability: t.availability
-                })));
-            }
-            
-            let therapistsWithDistance = cityFilteredTherapists
+                            // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
+                            // 🌍 STEP 1: Calculate distances for all therapists with valid geopoints
+                            
+                            // 🔍 DEBUG: Log therapist data to understand filtering issues
+                            logger.debug('Total therapists received', { count: therapists?.length || 0 });
+                            if (therapists && therapists.length > 0) {
+                                logger.debug('First 3 therapists data', {
+                                    therapists: therapists.slice(0, 3).map((t: any) => ({
+                                        name: t.name,
+                                        id: t.$id || t.id,
+                                        hasCoordinates: !!t.coordinates,
+                                        hasGeopoint: !!t.geopoint,
+                                        coordinates: t.coordinates,
+                                        geopoint: t.geopoint,
+                                        location: t.location,
+                                        city: t.city,
+                                        isLive: t.isLive,
+                                        status: t.status,
+                                        availability: t.availability
+                                    }))
+                                });
+                            }
+                            
+                            let therapistsWithDistance = cityFilteredTherapists
                 .map((t: any) => {
                     let distance: number | null = null;
                     let locationArea: string = t.city || t.location || 'Unknown';
@@ -1559,7 +1567,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             
                             // 🔍 DEBUG: Log distance calculation for debugging
                             if (t.name === 'Budi' || t.name === 'Surtiningsih' || t.name === 'Wiwid') {
-                                console.log(`🧮 [DISTANCE CALC] ${t.name}:`, {
+                                logger.debug(`Distance calculation for ${t.name}`, {
                                     userLocation: currentUserLocation,
                                     therapistCoords: therapistCoords,
                                     rawCoordinates: t.coordinates,
@@ -1591,7 +1599,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     
                     // 🔍 LOG COMPARISON: Detailed logging for filtering decisions
                     if (isBudi || therapistsWithDistance.indexOf(t) < 3) { // Log Budi + first 3 others
-                        console.log(`🔍 [FILTER CHECK] ${t.name} (${isBudi ? 'BUDI' : 'OTHER'}):`, {
+                        logger.debug(`Filter check for ${t.name} (${isBudi ? 'BUDI' : 'OTHER'})`, {
                             name: t.name,
                             $id: t.$id,
                             treatedAsLive: treatedAsLive,
@@ -1614,7 +1622,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     // Always show featured sample therapists (Budi) in all cities
                     if (isFeatured) {
                         if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            console.log(`✅ [FILTER PASS] ${t.name}: isFeatured=true, INCLUDED`);
+                            logger.debug(`Filter pass for ${t.name}: isFeatured=true, INCLUDED`);
                         }
                         return true;
                     }
@@ -1623,14 +1631,14 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     // Show therapists based purely on their city assignment, not GPS proximity
                     // Distance is only calculated for sorting (nearest first), not for filtering
                     if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                        console.log(`✅ [FILTER PASS] ${t.name}: Location-based filtering (no radius restriction)`);
+                        logger.debug(`Filter pass for ${t.name}: Location-based filtering (no radius restriction)`);
                     }
                     
                     // 🔄 FALLBACK: Include therapists without valid coordinates (GPS-agnostic)
                     // Never exclude therapists just because they lack coordinates
                     if (t._distance === null) {
                         if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            console.log(`✅ [FILTER PASS] ${t.name}: No coordinates, GPS-agnostic inclusion, INCLUDED`);
+                            logger.debug(`Filter pass for ${t.name}: No coordinates, GPS-agnostic inclusion, INCLUDED`);
                         }
                         // Continue to other filters (live status, etc.) - don't return here
                     }
@@ -1639,7 +1647,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
                         const areaMatch = t._locationArea === adminViewArea;
                         if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            console.log(`${areaMatch ? '✅ [FILTER PASS]' : '❌ [FILTER FAIL]'} ${t.name}: Admin area view, area match=${areaMatch}`);
+                            logger.debug(`${areaMatch ? 'Filter pass' : 'Filter fail'} for ${t.name}: Admin area view, area match=${areaMatch}`);
                         }
                         return areaMatch;
                     }
@@ -1648,29 +1656,26 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     // Location strings are for DISPLAY ONLY, not filtering
                     // This ensures all therapists with valid coordinates in range are shown
                     if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                        console.log(`✅ [FILTER PASS] ${t.name}: Final default inclusion, INCLUDED`);
+                        logger.debug(`Filter pass for ${t.name}: Final default inclusion, INCLUDED`);
                     }
                     return true;
                 });
 
             // 🔍 FILTERING RESULTS SUMMARY
-            console.log('🔍 [FILTERING SUMMARY]');
-            console.log(`  📊 Input: ${therapistsWithDistance.length} therapists with distance calculated`);
-            console.log(`  📊 Output: ${baseList.length} therapists after filtering`);
-            
             const budiInBaseList = baseList.find(t => t.name?.toLowerCase().includes('budi'));
             const nonBudiInBaseList = baseList.filter(t => !t.name?.toLowerCase().includes('budi'));
             
-            console.log(`  🎯 Budi in final list: ${!!budiInBaseList} (${budiInBaseList?.name || 'NOT FOUND'})`);
-            console.log(`  🎯 Non-Budi in final list: ${nonBudiInBaseList.length} therapists`);
-            
-            if (nonBudiInBaseList.length > 0) {
-                console.log(`  🎯 First 3 non-Budi therapists in final list:`, 
-                    nonBudiInBaseList.slice(0, 3).map(t => ({ name: t.name, id: t.$id })));
-            }
+            logger.debug('Filtering summary', {
+                input: therapistsWithDistance.length,
+                output: baseList.length,
+                budiInList: !!budiInBaseList,
+                budiName: budiInBaseList?.name || 'NOT FOUND',
+                nonBudiCount: nonBudiInBaseList.length,
+                first3NonBudi: nonBudiInBaseList.slice(0, 3).map(t => ({ name: t.name, id: t.$id }))
+            });
             
             if (baseList.length === 1 && budiInBaseList) {
-                console.log('🚨 [CRITICAL ISSUE] Only Budi is in the final list - this is the bug!');
+                logger.warn('[CRITICAL ISSUE] Only Budi is in the final list - this is the bug');
             }
             
             // 👩‍⚕️ FEMALE THERAPIST FILTER: Apply if showFemaleOnly is active
@@ -1691,7 +1696,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     
                     return isFemale;
                 });
-                console.log(`👩‍⚕️ [FEMALE FILTER] Filtered to ${baseList.length} female/female-friendly therapists`);
+                logger.debug(`Female filter applied: ${baseList.length} female/female-friendly therapists`);
             }
             
             // 🗺️ AREA FILTER: Apply if selectedArea is active (city-first location system)
@@ -1707,23 +1712,23 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 serviceAreas = t.serviceAreas;
                             }
                         } catch (error) {
-                            console.warn('⚠️ Failed to parse serviceAreas for therapist:', t.name, error);
+                            logger.warn('Failed to parse serviceAreas for therapist', { therapistName: t.name, error });
                             return false;
                         }
                     }
                     
                     const servesArea = Array.isArray(serviceAreas) && serviceAreas.includes(selectedArea);
                     if (servesArea) {
-                        console.log(`✅ AREA FILTER: ${t.name} serves area "${selectedArea}"`);
+                        logger.debug(`Area filter: ${t.name} serves area "${selectedArea}"`);
                     }
                     return servesArea;
                 });
-                console.log(`🗺️ [AREA FILTER] Filtered to ${baseList.length} therapists serving area "${selectedArea}"`);
+                logger.debug(`Area filter applied: ${baseList.length} therapists serving area "${selectedArea}"`);
             }
 
             // 🔍 ADVANCED FILTERS: Apply all advanced filter selections
             if (selectedTherapistGender || selectedServiceFor || selectedMassageType || selectedSpecialFeature || (priceRange[0] !== 100000 || priceRange[1] !== 450000)) {
-                console.log('🔍 [ADVANCED FILTERS] Applying advanced filters:', {
+                logger.debug('Applying advanced filters', {
                     therapistGender: selectedTherapistGender,
                     serviceFor: selectedServiceFor,
                     massageType: selectedMassageType,
@@ -1821,7 +1826,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     return true;
                 });
 
-                console.log(`🔍 [ADVANCED FILTERS] Filtered to ${baseList.length} therapists matching criteria`);
+                logger.debug(`Advanced filters applied: ${baseList.length} therapists matching criteria`);
             }
 
                             // Ensure owner's profile appears once
@@ -1856,10 +1861,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     if (showcaseProfiles.length > 0) {
                                         // Add showcase profiles (they appear as busy, can't be booked)
                                         baseList = [...baseList, ...showcaseProfiles];
-                                        console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} display (no real therapists)`);
+                                        logger.debug(`Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} display (no real therapists)`);
                                     }
                                 } else {
-                                    console.log(`✅ ${selectedCity} has ${realTherapistsInCity.length} real therapist(s) in display, skipping showcase profiles`);
+                                    logger.debug(`${selectedCity} has ${realTherapistsInCity.length} real therapist(s) in display, skipping showcase profiles`);
                                 }
                             }
 
@@ -1943,7 +1948,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     sortedByHash.slice(0, countToTransform).map(t => t.$id || t.id)
                                 );
                                 
-                                console.log(`🎭 [VISUAL ENHANCEMENT] Transforming ${countToTransform}/${offlineTherapists.length} offline therapists to display as Busy`);
+                                logger.debug(`Visual enhancement: Transforming ${countToTransform}/${offlineTherapists.length} offline therapists to display as Busy`);
                                 
                                 // Transform the selected offline therapists to display as busy
                                 return list.map(therapist => {
@@ -2011,7 +2016,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     if (isFeaturedSample(therapist, 'therapist') && selectedCity !== 'all') {
                                         displayLocation = selectedCity;
                                         displayCity = selectedCity;
-                                        console.log(`🎯 Overriding featured sample ${therapist.name} location to ${selectedCity}`);
+                                        logger.debug(`Overriding featured sample ${therapist.name} location to ${selectedCity}`);
                                     }
                                     
                                     return { 
@@ -2022,7 +2027,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     };
                                 });
 
-                            console.log('🔧 [DEBUG] Final therapist list with priority scores:', {
+                            logger.debug('Final therapist list with priority scores', {
                                 originalCount: therapists?.length || 0,
                                 afterFiltering: baseList.length,
                                 finalCount: preparedTherapists.length,
@@ -2052,20 +2057,22 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             // Render grouped therapists with section headers
                             const locationAreas = Object.keys(therapistsByLocation).sort();
                             
-                            console.log('🔍 [STAGE 6 - Render] About to render therapist cards:', preparedTherapists.length);
-                            console.log('🔍 [STAGE 6] Location areas:', locationAreas);
-                            console.log('🔍 [STAGE 6] Therapists by location:', Object.keys(therapistsByLocation).map(k => `${k}: ${therapistsByLocation[k].length}`));
+                            logger.debug('[STAGE 6 - Render] About to render therapist cards', {
+                                count: preparedTherapists.length,
+                                locationAreas,
+                                therapistsByLocation: Object.keys(therapistsByLocation).map(k => `${k}: ${therapistsByLocation[k].length}`)
+                            });
                             
                             return (
                                 <>
                                 {locationAreas.map((area) => {
                                     const therapistsInArea = therapistsByLocation[area];
-                                    console.log('🔍 [STAGE 6] Rendering area:', area, 'with', therapistsInArea.length, 'therapists');
+                                    logger.debug('[STAGE 6] Rendering area', { area, therapistCount: therapistsInArea.length });
                                     return (
                                         <div key={`area-${area}`} className="mb-8">
                                             {/* Therapist Cards in This Area */}
                                             {therapistsInArea.map((therapist: any, index: number) => {
-                                                console.log('🔍 [STAGE 6] Rendering TherapistHomeCard for:', therapist.name);
+                                                logger.debug('[STAGE 6] Rendering TherapistHomeCard', { therapistName: therapist.name });
                                 // 🌐 Enhanced Debug: Comprehensive therapist data analysis
                                 // Parse languages safely - handle both JSON arrays and comma-separated strings
                                 let languagesParsed: string[] = [];
@@ -2081,7 +2088,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 
                                 // Debug in development mode (reduced verbosity)
                                 if (process.env.NODE_ENV === 'development' && therapist.name?.toLowerCase().includes('budi')) {
-                                    console.log(`🏠 HomePage → ${therapist.name}: languages=${therapist.languages}, isLive=${therapist.isLive}`);
+                                    logger.debug(`HomePage → ${therapist.name}`, { 
+                                        languages: therapist.languages, 
+                                        isLive: therapist.isLive 
+                                    });
                                 }
                                 
                                 // Real discount data - check if therapist has active discount
@@ -2115,7 +2125,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     prefetchedMenu={prefetchedData?.menus.get(String(therapist.$id || therapist.id))}
                                     prefetchedShareLink={prefetchedData?.shareLinks.get(String(therapist.$id || therapist.id))}
                                     onClick={(selectedTherapist) => {
-                                        console.log('🎯 TherapistHomeCard onClick - selectedCity being passed:', selectedCity);
+                                        logger.debug('TherapistHomeCard onClick', { selectedCity });
                                         // Set selected therapist and navigate to profile page with URL update
                                         onSelectTherapist?.(selectedTherapist);
                                         const therapistId = selectedTherapist.id || selectedTherapist.$id;
@@ -2202,7 +2212,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             try {
                                 const total = places?.length ?? 0;
                                 const live = places ? places.filter((p: any) => p.isLive).length : 0;
-                                console.log(`🏨 Massage Places Tab → total: ${total}, live: ${live}`);
+                                logger.debug('Massage Places Tab', { total, live });
                             } catch {}
                             
                             // Use city-filtered places instead of raw places
@@ -2273,7 +2283,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                 <MassagePlaceHomeCard
                                                     place={place}
                                                     onClick={(p) => {
-                                                        console.log('🟢 HOMEPAGE ONCLICK HANDLER:', {
+                                                        logger.debug('Homepage place card clicked', {
                                                             placeId: p.id || p.$id,
                                                             placeName: p.name
                                                         });
@@ -2284,7 +2294,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                         const placeId = p.id || p.$id;
                                                         const slug = p.name?.toLowerCase().replace(/\s+/g, '-') || 'place';
                                                         const profileUrl = `/profile/place/${placeId}-${slug}`;
-                                                        console.log('🔗 PUSHING URL:', profileUrl);
+                                                        logger.debug('Pushing place profile URL', { url: profileUrl });
                                                         window.history.pushState({}, '', profileUrl);
                                                         
                                                         // Note: onSelectPlace already triggers navigation to massage-place-profile
@@ -2333,7 +2343,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             const liveFacialPlaces = (facialPlaces?.filter((place: any) => {
                                 // Always show featured sample places (Sample Massage Spa) in ALL cities
                                 if (isFeaturedSample(place, 'place')) {
-                                    console.log(`✅ Including featured place "${place.name}" in Facial Places tab for city "${selectedCity}"`);
+                                    logger.debug(`Including featured place "${place.name}" in Facial Places tab for city "${selectedCity}"`);
                                     return true;
                                 }
                                 
@@ -2387,7 +2397,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             };
                             liveFacialPlaces.sort((a, b) => getFacialPlaceStatusScore(b) - getFacialPlaceStatusScore(a));
 
-                            console.log('🔍 Facial Places on HomePage:', {
+                            logger.debug('Facial Places on HomePage', {
                                 total: facialPlaces?.length || 0,
                                 liveFacialPlaces: liveFacialPlaces.length,
                                 selectedCity,
@@ -2698,7 +2708,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            console.log('FAB Button clicked, current state:', fabMenuOpen);
+                            logger.debug('FAB button clicked', { currentState: fabMenuOpen });
                             setFabMenuOpen(!fabMenuOpen);
                         }}
                         className={`w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 will-change-transform ${

@@ -39,6 +39,7 @@ import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwr
 // REMOVED: chatSessionService import - no longer using global chat sessions
 // REMOVED: ChatErrorBoundary import - no longer using global ChatWindow
 import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapper';
+import { logger } from './utils/logger';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
 import { useServiceWorkerListener } from '../app/useServiceWorkerListener';
@@ -66,7 +67,7 @@ import { AdminErrorNotification } from './components/AdminErrorNotification';
 // Moved to useEffect to prevent blocking initial page display
 
 const App = () => {
-    console.log('🏗️ App.tsx: App component rendering');
+    logger.debug('App.tsx: App component rendering');
     
     // 🚀 PERFORMANCE: Initialize heavy enterprise services after first render
     useEffect(() => {
@@ -74,17 +75,17 @@ const App = () => {
         const initializeEnterpriseServices = async () => {
             try {
                 await import('./services/enterpriseInitService');
-                console.log('✅ Enterprise services initialized (lazy)');
+                logger.debug('Enterprise services initialized (lazy)');
                 
                 // Load analytics services after enterprise init
                 await loadAnalyticsService();
-                console.log('✅ Analytics services loaded (lazy)');
+                logger.debug('Analytics services loaded (lazy)');
                 
                 // Load booking expiration service
                 const bookingService = await loadBookingExpirationService();
-                console.log('✅ Booking expiration service loaded (lazy)');
+                logger.debug('Booking expiration service loaded (lazy)');
             } catch (error) {
-                console.error('❌ Failed to lazy-load enterprise services:', error);
+                logger.error('Failed to lazy-load enterprise services', { error });
             }
         };
         
@@ -126,17 +127,17 @@ const App = () => {
                 const directTherapistId = sessionStorage.getItem('direct_therapist_id');
                 
                 if (pendingDeeplink) {
-                    console.log('🚨 [REDIRECT FIX] Clearing unwanted pending deeplink on home page visit:', pendingDeeplink);
+                    logger.debug('[REDIRECT FIX] Clearing unwanted pending deeplink on home page visit', { pendingDeeplink });
                     sessionStorage.removeItem('pending_deeplink');
                 }
                 
                 if (directTherapistId) {
-                    console.log('🚨 [REDIRECT FIX] Clearing direct_therapist_id on home page visit:', directTherapistId);
+                    logger.debug('[REDIRECT FIX] Clearing direct_therapist_id on home page visit', { directTherapistId });
                     sessionStorage.removeItem('direct_therapist_id');
                 }
                 
-                console.log('🚨 [REDIRECT FIX] Current path:', currentPath);
-                console.log('🚨 [REDIRECT FIX] Cleared all redirect-causing session storage items');
+                logger.debug('[REDIRECT FIX] Current path', { currentPath });
+                logger.debug('[REDIRECT FIX] Cleared all redirect-causing session storage items');
             }
         };
         
@@ -176,26 +177,26 @@ const App = () => {
             
             setForcedBookingData(mockBookingData);
         } catch (error) {
-            console.error('Failed to fetch forced booking:', error);
+            logger.error('Failed to fetch forced booking', { error });
         }
     };
     
     // Auto-accept booking (from email link)
     const handleAutoAcceptBooking = async (bookingId: string) => {
         try {
-            console.log('✅ Auto-accepting booking:', bookingId);
+            logger.debug('Auto-accepting booking', { bookingId });
             // TODO: Accept booking via Appwrite
             // Show success message
             alert('Booking accepted successfully!');
         } catch (error) {
-            console.error('Auto-accept failed:', error);
+            logger.error('Auto-accept failed', { error });
             alert('Failed to accept booking. Please try manually.');
         }
     };
     
     // Handle booking expiration
     const handleBookingExpiration = async (bookingId: string, reason: string) => {
-        console.log('⏰ Handling booking expiration:', bookingId, reason);
+        logger.debug('Handling booking expiration', { bookingId, reason });
         // TODO: Update availability score
         // TODO: Send expiration notification
         setForcedBookingData(null); // Close modal if open
@@ -262,10 +263,10 @@ const App = () => {
             path.startsWith('/dashboard/');
         
         if (needsRedirect) {
-            console.log('🔄 [HASHROUTER FIX] Clean URL detected, redirecting to hash URL');
-            console.log('   From:', window.location.href);
+            logger.debug('[HASHROUTER FIX] Clean URL detected, redirecting to hash URL');
+            logger.debug('[HASHROUTER FIX] From URL', { url: window.location.href });
             const newUrl = window.location.origin + '/#' + path + search;
-            console.log('   To:', newUrl);
+            logger.debug('[HASHROUTER FIX] To URL', { url: newUrl });
             window.location.replace(newUrl); // Silent redirect, no history entry
         }
     }, []); // Run once on mount
@@ -278,7 +279,7 @@ const App = () => {
         const pageParam = urlParams.get('page');
         const isPWAMode = isPWA(); // Use proper PWA detection utility
         
-        console.log('🔍 PWA Detection:', {
+        logger.debug('PWA Detection', {
             pwaParam,
             pageParam, 
             isPWAMode,
@@ -287,14 +288,14 @@ const App = () => {
         });
         
         if ((pwaParam || isPWAMode) && pageParam === 'status') {
-            console.log('🏠 PWA Home Screen Launch - Checking authentication status...');
+            logger.debug('PWA Home Screen Launch - Checking authentication status');
             
             // Check if therapist is already authenticated
             if (state.loggedInProvider && state.loggedInProvider.type === 'therapist') {
-                console.log('✅ Therapist authenticated - Routing to Status Dashboard');
+                logger.debug('Therapist authenticated - Routing to Status Dashboard');
                 navigation.setPage('therapist-status');
             } else {
-                console.log('❌ Not authenticated - Routing to Therapist Login');
+                logger.debug('Not authenticated - Routing to Therapist Login');
                 // Store intended destination for post-login redirect
                 sessionStorage.setItem('pwa-redirect-after-login', 'therapist-status');
                 navigation.setPage('signin');
@@ -305,7 +306,7 @@ const App = () => {
     // Log mobile detection info for debugging (only when mobile detected)
     useEffect(() => {
         if (mobileDetection.isMobileDevice || mobileDetection.isMobileScreen) {
-            console.log('📱 Mobile device detected:', {
+            logger.debug('Mobile device detected', {
                 device: mobileDetection.isMobileDevice ? 'Mobile Device' : 'Mobile Screen',
                 screen: `${mobileDetection.deviceInfo.viewportWidth}x${mobileDetection.deviceInfo.viewportHeight}`,
                 orientation: mobileDetection.isPortrait ? 'Portrait' : 'Landscape',
@@ -339,16 +340,16 @@ const App = () => {
 
     // Track activeChat state changes
     useEffect(() => {
-        console.log('🔥 REACT STATE UPDATED - activeChat changed');
+        logger.debug('React state updated - activeChat changed');
         if (activeChat) {
-            console.log('🔥 activeChat IS NOW SET:', {
+            logger.debug('activeChat is now set', {
                 chatRoomId: activeChat.chatRoomId,
                 bookingId: activeChat.bookingId,
                 providerId: activeChat.providerId
             });
-            console.log('🔥 NEXT: ChatWindow should render in JSX');
+            logger.debug('Next: ChatWindow should render in JSX');
         } else {
-            console.log('❌ activeChat cleared - ChatWindow hidden');
+            logger.debug('activeChat cleared - ChatWindow hidden');
         }
     }, [activeChat]);
 
@@ -380,12 +381,12 @@ const App = () => {
         const initializeAppwriteSession = async () => {
             try {
                 if (!(window as any).Appwrite) {
-                    console.log('📦 CDN failed, loading Appwrite from npm...');
+                    logger.debug('CDN failed, loading Appwrite from npm');
                     const appwriteModule = await import('appwrite');
                     (window as any).Appwrite = appwriteModule;
-                    console.log('✅ Appwrite SDK loaded from npm:', Object.keys(appwriteModule));
+                    logger.debug('Appwrite SDK loaded from npm', { keys: Object.keys(appwriteModule) });
                 } else {
-                    console.log('✅ Appwrite SDK already available from CDN');
+                    logger.debug('Appwrite SDK already available from CDN');
                 }
 
                 const { account } = await import('./lib/appwrite');
@@ -394,7 +395,7 @@ const App = () => {
                 const cached = sessionCache.get();
                 if (cached) {
                     if (cached.hasSession) {
-                        console.log('✅ Session active (cached):', cached.user?.email);
+                        logger.debug('Session active (cached)', { email: cached.user?.email });
                     }
                     return;
                 }
@@ -406,7 +407,7 @@ const App = () => {
                     ]) as any;
 
                     sessionCache.set(true, currentUser);
-                    console.log('✅ Session already active:', currentUser.email);
+                    logger.debug('Session already active', { email: currentUser.email });
                 } catch (sessionError: any) {
                     sessionCache.setNoSession();
                     
@@ -419,12 +420,12 @@ const App = () => {
                     // See: lib/authSessionHelper.ts for on-demand session creation
                     
                     if (sessionError?.code !== 401 && sessionError?.message !== 'timeout') {
-                        console.log('ℹ️ Session check:', sessionError.message || 'No active session');
+                        logger.debug('Session check', { message: sessionError.message || 'No active session' });
                     }
                 }
             } catch (error: any) {
                 if (!error.message?.includes('already exists')) {
-                    console.log('Session initialization:', error.message);
+                    logger.debug('Session initialization', { message: error.message });
                 }
             }
         };
@@ -436,22 +437,22 @@ const App = () => {
         // 🔍 FACEBOOK AI COMPLIANCE - Initialize booking flow monitoring
         if (typeof window !== 'undefined') {
             window.sessionStorage.setItem('booking_initial_url', window.location.href);
-            console.log('🔍 FB AI Compliance: Monitoring initialized for booking flow');
+            logger.debug('FB AI Compliance: Monitoring initialized for booking flow');
         }
 
         pushNotifications.initialize().catch(err => {
-            console.log('Push notification initialization:', err.message);
+            logger.debug('Push notification initialization', { message: err.message });
         });
 
         // ===== WEBSOCKET/REALTIME CONNECTION INITIALIZATION =====
         // Disabled to prevent conflicts with EnterpriseWebSocketService
         const initializeRealtimeConnection = async () => {
             // Skip all realtime tests - handled by EnterpriseWebSocketService
-            console.log('🔌 WebSocket connection handling delegated to EnterpriseWebSocketService');
+            logger.debug('WebSocket connection handling delegated to EnterpriseWebSocketService');
             return;
 
             try {
-                console.log('🔌 Testing realtime WebSocket connection...');
+                logger.debug('Testing realtime WebSocket connection');
                 const { appwriteClient } = await import('./lib/appwrite/client');
                 
                 // Simple connection test with shorter timeout
@@ -464,20 +465,20 @@ const App = () => {
                             // Use simplest possible subscription
                             unsubscribe = appwriteClient.subscribe('files', (response) => {
                                 connectionEstablished = true;
-                                console.log('✅ Realtime WebSocket connection verified');
+                                logger.debug('Realtime WebSocket connection verified');
                                 resolve(true);
                             });
                             
                             // Short timeout for quick feedback
                             setTimeout(() => {
                                 if (!connectionEstablished) {
-                                    console.log('ℹ️ Realtime connection test timeout (this is normal in some environments)');
+                                    logger.debug('Realtime connection test timeout (normal in some environments)');
                                 }
                                 resolve(connectionEstablished);
                             }, 2000); // Reduced to 2 seconds
                             
                         } catch (error: any) {
-                            console.log('ℹ️ Realtime connection test skipped:', error.message);
+                            logger.debug('Realtime connection test skipped', { message: error.message });
                             resolve(false);
                         }
                     });
@@ -492,11 +493,11 @@ const App = () => {
                 
                 if (!result) {
                     // This is now just informational, not an error
-                    console.log('ℹ️ Realtime connection not established immediately - chat may use polling fallback');
+                    logger.debug('Realtime connection not established immediately - chat may use polling fallback');
                 }
                 
             } catch (error: any) {
-                console.log('ℹ️ Realtime connection test failed:', error.message);
+                logger.debug('Realtime connection test failed', { message: error.message });
                 // Only report as error if it's a configuration issue
                 if (error.message?.includes('Invalid project') || error.message?.includes('endpoint')) {
                     if (typeof window !== 'undefined') {
@@ -526,7 +527,7 @@ const App = () => {
     // ✅ GLOBAL REFRESH HANDLER: Handle pull-to-refresh and page refresh events
     useEffect(() => {
         const handleAppRefresh = async (event: CustomEvent) => {
-            console.log('🔄 App refresh triggered:', event.detail);
+            logger.debug('App refresh triggered', { detail: event.detail });
             
             try {
                 // Clear any cached data if needed
@@ -538,7 +539,7 @@ const App = () => {
                 
                 // Refresh therapist data if on home page
                 if (state.page === 'home' || state.page === 'landing') {
-                    console.log('🔄 Refreshing therapist data...');
+                    logger.debug('Refreshing therapist data');
                     // Trigger therapist data refresh
                     window.dispatchEvent(new CustomEvent('refresh-therapists'));
                 }
@@ -546,10 +547,10 @@ const App = () => {
                 // Refresh current page data based on route
                 const currentHash = window.location.hash;
                 if (currentHash.includes('therapist-profile')) {
-                    console.log('🔄 Refreshing therapist profile...');
+                    logger.debug('Refreshing therapist profile');
                     window.dispatchEvent(new CustomEvent('refresh-profile'));
                 } else if (currentHash.includes('dashboard')) {
-                    console.log('🔄 Refreshing dashboard data...');
+                    logger.debug('Refreshing dashboard data');
                     window.dispatchEvent(new CustomEvent('refresh-dashboard'));
                 }
                 
@@ -559,7 +560,7 @@ const App = () => {
                 }
                 
             } catch (error) {
-                console.error('❌ Refresh error:', error);
+                logger.error('Refresh error', { error });
             }
         };
 
@@ -608,18 +609,18 @@ const App = () => {
                 window.history.replaceState({}, '', url.toString());
             }
         } catch (e) {
-            console.warn('Inbound share tracking failed:', e);
+            logger.warn('Inbound share tracking failed', { error: e });
         }
     }, []);
 
     // Log current language and page state
-    console.log('🌐 App.tsx: Current language state:', language);
-    console.log('📄 App.tsx: Current page state:', state.page);
+    logger.debug('App.tsx: Current language state', { language });
+    logger.debug('App.tsx: Current page state', { page: state.page });
 
     // ===== ROUTE CHANGE CLEANUP =====
     // Close modals and reset temporary UI state on route change
     useEffect(() => {
-        console.log('🔄 Route changed to:', state.page);
+        logger.debug('Route changed', { page: state.page });
         
         // Close all modals on route change
         setIsStatusTrackerOpen(false);
@@ -635,11 +636,11 @@ const App = () => {
     // Listen for navigateToLanding event from GlobalHeader logo click
     useEffect(() => {
         const handleNavigateToLanding = () => {
-            console.log('🏠 [APP] navigateToLanding event received - navigating to landing page');
+            logger.debug('[APP] navigateToLanding event received - navigating to landing page');
             // Clear any pending deeplinks when explicitly navigating to home
             const pending = sessionStorage.getItem('pending_deeplink');
             if (pending) {
-                console.log('🗑️ [HOME_NAV] Clearing pending deeplink on home navigation:', pending);
+                logger.debug('[HOME_NAV] Clearing pending deeplink on home navigation', { pending });
                 sessionStorage.removeItem('pending_deeplink');
             }
             navigation?.setPage('landing');
@@ -654,14 +655,13 @@ const App = () => {
         
     // ===== GLOBAL PAGE CHANGE MONITOR =====
     useEffect(() => {
-        console.log('\n' + '📄'.repeat(50));
-        console.log('📄 [PAGE STATE] Page changed');
-        console.log('📄'.repeat(50));
-        console.log('📍 Current page:', state.page);
-        console.log('📍 Previous page:', document.title);
-        console.log('🔗 Current URL:', window.location.href);
-        console.log('🔗 Pathname:', window.location.pathname);
-        console.log('📄'.repeat(50) + '\n');
+        logger.debug('========== PAGE STATE ==========');
+        logger.debug('[PAGE STATE] Page changed');
+        logger.debug('Current page', { page: state.page });
+        logger.debug('Previous page', { title: document.title });
+        logger.debug('Current URL', { url: window.location.href });
+        logger.debug('Pathname', { pathname: window.location.pathname });
+        logger.debug('================================');
     }, [state.page]);
 
     // ===== URL SYNCHRONIZATION SYSTEM =====
@@ -680,14 +680,13 @@ const App = () => {
         const currentPath = window.location.pathname;
         const expectedUrl = getUrlForPage(state.page);
         
-        console.log('\n' + '🔄'.repeat(50));
-        console.log('🔄 [URL SYNC] DISABLED - Would cause redirect loop');
-        console.log('🔄'.repeat(50));
-        console.log('📍 Current path:', currentPath);
-        console.log('📍 Expected URL:', expectedUrl);
-        console.log('📍 Match:', currentPath === expectedUrl);
-        console.log('📍 URL sync disabled to prevent HashRouter conflicts');
-        console.log('🔄'.repeat(50) + '\n');
+        logger.debug('========== URL SYNC ==========');
+        logger.debug('[URL SYNC] DISABLED - Would cause redirect loop');
+        logger.debug('Current path', { path: currentPath });
+        logger.debug('Expected URL', { url: expectedUrl });
+        logger.debug('Match', { match: currentPath === expectedUrl });
+        logger.debug('URL sync disabled to prevent HashRouter conflicts');
+        logger.debug('==============================');
         
         // DISABLED: Only update if URL doesn't match (avoid unnecessary history entries)
         // if (currentPath !== expectedUrl && !currentPath.startsWith('/profile/therapist/') && !currentPath.startsWith('/profile/place/') && !currentPath.startsWith('/accept-booking/')) {
@@ -703,17 +702,15 @@ const App = () => {
             const path = window.location.pathname;
             const page = getPageFromUrl(path);
             
-            console.log('\n' + '🔙'.repeat(50));
-            console.log('🔙 [NAVIGATION] Browser back/forward detected');
-            console.log('🔙'.repeat(50));
-            console.log('📍 Path:', path);
-            console.log('📄 Resolved page:', page);
-            console.log('📄 Current page:', state.page);
-            console.log('🔙'.repeat(50) + '\n');
+            logger.debug('========== NAVIGATION ==========');
+            logger.debug('[NAVIGATION] Browser back/forward detected');
+            logger.debug('Path', { path });
+            logger.debug('Resolved page', { page });
+            logger.debug('Current page', { current: state.page });
+            logger.debug('================================');
             
             if (page && page !== state.page) {
-                console.log('🚫 [REDIRECT] Page change triggered by popstate');
-                console.log('   From:', state.page, '→ To:', page);
+                logger.debug('[REDIRECT] Page change triggered by popstate', { from: state.page, to: page });
                 state.setPage(page);
             }
         };
@@ -741,7 +738,7 @@ const App = () => {
             if (currentPath === '/' && currentHash && !window.location.search) {
                 // Check if hash contains a profile URL (stale from previous navigation)
                 if (currentHash.includes('/profile/therapist/') || currentHash.includes('/therapist-profile/')) {
-                    console.log('🏠 [ROOT NAVIGATION] User navigated to root, clearing stale profile hash:', currentHash);
+                    logger.debug('[ROOT NAVIGATION] User navigated to root, clearing stale profile hash', { hash: currentHash });
                     window.history.replaceState(null, '', '/');
                     // Set to landing page (will redirect to home based on app logic)
                     if (state.page !== 'landing' && state.page !== 'home') {
@@ -759,7 +756,7 @@ const App = () => {
             // If hash starts with #/, use hash as the path
             if (hash.startsWith('#/')) {
                 path = hash.substring(1); // Remove # to get /therapist-profile/123
-                console.log('🔗 [HASH URL] Parsed path from hash:', path);
+                logger.debug('[HASH URL] Parsed path from hash', { path });
             }
             
             if (path.startsWith('/accept-booking/')) {
@@ -768,7 +765,7 @@ const App = () => {
                 state.setPage('membership-select');
             } else if (path === '/admin' || path.startsWith('/admin/')) {
                 // Handle admin routes
-                console.log('🔗 [ADMIN URL] Admin route detected:', path);
+                logger.debug('[ADMIN URL] Admin route detected', { path });
                 if (path === '/admin') {
                     state.setPage('admin');
                 } else if (path === '/admin/therapists') {
@@ -786,16 +783,16 @@ const App = () => {
                 }
             } else if (path.startsWith('/therapist-profile/')) {
                 // Handle direct shared therapist profile URL (production links)
-                console.log('🔗 Direct therapist profile path detected:', path);
+                logger.debug('Direct therapist profile path detected', { path });
                 const match = path.match(/\/therapist-profile\/([a-z0-9]+)-/);
                 if (match) {
                     const therapistId = match[1];
-                    console.log('   Extracted therapist ID:', therapistId);
+                    logger.debug('Extracted therapist ID', { therapistId });
                     state.setPage('shared-therapist-profile');
                     // Store for SharedTherapistProfile component to use
                     sessionStorage.setItem('direct_therapist_id', therapistId);
                 } else {
-                    console.warn('   Could not extract therapist ID from path:', path);
+                    logger.warn('Could not extract therapist ID from path', { path });
                 }
             } else if (path.startsWith('/profile/therapist/')) {
                 // Handle direct therapist profile URL with reviews
@@ -805,7 +802,7 @@ const App = () => {
                                          currentUrl.includes('/#/home') || currentUrl.includes('/#home');
                 
                 if (isNavigatingToHome) {
-                    console.log('🚫 [URL PROCESSING] Skipping therapist deeplink - user navigating to home');
+                    logger.debug('[URL PROCESSING] Skipping therapist deeplink - user navigating to home');
                     // Clear any existing pending deeplinks to prevent unwanted redirects
                     sessionStorage.removeItem('pending_deeplink');
                     return;
@@ -822,13 +819,13 @@ const App = () => {
                         // LOCKED RULE: Only set page if not already on therapist-profile
                         // UI overlays (menu slider) must survive data hydration
                         if (state.page !== 'therapist-profile') {
-                            console.trace('📍 [PAGE STATE CHANGE TRIGGERED] Setting page to therapist-profile');
+                            logger.debug('[PAGE STATE CHANGE TRIGGERED] Setting page to therapist-profile');
                             state.setPage('therapist-profile');
                         }
                     }
                 } else if (match) {
                     // Store for later when therapists are loaded - but only if not going to home
-                    console.log('🔍 [URL PROCESSING] Creating pending deeplink for therapist:', match[1]);
+                    logger.debug('[URL PROCESSING] Creating pending deeplink for therapist', { therapistId: match[1] });
                     sessionStorage.setItem('pending_deeplink', JSON.stringify({
                         provider: `therapist-${match[1]}`,
                         targetPage: 'therapist-profile'
@@ -869,7 +866,7 @@ const App = () => {
                 return;
             }
         } catch (e) {
-            console.warn('Path detection failed:', e);
+            logger.warn('Path detection failed', { error: e });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.therapists, state.places]);
@@ -878,15 +875,15 @@ const App = () => {
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash || '';
-            console.log('🔄 [HASH CHANGE] Hash changed to:', hash);
+            logger.debug('[HASH CHANGE] Hash changed', { hash });
             
             if (hash.startsWith('#/')) {
                 const path = hash.substring(1); // Remove # to get /therapist-profile/123
-                console.log('🔗 [HASH CHANGE] Parsed path:', path);
+                logger.debug('[HASH CHANGE] Parsed path', { path });
                 
                 if (path === '/admin' || path.startsWith('/admin/')) {
                     // Handle admin routes
-                    console.log('🔗 [HASH CHANGE] Admin route detected:', path);
+                    logger.debug('[HASH CHANGE] Admin route detected', { path });
                     if (path === '/admin') {
                         state.setPage('admin');
                     } else if (path === '/admin/therapists') {
@@ -906,7 +903,7 @@ const App = () => {
                     const match = path.match(/\/therapist-profile\/([a-z0-9]+)-/);
                     if (match) {
                         const therapistId = match[1];
-                        console.log('✅ [HASH CHANGE] Setting page to shared-therapist-profile, ID:', therapistId);
+                        logger.debug('[HASH CHANGE] Setting page to shared-therapist-profile', { therapistId });
                         state.setPage('shared-therapist-profile');
                         sessionStorage.setItem('direct_therapist_id', therapistId);
                     }
@@ -929,7 +926,7 @@ const App = () => {
             if (state.page === 'home' || state.page === 'landing') {
                 const pending = sessionStorage.getItem('pending_deeplink');
                 if (pending) {
-                    console.log('🚫 [DEEPLINK] Clearing pending deeplink - user on home/landing page');
+                    logger.debug('[DEEPLINK] Clearing pending deeplink - user on home/landing page');
                     sessionStorage.removeItem('pending_deeplink');
                 }
                 sessionStorage.removeItem('direct_therapist_id');
@@ -942,10 +939,10 @@ const App = () => {
                               currentPath.includes('/home') || currentPath === '' || currentPath === '/#';
                               
             if (isHomePage) {
-                console.log('🚫 [DEEPLINK] Skipping deeplink processing - URL indicates home page');
+                logger.debug('[DEEPLINK] Skipping deeplink processing - URL indicates home page');
                 const pending = sessionStorage.getItem('pending_deeplink');
                 if (pending) {
-                    console.log('🗑️ [DEEPLINK] Clearing pending deeplink from home page:', pending);
+                    logger.debug('[DEEPLINK] Clearing pending deeplink from home page', { pending });
                     sessionStorage.removeItem('pending_deeplink');
                 }
                 sessionStorage.removeItem('direct_therapist_id');
@@ -955,9 +952,9 @@ const App = () => {
             const pending = sessionStorage.getItem('pending_deeplink');
             if (!pending) return;
             
-            console.log('🔍 [DEEPLINK DEBUG] Found pending deeplink:', pending);
-            console.log('🔍 [DEEPLINK DEBUG] Current URL:', window.location.href);
-            console.log('🔍 [DEEPLINK DEBUG] Current page:', state.page);
+            logger.debug('[DEEPLINK DEBUG] Found pending deeplink', { pending });
+            logger.debug('[DEEPLINK DEBUG] Current URL', { url: window.location.href });
+            logger.debug('[DEEPLINK DEBUG] Current page', { page: state.page });
             
             const parsed = JSON.parse(pending) as { provider?: string; targetPage?: string };
             const { provider, targetPage } = parsed;
@@ -965,24 +962,24 @@ const App = () => {
             const [ptype, pidRaw] = provider.split('-');
             const idStr = (pidRaw || '').toString();
             
-            console.log('🔍 [DEEPLINK DEBUG] Parsed data:', { ptype, idStr, targetPage });
+            logger.debug('[DEEPLINK DEBUG] Parsed data', { ptype, idStr, targetPage });
             
             if (ptype === 'therapist' && state.therapists && state.therapists.length) {
                 const found = state.therapists.find((th: any) => ((th.id ?? th.$id ?? '').toString() === idStr));
-                console.log('🔍 [DEEPLINK DEBUG] Therapist search result:', found?.name || 'NOT FOUND');
+                logger.debug('[DEEPLINK DEBUG] Therapist search result', { name: found?.name || 'NOT FOUND' });
                 
                 if (found) {
-                    console.log('🚀 [DEEPLINK] Auto-navigating to therapist profile:', found.name);
+                    logger.debug('[DEEPLINK] Auto-navigating to therapist profile', { name: found.name });
                     state.setSelectedTherapist(found);
                     const target = (targetPage === 'shared-therapist-profile') ? 'shared-therapist-profile' : 'therapistProfile';
                     // LOCKED RULE: Only set page if not already on target page
                     // UI overlays (menu slider) must survive data hydration
                     if (state.page !== target) {
-                        console.trace('📍 [PAGE STATE CHANGE TRIGGERED] Setting page to', target);
+                        logger.debug('[PAGE STATE CHANGE TRIGGERED] Setting page', { target });
                         state.setPage(target as any);
                     }
                     sessionStorage.removeItem('pending_deeplink');
-                    console.log('🗑️ [DEEPLINK] Cleared pending deeplink');
+                    logger.debug('[DEEPLINK] Cleared pending deeplink');
                 }
             } else if (ptype === 'place' && state.places && state.places.length) {
                 const found = state.places.find((pl: any) => ((pl.id ?? pl.$id ?? '').toString() === idStr));
@@ -990,14 +987,14 @@ const App = () => {
                     state.setSelectedPlace(found);
                     // LOCKED RULE: Only set page if not already on massage-place-profile
                     if (state.page !== 'massage-place-profile') {
-                        console.trace('📍 [PAGE STATE CHANGE TRIGGERED] Setting page to massage-place-profile');
+                        logger.debug('[PAGE STATE CHANGE TRIGGERED] Setting page to massage-place-profile');
                         state.setPage('massage-place-profile');
                     }
                     sessionStorage.removeItem('pending_deeplink');
                 }
             }
         } catch (e) {
-            console.warn('Deeplink navigation failed:', e);
+            logger.warn('Deeplink navigation failed', { error: e });
         }
     }, [state.therapists, state.places, state.page]);
 
@@ -1071,12 +1068,11 @@ const App = () => {
 
     // Use the actual language handler from hooks
     const handleLanguageSelect = async (lang: 'en' | 'id' | 'gb') => {
-        console.log('🌍 App.tsx: handleLanguageSelect called with:', lang);
+        logger.debug('handleLanguageSelect called', { lang });
         const normalized = lang === 'gb' ? 'en' : lang;
-        console.log('🌍 App.tsx: Normalized language:', normalized);
-        console.log('🌍 App.tsx: Previous language:', language);
+        logger.debug('Normalized language', { normalized, previous: language });
         setLanguage(normalized);
-        console.log('🌍 App.tsx: Language state updated to:', normalized);
+        logger.debug('Language state updated', { language: normalized });
         // Force re-render by ensuring state change is processed
         await new Promise(resolve => setTimeout(resolve, 0));
         return Promise.resolve();
@@ -1090,7 +1086,7 @@ const App = () => {
         price: number;
         responseDeadline: Date;
     }) => {
-        console.log('📊 Opening booking status tracker:', statusInfo);
+        logger.debug('Opening booking status tracker', statusInfo);
         setBookingStatusInfo(statusInfo);
         setIsStatusTrackerOpen(true);
         
@@ -1098,14 +1094,14 @@ const App = () => {
         const slug = statusInfo.therapistName.toLowerCase().replace(/\s+/g, '-');
         const bookingUrl = `/booking/status/${statusInfo.bookingId}/${slug}`;
         window.history.pushState({ bookingId: statusInfo.bookingId }, '', bookingUrl);
-        console.log('🔗 Updated URL to:', bookingUrl);
+        logger.debug('Updated URL', { url: bookingUrl });
     };
 
 
 
     // Register global booking functions in useEffect to ensure they're available
     useEffect(() => {
-        console.log('📱 Registering global booking functions...');
+        logger.debug('Registering global booking functions');
         (window as any).openBookingStatusTracker = handleOpenBookingStatusTracker;
         
         // Register global navigation functions
@@ -1125,7 +1121,7 @@ const App = () => {
         // Clear any pending deeplinks when explicitly navigating to home
         const pending = sessionStorage.getItem('pending_deeplink');
         if (pending) {
-            console.log('🗑️ [FIND_NEW] Clearing pending deeplink on home navigation:', pending);
+            logger.debug('[FIND_NEW] Clearing pending deeplink on home navigation', { pending });
             sessionStorage.removeItem('pending_deeplink');
         }
         // Optionally navigate back to therapist list
@@ -1145,9 +1141,9 @@ const App = () => {
                     const { account } = await import('./lib/appwrite');
                     const user = await account.get();
                     setRealUser(user);
-                    console.log('🔐 Real user authenticated:', user.email);
+                    logger.debug('Real user authenticated', { email: user.email });
                 } catch {
-                    console.log('👤 Using guest mode - no authenticated user');
+                    logger.debug('Using guest mode - no authenticated user');
                 }
             };
             loadUser();
@@ -1158,7 +1154,7 @@ const App = () => {
             if (chatContext && chatContext.activeChatRooms.length > 0 && !activeChat) {
                 const availableRoom = chatContext.activeChatRooms[0]; // Use first available room
                 
-                console.log('🎪 Auto-setting activeChat for room:', availableRoom.$id);
+                logger.debug('Auto-setting activeChat for room', { roomId: availableRoom.$id });
                 setActiveChat({
                     chatRoomId: availableRoom.$id,
                     bookingId: availableRoom.bookingId || 'temp-booking',
@@ -1179,23 +1175,23 @@ const App = () => {
     };
 
     const renderChatWindow = () => {
-        console.log('💬 JSX RENDER CYCLE - Checking ChatWindow condition');
-        console.log('💬 activeChat value:', activeChat);
-        console.log('💬 activeChat?.chatRoomId:', activeChat?.chatRoomId);
-        console.log('💬 isChatMinimized:', isChatMinimized);
-        console.log('💬 Will render ChatWindow?:', !!activeChat?.chatRoomId && !isChatMinimized);
+        logger.debug('JSX RENDER CYCLE - Checking ChatWindow condition');
+        logger.debug('activeChat value', { activeChat });
+        logger.debug('activeChat?.chatRoomId', { chatRoomId: activeChat?.chatRoomId });
+        logger.debug('isChatMinimized', { isChatMinimized });
+        logger.debug('Will render ChatWindow?', { willRender: !!activeChat?.chatRoomId && !isChatMinimized });
         
         // Show debug info when activeChat exists but not rendering
         if (activeChat && !activeChat.chatRoomId) {
-            console.log('⚠️ activeChat exists but no chatRoomId:', activeChat);
+            logger.warn('activeChat exists but no chatRoomId', { activeChat });
         }
         
         if (activeChat && isChatMinimized) {
-            console.log('ℹ️ ChatWindow minimized, activeChat exists');
+            logger.info('ChatWindow minimized, activeChat exists');
         }
         
         if (!activeChat?.chatRoomId || isChatMinimized) {
-            console.log('❌ ChatWindow NOT rendering - missing chatRoomId or minimized');
+            logger.debug('ChatWindow NOT rendering - missing chatRoomId or minimized');
             
             // Show debug overlay when we should render but can't
             if (activeChat && !activeChat.chatRoomId && !isChatMinimized) {
@@ -1213,8 +1209,8 @@ const App = () => {
             return null;
         }
         
-        console.log('🔥 RENDERING FloatingChatWindow COMPONENT (direct import)');
-        console.log('✅ FloatingChatWindow RENDERING NOW');
+        logger.debug('RENDERING FloatingChatWindow COMPONENT (direct import)');
+        logger.debug('FloatingChatWindow RENDERING NOW');
         
         // Re-enable FloatingChatWindow to test booking banner functionality
         return (
@@ -1250,7 +1246,7 @@ const App = () => {
             <PersistentChatProvider setIsChatWindowVisible={state.setIsChatWindowVisible}>
             {/* 🚀 PWA STATE MANAGER - Facebook/Amazon standard state preservation */}
             <PWAStateManager onStateRestored={(restoredState) => {
-                console.log('✅ PWA state restored:', restoredState);
+                logger.debug('PWA state restored', { restoredState });
                 // Handle restored chat state
                 if (restoredState?.isOpen) {
                     state.setIsChatWindowVisible(true);
@@ -1299,7 +1295,7 @@ const App = () => {
                     isLoading={state.isLoading}
 
                     loggedInProvider={(() => {
-                        console.log('🔸 [APP.TSX] Passing loggedInProvider to AppRouter:', {
+                        logger.debug('[APP.TSX] Passing loggedInProvider to AppRouter', {
                             hasProvider: !!state.loggedInProvider,
                             providerId: state.loggedInProvider?.$id || state.loggedInProvider?.id,
                             providerType: state.loggedInProvider?.type,
@@ -1324,7 +1320,7 @@ const App = () => {
                     // Pass loggedInProvider for therapists/places (has full profile data), otherwise use loggedInUser
                     user={(() => {
                         const resolvedUser = (state.loggedInProvider || state.loggedInCustomer || state.loggedInUser) as any;
-                        console.log('[APP.TSX] Resolved user for AppRouter:', {
+                        logger.debug('[APP.TSX] Resolved user for AppRouter', {
                             hasUser: !!resolvedUser,
                             userId: resolvedUser?.$id || resolvedUser?.id,
                             userName: resolvedUser?.name,
@@ -1361,10 +1357,10 @@ const App = () => {
                     handleQuickBookWithChat={(provider: Therapist | Place, type: 'therapist' | 'place') => {
                         // This handler is deprecated but kept for backward compatibility
                         // All new implementations should use direct PersistentChatProvider integration
-                        console.warn('⚠️ DEPRECATED: handleQuickBookWithChat used - should migrate to direct integration');
+                        logger.warn('DEPRECATED: handleQuickBookWithChat used - should migrate to direct integration');
                         
-                        console.log('[BOOKING] Profile Book Now clicked');
-                        console.log('🚀 Opening chat for provider:', provider.name);
+                        logger.debug('[BOOKING] Profile Book Now clicked');
+                        logger.debug('Opening chat for provider', { name: provider.name });
                         
                         // Legacy event system - will be removed in future version
                         window.dispatchEvent(new CustomEvent('openChat', {
@@ -1379,7 +1375,7 @@ const App = () => {
                             }
                         }));
                         
-                        console.log('[CHAT] Chat opened from profile');
+                        logger.debug('[CHAT] Chat opened from profile');
                         return Promise.resolve();
                     }}
                     handleChatWithBusyTherapist={() => Promise.resolve()}
@@ -1506,7 +1502,7 @@ const App = () => {
                         setBookingStatusInfo(null);
                         // Reset URL when booking tracker closes
                         window.history.pushState({}, '', '/');
-                        console.log('🔗 Reset URL to home');
+                        logger.debug('Reset URL to home');
                     }}
                     bookingId={bookingStatusInfo.bookingId}
                     therapistName={bookingStatusInfo.therapistName}

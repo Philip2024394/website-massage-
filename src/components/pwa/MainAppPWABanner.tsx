@@ -38,7 +38,7 @@ export const MainAppPWABanner: React.FC = () => {
     const installCompleted = localStorage.getItem('pwa-main-installed') === 'true';
     
     if (isStandalone || isIOSWebApp || installCompleted) {
-      console.log('[Main App PWA] Already installed, not showing banner');
+      logger.debug('[Main App PWA] Already installed, not showing banner');
       return;
     }
 
@@ -47,7 +47,7 @@ export const MainAppPWABanner: React.FC = () => {
     if (dismissedTime) {
       const sevenDays = 7 * 24 * 60 * 60 * 1000;
       if (Date.now() - parseInt(dismissedTime) < sevenDays) {
-        console.log('[Main App PWA] Banner dismissed recently, not showing');
+        logger.debug('[Main App PWA] Banner dismissed recently, not showing');
         return;
       }
     }
@@ -59,7 +59,7 @@ export const MainAppPWABanner: React.FC = () => {
     // 🔒 GOLD STANDARD RULE: Capture beforeinstallprompt (Android/Chrome)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      console.log('[Main App PWA] Install prompt available');
+      logger.debug('[Main App PWA] Install prompt available');
       setDeferredPrompt(e as PWAInstallPromptEvent);
       setShowBanner(true);
     };
@@ -96,36 +96,36 @@ export const MainAppPWABanner: React.FC = () => {
     }
 
     if (!deferredPrompt) {
-      console.log('[Main App PWA] No install prompt available');
+      logger.debug('[Main App PWA] No install prompt available');
       return;
     }
 
     try {
       setIsInstalling(true);
-      console.log('[Main App PWA] Showing install prompt');
+      logger.debug('[Main App PWA] Showing install prompt');
       
       await deferredPrompt.prompt();
       const choiceResult = await deferredPrompt.userChoice;
       
       if (choiceResult.outcome === 'accepted') {
-        console.log('[Main App PWA] Installation accepted');
+        logger.debug('[Main App PWA] Installation accepted');
         localStorage.setItem('pwa-main-installed', 'true');
         setShowBanner(false);
       } else {
-        console.log('[Main App PWA] Installation dismissed');
+        logger.debug('[Main App PWA] Installation dismissed');
         setIsInstalling(false);
       }
       
       setDeferredPrompt(null);
     } catch (error) {
-      console.error('[Main App PWA] Install error:', error);
+      logger.error('[Main App PWA] Install error:', error);
       setIsInstalling(false);
     }
   };
 
   // 🔒 GOLD STANDARD RULE: Handle dismiss with 7-day timeout
   const handleDismiss = () => {
-    console.log('[Main App PWA] Banner dismissed by user');
+    logger.debug('[Main App PWA] Banner dismissed by user');
     localStorage.setItem('pwa-main-dismissed', Date.now().toString());
     setShowBanner(false);
   };
