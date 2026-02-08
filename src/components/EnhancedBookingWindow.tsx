@@ -199,7 +199,7 @@ export const EnhancedBookingWindow: React.FC<EnhancedBookingWindowProps> = ({
       setChatMessage('');
       
     } catch (error) {
-      console.error('Send message error:', error);
+      logger.error('Send message error:', error);
     }
   };
 

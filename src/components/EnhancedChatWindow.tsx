@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { logger } from '../utils/logger';
 import { Send, Phone, Menu, Shield, AlertTriangle, CheckCircle, X, Eye } from 'lucide-react';
 import { EnhancedReportButton, MessageFilterAlert } from './EnhancedReportButton';
 import { ProfessionalChatMessage } from './ProfessionalChatMessage';
@@ -84,7 +85,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
 
       return null;
     } catch (error) {
-      console.error('Message validation error:', error);
+      logger.error('Message validation error:', error);
       return null;
     }
   };
@@ -125,7 +126,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
       inputRef.current?.focus();
       
     } catch (error) {
-      console.error('Send message error:', error);
+      logger.error('Send message error:', error);
       alert('Failed to send message. Please try again.');
     } finally {
       setIsSending(false);
@@ -150,7 +151,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
       // const stats = await chatModerationService.getUserModerationStats(currentUserId);
       return null; // Stats method not available
     } catch (error) {
-      console.error('Failed to get moderation stats:', error);
+      logger.error('Failed to get moderation stats:', error);
       return null;
     }
   };
@@ -208,7 +209,7 @@ export const EnhancedChatWindow: React.FC<EnhancedChatWindowProps> = ({
             recipientName={recipientName}
             userRole={userRole}
             onReportSubmitted={(reportId) => {
-              console.log('Report submitted:', reportId);
+              logger.debug('Report submitted:', reportId);
             }}
           />
 
