@@ -25,6 +25,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB limit for large chunks
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
         // 🔒 GOLD STANDARD RULE: NEVER cache booking/auth/API calls
         runtimeCaching: [
