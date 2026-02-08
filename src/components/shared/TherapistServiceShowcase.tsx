@@ -44,24 +44,24 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
     const [expandedCards, setExpandedCards] = useState<{ [key: string]: boolean }>({});
 
     // 🎯 CRITICAL DEBUG: Log EVERY render to catch state resets
-    console.log('🔄 TherapistServiceShowcase RENDER');
-    console.log('   isMassageTypesOpen:', isMassageTypesOpen);
-    console.log('   Therapist ID:', (therapist as any).id || (therapist as any).$id);
-    console.log('   Therapist Name:', therapist.name);
+    logger.debug('🔄 TherapistServiceShowcase RENDER');
+    logger.debug('   isMassageTypesOpen:', isMassageTypesOpen);
+    logger.debug('   Therapist ID:', (therapist as any).id || (therapist as any).$id);
+    logger.debug('   Therapist Name:', therapist.name);
 
     // 🔍 DEBUG: Component mount/unmount tracking
     React.useEffect(() => {
-        console.log('🟢 TherapistServiceShowcase MOUNTED');
+        logger.debug('🟢 TherapistServiceShowcase MOUNTED');
         return () => {
-            console.log('🔴 TherapistServiceShowcase UNMOUNTED');
-            console.log('   🚨 If slider was open, unmount destroyed it!');
+            logger.debug('🔴 TherapistServiceShowcase UNMOUNTED');
+            logger.debug('   🚨 If slider was open, unmount destroyed it!');
         };
     }, []);
 
     // 🔍 DEBUG: Track therapist prop changes (could cause re-render)
     React.useEffect(() => {
-        console.log('👤 Therapist prop changed');
-        console.log('   This re-render could be the cause if it happens when slider opens');
+        logger.debug('👤 Therapist prop changed');
+        logger.debug('   This re-render could be the cause if it happens when slider opens');
     }, [therapist]);
 
     const openLightbox = (imageSrc: string, imageAlt: string) => {
@@ -79,14 +79,14 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
     };
 
     const openMassageTypes = () => {
-        console.log('✅ openMassageTypes() called at', new Date().toISOString());
+        logger.debug('✅ openMassageTypes() called at', new Date().toISOString());
         setIsMassageTypesOpen(true);
         setExpandedCards({}); // Reset expansion state when opening modal
         document.body.style.overflow = 'auto';
     };
 
     const closeMassageTypes = () => {
-        console.trace('🚨 closeMassageTypes() called at', new Date().toISOString());
+        logger.debug('🚨 closeMassageTypes() called at', new Date().toISOString());
         setIsMassageTypesOpen(false);
         setExpandedCards({}); // Reset expansion state when closing modal
         document.body.style.overflow = 'auto';

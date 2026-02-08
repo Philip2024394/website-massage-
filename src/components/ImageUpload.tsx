@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { imageUploadService } from '../lib/appwriteService';
+import { logger } from '../utils/logger';
 
 interface ImageUploadProps {
     id: string;
@@ -29,30 +30,30 @@ const ImageUpload = ({ id, label, currentImage, onImageChange, className, height
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     useEffect(() => {
-        console.log('🖼️ ImageUpload: currentImage changed to:', currentImage?.substring(0, 100) + '...');
+        logger.debug('🖼️ ImageUpload: currentImage changed to:', currentImage?.substring(0, 100) + '...');
         setPreview(currentImage);
     }, [currentImage]);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        console.log('📂 File input change event triggered');
+        logger.debug('📂 File input change event triggered');
         const file = event.target.files?.[0];
-        console.log('📂 Selected file:', file);
+        logger.debug('📂 Selected file:', file);
         if (file) {
-            console.log('📸 Image selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+            logger.debug('📸 Image selected:', file.name, 'Size:', file.size, 'Type:', file.type);
             
             const reader = new FileReader();
             reader.onloadend = async () => {
                 const result = reader.result as string;
-                console.log('📸 Image read as base64, length:', result.length);
+                logger.debug('📸 Image read as base64, length:', result.length);
                 
                 // Set preview immediately for better UX
                 setPreview(result);
                 
                 // Upload to Appwrite Storage and get URL
                 try {
-                    console.log('📤 Starting upload to Appwrite Storage...');
+                    logger.debug('📤 Starting upload to Appwrite Storage...');
                     const imageUrl = await imageUploadService.uploadProfileImage(result);
-                    console.log('✅ Upload successful! URL:', imageUrl);
+                    logger.debug('✅ Upload successful! URL:', imageUrl);
                     
                     // Update preview to the uploaded URL
                     setPreview(imageUrl);
@@ -60,13 +61,13 @@ const ImageUpload = ({ id, label, currentImage, onImageChange, className, height
                     // Notify parent component
                     onImageChange(imageUrl);
                 } catch (error) {
-                    console.error('❌ Error uploading image:', error);
+                    logger.error('❌ Error uploading image:', error);
                     alert(`Error uploading image: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
                     setPreview(null);
                 }
             };
             reader.onerror = (error) => {
-                console.error('❌ Error reading file:', error);
+                logger.error('❌ Error reading file:', error);
                 alert('Error reading file. Please try again.');
             };
             reader.readAsDataURL(file);
@@ -74,10 +75,10 @@ const ImageUpload = ({ id, label, currentImage, onImageChange, className, height
     };
 
     const triggerFileInput = () => {
-        console.log('🖱️ ImageUpload: File input triggered for:', id);
-        console.log('🖱️ File input ref:', fileInputRef.current);
+        logger.debug('🖱️ ImageUpload: File input triggered for:', id);
+        logger.debug('🖱️ File input ref:', fileInputRef.current);
         if (!fileInputRef.current) {
-            console.error('❌ File input ref is null!');
+            logger.error('❌ File input ref is null!');
             return;
         }
         fileInputRef.current?.click();
@@ -102,7 +103,7 @@ const ImageUpload = ({ id, label, currentImage, onImageChange, className, height
                                 alt="Profile Preview" 
                                 className={imageClassName || "w-full h-full object-cover"}
                                 onError={() => {
-                                    console.error('❌ Failed to load image preview:', preview.substring(0, 100));
+                                    logger.error('❌ Failed to load image preview:', preview.substring(0, 100));
                                     setPreview(null);
                                 }}
                             />

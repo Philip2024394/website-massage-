@@ -4,6 +4,7 @@ import type { Place, Analytics } from '../src/types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import { bookingService, reviewService } from '../lib/appwriteService';
+import { logger } from '../utils/logger';
 // import { placesMenusService } from '../lib/appwrite/services/placesMenus.service'; // TODO: Service doesn't exist yet
 import DistanceDisplay from './DistanceDisplay';
 import AnonymousReviewModal from './AnonymousReviewModal';
@@ -228,7 +229,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 }
             }, 1000);
         } catch (error) {
-            console.error('Error submitting review:', error);
+            logger.error('Error submitting review:', error);
             throw error;
         }
     };
@@ -370,7 +371,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
 
 
     const handleViewDetails = () => {
-        console.log('🏨 MassagePlaceCard - View Details clicked:', {
+        logger.debug('🏨 MassagePlaceCard - View Details clicked:', {
             place: place,
             placeName: place.name,
             placeId: place.id || (place as any).$id,
@@ -390,12 +391,12 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         
         // Use setTimeout to ensure state update completes before navigation
         if (onNavigate) {
-            console.log('🏨 Navigating to massage-place-profile');
+            logger.debug('🏨 Navigating to massage-place-profile');
             setTimeout(() => {
                 onNavigate('massage-place-profile');
             }, 0);
         } else {
-            console.error('❌ onNavigate is not defined!');
+            logger.error('❌ onNavigate is not defined!');
         }
     };
 
