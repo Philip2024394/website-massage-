@@ -35,34 +35,34 @@ export interface BookingMenuSliderProps {
 const bookingTypes: BookingType[] = [
   {
     id: 'book-now',
-    title: 'Book Now',
-    subtitle: 'Immediate service',
+    title: 'Pesan Sekarang',
+    subtitle: 'Layanan langsung',
     icon: <Zap className="w-6 h-6" />,
     color: 'bg-gradient-to-r from-orange-500 to-red-500',
-    description: 'Get immediate massage service within 30-60 minutes',
+    description: 'Dapatkan layanan pijat langsung dalam 30-60 menit',
     features: [
-      'Available therapists only',
-      'Service within 30-60 minutes',
-      'Real-time chat support',
-      'Emergency booking priority'
+      'Hanya terapis yang tersedia',
+      'Layanan dalam 30-60 menit',
+      'Dukungan chat real-time',
+      'Prioritas pemesanan darurat'
     ],
-    estimatedTime: '30-60 min',
+    estimatedTime: '30-60 menit',
     priceModifier: 1.2
   },
   {
     id: 'scheduled',
-    title: 'Schedule',
-    subtitle: 'Plan ahead',
+    title: 'Jadwalkan',
+    subtitle: 'Rencanakan sebelumnya',
     icon: <Calendar className="w-6 h-6" />,
     color: 'bg-gradient-to-r from-blue-500 to-purple-500',
-    description: 'Schedule your massage for a specific date and time',
+    description: 'Jadwalkan pijat Anda untuk tanggal dan waktu tertentu',
     features: [
-      'Choose specific therapist',
-      'Pick preferred time slot',
-      'Plan up to 7 days ahead',
-      'Reminder notifications'
+      'Pilih terapis spesifik',
+      'Pilih slot waktu yang disukai',
+      'Rencanakan hingga 7 hari ke depan',
+      'Pemberitahuan pengingat'
     ],
-    estimatedTime: 'Your choice',
+    estimatedTime: 'Pilihan Anda',
     priceModifier: 1.0
   }
 ];
@@ -108,10 +108,10 @@ export const BookingMenuSlider: React.FC<BookingMenuSliderProps> = ({
       {/* Header */}
       <div className="mb-6 text-center">
         <h3 className="text-xl font-bold text-gray-800 mb-2">
-          Choose Booking Type
+          Pilih Tipe Pemesanan
         </h3>
         <p className="text-gray-600 text-sm">
-          Select how you'd like to book your massage service
+          Pilih cara Anda ingin memesan layanan pijat
         </p>
       </div>
 
@@ -220,8 +220,8 @@ export const BookingMenuSlider: React.FC<BookingMenuSliderProps> = ({
                 <DollarSign className="w-4 h-4 text-green-600" />
                 <span className="text-gray-600">
                   {currentBookingType.priceModifier > 1 
-                    ? `+${Math.round((currentBookingType.priceModifier - 1) * 100)}% for immediate service`
-                    : `${Math.round((1 - currentBookingType.priceModifier) * 100)}% standard pricing`
+                    ? `+${Math.round((currentBookingType.priceModifier - 1) * 100)}% untuk layanan langsung`
+                    : `${Math.round((1 - currentBookingType.priceModifier) * 100)}% harga standar`
                   }
                 </span>
               </div>
@@ -233,7 +233,7 @@ export const BookingMenuSlider: React.FC<BookingMenuSliderProps> = ({
       {/* Action Hint */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">
-          Selection will proceed to {activeType === 'book-now' ? 'immediate booking' : 'scheduling calendar'}
+          Pilihan akan dilanjutkan ke {activeType === 'book-now' ? 'pemesanan langsung' : 'kalender penjadwalan'}
         </p>
       </div>
     </div>
@@ -353,8 +353,8 @@ export const EnterpriseBookingMenu: React.FC<{
             {selectedType?.icon}
             <span>
               {isBookingFlowActive 
-                ? 'Starting...' 
-                : `Continue with ${selectedType?.title || 'Booking'}`
+                ? 'Memulai...' 
+                : `Lanjutkan dengan ${selectedType?.title || 'Pemesanan'}`
               }
             </span>
           </div>
@@ -382,7 +382,7 @@ export const EnterpriseBookingMenu: React.FC<{
       {isBookingFlowActive && (
         <div className="mt-4 flex items-center justify-center space-x-2 text-sm text-blue-600">
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <span>Initializing enterprise booking system...</span>
+          <span>Menginisialisasi sistem pemesanan...</span>
         </div>
       )}
     </div>
