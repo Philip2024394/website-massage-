@@ -1,7 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (10 fixes)
-// @ts-expect-error - React 19 type compatibility issue with lucide-react icons, will be resolved in future version
 import React, { useState, useEffect } from 'react';
-import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
+import { Power, Clock, CheckCircle, XCircle, Crown, Download, Badge, AlertTriangle, X, Lock } from "lucide-react";
 import { therapistService } from '../../lib/appwriteService';
 import { AvailabilityStatus } from "../../types";
 import { devLog, devWarn } from "../../utils/devMode";
@@ -381,7 +380,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       // const pwaStatus = PWAInstallationEnforcer.checkInstallationStatus();
       const pwaStatus = { canInstall: false, isInstalled: false }; // Fallback
       setIsAppInstalled(pwaStatus.isInstalled);
-      setPwaEnforcementActive(!pwaStatus.isInstalled && !pwaStatus.canBypass);
+      setPwaEnforcementActive(!pwaStatus.isInstalled);
       
       // Detect iOS device
       const isiOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -598,7 +597,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       };
       
       devLog('✅ Status saved:', statusMessages[newStatus]);
-      showSuccessToast(statusMessages[newStatus]);
+      showToast(statusMessages[newStatus], 'success');
       
     } catch (error) {
       console.error('❌ Failed to update status:', error);
@@ -643,7 +642,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       });
       
       devLog('✅ Auto-offline time saved:', result.autoOfflineTime);
-      showSuccessToast('⏰ Auto-offline timer set for ' + time);
+      showToast('⏰ Auto-offline timer set for ' + time, 'success');
     } catch (error) {
       console.error('❌ Failed to save auto-offline time:', error);
       showErrorToast('Failed to save auto-offline time. Please try again.');
@@ -661,7 +660,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       setAutoOfflineTime('');
       devLog('✅ Auto-offline timer cancelled');
-      showSuccessToast('✅ Auto-offline timer cancelled');
+      showToast('✅ Auto-offline timer cancelled', 'success');
     } catch (error) {
       console.error('❌ Failed to cancel timer:', error);
       showErrorToast('Failed to cancel timer. Please try again.');
@@ -690,7 +689,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       setIsDiscountActive(true);
       devLog('✅ Discount badge activated');
-      showSuccessToast(`✅ ${discountPercentage}% discount badge activated for ${discountDuration} hours!`);
+      showToast(`✅ ${discountPercentage}% discount badge activated for ${discountDuration} hours!`, 'success');
       
       // Don't refresh here - it causes button jumping when clicking OK on alert
     } catch (error) {
@@ -714,7 +713,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       setDiscountDuration(0);
       setIsDiscountActive(false);
       devLog('✅ Discount badge cancelled');
-      showSuccessToast('✅ Discount badge removed');
+      showToast('✅ Discount badge removed', 'success');
       
       // Don't refresh here - it causes button jumping when clicking OK on alert
     } catch (error) {
@@ -931,15 +930,24 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
         try {
           const registration = await navigator.serviceWorker.ready;
-          await registration.sync.register('background-sync');
-          console.log('✅ Background sync enabled');
+          // Background sync requires HTTPS or localhost and browser support
+          if ('sync' in registration && registration.sync) {
+            await (registration as any).sync.register('background-sync');
+            console.log('✅ Background sync enabled');
+          }
         } catch (syncError) {
           console.log('🔄 Background sync not available:', syncError);
         }
       }
       
-      // 4. Initialize notification sound handler
-      pwaNotificationSoundHandler.initialize();
+      // 4. Initialize notification sound handler (check if method exists)
+      if (typeof (pwaNotificationSoundHandler as any).initialize === 'function') {
+        try {
+          (pwaNotificationSoundHandler as any).initialize();
+        } catch (soundError) {
+          console.log('🔊 Sound handler initialization skipped:', soundError);
+        }
+      }
       
       // 5. Store enhanced features flag and ensure chat window is ready
       localStorage.setItem('therapist-dashboard-enhanced', 'true');
@@ -981,17 +989,17 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         '• Click OK to FORCE REINSTALL\n' +
         '• This ensures you have the latest notification sounds\n' +
         '• Cancel if notifications are working fine',
-        {
-          onConfirm: () => {
-            setForceReinstall(true);
-            setIsAppInstalled(false);
-            localStorage.removeItem('pwa-installed');
-            localStorage.removeItem('pwa-install-completed');
-            // PWAInstallationEnforcer.forceRefreshStatus(); // Temporarily disabled
-            showToast('⚙️ Now tap the DOWNLOAD button again to reinstall with enhanced notifications!', 'info');
-          },
-          confirmText: 'Force Reinstall',
-          cancelText: 'Keep Current App'
+        () => {
+          // onConfirm
+          setForceReinstall(true);
+          setIsAppInstalled(false);
+          localStorage.removeItem('pwa-installed');
+          localStorage.removeItem('pwa-install-completed');
+          // PWAInstallationEnforcer.forceRefreshStatus(); // Temporarily disabled
+          showToast('⚙️ Now tap the DOWNLOAD button again to reinstall with enhanced notifications!', 'info');
+        },
+        () => {
+          // onCancel - do nothing, just close toast
         }
       );
       return;
@@ -1453,7 +1461,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
                 isAppInstalled ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-orange-500 to-orange-600'
               }`}>
-                {isAppInstalled ? <Lock className="w-6 h-6 text-white" /> : <Smartphone className="w-6 h-6 text-white" />}
+                {isAppInstalled ? <Lock className="w-6 h-6 text-white" /> : <Download className="w-6 h-6 text-white" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">

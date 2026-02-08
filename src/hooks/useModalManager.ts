@@ -45,7 +45,8 @@ export interface ModalManagerActions {
 const TRANSITION_DELAY = 200; // Animation duration in milliseconds
 
 // Modal priorities (higher number = higher priority)
-const MODAL_PRIORITIES: Record<ModalType, number> = {
+type ModalPriorities = { [K in NonNullable<ModalType>]: number } & { null: number };
+const MODAL_PRIORITIES: ModalPriorities = {
   'booking-popup': 100,     // Highest priority - main booking flow
   'schedule-booking': 90,   // High priority - scheduled booking
   'price-list': 80,         // High priority - price selection
@@ -66,7 +67,7 @@ export function useModalManager(): ModalManagerState & ModalManagerActions {
     previousModal: null
   });
 
-  const transitionTimeoutRef = useRef<NodeJS.Timeout>();
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const openModal = useCallback(async (type: ModalType, options: { force?: boolean } = {}) => {
     if (!type) return;

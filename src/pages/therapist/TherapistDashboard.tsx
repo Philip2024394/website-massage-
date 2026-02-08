@@ -1092,18 +1092,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   const status = therapist?.status || therapist?.availability;
                   const statusStr = String(status).toLowerCase();
                   
-                  if (statusStr === 'available' && therapist?.availableStartTime) {
-                    const now = new Date();
-                    const startTime = new Date(therapist.availableStartTime);
-                    const hoursElapsed = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-                    const hoursRemaining = Math.max(0, 12 - hoursElapsed);
-                    
+                  // ❌ Timer logic removed (THERAPIST_AUTO_OFFLINE_TIMER_DISABLED.md)
+                  // Status now manual-only, no countdown timers
+                  
+                  if (statusStr === 'available') {
                     return (
                       <>
-                        <span className="text-sm font-semibold text-gray-700">
-                          {hoursRemaining > 0 ? `${Math.floor(hoursRemaining)}h ${Math.floor((hoursRemaining % 1) * 60)}m` : '0h 0m'}
+                        <span className="text-sm font-semibold text-green-600">
+                          Active
                         </span>
-                        <span className="text-xs text-gray-500">remaining</span>
+                        <span className="text-xs text-gray-500">Manual control</span>
                       </>
                     );
                   } else if (statusStr === 'busy') {

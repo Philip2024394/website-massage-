@@ -20,7 +20,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { BookingLifecycleStatus } from '../types/booking';
+import { BookingLifecycleStatus } from '../lib/services/bookingLifecycleService';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPE DEFINITIONS

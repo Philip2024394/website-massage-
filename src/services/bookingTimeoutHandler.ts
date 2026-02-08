@@ -55,6 +55,8 @@ class BookingTimeoutHandler {
       // Create broadcast request
       const broadcastRequest: BroadcastRequest = {
         bookingId: request.bookingId,
+        providerType: 'therapist', // Default to therapist for timeout fallback
+        bookingType: 'immediate', // Timeout scenarios are immediate bookings
         userLocation,
         serviceType: request.serviceType,
         duration: request.duration,

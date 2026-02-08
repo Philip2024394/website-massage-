@@ -685,7 +685,7 @@ export class DefaultMenuManager {
     const servicesPerCategory = Math.ceil(count / 5);
     const selectedServices: DefaultMenuService[] = [];
     
-    const categories: (keyof typeof this.getCategorizedServices)[] = [
+    const categories: string[] = [
       'relaxation', 'office_student', 'specialty', 'body_focus', 'quick_express'
     ];
     
@@ -761,7 +761,7 @@ export class DefaultMenuManager {
   /**
    * Group services by category
    */
-  private static getCategorizedServices() {
+  private static getCategorizedServices(): Record<string, DefaultMenuService[]> {
     return {
       relaxation: DEFAULT_MENU_SERVICES.filter(s => s.category === 'relaxation'),
       office_student: DEFAULT_MENU_SERVICES.filter(s => s.category === 'office_student'),

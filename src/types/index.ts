@@ -83,3 +83,27 @@ export interface NotificationData {
   badge?: string;
   data?: Record<string, unknown>;
 }
+
+// Therapist menu/service types
+export interface TherapistMenu {
+  $id?: string;
+  therapistId: string;
+  services?: any[];
+  pricing?: Record<string, number>;
+  $createdAt?: string;
+  $updatedAt?: string;
+  [key: string]: any; // Allow additional properties
+}
+
+// Share link types
+export interface ShareLink {
+  $id?: string;
+  therapistId?: string;
+  placeId?: string;
+  code: string;
+  url: string;
+  createdAt?: string;
+  $createdAt?: string;
+  $updatedAt?: string;
+  [key: string]: any; // Allow additional properties
+}
