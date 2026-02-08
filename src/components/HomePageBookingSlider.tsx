@@ -33,20 +33,20 @@ export interface HomePageBookingSliderProps {
 const homePageBookingTypes: HomePageBookingType[] = [
   {
     id: 'book-now',
-    title: 'Book Now',
-    subtitle: 'Immediate',
+    title: 'Pesan Sekarang',
+    subtitle: 'Langsung',
     icon: <Zap className="w-5 h-5" />,
     color: 'bg-gradient-to-r from-orange-500 to-red-500',
-    description: 'Get massage service within 30-60 minutes',
+    description: 'Dapatkan layanan pijat dalam 30-60 menit',
     requiresVerification: false
   },
   {
     id: 'scheduled',
-    title: 'Scheduled',
-    subtitle: 'Plan ahead',
+    title: 'Terjadwal',
+    subtitle: 'Rencanakan',
     icon: <Calendar className="w-5 h-5" />,
     color: 'bg-gradient-to-r from-blue-500 to-purple-500',
-    description: 'Schedule for specific date and time',
+    description: 'Jadwalkan untuk tanggal dan waktu tertentu',
     requiresVerification: true
   }
 ];
@@ -68,8 +68,8 @@ const checkTherapistVerification = (therapist: Therapist) => {
     hasKTPVerification,
     isFullyVerified: hasBankDetails && hasKTPVerification,
     missingRequirements: [
-      ...(!hasBankDetails ? ['Bank details'] : []),
-      ...(!hasKTPVerification ? ['KTP verification'] : [])
+      ...(!hasBankDetails ? ['Detail bank'] : []),
+      ...(!hasKTPVerification ? ['Verifikasi KTP'] : [])
     ]
   };
 };
@@ -216,10 +216,10 @@ export const HomePageBookingSlider: React.FC<HomePageBookingSliderProps> = ({
           <div className="flex items-start space-x-2">
             <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
             <div className="text-xs text-orange-700">
-              <div className="font-medium">Verification Required</div>
-              <div>Missing: {verificationStatus.missingRequirements.join(', ')}</div>
+              <div className="font-medium">Verifikasi Diperlukan</div>
+              <div>Kurang: {verificationStatus.missingRequirements.join(', ')}</div>
               <div className="mt-1 opacity-75">
-                Therapist dashboard completion required for scheduled bookings
+                Penyelesaian dashboard terapis diperlukan untuk pemesanan terjadwal
               </div>
             </div>
           </div>
