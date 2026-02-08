@@ -7,6 +7,7 @@ import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { buildHotelsPayload } from './hotelsSchema';
 import { sessionCache } from './sessionCache';
 import { checkRateLimit, formatRateLimitError, handleAppwriteError } from './rateLimitUtils';
+import { createAccountRateLimited, createSessionRateLimited, formatRateLimitError as formatRLError } from './rateLimitedAppwrite';
 
 export interface AuthResponse {
     success: boolean;
@@ -20,7 +21,7 @@ export const hotelAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
             console.log('🏨 Starting hotel signup for:', email);
-            const user = await account.create(ID.unique(), email, password);
+            const user = await createAccountRateLimited(email, password);
             console.log('✅ Appwrite user created:', user.$id);
             try {
                 const hotelId = ID.unique();
@@ -59,7 +60,7 @@ export const hotelAuth = {
             } catch (err: any) {
                 console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
-            const session = await account.createEmailPasswordSession(email, password);
+            const session = await createSessionRateLimited(email, password);
             console.log('✅ Session created:', session.$id);
             const user = await account.get();
             console.log('✅ User retrieved:', user.$id);
@@ -91,7 +92,7 @@ export const adminAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
             console.log('👤 Admin signup start:', email);
-            const user = await account.create(ID.unique(), email, password);
+            const user = await createAccountRateLimited(email, password);
             console.log('✅ Admin user created:', user.$id);
             return { success: true, userId: user.$id };
         } catch (error: any) {
@@ -103,7 +104,7 @@ export const adminAuth = {
         try {
             console.log('👤 Admin signin start:', email);
             try { await account.deleteSession('current'); } catch {}
-            const session = await account.createEmailPasswordSession(email, password);
+            const session = await createSessionRateLimited(email, password);
             console.log('✅ Admin session created:', session.$id);
             const user = await account.get();
             return { success: true, userId: user.$id };
@@ -152,12 +153,12 @@ export const therapistAuth = {
             
             console.log('🔵 [Therapist Sign-Up] Creating Appwrite account...');
             const normalizedEmail = email.toLowerCase().trim();
-            const user = await account.create(ID.unique(), normalizedEmail, password);
+            const user = await createAccountRateLimited(normalizedEmail, password);
             logger.debug('✅ [Therapist Sign-Up] Appwrite account created:', user.$id);
             
             // Create session after account creation
             logger.debug('🔵 [Therapist Sign-Up] Creating session...');
-            await account.createEmailPasswordSession(normalizedEmail, password);
+            await createSessionRateLimited(normalizedEmail, password);
             logger.debug('✅ [Therapist Sign-Up] Session created');
             
             const therapistId = ID.unique();
@@ -295,7 +296,7 @@ export const therapistAuth = {
             }
             
             console.log('🔵 [Therapist Sign-In] Creating email/password session...');
-            await account.createEmailPasswordSession(email, password);
+            await createSessionRateLimited(email, password);
             console.log('✅ [Therapist Sign-In] Session created');
             
             console.log('🔵 [Therapist Sign-In] Getting user account...');
@@ -374,7 +375,7 @@ export const therapistAuth = {
 export const placeAuth = {
     async signUp(email: string, password: string, name?: string, whatsappNumber?: string): Promise<AuthResponse> {
         try {
-            const user = await account.create(ID.unique(), email, password);
+            const user = await createAccountRateLimited(email, password);
             const generatedPlaceId = ID.unique();
             
             console.log('🏢 Creating massage place with required attributes only...');
@@ -458,7 +459,7 @@ export const placeAuth = {
                 console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
-            await account.createEmailPasswordSession(email, password);
+            await createSessionRateLimited(email, password);
             const user = await account.get();
             console.log('✅ Authentication successful for:', email, 'user ID:', user.$id);
             
@@ -532,7 +533,7 @@ export const placeAuth = {
 export const villaAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
-            const user = await account.create(ID.unique(), email, password);
+            const user = await createAccountRateLimited(email, password);
             
             const villaId = ID.unique();
             const { sanitized, diff } = buildHotelsPayload({ id: villaId, email, type: 'villa', userId: user.$id });
@@ -569,7 +570,7 @@ export const villaAuth = {
                 console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
-            await account.createEmailPasswordSession(email, password);
+            await createSessionRateLimited(email, password);
             const user = await account.get();
             
             const villas = await databases.listDocuments(
@@ -627,7 +628,7 @@ export const villaAuth = {
 export const agentAuth = {
     async signUp(email: string, password: string): Promise<AuthResponse> {
         try {
-            const user = await account.create(ID.unique(), email, password);
+            const user = await createAccountRateLimited(email, password);
             
             const agent = await databases.createDocument(
                 DATABASE_ID,
@@ -669,7 +670,7 @@ export const agentAuth = {
                 console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
-            await account.createEmailPasswordSession(email, password);
+            await createSessionRateLimited(email, password);
             const user = await account.get();
             
             const agents = await databases.listDocuments(
