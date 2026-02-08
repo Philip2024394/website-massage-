@@ -39,6 +39,18 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
     
     // Filter and sort therapists by user's location and bookings
     const getTopTherapistsByLocation = () => {
+        logger.debug('🏆 [TOP5] Filtering therapists', { 
+            totalCount: therapists.length, 
+            userCity,
+            sampleTherapist: therapists[0] ? {
+                id: therapists[0].$id || therapists[0].id,
+                name: therapists[0].name,
+                rating: therapists[0].rating,
+                reviewCount: therapists[0].reviewCount,
+                totalBookings: therapists[0].totalBookings
+            } : null
+        });
+        
         // Filter by user's city if provided
         let filtered = therapists;
         if (userCity) {
@@ -48,8 +60,8 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
         }
         
         // Sort by bookings (last 30 days) or online time, then by rating
-        return filtered
-            .filter(t => t.rating && t.reviewCount > 0)
+        // RELAXED FILTER: Include therapists even without rating/reviews
+        const sorted = filtered
             .sort((a, b) => {
                 // Sort by bookings first (if available), otherwise by rating
                 const aBookings = a.totalBookings || a.reviewCount || 0;
@@ -61,6 +73,18 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                 return (b.rating || 0) - (a.rating || 0);
             })
             .slice(0, 5);
+        
+        logger.debug('🏆 [TOP5] Top therapists computed', {
+            count: sorted.length,
+            therapists: sorted.map(t => ({
+                id: t.$id || t.id,
+                name: t.name,
+                bookings: t.totalBookings || t.reviewCount || 0,
+                rating: t.rating || 0
+            }))
+        });
+        
+        return sorted;
     };
     
     const topTherapists = useMemo(() => getTopTherapistsByLocation(), [therapists, userCity]);
@@ -158,6 +182,18 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                             const imageUrl = getTherapistImage(therapist);
                             const isImageLoaded = loadedImages.has(therapistId);
                             
+                            // PRODUCTION DEBUG: Log each therapist's unique data
+                            const bookingCount = therapist.totalBookings || therapist.reviewCount || 0;
+                            const rating = therapist.rating || 0;
+                            
+                            logger.debug(`🏆 [TOP5] Rendering therapist #${index + 1}`, {
+                                id: therapistId,
+                                name: therapist.name,
+                                bookings: bookingCount,
+                                rating: rating,
+                                city: therapist.city
+                            });
+                            
                             return (
                                 <div 
                                     key={therapistId}
@@ -193,16 +229,16 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                         
                                         {/* Stats Row */}
                                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                                            {/* Bookings */}
+                                            {/* Bookings - Use computed value to prevent reference issues */}
                                             <div className="flex items-center gap-1.5 text-orange-600 font-semibold">
                                                 <Calendar className="w-4 h-4" />
-                                                <span>{therapist.totalBookings || therapist.reviewCount || 0} {currentLanguage === 'id' ? 'booking' : 'bookings'}</span>
+                                                <span>{bookingCount} {currentLanguage === 'id' ? 'booking' : 'bookings'}</span>
                                             </div>
                                             
-                                            {/* Rating */}
+                                            {/* Rating - Use computed value to prevent reference issues */}
                                             <div className="flex items-center gap-1.5 text-yellow-600 font-semibold">
                                                 <Star className="w-4 h-4 fill-yellow-500" />
-                                                <span>{therapist.rating?.toFixed(1) || '0.0'} ({therapist.reviewCount || 0})</span>
+                                                <span>{rating > 0 ? rating.toFixed(1) : 'New'} ({therapist.reviewCount || 0})</span>
                                             </div>
                                             
                                             {/* City */}
@@ -218,8 +254,32 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                     {/* View Profile Button */}
                                     <button
                                         onClick={() => {
-                                            onSelectTherapist?.(therapist);
-                                            onNavigate?.('therapist-profile');
+                                            logger.debug('🏆 [TOP5] Therapist clicked', {
+                                                id: therapist.$id || therapist.id,
+                                                name: therapist.name,
+                                                bookings: therapist.totalBookings || therapist.reviewCount || 0,
+                                                rating: therapist.rating || 0
+                                            });
+                                            
+                                            try {
+                                                // CRITICAL: Set selected therapist before navigation
+                                                if (onSelectTherapist) {
+                                                    onSelectTherapist(therapist);
+                                                    logger.debug('🏆 [TOP5] Therapist selected successfully');
+                                                } else {
+                                                    logger.warn('🏆 [TOP5] onSelectTherapist handler missing!');
+                                                }
+                                                
+                                                // Navigate to profile
+                                                if (onNavigate) {
+                                                    onNavigate('therapist-profile');
+                                                    logger.debug('🏆 [TOP5] Navigation initiated');
+                                                } else {
+                                                    logger.error('🏆 [TOP5] onNavigate handler missing!');
+                                                }
+                                            } catch (error) {
+                                                logger.error('🏆 [TOP5] Navigation failed', error);
+                                            }
                                         }}
                                         className="flex-shrink-0 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors shadow-md flex items-center gap-2"
                                     >
