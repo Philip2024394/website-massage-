@@ -4,6 +4,8 @@ import { Eye, EyeOff, Mail, Lock, UserPlus, Home } from 'lucide-react';
 import { account } from '../lib/appwrite';
 import { showToast } from '../utils/showToastPortal';
 import { ID } from 'appwrite';
+import { InputValidator } from '../lib/inputValidator.production';
+import { createAccountRateLimited, createSessionRateLimited } from '../lib/rateLimitedAppwrite';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -52,12 +54,32 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    // Validate inputs
+    const emailValidation = InputValidator.validateEmail(email);
+    const passwordValidation = InputValidator.validatePassword(password);
+
+    if (!emailValidation.isValid || !passwordValidation.isValid) {
+      setEmailError(emailValidation.error || '');
+      setPasswordError(passwordValidation.error || '');
+      setEmailTouched(true);
+      setPasswordTouched(true);
+      setError('Please fix the errors above');
+      setLoading(false);
+      return;
+    }
 
     try {
       // Clear any existing session first
@@ -70,8 +92,8 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
         // No active session, which is fine
       }
       
-      // Sign in with email and password
-      await account.createEmailPasswordSession(email, password);
+      // Sign in with rate-limited email and password (uses sanitized email)
+      await createSessionRateLimited(emailValidation.sanitized!, password);
       
       // Get user account
       const user = await account.get();
@@ -86,8 +108,14 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       }
     } catch (error: any) {
       console.error('Sign in error:', error);
-      const errorMessage = error.message || 'Sign in failed. Please check your credentials.';
-      setError(errorMessage);
+      if (error.code === 429) {
+        setError(error.userMessage || 'Too many login attempts. Please wait and try again.');
+        showToast(error.userMessage || 'Too many attempts. Please wait.', 'error');
+      } else {
+        const errorMessage = error.message || 'Sign in failed. Please check your credentials.';
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -96,18 +124,24 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!name.trim()) {
-      setError('Please enter your name');
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
-
     setLoading(true);
+
+    // Validate all inputs
+    const nameValidation = InputValidator.validateText(name, { required: true, minLength: 2, maxLength: 100 });
+    const emailValidation = InputValidator.validateEmail(email);
+    const passwordValidation = InputValidator.validatePassword(password);
+
+    if (!nameValidation.isValid || !emailValidation.isValid || !passwordValidation.isValid) {
+      setNameError(nameValidation.error || '');
+      setEmailError(emailValidation.error || '');
+      setPasswordError(passwordValidation.error || '');
+      setNameTouched(true);
+      setEmailTouched(true);
+      setPasswordTouched(true);
+      setError('Please fix the errors above');
+      setLoading(false);
+      return;
+    }
 
     try {
       // Clear any existing session first
@@ -120,11 +154,11 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
         // No active session, which is fine
       }
       
-      // Create account
-      await account.create(ID.unique(), email, password, name);
+      // Create account with rate limiting (uses sanitized values)
+      await createAccountRateLimited(emailValidation.sanitized!, password, nameValidation.sanitized);
       
       // Automatically sign in
-      await account.createEmailPasswordSession(email, password);
+      await createSessionRateLimited(emailValidation.sanitized!, password);
       
       // Get user account
       const user = await account.get();
@@ -139,8 +173,14 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       }
     } catch (error: any) {
       console.error('Sign up error:', error);
-      const errorMessage = error.message || 'Sign up failed. Please try again.';
-      setError(errorMessage);
+      if (error.code === 429) {
+        setError(error.userMessage || 'Too many registration attempts. Please wait and try again.');
+        showToast(error.userMessage || 'Too many attempts. Please wait.', 'error');
+      } else {
+        const errorMessage = error.message || 'Sign up failed. Please try again.';
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -254,11 +294,25 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailTouched) {
+                        const result = InputValidator.validateEmail(e.target.value);
+                        setEmailError(result.isValid ? '' : result.error || '');
+                      }
+                    }}
+                    onBlur={() => {
+                      setEmailTouched(true);
+                      const result = InputValidator.validateEmail(email);
+                      setEmailError(result.isValid ? '' : result.error || '');
+                    }}
                     placeholder="Enter your email"
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border ${emailTouched && emailError ? 'border-red-400 bg-red-50/95' : 'border-white/20'} focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg`}
                     required
                   />
+                  {emailTouched && emailError && (
+                    <p className="text-red-600 text-sm mt-1 drop-shadow">{emailError}</p>
+                  )}
                 </div>
               </div>
 
@@ -271,9 +325,20 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordTouched) {
+                        const result = InputValidator.validatePassword(e.target.value);
+                        setPasswordError(result.isValid ? '' : result.error || '');
+                      }
+                    }}
+                    onBlur={() => {
+                      setPasswordTouched(true);
+                      const result = InputValidator.validatePassword(password);
+                      setPasswordError(result.isValid ? '' : result.error || '');
+                    }}
                     placeholder="Enter your password"
-                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    className={`w-full pl-12 pr-12 py-3 rounded-xl border ${passwordTouched && passwordError ? 'border-red-400 bg-red-50/95' : 'border-white/20'} focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg`}
                     required
                   />
                   <button
@@ -316,11 +381,25 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
                   <input
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (nameTouched) {
+                        const result = InputValidator.validateText(e.target.value, { required: true, minLength: 2, maxLength: 100 });
+                        setNameError(result.isValid ? '' : result.error || '');
+                      }
+                    }}
+                    onBlur={() => {
+                      setNameTouched(true);
+                      const result = InputValidator.validateText(name, { required: true, minLength: 2, maxLength: 100 });
+                      setNameError(result.isValid ? '' : result.error || '');
+                    }}
                     placeholder="Enter your full name"
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border ${nameTouched && nameError ? 'border-red-400 bg-red-50/95' : 'border-white/20'} focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg`}
                     required
                   />
+                  {nameTouched && nameError && (
+                    <p className="text-red-600 text-sm mt-1 drop-shadow">{nameError}</p>
+                  )}
                 </div>
               </div>
 
@@ -333,11 +412,25 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailTouched) {
+                        const result = InputValidator.validateEmail(e.target.value);
+                        setEmailError(result.isValid ? '' : result.error || '');
+                      }
+                    }}
+                    onBlur={() => {
+                      setEmailTouched(true);
+                      const result = InputValidator.validateEmail(email);
+                      setEmailError(result.isValid ? '' : result.error || '');
+                    }}
                     placeholder="Enter your email"
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border ${emailTouched && emailError ? 'border-red-400 bg-red-50/95' : 'border-white/20'} focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg`}
                     required
                   />
+                  {emailTouched && emailError && (
+                    <p className="text-red-600 text-sm mt-1 drop-shadow">{emailError}</p>
+                  )}
                 </div>
               </div>
 
@@ -350,9 +443,20 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordTouched) {
+                        const result = InputValidator.validatePassword(e.target.value);
+                        setPasswordError(result.isValid ? '' : result.error || '');
+                      }
+                    }}
+                    onBlur={() => {
+                      setPasswordTouched(true);
+                      const result = InputValidator.validatePassword(password);
+                      setPasswordError(result.isValid ? '' : result.error || '');
+                    }}
                     placeholder="Create a password (min 8 characters)"
-                    className="w-full pl-12 pr-12 py-3 rounded-xl border border-white/20 focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg"
+                    className={`w-full pl-12 pr-12 py-3 rounded-xl border ${passwordTouched && passwordError ? 'border-red-400 bg-red-50/95' : 'border-white/20'} focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 transition-all bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 shadow-lg`}
                     required
                   />
                   <button
