@@ -15,8 +15,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { logger } from '../utils/logger';
-import { pwaNotificationSoundHandler } from '../services/pwaNotificationSoundHandler';
-
+import { pwaNotificationSoundHandler } from '../services/pwaNotificationSoundHandler';import { logger } from '../utils/logger';
 interface IOSNotificationPromptProps {
   onPermissionGranted?: () => void;
   onPermissionDenied?: () => void;
@@ -65,7 +64,7 @@ export const IOSNotificationPrompt: React.FC<IOSNotificationPromptProps> = ({
       setPermissionState(permission);
 
       if (permission === 'granted') {
-        console.log('✅ iOS notification permission granted');
+        logger.debug('✅ iOS notification permission granted');
 
         // Step 2: Request audio playback permission (iOS-specific)
         await pwaNotificationSoundHandler.requestIOSAudioPermission();
@@ -79,14 +78,14 @@ export const IOSNotificationPrompt: React.FC<IOSNotificationPromptProps> = ({
         // Show success message
         alert('✅ Notifications enabled! You\'ll receive booking alerts with sound.');
       } else {
-        console.log('❌ iOS notification permission denied');
+        logger.debug('❌ iOS notification permission denied');
         setIsVisible(false);
         if (onPermissionDenied) {
           onPermissionDenied();
         }
       }
     } catch (error) {
-      console.error('Failed to request notification permission:', error);
+      logger.error('Failed to request notification permission:', error);
       alert('⚠️ Failed to enable notifications. Please try again or check your browser settings.');
     }
   };

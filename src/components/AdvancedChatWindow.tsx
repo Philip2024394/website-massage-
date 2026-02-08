@@ -8,6 +8,7 @@ import { Send, Shield, AlertTriangle, X, Eye, EyeOff, Ban } from 'lucide-react';
 import { chatModerationService } from '../services/chatModerationService';
 import { splitPhoneDetectionService, SplitPhoneDetection, CircumventionAlert } from '../services/splitPhoneDetectionService';
 import { professionalChatService } from '../services/professionalChatNotificationService';
+import { logger } from '../utils/logger';
 
 interface AdvancedChatWindowProps {
   chatId: string;
@@ -166,7 +167,7 @@ export const AdvancedChatWindow: React.FC<AdvancedChatWindowProps> = ({
       inputRef.current?.focus();
       
     } catch (error) {
-      console.error('Send message error:', error);
+      logger.error('Send message error:', error);
       alert('Failed to send message. Please try again.');
     } finally {
       setIsSending(false);

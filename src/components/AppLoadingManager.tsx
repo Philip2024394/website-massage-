@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useLoading } from '../context/LoadingContext';
 import { useAuth } from '../context/AuthContext';
 import { useAuthenticationLoading } from '../hooks/useAuthenticationLoading';
+import { logger } from '../utils/logger';
 
 interface AppLoadingManagerProps {
   children: React.ReactNode;
@@ -46,7 +47,7 @@ export const AppLoadingManager: React.FC<AppLoadingManagerProps> = ({
 
   // Log loading state changes for debugging
   useEffect(() => {
-    console.log('🚀 [LOADING MANAGER] State changed:', {
+    logger.debug('🚀 [LOADING MANAGER] State changed:', {
       global: loading.global,
       auth: loading.auth,
       page: loading.page,

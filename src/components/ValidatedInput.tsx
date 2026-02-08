@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { InputValidator } from '../lib/inputValidator.production';
+import { logger } from '../utils/logger';
 
 interface ValidatedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   validationType?: 'email' | 'phone' | 'text' | 'password' | 'whatsapp';
@@ -114,7 +115,7 @@ AFTER:
   required
   onValidation={(isValid, error) => {
     setEmailValid(isValid);
-    if (!isValid) console.log('Email error:', error);
+    if (!isValid) logger.debug('Email error:', error);
   }}
 />
 

@@ -6,6 +6,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Image, CreditCard, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { BankDetails, PaymentConfirmationRequest } from '../services/scheduledBookingPaymentService';
+import { logger } from '../utils/logger';
 
 interface ScheduledPaymentChatProps {
   bookingId: string;
@@ -64,7 +65,7 @@ export const ScheduledPaymentChat: React.FC<ScheduledPaymentChatProps> = ({
       setSelectedFile(null);
       setPreviewUrl('');
     } catch (error) {
-      console.error('Upload failed:', error);
+      logger.error('Upload failed:', error);
     }
   };
 
