@@ -1483,6 +1483,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 </div>
               </div>
               
+              {/* UX FIX: Added tooltip to clarify GPS button behavior */}
+              {!locationSet && !gpsLoading && (
+                <div className="mb-3 text-center">
+                  <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 text-xs px-3 py-2 rounded-full animate-bounce">
+                    <span className="text-base">👆</span>
+                    <span className="font-medium">Click button below to set your GPS location (required)</span>
+                  </div>
+                </div>
+              )}
+              
               <button
                 onClick={handleSetLocation}
                 disabled={gpsLoading}

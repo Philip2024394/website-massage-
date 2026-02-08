@@ -629,6 +629,25 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           {/* Navigation Menu */}
           <nav className="flex-1 overflow-y-auto p-4">
             <div className="space-y-2">
+              {/* Back to Home Button */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = '/';
+                }}
+                className="flex items-center gap-3 w-full min-h-[48px] py-3 px-4 rounded-lg transition-all transform active:scale-98 touch-manipulation cursor-pointer select-none bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md hover:from-blue-600 hover:to-blue-700 mb-4"
+                style={{ 
+                  willChange: 'transform',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+              >
+                <Home className="w-5 h-5 flex-shrink-0" />
+                <span className="text-sm">
+                  {language === 'en' ? 'View My Public Profile' : 'Lihat Profil Publik Saya'}
+                </span>
+              </button>
+              
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;

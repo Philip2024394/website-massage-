@@ -1568,11 +1568,12 @@ export function PersistentChatWindow() {
       
       <div
         data-testid="persistent-chat-window"
-        className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100%-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col animate-slide-up"
+        className="fixed bottom-0 pb-[env(safe-area-inset-bottom)] left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100%-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col animate-slide-up"
         style={{ 
           /* MOBILE SCROLL COMPLIANCE: Chat window with internal scrolling */
-          height: 'min(600px, calc(100dvh - 60px))', // Fixed: iOS Safari viewport
-          maxHeight: 'calc(100dvh - 60px)', // Fixed: iOS Safari viewport
+          /* UX FIX: Added safe-area-inset padding for iOS home indicator */
+          height: 'min(600px, calc(100dvh - 60px - env(safe-area-inset-bottom)))', // Fixed: iOS Safari viewport + safe area
+          maxHeight: 'calc(100dvh - 60px - env(safe-area-inset-bottom))', // Fixed: iOS Safari viewport + safe area
           fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
@@ -2685,11 +2686,13 @@ export function PersistentChatWindow() {
                 </div>
               )}
               
-              <button
-                type="submit"
-                data-testid="order-now-button"
-                disabled={isSending || !customerForm.name.trim() || !customerForm.whatsApp || customerForm.whatsApp.length < 8 || customerForm.whatsApp.length > 15 || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
-                className={`w-full py-3 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+              {/* UX FIX: Added border separator to prevent accidental taps */}
+              <div className="border-t-2 border-gray-200 pt-4 mt-4">
+                <button
+                  type="submit"
+                  data-testid="order-now-button"
+                  disabled={isSending || !customerForm.name.trim() || !customerForm.whatsApp || customerForm.whatsApp.length < 8 || customerForm.whatsApp.length > 15 || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
+                  className={`w-full py-3 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                   (!isSending && customerForm.name.trim() && customerForm.whatsApp && customerForm.whatsApp.length >= 8 && customerForm.whatsApp.length <= 15 && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))
                     ? 'bg-green-500 hover:bg-green-600 text-white'
                     : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
@@ -2706,7 +2709,8 @@ export function PersistentChatWindow() {
                     Order Now
                   </React.Fragment>
                 )}
-              </button>
+                </button>
+              </div>
             </form>
           </div>
         )}

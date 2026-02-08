@@ -168,7 +168,7 @@ export const HomePageBookingSlider: React.FC<HomePageBookingSliderProps> = ({
                 onClick={() => handleTypeSelect(type)}
                 disabled={disabled}
                 className={`
-                  relative z-10 px-3 py-3 rounded-lg transition-all duration-300
+                  relative z-10 px-4 py-4 min-h-[48px] rounded-lg transition-all duration-300 will-change-transform transform-gpu
                   ${style.containerClass}
                   ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
                   ${isAnimating ? 'pointer-events-none' : ''}
