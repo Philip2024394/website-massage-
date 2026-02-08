@@ -37,6 +37,7 @@ import { useEnhancedMenuData } from '../../hooks/useEnhancedMenuData';
 import { MenuService } from '../../services/enhancedMenuDataService';
 import { Plus, Edit3, Save, X, Trash2, Download, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 import '../../styles/badges.css';
+import { logger } from '../../utils/logger';
 
 // Simple rotate icon component to replace lucide-react import
 const RotateCcw = ({ className }: { className?: string }) => (
@@ -132,7 +133,7 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
       await updateService(serviceId, editingService);
       cancelEditing(serviceId);
     } catch (error) {
-      console.error('Failed to save service:', error);
+      logger.error('Failed to save service:', error);
     }
   };
 
@@ -163,7 +164,7 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
       });
       setShowAddForm(false);
     } catch (error) {
-      console.error('Failed to add service:', error);
+      logger.error('Failed to add service:', error);
     }
   };
 
@@ -177,7 +178,7 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
       try {
         await deleteService(service.id);
       } catch (error) {
-        console.error('Failed to delete service:', error);
+        logger.error('Failed to delete service:', error);
       }
     }
   };

@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { databases, APPWRITE_CONFIG, Query, storage, ID } from '../../lib/services/_shared';
+import { logger } from '../../utils/logger';
 // Payment notification service - to be implemented
 
 interface MembershipPackageDisplayProps {
@@ -127,7 +128,7 @@ export const MembershipPackageDisplay: React.FC<MembershipPackageDisplayProps> =
             setPaymentStatus(status);
 
         } catch (error) {
-            console.error('Error loading membership data:', error);
+            logger.error('Error loading membership data:', error);
         } finally {
             setLoading(false);
         }
@@ -181,7 +182,7 @@ export const MembershipPackageDisplay: React.FC<MembershipPackageDisplayProps> =
             await loadMembershipData();
 
         } catch (error) {
-            console.error('Error uploading payment proof:', error);
+            logger.error('Error uploading payment proof:', error);
             showErrorToast('❌ Failed to upload payment proof. Please try again.');
         } finally {
             setUploadingProof(false);

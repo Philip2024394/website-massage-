@@ -2,6 +2,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useRef, useEffect } from 'react';
 import { HelpCircle, X } from 'lucide-react';
+import { logger } from '../../utils/logger';
 
 interface HelpTooltipProps {
   title: string;
@@ -38,7 +39,7 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
 
   // Safety check: Don't render if no content provided
   if (!title || !content) {
-    console.warn('[HelpTooltip] Missing required props:', { title, content });
+    logger.warn('[HelpTooltip] Missing required props:', { title, content });
     return null;
   }
 

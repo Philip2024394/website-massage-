@@ -14,6 +14,7 @@
 
 import React, { useState, useEffect } from 'react';
 import './ForcedBookingModal.css';
+import { logger } from '../../utils/logger';
 
 interface BookingRequest {
   id: string;
@@ -84,7 +85,7 @@ export const ForcedBookingModal: React.FC<ForcedBookingModalProps> = ({
     try {
       await onAccept(booking.id);
     } catch (error) {
-      console.error('Accept failed:', error);
+      logger.error('Accept failed:', error);
       alert('Failed to accept booking. Please try again.');
       setIsAccepting(false);
     }
@@ -104,7 +105,7 @@ export const ForcedBookingModal: React.FC<ForcedBookingModalProps> = ({
     try {
       await onDecline(booking.id, declineReason);
     } catch (error) {
-      console.error('Decline failed:', error);
+      logger.error('Decline failed:', error);
       alert('Failed to decline booking. Please try again.');
       setIsDeclining(false);
     }
