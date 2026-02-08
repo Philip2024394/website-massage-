@@ -40,7 +40,6 @@ import type { Therapist, Place, Analytics } from './src/types';
 import './src/lib/notificationSound'; // Initialize notification sound system
 import { initScrollLockDetection } from './src/utils/scrollLockDetection';
 import { AIProtectionSystem } from './src/utils/aiProtection';
-import { AIProtectionSystem } from './src/utils/aiProtection';
 import { pushNotifications } from './src/lib/pushNotifications'; // Initialize Appwrite push notifications
 // REMOVED: chatSessionService import - no longer using global chat sessions
 // REMOVED: ChatErrorBoundary import - no longer using global ChatWindow
