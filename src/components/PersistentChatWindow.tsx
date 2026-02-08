@@ -474,7 +474,7 @@ export function PersistentChatWindow() {
         });
       }
     } catch (error: unknown) {
-      const err = error as Error; console.error('Discount validation error:', err);
+      const err = error as Error; logger.error('Discount validation error:', err);
       setDiscountValidation({
         valid: false,
         message: 'Failed to validate discount code'
@@ -638,7 +638,7 @@ export function PersistentChatWindow() {
 
   // Handle customer form submission
   const handleCustomerSubmit = async (e: React.FormEvent) => {
-    console.log('🎯 [HANDLE CUSTOMER SUBMIT] Function called');
+    logger.debug('🎯 [HANDLE CUSTOMER SUBMIT] Function called');
     
     // � START BOOKING FLOW MONITORING
     const monitorSession = bookingFlowMonitor.startBookingFlow(
@@ -735,11 +735,11 @@ export function PersistentChatWindow() {
       
       // Additional validation for hotel/villa specific fields
       if (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') {
-        console.error('- Hotel/Villa Name:', !customerForm.hotelVillaName ? 'MISSING' : 'OK');
-        console.error('- Room Number:', !customerForm.roomNumber ? 'MISSING' : 'OK');
+        logger.error('- Hotel/Villa Name:', !customerForm.hotelVillaName ? 'MISSING' : 'OK');
+        logger.error('- Room Number:', !customerForm.roomNumber ? 'MISSING' : 'OK');
         
         if (!customerForm.hotelVillaName || !customerForm.roomNumber) {
-          console.error('❌ Hotel/Villa booking requires name and room number');
+          logger.error('❌ Hotel/Villa booking requires name and room number');
           addSystemNotification('❌ Hotel/Villa bookings require facility name and room number');
           unlockChat(); // Unlock chat so user can fix the form
           return;
@@ -767,18 +767,18 @@ export function PersistentChatWindow() {
       const bookingCreated = chatState.currentBooking !== null;
       const currentStep = chatState.bookingStep;
       
-      console.log('🔍 [ORDER NOW MONITOR] Progress check after 8 seconds:');
-      console.log('- Booking created:', bookingCreated);
-      console.log('- Current step:', currentStep);
+      logger.debug('🔍 [ORDER NOW MONITOR] Progress check after 8 seconds:');
+      logger.debug('- Booking created:', bookingCreated);
+      logger.debug('- Current step:', currentStep);
       
       if (bookingCreated && currentStep === 'chat') {
-        console.log('✅ ORDER NOW SUCCESS - Booking created and chat opened!');
-        console.log('- Flow completed in', Date.now() - orderNowStartTime, 'ms');
+        logger.debug('✅ ORDER NOW SUCCESS - Booking created and chat opened!');
+        logger.debug('- Flow completed in', Date.now() - orderNowStartTime, 'ms');
       } else if (!bookingCreated) {
-        console.log('🔍 ORDER NOW IN PROGRESS - Booking creation still processing');
-        console.log('- This is normal for network delays or validation');
+        logger.debug('🔍 ORDER NOW IN PROGRESS - Booking creation still processing');
+        logger.debug('- This is normal for network delays or validation');
       } else {
-        console.log('🔍 ORDER NOW PROCESSING - Booking exists, waiting for chat step');
+        logger.debug('🔍 ORDER NOW PROCESSING - Booking exists, waiting for chat step');
       }
     }, 8000);
     
@@ -789,12 +789,12 @@ export function PersistentChatWindow() {
     const originalURL = window.location.href;
     const urlCheckInterval = setInterval(() => {
       if (window.location.href !== originalURL) {
-        console.error('🚨 URL CHANGED UNEXPECTEDLY!');
-        console.error('Original URL:', originalURL);
-        console.error('New URL:', window.location.href);
-        console.log('🔧 RESTORING original URL to prevent booking flow interruption...');
+        logger.error('🚨 URL CHANGED UNEXPECTEDLY!');
+        logger.error('Original URL:', originalURL);
+        logger.error('New URL:', window.location.href);
+        logger.debug('🔧 RESTORING original URL to prevent booking flow interruption...');
         window.history.replaceState({}, '', originalURL);
-        console.log('✅ URL restored to:', window.location.href);
+        logger.debug('✅ URL restored to:', window.location.href);
         clearInterval(urlCheckInterval);
       }
     }, 100);
@@ -803,13 +803,13 @@ export function PersistentChatWindow() {
     setTimeout(() => clearInterval(urlCheckInterval), 10000);
     */
     
-    console.log('📋 [FLOW] Starting booking creation process');
-    console.log('🔍 [DEBUG] About to validate required fields...');
+    logger.debug('📋 [FLOW] Starting booking creation process');
+    logger.debug('🔍 [DEBUG] About to validate required fields...');
     
     if (!customerForm.name || !customerForm.whatsApp) {
-      console.error('❌ [VALIDATION FAILED] Missing required fields');
-      console.error('- Name:', customerForm.name || 'MISSING');
-      console.error('- WhatsApp:', customerForm.whatsApp || 'MISSING');
+      logger.error('❌ [VALIDATION FAILED] Missing required fields');
+      logger.error('- Name:', customerForm.name || 'MISSING');
+      logger.error('- WhatsApp:', customerForm.whatsApp || 'MISSING');
       setBookingError({
         errorPoint: 'Form Validation',
         errorReason: 'Missing required fields',
@@ -820,11 +820,11 @@ export function PersistentChatWindow() {
       return;
     }
     
-    console.log('✅ [VALIDATION] Required fields present');
+    logger.debug('✅ [VALIDATION] Required fields present');
     
     // ✅ CRITICAL: Set customer details with full WhatsApp (country code + number)
     const fullWhatsApp = `${customerForm.countryCode}${customerForm.whatsApp}`;
-    console.log('✅ Setting customer WhatsApp:', fullWhatsApp);
+    logger.debug('✅ Setting customer WhatsApp:', fullWhatsApp);
     
     setCustomerDetails({
       name: customerForm.name,
@@ -833,7 +833,7 @@ export function PersistentChatWindow() {
     });
     
     // ✅ Store WhatsApp in chat state for immediate access
-    console.log('✅ Customer details set:', {
+    logger.debug('✅ Customer details set:', {
       name: customerForm.name,
       whatsApp: fullWhatsApp,
       location: customerForm.location
@@ -970,25 +970,25 @@ export function PersistentChatWindow() {
                 address: scheduledLocationText, // ✅ Same as location
                 roomNumber: customerForm.roomNumber || undefined,
               });
-              console.log('✅ Scheduled booking created');
+              logger.debug('✅ Scheduled booking created');
               
               // 🔒 ALWAYS SWITCH TO CHAT STEP for scheduled bookings too
-              console.log('═══════════════════════════════════════════');
-              console.log('✅ [ORDER NOW] Scheduled booking created');
-              console.log('📋 [FLOW STEP 2 ✅] Booking creation completed');
-              console.log('📋 [FLOW STEP 3 →] Chat session already exists, proceeding to step transition...');
-              console.log('Switching to chat step...');
-              console.log('Current URL (should NOT change):', window.location.href);
-              console.log('Current step before setBookingStep:', chatState.bookingStep);
-              console.log('═══════════════════════════════════════════');
+              logger.debug('═══════════════════════════════════════════');
+              logger.debug('✅ [ORDER NOW] Scheduled booking created');
+              logger.debug('📋 [FLOW STEP 2 ✅] Booking creation completed');
+              logger.debug('📋 [FLOW STEP 3 →] Chat session already exists, proceeding to step transition...');
+              logger.debug('Switching to chat step...');
+              logger.debug('Current URL (should NOT change):', window.location.href);
+              logger.debug('Current step before setBookingStep:', chatState.bookingStep);
+              logger.debug('═══════════════════════════════════════════');
               
               setBookingStep('chat');
               
-              console.log('✅ CHAT OPENED AFTER SCHEDULED BOOKING');
-              console.log('✅ setBookingStep("chat") called for scheduled booking');
-              console.log('Current step after setBookingStep:', chatState.bookingStep);
+              logger.debug('✅ CHAT OPENED AFTER SCHEDULED BOOKING');
+              logger.debug('✅ setBookingStep("chat") called for scheduled booking');
+              logger.debug('Current step after setBookingStep:', chatState.bookingStep);
             } catch (schedError) {
-              console.error('❌ Scheduled booking failed:', schedError);
+              logger.error('❌ Scheduled booking failed:', schedError);
               
               // 🚨 Set error state for display
               setBookingError({
@@ -1002,21 +1002,21 @@ export function PersistentChatWindow() {
               });
               
               // Still switch to chat even if booking fails
-              console.log('🔄 [FALLBACK] Switching to chat despite scheduled booking error...');
+              logger.debug('🔄 [FALLBACK] Switching to chat despite scheduled booking error...');
               setBookingStep('chat');
               throw schedError;
             }
           } else {
             // Regular immediate booking with timeout and retry logic
-            console.log('📝 Creating immediate booking with reliability layer...');
+            logger.debug('📝 Creating immediate booking with reliability layer...');
             try {
               // 🔒 CREATE BOOKING WITH SIMPLE LOCATION FIELD
-              console.log('📝 [ORDER_NOW_MONITOR] Initiating booking creation with timeout and retry protection');
+              logger.debug('📝 [ORDER_NOW_MONITOR] Initiating booking creation with timeout and retry protection');
               
               // ✅ SIMPLIFIED: Use the location text field directly
               const locationText = customerForm.location?.trim() || 'Location provided in chat';
               
-              console.log('🔍 Simple Location Debug:', {
+              logger.debug('🔍 Simple Location Debug:', {
                 locationType: customerForm.locationType,
                 locationText: locationText,
                 originalLocation: customerForm.location
@@ -1050,7 +1050,7 @@ export function PersistentChatWindow() {
                 discountPercentage: hasDiscount ? discountValidation.percentage : undefined
               };
               
-              console.log('🚀 [ORDER_NOW_MONITOR] Booking payload prepared:', {
+              logger.debug('🚀 [ORDER_NOW_MONITOR] Booking payload prepared:', {
                 customerName: bookingPayload.customerName,
                 duration: bookingPayload.duration,
                 price: bookingPayload.price,
@@ -1066,7 +1066,7 @@ export function PersistentChatWindow() {
               );
               
               // Log final result
-              console.log(`📊 [ORDER_NOW_MONITOR] Booking operation completed:`, {
+              logger.debug(`📊 [ORDER_NOW_MONITOR] Booking operation completed:`, {
                 success: bookingResult.success,
                 attempts: bookingResult.attempts,
                 duration: bookingResult.duration,
@@ -1086,17 +1086,17 @@ export function PersistentChatWindow() {
                 bookingCreated ? undefined : `Booking creation failed after ${bookingResult.attempts} attempts`
               );
               
-              console.log('📝 [ORDER_NOW_MONITOR] Booking created:', !!bookingCreated, '| Booking ID:', bookingCreated ? (bookingCreated as any).id : null);
+              logger.debug('📝 [ORDER_NOW_MONITOR] Booking created:', !!bookingCreated, '| Booking ID:', bookingCreated ? (bookingCreated as any).id : null);
               
               // ✅ FIXED: Only open chat if booking succeeded
               if (!bookingCreated) {
                 const errorCategory = bookingResult.error ? categorizeBookingError(bookingResult.error) : 'unknown';
                 
-                console.error('❌ [ORDER_NOW_MONITOR] Booking creation FAILED after all retries');
-                console.error('📊 [ORDER_NOW_MONITOR] Failure reason:', errorCategory);
-                console.error('📊 [ORDER_NOW_MONITOR] Error details:', bookingResult.error?.message);
-                console.error('📊 [ORDER_NOW_MONITOR] Total attempts:', bookingResult.attempts);
-                console.error('📊 [ORDER_NOW_MONITOR] Total duration:', bookingResult.duration, 'ms');
+                logger.error('❌ [ORDER_NOW_MONITOR] Booking creation FAILED after all retries');
+                logger.error('📊 [ORDER_NOW_MONITOR] Failure reason:', errorCategory);
+                logger.error('📊 [ORDER_NOW_MONITOR] Error details:', bookingResult.error?.message);
+                logger.error('📊 [ORDER_NOW_MONITOR] Total attempts:', bookingResult.attempts);
+                logger.error('📊 [ORDER_NOW_MONITOR] Total duration:', bookingResult.duration, 'ms');
                 
                 bookingFlowMonitor.checkpoint('booking_creation', 'failed',
                   { 
@@ -1124,30 +1124,30 @@ export function PersistentChatWindow() {
                 return; // Stay in details step, do NOT open chat
               }
               
-              console.log('═══════════════════════════════════════════');
-              console.log('✅ [ORDER_NOW_MONITOR] Booking created successfully');
-              console.log('📋 [FLOW STEP 1 ✅] Message sending completed');
-              console.log('📋 [FLOW STEP 2 ✅] Booking creation successful');
-              console.log('📊 [ORDER_NOW_MONITOR] Success metrics:', {
+              logger.debug('═══════════════════════════════════════════');
+              logger.debug('✅ [ORDER_NOW_MONITOR] Booking created successfully');
+              logger.debug('📋 [FLOW STEP 1 ✅] Message sending completed');
+              logger.debug('📋 [FLOW STEP 2 ✅] Booking creation successful');
+              logger.debug('📊 [ORDER_NOW_MONITOR] Success metrics:', {
                 attempts: bookingResult.attempts,
                 duration: bookingResult.duration + 'ms',
                 bookingId: (bookingCreated as any)?.id || 'unknown',
                 timestamp: new Date().toISOString()
               });
-              console.log('Current URL (should NOT change):', window.location.href);
-              console.log('🔍 [DEBUG] Current bookingStep BEFORE setBookingStep:', chatState.bookingStep);
-              console.log('🔍 [DEBUG] Current booking object:', chatState.currentBooking);
-              console.log('🔍 [DEBUG] isOpen:', chatState.isOpen);
-              console.log('═══════════════════════════════════════════');
+              logger.debug('Current URL (should NOT change):', window.location.href);
+              logger.debug('🔍 [DEBUG] Current bookingStep BEFORE setBookingStep:', chatState.bookingStep);
+              logger.debug('🔍 [DEBUG] Current booking object:', chatState.currentBooking);
+              logger.debug('🔍 [DEBUG] isOpen:', chatState.isOpen);
+              logger.debug('═══════════════════════════════════════════');
               
               // ✅ State update happens atomically in createBooking - no need to call setBookingStep again
-              console.log('✅ [BOOKING→CHAT] Booking created with chat mode enabled');
-              console.log('✅ [STATE] createBooking set bookingStep to "chat" atomically with booking data');
-              console.log('🎪 [BOOKING→CHAT] Chat window opened after booking success');
-              console.log('📋 [FLOW STEP 3 ✅] Chat session ready with booking integration');
-              console.log('⏱️ [FLOW STEP 4 ✅] Welcome timer started');
-              console.log('✅ setBookingStep("chat") called for immediate booking with chat integration');
-              console.log('📡 [DASHBOARD NOTIFY] Therapist dashboard will receive real-time notification');
+              logger.debug('✅ [BOOKING→CHAT] Booking created with chat mode enabled');
+              logger.debug('✅ [STATE] createBooking set bookingStep to "chat" atomically with booking data');
+              logger.debug('🎪 [BOOKING→CHAT] Chat window opened after booking success');
+              logger.debug('📋 [FLOW STEP 3 ✅] Chat session ready with booking integration');
+              logger.debug('⏱️ [FLOW STEP 4 ✅] Welcome timer started');
+              logger.debug('✅ setBookingStep("chat") called for immediate booking with chat integration');
+              logger.debug('📡 [DASHBOARD NOTIFY] Therapist dashboard will receive real-time notification');
               
               bookingFlowMonitor.checkpoint('booking_success', 'success', {
                 bookingCreated: true,
@@ -1157,7 +1157,7 @@ export function PersistentChatWindow() {
               });
               bookingFlowMonitor.endBookingFlow(true);
             } catch (bookingError) {
-              console.error('❌ createBooking threw error:', bookingError);
+              logger.error('❌ createBooking threw error:', bookingError);
               
               // 🚨 Set error state for display
               setBookingError({
@@ -1171,19 +1171,19 @@ export function PersistentChatWindow() {
               });
               
               // Still switch to chat even if booking fails
-              console.log('🔄 [FALLBACK] Switching to chat despite booking error...');
+              logger.debug('🔄 [FALLBACK] Switching to chat despite booking error...');
               setBookingStep('chat');
               throw bookingError;
             }
           }
         } else {
-          console.warn('⚠️ Message not sent, result:', result);
-          console.warn('⚠️ Result details:', { sent: result.sent, warning: result.warning });
-          console.log('🔄 [FALLBACK] Message failed but creating booking anyway...');
+          logger.warn('⚠️ Message not sent, result:', result);
+          logger.warn('⚠️ Result details:', { sent: result.sent, warning: result.warning });
+          logger.debug('🔄 [FALLBACK] Message failed but creating booking anyway...');
           
           // 🔧 FIX: Create booking even if message fails
           if (!isScheduleMode) {
-            console.log('📝 [FALLBACK] Creating immediate booking despite message failure...');
+            logger.debug('📝 [FALLBACK] Creating immediate booking despite message failure...');
             try {
               // 🔒 USE ISOLATED BOOKING SERVICE (Fallback)
               const { createBooking } = await import('../services/bookingCreationService');
@@ -1215,16 +1215,16 @@ export function PersistentChatWindow() {
               });
               
               if (fallbackResult.success) {
-                console.log('✅ [FALLBACK] Isolated booking created despite message failure:', fallbackResult.bookingId);
-                console.log('🔄 [FALLBACK] Switching to chat after successful fallback booking...');
+                logger.debug('✅ [FALLBACK] Isolated booking created despite message failure:', fallbackResult.bookingId);
+                logger.debug('🔄 [FALLBACK] Switching to chat after successful fallback booking...');
                 setBookingStep('chat');
               } else {
-                console.error('❌ [FALLBACK] Fallback booking failed:', fallbackResult.error);
+                logger.error('❌ [FALLBACK] Fallback booking failed:', fallbackResult.error);
                 addSystemNotification('❌ Booking creation failed. Please try again.');
                 throw new Error(fallbackResult.error || 'Fallback booking failed');
               }
             } catch (bookingError) {
-              console.error('❌ [FALLBACK] Booking creation also failed:', bookingError);
+              logger.error('❌ [FALLBACK] Booking creation also failed:', bookingError);
               
               // 🚨 Set error state for display
               setBookingError({
@@ -1246,15 +1246,15 @@ export function PersistentChatWindow() {
           }
           
           // ❌ REMOVED: No longer switching to chat unconditionally
-          console.log('⚠️ [FALLBACK] Message failed - staying in details step');
+          logger.warn('⚠️ [FALLBACK] Message failed - staying in details step');
           addSystemNotification('❌ Message sending failed. Please try again.');
           setIsSending(false);
         }
       } catch (innerError) {
-        console.error('❌ Error in booking flow:', innerError);
-        console.error('❌ Error name:', (innerError as Error).name);
-        console.error('❌ Error message:', (innerError as Error).message);
-        console.error('❌ Error stack:', (innerError as Error).stack);
+        logger.error('❌ Error in booking flow:', innerError);
+        logger.error('❌ Error name:', (innerError as Error).name);
+        logger.error('❌ Error message:', (innerError as Error).message);
+        logger.error('❌ Error stack:', (innerError as Error).stack);
         throw innerError; // Re-throw to outer catch
       }
       
@@ -1262,10 +1262,10 @@ export function PersistentChatWindow() {
       return false;
     } catch (error: unknown) {
       const err = error as Error; 
-      console.error('❌ [OUTER CATCH] Failed to send booking request:', err);
-      console.error('❌ [OUTER CATCH] Error name:', err.name);
-      console.error('❌ [OUTER CATCH] Error message:', err.message);
-      console.error('❌ [OUTER CATCH] Error stack:', err.stack);
+      logger.error('❌ [OUTER CATCH] Failed to send booking request:', err);
+      logger.error('❌ [OUTER CATCH] Error name:', err.name);
+      logger.error('❌ [OUTER CATCH] Error message:', err.message);
+      logger.error('❌ [OUTER CATCH] Error stack:', err.stack);
       
       // 🚨 Set comprehensive error state for display
       setBookingError({
@@ -1285,23 +1285,23 @@ export function PersistentChatWindow() {
       });
       
       // �🔄 [FIXED FLOW] Keep user in details step on error so they can retry
-      console.log('🔄 [ERROR RECOVERY] Staying in details step for user to retry booking...');
+      logger.debug('🔄 [ERROR RECOVERY] Staying in details step for user to retry booking...');
       addSystemNotification('❌ Booking failed. Please check your details and try again.');
       
       // 🔓 UNLOCK CHAT on error to allow user to retry or close if needed
       unlockChat();
-      console.log('🔓 Chat unlocked after booking error - user can retry');
+      logger.debug('🔓 Chat unlocked after booking error - user can retry');
       
       // Don't switch to chat step on error - let user retry
       
       // Prevent any default action even on error
       return false;
     } finally {
-      console.log('🏁 Finishing submission, setting isSending to false');
+      logger.debug('🏁 Finishing submission, setting isSending to false');
       setIsSending(false);
       
       // ✅ DEFENSIVE CLEANUP: Navigation is cleaned up by isolated booking service
-      console.log('✅ [BOOKING ISOLATION] Cleanup handled by isolation layer');
+      logger.debug('✅ [BOOKING ISOLATION] Cleanup handled by isolation layer');
     }
     
     // 🔒 FINAL SAFEGUARD: Return false to prevent any form submission
@@ -1344,9 +1344,9 @@ export function PersistentChatWindow() {
         `📅 Scheduled booking created! Please pay 30% deposit (${formatPrice(depositAmount)}) to confirm your appointment. Deposits are non-refundable.`
       );
       
-      console.log('💰 Scheduled booking created with deposit requirement:', scheduledDeposit);
+      logger.debug('💰 Scheduled booking created with deposit requirement:', scheduledDeposit);
     } catch (error) {
-      console.error('❌ Failed to create scheduled booking with deposit:', error);
+      logger.error('❌ Failed to create scheduled booking with deposit:', error);
       addSystemNotification('❌ Failed to create scheduled booking. Please try again.');
     }
   };
@@ -1374,9 +1374,9 @@ export function PersistentChatWindow() {
         '✅ Deposit payment submitted! Your booking will be confirmed once the therapist approves your payment proof. You will receive notifications about your upcoming appointment.'
       );
       
-      console.log('💳 Deposit payment submitted successfully');
+      logger.debug('💳 Deposit payment submitted successfully');
     } catch (error) {
-      console.error('❌ Failed to process deposit payment:', error);
+      logger.error('❌ Failed to process deposit payment:', error);
       addSystemNotification('❌ Failed to process deposit payment. Please try again.');
     } finally {
       setIsProcessingDeposit(false);
@@ -1410,7 +1410,7 @@ export function PersistentChatWindow() {
         setTimeout(() => setMessageWarning(null), 5000);
       }
     } catch (error: unknown) {
-      const err = error as Error; console.error('Failed to send message:', err);
+      const err = error as Error; logger.error('Failed to send message:', err);
     } finally {
       setIsSending(false);
     }
@@ -1456,7 +1456,7 @@ export function PersistentChatWindow() {
   // ========================================================================
 
   const handleBookingExpire = (bookingId: string) => {
-    console.log('Booking expired:', bookingId);
+    logger.debug('Booking expired:', bookingId);
     addSystemNotification('⏰ Booking request expired due to timeout.');
   };
 
@@ -1494,8 +1494,8 @@ export function PersistentChatWindow() {
   }
 
   // 🔍 DEBUGGING: Log therapist data being displayed
-  console.log('🔍 PersistentChatWindow RENDER: therapist being displayed:', therapist?.name, therapist?.id);
-  console.log('🔍 PersistentChatWindow RENDER: chatState.therapist:', chatState.therapist?.name, chatState.therapist?.id);
+  logger.debug('🔍 PersistentChatWindow RENDER: therapist being displayed:', therapist?.name, therapist?.id);
+  logger.debug('🔍 PersistentChatWindow RENDER: chatState.therapist:', chatState.therapist?.name, chatState.therapist?.id);
 
   // Full chat window
   return (
@@ -1612,7 +1612,7 @@ export function PersistentChatWindow() {
           onClick={() => {
             // 🔒 SAFETY: Disable language switching during active booking
             if (chatState.currentBooking) {
-              console.warn('🔒 [UI LANGUAGE] Switching disabled during active booking');
+              logger.warn('🔒 [UI LANGUAGE] Switching disabled during active booking');
               alert('⚠️ Language switching is temporarily disabled during booking to prevent data loss.');
               return;
             }
@@ -1629,8 +1629,8 @@ export function PersistentChatWindow() {
             // Sync to HTML attribute
             document.documentElement.setAttribute('data-lang', newLang);
             
-            console.log('🌐 [UI LANGUAGE] Switched to:', newLang === 'id' ? 'Indonesian' : 'English');
-            console.log('💬 [MESSAGES] Stay in original language (NOT translated)');
+            logger.debug('🌐 [UI LANGUAGE] Switched to:', newLang === 'id' ? 'Indonesian' : 'English');
+            logger.debug('💬 [MESSAGES] Stay in original language (NOT translated)');
           }}
           id="language-selector" 
           data-gb="Bahasa|Language"
@@ -1773,9 +1773,9 @@ export function PersistentChatWindow() {
                   <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => {
-                        console.log('🔍 Current Form State:', customerForm);
-                        console.log('🔍 Current Chat State:', chatState);
-                        console.log('🔍 Full Error Object:', bookingError);
+                        logger.debug('🔍 Current Form State:', customerForm);
+                        logger.debug('🔍 Current Chat State:', chatState);
+                        logger.debug('🔍 Full Error Object:', bookingError);
                       }}
                       className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
                     >
@@ -1793,7 +1793,7 @@ export function PersistentChatWindow() {
                           alert('Complete error report copied to clipboard! 📋');
                         }).catch(() => {
                           alert('Error details logged to console');
-                          console.log('📋 Complete Error Report:', errorReport);
+                          logger.debug('📋 Complete Error Report:', errorReport);
                         });
                       }}
                       className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200"
@@ -1803,7 +1803,7 @@ export function PersistentChatWindow() {
                     <button
                       onClick={() => {
                         setBookingError(null);
-                        console.log('🧹 Error cleared from UI');
+                        logger.debug('🧹 Error cleared from UI');
                       }}
                       className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200"
                     >
@@ -1813,12 +1813,12 @@ export function PersistentChatWindow() {
                       onClick={async () => {
                         try {
                           const { runSystemDiagnostics, displayDiagnostics } = await import('../utils/chatDiagnostics');
-                          console.log('🔍 Running system diagnostics...');
+                          logger.debug('🔍 Running system diagnostics...');
                           const diagnostics = await runSystemDiagnostics();
                           displayDiagnostics(diagnostics);
                           alert(`Diagnostics complete! Check console for details.\nOverall status: ${diagnostics.overall}`);
                         } catch (error) {
-                          console.error('❌ Diagnostics failed:', error);
+                          logger.error('❌ Diagnostics failed:', error);
                           alert('Failed to run diagnostics. Check console for details.');
                         }
                       }}
@@ -3018,7 +3018,7 @@ export function PersistentChatWindow() {
                     }}
                     onConfirmBooking={confirmBooking}
                     onCancelBooking={cancelBooking}
-                    onRequestLocation={() => console.log('Request location')}
+                    onRequestLocation={() => logger.debug('Request location')}
                     onContactTherapist={() => window.open(`tel:${therapist.phone}`)}
                   />
                 )}
@@ -3044,7 +3044,7 @@ export function PersistentChatWindow() {
                       if (method === 'whatsapp') window.open(`https://wa.me/${therapist.whatsApp}`);
                       if (method === 'chat') setBookingStep('chat');
                     }}
-                    onUpdateLocation={() => console.log('Update location')}
+                    onUpdateLocation={() => logger.debug('Update location')}
                   />
                 )}
 
@@ -3064,10 +3064,10 @@ export function PersistentChatWindow() {
                       arrivedAt: new Date().toISOString(),
                       location: chatState.currentBooking.locationZone
                     }}
-                    onStartService={() => console.log('Start service')}
+                    onStartService={() => logger.debug('Start service')}
                     onContactTherapist={() => window.open(`tel:${therapist.phone}`)}
                     onEmergencyContact={() => window.open('tel:911')}
-                    onConfirmPaymentMethod={(method) => console.log('Payment method:', method)}
+                    onConfirmPaymentMethod={(method) => logger.debug('Payment method:', method)}
                   />
                 )}
 
