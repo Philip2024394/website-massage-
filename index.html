@@ -648,11 +648,42 @@
     <!-- CACHE BUSTER: 2024-10-31-10:05:00 -->
     <script type="module" src="/src/index.tsx?v=20241031100500"></script>
     <script>
+      // 🔥🔥🔥 TEMPORARY P0 FIX: Force-kill all service workers to fix stuck loading issue
+      // Remove this after 48 hours once all users have received new build
+      // Date activated: February 8, 2026
+      if ('serviceWorker' in navigator) {
+        console.log('🔥 [P0 FIX] Force-killing all service workers...');
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((reg) => {
+            reg.unregister();
+            console.log('🧹 [P0 FIX] Unregistered service worker:', reg.scope);
+          });
+        }).catch((err) => {
+          console.error('❌ [P0 FIX] Failed to unregister service workers:', err);
+        });
+        
+        // Clear all caches
+        if ('caches' in window) {
+          caches.keys().then((names) => {
+            names.forEach(name => {
+              caches.delete(name);
+              console.log('🧹 [P0 FIX] Deleted cache:', name);
+            });
+          });
+        }
+      }
+      
+      // 🆔 App version tracking for cache busting
+      window.APP_VERSION = '2026.02.08.001';
+      window.BUILD_TIMESTAMP = Date.now();
+      console.log('🆔 App Version:', window.APP_VERSION);
+      
       // Note: All console errors will now display naturally as per system honesty requirements
       // This includes 401/501 authentication errors which are expected when not logged in
       
-      // 📱 PWA SERVICE WORKER: Disabled on localhost to avoid dev cache issues
-      if ('serviceWorker' in navigator) {
+      // 📱 PWA SERVICE WORKER: Disabled temporarily for P0 fix
+      // TODO: Re-enable after confirming all users received new build (after Feb 10, 2026)
+      if (false && 'serviceWorker' in navigator) {
         const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
         if (isLocal) {

@@ -11,7 +11,18 @@
 
 import { databases } from '../appwrite';
 import { Query } from 'appwrite';
-import type { TherapistMenu, ShareLink } from '../../types';
+import type { ShareLink } from './shareLinkService';
+
+// Define TherapistMenu interface locally since types export has issues
+interface TherapistMenu {
+  $id?: string;
+  therapistId: string;
+  services?: any[];
+  pricing?: Record<string, number>;
+  $createdAt?: string;
+  $updatedAt?: string;
+  [key: string]: any;
+}
 
 const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const THERAPIST_MENUS_COLLECTION_ID = import.meta.env.VITE_THERAPIST_MENUS_COLLECTION_ID;

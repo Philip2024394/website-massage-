@@ -895,4 +895,74 @@ export interface UserCoins {
     topProviderCoins?: number;
 }
 
+export interface BookingData {
+  id?: string;
+  $id?: string;
+  bookingId: string;
+  documentId?: string;
+  status?: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'waiting_others' | 'therapist_accepted' | 'user_confirmed' | 'on_the_way' | 'payment_pending' | 'payment_received' | 'expired';
+  lifecycleStatus?: string;
+  
+  // Provider info
+  therapistId?: string;
+  therapistName?: string;
+  businessId?: string;
+  businessName?: string;
+  providerId?: string;
+  providerName?: string;
+  providerType?: 'therapist' | 'place' | 'facial';
+  
+  // Customer info
+  customerId?: string;
+  customerName: string;
+  customerPhone?: string;
+  customerWhatsApp?: string;
+  
+  // Service details
+  serviceType?: string;
+  service?: string;
+  duration: '60' | '90' | '120' | number;
+  locationZone?: string;
+  location?: string;
+  address?: string;
+  locationType?: 'home' | 'hotel' | 'villa';
+  roomNumber?: string;
+  coordinates?: [number, number] | { lat: number; lng: number };
+  
+  // Booking type and pricing
+  bookingType?: string;
+  price?: number;
+  totalPrice?: number;
+  adminCommission?: number;
+  providerPayout?: number;
+  originalPrice?: number;
+  discountedPrice?: number;
+  
+  // Discount
+  discountCode?: string;
+  discountPercentage?: number;
+  
+  // Timestamps
+  startTime?: string;
+  createdAt?: string;
+  pendingAt?: string;
+  responseDeadline?: string;
+  acceptedAt?: string;
+  confirmedAt?: string;
+  completedAt?: string;
+  declinedAt?: string;
+  expiredAt?: string;
+  
+  // Schedule
+  scheduledDate?: string;
+  scheduledTime?: string;
+  
+  // Legacy fields
+  therapistAcceptedAt?: string;
+  userConfirmedAt?: string;
+  therapistOnTheWayAt?: string;
+  paymentMethod?: 'cash' | 'bank_transfer';
+  paymentStatus?: 'pending' | 'transferred' | 'received';
+}
+
 

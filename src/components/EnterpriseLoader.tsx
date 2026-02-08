@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLoading } from '../context/LoadingContext';
 import { SkeletonLoader, PageSkeleton } from './ui/SkeletonLoader';
 
@@ -32,6 +32,26 @@ export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
   pageVariant = 'generic'
 }) => {
   const { loading, progress, canShowContent, isCriticalLoading, getComponentLoading } = useLoading();
+  const [hasTimeout, setHasTimeout] = useState(false);
+  const [showErrorUI, setShowErrorUI] = useState(false);
+  
+  // 🔥 P0 FIX: Fail-safe timeout - loader must NEVER be infinite
+  useEffect(() => {
+    if (variant === 'global' && loading.global) {
+      console.log('⏱️ [FAIL-SAFE] Starting 8-second timeout for global loader');
+      
+      const timeoutId = setTimeout(() => {
+        console.error('🚨 [FAIL-SAFE] Global loader timeout after 8 seconds!');
+        console.error('🚨 [FAIL-SAFE] Loading state:', { loading, progress });
+        console.error('🚨 [FAIL-SAFE] This indicates a blocking error during app bootstrap');
+        console.error('🚨 [FAIL-SAFE] Check console for errors above');
+        setHasTimeout(true);
+        setShowErrorUI(true);
+      }, 8000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [variant, loading.global, loading, progress]);
 
   const shouldShowLoading = () => {
     switch (variant) {
@@ -49,6 +69,57 @@ export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
   };
 
   const isLoading = shouldShowLoading();
+  
+  // 🔥 P0 FIX: Show error UI if timeout occurred
+  if (showErrorUI && variant === 'global') {
+    return (
+      <div 
+        className="fixed inset-0 flex flex-col items-center justify-center z-50 bg-red-500 px-4"
+        role="alert"
+        aria-live="assertive"
+      >
+        <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
+          <div className="text-center mb-4">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">App Loading Failed</h2>
+            <p className="text-gray-600 mb-4">
+              The app is taking too long to start. This usually means:
+            </p>
+            <ul className="text-left text-gray-600 space-y-2 mb-6">
+              <li>• Network connection issue</li>
+              <li>• Server is temporarily unavailable</li>
+              <li>• Old cached version conflict</li>
+            </ul>
+          </div>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-600 transition"
+            >
+              🔄 Reload Page
+            </button>
+            
+            <button
+              onClick={() => {
+                // Clear all storage and reload
+                sessionStorage.clear();
+                localStorage.clear();
+                window.location.reload();
+              }}
+              className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition"
+            >
+              🧹 Clear Cache & Reload
+            </button>
+          </div>
+          
+          <p className="text-xs text-gray-500 mt-4 text-center">
+            Version: {(window as any).APP_VERSION || 'unknown'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // For global loading - show full screen loading with brand
   if (variant === 'global' && isLoading) {

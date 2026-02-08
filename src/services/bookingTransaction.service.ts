@@ -431,7 +431,7 @@ async function confirmBookingState(
       timerPhase: 'THERAPIST_RESPONSE' as TimerPhase
     };
     
-    console.log('✅ [CONFIRM] Booking state confirmed:', booking.bookingId);
+    console.log('✅ [CONFIRM] Booking state confirmed:', booking.bookingId!);
     
     return { success: true, data: committedState };
     
