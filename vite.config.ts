@@ -217,100 +217,30 @@ export default defineConfig({
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]',
         
-        // 🚀 INDONESIA OPTIMIZATION: Aggressive code splitting for 3G/weak 4G
+        // 🚀 SIMPLIFIED CHUNKING: Reduce circular dependencies
         manualChunks: (id) => {
-          // Critical path optimization for slow networks
-          
-          // Priority 1: Critical React core (minimal, loads first)
+          // Only split stable vendor code to avoid circular dependencies
           if (id.includes('node_modules')) {
+            // Priority 1: Critical React core
             if (id.includes('react/') || id.includes('react-dom/') || id.includes('scheduler')) {
               return 'vendor-react';
             }
             
-            // Priority 2: Appwrite SDK (API calls)
+            // Priority 2: Appwrite SDK
             if (id.includes('appwrite')) {
               return 'vendor-appwrite';
             }
             
-            // Priority 3: Router (needed for SPA)
-            if (id.includes('react-router-dom')) {
-              return 'vendor-router';
-            }
-            
-            // Priority 4: Icons (lazy load, not critical)
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            
-            // Priority 5: UI libraries (lazy load)
-            if (id.includes('framer-motion') || id.includes('react-hot-toast')) {
+            // Priority 3: UI libraries
+            if (id.includes('lucide-react') || id.includes('framer-motion') || id.includes('react-hot-toast')) {
               return 'vendor-ui';
             }
             
-            // Priority 6: All other vendor code (deferred)
+            // Priority 4: All other vendor code
             return 'vendor-misc';
           }
           
-          // 🎯 CRITICAL PATH: Core app functionality (< 100KB)
-          if (id.includes('lib/appwrite') || id.includes('context/') || id.includes('App.tsx')) {
-            return 'core-app';
-          }
-          
-          // 🏠 HOME PAGE: Split into smaller chunks for faster TTI
-          if (id.includes('pages/HomePage')) {
-            return 'page-home';
-          }
-          
-          if (id.includes('components/TherapistHomeCard') || 
-              id.includes('components/MassagePlaceHomeCard') ||
-              id.includes('components/FacialPlaceHomeCard')) {
-            return 'components-home-cards';
-          }
-          
-          // 💬 CHAT: Heavy component, load only when needed
-          if (id.includes('PersistentChatWindow') || id.includes('chat/')) {
-            return 'feature-chat';
-          }
-          
-          // 🔐 AUTH: Separate chunk for login/register
-          if (id.includes('pages/auth/') || id.includes('AuthPage')) {
-            return 'pages-auth';
-          }
-          
-          // 📊 DASHBOARDS: Heavy, rarely accessed on mobile
-          if (id.includes('Dashboard') && !id.includes('node_modules')) {
-            if (id.includes('therapist')) return 'dashboard-therapist';
-            if (id.includes('place')) return 'dashboard-place';
-            if (id.includes('admin')) return 'dashboard-admin';
-            return 'dashboard-misc';
-          }
-          
-          // 📸 MEDIA: Images, videos, heavy UI
-          if (id.includes('ImageUpload') || id.includes('VideoPlayer') || id.includes('Gallery')) {
-            return 'feature-media';
-          }
-          
-          // 📋 FORMS: Booking forms, profile editors
-          if (id.includes('BookingForm') || id.includes('ProfileEditor')) {
-            return 'feature-forms';
-          }
-          
-          // 🗺️ MAPS: Google Maps (heavy!)
-          if (id.includes('GoogleMap') || id.includes('maps')) {
-            return 'feature-maps';
-          }
-          
-          // 💼 JOBS: Rarely accessed
-          if (id.includes('Job') && !id.includes('node_modules')) {
-            return 'pages-jobs';
-          }
-          
-          // 📄 OTHER PAGES: Blog, legal, etc.
-          if (id.includes('pages/') && !id.includes('HomePage')) {
-            return 'pages-misc';
-          }
-          
-          // Default: Small utilities stay in main bundle
+          // Let Vite automatically split the rest to avoid circular dependencies
           return undefined;
         },
       },
