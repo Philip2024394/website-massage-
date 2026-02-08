@@ -9,6 +9,7 @@ import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { Share2 } from 'lucide-react';
 import SafePassModal from './modals/SafePassModal';
+import { logger } from '../utils/logger';
 
 interface MassagePlaceHomeCardProps {
     place: Place;
@@ -61,7 +62,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                 const count = await bookingService.getBookingsCount(placeId, 'place');
                 setBookingsCount(count);
             } catch (error) {
-                console.error('Failed to load bookings count:', error);
+                logger.error('Failed to load bookings count:', error);
             }
         };
 
@@ -86,7 +87,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                     setShortShareUrl(fullUrl);
                 }
             } catch (error) {
-                console.error('Error generating share URL:', error);
+                logger.error('Error generating share URL:', error);
                 // Fallback to regular URL
                 const fullUrl = `https://www.indastreetmassage.com/place/${place.name?.replace(/\\s+/g, '-').toLowerCase()}`;
                 setShortShareUrl(fullUrl);
@@ -372,7 +373,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                             : [];
                         
                         // Debug logging
-                        console.log('🏠 MassagePlaceHomeCard languages debug:', {
+                        logger.debug('🏠 MassagePlaceHomeCard languages debug:', {
                             placeName: place.name,
                             languagesValue,
                             parsedLanguages: languages,
@@ -524,7 +525,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                 <button 
                     onClick={(e) => {
                         e.stopPropagation(); // Prevent card onClick from firing
-                        console.log('🔵 MASSAGE PLACE VIEW PROFILE CLICKED:', {
+                        logger.debug('🔵 MASSAGE PLACE VIEW PROFILE CLICKED:', {
                             placeId: place.id || place.$id,
                             placeName: place.name,
                             readOnly

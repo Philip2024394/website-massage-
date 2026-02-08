@@ -7,18 +7,19 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { pwaInstallStatePreservationService } from '../services/pwaInstallStatePreservation.service';
 import { appwriteConnectionHealthMonitor } from '../services/appwriteConnectionHealthMonitor.service';
 import type { ConnectionHealthStatus } from '../services/appwriteConnectionHealthMonitor.service';
+import { logger } from '../utils/logger';
 
 // Simple toast implementation since sonner may not be available
 const toast = {
   success: (title: string, options?: { description?: string; duration?: number }) => {
-    console.log(`✅ ${title}${options?.description ? ': ' + options.description : ''}`);
+    logger.info(`✅ ${title}${options?.description ? ': ' + options.description : ''}`);
     // Could implement custom toast UI here
   },
   error: (title: string, options?: { description?: string; duration?: number; action?: any }) => {
-    console.error(`❌ ${title}${options?.description ? ': ' + options.description : ''}`);
+    logger.error(`❌ ${title}${options?.description ? ': ' + options.description : ''}`);
   },
   warning: (title: string, options?: { description?: string; duration?: number }) => {
-    console.warn(`⚠️ ${title}${options?.description ? ': ' + options.description : ''}`);
+    logger.warn(`⚠️ ${title}${options?.description ? ': ' + options.description : ''}`);
   }
 };
 
@@ -51,14 +52,14 @@ export const PWAStateManager: React.FC<PWAStateManagerProps> = ({ children, onSt
    * Initialize PWA state preservation and connection monitoring
    */
   useEffect(() => {
-    console.log('🔧 Initializing PWA state manager...');
+    logger.debug('🔧 Initializing PWA state manager...');
 
     // Check for preserved state on component mount
     const checkForRestoredState = async () => {
       try {
         const restoredState = pwaInstallStatePreservationService.restoreChatState();
         if (restoredState && onStateRestored) {
-          console.log('✅ PWA state restored:', restoredState);
+          logger.debug('✅ PWA state restored:', restoredState);
           onStateRestored(restoredState);
           
           // Show user notification
@@ -68,7 +69,7 @@ export const PWAStateManager: React.FC<PWAStateManagerProps> = ({ children, onSt
           });
         }
       } catch (error) {
-        console.warn('⚠️ Failed to restore PWA state:', error);
+        logger.warn('⚠️ Failed to restore PWA state:', error);
       }
     };
 
@@ -77,9 +78,9 @@ export const PWAStateManager: React.FC<PWAStateManagerProps> = ({ children, onSt
       try {
         appwriteConnectionHealthMonitor.startMonitoring();
         setIsMonitoring(true);
-        console.log('✅ Connection health monitoring started');
+        logger.debug('✅ Connection health monitoring started');
       } catch (error) {
-        console.error('❌ Failed to start health monitoring:', error);
+        logger.error('❌ Failed to start health monitoring:', error);
       }
     };
 
@@ -88,20 +89,20 @@ export const PWAStateManager: React.FC<PWAStateManagerProps> = ({ children, onSt
 
     // Listen for PWA installation events
     const handleBeforeInstallPrompt = (e: Event) => {
-      console.log('📱 PWA installation prompt detected');
+      logger.debug('📱 PWA installation prompt detected');
       e.preventDefault();
       
       // Preserve current chat state before installation
       const currentState = getCurrentChatState();
       if (currentState) {
         pwaInstallStatePreservationService.preserveChatState(currentState);
-        console.log('💾 Chat state preserved for PWA installation');
+        logger.debug('💾 Chat state preserved for PWA installation');
       }
     };
 
     // Listen for successful PWA installation
     const handleAppInstalled = () => {
-      console.log('✅ PWA installed successfully');
+      logger.debug('✅ PWA installed successfully');
       toast.success('App Installed', {
         description: 'The app is now installed and your chat is preserved.',
         duration: 5000
@@ -194,7 +195,7 @@ export const PWAStateManager: React.FC<PWAStateManagerProps> = ({ children, onSt
 
       return chatData;
     } catch (error) {
-      console.warn('⚠️ Failed to extract chat state:', error);
+      logger.warn('⚠️ Failed to extract chat state:', error);
       return null;
     }
   }, [connectionStatus]);

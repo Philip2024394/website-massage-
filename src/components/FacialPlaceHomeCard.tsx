@@ -8,6 +8,7 @@ import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { Share2 } from 'lucide-react';
+import { logger } from '../utils/logger';
 
 interface FacialPlaceHomeCardProps {
     place: Place;
@@ -83,7 +84,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                     setShortShareUrl(fullUrl);
                 }
             } catch (error) {
-                console.error('Error generating share URL:', error);
+                logger.error('Error generating share URL:', error);
                 // Fallback to regular URL
                 const fullUrl = `https://www.indastreetmassage.com/facial/${place.name?.replace(/\\s+/g, '-').toLowerCase()}`;
                 setShortShareUrl(fullUrl);
@@ -301,7 +302,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                             : [];
                         
                         // Debug logging
-                        console.log('🏠 FacialPlaceHomeCard languages debug:', {
+                        logger.debug('🏠 FacialPlaceHomeCard languages debug:', {
                             placeName: place.name,
                             languagesValue,
                             parsedLanguages: languages,
@@ -468,7 +469,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                         if (typeof onClick === 'function') {
                             onClick(place);
                         } else {
-                            console.error('onClick is not a function in FacialPlaceHomeCard');
+                            logger.error('onClick is not a function in FacialPlaceHomeCard');
                         }
                     }}
                     className="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center gap-2"
