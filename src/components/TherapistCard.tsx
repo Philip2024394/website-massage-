@@ -845,10 +845,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // Get main image from therapist data - MATCH TopTherapistsPage priority order
     // Priority: profilePicture > profileImageUrl > profileImage > mainImage
-    const mainImage = (therapist as any).profilePicture || 
-                      (therapist as any).profileImageUrl || 
-                      therapist.profileImage || 
-                      (therapist as any).mainImage;
+    // Skip data: base64 URLs (match TopTherapistsPage validation)
+    const profilePicture = (therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null;
+    const profileImageUrl = (therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null;
+    const profileImage = therapist.profileImage && !therapist.profileImage.startsWith('data:') ? therapist.profileImage : null;
+    const mainImageRaw = (therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null;
+    
+    const mainImage = profilePicture || profileImageUrl || profileImage || mainImageRaw;
     
     // Use therapist's image or shared profile image pool (better than gray placeholders)
     const displayImage = mainImage || getRandomSharedProfileImage();
@@ -859,12 +862,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     console.log('%c🖼️ [TherapistCard] Image Debug', 'background: #9C27B0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
     console.log('Therapist:', therapist.name);
-    console.log('mainImage:', (therapist as any).mainImage || 'NOT SET');
-    console.log('mainImage Value:', (therapist as any).mainImage);
-    console.log('profileImage:', therapist.profileImage || 'NOT SET');
+    console.log('profilePicture (1st priority):', (therapist as any).profilePicture || 'NOT SET', profilePicture ? '✅ VALID' : '❌ INVALID/EMPTY');
+    console.log('profileImageUrl (2nd priority):', (therapist as any).profileImageUrl || 'NOT SET', profileImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
+    console.log('profileImage (3rd priority):', therapist.profileImage || 'NOT SET', profileImage ? '✅ VALID' : '❌ INVALID/EMPTY');
+    console.log('mainImage (4th priority):', (therapist as any).mainImage || 'NOT SET', mainImageRaw ? '✅ VALID' : '❌ INVALID/EMPTY');
+    console.log('Selected mainImage:', mainImage || 'NONE - using fallback');
     console.log('Final displayImage:', displayImage);
     console.log('displayImage TYPE:', typeof displayImage);
-    console.log('Using fallback?', !mainImage ? 'YES (SharedProfile pool)' : 'NO');
+    console.log('Using fallback?', !mainImage ? '✅ YES (SharedProfile pool)' : '❌ NO');
     console.log('Is Valid URL?', isValidUrl ? '✅ YES' : '❌ NO');
     console.log('Is SVG Placeholder?', isSvgPlaceholder ? '⚠️ YES (GRAY BOX)' : '✅ NO');
     console.log('Display Image Length:', displayImage?.length || 0);
