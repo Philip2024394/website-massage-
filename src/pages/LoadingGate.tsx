@@ -1,3 +1,25 @@
+/**
+ * 🔴 PRODUCTION-CRITICAL — DO NOT MODIFY
+ *
+ * This file controls the initial app load and loading page.
+ * Previously caused full app crashes and blank screens.
+ * Current behavior is STABLE and MUST NOT CHANGE.
+ *
+ * ALLOWED:
+ * - Read user location
+ * - Allow city selection (slider/manual)
+ * - Save selected location to state/storage
+ *
+ * FORBIDDEN:
+ * - Changing render flow
+ * - Adding async blocking logic
+ * - Adding new effects, polling, or refactors
+ * - Adding API or DB calls
+ *
+ * If this file breaks, the app does not load.
+ * Stability > Features > Refactors.
+ */
+
 import { useEffect } from "react";
 
 /**

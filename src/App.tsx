@@ -1,3 +1,25 @@
+/**
+ * 🔴 PRODUCTION-CRITICAL — DO NOT MODIFY BOOTSTRAP SECTION
+ *
+ * This file controls the initial app bootstrap and initialization.
+ * Previously caused full app crashes and blank screens.
+ * Current behavior is STABLE and MUST NOT CHANGE.
+ *
+ * ALLOWED:
+ * - Read user location
+ * - Allow city selection (slider/manual)
+ * - Save selected location to state/storage
+ *
+ * FORBIDDEN:
+ * - Changing render flow or initialization order
+ * - Adding async blocking logic in bootstrap
+ * - Adding new effects, polling, or refactors
+ * - Adding API or DB calls before render
+ *
+ * If bootstrap breaks, the app does not load.
+ * Stability > Features > Refactors.
+ */
+
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 /**
  * ⚠️ WARNING

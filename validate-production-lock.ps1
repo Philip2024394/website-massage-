@@ -54,15 +54,12 @@ if ($violatedFiles.Count -gt 0) {
     Write-Host ""
     Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
     
-    # Return error code but don't block (informational only)
-    # To make this blocking, uncomment the line below:
-    # exit 1
-    
+    # 🔒 BLOCKING MODE: Prevent commit of locked files
     Write-Host ""
-    Write-Host "⚠️  Proceeding with commit, but owner review required!" -ForegroundColor Yellow
+    Write-Host "🚫 COMMIT BLOCKED - Production lock violation" -ForegroundColor Red
     Write-Host ""
     
-    exit 0  # Allow commit but with warning
+    exit 1  # Block commit
     
 } else {
     Write-Host "✅ No production-locked files modified. Safe to commit." -ForegroundColor Green
