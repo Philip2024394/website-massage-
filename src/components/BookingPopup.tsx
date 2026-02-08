@@ -19,6 +19,7 @@ import { translations } from '../translations';
 import { createChatRoom, sendSystemMessage } from '../lib/chatService';
 import { showToast } from '../utils/showToastPortal';
 import { useChatProvider } from '../hooks/useChatProvider';
+import { logger } from '../utils/logger';
 import { 
   validateBookingPayload, 
   validateUserInput,
@@ -140,7 +141,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
 
   const createBookingRecord = async () => {
     if (!selectedDuration) {
-      console.warn('⚠️ No duration selected');
+      logger.warn('No duration selected');
       showToast('Please select a service duration', 'error');
       return;
     }
@@ -172,8 +173,8 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       }
     }
 
-    console.log('🚀 Starting booking creation process...');
-    console.log(`📍 Booking source: ${bookingSource}${initialDuration ? ` | Pre-selected duration: ${initialDuration}min` : ''}`);
+    logger.info('Starting booking creation process');
+    logger.debug('Booking source', { bookingSource, initialDuration });
 
     try {
       setIsCreating(true);
@@ -184,13 +185,13 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       const authResult = await ensureAuthSession('booking creation');
       
       if (!authResult.success) {
-        console.error('❌ Cannot create booking without authentication');
+        logger.error('Cannot create booking without authentication');
         alert('Unable to authenticate. Please try again.');
         setIsCreating(false);
         return;
       }
       
-      console.log(`✅ Authentication confirmed for booking (userId: ${authResult.userId})`);
+      logger.info('Authentication confirmed for booking', { userId: authResult.userId });
 
       // If booking a place (venue), ensure current time is within opening hours
       const isPlace = (providerType || 'therapist') === 'place';
@@ -220,7 +221,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
             }
           }
         } catch (e) {
-          console.warn('Could not validate venue opening hours:', e);
+          logger.warn('Could not validate venue opening hours', e);
           // Continue; do not block booking if hours cannot be fetched
         }
       }
@@ -312,11 +313,11 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         }
       });
 
-      console.log('[FINAL_BOOKING_PAYLOAD]', JSON.stringify(bookingData, null, 2));
+      logger.debug('[FINAL_BOOKING_PAYLOAD]', { payload: bookingData });
       logPayload(bookingData);
 
       // ===== 🚀 ENTERPRISE BOOKING FLOW INTEGRATION =====
-      console.log('🏢 [ENTERPRISE] Initiating enterprise booking flow...');
+      logger.info('[ENTERPRISE] Initiating enterprise booking flow');
       
       try {
         // Create enterprise booking request with proper data structure
@@ -350,7 +351,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
           urgency: 'normal'
         });
         
-        console.log(`✅ [ENTERPRISE] Booking flow initiated: ${enterpriseBookingId}`);
+        logger.info('[ENTERPRISE] Booking flow initiated', { enterpriseBookingId });
         
         // The enterprise system will:
         // 1. Assign to therapist with 5-minute timer
@@ -360,18 +361,18 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         // 5. Create WhatsApp-free chat room
         
       } catch (enterpriseError) {
-        console.warn('⚠️ [ENTERPRISE] Enterprise booking failed, continuing with legacy flow:', enterpriseError);
+        logger.warn('[ENTERPRISE] Enterprise booking failed, continuing with legacy flow', enterpriseError);
         // Don't block the booking if enterprise system fails
       }
       
-      console.log('📤 STEP 1: Creating immediate booking with validated data');
+      logger.debug('STEP 1: Creating immediate booking with validated data');
 
       // Enforce Appwrite as single source of truth
       if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
         throw new Error('Bookings collection not configured - cannot create booking');
       }
       
-      console.log('🔥 STEP 2: Creating booking via appwriteBookingService...');
+      logger.debug('STEP 2: Creating booking via appwriteBookingService');
       
       // Prepare booking data for the service (map rawBookingData to service expected format)
       const serviceBookingData = {
@@ -399,7 +400,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       const { appwriteBookingService } = await import('../lib/appwrite/services/booking.service.appwrite');
       const booking = await appwriteBookingService.createBooking(serviceBookingData);
 
-      console.log('✅ STEP 2 COMPLETE: Booking created successfully:', booking.$id);
+      logger.info('STEP 2 COMPLETE: Booking created successfully', { bookingId: booking.$id });
 
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
       
@@ -449,12 +450,12 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       // All communication happens through platform chat system
       
       // Show success message before creating chat room
-      console.log('✅ Booking created successfully, creating chat room...');
+      logger.info('Booking created successfully, creating chat room');
 
       // 🔥 CHAT FLOW RESTORATION: Create chat room and open chat window
       try {
         // Create chat room for the booking
-        console.log('🔥 STEP 3: Creating chat room for immediate booking...');
+        logger.debug('STEP 3: Creating chat room for immediate booking');
         
         const expiresAt = new Date();
         expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5 minutes for response
@@ -473,7 +474,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
           expiresAt: expiresAt.toISOString()
         });
         
-        console.log('✅ STEP 3 COMPLETE: Chat room created:', chatRoom.$id);
+        logger.info('STEP 3 COMPLETE: Chat room created', { chatRoomId: chatRoom.$id });
         
         // ✅ FIX: Validate chat room creation before proceeding
         if (!chatRoom || !chatRoom.$id) {
@@ -481,7 +482,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         }
         
         // 🔒 STEP 3.5: Update booking and chat room for location verification
-        console.log('🔒 STEP 3.5: Setting up location verification requirement...');
+        logger.debug('STEP 3.5: Setting up location verification requirement');
         try {
           await databases.updateDocument(
             APPWRITE_CONFIG.databaseId,
@@ -502,14 +503,14 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
             }
           );
           
-          console.log('✅ STEP 3.5 COMPLETE: Location verification enabled');
+          logger.info('STEP 3.5 COMPLETE: Location verification enabled');
         } catch (locationSetupError) {
-          console.error('⚠️ Non-critical: Failed to set location requirement:', locationSetupError);
+          logger.error('Non-critical: Failed to set location requirement', locationSetupError);
           // Continue - this is not a blocking error
         }
         
         // Create booking confirmation system message
-        console.log('🔥 STEP 4: Creating system message...');
+        logger.debug('STEP 4: Creating system message');
         const serviceType = providerType === 'place' && therapistName.toLowerCase().includes('facial') 
           ? 'facial treatment' 
           : 'massage';
@@ -533,28 +534,28 @@ ${
 ⚠️ WARNING: You have 5 minutes to respond. If no response, booking will be sent to all available providers.`;
 
         // Send system message to chat room
-        console.log('🔥 STEP 5: Sending system message to chat room...');
+        logger.debug('STEP 5: Sending system message to chat room');
         if (chatRoom?.$id) {
           await sendSystemMessage(chatRoom.$id, { en: systemMessage, id: systemMessage }, therapistId, null as any /* user?.id - user undefined */);
-          console.log('✅ STEP 5 COMPLETE: System message sent successfully');
+          logger.info('STEP 5 COMPLETE: System message sent successfully');
         } else {
-          console.error('❌ STEP 5 FAILED: Chat room ID is null');
+          logger.error('STEP 5 FAILED: Chat room ID is null');
         }
         
         // Show success toast
         showToast('✅ Booking created! Opening chat...', 'success');
         
         // 🔥 STEP 6: Open integrated booking-chat flow
-        console.log('🎪 [BOOKING→CHAT] Opening integrated booking-chat flow...');
-        console.log('📡 [MAIN→DASHBOARD] Booking notification sent to therapist dashboard');
+        logger.info('[BOOKING→CHAT] Opening integrated booking-chat flow');
+        logger.debug('[MAIN→DASHBOARD] Booking notification sent to therapist dashboard');
         
         // ✅ FIX: Validate required fields before opening chat
         if (!chatRoom.$id) {
-          console.error('❌ STEP 6 FAILED: Cannot open chat - missing chatRoom.$id');
+          logger.error('STEP 6 FAILED: Cannot open chat - missing chatRoom.$id');
           return;
         }
         
-        console.log('🔄 [INTEGRATION STATUS] Opening chat with booking context:', {
+        logger.debug('[INTEGRATION STATUS] Opening chat with booking context', {
           chatRoomId: chatRoom.$id,
           bookingId: booking.$id,
           therapistId: therapistId.toString(),
@@ -578,14 +579,14 @@ ${
         });
         
         if (chatOpened) {
-          console.log('✅ STEP 6: Chat opened via ChatProvider successfully');
+          logger.info('STEP 6: Chat opened via ChatProvider successfully');
         } else {
-          console.warn('⚠️ STEP 6: ChatProvider failed to open chat');
+          logger.warn('STEP 6: ChatProvider failed to open chat');
         }
         
       } catch (chatError: any) {
-        console.error('❌ Error creating chat room:', chatError);
-        console.error('Chat error details:', {
+        logger.error('Error creating chat room', chatError);
+        logger.error('Chat error details', {
           message: chatError.message,
           code: chatError.code,
           type: chatError.type
@@ -611,8 +612,8 @@ ${
       }, 1000);
 
     } catch (error: any) {
-      console.error('❌ Error creating booking:', error);
-      console.error('Error details:', {
+      logger.error('Error creating booking', error);
+      logger.error('Error details', {
         message: error.message,
         code: error.code,
         type: error.type,
@@ -646,7 +647,7 @@ ${
   
   // CRITICAL FIX: Defensive checks to prevent white screen
   if (!therapistId || !therapistName) {
-    console.warn('⚠️ BookingPopup rendered without required data:', { therapistId, therapistName });
+    logger.warn('BookingPopup rendered without required data', { therapistId, therapistName });
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
         <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6">
