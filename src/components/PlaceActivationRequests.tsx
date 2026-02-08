@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Clock, MapPin, Mail, Calendar } from 'lucide-react';
 import { notificationService } from '../lib/appwriteService';
+import { logger } from '../utils/logger';
 
 interface PlaceActivationNotification {
     $id: string;
@@ -43,9 +44,9 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
             );
             
             setNotifications(placeRequests);
-            console.log('📬 Loaded place activation requests:', placeRequests.length);
+            logger.debug('📬 Loaded place activation requests:', placeRequests.length);
         } catch (error) {
-            console.error('❌ Failed to load place activation requests:', error);
+            logger.error('❌ Failed to load place activation requests:', error);
         } finally {
             setIsLoading(false);
         }
@@ -69,7 +70,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
             // Remove from the list
             setNotifications(prev => prev.filter(n => n.$id !== notification.$id));
             
-            console.log('✅ Approved massage place:', notification.data.placeName);
+            logger.debug('✅ Approved massage place:', notification.data.placeName);
             
             // Create a success notification for the place owner
             await notificationService.create({
@@ -87,7 +88,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
             
             onRefresh?.();
         } catch (error) {
-            console.error('❌ Failed to approve place:', error);
+            logger.error('❌ Failed to approve place:', error);
             alert('Failed to approve place. Please try again.');
         } finally {
             setProcessing(null);
@@ -112,7 +113,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
             // Remove from the list
             setNotifications(prev => prev.filter(n => n.$id !== notification.$id));
             
-            console.log('❌ Rejected massage place:', notification.data.placeName);
+            logger.debug('❌ Rejected massage place:', notification.data.placeName);
             
             // Create a notification for the place owner
             await notificationService.create({
@@ -131,7 +132,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
             
             onRefresh?.();
         } catch (error) {
-            console.error('❌ Failed to reject place:', error);
+            logger.error('❌ Failed to reject place:', error);
             alert('Failed to reject place. Please try again.');
         } finally {
             setProcessing(null);

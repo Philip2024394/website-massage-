@@ -25,6 +25,7 @@ import {
   type DiscountPercentage,
   type ValidityPeriod
 } from '../lib/services/discountRewardService';
+import { logger } from '../utils/logger';
 
 interface SendDiscountModalProps {
   isOpen: boolean;
@@ -99,7 +100,7 @@ const SendDiscountModal: React.FC<SendDiscountModalProps> = ({
         }, 3000);
       }
     } catch (error) {
-      console.error('Failed to send discount:', error);
+      logger.error('Failed to send discount:', error);
       setResult({
         success: false,
         message: 'Network error. Please try again.'
