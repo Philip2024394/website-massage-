@@ -15,6 +15,38 @@ const _isAdminMode = process.env.VITE_PORT === '3004' || process.argv.includes('
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  resolve: {
+    dedupe: ['react', 'react-dom'], // 🔒 CRITICAL: Prevent "R is undefined" errors
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@/components': path.resolve(__dirname, './src/components'),
+      '@/lib': path.resolve(__dirname, './src/lib'),
+      '@/services': path.resolve(__dirname, './src/services'),
+      '@/utils': path.resolve(__dirname, './src/utils'),
+      '@/hooks': path.resolve(__dirname, './src/hooks'),
+      '@/types': path.resolve(__dirname, './src/types'),
+      '@/context': path.resolve(__dirname, './src/context'),
+      '@/pages': path.resolve(__dirname, './src/pages'),
+      '@/constants': path.resolve(__dirname, './src/constants'),
+      '@/config': path.resolve(__dirname, './src/config'),
+      '@/shared': path.resolve(__dirname, './src/shared'),
+      '@/apps': path.resolve(__dirname, './src/apps'),
+      '@/admin': path.resolve(__dirname, './src/apps/admin'),
+      '@/agent': path.resolve(__dirname, './src/apps/agent'),
+      '@/client': path.resolve(__dirname, './src/apps/client'),
+      '@/therapist': path.resolve(__dirname, './src/apps/therapist'),
+      '@/place': path.resolve(__dirname, './src/apps/place'),
+      '@/hotel': path.resolve(__dirname, './src/apps/hotel'),
+      '@/villa': path.resolve(__dirname, './src/apps/villa'),
+      'src': path.resolve(__dirname, './src'),
+      // Therapist Dashboard @lib aliases (for file watcher compatibility)
+      '@lib': path.resolve(__dirname, './apps/therapist-dashboard/src/lib'),
+      '@lib/services': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/services'),
+      '@lib/appwrite': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/appwrite'),
+      '@lib/components': path.resolve(__dirname, '.apps/therapist-dashboard/src/lib/components'),
+      '@lib/utils': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/utils'),
+    },
+  },
   plugins: [
     react(),
     // 🆕 GOLD STANDARD PWA PLUGIN: Store-ready, state-safe installation
@@ -111,36 +143,6 @@ export default defineConfig({
       }
     }
   ],
-  resolve: {
-    dedupe: ['react', 'react-dom'], // 🔒 CRITICAL: Prevent "R is undefined" errors
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@/shared': path.resolve(__dirname, './src/shared'),
-      '@/apps': path.resolve(__dirname, './src/apps'),
-      '@/admin': path.resolve(__dirname, './src/apps/admin'),
-      '@/agent': path.resolve(__dirname, './src/apps/agent'),
-      '@/client': path.resolve(__dirname, './src/apps/client'),
-      '@/therapist': path.resolve(__dirname, './src/apps/therapist'),
-      '@/place': path.resolve(__dirname, './src/apps/place'),
-      '@/hotel': path.resolve(__dirname, './src/apps/hotel'),
-      '@/villa': path.resolve(__dirname, './src/apps/villa'),
-      // Additional aliases for cleaner imports (Enterprise standard)
-      '@/components': path.resolve(__dirname, './components'),
-      '@/pages': path.resolve(__dirname, './pages'),
-      '@/lib': path.resolve(__dirname, './lib'),
-      '@/hooks': path.resolve(__dirname, './hooks'),
-      '@/utils': path.resolve(__dirname, './utils'),
-      '@/types': path.resolve(__dirname, './types'),
-      // CRITICAL: Allow apps/ to resolve root src/ imports
-      'src': path.resolve(__dirname, './src'),
-      // Therapist Dashboard @lib aliases (for file watcher compatibility)
-      '@lib': path.resolve(__dirname, './apps/therapist-dashboard/src/lib'),
-      '@lib/services': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/services'),
-      '@lib/appwrite': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/appwrite'),
-      '@lib/components': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/components'),
-      '@lib/utils': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/utils'),
-    },
-  },
   server: {
     // 🔒 PRODUCTION-GRADE DEV SERVER LOCK (no fallback, explicit binding)
     port: 3000,
