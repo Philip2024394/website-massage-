@@ -8,6 +8,7 @@ import { useEnhancedTimeout } from '../hooks/useEnhancedTimeout';
 import EnhancedBookingTimeout from '../components/EnhancedBookingTimeout';
 import { BookingProgress } from '../components/BookingProgress';
 import { TimeoutHandlerResult } from '../services/bookingTimeoutHandler';
+import { logger } from '../utils/logger';
 
 interface EnhancedTimeoutExampleProps {
   bookingId: string;
@@ -63,7 +64,7 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
     price,
     location,
     onTimeoutTriggered: (result: TimeoutHandlerResult) => {
-      console.log('⏰ Timeout triggered with result:', result);
+      logger.debug('⏰ Timeout triggered with result:', result);
       if (result.action === 'broadcasted' && result.success) {
         setBookingStatus('broadcast_all');
         setShowTimeoutHandler(true);
@@ -71,7 +72,7 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
     },
     onCancelBooking: () => {
       setBookingStatus('cancelled');
-      console.log('❌ Booking cancelled, redirecting to directory...');
+      logger.debug('❌ Booking cancelled, redirecting to directory...');
     }
   });
 
@@ -154,10 +155,10 @@ export const EnhancedTimeoutExample: React.FC<EnhancedTimeoutExampleProps> = ({
             location={location}
             onCancel={handleCancelAndBrowse}
             onProviderFound={(count) => {
-              console.log(`🎯 ${count} providers found and notified`);
+              logger.debug(`🎯 ${count} providers found and notified`);
             }}
             onLocationRequired={() => {
-              console.log('📍 Location permission required for better results');
+              logger.debug('📍 Location permission required for better results');
             }}
           />
         )}

@@ -73,7 +73,7 @@ export const ProgressiveWarningSystem: React.FC<ProgressiveWarningSystemProps> =
         onChatDeactivated?.();
       }
     } catch (error) {
-      console.error('Failed to load user violation profile:', error);
+      logger.error('Failed to load user violation profile:', error);
     }
   };
 
@@ -126,7 +126,7 @@ export const ProgressiveWarningSystem: React.FC<ProgressiveWarningSystemProps> =
           await professionalChatService.playChatEffect('message_sent');
       }
     } catch (error) {
-      console.error('Failed to play warning sound:', error);
+      logger.error('Failed to play warning sound:', error);
     }
   };
 
@@ -152,7 +152,7 @@ export const ProgressiveWarningSystem: React.FC<ProgressiveWarningSystemProps> =
       await loadUserProfile();
       
     } catch (error) {
-      console.error('Failed to record violation:', error);
+      logger.error('Failed to record violation:', error);
     }
   };
 

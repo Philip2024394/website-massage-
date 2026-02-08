@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Send, Upload, CheckCircle, Clock, CreditCard, AlertTriangle } from 'lucide-react';
 import { scheduledBookingPaymentService } from '../services/scheduledBookingPaymentService';
 import { mp3NotificationService } from '../services/mp3NotificationService';
+import { logger } from '../utils/logger';
 
 interface EnhancedChatIntegrationProps {
   bookingId: string;
@@ -85,7 +86,7 @@ export const EnhancedChatIntegration: React.FC<EnhancedChatIntegrationProps> = (
         await initiatePaymentFlow();
       }
     } catch (error) {
-      console.error('Error checking payment status:', error);
+      logger.error('Error checking payment status:', error);
     }
   };
 
@@ -129,7 +130,7 @@ Your scheduled booking has been accepted! Please transfer **30% deposit** to con
       await mp3NotificationService.playNotification('booking_confirmed');
 
     } catch (error) {
-      console.error('Error initiating payment flow:', error);
+      logger.error('Error initiating payment flow:', error);
       onSendMessage('❌ Error loading payment details. Please contact support.', 'system');
     }
   };
@@ -190,14 +191,14 @@ Please verify the payment and confirm/reject within 30 minutes.
       onFileUpload(file, 'screenshot');
 
     } catch (error) {
-      console.error('Error uploading screenshot:', error);
+      logger.error('Error uploading screenshot:', error);
       onSendMessage('❌ Failed to upload screenshot. Please try again.', 'system');
     }
   };
 
   const sendToProviderChat = async (providerId: string, message: string) => {
     // This would integrate with the provider's chat system
-    console.log(`Sending to provider ${providerId}:`, message);
+    logger.debug(`Sending to provider ${providerId}:`, message);
     
     // Play notification sound for provider
     await mp3NotificationService.playNotification('booking_confirmed');

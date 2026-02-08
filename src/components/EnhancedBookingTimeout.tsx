@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Users, X } from 'lucide-react';
 import { handleBookingTimeout, BookingTimeoutRequest, TimeoutHandlerResult } from '../services/bookingTimeoutHandler';
+import { logger } from '../utils/logger';
 
 interface EnhancedBookingTimeoutProps {
   bookingId: string;
@@ -76,7 +77,7 @@ export const EnhancedBookingTimeout: React.FC<EnhancedBookingTimeoutProps> = ({
       }
       
     } catch (error) {
-      console.error('❌ Timeout handling failed:', error);
+      logger.error('❌ Timeout handling failed:', error);
       setTimeoutResult({
         success: false,
         action: 'failed',

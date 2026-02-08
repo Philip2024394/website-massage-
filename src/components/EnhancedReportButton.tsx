@@ -8,6 +8,7 @@ import { AlertTriangle, Shield, CheckCircle, X, Eye, EyeOff } from 'lucide-react
 import { chatFlagService } from '../lib/services/chatFlagService';
 import { chatModerationService, ContentFilterResult } from '../services/chatModerationService';
 import { professionalChatService } from '../services/professionalChatNotificationService';
+import { logger } from '../utils/logger';
 
 interface EnhancedReportButtonProps {
   chatId: string;
@@ -42,7 +43,7 @@ export const EnhancedReportButton: React.FC<EnhancedReportButtonProps> = ({
         const alreadyReported = await chatFlagService.hasUserFlagged(chatId, currentUserId);
         setHasReported(alreadyReported);
       } catch (error) {
-        console.error('Failed to check report status:', error);
+        logger.error('Failed to check report status:', error);
       }
     };
     
@@ -96,7 +97,7 @@ export const EnhancedReportButton: React.FC<EnhancedReportButtonProps> = ({
         alert(`Report failed: ${result.message}`);
       }
     } catch (error) {
-      console.error('Report submission error:', error);
+      logger.error('Report submission error:', error);
       alert('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -105,7 +106,7 @@ export const EnhancedReportButton: React.FC<EnhancedReportButtonProps> = ({
 
   const notifyAdminOfReport = async (reportId: string, reason: string, reporterRole: string) => {
     // This integrates with your existing admin notification system
-    console.log('🚨 Admin notification: New report submitted', {
+    logger.debug('🚨 Admin notification: New report submitted', {
       reportId,
       reason,
       reporterRole,

@@ -111,7 +111,7 @@ export const AdminChatModerationDashboard: React.FC<AdminDashboardProps> = ({
           ).length
         });
       } else {
-        console.warn('Failed to load flags or no flags returned');
+        logger.warn('Failed to load flags or no flags returned');
       }
 
       // Load moderation stats - create default stats since getSystemStats doesn't exist
@@ -126,7 +126,7 @@ export const AdminChatModerationDashboard: React.FC<AdminDashboardProps> = ({
       setModerationStats(moderationData);
       
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      logger.error('Failed to load dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -148,7 +148,7 @@ export const AdminChatModerationDashboard: React.FC<AdminDashboardProps> = ({
         alert(`Action failed: Unable to update flag status`);
       }
     } catch (error) {
-      console.error('Report action failed:', error);
+      logger.error('Report action failed:', error);
       alert('Failed to update report. Please try again.');
     }
   };
