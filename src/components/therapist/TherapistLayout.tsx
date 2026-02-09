@@ -353,8 +353,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     <div 
       className="bg-white w-full max-w-full therapist-page-container"
       style={{ 
-        // 🔒 STABILITY: Gold standard natural scrolling (per STABILITY_SCROLL_LOCK_RULES.md)
-        minHeight: '100vh',  // ✅ Minimum height, allows natural growth
+        // ✅ MODEL A: Natural document flow - NO viewport constraints
+        // ❌ REMOVED minHeight: '100vh' - was creating flexbox scroll trap
         display: 'flex',
         flexDirection: 'column',
         overflow: 'visible',  // ✅ Allows dashboard to scroll naturally
@@ -787,13 +787,12 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
-          // 🔒 MODEL A: Natural scroll, no marginTop needed with sticky header
+          // ✅ MODEL A: Natural content growth - NO flex constraints
+          // ❌ REMOVED flex: '1 1 auto' - was constraining content to parent bounds
+          // ❌ REMOVED minHeight: 0 - was preventing natural content growth
           paddingBottom: 'max(env(safe-area-inset-bottom, 10px), 60px)',
-          flex: '1 1 auto',
-          minHeight: 0,  // ✅ Allows flexbox shrinking
           WebkitOverflowScrolling: 'touch'  // ✅ Smooth iOS scrolling
-          // ✅ NO marginTop - sticky header handles positioning
-          // ✅ NO overflow restrictions - browser controls scroll
+          // ✅ Content now grows naturally - browser handles scroll
         }}
       >
         <div 
