@@ -357,6 +357,19 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             }
         }
         
+        // CRITICAL FIX: Handle customer-facing profile URLs FIRST before other checks
+        if (initialPath.startsWith('/profile/therapist/')) {
+            console.log(`🎯 Initial URL: ${initialPath} → therapist-profile`);
+            setPage('therapist-profile');
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+        
+        if (initialPath.startsWith('/profile/place/')) {
+            console.log(`🎯 Initial URL: ${initialPath} → massage-place-profile`);
+            setPage('massage-place-profile');
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+        
         // Handle new share URLs (with SEO keywords or simple format)
         if (initialPath.startsWith('/share/')) {
             const segments = initialPath.split('/').filter(Boolean);
@@ -379,7 +392,8 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             return () => window.removeEventListener('popstate', handlePopState);
         }
         
-        if (initialPath !== '/' && initialPath !== '/home') {
+        // CRITICAL FIX: No longer skip root and home paths - they need page state sync
+        if (initialPath !== '/') {
             // Handle auth routes with query parameters
             if (initialPath === '/signup') {
                 console.log(`🎯 Initial URL: ${initialPath} → signup`);
@@ -433,6 +447,13 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             if (targetPage && targetPage !== page) {
                 console.log(`🎯 Initial URL: ${initialPath} → ${targetPage}`);
                 setPage(targetPage);
+            }
+        } else {
+            // CRITICAL FIX: Explicitly handle root path to ensure landing page loads
+            // Only set if current page is not already landing or home
+            if (page !== 'landing' && page !== 'home') {
+                console.log(`🎯 Root URL detected → landing (current page: ${page})`);
+                setPage('landing');
             }
         }
 
