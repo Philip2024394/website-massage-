@@ -74,6 +74,7 @@ export default function LoadingGate() {
         minHeight: "calc(var(--vh, 1vh) * 100)", // Fallback for browsers without 100dvh
         width: "100%",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         color: "#fff",
@@ -81,6 +82,48 @@ export default function LoadingGate() {
         fontWeight: 600,
       }}
     >
+      {/* Brand Header */}
+      <div style={{ marginBottom: "32px", textAlign: "center" }}>
+        <h1 style={{ fontSize: "48px", fontWeight: "bold", marginBottom: "8px" }}>
+          <span style={{ color: "#fff" }}>Inda</span>
+          <span style={{ color: "#fff" }}>Street</span>
+        </h1>
+        <p style={{ color: "rgba(255,255,255,0.9)", fontSize: "18px", fontWeight: "500" }}>
+          Professional Massage Services
+        </p>
+      </div>
+      
+      {/* Loading Dots */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ 
+          width: "8px", 
+          height: "8px", 
+          backgroundColor: "#fff", 
+          borderRadius: "50%",
+          animation: "bounce 1s infinite"
+        }}></div>
+        <div style={{ 
+          width: "8px", 
+          height: "8px", 
+          backgroundColor: "#fff", 
+          borderRadius: "50%",
+          animation: "bounce 1s infinite 0.15s"
+        }}></div>
+        <div style={{ 
+          width: "8px", 
+          height: "8px", 
+          backgroundColor: "#fff", 
+          borderRadius: "50%",
+          animation: "bounce 1s infinite 0.3s"
+        }}></div>
+      </div>
+      
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes bounce {
+          0%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-10px); }
+        }
+      `}} />
     </div>
   );
 }
