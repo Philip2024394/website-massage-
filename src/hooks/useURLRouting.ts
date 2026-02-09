@@ -57,6 +57,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'facialPlaceDashboard': '/dashboard/facial-place',
         'facialPlaceProfile': '/dashboard/facial-place/profile',
         'shared-therapist-profile': '/therapist-profile',
+        'therapist-profile': '/profile/therapist', // CRITICAL: Customer-facing therapist profile
         'share-therapist': '/share/therapist',
         'share-place': '/share/place',
         'share-facial': '/share/facial',
@@ -120,12 +121,14 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
     useEffect(() => {
         // Don't modify URL for shared therapist profiles - preserve the full path with ID and slug
         if (page === 'shared-therapist-profile' || 
+            page === 'therapist-profile' || // CRITICAL: Preserve customer-facing profile URLs
             page === 'share-therapist' || 
             page === 'share-place' || 
             page === 'share-facial' ||
             page === 'massage-place-profile' ||
             page === 'facial-place-profile' ||
             page === 'mobile-terms-and-conditions') {
+            console.log('🔒 URL Routing: Preserving URL for:', page, '| Current:', window.location.pathname);
             return;
         }
         
@@ -174,6 +177,19 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                         setPage('share-facial');
                         return;
                     }
+                }
+                
+                // Handle customer-facing profile URLs
+                if (path.startsWith('/profile/therapist/')) {
+                    console.log('🎯 URL ROUTING: Customer therapist profile URL detected → therapist-profile');
+                    setPage('therapist-profile');
+                    return;
+                }
+                
+                if (path.startsWith('/profile/place/')) {
+                    console.log('🎯 URL ROUTING: Customer place profile URL detected → massage-place-profile');
+                    setPage('massage-place-profile');
+                    return;
                 }
                 
                 // Handle legacy therapist profile URL
