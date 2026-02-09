@@ -1,0 +1,74 @@
+/**
+ * 🔒 HEIGHT LOCK ELIMINATION - MODEL A COMPLIANCE
+ * 
+ * RULE: NO container may use height: 100vh when header is position: sticky
+ * ONLY min-height: 100vh is allowed for natural content growth
+ * 
+ * This file provides defensive fixes to eliminate ALL height locks
+ * that prevent natural scrolling in therapist dashboard.
+ */
+
+/* ============================================================================
+ * THERAPIST DASHBOARD HEIGHT LOCK FIXES
+ * ============================================================================ */
+
+/* Force remove any height locks on main layout containers */
+.therapist-page-container,
+.therapist-layout-content,
+.therapist-content-wrapper,
+.therapist-dashboard-page,
+.therapist-page-main {
+  /* ❌ FORBIDDEN: height: 100vh, max-height: 100vh */
+  height: auto !important;
+  max-height: none !important;
+  
+  /* ✅ REQUIRED: min-height only for natural growth */
+  min-height: auto !important;
+  
+  /* ✅ REQUIRED: overflow visible for natural scrolling */
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: visible !important;
+}
+
+/* Ensure AppShell doesn't create height constraints */
+.app-shell,
+.app-shell main {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure body and html allow natural growth */
+html,
+body,
+#root {
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
+
+/* ============================================================================
+ * FLEX CONTAINER HEIGHT FIXES
+ * ============================================================================ */
+
+/* Fix flex: 1 inside height-constrained parents */
+.therapist-page-container main,
+.therapist-layout-content main,
+[class*="therapist"] main {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* ============================================================================
+ * DIAGNOSTIC HELPERS (Remove after confirming fix)
+ * ============================================================================ */
+
+/* Uncomment to visualize container boundaries
+.therapist-page-container { outline: 2px solid red !important; }
+.therapist-layout-content { outline: 2px solid blue !important; }
+.therapist-content-wrapper { outline: 2px solid green !important; }
+*/

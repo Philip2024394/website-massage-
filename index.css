@@ -1,6 +1,9 @@
 /* Footer fixes - must come before Tailwind */
 @import url('./test/debug-pages/footer-fix.css');
 
+/* 🔒 Height Lock Elimination - MODEL A Compliance */
+@import url('./src/styles/height-lock-elimination.css');
+
 /* Elite Therapist Dashboard Styles */
 @import url('./src/styles/elite-therapist-dashboard.css');
 
