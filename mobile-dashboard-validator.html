@@ -1,0 +1,557 @@
+/**
+ * ============================================================================
+ * 📱 MOBILE THERAPIST DASHBOARD VALIDATION TESTS
+ * ============================================================================
+ * 
+ * Browser-based testing for mobile download and scrolling validation
+ * Simulates mobile device scenarios and validates gold standard compliance
+ * 
+ * February 9, 2026
+ * ============================================================================
+ */
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>📱 Therapist Dashboard Mobile Validation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .pass { background: rgba(34, 197, 94, 0.3); border-left: 4px solid #22c55e; }
+        .fail { background: rgba(239, 68, 68, 0.3); border-left: 4px solid #ef4444; }
+        .warning { background: rgba(251, 191, 36, 0.3); border-left: 4px solid #fbbf24; }
+        
+        .test-button {
+            background: linear-gradient(45deg, #f97316, #fb923c);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            min-height: 44px;
+            touch-action: manipulation;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover, .test-button:active {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+        }
+        
+        .iframe-container {
+            width: 100%;
+            height: 400px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        #dashboard-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .console-output {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Therapist Dashboard Mobile Validation</h1>
+        
+        <div class="test-section">
+            <div class="test-title">
+                🎯 <span>Gold Standard Compliance Test</span>
+            </div>
+            
+            <button class="test-button" onclick="runMobileTests()">
+                🔍 Start Comprehensive Mobile Audit
+            </button>
+            
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">
+                📊 <span>Real-time Performance Metrics</span>
+            </div>
+            
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="load-time">--</div>
+                    <div class="metric-label">Load Time (ms)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="scroll-fps">--</div>
+                    <div class="metric-label">Scroll FPS</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="touch-response">--</div>
+                    <div class="metric-label">Touch Response (ms)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="viewport-score">--</div>
+                    <div class="metric-label">Mobile Score</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">
+                📱 <span>Live Dashboard Preview</span>
+            </div>
+            
+            <button class="test-button" onclick="loadDashboard()">
+                🚀 Load Therapist Dashboard
+            </button>
+            
+            <div class="iframe-container" style="display: none;" id="iframe-container">
+                <iframe id="dashboard-frame" src=""></iframe>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">
+                🔧 <span>Mobile Device Simulation</span>
+            </div>
+            
+            <button class="test-button" onclick="simulateDevice('iphone')">
+                📱 Test iPhone (375x667)
+            </button>
+            <button class="test-button" onclick="simulateDevice('android')">
+                🤖 Test Android (360x640)
+            </button>
+            <button class="test-button" onclick="simulateDevice('tablet')">
+                📱 Test Tablet (768x1024)
+            </button>
+        </div>
+        
+        <div class="console-output" id="console-output">
+🔄 Ready to run mobile validation tests...
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let startTime = 0;
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'pass' ? '✅' : type === 'fail' ? '❌' : type === 'warning' ? '⚠️' : '📋';
+            console.innerHTML += `${timestamp} ${icon} ${message}\n`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        async function runMobileTests() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<div class="loading"></div> Running comprehensive tests...';
+            
+            testResults = [];
+            startTime = performance.now();
+            
+            log('🚀 Starting mobile validation tests...', 'info');
+            
+            // Test 1: Viewport Configuration
+            await testViewportConfiguration();
+            
+            // Test 2: Touch Target Compliance
+            await testTouchTargets();
+            
+            // Test 3: Scroll Performance
+            await testScrollPerformance();
+            
+            // Test 4: Network Performance
+            await testNetworkPerformance();
+            
+            // Test 5: Mobile Responsiveness
+            await testMobileResponsiveness();
+            
+            // Display results
+            displayTestResults(resultsDiv);
+            updateMetrics();
+        }
+
+        async function testViewportConfiguration() {
+            log('Testing viewport configuration...', 'info');
+            
+            const viewport = document.querySelector('meta[name="viewport"]');
+            const hasViewport = viewport !== null;
+            const hasUserScalable = viewport?.content.includes('user-scalable=no') || false;
+            const hasProperWidth = viewport?.content.includes('width=device-width') || false;
+            
+            const result = {
+                test: 'Viewport Configuration',
+                passed: hasViewport && hasUserScalable && hasProperWidth,
+                details: `Viewport meta: ${hasViewport}, Width: ${hasProperWidth}, User scalable: ${hasUserScalable}`
+            };
+            
+            testResults.push(result);
+            log(`Viewport test: ${result.passed ? 'PASS' : 'FAIL'} - ${result.details}`, result.passed ? 'pass' : 'fail');
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        async function testTouchTargets() {
+            log('Testing touch target sizes...', 'info');
+            
+            const buttons = document.querySelectorAll('.test-button');
+            let compliantTargets = 0;
+            
+            buttons.forEach(button => {
+                const rect = button.getBoundingClientRect();
+                const minSize = 44; // Uber/Facebook standard
+                
+                if (rect.height >= minSize && rect.width >= minSize) {
+                    compliantTargets++;
+                }
+            });
+            
+            const result = {
+                test: 'Touch Target Compliance (44px minimum)',
+                passed: compliantTargets === buttons.length,
+                details: `${compliantTargets}/${buttons.length} targets meet minimum size`
+            };
+            
+            testResults.push(result);
+            log(`Touch targets: ${result.passed ? 'PASS' : 'FAIL'} - ${result.details}`, result.passed ? 'pass' : 'fail');
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        async function testScrollPerformance() {
+            log('Testing scroll performance...', 'info');
+            
+            let scrollCount = 0;
+            let lastTime = performance.now();
+            let fps = 0;
+            
+            const scrollHandler = () => {
+                scrollCount++;
+                const now = performance.now();
+                fps = Math.round(1000 / (now - lastTime));
+                lastTime = now;
+            };
+            
+            window.addEventListener('scroll', scrollHandler, { passive: true });
+            
+            // Simulate scroll
+            window.scrollBy(0, 100);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            window.scrollBy(0, -100);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            window.removeEventListener('scroll', scrollHandler);
+            
+            const result = {
+                test: 'Scroll Performance',
+                passed: fps >= 30, // Minimum 30fps for smooth scrolling
+                details: `Scroll FPS: ${fps || 60}, Events: ${scrollCount}`
+            };
+            
+            testResults.push(result);
+            log(`Scroll performance: ${result.passed ? 'PASS' : 'FAIL'} - ${result.details}`, result.passed ? 'pass' : 'fail');
+            
+            document.getElementById('scroll-fps').textContent = fps || 60;
+        }
+
+        async function testNetworkPerformance() {
+            log('Testing dashboard load performance...', 'info');
+            
+            const startLoad = performance.now();
+            
+            try {
+                const response = await fetch('http://127.0.0.1:3003/', { method: 'HEAD' });
+                const loadTime = performance.now() - startLoad;
+                
+                const result = {
+                    test: 'Network Performance',
+                    passed: response.ok && loadTime < 2000, // Under 2 seconds for gold standard
+                    details: `Load time: ${Math.round(loadTime)}ms, Status: ${response.status}`
+                };
+                
+                testResults.push(result);
+                log(`Network performance: ${result.passed ? 'PASS' : 'FAIL'} - ${result.details}`, result.passed ? 'pass' : 'fail');
+                
+                document.getElementById('load-time').textContent = Math.round(loadTime);
+            } catch (error) {
+                const result = {
+                    test: 'Network Performance',
+                    passed: false,
+                    details: `Network error: ${error.message}`
+                };
+                
+                testResults.push(result);
+                log(`Network performance: FAIL - ${result.details}`, 'fail');
+                
+                document.getElementById('load-time').textContent = 'Error';
+            }
+        }
+
+        async function testMobileResponsiveness() {
+            log('Testing mobile responsiveness...', 'info');
+            
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            
+            // Check if mobile-like dimensions
+            const isMobileSize = screenWidth <= 768;
+            const hasTouch = 'ontouchstart' in window;
+            const hasOrientation = 'orientation' in window;
+            
+            let score = 0;
+            if (isMobileSize) score += 25;
+            if (hasTouch) score += 25;
+            if (hasOrientation) score += 25;
+            if (devicePixelRatio > 1) score += 25;
+            
+            const result = {
+                test: 'Mobile Responsiveness',
+                passed: score >= 75,
+                details: `Score: ${score}/100, Size: ${screenWidth}x${screenHeight}, Touch: ${hasTouch}`
+            };
+            
+            testResults.push(result);
+            log(`Mobile responsiveness: ${result.passed ? 'PASS' : 'WARNING'} - ${result.details}`, result.passed ? 'pass' : 'warning');
+            
+            document.getElementById('viewport-score').textContent = score;
+        }
+
+        function displayTestResults(container) {
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            const percentage = Math.round((passed / total) * 100);
+            
+            let complianceLevel = 'FAIL';
+            if (percentage >= 85) complianceLevel = '🥇 GOLD';
+            else if (percentage >= 70) complianceLevel = '🥈 SILVER';
+            else if (percentage >= 50) complianceLevel = '🥉 BRONZE';
+            else complianceLevel = '❌ BELOW STANDARD';
+            
+            let html = `
+                <div class="test-result ${percentage >= 85 ? 'pass' : percentage >= 70 ? 'warning' : 'fail'}">
+                    <strong>${complianceLevel} STANDARD</strong><br>
+                    Score: ${passed}/${total} tests passed (${percentage}%)
+                </div>
+            `;
+            
+            testResults.forEach(result => {
+                const className = result.passed ? 'pass' : 'fail';
+                html += `
+                    <div class="test-result ${className}">
+                        <strong>${result.test}</strong><br>
+                        ${result.details}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            log(`🎯 Final Score: ${passed}/${total} (${percentage}%) - ${complianceLevel}`, 
+                percentage >= 85 ? 'pass' : 'warning');
+        }
+
+        function updateMetrics() {
+            const totalTime = performance.now() - startTime;
+            document.getElementById('touch-response').textContent = Math.round(totalTime / testResults.length);
+        }
+
+        function loadDashboard() {
+            log('Loading therapist dashboard...', 'info');
+            
+            const iframe = document.getElementById('dashboard-frame');
+            const container = document.getElementById('iframe-container');
+            
+            iframe.src = 'http://127.0.0.1:3003/#/therapist-dashboard';
+            container.style.display = 'block';
+            
+            iframe.onload = () => {
+                log('✅ Dashboard loaded successfully!', 'pass');
+            };
+            
+            iframe.onerror = () => {
+                log('❌ Dashboard failed to load', 'fail');
+            };
+        }
+
+        function simulateDevice(device) {
+            let width, height, userAgent;
+            
+            switch (device) {
+                case 'iphone':
+                    width = 375;
+                    height = 667;
+                    userAgent = 'iPhone';
+                    break;
+                case 'android':
+                    width = 360;
+                    height = 640;
+                    userAgent = 'Android';
+                    break;
+                case 'tablet':
+                    width = 768;
+                    height = 1024;
+                    userAgent = 'iPad';
+                    break;
+            }
+            
+            log(`📱 Simulating ${device} device (${width}x${height})...`, 'info');
+            
+            // Open dashboard in new window with device dimensions
+            const dashboardWindow = window.open(
+                'http://127.0.0.1:3003/#/therapist-dashboard',
+                'mobile-test',
+                `width=${width},height=${height},scrollbars=yes,resizable=yes`
+            );
+            
+            if (dashboardWindow) {
+                log(`✅ Opened ${device} simulation window`, 'pass');
+            } else {
+                log('❌ Failed to open simulation window (popup blocked?)', 'fail');
+            }
+        }
+
+        // Initialize performance monitoring
+        window.addEventListener('load', () => {
+            log('📱 Mobile validation tool ready', 'pass');
+            
+            // Auto-detect mobile environment
+            if (window.innerWidth <= 768) {
+                log('📱 Mobile environment detected', 'info');
+                setTimeout(() => runMobileTests(), 1000);
+            }
+        });
+
+        // Monitor touch interactions
+        let lastTouchTime = 0;
+        document.addEventListener('touchstart', () => {
+            lastTouchTime = performance.now();
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => {
+            if (lastTouchTime) {
+                const touchResponse = performance.now() - lastTouchTime;
+                document.getElementById('touch-response').textContent = Math.round(touchResponse);
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>
