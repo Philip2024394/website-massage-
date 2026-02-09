@@ -122,6 +122,20 @@ body {
    6️⃣ MODAL & OVERLAY - TEMPORARY SCROLL LOCK ONLY
    ============================================================================ */
 
+/* 🚨 WARNING: This class violates STABILITY_SCROLL_LOCK_RULES.md 
+ * 
+ * ❌ DO NOT USE for:
+ *   - Loading screens (use self-contained position: fixed instead)
+ *   - Landing pages (use self-contained position: fixed instead)
+ *   - Any permanent UI elements
+ * 
+ * ✅ ONLY USE for:
+ *   - True modals that overlay existing content temporarily
+ *   - Components that need TEMPORARY scroll lock (< 5 seconds)
+ * 
+ * See: core-ui/STABILITY_SCROLL_LOCK_RULES.md for details
+ */
+
 /* When modal is open, lock body scroll temporarily */
 body.modal-open {
   overflow: hidden;

@@ -33,6 +33,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run Scroll Lock Compliance Tests
+        run: npm test -- scrollLockCompliance.test.ts
+        continue-on-error: false
+
       - name: Run TypeScript Check
         run: npm run type-check || npx tsc --noEmit
 

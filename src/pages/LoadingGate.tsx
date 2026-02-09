@@ -51,8 +51,8 @@ export default function LoadingGate() {
     sessionStorage.setItem("LOADING_LOCKED", "1");
     logger.debug("🔒 LoadingGate: Lock engaged");
     
-    // ✅ MOBILE SCROLL FIX: Use modal-open class instead of inline styles
-    document.body.classList.add('modal-open');
+    // ❌ REMOVED: modal-open class (violated STABILITY_SCROLL_LOCK_RULES.md)
+    // Loading screen is self-contained with position: fixed below
     
     const timer = setTimeout(() => {
       logger.debug("✅ LoadingGate: Timeout complete, redirecting to home");
@@ -62,17 +62,19 @@ export default function LoadingGate() {
 
     return () => {
       clearTimeout(timer);
-      document.body.classList.remove('modal-open');
     };
   }, []);
 
   return (
     <div
       style={{
+        // 🔒 STABILITY: Self-contained lock (per STABILITY_SCROLL_LOCK_RULES.md)
+        position: "fixed",
+        inset: 0,
+        overflow: "hidden",
+        zIndex: 9999,
+        // Visual styling
         backgroundColor: "#FF7A00",
-        height: "100dvh", // Fixed: iOS Safari viewport fix
-        minHeight: "calc(var(--vh, 1vh) * 100)", // Fallback for browsers without 100dvh
-        width: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
