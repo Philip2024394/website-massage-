@@ -21,6 +21,7 @@
  */
 
 import { useEffect } from "react";
+import { logger } from '../utils/logger';
 
 /**
  * LoadingGate - Isolated loading page to prevent infinite loops
