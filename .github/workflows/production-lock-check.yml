@@ -1,4 +1,4 @@
-name: 🔒 Production Lock Check
+name: Production Lock Check
 
 on:
   pull_request:
