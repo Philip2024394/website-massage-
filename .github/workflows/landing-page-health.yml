@@ -1,5 +1,4 @@
 name: Landing Page Health Check
-
 on:
   pull_request:
     branches: [main, develop]
