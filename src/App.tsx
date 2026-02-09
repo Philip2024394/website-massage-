@@ -1152,8 +1152,14 @@ const App = () => {
             logger.debug('[FIND_NEW] Clearing pending deeplink on home navigation', { pending });
             sessionStorage.removeItem('pending_deeplink');
         }
-        // Optionally navigate back to therapist list
-        state.setPage('home');
+        // Smart navigation based on user role
+        if (state.user?.role === 'therapist' || state.user?.userType === 'therapist' || state.user?.type === 'therapist' || state.isTherapist) {
+            // Therapists stay in their dashboard system
+            state.setPage('therapist-dashboard');
+        } else {
+            // Customers navigate to therapist list
+            state.setPage('home');
+        }
     };
 
     

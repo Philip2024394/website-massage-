@@ -1009,8 +1009,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         onNavigateToSchedule?.();
         break;
       case 'dashboard':
-        logger.debug('[NAV CLICK] Already on dashboard');
-        // Already on dashboard, do nothing or refresh
+        logger.debug('[NAV CLICK] Staying on dashboard - profile management page');
+        // Stay on dashboard - this is the profile management page
+        showToast('✅ You are on the Dashboard (Profile Management) page', 'info');
         break;
       case 'bookings':
         logger.debug('[NAV CLICK] Calling onNavigateToBookings()');
@@ -1057,8 +1058,25 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         onNavigateToLegal?.();
         break;
       case 'how-it-works':
-        logger.debug('[NAV CLICK] Calling onNavigateToHowItWorks()');
-        onNavigateToHowItWorks?.();
+      case 'therapist-how-it-works':
+        logger.debug('[NAV CLICK] Calling onNavigateToHowItWorks() or navigating to therapist-how-it-works');
+        onNavigateToHowItWorks?.() || onNavigate?.('therapist-how-it-works');
+        break;
+      case 'customers':
+        logger.debug('[NAV CLICK] Navigating to customers page');
+        onNavigate?.('customers');
+        break;
+      case 'send-discount':
+        logger.debug('[NAV CLICK] Navigating to send-discount page');
+        onNavigate?.('send-discount');
+        break;
+      case 'analytics':
+        logger.debug('[NAV CLICK] Navigating to analytics page');
+        onNavigate?.('analytics');
+        break;
+      case 'therapist-hotel-villa-safe-pass':
+        logger.debug('[NAV CLICK] Navigating to SafePass page');
+        onNavigate?.('therapist-hotel-villa-safe-pass');
         break;
       case 'logout':
         logger.debug('[NAV CLICK] Calling onLogout()');
@@ -1126,7 +1144,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       )}
 
       {/* Main Content - MODEL A: NO top padding, sticky header provides spacing */}
-      <main className="w-full px-2 pb-3">
+      <main className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px' }}>
 
           {/* 🆕 ELITE FIX: Therapist Connection Status Indicator (Facebook/Amazon Standard) */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">

@@ -889,17 +889,57 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             logger.debug('  - selectedTherapist:', { therapist: props.selectedTherapist });
             logger.debug('  - URL:', { url: window.location.href });
             
-            // Parse ID from hash URL (/#/therapist-profile/123) or pathname
+            // Parse ID from hash URL (/#/therapist-profile/123) or pathname first
             let pathForId = window.location.pathname;
             const hashForId = window.location.hash;
             if (hashForId.startsWith('#/')) {
                 pathForId = hashForId.substring(1); // Remove # to get /therapist-profile/123
             }
             
+            // Extract the therapist ID from URL
+            const pathMatch = pathForId.match(/\/(?:therapist-profile|profile\/therapist)\/([a-z0-9-]+)/);
+            let profileTherapistId = null;
+            
+            if (pathMatch) {
+                const urlId = pathMatch[1];
+                const idWithoutName = urlId.split('-')[0]; // Get ID before first hyphen
+                profileTherapistId = idWithoutName;
+                logger.debug('  - Extracted profile therapist ID:', { urlId, profileTherapistId });
+            } else if (props.selectedTherapist) {
+                profileTherapistId = (props.selectedTherapist.$id || props.selectedTherapist.id || '').toString();
+                logger.debug('  - Using selectedTherapist ID:', { profileTherapistId });
+            }
+            
+            // 🔒 SMART SAFETY GUARD: Allow therapists to view profiles (including their own) but prevent inappropriate booking
+            if (props.user && (props.user.role === 'therapist' || props.user.userType === 'therapist' || props.user.type === 'therapist')) {
+                const currentTherapistId = (props.user.$id || props.user.id || props.user.therapistId || '').toString();
+                
+                if (profileTherapistId && currentTherapistId && profileTherapistId === currentTherapistId) {
+                    // Therapist viewing their own profile - allow but show special message
+                    logger.debug('✅ PROFILE ACCESS: Therapist viewing own profile - allowing with dashboard suggestion');
+                    props.showToast?.('💡 Tip: Use your dashboard to manage your profile', 'info');
+                } else if (profileTherapistId) {
+                    // Therapist viewing another therapist's profile - allow for reference/learning
+                    logger.debug('✅ PROFILE ACCESS: Therapist viewing another therapist profile - allowing for reference');
+                } else {
+                    // No clear profile ID - redirect to dashboard as safety measure
+                    logger.warn('⚠️ REDIRECT PREVENTION: Unclear profile access by therapist - redirecting to dashboard');
+                    props.showToast?.('🔄 Redirecting to your dashboard...', 'info');
+                    setTimeout(() => {
+                        props.setPage?.('therapist-dashboard');
+                    }, 500);
+                    return <div className="flex items-center justify-center min-h-screen">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
+                            <p className="text-gray-600">Redirecting to your dashboard...</p>
+                        </div>
+                    </div>;
+                }
+            }
+            
             // UPDATED: Support both URL patterns:
             // 1. /therapist-profile/[id] (hash router)
             // 2. /profile/therapist/[id] (SEO-friendly URLs)
-            const pathMatch = pathForId.match(/\/(?:therapist-profile|profile\/therapist)\/([a-z0-9-]+)/);
             if (pathMatch) {
                 const urlId = pathMatch[1];
                 logger.debug('  - Extracted ID:', { urlId });
@@ -1177,7 +1217,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 therapist: therapistProfile,
                 onStatusChange: props.handleTherapistStatusChange,
                 onNavigateToDashboard: () => props.setPage('therapistDashboard'),
-                onNavigateToHome: () => props.setPage('home')
+                onNavigateToHome: () => props.setPage('therapist-dashboard') // ✅ STAY IN THERAPIST SYSTEM
             });
         }
 
@@ -1185,7 +1225,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'privacy-policy':
         case 'privacy':
             return renderRoute(legalRoutes.privacy.component, {
-                onBack: () => props.onNavigate?.('home'),
+                onBack: () => {
+                    // Smart back navigation based on user role
+                    if (props.user && (props.user.role === 'therapist' || props.user.userType === 'therapist' || props.user.type === 'therapist')) {
+                        props.onNavigate?.('therapist-dashboard');
+                    } else {
+                        props.onNavigate?.('home');
+                    }
+                },
                 t: dict?.privacyPolicy
             });
         
@@ -1195,7 +1242,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'service-terms':
         case 'serviceTerms':
             return renderRoute(legalRoutes.serviceTerms.component, {
-                onBack: () => props.onNavigate?.('home'),
+                onBack: () => {
+                    // Smart back navigation based on user role  
+                    if (props.user && (props.user.role === 'therapist' || props.user.userType === 'therapist' || props.user.type === 'therapist')) {
+                        props.onNavigate?.('therapist-dashboard');
+                    } else {
+                        props.onNavigate?.('home');
+                    }
+                },
                 t: dict?.serviceTerms,
                 contactNumber: '+62 812-3456-7890'
             });

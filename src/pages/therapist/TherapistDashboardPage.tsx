@@ -919,8 +919,25 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         onNavigateToLegal?.();
         break;
       case 'how-it-works':
-        console.log('[NAV CLICK] \u2192 Calling onNavigateToHowItWorks()');
-        onNavigateToHowItWorks?.();
+      case 'therapist-how-it-works':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToHowItWorks() or navigating to therapist-how-it-works');
+        onNavigateToHowItWorks?.() || onNavigate?.('therapist-how-it-works');
+        break;
+      case 'customers':
+        console.log('[NAV CLICK] \u2192 Navigating to customers page');
+        onNavigate?.('customers');
+        break;
+      case 'send-discount':
+        console.log('[NAV CLICK] \u2192 Navigating to send-discount page');
+        onNavigate?.('send-discount');
+        break;
+      case 'analytics':
+        console.log('[NAV CLICK] \u2192 Navigating to analytics page');
+        onNavigate?.('analytics');
+        break;
+      case 'therapist-hotel-villa-safe-pass':
+        console.log('[NAV CLICK] \u2192 Navigating to SafePass page');
+        onNavigate?.('therapist-hotel-villa-safe-pass');
         break;
       case 'logout':
         console.log('[NAV CLICK] \u2192 Calling onLogout()');
@@ -966,7 +983,11 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       >
       <div className="bg-white w-full">
       
-      {/* MOBILE SCROLL TEST - Force content taller than viewport */}
+      {/* Main Content - MODEL A: NO top padding to eliminate white space */}
+      <main className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px', marginTop: '0px' }}>
+        
+        {/* Elite Connection Status - NO top margin */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3" style={{ marginTop: '0px' }}>
       <div className="bg-gradient-to-b from-green-50 to-blue-50 p-4 border-b border-gray-200">
         <div className="text-center">
           <p className="text-sm font-bold text-green-700">✅ MOBILE SCROLLING TEST</p>
