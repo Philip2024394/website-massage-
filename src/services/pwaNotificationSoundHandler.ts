@@ -18,8 +18,8 @@ export type NotificationSoundType = 'booking' | 'message' | 'status' | 'urgent';
 const SOUND_FILES: Record<NotificationSoundType, string> = {
   booking: '/sounds/booking-notification.mp3',
   message: '/sounds/message-notification.mp3',
-  status: '/sounds/status-notification.mp3',
-  urgent: '/sounds/urgent-notification.mp3'
+  status: '/sounds/success-notification.mp3',    // ✅ Fix: Use success sound (was missing status-notification.mp3)
+  urgent: '/sounds/alert-notification.mp3'       // ✅ Fix: Use alert sound (was missing urgent-notification.mp3)
 };
 
 // Fallback: Use booking sound for all if specific files don't exist
