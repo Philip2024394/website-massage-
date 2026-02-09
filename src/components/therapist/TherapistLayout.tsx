@@ -57,7 +57,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Menu, X, User, Calendar, DollarSign, Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart, Home} from 'lucide-react';
+  Menu, X, User, Calendar, DollarSign, Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart, Home, Eye} from 'lucide-react';
 import BookingBadge from './BookingBadge';
 import { useUnreadBadge } from "../../chat/hooks/useUnreadBadge";
 import { useGestureSwipe } from "../../hooks/useGestureSwipe";
@@ -658,7 +658,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                   e.stopPropagation();
                   handleNavigate('dashboard');
                 }}
-                className="flex items-center gap-3 w-full min-h-[48px] py-3 px-4 rounded-lg transition-all transform active:scale-98 touch-manipulation cursor-pointer select-none bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md hover:from-orange-600 hover:to-orange-700 mb-4"
+                className="flex items-center gap-3 w-full min-h-[48px] py-3 px-4 rounded-lg transition-all transform active:scale-98 touch-manipulation cursor-pointer select-none bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md hover:from-orange-600 hover:to-orange-700 mb-2"
                 style={{ 
                   willChange: 'transform',
                   WebkitTapHighlightColor: 'transparent'
@@ -667,6 +667,31 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                 <User className="w-5 h-5 flex-shrink-0" />
                 <span className="text-sm">
                   {language === 'en' ? 'My Dashboard' : 'Dashboard Saya'}
+                </span>
+              </button>
+
+              {/* View My Public Profile Button */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const therapistId = therapist?.$id || therapist?.id;
+                  if (therapistId) {
+                    onNavigate('therapist-profile');
+                    // Update URL to show profile
+                    const slug = therapist?.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                    window.history.pushState({}, '', `/#/therapist-profile/${therapistId}-${slug}`);
+                  }
+                }}
+                className="flex items-center gap-3 w-full min-h-[48px] py-3 px-4 rounded-lg transition-all transform active:scale-98 touch-manipulation cursor-pointer select-none bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md hover:from-blue-600 hover:to-blue-700 mb-4"
+                style={{ 
+                  willChange: 'transform',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+              >
+                <Eye className="w-5 h-5 flex-shrink-0" />
+                <span className="text-sm">
+                  {language === 'en' ? 'View My Public Profile' : 'Lihat Profil Publik Saya'}
                 </span>
               </button>
               

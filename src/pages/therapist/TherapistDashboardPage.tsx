@@ -73,6 +73,7 @@ import { profileEditHelp } from './constants/helpContent';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
+  onNavigate?: (page: string) => void;
   onNavigateToStatus?: () => void;
   onNavigateToBookings?: () => void;
   onNavigateToEarnings?: () => void;
@@ -94,6 +95,7 @@ interface TherapistPortalPageProps {
 
 const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
   therapist,
+  onNavigate,
   onNavigateToStatus,
   onNavigateToBookings,
   onNavigateToEarnings,

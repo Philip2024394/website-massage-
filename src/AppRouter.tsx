@@ -1485,6 +1485,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     // Redirect to therapist dashboard
                     return renderRoute(therapistRoutes.dashboard.component, {
                         therapist: props.user,
+                        onNavigate: props.onNavigate,
                         onLogout: props.handleLogout,
                         onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
                         onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
