@@ -141,11 +141,12 @@ input, textarea, select {
 }
 
 .therapist-layout-content {
-  /* Stable content area */
+  /* Stable content area - MODEL A: NO OVERFLOW */
   contain: none;
   min-height: calc(100vh - var(--stable-header-height));
-  max-height: calc(100vh - var(--stable-header-height));
-  overflow-y: auto;
+  /* ❌ REMOVED max-height - allows natural growth */
+  /* ✅ MODEL A: overflow visible - browser controls scroll */
+  overflow: visible;
   
   /* Elite scrolling */
   -webkit-overflow-scrolling: touch;
@@ -158,20 +159,22 @@ input, textarea, select {
  * THERAPIST DASHBOARD PAGE SCROLLING ENHANCEMENTS
  * ============================================================================ */
 
-/* Enhance scrolling for therapist dashboard page containers */
+/* Enhance scrolling for therapist dashboard page containers - MODEL A COMPLIANT */
 .therapist-dashboard-page {
   height: auto !important;
   min-height: calc(100vh - var(--stable-header-height));
-  overflow-y: auto;
+  /* ✅ MODEL A: overflow visible - browser controls scroll */
+  overflow: visible;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y pan-x;
   scroll-behavior: smooth;
 }
 
-/* Therapist page main content areas */
+/* Therapist page main content areas - MODEL A COMPLIANT */
 .therapist-page-main {
-  max-height: calc(100vh - var(--stable-header-height));
-  overflow-y: auto;
+  /* ❌ REMOVED max-height - allows natural growth */
+  /* ✅ MODEL A: overflow visible - browser controls scroll */
+  overflow: visible;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: auto;
 }
@@ -183,9 +186,10 @@ input, textarea, select {
   overflow-y: visible !important;
 }
 
-/* Utility classes for therapist dashboard pages */
+/* Utility classes for therapist dashboard pages - MODEL A COMPLIANT */
 .therapist-scroll-container {
-  overflow-y: auto;
+  /* ✅ MODEL A: overflow visible - browser controls scroll */
+  overflow: visible;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y pan-x;
   scroll-behavior: smooth;
