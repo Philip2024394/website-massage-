@@ -497,7 +497,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     if (page === 'landing') {
         console.log('🧭 Router resolved - rendering landing page');
         const LandingComponent = publicRoutes.landing.component;
-        return <LandingComponent />;
+        return <LandingComponent 
+            language={props.language}
+            onLanguageChange={props.onLanguageChange}
+            onLanguageSelect={props.handleLanguageSelect}
+            handleEnterApp={props.handleEnterApp}
+        />;
     }
     
     return (
