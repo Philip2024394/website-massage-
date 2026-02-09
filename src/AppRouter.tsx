@@ -501,7 +501,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             language={props.language}
             onLanguageChange={props.onLanguageChange}
             onLanguageSelect={props.handleLanguageSelect}
+            onEnterApp={props.handleEnterApp}
             handleEnterApp={props.handleEnterApp}
+            handleLanguageSelect={props.handleLanguageSelect}
         />;
     }
     
