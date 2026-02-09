@@ -58,7 +58,7 @@ export default function LoadingGate() {
       logger.debug("✅ LoadingGate: Timeout complete, redirecting to home");
       // Direct hash navigation - works with app's routing system
       window.location.hash = "#/home";
-    }, 1800); // 1.8 seconds
+    }, 300); // 300ms - smooth transition without unnecessary wait
 
     return () => {
       clearTimeout(timer);
