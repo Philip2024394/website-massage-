@@ -27,19 +27,24 @@ export const AppLoadingManager: React.FC<AppLoadingManagerProps> = ({
 
   // Manage global loading state based on app initialization
   useEffect(() => {
-    // Set global loading during critical app initialization
-    if (isLoading && (page === undefined || page === null || page === '')) {
-      setGlobalLoading(true, 'Initializing IndaStreet...');
-    } else {
-      setGlobalLoading(false);
-    }
-  }, [isLoading, page, setGlobalLoading]);
+    console.log('✅ Splash hidden - boot manager initialized');
+    // P0 FIX: NEVER block landing page
+    // Landing page must render immediately, no conditions
+    setGlobalLoading(false);
+  }, [setGlobalLoading]);
 
   // Manage page loading state
   useEffect(() => {
-    // Set page loading for route transitions (except landing page)
-    if (page && page !== 'landing') {
-      setPageLoading(isLoading);
+    // P0 FIX: Landing page NEVER shows loading spinner
+    if (page === 'landing') {
+      console.log('🔥 Landing mounted');
+      setPageLoading(false);
+      return;
+    }
+    
+    // Other pages can show loading states
+    if (page && isLoading) {
+      setPageLoading(true);
     } else {
       setPageLoading(false);
     }

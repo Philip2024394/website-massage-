@@ -492,6 +492,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         return <LoadingGate />;
     }
     
+    // P0 FIX: Landing page renders IMMEDIATELY, no loading wrappers
+    if (page === 'landing') {
+        console.log('🧭 Router resolved - rendering landing page');
+        const LandingComponent = publicRoutes.landing.component;
+        return <LandingComponent />;
+    }
+    
     return (
         <EnterpriseLoader
             variant="page"
@@ -505,6 +512,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 switch (page) {
         // ===== PUBLIC ROUTES =====
         case 'landing':
+            // Should never reach here due to check above, but keep for safety
             return renderRoute(publicRoutes.landing.component);
         
         case 'home':
