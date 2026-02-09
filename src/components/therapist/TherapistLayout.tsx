@@ -361,11 +361,11 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}
     >
-      {/* Elite Header - Now working with forced visibility and safe area support */}
+      {/* Elite Header - MODEL A: Sticky positioning for natural scroll */}
       <header 
         className="therapist-layout-header"
         style={{
-          position: 'fixed',
+          position: 'sticky',  // ✅ MODEL A: Sticky, not fixed
           top: '0',
           left: '0', 
           right: '0',
@@ -783,17 +783,17 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Main Content - Gold Standard Natural Scrolling */}
+      {/* Main Content - MODEL A: Natural document flow */}
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
-          // 🔒 STABILITY: Natural scroll (per STABILITY_SCROLL_LOCK_RULES.md Rule #5)
+          // 🔒 MODEL A: Natural scroll, no marginTop needed with sticky header
           paddingBottom: 'max(env(safe-area-inset-bottom, 10px), 60px)',
           flex: '1 1 auto',
           minHeight: 0,  // ✅ Allows flexbox shrinking
-          WebkitOverflowScrolling: 'touch',  // ✅ Smooth iOS scrolling
-          marginTop: '60px'
-          // ✅ NO overflow restrictions - scrolls naturally via body
+          WebkitOverflowScrolling: 'touch'  // ✅ Smooth iOS scrolling
+          // ✅ NO marginTop - sticky header handles positioning
+          // ✅ NO overflow restrictions - browser controls scroll
         }}
       >
         <div 
