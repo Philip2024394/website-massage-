@@ -1275,10 +1275,19 @@ const App = () => {
             {/* 🚀 PWA STATE MANAGER - Facebook/Amazon standard state preservation */}
             <PWAStateManager onStateRestored={(restoredState) => {
                 logger.debug('PWA state restored', { restoredState });
-                // Handle restored chat state
-                if (restoredState?.isOpen) {
+                
+                // 🔥 CRITICAL FIX: Do NOT auto-open chat on landing page
+                // Only restore chat for non-landing pages
+                const currentPage = window.location.hash.replace('#', '').split('/')[0];
+                const isLandingOrHome = !currentPage || currentPage === 'landing' || currentPage === 'home' || currentPage === '';
+                
+                if (restoredState?.isOpen && !isLandingOrHome) {
+                    logger.debug('Restoring chat window state (not on landing page)');
                     state.setIsChatWindowVisible(true);
+                } else {
+                    logger.debug('Chat state not restored - on landing/home page or chat was closed');
                 }
+                
                 if (restoredState?.currentBooking) {
                     localStorage.setItem('currentBooking', JSON.stringify(restoredState.currentBooking));
                 }

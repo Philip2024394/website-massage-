@@ -4,6 +4,7 @@
  */
 
 export type Page = 
+    | 'loading' // Loading state
     | 'landing' 
     | 'auth' 
     | 'signIn'
@@ -28,6 +29,8 @@ export type Page =
     | 'registrationChoice' 
     | 'providerAuth' 
     | 'therapistStatus' 
+    | 'appwrite-diagnostic' // Appwrite diagnostic page
+    | 'diagnostic' // General diagnostic page 
     | 'therapistAvailability' // Therapist availability page
     | 'therapistPortal'
     | 'therapist' // Therapist portal/dashboard
@@ -256,6 +259,19 @@ export type Page =
     | 'admin-live-listings'
     | 'massage-place-dashboard'
     | 'facial-place-dashboard'
+    // Therapist Routes
+    | 'therapist-how-it-works'
+    | 'customers'
+    | 'therapist-customers'
+    | 'more-customers'
+    | 'analytics'
+    | 'therapist-analytics'
+    | 'banner-discount'
+    | 'therapist-banner-discount'
+    | 'therapist-hotel-villa-safe-pass'
+    | 'therapist-safepass-apply'
+    | 'place-safepass-apply'
+    | 'admin-safepass'
     // Admin Dashboard Routes (MERGED from apps/admin-dashboard)
     | 'admin'
     | 'admin-dashboard'

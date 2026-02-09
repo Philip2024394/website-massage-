@@ -392,8 +392,18 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   };
 
   const persistedState = loadPersistedState();
+  
+  // 🔥 CRITICAL FIX: Do NOT auto-open chat on mount, even with persisted state
+  // Chat should only open via explicit user action (Book Now button, etc.)
+  // This prevents chat from auto-opening on landing page load
   const mergedInitialState = persistedState 
-    ? { ...initialState, ...persistedState, isOpen: true, isMinimized: false }
+    ? { 
+        ...initialState, 
+        ...persistedState, 
+        // KEEP CHAT CLOSED - User must explicitly open it
+        isOpen: false,      // Changed from true
+        isMinimized: false  // Keep minimized state
+      }
     : initialState;
 
   const [chatState, _setChatState] = useState<ChatWindowState>(mergedInitialState);
@@ -867,12 +877,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Open chat with therapist
   const openChat = useCallback(async (therapist: ChatTherapist, mode: 'book' | 'schedule' | 'price' = 'book', source: 'share' | 'profile' | 'search' | null = null) => {
-    logger.debug('💬 Opening chat with:', therapist.name, 'mode:', mode, 'source:', source);
+    logger.debug('💬 Opening chat with:', { name: therapist.name, mode, source });
     if (source === 'share') {
       logger.debug('📤 SHARED LINK BOOKING: Direct provider booking (no broadcast)');
     }
-    logger.debug('� DEBUGGING: Previous therapist:', chatState.therapist?.name, chatState.therapist?.id);
-    logger.debug('🔍 DEBUGGING: New therapist:', therapist.name, therapist.id);
+    logger.debug('🔍 DEBUGGING: Previous therapist:', { name: chatState.therapist?.name, id: chatState.therapist?.id });
+    logger.debug('🔍 DEBUGGING: New therapist:', { name: therapist.name, id: therapist.id });
     logger.debug('�🔒 Locking chat to prevent accidental closure during booking');
     
     // 🔒 CRITICAL VALIDATION: Block if therapist.appwriteId is missing
@@ -1003,7 +1013,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     service: { serviceName: string; duration: number; price: number },
     options?: { isScheduled?: boolean; depositRequired?: boolean; depositPercentage?: number }
   ) => {
-    logger.debug('💬 Opening chat with pre-selected service:', therapist.name, service, options);
+    logger.debug('💬 Opening chat with pre-selected service:', { name: therapist.name, service, options });
     
     // 🔒 CRITICAL VALIDATION: Resolve therapist document ID with fallback chain
     const therapistDocumentId = therapist.appwriteId || therapist.$id || therapist.id;
@@ -1019,7 +1029,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       throw new Error(errorMsg);
     }
     
-    logger.info('✅ VALIDATION PASSED: therapist document ID resolved:', therapistDocumentId);
+    logger.info('✅ VALIDATION PASSED: therapist document ID resolved:', { therapistDocumentId });
     logger.debug('📋 ID resolution chain:', {
       appwriteId: therapist.appwriteId,
       $id: therapist.$id,
@@ -1049,7 +1059,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     };
     
     const draftBookingId = generateDraftBookingId();
-    logger.debug('🆔 Auto-created booking ID:', draftBookingId);
+    logger.debug('🆔 Auto-created booking ID:', { draftBookingId });
     
     // 🔒 ENSURE therapist object has appwriteId field set with resolved ID
     const therapistWithResolvedId: ChatTherapist = {
@@ -1100,7 +1110,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     if (currentUserId) {
       // ✅ Use resolved document ID for database queries
       const therapistIdForQuery = therapistDocumentId;
-      logger.debug('🔍 DEBUGGING: Loading messages (service) with resolved therapistId:', therapistIdForQuery);
+      logger.debug('🔍 DEBUGGING: Loading messages (service) with resolved therapistId:', { therapistIdForQuery });
       
       const messages = await loadMessages(therapistIdForQuery);
       if (messages.length > 0) {
@@ -1168,10 +1178,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   // Guards below prevent closing during booking - DO NOT REMOVE
   const closeChat = useCallback(() => {
     logger.debug('🔍 closeChat() called - Checking conditions...');
-    logger.debug('  - Current booking:', !!chatState.currentBooking);
-    logger.debug('  - Booking step:', chatState.bookingStep);
-    logger.debug('  - Is locked:', isLocked);
-    logger.debug('📍 CALL STACK:', new Error().stack);
+    logger.debug('  - Current booking:', { hasBooking: !!chatState.currentBooking });
+    logger.debug('  - Booking step:', { step: chatState.bookingStep });
+    logger.debug('  - Is locked:', { isLocked });
+    logger.debug('📍 CALL STACK:', { stack: new Error().stack });
     
     // CRITICAL: Don't close if there's an active booking or booking in progress
     // SPECIAL: 'details' step is critical for Order Now flow - never close during this step
@@ -1214,7 +1224,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
 
   // Set booking step
   const setBookingStep = useCallback((step: BookingStep) => {
-    logger.debug('📋 [setBookingStep] Setting step to:', step);
+    logger.debug('📋 [setBookingStep] Setting step to:', { step });
     
     // ✅ FIX: Use functional update to ensure we get latest state
     setChatState(prev => {
@@ -1248,7 +1258,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
             bookingId: prev.currentBooking.bookingId,
           };
           localStorage.setItem('active_booking_state', JSON.stringify(bookingState));
-          logger.debug('💾 Persisted booking state at step:', step);
+          logger.debug('💾 Persisted booking state at step:', { step });
         } catch (error) {
           logger.error('❌ Failed to persist booking state:', error);
         }
@@ -1312,11 +1322,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     logger.debug('═══════════════════════════════════════════');
     logger.debug('💬 [RELIABLE CHAT] Sending message');
     logger.debug('═══════════════════════════════════════════');
-    logger.debug('Current User ID:', currentUserId || '⚠️ Guest (not logged in)');
-    logger.debug('Current User Name:', currentUserName || 'Guest');
-    logger.debug('User Type:', isGuestUser ? '👤 GUEST' : '🔐 AUTHENTICATED');
-    logger.debug('Message Content Length:', messageContent?.trim()?.length || 0);
-    logger.debug('Therapist:', chatState.therapist?.name || '❌ MISSING', chatState.therapist?.id || '');
+    logger.debug('Current User ID:', { userId: currentUserId || '⚠️ Guest (not logged in)' });
+    logger.debug('Current User Name:', { userName: currentUserName || 'Guest' });
+    logger.debug('User Type:', { userType: isGuestUser ? '👤 GUEST' : '🔐 AUTHENTICATED' });
+    logger.debug('Message Content Length:', { length: messageContent?.trim()?.length || 0 });
+    logger.debug('Therapist:', { name: chatState.therapist?.name || '❌ MISSING', id: chatState.therapist?.id || '' });
     logger.debug('═══════════════════════════════════════════');
     
     // Basic validation
@@ -1349,7 +1359,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // Generate conversation room ID using standardized service
     const roomId = chatDataFlowService.generateConversationId(currentUserId, therapist.id);
     
-    logger.debug('📤 [RELIABLE] Sending to:', therapist.name);
+    logger.debug('📤 [RELIABLE] Sending to:', { name: therapist.name });
 
     const startTime = performance.now();
 
@@ -1471,7 +1481,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       
     } catch (error) {
       const latency = performance.now() - startTime;
-      logger.error('🚨 [100% FACEBOOK] Critical error after', latency.toFixed(2), 'ms:', error);
+      logger.error('🚨 [100% FACEBOOK] Critical error after', { latency: latency.toFixed(2) + 'ms', error });
       
       return { 
         sent: false, 
@@ -1550,7 +1560,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       return false;
     }
     
-    logger.debug('✅ Therapist Document ID resolved:', therapistDocumentId);
+    logger.debug('✅ Therapist Document ID resolved:', { therapistDocumentId });
     
     const transactionParams: BookingTransactionParams = {
       therapist: {
@@ -1612,7 +1622,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       // NO bookingCountdown - managed by timer hook
     }));
     
-    logger.debug('✅ [COMMIT] State updated with booking:', booking.bookingId);
+    logger.debug('✅ [COMMIT] State updated with booking:', { bookingId: booking.bookingId });
     
     // ═══════════════════════════════════════════════════════════════════════
     // Update booking state ref IMMEDIATELY (timer needs latest state)

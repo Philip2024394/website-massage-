@@ -632,12 +632,12 @@
           }
         }, 50); // Check more frequently
         
-        // EXTENDED TIMEOUT: Give more time for complex landing page to load (5 seconds)
+        // OPTIMIZED TIMEOUT: Faster splash dismiss for better UX (2 seconds max)
         setTimeout(function() {
           console.log('[SPLASH] Timeout reached - hiding splash screen');
           clearInterval(checkInterval);
           hideSplash();
-        }, 5000); // Allow up to 5 seconds for landing page to load completely
+        }, 2000); // Reduced from 5s to 2s for faster perceived performance
       })();
     </script>
     

@@ -23,6 +23,7 @@ import { X, Info } from 'lucide-react';
 import type { Therapist } from '../../types';
 import { MASSAGE_TYPE_DETAILS, getMassageTypeImage } from '../../constants';
 import { MassageTypeCard } from './MassageTypeCard';
+import logger from '../../utils/logger';
 
 interface TherapistServiceShowcaseProps {
     therapist: Therapist;
@@ -45,9 +46,9 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
 
     // 🎯 CRITICAL DEBUG: Log EVERY render to catch state resets
     logger.debug('🔄 TherapistServiceShowcase RENDER');
-    logger.debug('   isMassageTypesOpen:', isMassageTypesOpen);
-    logger.debug('   Therapist ID:', (therapist as any).id || (therapist as any).$id);
-    logger.debug('   Therapist Name:', therapist.name);
+    logger.debug('   isMassageTypesOpen:', { isMassageTypesOpen });
+    logger.debug('   Therapist ID:', { id: (therapist as any).id || (therapist as any).$id });
+    logger.debug('   Therapist Name:', { name: therapist.name });
 
     // 🔍 DEBUG: Component mount/unmount tracking
     React.useEffect(() => {
@@ -79,14 +80,14 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
     };
 
     const openMassageTypes = () => {
-        logger.debug('✅ openMassageTypes() called at', new Date().toISOString());
+        logger.debug('✅ openMassageTypes() called at', { timestamp: new Date().toISOString() });
         setIsMassageTypesOpen(true);
         setExpandedCards({}); // Reset expansion state when opening modal
         document.body.style.overflow = 'auto';
     };
 
     const closeMassageTypes = () => {
-        logger.debug('🚨 closeMassageTypes() called at', new Date().toISOString());
+        logger.debug('🚨 closeMassageTypes() called at', { timestamp: new Date().toISOString() });
         setIsMassageTypesOpen(false);
         setExpandedCards({}); // Reset expansion state when closing modal
         document.body.style.overflow = 'auto';

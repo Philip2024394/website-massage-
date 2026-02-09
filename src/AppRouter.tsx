@@ -101,7 +101,8 @@ const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipA
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
-const AppwriteDiagnostic = React.lazy(() => import('./pages/AppwriteDiagnostic'));
+const AppwriteDiagnostic = React.lazy(() => import('./pages/AppwriteDiagnostic').then(m => ({ default: m.AppwriteDiagnostic })));
+const DiagnosticPage = React.lazy(() => import('./pages/DiagnosticPage').then(m => ({ default: m.DiagnosticPage })));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
 const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
 const RoleSelectionPage = React.lazy(() => import('./pages/auth/RoleSelectionPage'));
@@ -484,7 +485,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
      * Route matcher - Enterprise pattern for clean routing
      * 🚀 WRAPPED: With enterprise page loading system
      */
-    logger.debug('[ROUTER] Resolving page:', page, '| Type:', typeof page);
+    logger.debug('[ROUTER] Resolving page:', { page, type: typeof page });
     
     // ⚠️ CRITICAL: LoadingGate must be completely isolated - NO WRAPPERS
     if (page === 'loading') {
@@ -504,16 +505,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             variant="page"
             pageVariant={
                 page.includes('therapist') ? 'therapist-dashboard' : 
-                page === 'home' || page === 'landing' ? 'home' : 
+                page === 'home' ? 'home' : 
                 'generic'
             }
         >
             {(() => {
                 switch (page) {
         // ===== PUBLIC ROUTES =====
-        case 'landing':
-            // Should never reach here due to check above, but keep for safety
-            return renderRoute(publicRoutes.landing.component);
+        // Note: 'landing' case removed - already handled by early return at line 496
         
         case 'home':
             // Allow everyone to access home page
@@ -597,7 +596,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // � Appwrite Connection Diagnostic
         case 'appwrite-diagnostic':
-            return renderRoute(() => <AppwriteDiagnostic />, {
+            return renderRoute(AppwriteDiagnostic, {
                 t: t,
                 language: props.language,
                 onNavigate: props.onNavigate
@@ -605,7 +604,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // �🔬 Appwrite Connection Diagnostic
         case 'diagnostic':
-            return renderRoute(() => <DiagnosticPage />, {
+            return renderRoute(DiagnosticPage, {
                 t: t,
                 language: props.language,
                 onNavigate: props.onNavigate
@@ -689,7 +688,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(authRoutes.signin.component, {
                 mode: 'signin',
                 onAuthSuccess: async (userType: string) => {
-                    logger.info('Sign in successful - navigating to dashboard for:', userType);
+                    logger.info('Sign in successful - navigating to dashboard for:', { userType });
                     
                     // Restore user session to populate loggedInUser state
                     if (props.restoreUserSession) {
@@ -701,7 +700,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     // Check for PWA redirect flag
                     const pwaRedirect = sessionStorage.getItem('pwa-redirect-after-login');
                     if (pwaRedirect) {
-                        logger.info('PWA redirect detected - navigating to:', pwaRedirect);
+                        logger.info('PWA redirect detected - navigating to:', { pwaRedirect });
                         sessionStorage.removeItem('pwa-redirect-after-login');
                         props.onNavigate(pwaRedirect as Page);
                         return;
@@ -771,7 +770,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(authRoutes.signup.component, {
                 mode: 'signup',
                 onAuthSuccess: async (userType: string) => {
-                    logger.info('Signup successful - navigating to dashboard for:', userType);
+                    logger.info('Signup successful - navigating to dashboard for:', { userType });
                     
                     // Restore user session to populate loggedInUser state
                     if (props.restoreUserSession) {
@@ -880,8 +879,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // ===== PROFILE ROUTES =====
         case 'therapist-profile':
             logger.debug('[TherapistProfile] Unified profile route');
-            logger.debug('  - selectedTherapist:', props.selectedTherapist);
-            logger.debug('  - URL:', window.location.href);
+            logger.debug('  - selectedTherapist:', { therapist: props.selectedTherapist });
+            logger.debug('  - URL:', { url: window.location.href });
             
             // Parse ID from hash URL (/#/therapist-profile/123) or pathname
             let pathForId = window.location.pathname;
@@ -896,7 +895,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             const pathMatch = pathForId.match(/\/(?:therapist-profile|profile\/therapist)\/([a-z0-9-]+)/);
             if (pathMatch) {
                 const urlId = pathMatch[1];
-                logger.debug('  - Extracted ID:', urlId);
+                logger.debug('  - Extracted ID:', { urlId });
                 
                 // Extract actual ID (may include name, e.g., "692467a3001f6f05aaa1-budi")
                 // Try exact match first, then match by ID prefix
@@ -909,7 +908,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 });
                 
                 if (foundTherapist) {
-                    logger.debug('  Found in memory:', foundTherapist.name);
+                    logger.debug('  Found in memory:', { name: foundTherapist.name });
                     return renderRoute(profileRoutes.therapistProfile.component, {
                         therapist: foundTherapist,
                         onBack: () => props.setPage?.('home'),
@@ -1029,8 +1028,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // NEW: Simple share routes
         case 'share-therapist':
             logger.debug('[ShareTherapist] Rendering new share page');
-            logger.debug('  - Therapists available:', props.therapists?.length || 0);
-            logger.debug('  - URL:', window.location.href);
+            logger.debug('  - Therapists available:', { count: props.therapists?.length || 0 });
+            logger.debug('  - URL:', { url: window.location.href });
             return renderRoute(profileRoutes.shareTherapist.component);
         
         case 'share-place':
@@ -1047,12 +1046,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // ⚠️ Used by thousands of shared links in production
         case 'shared-therapist-profile':
             logger.debug('[ROUTER] Route matched: shared-therapist-profile');
-            logger.debug('Current path:', window.location.pathname);
-            logger.debug('Full URL:', window.location.href);
-            logger.debug('Route name:', page);
-            logger.debug('Has loggedInCustomer:', !!props.loggedInCustomer);
-            logger.debug('Has userLocation:', !!props.userLocation);
-            logger.debug('Language:', props.language);
+            logger.debug('Current path:', { path: window.location.pathname });
+            logger.debug('Full URL:', { url: window.location.href });
+            logger.debug('Route name:', { page });
+            logger.debug('Has loggedInCustomer:', { hasCustomer: !!props.loggedInCustomer });
+            logger.debug('Has userLocation:', { hasLocation: !!props.userLocation });
+            logger.debug('Language:', { language: props.language });
             logger.debug('[ROUTER] Rendering SharedTherapistProfile component...');
             
             // Restore full shared profile UI (direct import, non-lazy)
@@ -1063,14 +1062,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     loggedInCustomer={props.loggedInCustomer}
                     // handleQuickBookWithChat={props.handleQuickBookWithChat} // ❌ REMOVED: Complex event chain
                     onNavigate={props.onNavigate}
-                    language={props.language}
+                    language={props.language as 'id' | 'en' | 'gb'}
                 />
             );
         
         case 'massage-place-profile':
             logger.debug('[MassagePlaceProfile] Rendering massage place profile page');
-            logger.debug('  - selected Place:', props.selectedPlace);
-            logger.debug('  - URL path:', window.location.pathname);
+            logger.debug('  - selected Place:', { place: props.selectedPlace });
+            logger.debug('  - URL path:', { path: window.location.pathname });
             
             // Check if accessing via URL with ID parameter
             const placePathMatch = window.location.pathname.match(/\/profile\/place\/(\d+-[\w-]+)/);
@@ -1131,7 +1130,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'facial-place-profile':
             logger.debug('[FacialPlaceProfile] Rendering facial place profile page');
-            logger.debug('  - selectedPlace:', props.selectedPlace);
+            logger.debug('  - selectedPlace:', { place: props.selectedPlace });
             
             return renderRoute(profileRoutes.facialPlace.component, {
                 place: props.selectedPlace,
@@ -1420,8 +1419,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'dashboard':
             // Redirect to appropriate dashboard based on logged-in user type
             if (props.user) {
-                const userType = props.user.userType || props.user.role || props.user.type;
-                if (userType === 'therapist' || props.user.therapistId || props.user.type === 'therapist') {
+                const userType = props.user.userType || props.user.role;
+                if (userType === 'therapist' || props.user.therapistId) {
                     // Redirect to therapist dashboard
                     return renderRoute(therapistRoutes.dashboard.component, {
                         therapist: props.user,
@@ -1510,7 +1509,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'bookings':
         case 'therapist-bookings':
             logger.debug('[ROUTE RESOLVE] therapist-bookings → TherapistBookings');
-            logger.debug('[ROUTER OK] therapist-bookings', '/dashboard/therapist/bookings');
+            logger.debug('[ROUTER OK] therapist-bookings', { route: '/dashboard/therapist/bookings' });
             return renderRoute(therapistRoutes.bookings.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
@@ -1678,7 +1677,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             logger.debug('[ROUTE RESOLVE] banner-discount → BannerDiscountPage');
             return renderRoute(therapistRoutes.bannerDiscount.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('customers'),
+                onBack: () => props.onNavigate?.('therapist-customers' as Page),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
@@ -1703,7 +1702,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'schedule':
         case 'therapist-schedule':
             logger.debug('[ROUTE RESOLVE] therapist-schedule → TherapistSchedule');
-            logger.debug('[ROUTER OK] therapist-schedule', '/dashboard/therapist/schedule');
+            logger.debug('[ROUTER OK] therapist-schedule', { route: '/dashboard/therapist/schedule' });
             return renderRoute(therapistRoutes.schedule.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),

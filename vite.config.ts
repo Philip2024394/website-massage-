@@ -251,8 +251,10 @@ export default defineConfig({
             return 'route-admin';
           }
           
-          // Therapist routes
-          if (id.includes('src/pages/Therapist') || id.includes('apps/therapist-dashboard')) {
+          // Therapist & Chat routes (merged to avoid circular dependency)
+          if (id.includes('src/pages/Therapist') || id.includes('apps/therapist-dashboard') ||
+              id.includes('PersistentChatProvider') || id.includes('ChatWindow') || 
+              id.includes('MessageCenter') || id.includes('src/pages/ChatRoom')) {
             return 'route-therapist';
           }
           
@@ -268,12 +270,6 @@ export default defineConfig({
             return 'route-payment';
           }
           
-          // Chat system (large with PersistentChatProvider)
-          if (id.includes('PersistentChatProvider') || id.includes('ChatWindow') || 
-              id.includes('MessageCenter') || id.includes('src/pages/ChatRoom')) {
-            return 'route-chat';
-          }
-          
           // Membership & Jobs
           if (id.includes('src/pages/Membership') || id.includes('src/pages/MassageJobs') ||
               id.includes('src/pages/BrowseJobs') || id.includes('src/pages/Employer')) {
@@ -286,11 +282,12 @@ export default defineConfig({
           }
           
           // Content pages (static/informational)
-          if (id.includes('src/pages/About') || id.includes('src/pages/FAQ') ||
-              id.includes('src/pages/Contact') || id.includes('src/pages/Terms') ||
-              id.includes('src/pages/Privacy') || id.includes('src/pages/Press')) {
-            return 'route-content';
-          }
+          // ⚠️ DISABLED: Circular dependency fix - let Vite handle content page chunking
+          // if (id.includes('src/pages/About') || id.includes('src/pages/FAQ') ||
+          //     id.includes('src/pages/Contact') || id.includes('src/pages/Terms') ||
+          //     id.includes('src/pages/Privacy') || id.includes('src/pages/Press')) {
+          //   return 'route-content';
+          // }
           
           // Let Vite automatically split the rest to avoid circular dependencies
           return undefined;

@@ -710,7 +710,7 @@ const HomePage: React.FC<HomePageProps> = ({
     };
 
     // Helper to check if provider is a featured sample (always show in all cities)
-    const isFeaturedSample = (provider: any, type: 'therapist' | 'place'): boolean => {
+    const isFeaturedSample = (provider: any, type: 'therapist' | 'place' | 'hotel'): boolean => {
         if (!provider) return false;
         
         const name = provider.name?.toLowerCase() || '';
@@ -1324,7 +1324,7 @@ const HomePage: React.FC<HomePageProps> = ({
             {/* Universal Header */}
             <UniversalHeader 
                 language={language}
-                onLanguageChange={onLanguageChange}
+                onLanguageChange={onLanguageChange as (lang: string) => void}
                 onMenuClick={() => {
                     logger.debug('UniversalHeader burger menu clicked in HomePage');
                     setIsMenuOpen(true);

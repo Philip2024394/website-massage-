@@ -28,16 +28,16 @@ export const AppLoadingManager: React.FC<AppLoadingManagerProps> = ({
   // Manage global loading state based on app initialization
   useEffect(() => {
     console.log('✅ Splash hidden - boot manager initialized');
-    // P0 FIX: NEVER block landing page
-    // Landing page must render immediately, no conditions
+    // P0 FIX: NEVER block landing page or home page
+    // Landing page and home must render immediately, no loading states
     setGlobalLoading(false);
   }, [setGlobalLoading]);
 
   // Manage page loading state
   useEffect(() => {
-    // P0 FIX: Landing page NEVER shows loading spinner
-    if (page === 'landing') {
-      console.log('🔥 Landing mounted');
+    // P0 FIX: Landing page and home NEVER show loading spinner
+    if (page === 'landing' || page === 'home' || page === '') {
+      console.log('🔥 Landing/Home mounted - no loading state');
       setPageLoading(false);
       return;
     }

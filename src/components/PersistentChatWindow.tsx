@@ -365,8 +365,11 @@ export function PersistentChatWindow() {
         logger.debug('📨 New booking notification received:', notification);
         setBookingNotifications(prev => [...prev, notification]);
         
-        // Auto-open chat if enabled
-        if (!chatState.isOpen) {
+        // Auto-open chat if enabled (ONLY for therapist view, NOT on landing page)
+        // Check if we're not on landing page before auto-opening
+        const currentPage = window.location.hash.replace('#', '').split('/')[ 0];
+        if (!chatState.isOpen && currentPage !== 'landing' && currentPage !== '' && currentPage !== 'home') {
+          logger.debug('🔔 Auto-opening chat for therapist notification');
           maximizeChat();
         }
       });
@@ -405,7 +408,7 @@ export function PersistentChatWindow() {
   useEffect(() => {
     // Sync to HTML attribute for CSS selectors if needed
     document.documentElement.setAttribute('data-lang', currentLanguage);
-    logger.debug('🌐 [CHAT UI] Language:', currentLanguage === 'id' ? 'Indonesian' : 'English');
+    logger.debug('🌐 [CHAT UI] Language:', { language: currentLanguage === 'id' ? 'Indonesian' : 'English' });
   }, [currentLanguage]);
 
   // Handle therapist booking responses
@@ -517,7 +520,7 @@ export function PersistentChatWindow() {
   useEffect(() => {
     if (chatState.currentBooking && 
         (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'waiting_others')) {
-      logger.debug('🔄 Resetting countdown timer for new booking:', chatState.currentBooking.id);
+      logger.debug('🔄 Resetting countdown timer for new booking:', { bookingId: chatState.currentBooking.id });
       setTherapistResponseCountdown(300); // Reset to 5 minutes
     }
   }, [chatState.currentBooking?.id]); // Only reset when booking ID changes (new booking)
@@ -564,7 +567,7 @@ export function PersistentChatWindow() {
 
   // Get price for duration - consistent with TherapistCard pricing logic
   const getPrice = (minutes: number) => {
-    logger.debug('🔍 [PRICING DEBUG] Getting price for', minutes, 'minutes');
+    logger.debug('🔍 [PRICING DEBUG] Getting price for', { minutes });
     logger.debug('🔍 [PRICING DEBUG] Therapist object:', {
       name: therapist.name,
       price60: therapist.price60,
@@ -580,13 +583,13 @@ export function PersistentChatWindow() {
       (therapist.price120 && parseInt(therapist.price120) > 0)
     );
 
-    logger.debug('🔍 [PRICING DEBUG] Has valid separate fields:', hasValidSeparateFields);
+    logger.debug('🔍 [PRICING DEBUG] Has valid separate fields:', { hasValidSeparateFields });
 
     if (hasValidSeparateFields) {
       const priceField = `price${minutes}` as keyof typeof therapist;
       const price = therapist[priceField];
       const finalPrice = price ? parseInt(price as string) * 1000 : 0;
-      logger.debug('✅ [PRICING DEBUG] Using separate field:', priceField, '=', price, '→', finalPrice);
+      logger.debug('✅ [PRICING DEBUG] Using separate field:', { priceField, price, finalPrice });
       return finalPrice;
     }
 
@@ -594,7 +597,7 @@ export function PersistentChatWindow() {
     const pricing = therapist.pricing || {};
     const basePrice = pricing[minutes.toString()] || pricing['60'] || 0;
     const finalPrice = basePrice * 1000; // Multiply by 1000 to match TherapistCard format
-    logger.debug('✅ [PRICING DEBUG] Using pricing object:', pricing, '→', basePrice, '→', finalPrice);
+    logger.debug('✅ [PRICING DEBUG] Using pricing object:', { pricing, basePrice, finalPrice });
     return finalPrice;
   };
 
@@ -674,12 +677,12 @@ export function PersistentChatWindow() {
     
     logger.debug('═══════════════════════════════════════════');
     logger.debug('🚀 [ORDER NOW] Form submission started');
-    logger.debug('Current URL:', window.location.href);
-    logger.debug('Current booking step:', chatState.bookingStep);
-    logger.debug('Chat is open:', chatState.isOpen);
-    logger.debug('Chat is locked:', isLocked);
+    logger.debug('Current URL:', { url: window.location.href });
+    logger.debug('Current booking step:', { step: chatState.bookingStep });
+    logger.debug('Chat is open:', { isOpen: chatState.isOpen });
+    logger.debug('Chat is locked:', { isLocked });
     logger.debug('✅ [PROTECTION] Chat locked during order process');
-    logger.debug('🔌 [CONNECTION] Real-time connected:', isConnected);
+    logger.debug('🔌 [CONNECTION] Real-time connected:', { isConnected });
     logger.debug('📡 [CONNECTION] Testing chat connectivity...');
     
     // Test real-time connection before proceeding
@@ -768,12 +771,12 @@ export function PersistentChatWindow() {
       const currentStep = chatState.bookingStep;
       
       logger.debug('🔍 [ORDER NOW MONITOR] Progress check after 8 seconds:');
-      logger.debug('- Booking created:', bookingCreated);
-      logger.debug('- Current step:', currentStep);
+      logger.debug('- Booking created:', { bookingCreated });
+      logger.debug('- Current step:', { currentStep });
       
       if (bookingCreated && currentStep === 'chat') {
         logger.debug('✅ ORDER NOW SUCCESS - Booking created and chat opened!');
-        logger.debug('- Flow completed in', Date.now() - orderNowStartTime, 'ms');
+        logger.debug('- Flow completed in', { durationMs: Date.now() - orderNowStartTime });
       } else if (!bookingCreated) {
         logger.debug('🔍 ORDER NOW IN PROGRESS - Booking creation still processing');
         logger.debug('- This is normal for network delays or validation');
@@ -824,7 +827,7 @@ export function PersistentChatWindow() {
     
     // ✅ CRITICAL: Set customer details with full WhatsApp (country code + number)
     const fullWhatsApp = `${customerForm.countryCode}${customerForm.whatsApp}`;
-    logger.debug('✅ Setting customer WhatsApp:', fullWhatsApp);
+    logger.debug('✅ Setting customer WhatsApp:', { fullWhatsApp });
     
     setCustomerDetails({
       name: customerForm.name,
@@ -904,18 +907,18 @@ export function PersistentChatWindow() {
       logger.debug('═══════════════════════════════════════════');
       logger.debug('📤 PRE-SEND VALIDATION');
       logger.debug('═══════════════════════════════════════════');
-      logger.debug('✓ Customer Name:', customerForm.name);
-      logger.debug('✓ Customer WhatsApp:', `${customerForm.countryCode}${customerForm.whatsApp}`);
-      logger.debug('✓ Treatment For:', customerForm.massageFor);
-      logger.debug('✓ Location Type:', customerForm.locationType);
-      logger.debug('✓ Location:', customerForm.location);
-      logger.debug('✓ Coordinates:', customerForm.coordinates);
-      logger.debug('✓ Selected Duration:', selectedDuration);
-      logger.debug('✓ Original Price:', originalPrice);
-      logger.debug('✓ Discounted Price:', discountedPrice);
-      logger.debug('✓ Therapist:', therapist?.name, therapist?.id);
-      logger.debug('✓ Therapist Pricing:', therapist?.pricing);
-      logger.debug('✓ Booking Message Length:', bookingMessage.length, 'chars');
+      logger.debug('✓ Customer Name:', { name: customerForm.name });
+      logger.debug('✓ Customer WhatsApp:', { whatsapp: `${customerForm.countryCode}${customerForm.whatsApp}` });
+      logger.debug('✓ Treatment For:', { massageFor: customerForm.massageFor });
+      logger.debug('✓ Location Type:', { locationType: customerForm.locationType });
+      logger.debug('✓ Location:', { location: customerForm.location });
+      logger.debug('✓ Coordinates:', { coordinates: customerForm.coordinates });
+      logger.debug('✓ Selected Duration:', { selectedDuration });
+      logger.debug('✓ Original Price:', { originalPrice });
+      logger.debug('✓ Discounted Price:', { discountedPrice });
+      logger.debug('✓ Therapist:', { name: therapist?.name, id: therapist?.id });
+      logger.debug('✓ Therapist Pricing:', { pricing: therapist?.pricing });
+      logger.debug('✓ Booking Message Length:', { length: bookingMessage.length, unit: 'chars' });
       logger.debug('═══════════════════════════════════════════');
       logger.debug('📤 Sending booking message...');
       
@@ -923,12 +926,12 @@ export function PersistentChatWindow() {
         const result = await sendMessage(bookingMessage);
         logger.debug('═══════════════════════════════════════════');
         logger.debug('📤 [RESULT CHECK] Message sent result:', result);
-        logger.debug('📤 [RESULT CHECK] result type:', typeof result);
-        logger.debug('📤 [RESULT CHECK] result.sent value:', result.sent);
-        logger.debug('📤 [RESULT CHECK] result.sent type:', typeof result.sent);
-        logger.debug('📤 [RESULT CHECK] result.sent === true:', result.sent === true);
-        logger.debug('📤 [RESULT CHECK] Boolean(result.sent):', Boolean(result.sent));
-        logger.debug('📤 [RESULT CHECK] Full result object:', JSON.stringify(result, null, 2));
+        logger.debug('📤 [RESULT CHECK] result type:', { type: typeof result });
+        logger.debug('📤 [RESULT CHECK] result.sent value:', { sent: result.sent });
+        logger.debug('📤 [RESULT CHECK] result.sent type:', { type: typeof result.sent });
+        logger.debug('📤 [RESULT CHECK] result.sent === true:', { isTrue: result.sent === true });
+        logger.debug('📤 [RESULT CHECK] Boolean(result.sent):', { boolean: Boolean(result.sent) });
+        logger.debug('📤 [RESULT CHECK] Full result object:', { result: JSON.stringify(result, null, 2) });
         logger.debug('═══════════════════════════════════════════');
         
         if (result.sent) {
@@ -978,15 +981,15 @@ export function PersistentChatWindow() {
               logger.debug('📋 [FLOW STEP 2 ✅] Booking creation completed');
               logger.debug('📋 [FLOW STEP 3 →] Chat session already exists, proceeding to step transition...');
               logger.debug('Switching to chat step...');
-              logger.debug('Current URL (should NOT change):', window.location.href);
-              logger.debug('Current step before setBookingStep:', chatState.bookingStep);
+              logger.debug('Current URL (should NOT change):', { url: window.location.href });
+              logger.debug('Current step before setBookingStep:', { step: chatState.bookingStep });
               logger.debug('═══════════════════════════════════════════');
               
               setBookingStep('chat');
               
               logger.debug('✅ CHAT OPENED AFTER SCHEDULED BOOKING');
               logger.debug('✅ setBookingStep("chat") called for scheduled booking');
-              logger.debug('Current step after setBookingStep:', chatState.bookingStep);
+              logger.debug('Current step after setBookingStep:', { step: chatState.bookingStep });
             } catch (schedError) {
               logger.error('❌ Scheduled booking failed:', schedError);
               
@@ -1086,7 +1089,7 @@ export function PersistentChatWindow() {
                 bookingCreated ? undefined : `Booking creation failed after ${bookingResult.attempts} attempts`
               );
               
-              logger.debug('📝 [ORDER_NOW_MONITOR] Booking created:', !!bookingCreated, '| Booking ID:', bookingCreated ? (bookingCreated as any).id : null);
+              logger.debug('📝 [ORDER_NOW_MONITOR] Booking created:', { created: !!bookingCreated, bookingId: bookingCreated ? (bookingCreated as any).id : null });
               
               // ✅ FIXED: Only open chat if booking succeeded
               if (!bookingCreated) {
@@ -1096,7 +1099,7 @@ export function PersistentChatWindow() {
                 logger.error('📊 [ORDER_NOW_MONITOR] Failure reason:', errorCategory);
                 logger.error('📊 [ORDER_NOW_MONITOR] Error details:', bookingResult.error?.message);
                 logger.error('📊 [ORDER_NOW_MONITOR] Total attempts:', bookingResult.attempts);
-                logger.error('📊 [ORDER_NOW_MONITOR] Total duration:', bookingResult.duration, 'ms');
+                logger.error('📊 [ORDER_NOW_MONITOR] Total duration:', { duration: bookingResult.duration, unit: 'ms' });
                 
                 bookingFlowMonitor.checkpoint('booking_creation', 'failed',
                   { 
@@ -1134,10 +1137,10 @@ export function PersistentChatWindow() {
                 bookingId: (bookingCreated as any)?.id || 'unknown',
                 timestamp: new Date().toISOString()
               });
-              logger.debug('Current URL (should NOT change):', window.location.href);
-              logger.debug('🔍 [DEBUG] Current bookingStep BEFORE setBookingStep:', chatState.bookingStep);
-              logger.debug('🔍 [DEBUG] Current booking object:', chatState.currentBooking);
-              logger.debug('🔍 [DEBUG] isOpen:', chatState.isOpen);
+              logger.debug('Current URL (should NOT change):', { url: window.location.href });
+              logger.debug('🔍 [DEBUG] Current bookingStep BEFORE setBookingStep:', { step: chatState.bookingStep });
+              logger.debug('🔍 [DEBUG] Current booking object:', { booking: chatState.currentBooking });
+              logger.debug('🔍 [DEBUG] isOpen:', { isOpen: chatState.isOpen });
               logger.debug('═══════════════════════════════════════════');
               
               // ✅ State update happens atomically in createBooking - no need to call setBookingStep again
@@ -1215,7 +1218,7 @@ export function PersistentChatWindow() {
               });
               
               if (fallbackResult.success) {
-                logger.debug('✅ [FALLBACK] Isolated booking created despite message failure:', fallbackResult.bookingId);
+                logger.debug('✅ [FALLBACK] Isolated booking created despite message failure:', { bookingId: fallbackResult.bookingId });
                 logger.debug('🔄 [FALLBACK] Switching to chat after successful fallback booking...');
                 setBookingStep('chat');
               } else {
@@ -1456,7 +1459,7 @@ export function PersistentChatWindow() {
   // ========================================================================
 
   const handleBookingExpire = (bookingId: string) => {
-    logger.debug('Booking expired:', bookingId);
+    logger.debug('Booking expired:', { bookingId });
     addSystemNotification('⏰ Booking request expired due to timeout.');
   };
 
@@ -1494,8 +1497,8 @@ export function PersistentChatWindow() {
   }
 
   // 🔍 DEBUGGING: Log therapist data being displayed
-  logger.debug('🔍 PersistentChatWindow RENDER: therapist being displayed:', therapist?.name, therapist?.id);
-  logger.debug('🔍 PersistentChatWindow RENDER: chatState.therapist:', chatState.therapist?.name, chatState.therapist?.id);
+  logger.debug('🔍 PersistentChatWindow RENDER: therapist being displayed:', { name: therapist?.name, id: therapist?.id });
+  logger.debug('🔍 PersistentChatWindow RENDER: chatState.therapist:', { name: chatState.therapist?.name, id: chatState.therapist?.id });
 
   // Full chat window
   return (
@@ -1629,7 +1632,7 @@ export function PersistentChatWindow() {
             // Sync to HTML attribute
             document.documentElement.setAttribute('data-lang', newLang);
             
-            logger.debug('🌐 [UI LANGUAGE] Switched to:', newLang === 'id' ? 'Indonesian' : 'English');
+            logger.debug('🌐 [UI LANGUAGE] Switched to:', { language: newLang === 'id' ? 'Indonesian' : 'English' });
             logger.debug('💬 [MESSAGES] Stay in original language (NOT translated)');
           }}
           id="language-selector" 
@@ -3067,7 +3070,7 @@ export function PersistentChatWindow() {
                     onStartService={() => logger.debug('Start service')}
                     onContactTherapist={() => window.open(`tel:${therapist.phone}`)}
                     onEmergencyContact={() => window.open('tel:911')}
-                    onConfirmPaymentMethod={(method) => logger.debug('Payment method:', method)}
+                    onConfirmPaymentMethod={(method) => logger.debug('Payment method:', { method })}
                   />
                 )}
 

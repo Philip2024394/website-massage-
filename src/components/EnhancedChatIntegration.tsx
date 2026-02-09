@@ -198,7 +198,7 @@ Please verify the payment and confirm/reject within 30 minutes.
 
   const sendToProviderChat = async (providerId: string, message: string) => {
     // This would integrate with the provider's chat system
-    logger.debug(`Sending to provider ${providerId}:`, message);
+    logger.debug(`Sending to provider ${providerId}:`, { message });
     
     // Play notification sound for provider
     await mp3NotificationService.playNotification('booking_confirmed');

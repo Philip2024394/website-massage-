@@ -82,13 +82,13 @@ export default function LoadingGate() {
         fontWeight: 600,
       }}
     >
-      {/* Brand Header */}
-      <div style={{ marginBottom: "32px", textAlign: "center" }}>
-        <h1 style={{ fontSize: "48px", fontWeight: "bold", marginBottom: "8px" }}>
-          <span style={{ color: "#fff" }}>Inda</span>
-          <span style={{ color: "#fff" }}>Street</span>
+      {/* Brand Header - Enhanced visibility */}
+      <div style={{ marginBottom: "32px", textAlign: "center", zIndex: 10, position: "relative" }}>
+        <h1 style={{ fontSize: "48px", fontWeight: "bold", marginBottom: "8px", color: "#ffffff", textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+          <span style={{ color: "#ffffff" }}>Inda</span>
+          <span style={{ color: "#ffffff" }}>Street</span>
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.9)", fontSize: "18px", fontWeight: "500" }}>
+        <p style={{ color: "#ffffff", fontSize: "18px", fontWeight: "500", opacity: 1, textShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
           Professional Massage Services
         </p>
       </div>

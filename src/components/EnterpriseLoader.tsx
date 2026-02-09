@@ -131,12 +131,12 @@ export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
         aria-live="polite"
         aria-label={progress.message || "Application is loading"}
       >
-        {/* Brand Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-white mb-2">
+        {/* Brand Header - Enhanced visibility */}
+        <div className="mb-8 text-center" style={{ zIndex: 10, position: "relative" }}>
+          <h1 className="text-4xl font-bold mb-2" style={{ color: "#ffffff", textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
             IndaStreet
           </h1>
-          <p className="text-white/90 text-lg font-medium">
+          <p className="text-lg font-medium" style={{ color: "#ffffff", opacity: 1, textShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
             Professional Massage Services
           </p>
         </div>
