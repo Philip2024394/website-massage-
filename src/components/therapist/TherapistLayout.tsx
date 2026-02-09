@@ -799,8 +799,9 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         <div 
           className="therapist-content-wrapper"
           style={{
-            paddingBottom: '40px',
-            minHeight: 'calc(100vh - 60px)'  // ✅ Ensures full viewport coverage
+            paddingBottom: '40px'
+            // ✅ MODEL A: NO minHeight calc() - content flows naturally with sticky header
+            // ✅ Sticky header means NO offset needed - content starts immediately after header
           }}
         >
           {children}

@@ -1125,8 +1125,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="w-full px-2 py-3">
+      {/* Main Content - MODEL A: NO top padding, sticky header provides spacing */}
+      <main className="w-full px-2 pb-3">
 
           {/* 🆕 ELITE FIX: Therapist Connection Status Indicator (Facebook/Amazon Standard) */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">

@@ -507,7 +507,8 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
 .therapist-layout-content {
   padding-bottom: max(env(safe-area-inset-bottom, 20px), 80px) !important;
   margin-bottom: max(env(safe-area-inset-bottom, 20px), 60px) !important;
-  min-height: calc(100vh - 60px) !important;
+  /* ✅ MODEL A: NO calc() - sticky header needs no viewport offset */
+  min-height: auto !important;
   /* ✅ MODEL A: overflow visible - browser controls scroll */
   overflow: visible !important;
   -webkit-overflow-scrolling: touch !important;
@@ -532,8 +533,9 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
   }
   
   .therapist-content-wrapper {
-    padding-bottom: max(env(safe-area-inset-bottom, 80px), 140px) !important;
-    margin-bottom: 40px !important;
+    /* ✅ MODEL A: Reduced excessive spacing - sticky header needs no offset */
+    padding-bottom: max(env(safe-area-inset-bottom, 40px), 60px) !important;
+    margin-bottom: 0 !important;
   }
   
   /* Fix for buttons at bottom of page */
@@ -601,7 +603,8 @@ button:not(:has(span)):not(:has(.text)):not(.btn-small) {
   .therapist-content-wrapper {
     position: relative !important;
     z-index: 1 !important;
-    min-height: calc(100vh - 60px) !important;
+    /* ✅ MODEL A: NO calc() - sticky header needs no viewport offset */
+    min-height: auto !important;
   }
   
   /* Ensure content can be scrolled past footer elements */
