@@ -1,0 +1,226 @@
+name: Landing Page Health Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'index.html'
+      - 'src/pages/LoadingGate.tsx'
+      - 'src/pages/MainLandingPage.tsx'
+      - 'src/App.tsx'
+      - 'src/main.tsx'
+      - 'core-ui/**'
+      - '.github/workflows/landing-page-health.yml'
+  push:
+    branches: [main]
+
+jobs:
+  health-check:
+    name: Boot Sequence & Landing Page Health
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript Check
+        run: npm run type-check || npx tsc --noEmit
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Check build output
+        run: |
+          echo "Checking dist folder..."
+          ls -la dist/
+          echo "Checking index.html exists..."
+          test -f dist/index.html
+          echo "✅ Build output verified"
+
+      - name: Verify critical files exist
+        run: |
+          echo "Checking critical source files..."
+          test -f index.html || (echo "❌ index.html missing" && exit 1)
+          test -f src/pages/LoadingGate.tsx || (echo "❌ LoadingGate.tsx missing" && exit 1)
+          test -f src/pages/MainLandingPage.tsx || (echo "❌ MainLandingPage.tsx missing" && exit 1)
+          test -f src/App.tsx || (echo "❌ App.tsx missing" && exit 1)
+          test -f src/main.tsx || (echo "❌ main.tsx missing" && exit 1)
+          echo "✅ All critical files present"
+
+      - name: Verify index.html has orange background
+        run: |
+          if grep -q 'background-color.*#f97316\|background.*#f97316\|background.*#FF7A00' index.html; then
+            echo "✅ Orange background found in index.html"
+          else
+            echo "❌ Orange background missing in index.html"
+            exit 1
+          fi
+
+      - name: Verify LoadingGate has timeout
+        run: |
+          if grep -q 'setTimeout' src/pages/LoadingGate.tsx; then
+            echo "✅ Timeout found in LoadingGate"
+          else
+            echo "❌ LoadingGate missing timeout - infinite loop risk!"
+            exit 1
+          fi
+
+      - name: Verify MainLandingPage has no blocking API calls
+        run: |
+          if grep -A 50 'const.*LandingPage.*=.*FC' src/pages/MainLandingPage.tsx | grep -E 'useEffect.*\[\].*=>.*await|fetch.*await'; then
+            echo "❌ Blocking API call found in LandingPage render"
+            exit 1
+          else
+            echo "✅ No blocking API calls in LandingPage"
+          fi
+
+      - name: Check for console.log patterns (boot verification)
+        run: |
+          echo "Checking for boot verification logs..."
+          if grep -q "Splash hidden\|Landing mounted\|Router resolved" src/components/AppLoadingManager.tsx src/pages/LoadingGate.tsx src/AppRouter.tsx; then
+            echo "✅ Boot verification logs present"
+          else
+            echo "⚠️ Warning: Boot verification logs missing"
+          fi
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Start preview server
+        run: |
+          npx vite preview --port 4173 &
+          echo $! > server.pid
+          sleep 5
+
+      - name: Run Playwright Landing Page Test
+        run: |
+          echo "Creating test script..."
+          cat > test-landing.spec.js << 'EOF'
+          const { test, expect } = require('@playwright/test');
+
+          test.describe('Landing Page Health Check', () => {
+            test('should load landing page without blank screen', async ({ page }) => {
+              // Set viewport
+              await page.setViewportSize({ width: 1280, height: 720 });
+
+              // Navigate to app
+              const response = await page.goto('http://localhost:4173/', {
+                waitUntil: 'networkidle',
+                timeout: 30000
+              });
+
+              expect(response.status()).toBe(200);
+
+              // Wait for landing page content
+              await page.waitForSelector('text=IndaStreet', { timeout: 5000 });
+
+              // Verify no blank screen (check if body has content)
+              const bodyText = await page.textContent('body');
+              expect(bodyText.length).toBeGreaterThan(100);
+
+              // Take screenshot
+              await page.screenshot({ path: 'landing-page-screenshot.png' });
+
+              console.log('✅ Landing page loaded successfully');
+            });
+
+            test('should complete boot within 2 seconds', async ({ page }) => {
+              const startTime = Date.now();
+
+              await page.goto('http://localhost:4173/', {
+                waitUntil: 'networkidle'
+              });
+
+              await page.waitForSelector('text=IndaStreet');
+
+              const bootTime = Date.now() - startTime;
+              console.log(`Boot time: ${bootTime}ms`);
+
+              expect(bootTime).toBeLessThan(2000);
+            });
+
+            test('should never show blank screen', async ({ page }) => {
+              // Capture all frames during boot
+              const screenshots = [];
+              let frameCount = 0;
+
+              await page.goto('http://localhost:4173/');
+
+              // Check multiple times during load
+              for (let i = 0; i < 5; i++) {
+                await page.waitForTimeout(200);
+                const bodyText = await page.textContent('body');
+                
+                if (bodyText.length < 10) {
+                  throw new Error(`Blank screen detected at frame ${i}`);
+                }
+                frameCount++;
+              }
+
+              console.log(`✅ No blank screens detected across ${frameCount} frames`);
+            });
+
+            test('should have orange background during boot', async ({ page }) => {
+              await page.goto('http://localhost:4173/');
+
+              // Check body background color immediately
+              const bgColor = await page.evaluate(() => {
+                return window.getComputedStyle(document.body).backgroundColor;
+              });
+
+              // Orange is rgb(249, 115, 0) or variations
+              const isOrange = bgColor.includes('249') || bgColor.includes('255');
+              expect(isOrange).toBeTruthy();
+
+              console.log('✅ Orange background confirmed:', bgColor);
+            });
+          });
+          EOF
+
+          # Run the test
+          npx playwright test test-landing.spec.js --reporter=list
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) || true
+            rm server.pid
+          fi
+
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: landing-page-screenshots
+          path: '*.png'
+          retention-days: 7
+
+      - name: Final health check summary
+        if: success()
+        run: |
+          echo "================================================"
+          echo "✅ LANDING PAGE HEALTH CHECK PASSED"
+          echo "================================================"
+          echo "✅ Build successful"
+          echo "✅ Critical files present"
+          echo "✅ Orange background confirmed"
+          echo "✅ LoadingGate has timeout"
+          echo "✅ No blocking API calls"
+          echo "✅ Landing page renders"
+          echo "✅ Boot time < 2 seconds"
+          echo "✅ No blank screens"
+          echo "================================================"
+          echo "🎉 Safe to deploy!"

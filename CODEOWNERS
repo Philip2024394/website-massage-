@@ -17,6 +17,17 @@ src/context/LoadingContext.tsx @Philip2024394
 src/services/customerGPSCollectionService.ts @Philip2024394
 src/services/simpleGPSBookingIntegration.ts @Philip2024394
 
+# 🛡️ CORE UI PROTECTION - MAXIMUM SECURITY
+# Boot sequence and runtime guards - require architect approval
+/core-ui/                                   @Philip2024394
+/index.html                                 @Philip2024394
+/src/utils/bootGuard.ts                     @Philip2024394
+/src/monitoring/productionMonitor.ts        @Philip2024394
+/src/components/AppLoadingManager.tsx       @Philip2024394
+/src/context/AppStateContext.tsx            @Philip2024394
+/src/main.tsx                               @Philip2024394
+/.github/workflows/landing-page-health.yml  @Philip2024394
+
 # 🔒 PRODUCTION LOCK - THERAPIST SYSTEM (ADMIN UNLOCK REQUIRED)
 # Revenue-critical therapist dashboard and auth - Requires ADMIN_UNLOCK_THERAPIST.flag
 PRODUCTION_LOCK_THERAPIST.md @Philip2024394

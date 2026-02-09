@@ -41,6 +41,12 @@ import('./lib/appwrite-startup-validator').catch(err =>
 import { initWebVitals } from './services/webVitals';
 import { errorMonitoring } from './services/enterpriseErrorMonitoring';
 
+// 🛡️ BOOT GUARD - Runtime Protection System
+import { initializeBootGuard, markBootSuccess } from './utils/bootGuard';
+
+// 🔍 PRODUCTION MONITOR - Error Tracking & Alerts
+import { initializeMonitoring, recordBootStart, recordBootComplete } from './monitoring/productionMonitor';
+
 // 🆕 ELITE PWA: Register Service Worker (Production Only)
 // ✅ Achieves 97% download reliability vs 75% without PWA
 // 🚨 TEMPORARILY DISABLED TO BREAK CACHE LOOP
@@ -83,7 +89,16 @@ const isAdminMode = import.meta.env.MODE === 'admin';
 
 logger.log(`🚀 main.tsx: Starting ${isAdminMode ? 'Admin' : 'Main'} app...`);
 
-// 🔒 Initialize startup guard IMMEDIATELY
+// �️ BOOT GUARD: Initialize IMMEDIATELY before anything else  
+initializeBootGuard();
+logger.log('🛡️ Boot guard initialized');
+
+// 🔍 PRODUCTION MONITOR: Start monitoring
+initializeMonitoring();
+recordBootStart();
+logger.log('🔍 Production monitoring active');
+
+// �🔒 Initialize startup guard IMMEDIATELY
   // TEMPORARILY DISABLED: initializeStartupGuard();
 // Admin mode: Redirect to separate admin dashboard app
 if (isAdminMode) {
@@ -224,9 +239,18 @@ if (isAdminMode) {
     );
     logger.log('✅ React app mounted successfully');
     
+    // 🛡️ BOOT GUARD: Mark boot complete
+    recordBootComplete();
+    
     // Signal successful mount to startup guard
     if ((window as any).__APP_MOUNTED__) {
       (window as any).__APP_MOUNTED__();
     }
+    
+    // Mark boot success after a short delay (ensure landing page renders)
+    setTimeout(() => {
+      markBootSuccess();
+      logger.log('✅ Boot sequence complete');
+    }, 1000);
   }
 }
