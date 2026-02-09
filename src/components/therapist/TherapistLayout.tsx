@@ -586,7 +586,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         }}
         aria-label="Therapist navigation menu"
         role="navigation"
-        aria-hidden={!isSidebarOpen}
+        // ✅ ACCESSIBILITY FIX: Use inert instead of aria-hidden to properly handle focus
+        {...(isSidebarOpen ? {} : { inert: '' as any })}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header - Reduced padding for cleaner layout */}
