@@ -240,13 +240,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     }
 
     const therapistId = String(therapist.$id || therapist.id);
-    logger.debug('Starting real-time booking subscription for therapist:', therapistId);
+    logger.debug('Starting real-time booking subscription for therapist:', { therapistId });
 
     try {
       // Subscribe to bookings collection for this therapist
       const channelName = `databases.${DATABASE_ID}.collections.${APPWRITE_CONFIG.collections.bookings}.documents`;
       
-      logger.debug('Subscribing to booking channel:', channelName);
+      logger.debug('Subscribing to booking channel:', { channelName });
 
       const unsubscribe = client.subscribe(channelName, (response: any) => {
         logger.debug('Real-time booking event received:', response.events);
@@ -351,7 +351,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       
       try {
         const therapistId = String(therapist.$id || therapist.id);
-        logger.debug('Loading latest therapist data from database', therapistId);
+        logger.debug('Loading latest therapist data from database', { therapistId });
         
         const latestData = await therapistService.getById(therapistId);
         logger.debug('Latest therapist data loaded', { name: latestData.name });
