@@ -353,11 +353,11 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     <div 
       className="bg-white w-full max-w-full therapist-page-container"
       style={{ 
-        height: '100vh',
-        maxHeight: '100vh',
+        // 🔒 STABILITY: Gold standard natural scrolling (per STABILITY_SCROLL_LOCK_RULES.md)
+        minHeight: '100vh',  // ✅ Minimum height, allows natural growth
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
+        overflow: 'visible',  // ✅ Allows dashboard to scroll naturally
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}
     >
@@ -783,24 +783,24 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Main Content - Optimized padding for cleaner layout */}
+      {/* Main Content - Gold Standard Natural Scrolling */}
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
+          // 🔒 STABILITY: Natural scroll (per STABILITY_SCROLL_LOCK_RULES.md Rule #5)
           paddingBottom: 'max(env(safe-area-inset-bottom, 10px), 60px)',
           flex: '1 1 auto',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          minHeight: 0,
-          WebkitOverflowScrolling: 'touch',
+          minHeight: 0,  // ✅ Allows flexbox shrinking
+          WebkitOverflowScrolling: 'touch',  // ✅ Smooth iOS scrolling
           marginTop: '60px'
+          // ✅ NO overflow restrictions - scrolls naturally via body
         }}
       >
         <div 
           className="therapist-content-wrapper"
           style={{
             paddingBottom: '40px',
-            minHeight: '100%'
+            minHeight: 'calc(100vh - 60px)'  // ✅ Ensures full viewport coverage
           }}
         >
           {children}
