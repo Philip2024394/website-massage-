@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 // 🔧 FIX: Reduced excessive padding px-4 py-6 → px-2 py-3 for cleaner layout
-// 🔧 FIX: Optimized bottom spacing paddingBottom 80px → 60px, marginBottom 60px → 50px
+// 🔧 FIX: White space eliminated - paddingBottom 60px → 20px, marginBottom 50px → 0, removed minHeight constraint
 /**
  * ============================================================================
  * 🔒 HARD LOCK: THERAPIST DASHBOARD - STABLE PROFILE MANAGEMENT
@@ -1099,9 +1099,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         style={{ 
           WebkitOverflowScrolling: 'touch', 
           touchAction: 'pan-y pan-x',
-          paddingBottom: 'max(env(safe-area-inset-bottom, 15px), 60px)',
-          marginBottom: 'max(env(safe-area-inset-bottom, 10px), 50px)',
-          minHeight: 0,
+          paddingBottom: 'max(env(safe-area-inset-bottom, 15px), 20px)',
+          marginBottom: 0,
           flex: '1 1 auto'
         }}
       >
