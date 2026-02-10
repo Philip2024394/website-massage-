@@ -129,6 +129,14 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
     const editingService = editingServices[serviceId];
     if (!editingService) return;
 
+    const p60 = Number(editingService.price60) ?? 0;
+    const p90 = Number(editingService.price90) ?? 0;
+    const p120 = Number(editingService.price120) ?? 0;
+    if (p60 < MIN_PRICE || p90 < MIN_PRICE || p120 < MIN_PRICE) {
+      alert(`Minimum price is Rp 100,000 (enter 100 or higher) for 60, 90, and 120 minutes.`);
+      return;
+    }
+
     try {
       await updateService(serviceId, editingService);
       cancelEditing(serviceId);
@@ -144,10 +152,19 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
     }));
   };
 
+  const MIN_PRICE = 100; // Rp 100,000 minimum for 60/90/120 min
+
   // Handle adding new service
   const handleAddService = async () => {
     if (!newService.name?.trim()) {
       alert('Service name is required');
+      return;
+    }
+    const p60 = Number(newService.price60) || 0;
+    const p90 = Number(newService.price90) || 0;
+    const p120 = Number(newService.price120) || 0;
+    if (p60 < MIN_PRICE || p90 < MIN_PRICE || p120 < MIN_PRICE) {
+      alert(`Minimum price is Rp 100,000 (enter 100 or higher) for 60, 90, and 120 minutes.`);
       return;
     }
 
@@ -418,29 +435,32 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">60min Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">60min (min 100)</label>
                 <input
                   type="number"
+                  min={MIN_PRICE}
                   value={newService.price60 || 150}
-                  onChange={(e) => setNewService(prev => ({ ...prev, price60: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewService(prev => ({ ...prev, price60: Math.max(MIN_PRICE, parseInt(e.target.value) || MIN_PRICE) }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">90min Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">90min (min 100)</label>
                 <input
                   type="number"
+                  min={MIN_PRICE}
                   value={newService.price90 || 200}
-                  onChange={(e) => setNewService(prev => ({ ...prev, price90: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewService(prev => ({ ...prev, price90: Math.max(MIN_PRICE, parseInt(e.target.value) || MIN_PRICE) }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">120min Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">120min (min 100)</label>
                 <input
                   type="number"
+                  min={MIN_PRICE}
                   value={newService.price120 || 280}
-                  onChange={(e) => setNewService(prev => ({ ...prev, price120: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewService(prev => ({ ...prev, price120: Math.max(MIN_PRICE, parseInt(e.target.value) || MIN_PRICE) }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
@@ -635,9 +655,10 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
                           {isEditing ? (
                             <input
                               type="number"
-                              value={Number(price) || 0}
+                              min={MIN_PRICE}
+                              value={Number(price) || MIN_PRICE}
                               onChange={(e) => updateEditingService(service.id, { 
-                                [priceKey]: parseInt(e.target.value) 
+                                [priceKey]: Math.max(MIN_PRICE, parseInt(e.target.value) || MIN_PRICE) 
                               })}
                               className="w-full text-center border border-gray-300 rounded px-2 py-1 text-sm font-bold focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             />

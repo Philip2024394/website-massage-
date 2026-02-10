@@ -549,6 +549,17 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       
       console.log('✅ Geopoint validation passed');
 
+      // Price minimum: 100 = Rp 100,000 for 60/90/120 min
+      const MIN_PRICE = 100;
+      const p60 = parseInt(price60, 10);
+      const p90 = parseInt(price90, 10);
+      const p120 = parseInt(price120, 10);
+      if ((price60 && !isNaN(p60) && p60 < MIN_PRICE) || (price90 && !isNaN(p90) && p90 < MIN_PRICE) || (price120 && !isNaN(p120) && p120 < MIN_PRICE)) {
+        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 60, 90, and 120 minutes.', 'error');
+        setSaving(false);
+        return;
+      }
+
       const updateData: any = {
         name: name.trim(),
         description: description.trim(),
@@ -1713,7 +1724,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
             {/* Pricing */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Massage Prices (100 = Rp 100,000)
+                Massage Prices (Min 100 = Rp 100,000)
               </label>
               <div className="grid grid-cols-3 gap-3">
                 <div>
@@ -1724,6 +1735,10 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                     onChange={e => {
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice60(value);
+                    }}
+                    onBlur={() => {
+                      const n = parseInt(price60, 10);
+                      if (price60 && !isNaN(n) && n < 100) setPrice60('100');
                     }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="100"
@@ -1739,6 +1754,10 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice90(value);
                     }}
+                    onBlur={() => {
+                      const n = parseInt(price90, 10);
+                      if (price90 && !isNaN(n) && n < 100) setPrice90('100');
+                    }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="150"
                     maxLength={3}
@@ -1752,6 +1771,10 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                     onChange={e => {
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice120(value);
+                    }}
+                    onBlur={() => {
+                      const n = parseInt(price120, 10);
+                      if (price120 && !isNaN(n) && n < 100) setPrice120('100');
                     }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="200"

@@ -78,6 +78,7 @@
     "check": "npm run lint && npm run type-check && npm run validate",
     "precommit": "npm run check && npm run test",
     "migrate:flags": "tsx scripts/migrateFlagImages.ts",
+    "migrate:live-therapist-menus": "tsx scripts/migrate-live-therapist-menus.ts",
     "mobile:android": "cd mobile && npx react-native run-android",
     "mobile:ios": "cd mobile && npx react-native run-ios",
     "mobile:start": "cd mobile && npx react-native start",

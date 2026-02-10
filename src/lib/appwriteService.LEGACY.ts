@@ -6793,10 +6793,42 @@ export const therapistMenusService = {
     },
 
     /**
+     * Validate menu prices - minimum 100,000 IDR (100 in thousands) for 60/90/120 min
+     */
+    _validateMenuPrices(menuData: string): void {
+        const MIN_PRICE = 100; // 100 = Rp 100,000
+        try {
+            const parsed = JSON.parse(menuData);
+            const items = Array.isArray(parsed) ? parsed : [];
+            for (let i = 0; i < items.length; i++) {
+                const s = items[i];
+                if (!s) continue;
+                const p60 = s.price60 != null && s.price60 !== '' ? Number(s.price60) : NaN;
+                const p90 = s.price90 != null && s.price90 !== '' ? Number(s.price90) : NaN;
+                const p120 = s.price120 != null && s.price120 !== '' ? Number(s.price120) : NaN;
+                if (!isNaN(p60) && p60 < MIN_PRICE) {
+                    throw new Error(`Service "${s.serviceName || s.name || 'Item ' + (i + 1)}": Minimum price for 60 min is Rp 100,000 (enter 100 or higher). Got: ${p60}`);
+                }
+                if (!isNaN(p90) && p90 < MIN_PRICE) {
+                    throw new Error(`Service "${s.serviceName || s.name || 'Item ' + (i + 1)}": Minimum price for 90 min is Rp 100,000 (enter 100 or higher). Got: ${p90}`);
+                }
+                if (!isNaN(p120) && p120 < MIN_PRICE) {
+                    throw new Error(`Service "${s.serviceName || s.name || 'Item ' + (i + 1)}": Minimum price for 120 min is Rp 100,000 (enter 100 or higher). Got: ${p120}`);
+                }
+            }
+        } catch (e) {
+            if (e instanceof Error && e.message.includes('Minimum price')) throw e;
+            // JSON parse error - let it propagate
+            if (e instanceof SyntaxError) throw e;
+        }
+    },
+
+    /**
      * Save or update menu
      */
     async saveMenu(therapistId: string, menuData: string): Promise<any> {
         try {
+            this._validateMenuPrices(menuData);
             // Check if menu exists
             const existing = await this.getByTherapistId(therapistId);
 

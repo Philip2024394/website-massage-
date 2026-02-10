@@ -27,6 +27,21 @@ interface TherapistMenuProps {
   language?: 'en' | 'id';
 }
 
+const MIN_PRICE = 100; // Rp 100,000 minimum for 60/90/120 min
+
+function validateMenuPrices(services: MenuService[]): string | null {
+  for (let i = 0; i < services.length; i++) {
+    const s = services[i];
+    const p60 = s.price60?.trim() ? parseInt(s.price60, 10) : NaN;
+    const p90 = s.price90?.trim() ? parseInt(s.price90, 10) : NaN;
+    const p120 = s.price120?.trim() ? parseInt(s.price120, 10) : NaN;
+    if (!isNaN(p60) && p60 < MIN_PRICE) return `Layanan "${s.serviceName || 'Item ' + (i + 1)}": Harga 60 menit minimal Rp 100.000 (masukkan 100 atau lebih).`;
+    if (!isNaN(p90) && p90 < MIN_PRICE) return `Layanan "${s.serviceName || 'Item ' + (i + 1)}": Harga 90 menit minimal Rp 100.000 (masukkan 100 atau lebih).`;
+    if (!isNaN(p120) && p120 < MIN_PRICE) return `Layanan "${s.serviceName || 'Item ' + (i + 1)}": Harga 120 menit minimal Rp 100.000 (masukkan 100 atau lebih).`;
+  }
+  return null;
+}
+
 const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, onLogout }) => {
   const language = 'id'; // Fixed Indonesian language
   const [services, setServices] = useState<MenuService[]>([]);
@@ -126,6 +141,13 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
     
     if (validServices.length === 0) return;
 
+    const priceErr = validateMenuPrices(validServices);
+    if (priceErr) {
+      showToast(`❌ ${priceErr}`, 'error');
+      setAutoSaveStatus('idle');
+      return;
+    }
+
     const menuDataString = JSON.stringify(validServices);
     const dataSize = new Blob([menuDataString]).size;
     
@@ -173,6 +195,12 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
     if (validServices.length === 0) {
       showToast('⚠️ Add at least one service with a name', 'error');
       console.error('❌ SAVE FAILED: No valid services (all services must have a name)');
+      return;
+    }
+
+    const priceErr = validateMenuPrices(validServices);
+    if (priceErr) {
+      showToast(`❌ ${priceErr}`, 'error');
       return;
     }
 
@@ -563,6 +591,10 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                                               const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                                               updateService(service.id, 'price60', value);
                                             }}
+                                            onBlur={() => {
+                                              const n = parseInt(service.price60, 10);
+                                              if (service.price60 && !isNaN(n) && n < MIN_PRICE) updateService(service.id, 'price60', '100');
+                                            }}
                                             className="w-full border border-gray-300 rounded px-1.5 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
                                             placeholder="150"
                                             maxLength={3}
@@ -599,6 +631,10 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                                               const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                                               updateService(service.id, 'price90', value);
                                             }}
+                                            onBlur={() => {
+                                              const n = parseInt(service.price90, 10);
+                                              if (service.price90 && !isNaN(n) && n < MIN_PRICE) updateService(service.id, 'price90', '100');
+                                            }}
                                             className="w-full border border-gray-300 rounded px-1.5 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
                                             placeholder="200"
                                             maxLength={3}
@@ -634,6 +670,10 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                                             onChange={e => {
                                               const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                                               updateService(service.id, 'price120', value);
+                                            }}
+                                            onBlur={() => {
+                                              const n = parseInt(service.price120, 10);
+                                              if (service.price120 && !isNaN(n) && n < MIN_PRICE) updateService(service.id, 'price120', '100');
                                             }}
                                             className="w-full border border-gray-300 rounded px-1.5 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
                                             placeholder="250"
