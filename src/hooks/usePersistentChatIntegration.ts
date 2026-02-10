@@ -19,14 +19,17 @@
 
 import { useCallback } from 'react';
 import { usePersistentChat, ChatTherapist, SelectedService } from '../context/PersistentChatProvider';
+import { useChatContext } from '../context/ChatProvider';
 import type { Therapist } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 
 /**
  * Hook to integrate TherapistCard buttons with PersistentChatWindow
+ * Also bridges to ChatProvider so FloatingChatWindow shows when Book Now is clicked
  */
 export function usePersistentChatIntegration() {
   const { openChat, openChatWithService, chatState, minimizeChat, maximizeChat } = usePersistentChat();
+  const chatContext = useChatContext();
   
   /**
    * Convert Therapist type to ChatTherapist type
@@ -180,7 +183,22 @@ export function usePersistentChatIntegration() {
     
     const chatTherapist = convertToChatTherapist(therapist);
     openChat(chatTherapist, 'book', source);
-  }, [openChat, convertToChatTherapist]);
+    
+    // Bridge: Add temp room to ChatProvider so FloatingChatWindow can render (for pages that use it)
+    try {
+      const therapistId = therapist.appwriteId || therapist.$id || therapist.id?.toString() || therapist.name;
+      const pricing = chatTherapist.pricing || { '60': 350000, '90': 450000, '120': 550000 };
+      chatContext.openBookingChat({
+        therapistId,
+        therapistName: therapist.name,
+        therapistImage: (therapist as any).mainImage || (therapist as any).profilePicture,
+        duration: 60,
+        pricing,
+      });
+    } catch (e) {
+      console.warn('[PersistentChatIntegration] ChatProvider bridge skipped:', e);
+    }
+  }, [openChat, convertToChatTherapist, chatContext]);
   
   /**
    * Open chat for "Schedule" button
