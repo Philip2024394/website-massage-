@@ -19,17 +19,16 @@
 
 import { useCallback } from 'react';
 import { usePersistentChat, ChatTherapist, SelectedService } from '../context/PersistentChatProvider';
-import { useChatContext } from '../context/ChatProvider';
 import type { Therapist } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
+import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 
 /**
  * Hook to integrate TherapistCard buttons with PersistentChatWindow
- * Also bridges to ChatProvider so FloatingChatWindow shows when Book Now is clicked
+ * Uses PersistentChatWindow only - FloatingChatWindow is NOT triggered (avoids duplicate chat UI)
  */
 export function usePersistentChatIntegration() {
   const { openChat, openChatWithService, chatState, minimizeChat, maximizeChat } = usePersistentChat();
-  const chatContext = useChatContext();
   
   /**
    * Convert Therapist type to ChatTherapist type
@@ -100,11 +99,16 @@ export function usePersistentChatIntegration() {
       console.warn('⚠️ Using fallback pricing - should fix therapist profile data!');
       
       // appwriteId already validated above - must be present
+      // Align with price modal: profilePicture (avatar) first, then mainImage
+      const imgUrl = (therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).mainimage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage(therapistDocumentId);
       const fallbackChatTherapist = {
         id: therapistName, // ✅ Use NAME as ID
         name: therapistName,
-        image: (therapist as any).mainImage || (therapist as any).profilePicture,
-        status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
+        image: imgUrl,
+        mainImage: imgUrl,
+        profileImageUrl: imgUrl,
+        profilePicture: (therapist as any).profilePicture || imgUrl,
+        status: (therapist as any).availability_status || (therapist as any).availabilityStatus || (therapist as any).availability || (therapist as any).status || 'available',
         pricing: fallbackPricing,
         // ✅ CRITICAL: Include separate price fields for fallback too
         price60: therapist.price60 || '350',
@@ -126,12 +130,16 @@ export function usePersistentChatIntegration() {
     
     console.log('✅ Therapist pricing loaded:', therapist.name, pricing);
     
-    // Document ID already validated above - must be present
+    // Align with price modal: profilePicture (avatar) first, then mainImage (banner)
+    const imgUrl = (therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).mainimage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage(therapistDocumentId);
     const chatTherapist = {
-      id: therapistName, // ✅ Use NAME as ID for easy debugging
+      id: therapistName,
       name: therapistName,
-      image: (therapist as any).mainImage || (therapist as any).profilePicture,
-      status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
+      image: imgUrl,
+      mainImage: imgUrl,
+      profileImageUrl: imgUrl,
+      profilePicture: (therapist as any).profilePicture || imgUrl,
+      status: (therapist as any).availability_status || (therapist as any).availabilityStatus || (therapist as any).availability || (therapist as any).status || 'available',
       pricing, // Use therapist's exact profile prices
       // ✅ CRITICAL: Include separate price fields for chat window pricing
       price60: therapist.price60,
@@ -184,21 +192,9 @@ export function usePersistentChatIntegration() {
     const chatTherapist = convertToChatTherapist(therapist);
     openChat(chatTherapist, 'book', source);
     
-    // Bridge: Add temp room to ChatProvider so FloatingChatWindow can render (for pages that use it)
-    try {
-      const therapistId = therapist.appwriteId || therapist.$id || therapist.id?.toString() || therapist.name;
-      const pricing = chatTherapist.pricing || { '60': 350000, '90': 450000, '120': 550000 };
-      chatContext.openBookingChat({
-        therapistId,
-        therapistName: therapist.name,
-        therapistImage: (therapist as any).mainImage || (therapist as any).profilePicture,
-        duration: 60,
-        pricing,
-      });
-    } catch (e) {
-      console.warn('[PersistentChatIntegration] ChatProvider bridge skipped:', e);
-    }
-  }, [openChat, convertToChatTherapist, chatContext]);
+    // REMOVED: ChatProvider bridge - was causing duplicate FloatingChatWindow (lock icons, "Complete Booking Form")
+    // to appear behind PersistentChatWindow. PersistentChatWindow handles the full booking flow alone.
+  }, [openChat, convertToChatTherapist]);
   
   /**
    * Open chat for "Schedule" button

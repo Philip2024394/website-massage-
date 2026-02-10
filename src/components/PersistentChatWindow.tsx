@@ -83,6 +83,7 @@ import { DURATION_OPTIONS, formatPrice, formatTime } from '../modules/chat/utils
 import ScheduledBookingDepositModal from './ScheduledBookingDepositModal';
 import { BookingChatLockIn } from '../lib/validation/bookingChatLockIn';
 import { bookingFlowMonitor } from '../utils/bookingFlowDiagnostics';
+import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 
 // Import new enhanced chat UI components
 import {
@@ -103,6 +104,7 @@ import {
 } from './chat';
 import { BookingProgress } from './BookingProgress';
 import { BookingConfirmationContainer } from '../modules/chat/BookingConfirmationContainer';
+import { BookingWelcomeBanner } from '../modules/chat/BookingWelcomeBanner';
 
 // ========================================================================
 // BOOKING RELIABILITY UTILITIES
@@ -851,17 +853,6 @@ export function PersistentChatWindow() {
       ? `https://www.google.com/maps?q=${customerForm.coordinates.lat},${customerForm.coordinates.lng}`
       : null;
     
-    // Build location details based on type
-    let locationDetails = '';
-    if (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') {
-      locationDetails = `🏨 ${customerForm.locationType === 'hotel' ? 'Hotel' : 'Villa'} Name: ${customerForm.hotelVillaName}\n` +
-        `🛏️ Room Number: ${customerForm.roomNumber}\n`;
-    }
-    
-    // Treatment recipient label
-    const treatmentForLabels = { male: '👨 Male', female: '👩 Female', children: '👶 Children' };
-    const massageForText = customerForm.massageFor ? treatmentForLabels[customerForm.massageFor] : 'Not specified';
-    
     // Calculate price with discount if applied
     const originalPrice = getPrice(selectedDuration || 60);
     const hasDiscount = discountValidation?.valid && discountValidation.percentage;
@@ -869,75 +860,26 @@ export function PersistentChatWindow() {
       ? originalPrice * (1 - (discountValidation.percentage || 0) / 100)
       : originalPrice;
     
-    let bookingMessage = `📋 ${isScheduleMode ? 'SCHEDULED BOOKING REQUEST' : 'BOOKING REQUEST'}\n\n` +
-      `👤 Name: ${customerForm.name}\n` +
-      `📱 WhatsApp: ${customerForm.countryCode}${customerForm.whatsApp}\n` +
-      `🧍 Treatment For: ${massageForText}\n` +
-      `🏢 Treatment At: ${locationTypeText}\n` +
-      locationDetails +
-      `⏱️ Duration: ${selectedDuration} minutes\n`;
-    
-    // 📍 Note: GPS coordinates are sent silently to therapist (not shown to customer for privacy)
-    
-    // Add price info with discount if applicable
-    if (hasDiscount) {
-      bookingMessage += `💰 Original Price: ${formatPrice(originalPrice)}\n` +
-        `🎁 Discount Code: ${discountCode} (${discountValidation.percentage}% off)\n` +
-        `✨ Final Price: ${formatPrice(discountedPrice)}`;
-    } else {
-      bookingMessage += `💰 Price: ${formatPrice(originalPrice)}`;
-    }
-    
-    // Add scheduled date/time if in schedule mode
-    if (isScheduleMode && selectedDate && selectedTime) {
-      const dateObj = new Date(selectedDate);
-      const formattedDate = dateObj.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      bookingMessage += `\n📅 Date: ${formattedDate}\n⏰ Time: ${selectedTime}`;
-    }
-    
-    bookingMessage += `\n\nPlease confirm my booking!`;
-
     try {
       setIsSending(true);
       logger.debug('═══════════════════════════════════════════');
-      logger.debug('📤 PRE-SEND VALIDATION');
+      logger.debug('📤 PRE-BOOKING VALIDATION');
       logger.debug('═══════════════════════════════════════════');
       logger.debug('✓ Customer Name:', { name: customerForm.name });
       logger.debug('✓ Customer WhatsApp:', { whatsapp: `${customerForm.countryCode}${customerForm.whatsApp}` });
       logger.debug('✓ Treatment For:', { massageFor: customerForm.massageFor });
       logger.debug('✓ Location Type:', { locationType: customerForm.locationType });
       logger.debug('✓ Location:', { location: customerForm.location });
-      logger.debug('✓ Coordinates:', { coordinates: customerForm.coordinates });
       logger.debug('✓ Selected Duration:', { selectedDuration });
       logger.debug('✓ Original Price:', { originalPrice });
       logger.debug('✓ Discounted Price:', { discountedPrice });
       logger.debug('✓ Therapist:', { name: therapist?.name, id: therapist?.id });
-      logger.debug('✓ Therapist Pricing:', { pricing: therapist?.pricing });
-      logger.debug('✓ Booking Message Length:', { length: bookingMessage.length, unit: 'chars' });
       logger.debug('═══════════════════════════════════════════');
-      logger.debug('📤 Sending booking message...');
       
+      // Create booking directly - UI shows slider-style BookingWelcomeBanner (no text chat messages)
+      const isScheduledBooking = !!(selectedDate && selectedTime);
       try {
-        const result = await sendMessage(bookingMessage);
-        logger.debug('═══════════════════════════════════════════');
-        logger.debug('📤 [RESULT CHECK] Message sent result:', result);
-        logger.debug('📤 [RESULT CHECK] result type:', { type: typeof result });
-        logger.debug('📤 [RESULT CHECK] result.sent value:', { sent: result.sent });
-        logger.debug('📤 [RESULT CHECK] result.sent type:', { type: typeof result.sent });
-        logger.debug('📤 [RESULT CHECK] result.sent === true:', { isTrue: result.sent === true });
-        logger.debug('📤 [RESULT CHECK] Boolean(result.sent):', { boolean: Boolean(result.sent) });
-        logger.debug('📤 [RESULT CHECK] Full result object:', { result: JSON.stringify(result, null, 2) });
-        logger.debug('═══════════════════════════════════════════');
-        
-        if (result.sent) {
-          logger.debug('✅ Message sent successfully, creating booking...');
-          // Check if this is a scheduled booking (requires 30% deposit)
-          const isScheduledBooking = !!(selectedDate && selectedTime);
+        logger.debug('✅ Creating booking...');
           
           if (isScheduledBooking) {
             // Create scheduled booking with deposit requirement
@@ -1179,80 +1121,6 @@ export function PersistentChatWindow() {
               throw bookingError;
             }
           }
-        } else {
-          logger.warn('⚠️ Message not sent, result:', result);
-          logger.warn('⚠️ Result details:', { sent: result.sent, warning: result.warning });
-          logger.debug('🔄 [FALLBACK] Message failed but creating booking anyway...');
-          
-          // 🔧 FIX: Create booking even if message fails
-          if (!isScheduleMode) {
-            logger.debug('📝 [FALLBACK] Creating immediate booking despite message failure...');
-            try {
-              // 🔒 USE ISOLATED BOOKING SERVICE (Fallback)
-              const { createBooking } = await import('../services/bookingCreationService');
-              const fallbackResult = await createBooking({
-                // User Info
-                customerName: customerForm.name,
-                customerWhatsApp: fullWhatsApp,
-                userId: chatState.currentUserId || 'anonymous',
-                
-                // Provider Info
-                providerId: chatState.therapist?.id || 'fallback-therapist',
-                providerName: chatState.therapist?.name || 'Professional Therapist',
-                providerType: 'therapist' as const,
-                
-                // Booking Details
-                duration: selectedDuration || 60,
-                price: discountedPrice,
-                bookingType: 'immediate' as const,
-                
-                // Location Info (REQUIRED for Appwrite)
-                location: customerForm.location || 'Customer Location',
-                locationType: customerForm.locationType as 'home' | 'hotel' | 'villa',
-                address: customerForm.location,
-                
-                // Optional Location Details
-                hotelId: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.hotelVillaName : undefined,
-                hotelGuestName: customerForm.locationType === 'hotel' || customerForm.locationType === 'villa' ? customerForm.name : undefined,
-                hotelRoomNumber: customerForm.roomNumber
-              });
-              
-              if (fallbackResult.success) {
-                logger.debug('✅ [FALLBACK] Isolated booking created despite message failure:', { bookingId: fallbackResult.bookingId });
-                logger.debug('🔄 [FALLBACK] Switching to chat after successful fallback booking...');
-                setBookingStep('chat');
-              } else {
-                logger.error('❌ [FALLBACK] Fallback booking failed:', fallbackResult.error);
-                addSystemNotification('❌ Booking creation failed. Please try again.');
-                throw new Error(fallbackResult.error || 'Fallback booking failed');
-              }
-            } catch (bookingError) {
-              logger.error('❌ [FALLBACK] Booking creation also failed:', bookingError);
-              
-              // 🚨 Set error state for display
-              setBookingError({
-                errorPoint: 'Fallback Booking Creation',
-                errorReason: 'Both message sending and booking creation failed',
-                errorDetails: {
-                  errorName: (bookingError as Error).name,
-                  errorMessage: (bookingError as Error).message,
-                  errorStack: (bookingError as Error).stack?.split('\n').slice(0, 3).join('\n')
-                },
-                timestamp: new Date().toLocaleString()
-              });
-              
-              // Do NOT open chat on total failure
-              addSystemNotification('❌ Both message and booking creation failed. Please try again.');
-              setIsSending(false);
-              return; // Stay in details step
-            }
-          }
-          
-          // ❌ REMOVED: No longer switching to chat unconditionally
-          logger.warn('⚠️ [FALLBACK] Message failed - staying in details step');
-          addSystemNotification('❌ Message sending failed. Please try again.');
-          setIsSending(false);
-        }
       } catch (innerError) {
         logger.error('❌ Error in booking flow:', innerError);
         logger.error('❌ Error name:', (innerError as Error).name);
@@ -1261,6 +1129,7 @@ export function PersistentChatWindow() {
         throw innerError; // Re-throw to outer catch
       }
       
+      setIsSending(false);
       // 🔒 EXPLICIT RETURN FALSE: Block any remaining event propagation
       return false;
     } catch (error: unknown) {
@@ -1434,7 +1303,7 @@ export function PersistentChatWindow() {
           {hasActiveChat ? (
             <>
               <img 
-                src={therapist.image || '/placeholder-avatar.jpg'} 
+                src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '')} 
                 alt={therapist.name}
                 className="w-10 h-10 rounded-full object-cover border-2 border-white"
               />
@@ -1509,7 +1378,7 @@ export function PersistentChatWindow() {
       {chatState.currentBooking && timerState.isActive && timerState.remainingSeconds > 0 && !chatState.isTherapistView && !chatState.isOpen && (
         <BookingConfirmationContainer
           therapistName={chatState.therapist?.name || 'Therapist'}
-          therapistImage={chatState.therapist?.mainImage || chatState.therapist?.profileImage}
+          therapistImage={(chatState.therapist as any)?.profilePicture || chatState.therapist?.mainImage || (chatState.therapist as any)?.profileImageUrl || chatState.therapist?.image || chatState.therapist?.profileImage}
           bookingId={chatState.currentBooking.bookingId}
           bookingDetails={{
             customerName: chatState.currentBooking.customerName,
@@ -1581,18 +1450,21 @@ export function PersistentChatWindow() {
           fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
-      {/* Header */}
+      {/* Header - Align with price modal: profilePicture (avatar) first, then mainImage */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
         
         <img 
-          src={therapist.image || '/placeholder-avatar.jpg'}
+          src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '')}
           alt={therapist.name}
-          className="w-10 h-10 rounded-full object-cover border-2 border-white/20"
+          className="w-10 h-10 rounded-full object-cover border-2 border-white/20 flex-shrink-0 bg-gray-200"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '');
+          }}
         />
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-base truncate" id="chat-therapist-name" data-gb="Nama Terapis|Therapist Name">{therapist.name}</h3>
-          {/* Availability Indicator - Green pulsing dot + "Available" text */}
-          {therapist.status === 'AVAILABLE' && (
+          {/* Availability Indicator - Green flashing dot + "Available" text (case-insensitive) */}
+          {(therapist.status || '').toUpperCase() === 'AVAILABLE' && (
             <div className="flex items-center gap-1.5 text-xs">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -1645,13 +1517,8 @@ export function PersistentChatWindow() {
           }
           disabled={!!chatState.currentBooking}
         >
-          <span className="text-lg flex items-center gap-1">
-            {/* Flag icon + language code */}
+          <span className="text-lg">
             {currentLanguage === 'id' ? '🇮🇩' : '🇬🇧'}
-            <span className="text-xs font-semibold opacity-90">
-              {currentLanguage === 'id' ? 'ID' : 'GB'}
-            </span>
-            {chatState.currentBooking && <span className="text-xs">🔒</span>}
           </span>
         </button>
         
@@ -1885,11 +1752,10 @@ export function PersistentChatWindow() {
 
       </>
 
-      {/* Content area - SCROLLABLE for mobile booking forms */}
-      <div className="flex-1 bg-white flex flex-col overflow-y-auto" style={{ 
+      {/* Content area - flex column; chat step has internal scroll for messages, input fixed at bottom */}
+      <div className={`flex-1 bg-white flex flex-col min-h-0 ${bookingStep === 'chat' ? '' : 'overflow-y-auto'}`} style={bookingStep === 'chat' ? {} : { 
         overscrollBehavior: 'contain',
         WebkitOverflowScrolling: 'touch',
-        maxHeight: '100%'
       }}>
         
         {/* Duration Selection Step */}
@@ -2095,7 +1961,7 @@ export function PersistentChatWindow() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="relative">
                   <img 
-                    src={therapist.image || '/placeholder-avatar.jpg'} 
+                    src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '')} 
                     alt={therapist.name}
                     className="w-14 h-14 rounded-full object-cover border-2 border-orange-400 shadow-md"
                   />
@@ -2719,117 +2585,48 @@ export function PersistentChatWindow() {
           </div>
         )}
 
-        {/* Chat Messages Step - Only render when in chat mode */}
-        <div key="chat-step" className={`flex flex-col h-full ${bookingStep === 'chat' ? '' : 'hidden'}`}>
-          {/* Messages */}
-          <div className="flex-1 min-h-0">
+        {/* Chat Messages Step - Only render when in chat mode; messages scroll, input fixed at bottom */}
+        <div key="chat-step" className={`flex flex-col min-h-0 ${bookingStep === 'chat' ? 'flex-1' : 'hidden'}`}>
+          {/* Messages - scrollable */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="p-4 space-y-3">
-              {/* Welcome message - conditionally rendered */}
-              {messages.length === 0 && (
+              {/* Slider-style booking confirmation - when currentBooking exists (same design as slider menu) */}
+              {chatState.currentBooking && (
+                <BookingWelcomeBanner
+                  currentBooking={{
+                    status: chatState.currentBooking.status,
+                    serviceType: chatState.selectedService?.name || chatState.currentBooking.serviceType || 'Professional Massage',
+                    providerType: (chatState.currentBooking as any)?.providerType || 'therapist',
+                    massageFor: (chatState.currentBooking as any)?.massageFor || customerForm.massageFor,
+                    duration: chatState.selectedDuration || chatState.currentBooking.duration || 60,
+                    customerName: chatState.currentBooking.customerName || chatState.customerName || customerForm.name || 'Customer',
+                    locationZone: chatState.currentBooking.locationZone || chatState.currentBooking.address,
+                    totalPrice: chatState.currentBooking.totalPrice ?? getPrice(chatState.selectedDuration || 60),
+                    bookingType: (chatState.currentBooking.bookingType === 'SCHEDULED' || chatState.currentBooking.bookingType === 'scheduled') ? 'scheduled' : 'book_now',
+                    scheduledDate: chatState.currentBooking.scheduledDate,
+                    scheduledTime: chatState.currentBooking.scheduledTime,
+                    bookingId: chatState.currentBooking.bookingId || chatState.currentBooking.id,
+                    id: chatState.currentBooking.id
+                  }}
+                  bookingCountdown={timerState.isActive && timerState.remainingSeconds > 0 ? timerState.remainingSeconds : null}
+                  onCancelBooking={cancelBooking}
+                />
+              )}
+              {/* Welcome when no booking yet */}
+              {messages.length === 0 && !chatState.currentBooking && (
               <div className="text-center py-12 px-4">
-                {/* Animated welcome */}
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
                     <MessageCircle className="w-10 h-10 text-white" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gray-300 rounded-full border-3 border-white animate-bounce">
-                    <div className="w-full h-full bg-gray-200 rounded-full animate-ping"></div>
-                  </div>
                 </div>
-                
-                {/* Welcome message */}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    🎉 Welcome Budiarti Massage Service
+                    🎉 Welcome {therapist.name} Massage Service
                   </h3>
                   <p className="text-gray-500 text-sm leading-relaxed">
-                    Your booking has been successfully submitted.<br/>
-                    You can chat directly with your therapist once they accept booking.
+                    Your booking has been submitted. Chat with your therapist once they accept.
                   </p>
-                </div>
-                
-                {/* Booking Information Bubble */}
-                <div className="bg-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm">
-                  <h4 className="font-semibold text-gray-800 text-sm mb-4" id="booking-details-title" data-gb="Detail Booking|Booking Details">
-                    Detail Booking
-                  </h4>
-                  
-                  <div className="space-y-3 text-sm text-gray-700">
-                    {/* Service Type */}
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium" id="service-label" data-gb="Layanan|Service">Layanan:</span>
-                      <span id="service-value" data-gb="Pijat|Massage">Pijat</span>
-                    </div>
-                    
-                    {/* Duration */}
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium" id="duration-label" data-gb="Durasi|Duration">Durasi:</span>
-                      <span id="duration-value">{chatState.selectedDuration || 60} menit</span>
-                    </div>
-                    
-                    {/* Price */}
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium" id="price-label" data-gb="Harga|Price">Harga:</span>
-                      <span className="font-semibold" id="price-value">{Math.round(getPrice(chatState.selectedDuration || 60) / 1000)}k</span>
-                    </div>
-                    
-                    {/* Arrival Time */}
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Arrival:</span>
-                      <span>30-60 Minutes</span>
-                    </div>
-                    
-                    {/* Payment Methods */}
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium" id="payment-label" data-gb="Pembayaran|Payment">Pembayaran:</span>
-                      <span id="payment-methods" data-gb="Tunai • Transfer|Cash • Transfer">Tunai • Transfer</span>
-                    </div>
-                  </div>
-                  
-                  {/* Booking Progress Indicator */}
-                  <div className="mt-4 pt-4 border-t border-gray-300">
-                    {/* 5-Minute Countdown Timer - Show when booking is waiting for response */}
-                    {chatState.currentBooking && timerState.isActive && timerState.remainingSeconds > 0 && (
-                      <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border-2 border-orange-300 shadow-md">
-                        <div className="text-center mb-2">
-                          <p className="text-xs font-semibold text-orange-800 uppercase tracking-wide mb-1">
-                            ⏰ Therapist Response Countdown
-                          </p>
-                          <p className="text-xs text-orange-600">
-                            Therapist has 5 minutes to accept booking
-                          </p>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 bg-white px-5 py-3 rounded-lg">
-                          <Clock className="w-6 h-6 text-orange-600 animate-pulse" />
-                          <span className="text-3xl font-bold text-orange-600 font-mono">
-                            {Math.floor(timerState.remainingSeconds / 60)}:{(timerState.remainingSeconds % 60).toString().padStart(2, '0')}
-                          </span>
-                        </div>
-                        <div className="mt-2 text-center">
-                          <p className="text-xs text-orange-700 font-medium">
-                            Time remaining for therapist to respond
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <BookingProgress 
-                      currentStatus={chatState.currentBooking?.status || 'sent'}
-                      className="border-0 p-0 bg-transparent"
-                      deadline={chatState.currentBooking?.responseDeadline}
-                      role={chatState.isTherapistView ? 'therapist' : 'user'}
-                      bookingId={chatState.currentBooking?.id}
-                      therapistName={therapist.name}
-                      onCancel={() => cancelBooking()}
-                      onAccept={() => handleAcceptBooking(chatState.currentBooking!.id)}
-                      onDecline={() => handleDeclineBooking(chatState.currentBooking!.id)}
-                      onExpire={() => {
-                        addSystemNotification('⏰ Booking expired - No response received. Please try booking again.');
-                        // Note: Direct state updates not available
-                        // Booking expiry handled by PersistentChatProvider
-                      }}
-                    />
-                  </div>
                 </div>
               </div>
               )}
@@ -2961,10 +2758,7 @@ export function PersistentChatWindow() {
                       {/* Action Buttons */}
                       <div className="flex gap-3">
                         <button
-                          onClick={() => {
-                            cancelBooking();
-                            addSystemNotification('❌ Booking cancelled by user');
-                          }}
+                          onClick={() => cancelBooking()}
                           className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
                         >
                           <X className="w-5 h-5" />
@@ -3144,9 +2938,9 @@ export function PersistentChatWindow() {
         </div>
       )}
 
-      {/* Payment Options - Show when service completed */}
+      {/* Payment Options - Show when service completed; flex-shrink-0 to stay above input */}
       {bookingStep === 'chat' && chatState.currentBooking?.status === 'completed' && !chatState.currentBooking?.paymentStatus && (
-        <div className="p-3 bg-emerald-50 border-t border-emerald-200">
+        <div className="flex-shrink-0 p-3 bg-emerald-50 border-t border-emerald-200">
           <p className="text-xs text-emerald-700 mb-2 text-center">
             ✨ Service completed! Choose payment method:
           </p>
@@ -3174,9 +2968,9 @@ export function PersistentChatWindow() {
         </div>
       )}
 
-      {/* Message Input - Only show in chat step */}
+      {/* Message Input - Fixed at bottom of chat; flex-shrink-0 prevents it from scrolling away */}
       {bookingStep === 'chat' && (
-        <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-gray-100">
+        <form onSubmit={handleSendMessage} className="flex-shrink-0 p-3 bg-white border-t border-gray-100">
           {/* Spam Warning */}
           {messageWarning && (
             <div className="mb-2 p-2 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">

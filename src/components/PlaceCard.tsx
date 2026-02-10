@@ -102,7 +102,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
         openBookingChat({
             appwriteId: place.$id,  // ✅ REQUIRED: Appwrite document ID
             name: place.name,
-            image: place.profilePicture || place.mainImage,
+            image: place.mainImage || (place as any).profileImageUrl || (place as any).image || place.profileImage || place.profilePicture,
             pricing: getParsedPricing(),
             whatsapp: (place as any).whatsapp || (place as any).phoneNumber,
             status: 'AVAILABLE', // Places are always available (no BUSY status)
@@ -177,9 +177,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                     className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
                     aria-label="Share this place"
                 >
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
+                    <Share2 className="w-5 h-5 text-white" color="white" strokeWidth={2.5} aria-hidden />
                 </button>
             </div>
             

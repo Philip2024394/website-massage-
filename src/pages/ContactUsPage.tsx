@@ -6,6 +6,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
+import { submitContactForm } from '../lib/services/contactFormService';
 
 // OWNER-CONTROLLED SUPPORT GATEWAY - Logic-heavy, Protected from AI refactors
 type UserRole = 'user' | 'therapist' | 'admin' | 'browsing';
@@ -194,6 +195,8 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
         message: '',
         country: 'ID'
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const handleRoleSelect = (role: UserRole) => {
         setSelectedRole(role);
@@ -233,29 +236,43 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
         }
     };
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSubmitError(null);
+        setIsSubmitting(true);
         
-        // Prepare contextual data
-        const contextData = {
-            userRole: selectedRole,
-            issueCategory: selectedCategory,
-            timestamp: new Date().toISOString(),
-            ...formData
-        };
+        const result = await submitContactForm({
+            email: formData.email,
+            phone: formData.phone,
+            country: formData.country,
+            message: formData.message,
+            userRole: selectedRole || undefined,
+            issueCategory: selectedCategory || undefined,
+        });
         
-        console.log('Contextual support request:', contextData);
-        alert('Thank you! Your request has been submitted with full context. We typically respond within 24 hours for priority issues.');
+        setIsSubmitting(false);
         
-        // Reset form
-        setFormData({ email: '', phone: '', message: '', country: 'ID' });
-        setTimeout(() => {
+        if (result.success) {
+            setFormData({ email: '', phone: '', message: '', country: 'ID' });
             setCurrentStep(1);
             setSelectedRole(null);
             setSelectedCategory('');
             setProblemSolved(null);
             setExpandedAnswers([]);
-        }, 2000);
+            alert('Thank you! Your request has been submitted. We typically respond within 24 hours for priority issues.');
+        } else {
+            setSubmitError(result.error || 'Submission failed');
+            if (result.mailtoUrl) {
+                const useMailto = window.confirm(
+                    'Unable to submit via form. Would you like to open your email client to send your message directly?'
+                );
+                if (useMailto) {
+                    window.location.href = result.mailtoUrl;
+                }
+            } else {
+                alert('Sorry, we couldn\'t submit your request. Please try again or email us at indastreet.id@gmail.com');
+            }
+        }
     };
 
     const resetProcess = () => {
@@ -351,6 +368,20 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                             </p>
                         </div>
                         
+                        <p className="text-center mb-6">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSelectedRole('browsing');
+                                    setSelectedCategory('other');
+                                    setCurrentStep(4);
+                                    setProblemSolved(false);
+                                }}
+                                className="text-orange-500 hover:text-orange-600 font-medium underline underline-offset-2"
+                            >
+                                Or contact us directly →
+                            </button>
+                        </p>
                         <div className="grid md:grid-cols-2 gap-6">
                             {USER_ROLES.map((role) => {
                                 const IconComponent = role.icon;
@@ -612,14 +643,27 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                     </div>
                                 </div>
 
+                                {submitError && (
+                                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                                        {submitError}
+                                    </div>
+                                )}
                                 {/* Submit Button */}
                                 <button
                                     type="submit"
-                                    disabled={formData.message.length < 40}
+                                    disabled={formData.message.length < 40 || isSubmitting}
                                     className="w-full py-4 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:text-gray-500 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-200 disabled:cursor-not-allowed"
                                 >
-                                    <Mail className="w-5 h-5" />
-                                    Send Contextual Request
+                                    {isSubmitting ? (
+                                        <>
+                                            <span className="animate-pulse">Sending...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Mail className="w-5 h-5" />
+                                            Send Contextual Request
+                                        </>
+                                    )}
                                 </button>
                             </form>
 

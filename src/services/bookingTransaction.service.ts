@@ -386,10 +386,10 @@ async function confirmBookingState(
       therapistName: appwriteBooking.therapistName,
       providerType: 'therapist',
       
-      // Customer info
+      // Customer info (fallback to params - Appwrite may return different casing)
       customerId: appwriteBooking.customerId,
-      customerName: appwriteBooking.customerName,
-      customerPhone: appwriteBooking.customerPhone,
+      customerName: appwriteBooking.customerName || appwriteBooking.customer_name || params.customerName,
+      customerPhone: appwriteBooking.customerPhone || appwriteBooking.customerphone || params.customerPhone,
       
       // Service details
       serviceType: appwriteBooking.serviceType,

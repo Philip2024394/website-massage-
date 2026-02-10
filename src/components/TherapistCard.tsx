@@ -40,7 +40,6 @@ import { logger } from '../utils/logger';
 import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
-import { getRandomSharedProfileImage } from '../lib/sharedProfileImages';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
@@ -844,34 +843,30 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return `${priceInThousands}k`;
     };
     
-    // Get main image from therapist data - PRIORITY: mainImage FIRST (large banner)
-    // Priority: mainImage > profileImageUrl > profileImage > profilePicture
-    // Skip data: base64 URLs (match TopTherapistsPage validation)
-    const mainImageRaw = (therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null;
-    const profileImageUrl = (therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null;
-    const profileImage = therapist.profileImage && !therapist.profileImage.startsWith('data:') ? therapist.profileImage : null;
-    const profilePicture = (therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null;
+    // Main image: Appwrite URL only (mainImage, profileImageUrl, heroImageUrl). Do NOT use profileImage/profilePicture.
+    const isValidUrl = (url: any) => url && typeof url === 'string' && !url.startsWith('data:') && /^https?:\/\//.test(url);
+    const mainImageRaw = isValidUrl((therapist as any).mainImage) ? (therapist as any).mainImage : isValidUrl((therapist as any).mainimage) ? (therapist as any).mainimage : null;
+    const profileImageUrl = isValidUrl((therapist as any).profileImageUrl) ? (therapist as any).profileImageUrl : null;
+    const heroImageUrl = isValidUrl((therapist as any).heroImageUrl) ? (therapist as any).heroImageUrl : null;
     
-    const mainImage = mainImageRaw || profileImageUrl || profileImage || profilePicture;
+    const mainImage = mainImageRaw || profileImageUrl || heroImageUrl;
     
-    // Use therapist's image or shared profile image pool (better than gray placeholders)
-    const displayImage = mainImage || getRandomSharedProfileImage();
+    // Fallback: deterministic by therapist ID (same as home page, no flicker on re-render)
+    const therapistId = String((therapist as any).$id || (therapist as any).id || therapist.name || '');
+    const displayImage = mainImage || getRandomTherapistImage(therapistId);
     
-    // ✅ VALIDATE: Ensure displayImage is a valid URL string
-    const isValidUrl = typeof displayImage === 'string' && /^https?:\/\/.+/.test(displayImage);
     const isSvgPlaceholder = typeof displayImage === 'string' && displayImage.startsWith('data:image/svg+xml');
     
     logger.debug('%c🖼️ [TherapistCard] Image Debug', 'background: #9C27B0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
     logger.debug('Therapist:', therapist.name);
-    logger.debug('mainImage (1st priority - BANNER):', (therapist as any).mainImage || 'NOT SET', mainImageRaw ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('profileImageUrl (2nd priority):', (therapist as any).profileImageUrl || 'NOT SET', profileImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('profileImage (3rd priority):', therapist.profileImage || 'NOT SET', profileImage ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('profilePicture (4th priority - PHOTO):', (therapist as any).profilePicture || 'NOT SET', profilePicture ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('Selected mainImage:', mainImage || 'NONE - using fallback');
+    logger.debug('mainImage (Appwrite URL only):', mainImageRaw || 'NOT SET', mainImageRaw ? '✅ VALID' : '❌ INVALID/EMPTY');
+    logger.debug('profileImageUrl:', profileImageUrl || 'NOT SET', profileImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
+    logger.debug('heroImageUrl:', heroImageUrl || 'NOT SET', heroImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
+    logger.debug('Selected displayImage:', mainImage || 'NONE - using fallback');
     logger.debug('Final displayImage:', displayImage);
     logger.debug('displayImage TYPE:', typeof displayImage);
     logger.debug('Using fallback?', !mainImage ? '✅ YES (SharedProfile pool)' : '❌ NO');
-    logger.debug('Is Valid URL?', isValidUrl ? '✅ YES' : '❌ NO');
+    logger.debug('Is Valid URL?', isValidUrl(displayImage) ? '✅ YES' : '❌ NO');
     logger.debug('Is SVG Placeholder?', isSvgPlaceholder ? '⚠️ YES (GRAY BOX)' : '✅ NO');
     logger.debug('Display Image Length:', displayImage?.length || 0);
     
@@ -1061,27 +1056,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
                 )}
             </div>
-            
-            {/* 🔍 MAIN IMAGE TROUBLESHOOTING - Remove after debugging */}
-            {window.location.pathname.includes('/shared') || window.location.hash.includes('therapist-profile') ? (
-                <div className="fixed bottom-4 left-4 bg-red-900/90 text-white p-4 rounded-lg shadow-2xl max-w-md z-50 text-xs font-mono">
-                    <div className="font-bold text-yellow-400 mb-2">🖼️ MAIN IMAGE DEBUG</div>
-                    <div className="space-y-1">
-                        <div><strong>Therapist:</strong> {therapist.name}</div>
-                        <div><strong>mainImage:</strong> {(therapist as any).mainImage ? String((therapist as any).mainImage).substring(0, 40) + '...' : '❌ NULL'}</div>
-                        <div><strong>profileImage:</strong> {therapist.profileImage ? String(therapist.profileImage).substring(0, 40) + '...' : '❌ NULL'}</div>
-                        <div><strong>displayImage:</strong> {String(displayImage).substring(0, 40)}...</div>
-                        <div><strong>TYPE:</strong> {typeof displayImage}</div>
-                        <div><strong>Valid URL?:</strong> {isValidUrl ? '✅ YES' : '❌ NO'}</div>
-                        <div><strong>SVG Placeholder?:</strong> {isSvgPlaceholder ? '⚠️ YES (GRAY)' : '✅ NO'}</div>
-                        <div className="mt-2 pt-2 border-t border-gray-400">
-                            {isSvgPlaceholder && <div className="text-red-300">❌ Will show gray box!</div>}
-                            {!isValidUrl && !isSvgPlaceholder && <div className="text-red-300">❌ Invalid URL!</div>}
-                            {isValidUrl && <div className="text-green-300">✅ Should display!</div>}
-                        </div>
-                    </div>
-                </div>
-            ) : null}
             
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
             <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8">

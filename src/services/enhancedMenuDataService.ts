@@ -70,34 +70,32 @@ export class EnhancedMenuDataService {
     try {
       console.log(`📋 Loading menu for therapist ${therapistId}`);
       
-      // 1. Load real menu data from database/API
+      // 1. Load real menu from Appwrite (therapist_menus collection)
       const realMenuData = await this.loadRealMenuData(therapistId);
       
-      // 2. Load or generate default menu
+      // 2. Get 5 sample menu items (for therapists without their own menu)
       const defaultMenuData = await this.getDefaultMenuData(therapistId);
       
-      // 3. Filter out defaults that conflict with real menu
-      const filteredDefaults = this.filterConflictingDefaults(defaultMenuData, realMenuData);
-      
-      // 4. Combine and enhance with badge data
+      // 3. Combine: real items + (5 - realCount) samples. When realCount >= 5, samples = 0
       const combinedServices = await this.combineAndEnhanceServices(
-        realMenuData, 
-        filteredDefaults, 
+        realMenuData,
+        defaultMenuData,
         therapistId
       );
       
-      // 5. Sort by priority (real first, then by popularity/category)
+      // 4. Sort by priority (real first, then by popularity/category)
       const sortedServices = this.sortServices(combinedServices);
+      const samplesIncluded = Math.max(0, 5 - realMenuData.length);
       
       const result: MenuLoadResult = {
         services: sortedServices,
-        hasDefaults: filteredDefaults.length > 0,
+        hasDefaults: samplesIncluded > 0,
         hasReal: realMenuData.length > 0,
         totalCount: sortedServices.length,
         lastUpdated: new Date()
       };
       
-      console.log(`✅ Menu loaded: ${result.totalCount} services (${realMenuData.length} real, ${filteredDefaults.length} defaults)`);
+      console.log(`✅ Menu loaded: ${result.totalCount} services (${realMenuData.length} real, ${samplesIncluded} samples)`);
       
       return result;
       
@@ -119,114 +117,91 @@ export class EnhancedMenuDataService {
   }
 
   /**
-   * Load real menu data from database/storage
+   * Load real menu data from Appwrite (therapist_menus collection)
+   * Therapists upload their menu via TherapistMenu page which saves to Appwrite
    */
   private static async loadRealMenuData(therapistId: string): Promise<MenuService[]> {
-    // TODO: Replace with actual API call
-    // For now, simulate with localStorage
-    
-    const storageKey = `${this.STORAGE_KEY_PREFIX}${therapistId}`;
-    const stored = localStorage.getItem(storageKey);
-    
-    if (!stored) {
-      console.log(`📄 No real menu found for therapist ${therapistId}`);
+    if (!therapistId) {
+      console.log('📄 No therapist ID provided for menu load');
       return [];
     }
-    
     try {
-      const parsedData = JSON.parse(stored);
-      return parsedData.map((service: any) => ({
-        ...service,
-        isDefault: false,
-        therapistId,
-        dateAdded: new Date(service.dateAdded || Date.now()),
-        lastModified: new Date(service.lastModified || Date.now()),
-        isActive: service.isActive ?? true,
-        bookingCount: service.bookingCount || 0,
-        isCustomized: false,
-        lastBookedAt: service.lastBookedAt ? new Date(service.lastBookedAt) : undefined
-      }));
+      const { therapistMenusService } = await import('../lib/appwriteService');
+      const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
+      if (!menuDoc?.menuData) {
+        console.log(`📄 No real menu found in Appwrite for therapist ${therapistId}`);
+        return [];
+      }
+      const parsedData = JSON.parse(menuDoc.menuData);
+      const items = Array.isArray(parsedData) ? parsedData : [];
+      const realServices: MenuService[] = items
+        .filter((s: any) => s && (s.serviceName || s.name) && (s.price60 || s.price90 || s.price120))
+        .map((service: any, index: number) => ({
+          id: service.id || `appwrite-${index}`,
+          name: service.serviceName || service.name || 'Service',
+          serviceName: service.serviceName || service.name,
+          description: service.description || '',
+          category: (service.category as any) || 'relaxation',
+          price60: Number(service.price60) || 0,
+          price90: Number(service.price90) || 0,
+          price120: Number(service.price120) || 0,
+          isDefault: false,
+          popularity: 3,
+          isNew: false,
+          therapistId,
+          dateAdded: new Date(service.dateAdded || Date.now()),
+          lastModified: new Date(service.lastModified || Date.now()),
+          isActive: true,
+          bookingCount: 0,
+          isCustomized: false,
+          lastBookedAt: undefined
+        }));
+      console.log(`📄 Loaded ${realServices.length} real menu items from Appwrite for therapist ${therapistId}`);
+      return realServices;
     } catch (error) {
-      console.error('❌ Error parsing real menu data:', error);
+      console.warn('⚠️ Failed to load menu from Appwrite, falling back to empty:', error);
       return [];
     }
   }
 
   /**
-   * Get or generate default menu data for therapist
+   * Get exactly 5 sample menu items for therapists without their own menu
+   * Samples disappear 1-by-1 as therapist adds real items (5 real = 0 samples)
    */
   private static async getDefaultMenuData(therapistId: string): Promise<MenuService[]> {
-    const assignmentKey = `${this.DEFAULT_ASSIGNMENT_KEY}${therapistId}`;
-    let storedAssignment = localStorage.getItem(assignmentKey);
-    
-    if (!storedAssignment) {
-      // Generate new default assignment
-      const defaultServices = DefaultMenuManager.getDefaultMenuForTherapist(therapistId);
-      
-      // Convert to MenuService format
-      const menuServices: MenuService[] = defaultServices.map(service => ({
-        ...service,
-        therapistId,
-        dateAdded: new Date(),
-        lastModified: new Date(),
-        isActive: true,
-        bookingCount: 0,
-        isCustomized: false,
-        originalDefaultId: service.id
-      }));
-      
-      // Store assignment for consistency
-      localStorage.setItem(assignmentKey, JSON.stringify(menuServices));
-      console.log(`🎲 Generated new default menu for therapist ${therapistId}: ${menuServices.length} services`);
-      
-      return menuServices;
-    }
-    
-    try {
-      const parsedAssignment = JSON.parse(storedAssignment);
-      return parsedAssignment.map((service: any) => ({
-        ...service,
-        dateAdded: new Date(service.dateAdded),
-        lastModified: new Date(service.lastModified),
-        lastBookedAt: service.lastBookedAt ? new Date(service.lastBookedAt) : undefined
-      }));
-    } catch (error) {
-      console.error('❌ Error parsing default assignment:', error);
-      // Regenerate if parsing fails
-      return await this.getDefaultMenuData(therapistId);
-    }
+    const defaultServices = DefaultMenuManager.getDefaultMenuForTherapist(therapistId, 5);
+    return defaultServices.map((service, index) => ({
+      ...service,
+      therapistId,
+      dateAdded: new Date(),
+      lastModified: new Date(),
+      isActive: true,
+      bookingCount: 0,
+      isCustomized: false,
+      originalDefaultId: service.id
+    } as MenuService));
   }
 
   /**
-   * Filter out default services that conflict with real menu
+   * Get samples to show: 5 - realCount (minimum 0)
+   * When realCount >= 5, show 0 samples. When realCount > 5, only real items display.
    */
-  private static filterConflictingDefaults(
-    defaultServices: MenuService[], 
-    realServices: MenuService[]
-  ): MenuService[] {
-    return defaultServices.filter(defaultService => {
-      const shouldReplace = DefaultMenuManager.shouldReplaceDefaultService(
-        defaultService.name,
-        realServices.map(s => ({ serviceName: s.name }))
-      );
-      
-      if (shouldReplace) {
-        console.log(`🔄 Filtering out default service "${defaultService.name}" - conflict with real menu`);
-      }
-      
-      return !shouldReplace;
-    });
+  private static getSamplesToShow(realCount: number, allSamples: MenuService[]): MenuService[] {
+    const count = Math.max(0, 5 - realCount);
+    return allSamples.slice(0, count);
   }
 
   /**
    * Combine real and default services with badge enhancement
+   * Logic: real items first, then up to (5 - realCount) samples
    */
   private static async combineAndEnhanceServices(
     realServices: MenuService[],
     defaultServices: MenuService[],
     therapistId: string
   ): Promise<MenuService[]> {
-    const combined = [...realServices, ...defaultServices];
+    const samplesToInclude = this.getSamplesToShow(realServices.length, defaultServices);
+    const combined = [...realServices, ...samplesToInclude];
     return await this.enhanceWithBadges(combined, therapistId);
   }
 

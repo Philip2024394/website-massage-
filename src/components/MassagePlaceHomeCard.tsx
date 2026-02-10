@@ -247,7 +247,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                         aria-label="Share profile"
                         style={{ minWidth: '44px', minHeight: '44px' }}
                     >
-                        <Share2 className="w-5 h-5 text-white" strokeWidth={2.5} />
+                        <Share2 className="w-5 h-5 text-white" color="white" strokeWidth={2.5} />
                     </button>
                 )}
             </div>

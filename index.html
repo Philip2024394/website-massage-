@@ -9,9 +9,8 @@
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
     
-    <!-- 🚀 CRITICAL PERFORMANCE: Minimal preload for fastest initial load -->
-    <!-- REMOVED: MainLandingPage, app context - defer until after critical render -->
-    <link rel="preload" href="/src/index.tsx" as="script">
+    <!-- 🚀 CRITICAL PERFORMANCE: Module preload removed - Vite handles bundling -->
+    <!-- Preloading /src/index.tsx caused "preloaded but not used" warning - entry is loaded as type="module" -->
     <link rel="preconnect" href="https://syd.cloud.appwrite.io" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     
@@ -589,36 +588,37 @@
           var root = document.getElementById('root');
           if (!root || root.children.length === 0) return false;
           
-          // IGNORE React loading states - they are not the final landing page
+          // IGNORE React loading states and skeleton - wait for real content
           if (root.querySelector('#react-loading-spinner, .loading-spinner, [data-loading-state]')) {
-            console.log('[SPLASH] React still loading - keeping splash visible');
             return false;
           }
+          // Skeleton has single spinner - avoid false positive from AppShellSkeleton
+          var spinnerCount = root.querySelectorAll('.animate-spin').length;
+          var hasSkeletonOnly = spinnerCount > 0 && root.querySelectorAll('img').length === 0 && !root.querySelector('input');
           
-          // Check for actual landing page content - more specific detection
-          var hasMainContent = root.querySelector('.main-content, .landing-page, .home-page, .search-section') !== null;
-          var hasProviderCards = root.querySelectorAll('.therapist-card, .provider-card, .service-card, [class*="card"]').length > 0;
-          var hasSearchSection = root.querySelector('input[type="text"], .search-input, .search-section') !== null;
-          var hasNavigationMenu = root.querySelectorAll('nav, .nav, .navigation, .menu, .header').length > 0;
-          var hasTherapistProfiles = root.textContent && (root.textContent.includes('massage') || root.textContent.includes('therapist') || root.textContent.includes('service'));
+          // Require ACTUAL landing page content - not skeleton/placeholder
+          var hasProviderCards = root.querySelectorAll('.therapist-card, .provider-card, .PlaceCard, .TherapistCard, [class*="TherapistCard"]').length > 0;
+          var hasSearchSection = root.querySelector('input[type="search"], .search-input, [placeholder*="Search"], [placeholder*="Cari"]') !== null;
+          var hasMainContent = root.querySelector('.main-content, .landing-page, .home-page, .landing-page-container, .MainLandingPage, .MainHomePage') !== null;
+          var hasNavigationMenu = root.querySelectorAll('nav, .nav, .navigation, .GlobalHeader, header').length > 0;
+          var hasImages = root.querySelectorAll('img[src*="imagekit"], img[src*="appwrite"], img[src*="cloud"]').length > 0;
+          var hasRichText = root.textContent && root.textContent.trim().length > 500;
           
-          // Enhanced text content check - must have substantial content
-          var hasRichText = root.textContent && root.textContent.trim().length > 200;
-          var hasImages = root.querySelectorAll('img').length > 0;
-          var hasButtons = root.querySelectorAll('button, .btn, [role="button"], .cta-button').length > 2;
+          // Skip if we only have skeleton (spinner but no real content)
+          if (hasSkeletonOnly) return false;
           
-          // Must have at least 2 strong indicators of real landing page content (lowered from 4 to prevent getting stuck)
+          // Must have strong indicators of real content (not just "IndaStreet" skeleton)
           var contentScore = 0;
+          if (hasProviderCards) contentScore += 3;
           if (hasMainContent) contentScore += 2;
-          if (hasProviderCards) contentScore += 2; 
-          if (hasSearchSection) contentScore += 1;
+          if (hasSearchSection) contentScore += 2;
           if (hasNavigationMenu) contentScore += 1;
-          if (hasTherapistProfiles) contentScore += 1;
-          if (hasRichText) contentScore += 1;
           if (hasImages) contentScore += 1;
-          if (hasButtons) contentScore += 1;
+          if (hasRichText) contentScore += 1;
           
-          console.log('[SPLASH] Content detection - Score:', contentScore, 'Required: 2');
+          if (contentScore >= 2) {
+            console.log('[SPLASH] Landing page ready - Score:', contentScore);
+          }
           return contentScore >= 2;
         }
         
@@ -632,12 +632,14 @@
           }
         }, 50); // Check more frequently
         
-        // OPTIMIZED TIMEOUT: Faster splash dismiss for better UX (2 seconds max)
+        // Max timeout: Hide splash after 12s even if content not ready (handles slow dev / cold start)
         setTimeout(function() {
-          console.log('[SPLASH] Timeout reached - hiding splash screen');
-          clearInterval(checkInterval);
-          hideSplash();
-        }, 2000); // Reduced from 5s to 2s for faster perceived performance
+          if (!splashHidden) {
+            console.log('[SPLASH] Timeout reached (12s) - hiding splash screen');
+            clearInterval(checkInterval);
+            hideSplash();
+          }
+        }, 12000);
       })();
     </script>
     

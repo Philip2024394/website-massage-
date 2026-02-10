@@ -178,6 +178,7 @@ export interface ChatTherapist {
   image?: string;
   mainImage?: string; // Main profile image
   profileImage?: string; // Profile image
+  profilePicture?: string; // Avatar (Appwrite standard - used in price modal)
   location?: string; // Location/address
   city?: string; // City
   pricing?: Record<string, number>;
@@ -513,10 +514,15 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         
         const therapistName = chatState.therapist?.name;
         const message = therapistName
-          ? `${therapistName} unfortunately is busy to accept your booking. We will locate an alternative replacement now. Please hold while we are processing your booking.`
-          : 'Unfortunately the therapist is busy to accept your booking. We will locate an alternative replacement now. Please hold while we are processing your booking.';
+          ? `${therapistName} unfortunately is busy to accept your booking. We will locate an alternative replacement now. Please hold while we process your booking.`
+          : 'Unfortunately, the therapist is busy to accept your booking. We will locate an alternative replacement now. Please hold while we process your booking.';
         
         addSystemNotification(`⚠️ ${message}`);
+
+        // Step 2: Follow-up message 8 seconds later (keep user engaged)
+        setTimeout(() => {
+          addSystemNotification('Therapists are checking your booking request now...');
+        }, 8000);
       } else {
         logger.warn('[EXPIRATION] Cannot expire THERAPIST_RESPONSE - unexpected status', { status: event.lifecycleStatus });
       }
@@ -1126,19 +1132,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
 
-    // Add system message about the booking type
-    const systemMessage = isScheduled 
-      ? `📅 Scheduled booking selected: ${service.serviceName} (${service.duration} min) - Total: Rp ${service.price.toLocaleString('id-ID')} (Deposit required after therapist accepts)`
-      : `🚀 Immediate booking selected: ${service.serviceName} (${service.duration} min) - Total: Rp ${service.price.toLocaleString('id-ID')}`;
-    
-    addMessage({
-      senderId: 'system',
-      senderName: 'System',
-      message: systemMessage,
-      type: 'system'
-    });
+    // No system message - booking confirmation UI (BookingWelcomeBanner) shows service details in chat window
 
-  }, [currentUserId, loadMessages, addMessage, setIsChatWindowVisible, setIsLocked]);
+  }, [currentUserId, loadMessages, setIsChatWindowVisible, setIsLocked]);
 
   // Minimize chat - reset booking flow to duration selection
   const minimizeChat = useCallback(() => {
@@ -1535,7 +1531,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       return false;
     }
     
-    const customerName = currentUserName || chatState.customerName;
+    const customerName = (bookingData as any).customerName || currentUserName || chatState.customerName;
     if (!customerName) {
       addSystemNotification('❌ Customer name is required.');
       return false;
@@ -1615,9 +1611,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // ═══════════════════════════════════════════════════════════════════════
     const { booking, lifecycleStatus, timerPhase } = result.data!;
     
+    const displayCustomerName = booking.customerName || (booking as any).customer_name || customerName || chatState.customerName;
     setChatState(prev => ({
       ...prev,
-      currentBooking: booking,
+      currentBooking: {
+        ...booking,
+        customerName: displayCustomerName
+      },
+      customerName: displayCustomerName,
       bookingStep: 'chat' as BookingStep,
       // NO bookingCountdown - managed by timer hook
     }));
@@ -1648,11 +1649,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     setIsChatWindowVisible(true);
     logger.debug('🔓 [COMMIT] Chat unlocked after timer start');
     
-    // Success notification
+    // Success notification - only for discount; booking status shown by BookingWelcomeBanner UI
     if (bookingData.discountCode) {
       addSystemNotification(`✅ Booking sent with ${bookingData.discountPercentage}% discount!`);
-    } else {
-      addSystemNotification('✅ Booking request sent to therapist');
     }
     
     logger.info('✅ [TRANSACTION] Booking creation complete');
@@ -1723,8 +1722,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       logger.debug('🔄 [LIFECYCLE] Booking state ref updated: PENDING → ACCEPTED');
     }
     
-    // Notify user
-    addSystemNotification(`✅ Therapist ${therapistName} accepted your booking. You have 1 minute to confirm or the booking is canceled.`);
+    // Notify user (enhanced message per booking chat flow spec)
+    const massageTypes = (currentBooking as any).massageFor || currentBooking?.serviceType || 'Massage';
+    const locationArea = currentBooking?.locationZone || 'Your location';
+    addSystemNotification(`✅ Your booking has been accepted by ${therapistName}.\nArea of massage: ${massageTypes}\nLocation: ${locationArea}\nYou have 1 minute to cancel the booking if needed.`);
     
     // 🔒 AUTO-INJECT BANK CARD FOR SCHEDULED BOOKINGS
     if (isScheduledBooking && therapist?.bankCardDetails) {
@@ -1834,7 +1835,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     }
     
     // Update state (lifecycle only - no status field)
-    addSystemNotification('❌ Booking canceled. Please select a new therapist from the homepage.');
+    addSystemNotification('Your booking has been cancelled. We will look for another therapist.');
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? { 
@@ -1875,7 +1876,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // No ref update needed - lifecycle status unchanged (still CONFIRMED)
     logger.debug('🚗 [OPERATIONAL] Therapist on the way (lifecycle: CONFIRMED)');
     
-    addSystemNotification(`🚗 ${therapistName} is on the way!`);
+    addSystemNotification(`🚗 Your therapist is on the way!`);
   }, [chatState.therapist, chatState.currentBooking, addSystemNotification, setChatState]);
 
   // Complete booking (CONFIRMED → COMPLETED) - This is the only state that generates commission

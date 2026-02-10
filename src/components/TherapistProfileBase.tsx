@@ -206,13 +206,10 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     } : null;
 
     // Hero image logic - only for shared mode
-    // Priority: mainImage > profileImageUrl > profileImage > profilePicture (banner image first)
-    // Skip data: base64 URLs
+    // Main image = banner URL (same as home page). Use mainImage/profileImageUrl only, NOT profilePicture (avatar).
     const therapistHeroImageUrl = mode === 'shared' ? (
         ((therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null) ||
         ((therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null) ||
-        (therapist.profileImage && !therapist.profileImage.startsWith('data:') ? therapist.profileImage : null) ||
-        ((therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null) ||
         ((therapist as any).heroImageUrl && !(therapist as any).heroImageUrl.startsWith('data:') ? (therapist as any).heroImageUrl : null)
     ) : null;
     const fallbackHeroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || "a" as string));
@@ -322,8 +319,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         providerImage={
                             ((therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null) ||
                             ((therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null) ||
-                            (therapist.profileImage && !therapist.profileImage.startsWith('data:') ? therapist.profileImage : null) ||
-                            ((therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null)
+                            ((therapist as any).heroImageUrl && !(therapist as any).heroImageUrl.startsWith('data:') ? (therapist as any).heroImageUrl : null)
                         }
                         onNavigate={onNavigate}
                     />

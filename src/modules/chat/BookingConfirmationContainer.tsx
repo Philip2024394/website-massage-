@@ -9,11 +9,13 @@
  * - Countdown timer always visible in scrollable area
  * - Confirmation text with glow animation once booking sent
  * 
+ * UI: Matches the chat step "Detail Booking" design exactly (same as after Order Now).
  * Mobile-safe: No overflow:hidden bugs on body
  */
 
 import React, { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Clock, MessageCircle } from 'lucide-react';
+import { formatPrice } from './utils/chatHelpers';
 
 interface BookingDetails {
   customerName?: string;
@@ -94,34 +96,11 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
     };
   }, []); // Empty dependency - timer manages its own state
 
-  // Format time as MM:SS
+  // Format time as MM:SS (same as chat step)
   const formatTime = (seconds: number): string => {
     const min = Math.floor(seconds / 60);
     const sec = seconds % 60;
     return `${min}:${sec.toString().padStart(2, '0')}`;
-  };
-
-  // Format location type
-  const formatLocationType = (type?: string): string => {
-    if (!type) return '';
-    const map: Record<string, string> = {
-      'home': '🏠 Home',
-      'hotel': '🏨 Hotel',
-      'villa': '🏡 Villa',
-      'gym': '💪 Gym & Fitness'
-    };
-    return map[type] || type;
-  };
-
-  // Format massage for
-  const formatMassageFor = (value?: string): string => {
-    if (!value) return '';
-    const map: Record<string, string> = {
-      'male': '👨 Male',
-      'female': '👩 Female',
-      'couple': '👫 Couple'
-    };
-    return map[value] || value;
   };
 
   return (
@@ -205,145 +184,107 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
           </div>
         </div>
 
-        {/* Scrollable body */}
+        {/* Scrollable body - Same design as chat step Detail Booking */}
         <div 
-          className="booking-body"
+          className="booking-body p-4"
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '16px',
             WebkitOverflowScrolling: 'touch'
           }}
         >
-          {/* Booking details */}
-          <div 
-            className="booking-details"
-            style={{
-              backgroundColor: '#f9fafb',
-              borderRadius: '8px',
-              padding: '16px',
-              marginBottom: '16px'
-            }}
-          >
-            {bookingDetails?.serviceType && (
-              <p style={{ fontSize: '14px', marginBottom: '8px', color: '#374151' }}>
-                <strong>Service:</strong> {bookingDetails.serviceType}
-              </p>
-            )}
-            
-            {bookingDetails?.duration && (
-              <p style={{ fontSize: '14px', marginBottom: '8px', color: '#374151' }}>
-                <strong>Duration:</strong> {bookingDetails.duration} Minutes
-              </p>
-            )}
-            
-            {bookingDetails?.price && (
-              <p style={{ fontSize: '14px', marginBottom: '8px', color: '#374151' }}>
-                <strong>Price:</strong> IDR {bookingDetails.price.toLocaleString('id-ID')}
-              </p>
-            )}
-            
-            {bookingDetails?.locationType && (
-              <p style={{ fontSize: '14px', marginBottom: '8px', color: '#374151' }}>
-                <strong>Location:</strong> {formatLocationType(bookingDetails.locationType)}
-              </p>
-            )}
-            
-            {bookingDetails?.massageFor && (
-              <p style={{ fontSize: '14px', marginBottom: '8px', color: '#374151' }}>
-                <strong>Treatment For:</strong> {formatMassageFor(bookingDetails.massageFor)}
-              </p>
-            )}
-            
-            {bookingDetails?.customerName && (
-              <p style={{ fontSize: '14px', marginBottom: '8px', color: '#374151' }}>
-                <strong>Customer:</strong> {bookingDetails.customerName}
-              </p>
-            )}
-            
-            {bookingDetails?.customerWhatsApp && (
-              <p style={{ fontSize: '14px', marginBottom: '8px', color: '#374151' }}>
-                <strong>WhatsApp:</strong> {bookingDetails.customerWhatsApp}
-              </p>
-            )}
-          </div>
-
-          {/* Countdown timer - MUST BE VISIBLE */}
-          <div 
-            className="booking-timer"
-            id="bookingTimer"
-            style={{
-              display: 'block',
-              margin: '16px 0',
-              padding: '12px',
-              background: '#f7f7f7',
-              borderRadius: '8px',
-              textAlign: 'center',
-              fontSize: '18px',
-              position: 'relative',
-              zIndex: 1
-            }}
-          >
-            <div style={{ 
-              fontSize: '32px', 
-              fontWeight: 700,
-              color: timeRemaining <= 60 ? '#dc2626' : '#f97316',
-              fontFamily: 'monospace',
-              marginBottom: '4px'
-            }} id="countdown">
-              {formatTime(timeRemaining)}
-            </div>
-            <small style={{ 
-              fontSize: '12px', 
-              color: '#6b7280',
-              display: 'block'
-            }}>
-              {timeRemaining <= 0 ? 'Expired' : 'Waiting for therapist response'}
-            </small>
-          </div>
-
-          {/* Confirmation status */}
-          {showConfirmation && timeRemaining > 0 && (
-            <div 
-              className="booking-status sent" 
-              id="bookingStatus"
-              style={{
-                marginTop: '16px',
-                padding: '16px',
-                textAlign: 'center',
-                borderRadius: '12px',
-                backgroundColor: '#f0fdf4',
-                border: '2px solid #86efac',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#15803d', marginBottom: '4px' }}>
-                ✅ Booking Request Sent
+          {/* Welcome - Same as chat step after Order Now */}
+          <div className="text-center py-6 px-4 mb-4">
+            <div className="relative mb-6">
+              <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                <MessageCircle className="w-10 h-10 text-white" />
               </div>
-              <div style={{ fontSize: '12px', color: '#166534' }}>
-                Waiting for therapist to respond...
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-gray-300 rounded-full border-3 border-white animate-bounce">
+                <div className="w-full h-full bg-gray-200 rounded-full animate-ping" />
               </div>
             </div>
-          )}
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              🎉 Welcome {therapistName} Massage Service
+            </h3>
+            <p className="text-gray-500 text-sm leading-relaxed">
+              Your booking has been successfully submitted.<br/>
+              You can chat directly with your therapist once they accept booking.
+            </p>
+          </div>
 
-          {/* Expired message */}
-          {timeRemaining <= 0 && (
-            <div 
-              className="booking-status expired"
-              style={{
-                marginTop: '16px',
-                padding: '12px',
-                textAlign: 'center',
-                fontWeight: 600,
-                borderRadius: '8px',
-                color: '#dc2626',
-                backgroundColor: '#fee2e2',
-                border: '1px solid #fca5a5'
-              }}
-            >
-              ⏰ Booking request expired - No response received
+          {/* Detail Booking - Exact same UI as chat step after Order Now */}
+          <div className="bg-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm">
+            <h4 className="font-semibold text-gray-800 text-sm mb-4">
+              Detail Booking
+            </h4>
+            
+            <div className="space-y-3 text-sm text-gray-700">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Layanan:</span>
+                <span>{bookingDetails?.serviceType || 'Pijat'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Durasi:</span>
+                <span>{bookingDetails?.duration || 60} menit</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Harga:</span>
+                <span className="font-semibold">
+                  {bookingDetails?.price ? formatPrice(bookingDetails.price) : '—'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Arrival:</span>
+                <span>30-60 Minutes</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Pembayaran:</span>
+                <span>Tunai • Transfer</span>
+              </div>
             </div>
-          )}
+            
+            {/* 5-Minute Countdown - Same orange gradient as chat step */}
+            <div className="mt-4 pt-4 border-t border-gray-300">
+              {timeRemaining > 0 && (
+                <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border-2 border-orange-300 shadow-md">
+                  <div className="text-center mb-2">
+                    <p className="text-xs font-semibold text-orange-800 uppercase tracking-wide mb-1">
+                      ⏰ Therapist Response Countdown
+                    </p>
+                    <p className="text-xs text-orange-600">
+                      Therapist has 5 minutes to accept booking
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 bg-white px-5 py-3 rounded-lg">
+                    <Clock className="w-6 h-6 text-orange-600 animate-pulse" />
+                    <span className="text-3xl font-bold text-orange-600 font-mono">
+                      {formatTime(timeRemaining)}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-center">
+                    <p className="text-xs text-orange-700 font-medium">
+                      Time remaining for therapist to respond
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Confirmation status */}
+              {showConfirmation && timeRemaining > 0 && (
+                <div className="bg-green-50 rounded-lg p-3 border-2 border-green-200 text-center">
+                  <p className="text-sm font-semibold text-green-800 mb-1">✅ Booking Request Sent</p>
+                  <p className="text-xs text-green-600">Waiting for therapist to respond...</p>
+                </div>
+              )}
+
+              {/* Expired message */}
+              {timeRemaining <= 0 && (
+                <div className="p-4 rounded-xl text-center font-semibold text-red-600 bg-red-50 border-2 border-red-200">
+                  ⏰ Booking request expired - No response received
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Actions footer */}

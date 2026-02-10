@@ -59,7 +59,7 @@ import type { Therapist, Place, Analytics } from './types';
 import './lib/notificationSound'; // Initialize notification sound system
 import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
 // REMOVED: chatSessionService import - no longer using global chat sessions
-// REMOVED: ChatErrorBoundary import - no longer using global ChatWindow
+import ChatErrorBoundary from './components/ChatErrorBoundary';
 import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapper';
 import { logger } from './utils/logger';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
@@ -1561,10 +1561,13 @@ const App = () => {
             {/* 🔒 PERSISTENT CHAT WINDOW - Facebook Messenger style
                 This renders at ROOT level, OUTSIDE all other components.
                 It will NEVER disappear once opened. 
-                NOTE: Using PersistentChatWindowSafe wrapper to bypass Babel JSX parsing errors */}
-            <Suspense fallback={null}>
-                <PersistentChatWindowSafe />
-            </Suspense>
+                NOTE: Using PersistentChatWindowSafe wrapper to bypass Babel JSX parsing errors
+                Micro-fix: Error boundary isolates chat failures; fallback=null keeps app stable */}
+            <ChatErrorBoundary fallback={null}>
+                <Suspense fallback={null}>
+                    <PersistentChatWindowSafe />
+                </Suspense>
+            </ChatErrorBoundary>
 
             {/* 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring */}
             {process.env.NODE_ENV !== 'production' && (
