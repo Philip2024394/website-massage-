@@ -176,7 +176,7 @@ const HomePage: React.FC<HomePageProps> = ({
     language
 }) => {
     // Get city from CityContext
-    const { city: contextCity, countryCode, country } = useCityContext();
+    const { city: contextCity, countryCode, country, hasConfirmedCity } = useCityContext();
     
     // 🚨 CRITICAL ROUTE GUARD - HomePage must ONLY render on home page
     // Use the page prop from the routing system instead of React Router DOM
@@ -1314,6 +1314,33 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderTherapists
 
     // Removed unused renderPlaces
+
+    if (!hasConfirmedCity) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+                <div className="max-w-sm w-full bg-white border border-gray-200 rounded-xl shadow-sm p-6 text-center">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                        Set your location to continue
+                    </h2>
+                    <p className="text-sm text-gray-600 mb-5">
+                        Choose your city or use GPS on the landing page so we can show therapists near you.
+                    </p>
+                    <button
+                        onClick={() => {
+                            if (onNavigate) {
+                                onNavigate('landing');
+                            } else if (typeof window !== 'undefined' && (window as any).setPage) {
+                                (window as any).setPage('landing');
+                            }
+                        }}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500 text-white font-semibold hover:bg-orange-600 transition-colors"
+                    >
+                        Set Location
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="home-page-container scrollable min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full ">

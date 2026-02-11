@@ -417,10 +417,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const ipDetectionRan = React.useRef(false);
     
     // Location state - now using auto-detected country
-    const { city: contextCity, countryCode, autoDetected, detectionMethod, locationResult, setCity, setCountry, clearCountry } = useCityContext();
+    const { 
+        city: contextCity, 
+        countryCode, 
+        autoDetected, 
+        detectionMethod, 
+        locationResult, 
+        setCity, 
+        setCountry, 
+        clearCountry,
+        confirmLocation,
+        hasConfirmedCity,
+        confirmedLocation
+    } = useCityContext();
     const [selectedCity, setSelectedCity] = useState<string | null>(contextCity || null);
     const [showCountryModal, setShowCountryModal] = useState(false);
     const [cityNotListed, setCityNotListed] = useState(false);
+    const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+    const [manualLocationText, setManualLocationText] = useState('');
     const [gpsCollected, setGpsCollected] = useState(false);
     const [gpsLocation, setGpsLocation] = useState<string | null>(null);
     
@@ -505,6 +519,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             logger.warn('⚠️ No city selected - cannot proceed');
             return;
         }
+
+        const normalizedLocationText = manualLocationText.trim() || gpsLocation || null;
+        confirmLocation({
+            cityName: selectedCity,
+            latitude: selectedCoordinates?.lat ?? null,
+            longitude: selectedCoordinates?.lng ?? null,
+            locationText: normalizedLocationText
+        });
         
         setIsDetectingLocation(true);
         
@@ -571,6 +593,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const handleCitySelectNew = async (city: CityOption) => {
         setSelectedCity(city.name);
         setCity(city.name);
+        setSelectedCoordinates(null);
+        setCityNotListed(false);
         
         logger.debug('📍 City selected:', city.name, 'in country:', city.country);
         
@@ -581,13 +605,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             
             try {
                 const newLang = selectedCountryInfo.language;
-                
-                // Load language resources
                 await loadLanguageResources(newLang);
-                
-                // Change language
                 handleLanguageToggle(newLang as Language);
-                
                 logger.debug('✅ Language auto-switched to:', newLang);
             } catch (error) {
                 logger.warn('⚠️ Language auto-switch failed, using English:', error);
@@ -595,57 +614,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             }
         }
         
-        // Update country in context
+        // Update country in context without persisting (confirmation will persist)
         setCountry(city.country, false);
-        
-        logger.debug('📍 Navigating to home page...');
-        
-        // Small delay to show selection feedback
-        setTimeout(async () => {
-            try {
-                // Try the provided callback first
-                if (enterAppCallback) {
-                    logger.debug('🚀 Using provided enterApp callback');
-                    const userLocation = await locationService.requestLocationWithFallback();
-                    await enterAppCallback(defaultLanguage, userLocation);
-                    return;
-                }
-                
-                // Fallback navigation methods
-                if (selectLanguage || (window as any).setPage) {
-                    if (selectLanguage) {
-                        await selectLanguage(defaultLanguage);
-                    }
-                    
-                    if ((window as any).setPage) {
-                        logger.debug('🚀 Navigating to home via global setPage');
-                        (window as any).setPage('home');
-                        // Scroll to top to show therapist cards immediately
-                        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
-                    } else {
-                        // Redirect via URL (ONLY in browser mode)
-                        if (shouldAllowRedirects()) {
-                            logger.debug('🚀 Redirecting to /home');
-                            window.location.href = '/home';
-                        }
-                    }
-                    return;
-                }
-                
-                // Final fallback - URL redirect (ONLY in browser mode)
-                if (shouldAllowRedirects()) {
-                    console.log('🚀 Final fallback: URL redirect to home');
-                    window.location.href = '/home';
-                }
-                
-            } catch (error) {
-                console.error('❌ Failed to navigate to home:', error);
-                // Only redirect in browser mode
-                if (shouldAllowRedirects()) {
-                    window.location.href = '/home';
-                }
-            }
-        }, 300);
     };
     
     // Handle manual country change via modal
@@ -746,80 +716,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             // Save the detected city
             setSelectedCity(detectedCity);
             setCity(detectedCity);
-            
-            // Small delay to show feedback
-            setTimeout(async () => {
-                // Navigate to home page
-                try {
-                    if (enterAppCallback) {
-                        console.log('🚀 Using provided enterApp callback with GPS location');
-                        await enterAppCallback(defaultLanguage, gpsLocationData);
-                        return;
-                    }
-                    
-                    if (selectLanguage || (window as any).setPage) {
-                        if (selectLanguage) {
-                            await selectLanguage(defaultLanguage);
-                        }
-                        
-                        if ((window as any).setPage) {
-                            console.log('🚀 Navigating to home via global setPage');
-                            (window as any).setPage('home');
-                            // Scroll to top to show therapist cards immediately
-                            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
-                        } else {
-                            // Redirect via URL (ONLY in browser mode)
-                            if (shouldAllowRedirects()) {
-                                console.log('🚀 Redirecting to /home');
-                                window.location.href = '/home';
-                            }
-                        }
-                        return;
-                    }
-                    
-                    // Final fallback - URL redirect (ONLY in browser mode)
-                    if (shouldAllowRedirects()) {
-                        console.log('🚀 Final fallback: URL redirect to home');
-                        window.location.href = '/home';
-                    }
-                    
-                } catch (error) {
-                    console.error('❌ Failed to navigate to home:', error);
-                    // Only redirect in browser mode
-                    if (shouldAllowRedirects()) {
-                        window.location.href = '/home';
-                    }
-                }
-            }, 500);
+            setSelectedCoordinates({ lat: gpsLocationData.lat, lng: gpsLocationData.lng });
             
         } catch (error) {
             console.error('❌ GPS detection failed:', error);
-            
-            // Fallback: Navigate to home without specific city
-            alert('Unable to detect your location. You\'ll see all available therapists.');
-            
-            try {
-                if (enterAppCallback) {
-                    const fallbackLocation = await locationService.requestLocationWithFallback();
-                    await enterAppCallback(defaultLanguage, fallbackLocation);
-                    return;
-                }
-                
-                if ((window as any).setPage) {
-                    (window as any).setPage('home');
-                } else {
-                    // Only redirect in browser mode
-                    if (shouldAllowRedirects()) {
-                        window.location.href = '/home';
-                    }
-                }
-            } catch (navError) {
-                console.error('❌ Navigation failed:', navError);
-                // Only redirect in browser mode
-                if (shouldAllowRedirects()) {
-                    window.location.href = '/home';
-                }
-            }
+            alert('Unable to detect your location automatically. Please select your city from the list.');
         } finally {
             if (isMountedRef.current) {
                 setIsDetectingLocation(false);
@@ -833,15 +734,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
-        <div className="landing-page-container mobile-optimized scrollable relative w-full bg-gray-900  " style={{ 
-            height: 'auto', // Allow natural height on mobile
-            minHeight: '100dvh', // Dynamic viewport height for mobile
-            maxHeight: 'none', // Remove height restrictions
+        <div className="landing-page-container mobile-optimized scrollable relative w-full bg-gray-900" style={{ 
+            height: 'auto',
+            minHeight: '100dvh',
+            maxHeight: 'none',
             position: 'relative',
-            paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 40px)', // Mobile safe area
-            WebkitOverflowScrolling: 'touch', // Smooth iOS scrolling
-            touchAction: 'pan-y pan-x', // Enable touch scrolling
-            overscrollBehavior: 'auto' // Allow native overscroll
+            paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 40px)',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y pan-x',
+            overscrollBehavior: 'auto',
+            // Ensure full bleed - no white/orange bleed from parent
+            backgroundColor: '#111827'
         }}>
             {/* Country Redirect Notification - shows when user is redirected to nearest country */}
             {locationResult && <CountryRedirectNotice location={locationResult} />}
@@ -868,9 +771,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 }}
             />
             
-            {/* Absolute overlay - optimized for GPU acceleration */}
+            {/* Absolute overlay - solid dark tint, no band/split */}
             <div 
-                className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" 
+                className="absolute inset-0 z-10 bg-black/50 pointer-events-none" 
                 style={{ willChange: 'contents' }}
             />
             
@@ -920,6 +823,20 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         </div>
 
 
+
+                        {/* Previously confirmed location */}
+                        {hasConfirmedCity && confirmedLocation && (
+                            <div className="mb-3 px-4 py-2 bg-orange-50 border border-orange-200 rounded-lg text-left text-gray-800">
+                                <div className="text-xs font-semibold text-orange-700">Saved Location</div>
+                                <div className="text-sm font-bold">{confirmedLocation.cityName}</div>
+                                {confirmedLocation.locationText && (
+                                    <div className="text-xs text-gray-600 mt-1">{confirmedLocation.locationText}</div>
+                                )}
+                                <div className="text-[11px] text-gray-500 mt-1">
+                                    You can change it anytime by selecting another city or using GPS.
+                                </div>
+                            </div>
+                        )}
 
                         {/* GPS Location Status Indicator - Subtle */}
                         {gpsCollected && gpsLocation && (
@@ -1003,6 +920,34 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                 </div>
                             )}
                         </div>
+
+                        <div className="mt-4 text-left">
+                            <label htmlFor="manual-area" className="block text-xs font-semibold text-gray-300 mb-1">
+                                Village / Area (optional)
+                            </label>
+                            <input
+                                id="manual-area"
+                                type="text"
+                                value={manualLocationText}
+                                onChange={(event) => setManualLocationText(event.target.value)}
+                                placeholder="e.g. Padangtegal, Canggu"
+                                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/40"
+                                autoComplete="off"
+                            />
+                        </div>
+
+                        <button
+                            onClick={handleEnterClick}
+                            disabled={isDetectingLocation || !selectedCity}
+                            className="w-full mt-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isDetectingLocation ? 'Preparing your location…' : selectedCity ? `Continue with ${selectedCity}` : 'Select a city to continue'}
+                        </button>
+                        {!selectedCity && (
+                            <p className="text-[11px] text-orange-200 mt-2 text-center">
+                                Choose a city or use GPS to unlock therapists near you.
+                            </p>
+                        )}
                     </div>
                 </div>
                 </div>

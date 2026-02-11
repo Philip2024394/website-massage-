@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { currencyService } from '../lib/currencyService';
 import { ipGeolocationService, GeolocationResult } from '../lib/ipGeolocationService';
+import { StoredUserLocation, loadUserLocation, saveUserLocation, clearUserLocation } from '../utils/userLocationStore';
+import { convertLocationStringToId } from '../utils/locationNormalizationV2';
 
 /**
  * CityContext - Smart location management with auto-detection
@@ -14,16 +16,28 @@ import { ipGeolocationService, GeolocationResult } from '../lib/ipGeolocationSer
  * - All data queries scoped to active city
  */
 
+interface ConfirmLocationInput {
+  cityId?: string;
+  cityName: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationText?: string | null;
+}
+
 interface CityContextValue {
   country: string;
   countryCode: string;
   city: string | null;
   hasSelectedCity: boolean;
+  hasConfirmedCity: boolean;
+  confirmedLocation: StoredUserLocation | null;
   autoDetected: boolean;
   detectionMethod: 'saved' | 'ip' | 'manual' | 'default' | 'nearest';
   locationResult: GeolocationResult | null; // Full location data including nearest country info
   setCity: (city: string) => void;
   setCountry: (countryCode: string, savePreference?: boolean) => void;
+  confirmLocation: (input: ConfirmLocationInput) => void;
+  clearConfirmedLocation: () => void;
   clearCity: () => void;
   clearCountry: () => void;
   isLoading: boolean;
@@ -32,12 +46,15 @@ interface CityContextValue {
 const CityContext = createContext<CityContextValue | undefined>(undefined);
 
 export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [city, setCity] = useState<string | null>(null);
+  const savedLocation = loadUserLocation();
+  const [city, setCityState] = useState<string | null>(savedLocation?.cityName ?? null);
   const [countryCode, setCountryCodeState] = useState<string>('ID');
   const [autoDetected, setAutoDetected] = useState(false);
   const [detectionMethod, setDetectionMethod] = useState<'saved' | 'ip' | 'manual' | 'default' | 'nearest'>('default');
   const [locationResult, setLocationResult] = useState<GeolocationResult | null>(null);
+  const [confirmedLocation, setConfirmedLocation] = useState<StoredUserLocation | null>(savedLocation);
   const [isLoading, setIsLoading] = useState(true);
+  const hasConfirmedCity = !!confirmedLocation;
 
   // Auto-detect country on mount
   useEffect(() => {
@@ -54,8 +71,8 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCountryCodeState(location.countryCode);
         setAutoDetected(location.detected);
         setDetectionMethod(location.method);
-        if (location.city) {
-          setCity(location.city);
+        if (!confirmedLocation && location.city) {
+          setCityState(location.city);
         }
         setIsLoading(false);
         
@@ -74,7 +91,7 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     initializeLocation();
-  }, []);
+  }, [confirmedLocation]);
 
   // Set city
   const handleSetCity = (newCity: string) => {
@@ -83,14 +100,17 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // ✅ CRITICAL FIX: Clear stale localStorage cache first
     // This prevents "Nearby in bandung" showing when "yogyakarta" is selected
-    localStorage.removeItem('user_location_preference');
-    console.log('🗑️ CityContext: Cleared stale localStorage cache');
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.removeItem('user_location_preference');
+        console.log('🗑️ CityContext: Cleared stale localStorage cache');
+      } catch {
+        // ignore storage failures (private mode, etc.)
+      }
+    }
     
-    setCity(newCity);
-    
-    // Save complete location preference to localStorage
-    ipGeolocationService.saveLocation(countryCode, newCity);
-    console.log('✅ CityContext: City saved to localStorage:', newCity);
+    setCityState(newCity);
+    setDetectionMethod('manual');
   };
 
   // Set country (with optional preference saving)
@@ -106,10 +126,41 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const handleConfirmLocation = (input: ConfirmLocationInput) => {
+    const cityName = input.cityName?.trim();
+    if (!cityName) {
+      console.warn('⚠️ confirmLocation called without cityName');
+      return;
+    }
+
+    const cityId = convertLocationStringToId(input.cityId || cityName);
+    const normalized: StoredUserLocation = {
+      cityId,
+      cityName,
+      latitude: typeof input.latitude === 'number' ? input.latitude : null,
+      longitude: typeof input.longitude === 'number' ? input.longitude : null,
+      locationText: input.locationText ?? null,
+      confirmedAt: new Date().toISOString()
+    };
+
+    setCityState(cityName);
+    setConfirmedLocation(normalized);
+    saveUserLocation(normalized);
+    ipGeolocationService.saveLocation(countryCode, cityName);
+    setDetectionMethod('manual');
+    setAutoDetected(false);
+  };
+
+  const handleClearConfirmedLocation = () => {
+    setConfirmedLocation(null);
+    clearUserLocation();
+  };
+
   // Clear city
   const clearCity = () => {
     console.log('📍 CityContext: Clearing city selection');
-    setCity(null);
+    setCityState(null);
+    handleClearConfirmedLocation();
   };
 
   // Clear country (reset to IP detection)
@@ -124,7 +175,8 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setAutoDetected(location.detected);
       setDetectionMethod(location.method);
       currencyService.setCountry(location.countryCode);
-      setCity(null); // Clear city when country changes
+      setCityState(null); // Clear city when country changes
+      handleClearConfirmedLocation();
     } catch (error) {
       console.error('Failed to re-detect country:', error);
     }
@@ -152,11 +204,15 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     countryCode,
     city,
     hasSelectedCity: !!city,
+    hasConfirmedCity,
+    confirmedLocation,
     autoDetected,
     detectionMethod,
     locationResult,
     setCity: handleSetCity,
     setCountry: handleSetCountry,
+    confirmLocation: handleConfirmLocation,
+    clearConfirmedLocation: handleClearConfirmedLocation,
     clearCity,
     clearCountry,
     isLoading,
@@ -175,10 +231,10 @@ export const useCityContext = (): CityContextValue => {
 
 // Hook to require city selection (for use in pages)
 export const useRequireCity = (): { city: string; country: string } => {
-  const { city, country, hasSelectedCity } = useCityContext();
+  const { city, country, hasConfirmedCity } = useCityContext();
   
-  if (!hasSelectedCity || !city) {
-    throw new Error('City selection required but not available');
+  if (!hasConfirmedCity || !city) {
+    throw new Error('Confirmed city required but not available');
   }
   
   return { city, country };
