@@ -59,6 +59,7 @@ import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
+import { matchTherapistsForUser, type MatchOutcome, type UserLocationContext } from '../utils/therapistMatching';
 import { logger } from '../utils/logger';
 
 // 🚀 PERFORMANCE: Bulk data fetching to eliminate N+1 queries
@@ -176,7 +177,7 @@ const HomePage: React.FC<HomePageProps> = ({
     language
 }) => {
     // Get city from CityContext
-    const { city: contextCity, countryCode, country, hasConfirmedCity } = useCityContext();
+    const { city: contextCity, countryCode, country, hasConfirmedCity, confirmedLocation } = useCityContext();
     
     // 🚨 CRITICAL ROUTE GUARD - HomePage must ONLY render on home page
     // Use the page prop from the routing system instead of React Router DOM
@@ -243,6 +244,59 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         logger.debug('HomePage selectedCity changed:', { selectedCity, contextCity });
     }, [selectedCity, contextCity]);
+    
+    const userLocationForMatching = useMemo<UserLocationContext | null>(() => {
+        if (!confirmedLocation) return null;
+        
+        return {
+            cityId: confirmedLocation.cityId,
+            cityName:
+                confirmedLocation.cityName ||
+                contextCity ||
+                selectedCity ||
+                'Unknown City',
+            latitude:
+                typeof confirmedLocation.latitude === 'number'
+                    ? confirmedLocation.latitude
+                    : null,
+            longitude:
+                typeof confirmedLocation.longitude === 'number'
+                    ? confirmedLocation.longitude
+                    : null,
+            locationText: confirmedLocation.locationText ?? null
+        };
+    }, [confirmedLocation, contextCity, selectedCity]);
+    
+    const therapistMatchOutcome = useMemo<MatchOutcome | null>(() => {
+        if (!userLocationForMatching) return null;
+        return matchTherapistsForUser(
+            Array.isArray(therapists) ? (therapists as any[]) : [],
+            userLocationForMatching,
+            {
+                radiusKm: 8,
+                minResults: 5,
+                maxResults: 12
+            }
+        );
+    }, [therapists, userLocationForMatching]);
+    
+    useEffect(() => {
+        if (!hasConfirmedCity) {
+            setCityFilteredTherapists([]);
+            return;
+        }
+
+        if (!therapistMatchOutcome) {
+            return;
+        }
+
+        logger.debug('🏙️ Therapist match outcome ready', {
+            totals: therapistMatchOutcome.stats,
+            firstNames: therapistMatchOutcome.matches.slice(0, 3).map((t) => (t as any).name)
+        });
+
+        setCityFilteredTherapists(therapistMatchOutcome.matches);
+    }, [hasConfirmedCity, therapistMatchOutcome, setCityFilteredTherapists]);
     
     // Female therapist filter state
     const [showFemaleOnly, setShowFemaleOnly] = useState(false);
@@ -946,232 +1000,90 @@ const HomePage: React.FC<HomePageProps> = ({
         filterByLocation();
     }, [therapists, places, hotels, autoDetectedLocation, userLocation, selectedCity]);
 
-    // Log therapist display info with location filtering
     useEffect(() => {
-        const liveTherapists = nearbyTherapists.filter((t: any) => {
-            const isOwner = loggedInProvider && loggedInProvider.type === 'therapist' && (
-                String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
-            );
-            const featuredTherapist = isFeaturedSample(t, 'therapist');
-            const treatedAsLive = shouldTreatTherapistAsLive(t);
-            
-            return treatedAsLive || isOwner || featuredTherapist;
-        });
-        const filteredTherapists = liveTherapists.filter((t: any) => {
-            // CRITICAL RULE: If activeCity ≠ therapist.city → therapist MUST NEVER appear
-            // This ensures the system never "feels broken"
-            
-            // Always show featured sample therapists (like Budi) in ALL cities
-            if (isFeaturedSample(t, 'therapist')) {
-                logger.debug(`Including featured therapist "${t.name}" in city "${selectedCity}" (shows everywhere in Indonesia)`);
-                return true;
-            }
-            
-            if (selectedCity === 'all') return true;
-            
-            // SMART CITY MATCH: GPS-AUTHORITATIVE FILTERING WITH REGION AWARENESS
-            // Priority: city (GPS-derived) → locationId → location (legacy fallback)
-            const therapistCity = t.city || t.locationId || t.location;
-            
-            // If therapist has no city data, exclude them
-            if (!therapistCity) {
-                logger.debug(`Excluded therapist "${t.name}" - no city data`);
-                return false;
-            }
-            
-            // Normalize both cities for comparison
-            // Handle location strings like "Canggu, Indonesia" by extracting just the city part
-            let normalizedTherapistCity = therapistCity.toLowerCase().trim();
-            if (normalizedTherapistCity.includes(',')) {
-                // Extract city name before comma (e.g., "Canggu, Indonesia" → "canggu")
-                normalizedTherapistCity = normalizedTherapistCity.split(',')[0].trim();
-            }
-            const normalizedSelectedCity = selectedCity.toLowerCase().trim();
-            
-            // BALI REGION MATCHING: Denpasar, Canggu, Ubud, Seminyak, etc. are all in Bali
-            const baliCities = ['denpasar', 'canggu', 'ubud', 'seminyak', 'sanur', 'kuta', 'nusa dua', 'jimbaran', 'uluwatu', 'bali'];
-            const isBaliTherapist = baliCities.includes(normalizedTherapistCity) || normalizedTherapistCity.includes('bali');
-            const isBaliUser = baliCities.includes(normalizedSelectedCity) || normalizedSelectedCity.includes('bali');
-            
-            // Match if both are in Bali region
-            if (isBaliTherapist && isBaliUser) {
-                logger.debug(`Included therapist "${t.name}" (${therapistCity}) matches Bali region with user in ${selectedCity}`);
-                return true;
-            }
-            
-            // EXACT MATCH (after normalization)
-            const matches = normalizedTherapistCity === normalizedSelectedCity;
-            
-            if (matches) {
-                logger.debug(`Included therapist "${t.name}" matches city "${selectedCity}"`);
-            } else {
-                logger.debug(`Excluded therapist "${t.name}" (city: "${therapistCity}") does not match "${selectedCity}"`);
-            }
-            
-            return matches;
-        });
-        
-        // Add showcase profiles from Yogyakarta ONLY to cities with no real therapists
-        let finalTherapistList = [...filteredTherapists];
-        if (selectedCity !== 'all') {
-            // Count real therapists (excluding featured Budi sample)
-            const realTherapistsInCity = filteredTherapists.filter((t: any) => !isFeaturedSample(t, 'therapist'));
-            
-            // Only add showcase profiles if city has NO real therapists
-            if (realTherapistsInCity.length === 0) {
-                const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
-                if (showcaseProfiles.length > 0) {
-                    // Add showcase profiles to the list (they'll appear as busy)
-                    finalTherapistList = [...filteredTherapists, ...showcaseProfiles];
-                    logger.debug(`Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} (no real therapists in city)`);
-                }
-            } else {
-                logger.debug(`${selectedCity} has ${realTherapistsInCity.length} real therapist(s), skipping showcase profiles`);
-            }
+        if (!hasConfirmedCity) {
+            setCityFilteredPlaces([]);
+            setCityFilteredHotels([]);
+            return;
         }
-        
-        // Update city-filtered therapists state
-        setCityFilteredTherapists(finalTherapistList);
-        
-        // Filter places by selected city (same logic as therapists)
+
         const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
         const filteredPlacesByCity = livePlaces.filter((p: any) => {
-            // Always show featured samples in ALL cities
             if (isFeaturedSample(p, 'place')) {
                 return true;
             }
-            
+
             if (selectedCity === 'all') return true;
-            
-            // STRICT CITY MATCH: GPS-AUTHORITATIVE FILTERING
+
             const placeCity = p.city || p.locationId || p.location;
-            
-            // If place has no city data, exclude them
+
             if (!placeCity) {
                 logger.debug(`Excluded place "${p.name}" - no city data`);
                 return false;
             }
-            
-            // Normalize both cities for comparison
+
             const normalizedPlaceCity = placeCity.toLowerCase().trim();
             const normalizedSelectedCity = selectedCity.toLowerCase().trim();
-            
-            // EXACT MATCH REQUIRED
+
             const matches = normalizedPlaceCity === normalizedSelectedCity;
-            
+
             if (matches) {
                 logger.debug(`Included place "${p.name}" matches city "${selectedCity}"`);
             } else {
                 logger.debug(`Excluded place "${p.name}" (city: "${placeCity}") does not match "${selectedCity}"`);
             }
-            
+
             return matches;
         });
-        
-        // Save filtered places to state
         setCityFilteredPlaces(filteredPlacesByCity);
-        
-        // Filter hotels by selected city (STRICT MATCHING - same as therapists/places)
+
         const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
         const filteredHotels = liveHotels.filter((h: any) => {
-            // Always show featured samples in ALL cities
             if (isFeaturedSample(h, 'hotel')) {
                 return true;
             }
-            
+
             if (selectedCity === 'all') return true;
-            
-            // STRICT CITY MATCH: GPS-AUTHORITATIVE FILTERING
+
             const hotelCity = h.city || h.locationId || h.location;
-            
-            // If hotel has no city data, exclude it
+
             if (!hotelCity) {
                 logger.debug(`Excluded hotel "${h.name}" - no city data`);
                 return false;
             }
-            
-            // Normalize both cities for comparison
+
             const normalizedHotelCity = hotelCity.toLowerCase().trim();
             const normalizedSelectedCity = selectedCity.toLowerCase().trim();
-            
-            // EXACT MATCH REQUIRED
+
             const matches = normalizedHotelCity === normalizedSelectedCity;
-            
+
             if (matches) {
                 logger.debug(`Included hotel "${h.name}" matches city "${selectedCity}"`);
             } else {
                 logger.debug(`Excluded hotel "${h.name}" (city: "${hotelCity}") does not match "${selectedCity}"`);
             }
-            
+
             return matches;
         });
-        
-        logger.debug('[HomePage RENDER] Provider Display Debug (Location-Filtered 25km radius)');
-        logger.debug('[STAGE 5 - HomePage Filters] Filter analysis', {
-            totalTherapistsProp: therapists.length,
-            nearbyTherapists: nearbyTherapists.length,
-            liveNearbyTherapists: liveTherapists.length,
-            finalFilteredTherapists: finalTherapistList.length
-        });
-        logger.debug('[STAGE 5] Filter breakdown', {
-            input: therapists.length,
-            afterLocation: nearbyTherapists.length,
-            afterLiveFilter: liveTherapists.length,
-            final: finalTherapistList.length,
-            reduction: therapists.length - finalTherapistList.length
-        });
-        logger.debug('Filtered hotels and location info', {
-            filteredHotels: filteredHotels.length,
-            autoDetectedLocation,
-            selectedCity
-        });
-        const missingCoords = therapists.filter((t: any)=>!t.coordinates).length;
-        logger.debug('Therapists missing coordinates', { count: missingCoords });
-        
-        // Also log places
-        const livePlacesCount = nearbyPlaces.filter((p: any) => p.isLive === true).length;
-        logger.debug('Places filtering info', {
-            totalPlacesProp: places.length,
-            nearbyPlaces: nearbyPlaces.length,
-            liveNearbyPlaces: livePlacesCount,
-            placesMissingCoords: places.filter((p: any)=>!p.coordinates).length
-        });
-        
-        // Also log hotels
-        const liveHotelsCount = nearbyHotels.filter((h: any) => h.isLive === true).length;
-        logger.debug('Hotels filtering info', {
-            totalHotelsProp: hotels.length,
-            nearbyHotels: nearbyHotels.length,
-            liveNearbyHotels: liveHotelsCount,
-            hotelsMissingCoords: hotels.filter((h: any)=>!h.coordinates).length
-        });
-        
-        // 🔧 DEV-ONLY: Diagnostic assertions
-        if (isDev) {
-            if (therapists.length > 0 && nearbyTherapists.length === 0) {
-                logger.warn('Warning: Therapists exist in DB but 0 after location filtering. Check coordinates or location matching.');
-            }
-            
-            const currentCoords = (isDev && devLocationOverride) 
-                ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng }
-                : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
-            
-            if (nearbyTherapists.length === 0 && therapists.length > 0 && currentCoords) {
-                const therapistsWithCoords = therapists.filter((t: any) => t.geopoint);
-                if (therapistsWithCoords.length > 0) {
-                    const minDist = Math.min(...therapistsWithCoords.map((t: any) => {
-                        const coords = t.geopoint;
-                        const dlat = currentCoords.lat - coords.latitude;
-                        const dlng = currentCoords.lng - coords.longitude;
-                        return Math.sqrt(dlat * dlat + dlng * dlng) * 111;
-                    }));
-                    if (minDist > 15) {
-                        logger.warn(`Warning: User location is ${minDist.toFixed(1)}km from nearest therapist cluster. Consider location override.`);
-                    }
-                }
+        setCityFilteredHotels(filteredHotels);
+
+        if (therapistMatchOutcome) {
+            logger.debug('[MATCH FLOW] Therapist matching summary', therapistMatchOutcome.stats);
+            if (therapistMatchOutcome.placeholders.length > 0) {
+                logger.debug('[MATCH FLOW] Placeholder therapists injected', {
+                    city: userLocationForMatching?.cityName,
+                    placeholderCount: therapistMatchOutcome.placeholders.length
+                });
             }
         }
-    }, [therapists, nearbyTherapists, places, nearbyPlaces, hotels, nearbyHotels, selectedCity, autoDetectedLocation, isDev, devLocationOverride, userLocation]);
+    }, [
+        hasConfirmedCity,
+        nearbyPlaces,
+        nearbyHotels,
+        selectedCity,
+        therapistMatchOutcome,
+        userLocationForMatching
+    ]);
 
     useEffect(() => {
         // Fetch custom drawer links
