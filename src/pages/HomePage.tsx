@@ -298,6 +298,14 @@ const HomePage: React.FC<HomePageProps> = ({
         setCityFilteredTherapists(therapistMatchOutcome.matches);
     }, [hasConfirmedCity, therapistMatchOutcome, setCityFilteredTherapists]);
     
+    const hasPlaceholderMatches = Boolean(therapistMatchOutcome?.placeholders.length);
+    const distanceMatchCount = therapistMatchOutcome?.distanceMatches.length ?? 0;
+    const displayCityName =
+        userLocationForMatching?.cityName ||
+        contextCity ||
+        selectedCity ||
+        'your area';
+    
     // Female therapist filter state
     const [showFemaleOnly, setShowFemaleOnly] = useState(false);
     
@@ -882,6 +890,41 @@ const HomePage: React.FC<HomePageProps> = ({
         return showcaseProfiles;
     };
 
+    interface PlaceholderCardProps {
+        cityName: string;
+        description?: string | null;
+        onRequest?: () => void;
+        onTherapistPortalClick?: () => void;
+    }
+
+    const PlaceholderTherapistCard: React.FC<PlaceholderCardProps> = ({
+        cityName,
+        description,
+        onRequest,
+        onTherapistPortalClick
+    }) => (
+        <div className="rounded-2xl border border-dashed border-orange-300 bg-white px-5 py-6 text-center shadow-sm">
+            <p className="text-lg font-semibold text-gray-900">Therapists Coming Soon</p>
+            <p className="text-sm text-gray-600 mt-1">
+                {description || `We are onboarding certified therapists for ${cityName}.`}
+            </p>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <button
+                    onClick={() => onRequest?.()}
+                    className="inline-flex items-center justify-center rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-orange-600 transition-colors"
+                >
+                    Request Therapist
+                </button>
+                <button
+                    onClick={() => onTherapistPortalClick?.()}
+                    className="inline-flex items-center justify-center rounded-full border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-600 shadow-sm hover:bg-orange-100 transition-colors"
+                >
+                    Become a Therapist
+                </button>
+            </div>
+        </div>
+    );
+
     // Filter therapists and places by location automatically
     useEffect(() => {
         const filterByLocation = async () => {
@@ -1304,35 +1347,91 @@ const HomePage: React.FC<HomePageProps> = ({
             <div className="bg-white sticky top-[60px] z-10">
                 <PageContainer className="px-0 sm:px-0 pt-0 pb-3">
                     {/* Location Display */}
-                    {userLocation && (
+                    {(userLocation || userLocationForMatching) && (
                         <div className="bg-white flex flex-col items-center gap-0.5 pt-4 pb-3">
                             <div className="flex items-center justify-center gap-2">
-                                <MusicPlayer autoPlay={true} />
-                                <svg 
-                                    className="w-4 h-4 text-gray-700" 
-                                    fill="none" 
-                                    viewBox="0 0 24 24" 
-                                    stroke="currentColor" 
+                                {userLocation && <MusicPlayer autoPlay={true} />}
+                                <svg
+                                    className="w-4 h-4 text-gray-700"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
                                     strokeWidth={2}
                                 >
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 <span className="text-lg font-bold text-gray-900">
-                                    {contextCity || (() => {
-                                        if (!userLocation.address || userLocation.address.trim() === '') {
-                                            return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                        }
-                                        try {
-                                            const parts = String(userLocation.address).split(',').map(p => p.trim());
-                                            return parts.slice(-2).join(', ');
-                                        } catch (e) {
-                                            return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                        }
-                                    })()}
+                                    {displayCityName}
                                 </span>
                             </div>
                             <p className="text-base font-semibold text-gray-600">{country}'s Massage Therapist Hub</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {distanceMatchCount > 0
+                                    ? `Prioritizing ${distanceMatchCount} therapist${distanceMatchCount === 1 ? '' : 's'} closest to you.`
+                                    : 'Showing trusted therapists across the city.'}
+                            </p>
+                        </div>
+                    )}
+
+                    {userLocationForMatching && (
+                        <div className="px-4 mt-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-orange-200 bg-orange-50/80 px-4 py-3 shadow-sm">
+                                <div>
+                                    <p className="text-sm font-semibold text-orange-700">
+                                        Showing availability for {displayCityName}
+                                    </p>
+                                    <p className="text-xs text-orange-600 mt-1">
+                                        {distanceMatchCount > 0
+                                            ? 'Live therapists nearby appear first.'
+                                            : 'No GPS match yet—we are showing the best options in your city.'}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setIsLocationModalOpen(true)}
+                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-orange-600 shadow hover:bg-orange-100 transition-colors"
+                                >
+                                    <svg
+                                        className="w-4 h-4"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <path d="M3 11l2-2m0 0l7-7 7 7M5 9v11a1 1 0 001 1h3m10-12l2 2m-2-2v11a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                    Change location
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {hasPlaceholderMatches && (
+                        <div className="px-4 mt-3">
+                            <div className="rounded-2xl border border-dashed border-orange-400 bg-orange-50 px-5 py-4 text-center shadow-sm">
+                                <p className="text-sm font-semibold text-orange-700">
+                                    We are onboarding therapists in {displayCityName}.
+                                </p>
+                                <p className="text-xs text-orange-600 mt-1">
+                                    Request a therapist for your next session or become the first professional in this area.
+                                </p>
+                                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                                    <button
+                                        onClick={() => onNavigate?.('contact')}
+                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-orange-600 transition-colors"
+                                    >
+                                        Request Therapist
+                                    </button>
+                                    <button
+                                        onClick={() => onTherapistPortalClick?.()}
+                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-orange-600 border border-orange-300 shadow-sm hover:bg-orange-100 transition-colors"
+                                    >
+                                        Become a Therapist
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -2034,6 +2133,18 @@ const HomePage: React.FC<HomePageProps> = ({
                                             {/* Therapist Cards in This Area */}
                                             {therapistsInArea.map((therapist: any, index: number) => {
                                                 logger.debug('[STAGE 6] Rendering TherapistHomeCard', { therapistName: therapist.name });
+                                                if (therapist._isPlaceholder) {
+                                                    return (
+                                                        <div key={therapist.$id || therapist.id} className="mb-8">
+                                                            <PlaceholderTherapistCard
+                                                                cityName={displayCityName}
+                                                                description={(therapist as any).description}
+                                                                onRequest={() => onNavigate?.('contact')}
+                                                                onTherapistPortalClick={onTherapistPortalClick}
+                                                            />
+                                                        </div>
+                                                    );
+                                                }
                                 // 🌐 Enhanced Debug: Comprehensive therapist data analysis
                                 // Parse languages safely - handle both JSON arrays and comma-separated strings
                                 let languagesParsed: string[] = [];
