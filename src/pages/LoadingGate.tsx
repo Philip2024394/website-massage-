@@ -20,53 +20,19 @@
  * Stability > Features > Refactors.
  */
 
-import { useEffect } from "react";
-import { logger } from '../utils/logger';
 
 /**
- * LoadingGate - Isolated loading page to prevent infinite loops
+ * LoadingGate - First-paint loading screen (matches index.html pwa-splash)
  * 
- * CRITICAL RULES:
- * - NO hooks except useEffect
- * - NO context providers (Auth, Chat, Status, etc.)
- * - NO props or conditional logic
- * - Single timeout, single exit route
- * - Completely isolated from app state
- * - HARD LOCK: Prevents re-entry via sessionStorage
+ * Displays orange screen while app loads. Parent coordinator switches to landing
+ * after 300ms or when critical data ready. No self-redirect - coordinator handles transition.
  * 
- * Usage: setPage('loading') or navigate to /#/loading
+ * Usage: setPage('loading') on fresh load → coordinator → setPage('landing')
  */
 export default function LoadingGate() {
-  useEffect(() => {
-    logger.debug("🔄 LoadingGate mounted");
-    
-    // HARD LOCK: Prevent infinite loop re-entry
-    if (sessionStorage.getItem("LOADING_LOCKED")) {
-      logger.warn("🚫 LoadingGate: Re-entry blocked by LOADING_LOCKED flag");
-      window.location.hash = "#/home";
-      return;
-    }
-    
-    // Set lock immediately
-    sessionStorage.setItem("LOADING_LOCKED", "1");
-    logger.debug("🔒 LoadingGate: Lock engaged");
-    
-    // ❌ REMOVED: modal-open class (violated STABILITY_SCROLL_LOCK_RULES.md)
-    // Loading screen is self-contained with position: fixed below
-    
-    const timer = setTimeout(() => {
-      logger.debug("✅ LoadingGate: Timeout complete, redirecting to home");
-      // Direct hash navigation - works with app's routing system
-      window.location.hash = "#/home";
-    }, 300); // 300ms - smooth transition without unnecessary wait
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
-
   return (
     <div
+      data-loading-gate
       style={{
         // 🔒 STABILITY: Self-contained lock (per STABILITY_SCROLL_LOCK_RULES.md)
         position: "fixed",

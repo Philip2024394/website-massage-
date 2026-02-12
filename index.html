@@ -407,14 +407,14 @@
             scrollbar-width: none;  /* Firefox */
         }
         
-        /* PWA Splash Screen - Orange IndaStreet Brand Design */
+        /* PWA Splash Screen - Orange IndaStreet Brand Design (matches LoadingGate) */
         #pwa-splash {
           position: fixed;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+          background: #FF7A00;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -439,7 +439,7 @@
         }
         
         #pwa-splash .brand-title .inda {
-          color: #000000;
+          color: #ffffff;
         }
         
         #pwa-splash .brand-title .street {
@@ -448,8 +448,8 @@
         
         #pwa-splash .loading-label {
           color: #ffffff;
-          font-size: 20px;
-          font-weight: 600;
+          font-size: 18px;
+          font-weight: 500;
           margin: 0 0 16px 0;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
           animation: fadeIn 0.8s ease-out 0.2s both;
@@ -511,7 +511,7 @@
     <!-- PWA Splash Screen - Indastreet Loading -->
     <div id="pwa-splash">
       <div class="brand-title"><span class="inda">Inda</span><span class="street">street</span></div>
-      <div class="loading-label">Loading</div>
+      <div class="loading-label">Professional Massage Services</div>
       <div class="dots-container">
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
@@ -583,11 +583,15 @@
           }
         }
         
-        // Check if landing page or app is fully loaded (has meaningful content)
+        // Check if landing page, loading gate, or app is ready
         function isLandingPageReady() {
           var root = document.getElementById('root');
           if (!root || root.children.length === 0) return false;
           
+          // FAST: Hide when React has rendered loading gate (orange screen - seamless transition)
+          if (root.querySelector('[data-loading-gate]')) {
+            return true;
+          }
           // IGNORE React loading states - wait for real content
           if (root.querySelector('#react-loading-spinner, .loading-spinner, [data-loading-state]')) {
             return false;
@@ -633,14 +637,14 @@
           }
         }, 50); // Check more frequently
         
-        // Max timeout: Hide splash after 12s even if content not ready (handles slow dev / cold start)
+        // Max timeout: Hide splash after 5s (handles slow connections)
         setTimeout(function() {
           if (!splashHidden) {
-            console.log('[SPLASH] Timeout reached (12s) - hiding splash screen');
+            console.log('[SPLASH] Timeout reached (5s) - hiding splash screen');
             clearInterval(checkInterval);
             hideSplash();
           }
-        }, 12000);
+        }, 5000);
       })();
     </script>
     

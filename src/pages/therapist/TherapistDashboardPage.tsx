@@ -73,6 +73,7 @@ import { profileEditHelp } from './constants/helpContent';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
+  onNavigate?: (page: string) => void;
   onNavigateToStatus?: () => void;
   onNavigateToBookings?: () => void;
   onNavigateToEarnings?: () => void;
@@ -94,6 +95,7 @@ interface TherapistPortalPageProps {
 
 const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
   therapist,
+  onNavigate,
   onNavigateToStatus,
   onNavigateToBookings,
   onNavigateToEarnings,
@@ -950,6 +952,10 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         console.log('[NAV CLICK] \u2192 Navigating to SafePass page');
         onNavigate?.('therapist-hotel-villa-safe-pass');
         break;
+      case 'therapist-profile':
+        console.log('[NAV CLICK] \u2192 Navigating to public therapist profile');
+        onNavigate?.('therapist-profile');
+        break;
       case 'logout':
         console.log('[NAV CLICK] \u2192 Calling onLogout()');
         onLogout?.();
@@ -1027,7 +1033,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       )}
 
       {/* Main Content */}
-      <main className="max-w-sm mx-auto px-4 py-6">
+      <main className="max-w-sm mx-auto px-4 pt-0 pb-6">
           
           {/* Page Header with Status Badge and Stats - EXACT MATCH TO HOME PAGE */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

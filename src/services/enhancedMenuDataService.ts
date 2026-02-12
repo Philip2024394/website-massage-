@@ -45,6 +45,8 @@ export interface MenuService extends DefaultMenuService {
   // Therapist customization
   isCustomized: boolean; // Has therapist edited this default service?
   originalDefaultId?: string; // Reference to original default if customized
+  /** Sample menu items cannot be edited - they disappear when therapist adds 5 of their own */
+  isSampleMenu?: boolean;
 }
 
 export interface MenuLoadResult {
@@ -195,7 +197,8 @@ export class EnhancedMenuDataService {
         isActive: true,
         bookingCount: 0,
         isCustomized: false,
-        originalDefaultId: service.id
+        originalDefaultId: service.id,
+        isSampleMenu: true // Cannot be edited - disappear when therapist adds 5 of their own
       } as MenuService;
     });
   }

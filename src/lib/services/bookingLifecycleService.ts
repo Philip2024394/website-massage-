@@ -53,6 +53,7 @@
 
 import { databases, ID, Query } from '../appwrite';
 import { APPWRITE_CONFIG } from '../appwrite.config';
+import { isSampleMenuServiceName, SAMPLE_BOOKING_DISPLAY_NAME } from '../../utils/samplePriceUtils';
 
 // ============================================================================
 // IMMUTABLE BOOKING STATUS ENUM
@@ -538,11 +539,17 @@ export const bookingLifecycleService = {
     }
 
     const now = new Date();
-    const updates = {
+    const updates: Record<string, unknown> = {
       bookingStatus: BookingLifecycleStatus.DECLINED,
       declinedAt: now.toISOString(),
       declineReason: reason || 'No reason provided',
     };
+
+    // When sample menu booking is declined (shared with other therapists), always display as Traditional Massage
+    const currentService = (booking as any).serviceType || (booking as any).service;
+    if (isSampleMenuServiceName(currentService)) {
+      updates.serviceType = SAMPLE_BOOKING_DISPLAY_NAME;
+    }
 
     const result = await databases.updateDocument(
       APPWRITE_CONFIG.databaseId,
@@ -572,11 +579,17 @@ export const bookingLifecycleService = {
     }
 
     const now = new Date();
-    const updates = {
+    const updates: Record<string, unknown> = {
       bookingStatus: BookingLifecycleStatus.EXPIRED,
       expiredAt: now.toISOString(),
       expirationReason: reason || 'Response timeout',
     };
+
+    // When sample menu booking expires (shared with other therapists), always display as Traditional Massage
+    const currentService = (booking as any).serviceType || (booking as any).service;
+    if (isSampleMenuServiceName(currentService)) {
+      updates.serviceType = SAMPLE_BOOKING_DISPLAY_NAME;
+    }
 
     const result = await databases.updateDocument(
       APPWRITE_CONFIG.databaseId,

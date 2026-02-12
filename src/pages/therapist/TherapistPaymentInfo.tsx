@@ -234,7 +234,7 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
     >
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
       {/* Main Content */}
-      <main className="max-w-sm mx-auto px-4 py-6">
+      <main className="max-w-sm mx-auto px-4 pt-0 pb-6">
         <div className="space-y-6">
           {/* Standardized Status Header */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

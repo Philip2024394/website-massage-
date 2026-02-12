@@ -235,6 +235,7 @@ export function matchTherapistsForUser(
 
   const distanceMatches: MatchedTherapist[] = [];
   const cityMatches: MatchedTherapist[] = [];
+  const otherCityTherapists: MatchedTherapist[] = [];
   const seenTherapists = new Set<string>();
 
   const userCoords = getUserCoordinates(userLocation);
@@ -285,6 +286,8 @@ export function matchTherapistsForUser(
     if (locationId === userLocation.cityId) {
       cityMatches.push(matchEntry);
       seenTherapists.add(therapistId);
+    } else {
+      otherCityTherapists.push(matchEntry);
     }
   });
 
@@ -311,10 +314,35 @@ export function matchTherapistsForUser(
   let matches = ensuredMinimum;
 
   if (matches.length === 0) {
-    placeholders = Array.from({ length: PLACEHOLDER_COUNT }).map((_, index) =>
-      createPlaceholder(index + 1, userLocation)
-    );
-    matches = placeholders;
+    const samplesFromOtherCities = otherCityTherapists
+      .slice(0, PLACEHOLDER_COUNT)
+      .map((entry) => {
+        const sample: MatchedTherapist = {
+          ...entry,
+          status: 'Busy',
+          displayStatus: 'Busy',
+          availability: 'Busy',
+          availabilityStatus: 'BUSY',
+          _bookable: false,
+          _statusNormalized: 'busy' as NormalizedStatus,
+          _isPlaceholder: true,
+          _matchType: 'placeholder',
+          _reason: 'sample-from-other-city'
+        };
+        (sample as any).chatDisabled = true;
+        if ((sample as any).displayStatus == null) (sample as any).displayStatus = 'Busy';
+        return sample;
+      });
+
+    if (samplesFromOtherCities.length > 0) {
+      placeholders = samplesFromOtherCities;
+      matches = samplesFromOtherCities;
+    } else {
+      placeholders = Array.from({ length: PLACEHOLDER_COUNT }).map((_, index) =>
+        createPlaceholder(index + 1, userLocation)
+      );
+      matches = placeholders;
+    }
   }
 
   return {

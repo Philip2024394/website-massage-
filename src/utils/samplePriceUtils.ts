@@ -5,30 +5,35 @@
  * Used on therapist home cards, profile pages, and booking chat.
  * 
  * Constraints:
- * - 60 min: ≤ 170,000 IDR
- * - 90 min: ≤ 210,000 IDR  
- * - 120 min: ≤ 250,000 IDR
- * - Variation (subtract from max): 0–20k for all (price may be lowered by up to 20,000 IDR)
+ * - Base: 60min 130.000, 90min 155.000, 120min 190.000 IDR
+ * - Variation: randomly ±5.000, ±8.000, or ±10.000 IDR per tier
  * - 5 sample menu items per therapist
  * - Deterministic per therapist ID (same therapist = same prices)
  */
 
-const MAX_60 = 170000;
-const MAX_90 = 210000;
-const MAX_120 = 250000;
+const BASE_60 = 130000;
+const BASE_90 = 155000;
+const BASE_120 = 190000;
 
-// Price may be lowered by up to 20,000 IDR from max (0–20k variation)
-const VARIATION_60 = { min: 0, max: 20000 };
-const VARIATION_90 = { min: 0, max: 20000 };
-const VARIATION_120 = { min: 0, max: 20000 };
+// Random variation: ±5.000, ±8.000, or ±10.000 IDR
+const VARIATION_OPTIONS = [-10000, -5000, -8000, 10000, 5000, 8000];
 
-const SAMPLE_MASSAGE_NAMES = [
+export const SAMPLE_MASSAGE_NAMES = [
   'Traditional Massage',
   'Relaxation Massage',
   'Swedish Massage',
   'Aromatherapy Massage',
   'Deep Tissue Massage'
-];
+] as const;
+
+/** When sample menu booking is shared/expired, always display this name */
+export const SAMPLE_BOOKING_DISPLAY_NAME = 'Traditional Massage';
+
+/** Check if service name is from a sample menu item (excluding Traditional Massage itself) */
+export function isSampleMenuServiceName(serviceName: string | undefined): boolean {
+  if (!serviceName?.trim()) return false;
+  return SAMPLE_MASSAGE_NAMES.some(n => n.toLowerCase() === serviceName!.trim().toLowerCase());
+}
 
 export interface SampleMenuItem {
   name: string;
@@ -68,8 +73,16 @@ function seededRange(seed: number, min: number, max: number): number {
 }
 
 /**
+ * Pick a variation option (0-5 index) using seeded random
+ */
+function pickVariation(seed: number, index: number): number {
+  const idx = seededRange(seed + index, 0, VARIATION_OPTIONS.length - 1);
+  return VARIATION_OPTIONS[idx];
+}
+
+/**
  * Generate 5 sample menu items for a therapist (display-only).
- * Prices never exceed max limits; variation applied for natural look.
+ * Base: 60min 130k, 90min 155k, 120min 190k IDR with ±5k/8k/10k variation.
  */
 export function getSampleMenuItems(therapistId: string): SampleMenuItem[] {
   const seed = createSeed(therapistId);
@@ -78,13 +91,13 @@ export function getSampleMenuItems(therapistId: string): SampleMenuItem[] {
   for (let i = 0; i < 5; i++) {
     const itemSeed = seed + i * 7919; // Prime for better distribution
 
-    const sub60 = seededRange(itemSeed, VARIATION_60.min, VARIATION_60.max);
-    const sub90 = seededRange(itemSeed + 1, VARIATION_90.min, VARIATION_90.max);
-    const sub120 = seededRange(itemSeed + 2, VARIATION_120.min, VARIATION_120.max);
+    const var60 = pickVariation(itemSeed, 0);
+    const var90 = pickVariation(itemSeed + 1, 1);
+    const var120 = pickVariation(itemSeed + 2, 2);
 
-    const price60 = Math.max(0, MAX_60 - sub60);
-    const price90 = Math.max(0, MAX_90 - sub90);
-    const price120 = Math.max(0, MAX_120 - sub120);
+    const price60 = Math.max(50000, BASE_60 + var60);
+    const price90 = Math.max(50000, BASE_90 + var90);
+    const price120 = Math.max(50000, BASE_120 + var120);
 
     const nameIndex = (seed + i * 31) % SAMPLE_MASSAGE_NAMES.length;
     const name = SAMPLE_MASSAGE_NAMES[nameIndex];

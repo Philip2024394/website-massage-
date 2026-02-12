@@ -2177,7 +2177,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                             {/* Therapist Cards in This Area */}
                                             {therapistsInArea.map((therapist: any, index: number) => {
                                                 logger.debug('[STAGE 6] Rendering TherapistHomeCard', { therapistName: therapist.name });
-                                                if (therapist._isPlaceholder) {
+                                                const isFakePlaceholder = therapist._isPlaceholder && String(therapist.$id || therapist.id || '').startsWith('placeholder-');
+                                                if (therapist._isPlaceholder && isFakePlaceholder) {
                                                     return (
                                                         <div key={therapist.$id || therapist.id} className="mb-8">
                                                             <PlaceholderTherapistCard

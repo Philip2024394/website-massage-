@@ -904,7 +904,7 @@ export function PersistentChatWindow() {
                 originalPrice: hasDiscount ? originalPrice : undefined,
                 discountCode: hasDiscount ? discountCode : undefined,
                 discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
-                serviceType: 'Professional Treatment',
+                serviceType: chatState.selectedService?.serviceName || 'Professional Treatment',
                 locationZone: customerForm.location || 'Bali',
                 location: scheduledLocationText, // ✅ Simple location text from user input
                 coordinates: customerForm.coordinates || undefined,
@@ -978,9 +978,9 @@ export function PersistentChatWindow() {
                 customerWhatsApp: fullWhatsApp,
                 // massageFor: customerForm.massageFor, // ❌ REMOVED: Field not in Appwrite schema (causes 400 error)
                 
-                // Service details
+                // Service details - use selected service name when from menu slider (sample menu items)
                 duration: selectedDuration || 60,
-                serviceType: 'Professional Treatment',
+                serviceType: chatState.selectedService?.serviceName || 'Professional Treatment',
                 price: discountedPrice,
                 totalPrice: discountedPrice,
                 
@@ -2597,7 +2597,7 @@ export function PersistentChatWindow() {
                 <BookingWelcomeBanner
                   currentBooking={{
                     status: chatState.currentBooking.status,
-                    serviceType: chatState.selectedService?.name || chatState.currentBooking.serviceType || 'Professional Massage',
+                    serviceType: chatState.selectedService?.serviceName || chatState.currentBooking.serviceType || 'Professional Massage',
                     providerType: (chatState.currentBooking as any)?.providerType || 'therapist',
                     massageFor: (chatState.currentBooking as any)?.massageFor || customerForm.massageFor,
                     duration: chatState.selectedDuration || chatState.currentBooking.duration || 60,

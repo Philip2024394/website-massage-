@@ -29,7 +29,7 @@ import { usePersistentChatIntegration } from '../../hooks/usePersistentChatInteg
 import type { Therapist, UserLocation } from '../../types';
 import { generateTherapistShareURL } from './utils/shareUrlBuilder';
 import { PREVIEW_IMAGES } from '../../config/previewImages';
-import { getHeroImageForTherapist } from '../../config/heroImages';
+import { getTherapistMainImage } from '../../utils/therapistImageUtils';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from '../../lib/appwrite';
 import { shareLinkService } from '../../lib/services/shareLinkService';
 import PWAInstallBanner from '../../components/PWAInstallBanner';
@@ -459,8 +459,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         const description = `✨ Book ${therapist.name} for professional massage therapy in ${city}. ⭐ Verified therapist • 💬 Instant chat • 🔒 Secure booking`;
         const shareUrl = generateTherapistShareURL(therapist);
         
-        // Use hero image from pool for social sharing
-        const previewImage = getHeroImageForTherapist(therapist.$id, ((therapist.location || 'Yogyakarta') as string));
+        // Use same image as home page and profile page for social sharing
+        const previewImage = getTherapistMainImage(therapist as any);
         
         console.log('📱 Social Media Preview:', { 
             therapist: therapist.name, 

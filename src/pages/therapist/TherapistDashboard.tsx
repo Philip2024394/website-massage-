@@ -66,6 +66,7 @@ import { bookingSoundService } from '../../services/bookingSound.service';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
+  onNavigate?: (page: string) => void;
   onNavigateToStatus?: () => void;
   onNavigateToBookings?: () => void;
   onNavigateToEarnings?: () => void;
@@ -87,6 +88,7 @@ interface TherapistPortalPageProps {
 
 const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   therapist,
+  onNavigate,
   onNavigateToStatus,
   onNavigateToBookings,
   onNavigateToEarnings,
@@ -1088,6 +1090,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       case 'therapist-hotel-villa-safe-pass':
         logger.debug('[NAV CLICK] Navigating to SafePass page');
         onNavigate?.('therapist-hotel-villa-safe-pass');
+        break;
+      case 'therapist-profile':
+        logger.debug('[NAV CLICK] Navigating to public therapist profile');
+        onNavigate?.('therapist-profile');
         break;
       case 'logout':
         logger.debug('[NAV CLICK] Calling onLogout()');

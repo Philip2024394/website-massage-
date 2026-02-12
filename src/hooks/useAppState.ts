@@ -242,9 +242,9 @@ export const useAppState = () => {
         return 'hotelVillaMenu';
       }
 
-      // Default: always start at landing on fresh app arrival
-      console.log('🚪 Fresh arrival: starting at landing page');
-      return 'landing';
+      // Default: start at loading (orange first paint) → coordinator switches to landing after 300ms
+      console.log('🚪 Fresh arrival: starting at loading page (fast first paint)');
+      return 'loading';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
       return 'landing';

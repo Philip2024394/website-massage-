@@ -88,6 +88,7 @@ import {
   BookingTransactionParams 
 } from '../services/bookingTransaction.service';
 import { logger } from '../utils/logger';
+import { isSampleMenuServiceName, SAMPLE_BOOKING_DISPLAY_NAME } from '../utils/samplePriceUtils';
 
 // Re-export lifecycle status for UI components
 export { BookingLifecycleStatus, BookingType, TherapistAvailabilityStatus };
@@ -503,14 +504,23 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           }
         }
         
-        // Update UI state
-        setChatState(prev => ({
-          ...prev,
-          currentBooking: prev.currentBooking ? {
-            ...prev.currentBooking,
-            lifecycleStatus: BookingLifecycleStatus.EXPIRED,
-          } : null,
-        }));
+        // Update UI state - when sample menu booking expires, show Traditional Massage to user
+        setChatState(prev => {
+          const booking = prev.currentBooking;
+          const serviceType = booking?.serviceType || prev.selectedService?.serviceName;
+          const isSample = isSampleMenuServiceName(serviceType);
+          return {
+            ...prev,
+            currentBooking: booking ? {
+              ...booking,
+              lifecycleStatus: BookingLifecycleStatus.EXPIRED,
+              ...(isSample && { serviceType: SAMPLE_BOOKING_DISPLAY_NAME }),
+            } : null,
+            selectedService: prev.selectedService && isSample
+              ? { ...prev.selectedService, serviceName: SAMPLE_BOOKING_DISPLAY_NAME }
+              : prev.selectedService,
+          };
+        });
         
         const therapistName = chatState.therapist?.name;
         const message = therapistName
@@ -540,14 +550,23 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           }
         }
         
-        // Update UI state
-        setChatState(prev => ({
-          ...prev,
-          currentBooking: prev.currentBooking ? {
-            ...prev.currentBooking,
-            lifecycleStatus: BookingLifecycleStatus.EXPIRED,
-          } : null,
-        }));
+        // Update UI state - when sample menu booking expires, show Traditional Massage to user
+        setChatState(prev => {
+          const booking = prev.currentBooking;
+          const serviceType = booking?.serviceType || prev.selectedService?.serviceName;
+          const isSample = isSampleMenuServiceName(serviceType);
+          return {
+            ...prev,
+            currentBooking: booking ? {
+              ...booking,
+              lifecycleStatus: BookingLifecycleStatus.EXPIRED,
+              ...(isSample && { serviceType: SAMPLE_BOOKING_DISPLAY_NAME }),
+            } : null,
+            selectedService: prev.selectedService && isSample
+              ? { ...prev.selectedService, serviceName: SAMPLE_BOOKING_DISPLAY_NAME }
+              : prev.selectedService,
+          };
+        });
         
         addSystemNotification(
           '❌ Booking expired - confirmation not received in time.'
@@ -1760,13 +1779,19 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
-    // Update state (lifecycle only - no status field)
+    // Update state - when sample menu booking declined, show Traditional Massage to user
+    const serviceType = currentBooking?.serviceType || chatState.selectedService?.serviceName;
+    const isSample = isSampleMenuServiceName(serviceType);
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
-        lifecycleStatus: BookingLifecycleStatus.DECLINED
+        lifecycleStatus: BookingLifecycleStatus.DECLINED,
+        ...(isSample && { serviceType: SAMPLE_BOOKING_DISPLAY_NAME }),
       } : null,
+      selectedService: prev.selectedService && isSample
+        ? { ...prev.selectedService, serviceName: SAMPLE_BOOKING_DISPLAY_NAME }
+        : prev.selectedService,
     }));
     
     // Update booking state ref IMMEDIATELY (timer needs DECLINED status)

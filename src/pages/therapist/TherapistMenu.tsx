@@ -271,7 +271,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
       <div className="max-w-sm mx-auto bg-white shadow-sm">
 
         {/* Content Area */}
-        <div className="px-8 py-6">
+        <div className="px-8 pt-0 pb-6">
           <div className="flex items-center gap-2 mb-4">
               
               {/* Data Size Indicator */}

@@ -652,9 +652,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         navigateToHome(nextCityName);
     }, [currentLanguage, enterAppCallback, navigateToHome]);
 
+    // Restore stored location to UI only - do NOT auto-redirect to home
+    // User must explicitly select a city or click "Use My GPS Location" to proceed
     useEffect(() => {
         if (!isMountedRef.current) return;
-        if (autoRedirectAttemptedRef.current) return;
         if (typeof window === 'undefined') return;
 
         const storedCityName = window.localStorage.getItem('user_city_name');
@@ -663,7 +664,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         const storedAddress = window.localStorage.getItem('user_city_address') || undefined;
 
         if (storedCityName) {
-            autoRedirectAttemptedRef.current = true;
             const parsedLat = storedLatValue ? Number.parseFloat(storedLatValue) : NaN;
             const parsedLng = storedLngValue ? Number.parseFloat(storedLngValue) : NaN;
             const lat = Number.isFinite(parsedLat) ? parsedLat : null;
@@ -682,74 +682,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             }
             setAutoDetectState('success');
             setAutoDetectMessage(null);
-            navigateToHome(storedCityName);
-            return;
-        }
-
-        if (!('geolocation' in navigator)) {
+            // Do NOT navigateToHome - user must explicitly select location or GPS to proceed
+        } else if (!('geolocation' in navigator)) {
             logger.warn('📍 Browser does not support geolocation. Prompting manual selection.');
             setAutoDetectState('error');
             setAutoDetectMessage('Location services are unavailable. Please select your city below.');
-            return;
         }
-
-        autoRedirectAttemptedRef.current = true;
-        setAutoDetectState('checking');
-        setAutoDetectMessage('Detecting your location...');
-
-        try {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    if (!isMountedRef.current) {
-                        return;
-                    }
-
-                    const { latitude, longitude } = position.coords;
-                    const detectedCity = findCityByCoordinates(latitude, longitude);
-                    const matchedCityName = detectedCity?.name ?? 'Your Location';
-                    const matchedAddress = detectedCity
-                        ? `${detectedCity.name}, ${detectedCity.province}`
-                        : `Lat ${latitude.toFixed(3)}, Lng ${longitude.toFixed(3)}`;
-
-                    const payload = persistAndBuildLocation(matchedCityName, latitude, longitude, matchedAddress);
-                    confirmLocation({
-                        cityName: matchedCityName,
-                        latitude,
-                        longitude,
-                        locationText: payload.address
-                    });
-
-                    setSelectedCity(matchedCityName);
-                    setSelectedCoordinates({ lat: latitude, lng: longitude });
-                    setGpsCollected(true);
-                    setGpsLocation(payload.address);
-                    setAutoDetectState('success');
-                    setAutoDetectMessage(null);
-                    navigateToHome(matchedCityName);
-                },
-                (error) => {
-                    if (!isMountedRef.current) {
-                        return;
-                    }
-
-                    logger.warn('📍 GPS detection failed or was denied:', error);
-                    autoRedirectAttemptedRef.current = false;
-                    setAutoDetectState('denied');
-                    setAutoDetectMessage('We could not access your location. Please select your city manually.');
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 12000,
-                    maximumAge: 0
-                }
-            );
-        } catch (error) {
-            logger.warn('📍 GPS detection threw a synchronous error (likely insecure origin):', error);
-            autoRedirectAttemptedRef.current = false;
-            setAutoDetectState('denied');
-            setAutoDetectMessage('Location access is blocked on this connection. Please pick your city manually.');
-        }
-    }, [confirmLocation, navigateToHome, persistAndBuildLocation, setSelectedCoordinates]);
+    }, [confirmLocation, persistAndBuildLocation, setSelectedCoordinates]);
 
     // Location selector handlers - NEW UX: Only city selection, country auto-detected
     const handleCitySelectNew = async (city: CityOption) => {

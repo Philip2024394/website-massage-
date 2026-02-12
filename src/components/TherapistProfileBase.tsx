@@ -22,7 +22,8 @@ import ShareActions from '../features/shared-profiles/ShareActions';
 import IndastreetAchievements from './IndastreetAchievements';
 import TherapistServiceShowcase from './shared/TherapistServiceShowcase';
 import type { Therapist, UserLocation } from '../types';
-import { getHeroImageForTherapist, HERO_WELCOME_TEXT } from '../config/heroImages';
+import { getTherapistMainImage } from '../utils/therapistImageUtils';
+import { HERO_WELCOME_TEXT } from '../config/heroImages';
 
 // SEO Hashtag Generator for different business types
 const generateSEOHashtags = (therapist: Therapist, city: string) => {
@@ -205,25 +206,8 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
         expiresAt: new Date(therapist.discountEndTime)
     } : null;
 
-    // Hero image logic - only for shared mode
-    // Main image = banner URL (same as home page). Use mainImage/profileImageUrl only, NOT profilePicture (avatar).
-    const therapistHeroImageUrl = mode === 'shared' ? (
-        ((therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null) ||
-        ((therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null) ||
-        ((therapist as any).heroImageUrl && !(therapist as any).heroImageUrl.startsWith('data:') ? (therapist as any).heroImageUrl : null)
-    ) : null;
-    const fallbackHeroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || "a" as string));
-    const heroImageRaw = therapistHeroImageUrl || fallbackHeroImage;
-    
-    const resolvedHeroImage = typeof heroImageRaw === "string" 
-        ? heroImageRaw 
-        : heroImageRaw?.url 
-        ? heroImageRaw.url 
-        : Array.isArray(heroImageRaw) && heroImageRaw[0]?.url 
-        ? heroImageRaw[0].url 
-        : fallbackHeroImage;
-    
-    const heroImage = resolvedHeroImage;
+    // Hero image = EXACT same as home page card (single source of truth)
+    const heroImage = mode === 'shared' ? getTherapistMainImage(therapist as any) : '';
     const welcomeText = HERO_WELCOME_TEXT[language] || HERO_WELCOME_TEXT.id;
     
     // SEO-optimized image alt text
@@ -316,11 +300,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         providerId={(therapist as any).id || (therapist as any).$id}
                         providerName={(therapist as any).name}
                         providerType={'therapist'}
-                        providerImage={
-                            ((therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null) ||
-                            ((therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null) ||
-                            ((therapist as any).heroImageUrl && !(therapist as any).heroImageUrl.startsWith('data:') ? (therapist as any).heroImageUrl : null)
-                        }
+                        providerImage={getTherapistMainImage(therapist as any)}
                         onNavigate={onNavigate}
                     />
                 </div>

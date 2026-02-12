@@ -415,10 +415,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     const getPricing = () => {
         // First, check if we have menu data with a cheaper service than the default pricing
         if (menuData && menuData.length > 0) {
-            // Find services that have 60/90/120 minute pricing
+            // Only use menu items with complete 3-duration pricing (60/90/120)
             const servicesWithFullPricing = menuData.filter(item => {
-                return item.duration60 && item.duration90 && item.duration120 &&
-                       item.price60 && item.price90 && item.price120;
+                const hasAll = item.price60 && item.price90 && item.price120;
+                const valid60 = Number(item.price60) > 0;
+                const valid90 = Number(item.price90) > 0;
+                const valid120 = Number(item.price120) > 0;
+                return hasAll && valid60 && valid90 && valid120;
             });
 
             if (servicesWithFullPricing.length > 0) {
@@ -463,18 +466,18 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             }
         }
 
-        // Fallback to default pricing logic
-        const hasValidSeparateFields = (
-            (therapist.price60 && parseInt(therapist.price60) > 0) ||
-            (therapist.price90 && parseInt(therapist.price90) > 0) ||
+        // Fallback to default pricing - only when ALL 3 containers (60/90/120) are set
+        const hasAllThreePrices = (
+            (therapist.price60 && parseInt(therapist.price60) > 0) &&
+            (therapist.price90 && parseInt(therapist.price90) > 0) &&
             (therapist.price120 && parseInt(therapist.price120) > 0)
         );
 
-        if (hasValidSeparateFields) {
+        if (hasAllThreePrices) {
             return {
-                "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
-                "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
-                "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
+                "60": parseInt(therapist.price60!) * 1000,
+                "90": parseInt(therapist.price90!) * 1000,
+                "120": parseInt(therapist.price120!) * 1000
             };
         }
 
@@ -510,10 +513,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             return 'Traditional Massage';
         }
 
-        // Find services that have 60/90/120 minute pricing
+        // Only use menu items with complete 3-duration pricing (60/90/120)
         const servicesWithFullPricing = menuData.filter(item => {
-            return item.duration60 && item.duration90 && item.duration120 &&
-                   item.price60 && item.price90 && item.price120;
+            const hasAll = item.price60 && item.price90 && item.price120;
+            const valid60 = Number(item.price60) > 0;
+            const valid90 = Number(item.price90) > 0;
+            const valid120 = Number(item.price120) > 0;
+            return hasAll && valid60 && valid90 && valid120;
         });
 
         if (servicesWithFullPricing.length === 0) {
@@ -527,13 +533,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             return currentPrice < cheapestPrice ? current : cheapest;
         });
 
-        // Extract service name - use first word + "Massage"
+        // Use full massage type name from cheapest service
         if (cheapestService.name || cheapestService.serviceName || cheapestService.title) {
             const serviceName = cheapestService.name || cheapestService.serviceName || cheapestService.title;
-            const firstWord = serviceName.split(' ')[0];
-            const result = `${firstWord} Massage`;
-            logger.debug(`🏠 Generated service name for ${therapist.name}: "${result}"`);
-            return result;
+            logger.debug(`🏠 Service name for ${therapist.name}: "${serviceName}"`);
+            return serviceName;
         }
 
         return 'Traditional Massage';
@@ -829,6 +833,36 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-2 text-left">
                         {therapist.description}
                     </p>
+                </div>
+            )}
+
+            {/* 3 Price Containers - Lowest menu item with complete 60/90/120 pricing */}
+            {pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 && (
+                <div className="mx-4 mb-4">
+                    {/* Massage type name above the 3 containers */}
+                    <h3 className="text-gray-800 font-bold text-sm tracking-wide text-center mb-2">
+                        {serviceName}
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
+                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">60 min</p>
+                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                                IDR {formatPrice(pricing["60"])}
+                            </p>
+                        </div>
+                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
+                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">90 min</p>
+                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                                IDR {formatPrice(pricing["90"])}
+                            </p>
+                        </div>
+                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
+                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">120 min</p>
+                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                                IDR {formatPrice(pricing["120"])}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
 

@@ -712,7 +712,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     >
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
-      <div className="max-w-sm mx-auto px-4 pt-6">
+      <div className="max-w-sm mx-auto px-4 pt-0 pb-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">

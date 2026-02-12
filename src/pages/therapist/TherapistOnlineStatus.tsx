@@ -1150,7 +1150,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       onLogout={onLogout}
     >
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
-      <div className="max-w-sm mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-sm mx-auto px-4 pt-0 pb-6 space-y-6">
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">

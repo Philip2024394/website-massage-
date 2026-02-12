@@ -1486,6 +1486,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     return renderRoute(therapistRoutes.dashboard.component, {
                         therapist: props.user,
                         onLogout: props.handleLogout,
+                        onNavigate: props.onNavigate,
                         onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
                         onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
                         onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),

@@ -41,8 +41,8 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                     width="400"
                     height="192"
                     onError={(e) => {
-                        logger.error('🖼️ Main image failed to load:', displayImage);
-                        // Fallback to a working ImageKit URL
+                        logger.warn('🖼️ Main image failed to load, using fallback:', typeof displayImage === 'string' ? displayImage.slice(0, 80) : displayImage);
+                        // Fallback to a working ImageKit URL (e.g. when Appwrite file returns 404)
                         (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
                     }}
                     onLoad={() => {

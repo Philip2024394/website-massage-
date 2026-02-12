@@ -156,16 +156,19 @@ export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataRes
     }
   }, [therapistId, refreshMenu]);
   
-  // Update existing service
+  // Update existing service (sample items cannot be updated)
   const updateService = useCallback(async (serviceId: string, updates: Partial<MenuService>) => {
     try {
-      console.log('✏️ Updating service:', serviceId);
-      
       const currentService = menuLoadResult?.services.find(s => s.id === serviceId);
       if (!currentService) {
         throw new Error('Service not found');
       }
+      if ((currentService as any).isSampleMenu) {
+        console.warn('⚠️ Sample menu items cannot be edited');
+        return;
+      }
       
+      console.log('✏️ Updating service:', serviceId);
       await EnhancedMenuDataService.saveService(therapistId, {
         ...currentService,
         ...updates,
@@ -181,11 +184,16 @@ export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataRes
     }
   }, [therapistId, menuLoadResult, refreshMenu]);
   
-  // Delete service
+  // Delete service (sample items cannot be deleted)
   const deleteService = useCallback(async (serviceId: string) => {
     try {
-      console.log('🗑️ Deleting service:', serviceId);
+      const currentService = menuLoadResult?.services.find(s => s.id === serviceId);
+      if (currentService && (currentService as any).isSampleMenu) {
+        console.warn('⚠️ Sample menu items cannot be deleted');
+        return;
+      }
       
+      console.log('🗑️ Deleting service:', serviceId);
       const success = await EnhancedMenuDataService.deleteService(therapistId, serviceId);
       
       if (!success) {
@@ -198,7 +206,7 @@ export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataRes
       console.error('❌ Error deleting service:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete service');
     }
-  }, [therapistId, refreshMenu]);
+  }, [therapistId, menuLoadResult, refreshMenu]);
   
   // Mark service as booked (for badge updates)
   const markServiceBooked = useCallback(async (serviceId: string) => {

@@ -45,11 +45,13 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
             return 'Traditional Massage';
         }
 
-        // Find services that have 60/90/120 minute pricing
+        // Only use menu items with complete 3-duration pricing (60/90/120)
         const servicesWithFullPricing = menuData.filter(item => {
-            // Check if this menu item has 60, 90, and 120 minute options
-            return item.duration60 && item.duration90 && item.duration120 &&
-                   item.price60 && item.price90 && item.price120;
+            const hasAll = item.price60 && item.price90 && item.price120;
+            const valid60 = Number(item.price60) > 0;
+            const valid90 = Number(item.price90) > 0;
+            const valid120 = Number(item.price120) > 0;
+            return hasAll && valid60 && valid90 && valid120;
         });
 
         console.log(`🏷️ Found ${servicesWithFullPricing.length} services with full pricing for ${therapist.name}`);
@@ -69,13 +71,11 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
 
         console.log(`🏷️ Cheapest service for ${therapist.name}:`, cheapestService);
 
-        // Extract service name - use first word + "Massage"
+        // Use full massage type name
         if (cheapestService.name || cheapestService.serviceName || cheapestService.title) {
             const serviceName = cheapestService.name || cheapestService.serviceName || cheapestService.title;
-            const firstWord = serviceName.split(' ')[0];
-            const result = `${firstWord} Massage`;
-            console.log(`🏷️ Generated service name for ${therapist.name}: "${result}" from "${serviceName}"`);
-            return result;
+            console.log(`🏷️ Service name for ${therapist.name}: "${serviceName}"`);
+            return serviceName;
         }
 
         // Fallback to traditional

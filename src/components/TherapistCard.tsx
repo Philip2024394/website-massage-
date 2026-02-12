@@ -39,7 +39,7 @@ import { AvailabilityStatus } from '../types';
 import { logger } from '../utils/logger';
 import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
-import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getTherapistMainImage } from '../utils/therapistImageUtils';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
@@ -711,10 +711,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const getPricing = () => {
         // First, check if we have menu data with a cheaper service than the default pricing
         if (menuData && menuData.length > 0) {
-            // Find services that have 60/90/120 minute pricing
+            // Only use menu items with complete 3-duration pricing (60/90/120)
             const servicesWithFullPricing = menuData.filter(item => {
-                return item.duration60 && item.duration90 && item.duration120 &&
-                       item.price60 && item.price90 && item.price120;
+                const hasAll = item.price60 && item.price90 && item.price120;
+                const valid60 = Number(item.price60) > 0;
+                const valid90 = Number(item.price90) > 0;
+                const valid120 = Number(item.price120) > 0;
+                return hasAll && valid60 && valid90 && valid120;
             });
 
             if (servicesWithFullPricing.length > 0) {
@@ -769,29 +772,29 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             }
         }
 
-        // Fallback to default pricing logic
-        const hasValidSeparateFields = (
-            (therapist.price60 && parseInt(therapist.price60) > 0) ||
-            (therapist.price90 && parseInt(therapist.price90) > 0) ||
+        // Fallback to default pricing - only when ALL 3 containers (60/90/120) are set
+        const hasAllThreePrices = (
+            (therapist.price60 && parseInt(therapist.price60) > 0) &&
+            (therapist.price90 && parseInt(therapist.price90) > 0) &&
             (therapist.price120 && parseInt(therapist.price120) > 0)
         );
 
-        if (hasValidSeparateFields) {
+        if (hasAllThreePrices) {
             return {
-                "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
-                "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
-                "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
+                "60": parseInt(therapist.price60!) * 1000,
+                "90": parseInt(therapist.price90!) * 1000,
+                "120": parseInt(therapist.price120!) * 1000
             };
         }
         
-        // Fallback to old JSON format - multiply by 1000 to get full IDR amounts
+        // Fallback to old JSON format - only when ALL 3 prices are > 0
         const parsedPricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
         const fromJson = {
             "60": parsedPricing["60"] * 1000,
             "90": parsedPricing["90"] * 1000,
             "120": parsedPricing["120"] * 1000
         };
-        if (fromJson["60"] > 0 || fromJson["90"] > 0 || fromJson["120"] > 0) {
+        if (fromJson["60"] > 0 && fromJson["90"] > 0 && fromJson["120"] > 0) {
             return fromJson;
         }
 
@@ -857,32 +860,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return `${priceInThousands}k`;
     };
     
-    // Main image: Appwrite URL only (mainImage, profileImageUrl, heroImageUrl). Do NOT use profileImage/profilePicture.
-    const isValidUrl = (url: any) => url && typeof url === 'string' && !url.startsWith('data:') && /^https?:\/\//.test(url);
-    const mainImageRaw = isValidUrl((therapist as any).mainImage) ? (therapist as any).mainImage : isValidUrl((therapist as any).mainimage) ? (therapist as any).mainimage : null;
-    const profileImageUrl = isValidUrl((therapist as any).profileImageUrl) ? (therapist as any).profileImageUrl : null;
-    const heroImageUrl = isValidUrl((therapist as any).heroImageUrl) ? (therapist as any).heroImageUrl : null;
-    
-    const mainImage = mainImageRaw || profileImageUrl || heroImageUrl;
-    
-    // Fallback: deterministic by therapist ID (same as home page, no flicker on re-render)
-    const therapistId = String((therapist as any).$id || (therapist as any).id || therapist.name || '');
-    const displayImage = mainImage || getRandomTherapistImage(therapistId);
+    // Single source of truth: same image as profile page (home card + profile page must match exactly)
+    const displayImage = getTherapistMainImage(therapist as any);
     
     const isSvgPlaceholder = typeof displayImage === 'string' && displayImage.startsWith('data:image/svg+xml');
     
     logger.debug('%c🖼️ [TherapistCard] Image Debug', 'background: #9C27B0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
-    logger.debug('Therapist:', therapist.name);
-    logger.debug('mainImage (Appwrite URL only):', mainImageRaw || 'NOT SET', mainImageRaw ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('profileImageUrl:', profileImageUrl || 'NOT SET', profileImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('heroImageUrl:', heroImageUrl || 'NOT SET', heroImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('Selected displayImage:', mainImage || 'NONE - using fallback');
-    logger.debug('Final displayImage:', displayImage);
-    logger.debug('displayImage TYPE:', typeof displayImage);
-    logger.debug('Using fallback?', !mainImage ? '✅ YES (SharedProfile pool)' : '❌ NO');
-    logger.debug('Is Valid URL?', isValidUrl(displayImage) ? '✅ YES' : '❌ NO');
-    logger.debug('Is SVG Placeholder?', isSvgPlaceholder ? '⚠️ YES (GRAY BOX)' : '✅ NO');
-    logger.debug('Display Image Length:', displayImage?.length || 0);
+    logger.debug('Therapist:', therapist.name, 'displayImage:', displayImage?.slice?.(0, 60) + '...');
     
     if (isSvgPlaceholder) {
         logger.error('%c❌ SVG PLACEHOLDER DETECTED!', 'background: red; color: white; padding: 4px 8px; font-weight: bold;');
@@ -1156,20 +1140,23 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
 
 
-            <TherapistPricingGrid
-                pricing={pricing}
-                therapist={therapist}
-                displayRating={displayRating}
-                animatedPriceIndex={animatedPriceIndex}
-                formatPrice={formatPrice}
-                getDynamicSpacing={getDynamicSpacing}
-                translatedDescriptionLength={translatedDescription.length}
-                menuData={menuData}
-                onPriceClick={() => {
-                    logger.debug('💰 Price grid clicked - opening price modal');
-                    setShowPriceListModal(true);
-                }}
-            />
+            {/* Only show 3 price containers when we have complete 60/90/120 pricing */}
+            {pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 && (
+                <TherapistPricingGrid
+                    pricing={pricing}
+                    therapist={therapist}
+                    displayRating={displayRating}
+                    animatedPriceIndex={animatedPriceIndex}
+                    formatPrice={formatPrice}
+                    getDynamicSpacing={getDynamicSpacing}
+                    translatedDescriptionLength={translatedDescription.length}
+                    menuData={menuData}
+                    onPriceClick={() => {
+                        logger.debug('💰 Price grid clicked - opening price modal');
+                        setShowPriceListModal(true);
+                    }}
+                />
+            )}
 
             {/* Round Button Row - Book Now | Scheduled Bookings | Price Slider */}
             <RoundButtonRow

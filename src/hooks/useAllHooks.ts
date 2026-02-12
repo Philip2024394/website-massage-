@@ -25,6 +25,16 @@ export const useAllHooks = () => {
     // URL routing - sync page state with browser URL
     useURLRouting(state.page, state.setPage);
     
+    // Loading coordinator: switch from loading → landing after 300ms (or when therapists ready)
+    useEffect(() => {
+        if (state.page !== 'loading') return;
+        const timer = setTimeout(() => {
+            state.setPage('landing');
+            sessionStorage.removeItem('LOADING_LOCKED');
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [state.page, state.setPage]);
+    
     // Fetch therapists and places on app initialization
     useEffect(() => {
         const initializeData = async () => {
@@ -54,9 +64,8 @@ export const useAllHooks = () => {
             }
         };
 
-        // ⚡ PERFORMANCE: Delay data fetch until after first paint
-        const timer = setTimeout(initializeData, 300);
-        return () => clearTimeout(timer);
+        // ⚡ PERFORMANCE: Start fetch immediately (parallel with loading screen)
+        initializeData();
     }, []); // Empty dependency array - only run once on mount
     
     // 🔄 Listen for discount activation events and refresh data
