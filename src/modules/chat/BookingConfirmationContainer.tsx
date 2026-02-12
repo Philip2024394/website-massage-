@@ -246,7 +246,16 @@ export const BookingConfirmationContainer: React.FC<BookingConfirmationContainer
             {/* 5-Minute Countdown - Same orange gradient as chat step */}
             <div className="mt-4 pt-4 border-t border-gray-300">
               {timeRemaining > 0 && (
-                <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border-2 border-orange-300 shadow-md">
+                <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border-2 border-orange-300 shadow-md relative">
+                  {/* Small cancel button - top right */}
+                  <button
+                    onClick={onCancel}
+                    className="absolute top-3 right-3 p-1.5 rounded-lg text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                    title="Cancel booking"
+                    aria-label="Cancel booking"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                   <div className="text-center mb-2">
                     <p className="text-xs font-semibold text-orange-800 uppercase tracking-wide mb-1">
                       ⏰ Therapist Response Countdown

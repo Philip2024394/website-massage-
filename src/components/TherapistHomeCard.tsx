@@ -29,6 +29,7 @@ import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModa
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { Share2 } from 'lucide-react';
 import { logger } from '../utils/logger';
+import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import SafePassModal from './modals/SafePassModal';
 import HomePageBookingSlider, { HomePageBookingType } from './HomePageBookingSlider';
 
@@ -453,8 +454,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     "120": parseFloat(cheapestService.price120) * 1000
                 };
 
-                // Use menu pricing if it's cheaper than default pricing
-                if (menuPricing["60"] < defaultPricing["60"] && menuPricing["60"] > 0) {
+                // Use menu pricing if it has values and (therapist has no prices OR menu is cheaper)
+                const therapistHasNoPrices = defaultPricing["60"] === 0 && defaultPricing["90"] === 0 && defaultPricing["120"] === 0;
+                if (menuPricing["60"] > 0 && (therapistHasNoPrices || menuPricing["60"] < defaultPricing["60"])) {
                     logger.debug('🏠 Using cheaper menu pricing for', therapist.name, ':', menuPricing);
                     return menuPricing;
                 }
@@ -475,7 +477,15 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
             };
         }
-        
+
+        // Display-only sample prices when therapist has no prices set
+        if (!hasActualPricing(therapist)) {
+            const therapistId = String((therapist as any).$id || therapist.id || '');
+            if (therapistId) {
+                return getSamplePricing(therapistId);
+            }
+        }
+
         return { "60": 0, "90": 0, "120": 0 };
     };
 
@@ -488,8 +498,15 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             menuLength: menuData?.length || 0
         });
 
-        // If no menu data or empty menu, default to "Traditional Massage"
+        // If no menu data or empty menu, use sample service name when therapist has no prices
         if (!menuData || menuData.length === 0) {
+            if (!hasActualPricing(therapist)) {
+                const therapistId = String((therapist as any).$id || therapist.id || '');
+                if (therapistId) {
+                    const sample = getSamplePricing(therapistId);
+                    return sample.serviceName || 'Traditional Massage';
+                }
+            }
             return 'Traditional Massage';
         }
 

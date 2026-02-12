@@ -60,7 +60,7 @@ input, textarea, select {
   }
   
   .therapist-layout-content {
-    padding: 0.5rem;
+    padding: 0 0.5rem 0.5rem 0.5rem; /* No top padding - content flows under hero/breadcrumb */
     max-width: calc(100vw - 1rem);
   }
   
@@ -455,7 +455,7 @@ input, textarea, select {
   
   /* Tablet layout adjustments */
   .therapist-layout-content {
-    padding: 1rem 2rem;
+    padding: 0 2rem 1rem 2rem; /* No top padding - content flows under hero */
     max-width: calc(100vw - 320px);
   }
   
@@ -512,7 +512,7 @@ input, textarea, select {
   }
   
   .therapist-layout-content {
-    padding: 2rem 3rem;
+    padding: 0 3rem 2rem 3rem; /* No top padding - content flows under hero */
     max-width: calc(100% - var(--stable-sidebar-width));
   }
   

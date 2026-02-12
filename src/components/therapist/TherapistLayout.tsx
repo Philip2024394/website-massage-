@@ -791,6 +791,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           // ✅ MODEL A: Natural content growth - NO flex constraints
           // ❌ REMOVED flex: '1 1 auto' - was constraining content to parent bounds
           // ❌ REMOVED minHeight: 0 - was preventing natural content growth
+          paddingTop: 0,  // ✅ No white space under header/breadcrumb - content flows up
           paddingBottom: 'max(env(safe-area-inset-bottom, 10px), 20px)',
           WebkitOverflowScrolling: 'touch'  // ✅ Smooth iOS scrolling
           // ✅ Content now grows naturally - browser handles scroll

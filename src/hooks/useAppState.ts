@@ -138,7 +138,7 @@ export const useAppState = () => {
         if (hashPath.startsWith('/dashboard/therapist') || hashPath.startsWith('/therapist')) {
           console.log('🔗 [INIT] Therapist route detected in hash:', hashPath);
           if (hashPath === '/therapist' || hashPath === '/therapist-dashboard' || hashPath === '/dashboard/therapist') {
-            return 'dashboard';
+            return 'therapist-dashboard';
           } else if (hashPath === '/dashboard/therapist/status' || hashPath === '/therapist/status') {
             return 'therapist-status';
           } else if (hashPath === '/dashboard/therapist/bookings' || hashPath === '/therapist/bookings') {

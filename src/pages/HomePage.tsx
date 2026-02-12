@@ -29,7 +29,7 @@
  * 🛑 UI changes require explicit qw: instruction
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 // Direct imports to avoid lazy loading issues on home page
 import TherapistHomeCard from '../components/TherapistHomeCard';
@@ -178,6 +178,7 @@ const HomePage: React.FC<HomePageProps> = ({
 }) => {
     // Get city from CityContext
     const { city: contextCity, countryCode, country, hasConfirmedCity, confirmedLocation } = useCityContext();
+    const [initializingCityGuard, setInitializingCityGuard] = useState(true);
     
     // 🚨 CRITICAL ROUTE GUARD - HomePage must ONLY render on home page
     // Use the page prop from the routing system instead of React Router DOM
@@ -245,6 +246,27 @@ const HomePage: React.FC<HomePageProps> = ({
         logger.debug('HomePage selectedCity changed:', { selectedCity, contextCity });
     }, [selectedCity, contextCity]);
     
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        try {
+            const storedCityId = window.localStorage.getItem('user_city_id');
+            const storedCityName = window.localStorage.getItem('user_city_name');
+
+            if (!storedCityId) {
+                console.warn('City not set — redirecting to landing.');
+                onNavigate?.('landing');
+                return;
+            }
+
+            if (!hasConfirmedCity && storedCityName && !selectedCity) {
+                logger.debug('Restoring selected city from storage on HomePage:', storedCityName);
+                setSelectedCity(storedCityName);
+            }
+        } catch (error) {
+            logger.error('Failed to read city selection from storage', error);
+        }
+    }, [hasConfirmedCity, onNavigate, selectedCity, setSelectedCity]);
+    
     const userLocationForMatching = useMemo<UserLocationContext | null>(() => {
         if (!confirmedLocation) return null;
         
@@ -281,22 +303,31 @@ const HomePage: React.FC<HomePageProps> = ({
     }, [therapists, userLocationForMatching]);
     
     useEffect(() => {
-        if (!hasConfirmedCity) {
-            setCityFilteredTherapists([]);
+        if (typeof window === 'undefined') {
+            setInitializingCityGuard(false);
             return;
         }
 
-        if (!therapistMatchOutcome) {
-            return;
+        try {
+            const storedCityId = window.localStorage.getItem('user_city_id');
+            const storedCityName = window.localStorage.getItem('user_city_name');
+
+            if (!storedCityId) {
+                logger.warn('City not set — redirecting to landing.');
+                onNavigate?.('landing');
+                return;
+            }
+
+            if (!hasConfirmedCity && storedCityName && !selectedCity) {
+                logger.debug('Restoring selected city from storage on HomePage:', storedCityName);
+                setSelectedCity(storedCityName);
+            }
+        } catch (error) {
+            logger.error('Failed to read city selection from storage', error);
+        } finally {
+            setInitializingCityGuard(false);
         }
-
-        logger.debug('🏙️ Therapist match outcome ready', {
-            totals: therapistMatchOutcome.stats,
-            firstNames: therapistMatchOutcome.matches.slice(0, 3).map((t) => (t as any).name)
-        });
-
-        setCityFilteredTherapists(therapistMatchOutcome.matches);
-    }, [hasConfirmedCity, therapistMatchOutcome, setCityFilteredTherapists]);
+    }, [hasConfirmedCity, onNavigate, selectedCity, setSelectedCity]);
     
     const hasPlaceholderMatches = Boolean(therapistMatchOutcome?.placeholders.length);
     const distanceMatchCount = therapistMatchOutcome?.distanceMatches.length ?? 0;
@@ -427,8 +458,55 @@ const HomePage: React.FC<HomePageProps> = ({
         onSetUserLocation
     });
 
+    useEffect(() => {
+        if (!initializingCityGuard && !hasConfirmedCity) {
+            setCityFilteredTherapists([]);
+        }
+    }, [initializingCityGuard, hasConfirmedCity, setCityFilteredTherapists]);
+
+    useEffect(() => {
+        if (!hasConfirmedCity) {
+            setCityFilteredTherapists([]);
+            return;
+        }
+
+        if (!therapistMatchOutcome) {
+            return;
+        }
+
+        logger.debug('🏙️ Therapist match outcome ready', {
+            totals: therapistMatchOutcome.stats,
+            firstNames: therapistMatchOutcome.matches.slice(0, 3).map((t) => (t as any).name)
+        });
+
+        setCityFilteredTherapists(therapistMatchOutcome.matches);
+    }, [hasConfirmedCity, therapistMatchOutcome, setCityFilteredTherapists]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        try {
+            const storedCityId = window.localStorage.getItem('user_city_id');
+            const storedCityName = window.localStorage.getItem('user_city_name');
+
+            if (!storedCityId) {
+                logger.warn('City not set — redirecting to landing.');
+                onNavigate?.('landing');
+                return;
+            }
+
+            if (!hasConfirmedCity && storedCityName && !selectedCity) {
+                logger.debug('Restoring selected city from storage on HomePage:', storedCityName);
+                setSelectedCity(storedCityName);
+            }
+        } catch (error) {
+            logger.error('Failed to read city selection from storage', error);
+        }
+    }, [hasConfirmedCity, onNavigate, selectedCity, setSelectedCity]);
+
     // State for city-filtered places
     const [cityFilteredPlaces, setCityFilteredPlaces] = useState<any[]>([]);
+    const [cityFilteredHotels, setCityFilteredHotels] = useState<any[]>([]);
 
     
     // Google Maps Autocomplete (minimal UI state)
@@ -1371,40 +1449,6 @@ const HomePage: React.FC<HomePageProps> = ({
                                     ? `Prioritizing ${distanceMatchCount} therapist${distanceMatchCount === 1 ? '' : 's'} closest to you.`
                                     : 'Showing trusted therapists across the city.'}
                             </p>
-                        </div>
-                    )}
-
-                    {userLocationForMatching && (
-                        <div className="px-4 mt-3">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-orange-200 bg-orange-50/80 px-4 py-3 shadow-sm">
-                                <div>
-                                    <p className="text-sm font-semibold text-orange-700">
-                                        Showing availability for {displayCityName}
-                                    </p>
-                                    <p className="text-xs text-orange-600 mt-1">
-                                        {distanceMatchCount > 0
-                                            ? 'Live therapists nearby appear first.'
-                                            : 'No GPS match yet—we are showing the best options in your city.'}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => setIsLocationModalOpen(true)}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-orange-600 shadow hover:bg-orange-100 transition-colors"
-                                >
-                                    <svg
-                                        className="w-4 h-4"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    >
-                                        <path d="M3 11l2-2m0 0l7-7 7 7M5 9v11a1 1 0 001 1h3m10-12l2 2m-2-2v11a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                    </svg>
-                                    Change location
-                                </button>
-                            </div>
                         </div>
                     )}
 

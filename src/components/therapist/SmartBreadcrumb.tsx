@@ -218,7 +218,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
 
   return (
     <div className={`bg-white border-b border-gray-200 ${className}`}>
-      <div className="px-4 py-3">
+      <div className="px-4 pt-3 pb-2">
         <div className="flex items-center justify-between">
           {/* Breadcrumb Path */}
           <nav className="flex items-center space-x-1 overflow-x-auto scrollbar-hide flex-1 min-w-0">

@@ -21,9 +21,8 @@
  */
 
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Button from '../components/Button';
-import { locationService } from '../services/locationService';
 import { deviceService } from '../services/deviceService';
 import { customerGPSService } from '../services/customerGPSCollectionService';
 import PageNumberBadge from '../components/PageNumberBadge';
@@ -35,6 +34,8 @@ import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { loadLanguageResources } from '../lib/i18n';
 import { ipGeolocationService } from '../lib/ipGeolocationService';
+import { findCityByCoordinates, findCityByName } from '../constants/indonesianCities';
+import { convertLocationStringToId } from '../utils/locationNormalizationV2';
 import { isPWA, shouldAllowRedirects } from '../utils/pwaDetection';
 import CountryRedirectNotice from '../components/CountryRedirectNotice';
 import { logger } from '../utils/logger';
@@ -430,13 +431,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         hasConfirmedCity,
         confirmedLocation
     } = useCityContext();
-    const [selectedCity, setSelectedCity] = useState<string | null>(contextCity || null);
+    const [selectedCity, setSelectedCity] = useState<string | null>(null);
     const [showCountryModal, setShowCountryModal] = useState(false);
     const [cityNotListed, setCityNotListed] = useState(false);
     const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat: number; lng: number } | null>(null);
     const [manualLocationText, setManualLocationText] = useState('');
     const [gpsCollected, setGpsCollected] = useState(false);
     const [gpsLocation, setGpsLocation] = useState<string | null>(null);
+    const lastConfirmedLocationRef = useRef<UserLocation | null>(null);
+    const autoRedirectAttemptedRef = useRef(false);
+    const [autoDetectState, setAutoDetectState] = useState<'idle' | 'checking' | 'success' | 'denied' | 'error'>('idle');
+    const [autoDetectMessage, setAutoDetectMessage] = useState<string | null>(null);
     
     // Menu state for burger menu
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -444,6 +449,73 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     // Use either prop name for backward compatibility
     const enterAppCallback = handleEnterApp || onEnterApp;
     const selectLanguage = handleLanguageSelect || onLanguageSelect;
+
+    // Must be declared before buildLocationPayload which references it
+    const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
+
+    const persistCitySelection = useCallback((
+        cityName: string,
+        lat: number | null = null,
+        lng: number | null = null,
+        locationText?: string | null
+    ) => {
+        try {
+            const cityId = convertLocationStringToId(cityName);
+            localStorage.setItem('user_city_id', cityId);
+            localStorage.setItem('user_city_name', cityName);
+
+            if (lat !== null && Number.isFinite(lat)) {
+                localStorage.setItem('user_city_lat', String(lat));
+            } else {
+                localStorage.removeItem('user_city_lat');
+            }
+
+            if (lng !== null && Number.isFinite(lng)) {
+                localStorage.setItem('user_city_lng', String(lng));
+            } else {
+                localStorage.removeItem('user_city_lng');
+            }
+
+            if (locationText && locationText.trim().length > 0) {
+                localStorage.setItem('user_city_address', locationText.trim());
+            } else {
+                localStorage.removeItem('user_city_address');
+            }
+
+            console.log('City saved:', cityName);
+        } catch (error) {
+            logger.warn('⚠️ Failed to persist city selection', error);
+        }
+    }, []);
+
+    const buildLocationPayload = useCallback((
+        cityName: string,
+        lat: number | null,
+        lng: number | null,
+        locationText?: string | null
+    ): UserLocation => {
+        const resolvedAddress = (locationText && locationText.trim().length > 0)
+            ? locationText.trim()
+            : `${cityName}, ${currentCountryData?.name ?? ''}`.trim();
+        return {
+            address: resolvedAddress,
+            lat: lat ?? 0,
+            lng: lng ?? 0
+        };
+    }, [currentCountryData?.name]);
+
+    const persistAndBuildLocation = useCallback((
+        cityName: string,
+        lat: number | null,
+        lng: number | null,
+        locationText?: string | null
+    ): UserLocation => {
+        persistCitySelection(cityName, lat, lng, locationText);
+
+        const payload = buildLocationPayload(cityName, lat, lng, locationText);
+        lastConfirmedLocationRef.current = payload;
+        return payload;
+    }, [persistCitySelection, buildLocationPayload]);
 
     // Handle language change
     const handleLanguageToggle = (newLang: Language) => {
@@ -510,90 +582,182 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     // Removed image preload effect - not needed for background images
     // Background images load progressively and don't need preloading state
 
-    const handleEnterClick = async () => {
-        if (isDetectingLocation) return;
-        if (!isMountedRef.current) return;
-        
-        // If no city selected, do nothing (button should be disabled)
-        if (!selectedCity) {
-            logger.warn('⚠️ No city selected - cannot proceed');
+    const navigateToHome = useCallback((cityName?: string) => {
+        if (typeof window === 'undefined') {
+            logger.warn('⚠️ Unable to navigate from non-browser environment.');
             return;
         }
 
-        const normalizedLocationText = manualLocationText.trim() || gpsLocation || null;
-        confirmLocation({
-            cityName: selectedCity,
-            latitude: selectedCoordinates?.lat ?? null,
-            longitude: selectedCoordinates?.lng ?? null,
-            locationText: normalizedLocationText
-        });
-        
-        setIsDetectingLocation(true);
-        
+        const query = cityName ? `?c=${encodeURIComponent(cityName)}` : '';
+        const targetPath = `/home${query}`;
+        const targetHash = `#/home${query}`;
+
         try {
-            // First, try the provided callback
-            if (enterAppCallback) {
-                logger.debug('🚀 Using provided enterApp callback');
-                const userLocation = await locationService.requestLocationWithFallback();
-                if (!isMountedRef.current) return;
-                await enterAppCallback(defaultLanguage, userLocation);
-                return;
-            }
-            
-            // Fallback: Direct navigation to home page
-            logger.debug('🚀 Using fallback navigation to home');
-            
-            // If we have an onNavigate prop, use it
-            if (selectLanguage || (window as any).setPage) {
-                const userLocation = await locationService.requestLocationWithFallback();
-                if (!isMountedRef.current) return;
-                
-                // Set language if possible
-                if (selectLanguage) {
-                    await selectLanguage(defaultLanguage);
-                }
-                
-                // Navigate to home page
-                if ((window as any).setPage) {
-                    logger.debug('🚀 Navigating to home via global setPage');
-                    (window as any).setPage('home');
-                } else {
-                    // Final fallback - redirect via URL (ONLY in browser mode)
-                    if (shouldAllowRedirects()) {
-                        logger.debug('🚀 Fallback: Redirecting to /home');
-                        window.location.href = '/home';
-                    }
-                }
-                return;
-            }
-            
-            // Final fallback - URL redirect (ONLY in browser mode)
-            if (shouldAllowRedirects()) {
-                logger.debug('🚀 Final fallback: URL redirect');
-                window.location.href = '/home';
-            }
-            
+            sessionStorage.setItem('current_page', 'home');
         } catch (error) {
-            logger.error('❌ Failed to handle enter click:', error);
-            
-            // Emergency fallback (ONLY in browser mode)
-            if (shouldAllowRedirects()) {
-                logger.debug('🚀 Emergency fallback: Direct URL navigation');
-                window.location.href = '/home';
+            logger.warn('⚠️ Unable to persist current_page session state', error);
+        }
+
+        const applyUrl = () => {
+            try {
+                window.history.replaceState({ page: 'home' }, '', targetPath);
+            } catch (error) {
+                logger.warn('⚠️ Unable to update history state', error);
             }
-        } finally {
-            // Don't reset loading state if component is unmounting
-            if (isMountedRef.current) {
-                setIsDetectingLocation(false);
+            if (window.location.hash !== targetHash) {
+                window.location.hash = targetHash;
+            }
+        };
+
+        if (typeof (window as any).App?.setPage === 'function') {
+            logger.debug('🚀 Navigating to home via App.setPage');
+            (window as any).App.setPage('home');
+            applyUrl();
+            return;
+        }
+
+        if (typeof (window as any).setPage === 'function') {
+            logger.debug('🚀 Navigating to home via global setPage');
+            (window as any).setPage('home');
+            applyUrl();
+            return;
+        }
+
+        logger.debug('🚀 Navigating to home via hash routing');
+        applyUrl();
+    }, []);
+    
+    const proceedToApp = useCallback(async (nextLocation?: UserLocation, nextCityName?: string) => {
+        const locationPayload =
+            nextLocation ||
+            lastConfirmedLocationRef.current || {
+                address: 'Unknown',
+                lat: 0,
+                lng: 0
+            };
+
+        if (enterAppCallback) {
+            logger.debug('🚀 Using provided enterApp callback');
+            try {
+                if (!isMountedRef.current) return;
+                await enterAppCallback(currentLanguage, locationPayload);
+                navigateToHome(nextCityName);
+                return;
+            } catch (error) {
+                logger.error('❌ enterApp callback failed, falling back to direct navigation', error);
             }
         }
-    };
+        
+        logger.debug('🚀 Final navigation to home');
+        navigateToHome(nextCityName);
+    }, [currentLanguage, enterAppCallback, navigateToHome]);
+
+    useEffect(() => {
+        if (!isMountedRef.current) return;
+        if (autoRedirectAttemptedRef.current) return;
+        if (typeof window === 'undefined') return;
+
+        const storedCityName = window.localStorage.getItem('user_city_name');
+        const storedLatValue = window.localStorage.getItem('user_city_lat');
+        const storedLngValue = window.localStorage.getItem('user_city_lng');
+        const storedAddress = window.localStorage.getItem('user_city_address') || undefined;
+
+        if (storedCityName) {
+            autoRedirectAttemptedRef.current = true;
+            const parsedLat = storedLatValue ? Number.parseFloat(storedLatValue) : NaN;
+            const parsedLng = storedLngValue ? Number.parseFloat(storedLngValue) : NaN;
+            const lat = Number.isFinite(parsedLat) ? parsedLat : null;
+            const lng = Number.isFinite(parsedLng) ? parsedLng : null;
+
+            const payload = persistAndBuildLocation(storedCityName, lat, lng, storedAddress || storedCityName);
+            confirmLocation({
+                cityName: storedCityName,
+                latitude: lat,
+                longitude: lng,
+                locationText: payload.address
+            });
+            setSelectedCity(storedCityName);
+            if (lat !== null && lng !== null) {
+                setSelectedCoordinates({ lat, lng });
+            }
+            setAutoDetectState('success');
+            setAutoDetectMessage(null);
+            navigateToHome(storedCityName);
+            return;
+        }
+
+        if (!('geolocation' in navigator)) {
+            logger.warn('📍 Browser does not support geolocation. Prompting manual selection.');
+            setAutoDetectState('error');
+            setAutoDetectMessage('Location services are unavailable. Please select your city below.');
+            return;
+        }
+
+        autoRedirectAttemptedRef.current = true;
+        setAutoDetectState('checking');
+        setAutoDetectMessage('Detecting your location...');
+
+        try {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    if (!isMountedRef.current) {
+                        return;
+                    }
+
+                    const { latitude, longitude } = position.coords;
+                    const detectedCity = findCityByCoordinates(latitude, longitude);
+                    const matchedCityName = detectedCity?.name ?? 'Your Location';
+                    const matchedAddress = detectedCity
+                        ? `${detectedCity.name}, ${detectedCity.province}`
+                        : `Lat ${latitude.toFixed(3)}, Lng ${longitude.toFixed(3)}`;
+
+                    const payload = persistAndBuildLocation(matchedCityName, latitude, longitude, matchedAddress);
+                    confirmLocation({
+                        cityName: matchedCityName,
+                        latitude,
+                        longitude,
+                        locationText: payload.address
+                    });
+
+                    setSelectedCity(matchedCityName);
+                    setSelectedCoordinates({ lat: latitude, lng: longitude });
+                    setGpsCollected(true);
+                    setGpsLocation(payload.address);
+                    setAutoDetectState('success');
+                    setAutoDetectMessage(null);
+                    navigateToHome(matchedCityName);
+                },
+                (error) => {
+                    if (!isMountedRef.current) {
+                        return;
+                    }
+
+                    logger.warn('📍 GPS detection failed or was denied:', error);
+                    autoRedirectAttemptedRef.current = false;
+                    setAutoDetectState('denied');
+                    setAutoDetectMessage('We could not access your location. Please select your city manually.');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 12000,
+                    maximumAge: 0
+                }
+            );
+        } catch (error) {
+            logger.warn('📍 GPS detection threw a synchronous error (likely insecure origin):', error);
+            autoRedirectAttemptedRef.current = false;
+            setAutoDetectState('denied');
+            setAutoDetectMessage('Location access is blocked on this connection. Please pick your city manually.');
+        }
+    }, [confirmLocation, navigateToHome, persistAndBuildLocation, setSelectedCoordinates]);
 
     // Location selector handlers - NEW UX: Only city selection, country auto-detected
     const handleCitySelectNew = async (city: CityOption) => {
+        if (isDetectingLocation) return;
+        setIsDetectingLocation(true);
         setSelectedCity(city.name);
         setCity(city.name);
-        setSelectedCoordinates(null);
+        autoRedirectAttemptedRef.current = true;
         setCityNotListed(false);
         
         logger.debug('📍 City selected:', city.name, 'in country:', city.country);
@@ -616,6 +780,48 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         
         // Update country in context without persisting (confirmation will persist)
         setCountry(city.country, false);
+        
+        try {
+            const canonicalCity = findCityByName(city.name);
+            const resolvedLat = canonicalCity?.coordinates.lat ?? null;
+            const resolvedLng = canonicalCity?.coordinates.lng ?? null;
+            const locationLabel =
+                manualLocationText.trim().length > 0
+                    ? manualLocationText
+                    : canonicalCity
+                        ? `${canonicalCity.name}, ${canonicalCity.province}`
+                        : `${city.name}, ${currentCountryData?.name ?? ''}`;
+
+            if (resolvedLat !== null && resolvedLng !== null) {
+                setSelectedCoordinates({ lat: resolvedLat, lng: resolvedLng });
+            } else {
+                setSelectedCoordinates(null);
+            }
+
+            const locationPayload = persistAndBuildLocation(
+                city.name,
+                resolvedLat,
+                resolvedLng,
+                locationLabel || null
+            );
+
+            await confirmLocation({
+                cityName: city.name,
+                latitude: resolvedLat,
+                longitude: resolvedLng,
+                locationText: locationLabel || null
+            });
+            setAutoDetectState('success');
+            setAutoDetectMessage(null);
+            await proceedToApp(locationPayload, city.name);
+        } catch (error) {
+            logger.error('❌ Failed to navigate after city selection:', error);
+            alert('Unable to open your city right now. Please try again or use GPS.');
+        } finally {
+            if (isMountedRef.current) {
+                setIsDetectingLocation(false);
+            }
+        }
     };
     
     // Handle manual country change via modal
@@ -718,6 +924,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             setCity(detectedCity);
             setSelectedCoordinates({ lat: gpsLocationData.lat, lng: gpsLocationData.lng });
             
+            const locationPayload = persistAndBuildLocation(
+                detectedCity,
+                gpsLocationData.lat,
+                gpsLocationData.lng,
+                gpsLocationData.address
+            );
+
+            confirmLocation({
+                cityName: detectedCity,
+                latitude: gpsLocationData.lat,
+                longitude: gpsLocationData.lng,
+                locationText: gpsLocationData.address
+            });
+            
+            await proceedToApp(locationPayload);
+            
         } catch (error) {
             console.error('❌ GPS detection failed:', error);
             alert('Unable to detect your location automatically. Please select your city from the list.');
@@ -731,7 +953,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     
     // Get cities for the currently detected/selected country - memoize to prevent re-renders
     const availableCities = useMemo(() => CITIES_BY_COUNTRY[countryCode] || [], [countryCode]);
-    const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
         <div className="landing-page-container mobile-optimized scrollable relative w-full bg-gray-900" style={{ 
@@ -824,20 +1045,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
 
 
 
-                        {/* Previously confirmed location */}
-                        {hasConfirmedCity && confirmedLocation && (
-                            <div className="mb-3 px-4 py-2 bg-orange-50 border border-orange-200 rounded-lg text-left text-gray-800">
-                                <div className="text-xs font-semibold text-orange-700">Saved Location</div>
-                                <div className="text-sm font-bold">{confirmedLocation.cityName}</div>
-                                {confirmedLocation.locationText && (
-                                    <div className="text-xs text-gray-600 mt-1">{confirmedLocation.locationText}</div>
-                                )}
-                                <div className="text-[11px] text-gray-500 mt-1">
-                                    You can change it anytime by selecting another city or using GPS.
-                                </div>
-                            </div>
-                        )}
-
                         {/* GPS Location Status Indicator - Subtle */}
                         {gpsCollected && gpsLocation && (
                             <div className="mb-3 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
@@ -921,33 +1128,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                             )}
                         </div>
 
-                        <div className="mt-4 text-left">
-                            <label htmlFor="manual-area" className="block text-xs font-semibold text-gray-300 mb-1">
-                                Village / Area (optional)
-                            </label>
-                            <input
-                                id="manual-area"
-                                type="text"
-                                value={manualLocationText}
-                                onChange={(event) => setManualLocationText(event.target.value)}
-                                placeholder="e.g. Padangtegal, Canggu"
-                                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/40"
-                                autoComplete="off"
-                            />
-                        </div>
-
-                        <button
-                            onClick={handleEnterClick}
-                            disabled={isDetectingLocation || !selectedCity}
-                            className="w-full mt-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isDetectingLocation ? 'Preparing your location…' : selectedCity ? `Continue with ${selectedCity}` : 'Select a city to continue'}
-                        </button>
-                        {!selectedCity && (
-                            <p className="text-[11px] text-orange-200 mt-2 text-center">
-                                Choose a city or use GPS to unlock therapists near you.
-                            </p>
-                        )}
                     </div>
                 </div>
                 </div>

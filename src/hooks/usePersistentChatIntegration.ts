@@ -22,6 +22,7 @@ import { usePersistentChat, ChatTherapist, SelectedService } from '../context/Pe
 import type { Therapist } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 
 /**
  * Hook to integrate TherapistCard buttons with PersistentChatWindow
@@ -82,40 +83,60 @@ export function usePersistentChatIntegration() {
     });
     
     // Parse pricing using existing helper - MUST match therapist profile prices exactly
-    const pricing = parsePricing(therapist.pricing);
-    
-    // CRITICAL: If pricing fails to parse, log error - don't use fallback
-    // This ensures prices always match therapist profile
-    if (!pricing || Object.keys(pricing).length === 0) {
-      console.error('⚠️ PRICING ERROR: Could not parse pricing for therapist', therapist.name, therapist.pricing);
-      console.error('⚠️ This will cause price mismatch between profile and chat window!');
-      // Use fallback only as last resort
-      const fallbackPricing = {
-        '30': 250000,
-        '60': 350000,
-        '90': 450000,
-        '120': 550000,
+    const parsedPricing = parsePricing(therapist.pricing);
+    const hasSeparatePrices = (therapist.price60 && Number(therapist.price60) > 0) ||
+      (therapist.price90 && Number(therapist.price90) > 0) ||
+      (therapist.price120 && Number(therapist.price120) > 0);
+
+    // Build pricing - use actual if available, else sample (display-only) when no prices set
+    let pricing = parsedPricing;
+    let price60: string | undefined = therapist.price60 != null ? String(therapist.price60) : undefined;
+    let price90: string | undefined = therapist.price90 != null ? String(therapist.price90) : undefined;
+    let price120: string | undefined = therapist.price120 != null ? String(therapist.price120) : undefined;
+
+    const pricingEmpty = !pricing || !(pricing["60"] > 0 || pricing["90"] > 0 || pricing["120"] > 0);
+    if (pricingEmpty && !hasSeparatePrices && !hasActualPricing(therapist)) {
+      const sample = getSamplePricing(therapistDocumentId);
+      pricing = {
+        "30": Math.round(sample["60"] * 0.6 / 1000),
+        "60": Math.round(sample["60"] / 1000),
+        "90": Math.round(sample["90"] / 1000),
+        "120": Math.round(sample["120"] / 1000),
       };
-      console.warn('⚠️ Using fallback pricing - should fix therapist profile data!');
-      
-      // appwriteId already validated above - must be present
-      // Align with price modal: profilePicture (avatar) first, then mainImage
+      price60 = String(Math.round(sample["60"] / 1000));
+      price90 = String(Math.round(sample["90"] / 1000));
+      price120 = String(Math.round(sample["120"] / 1000));
+      console.log('📋 Using display-only sample pricing for chat:', { price60, price90, price120 });
+    } else if (pricingEmpty && !hasSeparatePrices) {
+      console.error('⚠️ PRICING ERROR: Could not parse pricing for therapist', therapist.name, therapist.pricing);
+      const fallbackPricing = { '30': 250, '60': 350, '90': 450, '120': 550 };
+      pricing = fallbackPricing;
+      price60 = price60 ?? '350';
+      price90 = price90 ?? '450';
+      price120 = price120 ?? '550';
+    }
+
+    if (!pricingEmpty && pricing && !price60 && pricing["60"]) {
+      price60 = String(Math.round(pricing["60"]));
+      price90 = String(Math.round(pricing["90"]));
+      price120 = String(Math.round(pricing["120"]));
+    }
+
+    if (!pricing || Object.keys(pricing).length === 0) {
       const imgUrl = (therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).mainimage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage(therapistDocumentId);
       const fallbackChatTherapist = {
-        id: therapistName, // ✅ Use NAME as ID
+        id: therapistName,
         name: therapistName,
         image: imgUrl,
         mainImage: imgUrl,
         profileImageUrl: imgUrl,
         profilePicture: (therapist as any).profilePicture || imgUrl,
         status: (therapist as any).availability_status || (therapist as any).availabilityStatus || (therapist as any).availability || (therapist as any).status || 'available',
-        pricing: fallbackPricing,
-        // ✅ CRITICAL: Include separate price fields for fallback too
-        price60: therapist.price60 || '350',
-        price90: therapist.price90 || '450', 
-        price120: therapist.price120 || '550',
+        pricing: { '30': 250, '60': 350, '90': 450, '120': 550 },
+        price60: price60 || '350',
+        price90: price90 || '450',
+        price120: price120 || '550',
         duration: 60,
-        // 🔒 REQUIRED: Document ID (appwriteId or $id)
         appwriteId: therapistDocumentId,
       };
       
@@ -140,11 +161,11 @@ export function usePersistentChatIntegration() {
       profileImageUrl: imgUrl,
       profilePicture: (therapist as any).profilePicture || imgUrl,
       status: (therapist as any).availability_status || (therapist as any).availabilityStatus || (therapist as any).availability || (therapist as any).status || 'available',
-      pricing, // Use therapist's exact profile prices
+      pricing, // Use therapist's exact profile prices (or sample when none set)
       // ✅ CRITICAL: Include separate price fields for chat window pricing
-      price60: therapist.price60,
-      price90: therapist.price90,
-      price120: therapist.price120,
+      price60: price60 ?? therapist.price60,
+      price90: price90 ?? therapist.price90,
+      price120: price120 ?? therapist.price120,
       duration: 60,
       // 🔒 REQUIRED: Document ID (appwriteId or $id)
       appwriteId: therapistDocumentId,
@@ -191,7 +212,7 @@ export function usePersistentChatIntegration() {
     
     const chatTherapist = convertToChatTherapist(therapist);
     openChat(chatTherapist, 'book', source);
-    
+
     // REMOVED: ChatProvider bridge - was causing duplicate FloatingChatWindow (lock icons, "Complete Booking Form")
     // to appear behind PersistentChatWindow. PersistentChatWindow handles the full booking flow alone.
   }, [openChat, convertToChatTherapist]);

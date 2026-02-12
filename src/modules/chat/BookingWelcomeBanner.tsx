@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Clock, Sparkles, User, MapPin, CreditCard, Calendar, Tag } from 'lucide-react';
+import { Clock, Sparkles, User, MapPin, CreditCard, Calendar, Tag, X } from 'lucide-react';
 import { formatPrice } from './utils/chatHelpers';
 
 interface BookingBannerProps {
@@ -84,7 +84,18 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
         
         {/* 5-Minute Countdown Timer */}
         {Number.isFinite(bookingCountdown) && bookingCountdown !== null && bookingCountdown > 0 && (
-          <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border-2 border-orange-300 mb-3 shadow-md">
+          <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border-2 border-orange-300 mb-3 shadow-md relative">
+            {/* Small cancel button - top right */}
+            {onCancelBooking && (currentBooking.status === 'pending' || currentBooking.status === 'waiting_others') && (
+              <button
+                onClick={onCancelBooking}
+                className="absolute top-3 right-3 p-1.5 rounded-lg text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                title="Cancel booking"
+                aria-label="Cancel booking"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
             <div className="text-center mb-2">
               <p className="text-xs font-semibold text-orange-800 uppercase tracking-wide">
                 ⏰ Therapist Response Countdown

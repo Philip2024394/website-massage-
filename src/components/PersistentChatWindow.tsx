@@ -84,6 +84,8 @@ import ScheduledBookingDepositModal from './ScheduledBookingDepositModal';
 import { BookingChatLockIn } from '../lib/validation/bookingChatLockIn';
 import { bookingFlowMonitor } from '../utils/bookingFlowDiagnostics';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { MASSAGE_TYPE_DETAILS, getMassageTypeImage } from '../constants';
+import { MassageTypeCard } from './shared/MassageTypeCard';
 
 // Import new enhanced chat UI components
 import {
@@ -448,6 +450,7 @@ export function PersistentChatWindow() {
   const [depositAmount, setDepositAmount] = useState(0);
   const [isProcessingDeposit, setIsProcessingDeposit] = useState(false);
   const [isMassageTypesModalOpen, setIsMassageTypesModalOpen] = useState(false);
+  const [massageTypesExpandedCards, setMassageTypesExpandedCards] = useState<{ [key: string]: boolean }>({});
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -1855,24 +1858,23 @@ export function PersistentChatWindow() {
                           </div>
                         </div>
                       </button>
-                      
-                      {/* Helper text for massage types */}
-                      <div className="mt-2 text-center text-xs">
-                        <span className="text-gray-500 mr-1">Not sure?</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsMassageTypesModalOpen(true);
-                          }}
-                          className="text-pink-600 font-semibold hover:text-pink-700 underline-offset-2 hover:underline"
-                        >
-                          View massage types
-                        </button>
-                      </div>
                     </div>
                   );
                 })}
               </div>
+            </div>
+            
+            {/* Single link at bottom - opens same slider as Jenis Pijat Apa */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => {
+                setMassageTypesExpandedCards({});
+                setIsMassageTypesModalOpen(true);
+              }}
+                className="text-sm text-orange-600 font-medium hover:text-orange-700 underline-offset-2 hover:underline"
+              >
+                Not sure? View massage types
+              </button>
             </div>
             
             <p className="text-xs text-gray-400 text-center mt-4">
@@ -3045,92 +3047,51 @@ export function PersistentChatWindow() {
       isProcessing={isProcessingDeposit}
     />
 
-    {/* Massage Types Information Modal */}
+    {/* Massage Types Full-Screen Modal - Same slider as Jenis Pijat Apa */}
     {isMassageTypesModalOpen && (
       <div 
-        className="fixed inset-0 z-[9998] flex items-center justify-center"
-        style={{ background: 'rgba(0,0,0,0.5)' }}
-        onClick={() => setIsMassageTypesModalOpen(false)}
+        className="fixed inset-0 bg-white z-[9999] overflow-y-auto animate-slideUp"
       >
-        <div 
-          className="bg-white rounded-xl shadow-2xl w-[90%] max-w-md max-h-[80vh] overflow-y-auto p-6"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-          onClick={(e) => e.stopPropagation()}
+        <button
+          className="fixed top-4 right-4 z-10 p-2 bg-orange-500 rounded-full shadow-lg hover:bg-orange-600 transition-colors"
+          onClick={() => {
+            setIsMassageTypesModalOpen(false);
+            setMassageTypesExpandedCards({});
+          }}
+          aria-label="Close massage types"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-900">Massage Types</h3>
-            <button
-              onClick={() => setIsMassageTypesModalOpen(false)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="Close"
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
+          <X size={24} strokeWidth={2} className="text-black" />
+        </button>
+
+        <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6">
+          <div className="flex flex-col gap-4">
+            {MASSAGE_TYPE_DETAILS.map((massageTypeDetail, index) => {
+              const massage = {
+                name: massageTypeDetail.name,
+                description: massageTypeDetail.shortDescription,
+                fullDescription: massageTypeDetail.fullDescription,
+                benefits: massageTypeDetail.benefits || [],
+                duration: massageTypeDetail.duration || '60-90 min',
+                intensity: massageTypeDetail.intensity || 'Medium',
+                bestFor: massageTypeDetail.bestFor || [],
+                image: getMassageTypeImage(massageTypeDetail.name),
+                popularity: [4.2, 4.5, 4.7, 4.8][index % 4]
+              };
+
+              return (
+                <MassageTypeCard
+                  key={massage.name}
+                  massage={massage}
+                  expanded={massageTypesExpandedCards[massage.name] || false}
+                  onToggleExpanded={() => setMassageTypesExpandedCards(prev => ({
+                    ...prev,
+                    [massage.name]: !prev[massage.name]
+                  }))}
+                  showActionButtons={false}
+                />
+              );
+            })}
           </div>
-          
-          <div className="space-y-4 text-sm">
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <h4 className="font-semibold text-blue-900 mb-2">🌿 Relaxation Massage</h4>
-              <p className="text-blue-800 leading-relaxed">
-                Gentle, flowing strokes designed to reduce stress and promote deep relaxation. 
-                Perfect for unwinding after a long day. Uses light to medium pressure.
-              </p>
-            </div>
-
-            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-purple-900 mb-2">💪 Deep Tissue Massage</h4>
-              <p className="text-purple-800 leading-relaxed">
-                Firm pressure targeting deep muscle layers to relieve chronic pain and tension. 
-                Ideal for athletes or those with muscle knots. Focuses on problem areas.
-              </p>
-            </div>
-
-            <div className="p-3 bg-pink-50 rounded-lg border border-pink-200">
-              <h4 className="font-semibold text-pink-900 mb-2">🌸 Aromatherapy Massage</h4>
-              <p className="text-pink-800 leading-relaxed">
-                Combines gentle massage with essential oils for enhanced relaxation. 
-                Essential oils are chosen based on your needs (stress relief, energy, sleep).
-              </p>
-            </div>
-
-            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-              <h4 className="font-semibold text-green-900 mb-2">👣 Reflexology</h4>
-              <p className="text-green-800 leading-relaxed">
-                Focuses on pressure points in feet, hands, and ears that correspond to different body systems. 
-                Promotes healing and improves circulation throughout the body.
-              </p>
-            </div>
-
-            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-              <h4 className="font-semibold text-orange-900 mb-2">🔥 Hot Stone Massage</h4>
-              <p className="text-orange-800 leading-relaxed">
-                Smooth heated stones are placed on key points and used to massage. 
-                The warmth penetrates deep into muscles, promoting relaxation and easing tension.
-              </p>
-            </div>
-
-            <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-              <h4 className="font-semibold text-indigo-900 mb-2">🌺 Traditional Balinese</h4>
-              <p className="text-indigo-800 leading-relaxed">
-                A full-body treatment combining gentle stretches, acupressure, and aromatherapy oils. 
-                Uses rolling, kneading, and flowing strokes to improve circulation and energy flow.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-xs text-gray-600 leading-relaxed">
-              <strong className="text-gray-900">💡 Note:</strong> All massage types can be adapted to your pressure preference. 
-              Discuss with your therapist during booking to customize your experience.
-            </p>
-          </div>
-
-          <button
-            onClick={() => setIsMassageTypesModalOpen(false)}
-            className="w-full mt-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all"
-          >
-            Close
-          </button>
         </div>
       </div>
     )}

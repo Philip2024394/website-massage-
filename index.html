@@ -583,12 +583,12 @@
           }
         }
         
-        // Check if landing page is fully loaded (has meaningful content)
+        // Check if landing page or app is fully loaded (has meaningful content)
         function isLandingPageReady() {
           var root = document.getElementById('root');
           if (!root || root.children.length === 0) return false;
           
-          // IGNORE React loading states and skeleton - wait for real content
+          // IGNORE React loading states - wait for real content
           if (root.querySelector('#react-loading-spinner, .loading-spinner, [data-loading-state]')) {
             return false;
           }
@@ -596,10 +596,11 @@
           var spinnerCount = root.querySelectorAll('.animate-spin').length;
           var hasSkeletonOnly = spinnerCount > 0 && root.querySelectorAll('img').length === 0 && !root.querySelector('input');
           
-          // Require ACTUAL landing page content - not skeleton/placeholder
+          // Require ACTUAL content - landing, home, or therapist dashboard
           var hasProviderCards = root.querySelectorAll('.therapist-card, .provider-card, .PlaceCard, .TherapistCard, [class*="TherapistCard"]').length > 0;
           var hasSearchSection = root.querySelector('input[type="search"], .search-input, [placeholder*="Search"], [placeholder*="Cari"]') !== null;
-          var hasMainContent = root.querySelector('.main-content, .landing-page, .home-page, .landing-page-container, .MainLandingPage, .MainHomePage') !== null;
+          var hasMainContent = root.querySelector('.main-content, .landing-page, .home-page, .landing-page-container, .MainLandingPage, .MainHomePage, .app-shell') !== null;
+          var hasTherapistDashboard = root.querySelector('.therapist-layout-header, .therapist-page-container, .therapist-layout-content') !== null;
           var hasNavigationMenu = root.querySelectorAll('nav, .nav, .navigation, .GlobalHeader, header').length > 0;
           var hasImages = root.querySelectorAll('img[src*="imagekit"], img[src*="appwrite"], img[src*="cloud"]').length > 0;
           var hasRichText = root.textContent && root.textContent.trim().length > 500;
@@ -607,17 +608,17 @@
           // Skip if we only have skeleton (spinner but no real content)
           if (hasSkeletonOnly) return false;
           
-          // Must have strong indicators of real content (not just "IndaStreet" skeleton)
+          // Must have strong indicators of real content
           var contentScore = 0;
           if (hasProviderCards) contentScore += 3;
-          if (hasMainContent) contentScore += 2;
+          if (hasMainContent || hasTherapistDashboard) contentScore += 2;
           if (hasSearchSection) contentScore += 2;
           if (hasNavigationMenu) contentScore += 1;
           if (hasImages) contentScore += 1;
           if (hasRichText) contentScore += 1;
           
           if (contentScore >= 2) {
-            console.log('[SPLASH] Landing page ready - Score:', contentScore);
+            console.log('[SPLASH] Page ready - Score:', contentScore);
           }
           return contentScore >= 2;
         }

@@ -3,10 +3,20 @@
 import type { Pricing, Analytics } from '../types';
 
 // Pricing helpers
-export const parsePricing = (pricingString: string): Pricing => {
+export const parsePricing = (pricingInput: string | Record<string, number> | null | undefined): Pricing => {
   try {
+    if (pricingInput == null) {
+      return { "60": 0, "90": 0, "120": 0 };
+    }
+    if (typeof pricingInput === 'object' && !Array.isArray(pricingInput)) {
+      return {
+        "60": Number((pricingInput as Record<string, number>)["60"]) || 0,
+        "90": Number((pricingInput as Record<string, number>)["90"]) || 0,
+        "120": Number((pricingInput as Record<string, number>)["120"]) || 0,
+      };
+    }
+    const pricingString = String(pricingInput ?? '');
     if (!pricingString || pricingString.trim() === '') {
-      console.warn('⚠️ Empty or null pricing string, using default values');
       return { "60": 0, "90": 0, "120": 0 };
     }
     const result = JSON.parse(pricingString);

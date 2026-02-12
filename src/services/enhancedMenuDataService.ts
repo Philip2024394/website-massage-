@@ -27,6 +27,7 @@
 
 import { DefaultMenuService, DefaultMenuManager } from './defaultMenuService';
 import { BadgeType } from '../components/badges/ServiceBadges';
+import { getSampleMenuItems } from '../utils/samplePriceUtils';
 
 export interface MenuService extends DefaultMenuService {
   // Extended properties for enhanced functionality
@@ -167,19 +168,36 @@ export class EnhancedMenuDataService {
   /**
    * Get exactly 5 sample menu items for therapists without their own menu
    * Samples disappear 1-by-1 as therapist adds real items (5 real = 0 samples)
+   * Uses display-only sample prices within limits (60≤170k, 90≤210k, 120≤250k)
    */
   private static async getDefaultMenuData(therapistId: string): Promise<MenuService[]> {
     const defaultServices = DefaultMenuManager.getDefaultMenuForTherapist(therapistId, 5);
-    return defaultServices.map((service, index) => ({
-      ...service,
-      therapistId,
-      dateAdded: new Date(),
-      lastModified: new Date(),
-      isActive: true,
-      bookingCount: 0,
-      isCustomized: false,
-      originalDefaultId: service.id
-    } as MenuService));
+    const samplePrices = getSampleMenuItems(therapistId);
+
+    return defaultServices.map((service, index) => {
+      const sample = samplePrices[index] || samplePrices[0];
+      const price60 = Math.round(sample.price60 / 1000);
+      const price90 = Math.round(sample.price90 / 1000);
+      const price120 = Math.round(sample.price120 / 1000);
+      return {
+        ...service,
+        name: sample.name,
+        serviceName: sample.name,
+        price60,
+        price90,
+        price120,
+        duration60: true,
+        duration90: true,
+        duration120: true,
+        therapistId,
+        dateAdded: new Date(),
+        lastModified: new Date(),
+        isActive: true,
+        bookingCount: 0,
+        isCustomized: false,
+        originalDefaultId: service.id
+      } as MenuService;
+    });
   }
 
   /**

@@ -40,6 +40,7 @@ import { logger } from '../utils/logger';
 import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
@@ -755,8 +756,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     "120": parseFloat(cheapestService.price120) * 1000
                 };
 
-                // Use menu pricing if it's cheaper than default pricing
-                if (menuPricing["60"] < defaultPricing["60"] && menuPricing["60"] > 0) {
+                // Use menu pricing if it has values and (therapist has no prices OR menu is cheaper)
+                const therapistHasNoPrices = defaultPricing["60"] === 0 && defaultPricing["90"] === 0 && defaultPricing["120"] === 0;
+                if (menuPricing["60"] > 0 && (therapistHasNoPrices || menuPricing["60"] < defaultPricing["60"])) {
                     devLog(`💰 Using cheaper menu pricing for ${therapist.name}:`, {
                         serviceName: cheapestService.name || cheapestService.serviceName,
                         menuPricing,
@@ -784,13 +786,26 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         
         // Fallback to old JSON format - multiply by 1000 to get full IDR amounts
         const parsedPricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
-        return {
+        const fromJson = {
             "60": parsedPricing["60"] * 1000,
             "90": parsedPricing["90"] * 1000,
             "120": parsedPricing["120"] * 1000
         };
+        if (fromJson["60"] > 0 || fromJson["90"] > 0 || fromJson["120"] > 0) {
+            return fromJson;
+        }
+
+        // Display-only sample prices when therapist has no prices set
+        if (!hasActualPricing(therapist)) {
+            const therapistId = String((therapist as any).$id || therapist.id || '');
+            if (therapistId) {
+                return getSamplePricing(therapistId);
+            }
+        }
+
+        return fromJson;
     };
-    
+
     const pricing = getPricing();
 
     const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
@@ -829,12 +844,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             return "Contact"; // Show "Contact" instead of "0k" when no price is set
         }
         
-        // Convert to thousands and ensure 3-digit format (100-999)
+        // Convert to thousands - allow any positive value (e.g. 50k, 75k, 100k+)
         let priceInThousands = Math.round(numPrice / 1000);
-        
-        // Ensure 3-digit display (100k-999k range)
-        if (priceInThousands < 100) {
-            priceInThousands = 100; // Minimum 100k
+
+        if (priceInThousands < 1) {
+            priceInThousands = 1; // Minimum 1k for display
         } else if (priceInThousands > 999) {
             priceInThousands = 999; // Maximum 999k for 4-char display
         }

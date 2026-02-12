@@ -283,11 +283,6 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
             <main className="p-4 bg-white min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
                 <div className="max-w-7xl mx-auto">
 
-                    {/* Test Marker - SYSTEM WORKING */}
-                    <div className="text-center mb-2">
-                        <span className="text-xl text-red-600 font-bold bg-yellow-300 px-4 py-2 rounded border-4 border-red-500">🚨 URGENT TEST - IF YOU SEE THIS THE SYSTEM IS WORKING</span>
-                    </div>
-
                     {/* Description Text */}
                     <div className="text-center mb-6">
                         <p className="text-sm sm:text-base text-gray-600 max-w-3xl mx-auto">
