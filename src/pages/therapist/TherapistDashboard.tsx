@@ -58,9 +58,38 @@ import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, H
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { profileEditHelp } from './constants/helpContent';
+import { PWAInstallationStatusChecker } from '../../utils/pwaInstallationStatus';
 import { client, databases, DATABASE_ID } from '../../lib/appwrite';
 import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
 import { bookingSoundService } from '../../services/bookingSound.service';
+
+/* PWA dashboard indicator: green = downloaded, red = need download */
+function PWADashboardIndicator() {
+  const [installed, setInstalled] = useState(() => PWAInstallationStatusChecker.checkStatus().isInstalled);
+  useEffect(() => {
+    const update = () => setInstalled(PWAInstallationStatusChecker.checkStatus().isInstalled);
+    window.addEventListener('appinstalled', update);
+    window.addEventListener('beforeinstallprompt', update);
+    const mq = window.matchMedia('(display-mode: standalone)');
+    mq.addEventListener('change', update);
+    return () => {
+      window.removeEventListener('appinstalled', update);
+      window.removeEventListener('beforeinstallprompt', update);
+      mq.removeEventListener('change', update);
+    };
+  }, []);
+  return (
+    <span
+      className={`flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full font-medium ${
+        installed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+      }`}
+      title={installed ? 'App installed on device – notifications & sounds active' : 'Download app to home screen for notifications & sounds'}
+    >
+      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${installed ? 'bg-green-500' : 'bg-red-500'}`} />
+      {installed ? 'App installed' : 'Need download'}
+    </span>
+  );
+}
 
 /* P0 FIX: App-sized dashboard layout for proper desktop/mobile rendering */
 
@@ -1146,13 +1175,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         onLogout={onLogout}
       >
       <div
-        className="bg-white w-full max-w-full therapist-page-container"
+        className="bg-white w-full max-w-full"
         style={{ 
           WebkitOverflowScrolling: 'touch', 
           touchAction: 'pan-y pan-x',
           paddingBottom: 'max(env(safe-area-inset-bottom, 15px), 20px)',
-          marginBottom: 0,
-          flex: '1 1 auto'
+          marginBottom: 0
         }}
       >
       {/* Payment Pending Banner - Show when payment not submitted */}
@@ -1179,7 +1207,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       {/* Main Content - MODEL A: NO top padding, sticky header provides spacing */}
       <main className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px' }}>
 
-          {/* 🆕 ELITE FIX: Therapist Connection Status Indicator (Facebook/Amazon Standard) */}
+          {/* 🆕 ELITE FIX: Therapist Connection Status + PWA Download Indicator (green = installed, red = need download) */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1193,30 +1221,21 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full font-mono">
                   Active
                 </span>
+                {/* PWA status: green = downloaded, red = need download */}
+                <PWADashboardIndicator />
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    // Check if PWA is installable
-                    if ('BeforeInstallPromptEvent' in window || ('standalone' in navigator && !(navigator as any).standalone)) {
-                      const event = (window as any).deferredPWAPrompt;
-                      if (event) {
-                        event.prompt();
-                        event.userChoice.then((choiceResult: any) => {
-                          if (choiceResult.outcome === 'accepted') {
-                            showToast('✅ App installation started!', 'success');
-                          }
-                          (window as any).deferredPWAPrompt = null;
-                        });
-                      } else {
-                        showToast('📱 To install: Use browser menu → "Add to Home Screen"', 'info');
-                      }
-                    } else {
-                      showToast('📱 To install: Use browser menu → "Install App"', 'info');
+                  onClick={async () => {
+                    const result = await PWAInstallationStatusChecker.triggerInstallation();
+                    if (result.success && result.result === 'accepted') {
+                      showToast('✅ App installation started!', 'success');
+                    } else if (!result.success && result.error) {
+                      showToast(result.error, 'info', { duration: 8000 });
                     }
                   }}
                   className="text-xs bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-1 shadow-sm"
-                  title="Install as mobile app for 97% reliability"
+                  title="Install as mobile app – notifications & sounds when on home screen"
                 >
                   <img 
                     src="https://ik.imagekit.io/7grri5v7d/download_button-removebg-preview.png" 

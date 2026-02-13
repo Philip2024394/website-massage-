@@ -46,10 +46,11 @@ export class PWAInstallationStatusChecker {
     const canInstall = hasServiceWorker && hasManifest && isSecure && !isInstalled;
     const isInstallable = canInstall && (hasDeferredPrompt || isIOS);
 
-    // Install method determination
+    // Install method determination (rock-solid: manual for iOS and Android when no native prompt)
     let installMethod: PWAInstallationStatus['installMethod'] = 'unavailable';
     if (hasDeferredPrompt) installMethod = 'native';
     else if (isIOS && canInstall) installMethod = 'manual';
+    else if (isAndroid && canInstall) installMethod = 'manual';
     else if (!canInstall) installMethod = 'unavailable';
 
     // Notification permission
@@ -153,14 +154,15 @@ export class PWAInstallationStatusChecker {
       }
     }
 
-    // Enhanced manual installation for mobile
+    // Enhanced manual installation for mobile (rock-solid fallback – no alert)
     if (status.installMethod === 'manual') {
-      // Create better mobile-friendly installation modal
       const isIOS = status.platform === 'ios';
       if (isIOS) {
         this.showIOSInstallationModal();
+      } else if (status.platform === 'android') {
+        this.showAndroidInstallationModal();
       } else {
-        alert(this.getInstallationInstructions(status));
+        this.showDesktopInstallationModal();
       }
       return { success: true, result: 'manual-instructions-shown' };
     }
@@ -248,6 +250,154 @@ export class PWAInstallationStatusChecker {
       if (modal.parentNode) {
         modal.remove();
       }
+    }, 30000);
+  }
+
+  /**
+   * Show Android-specific installation modal (rock-solid fallback when install button fails)
+   */
+  static showAndroidInstallationModal(): void {
+    const modal = document.createElement('div');
+    modal.setAttribute('data-pwa-manual-modal', 'android');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    modal.innerHTML = `
+      <div style="
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 360px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        animation: slideUp 0.3s ease-out;
+      ">
+        <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+        <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Add to Home Screen (Android)</h3>
+        <div style="text-align: left; margin-bottom: 24px; color: #6b7280; line-height: 1.6;">
+          <p style="margin: 0 0 12px 0; font-weight: 600;">If the install button didn’t work:</p>
+          <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+            <p style="margin: 0 0 8px 0;"><strong>Chrome:</strong></p>
+            <p style="margin: 0 0 8px 0;">1. Tap <strong>⋮</strong> (menu) at top right</p>
+            <p style="margin: 0 0 8px 0;">2. Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></p>
+            <p style="margin: 0 0 12px 0;">Or tap the <strong>⊕ Install</strong> icon in the address bar if you see it.</p>
+            <p style="margin: 0 0 8px 0;"><strong>Samsung Internet:</strong></p>
+            <p style="margin: 0 0 8px 0;">Menu → <strong>Add page to</strong> → <strong>Home screen</strong></p>
+          </div>
+          <p style="margin: 0; font-size: 14px; color: #9ca3af;">Then open the app from your home screen for notifications and sounds.</p>
+        </div>
+        <button type="button" style="
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white;
+          border: none;
+          padding: 14px 24px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          width: 100%;
+          font-size: 16px;
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        ">Got it!</button>
+      </div>
+      <style>
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      </style>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeModal = () => {
+      if (modal.parentNode) modal.remove();
+    };
+
+    modal.querySelector('button')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    setTimeout(() => {
+      if (modal.parentNode) modal.remove();
+    }, 30000);
+  }
+
+  /**
+   * Show desktop installation modal when install is manual
+   */
+  static showDesktopInstallationModal(): void {
+    const modal = document.createElement('div');
+    modal.setAttribute('data-pwa-manual-modal', 'desktop');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    const instructions = this.getInstallationInstructions(this.checkStatus());
+    modal.innerHTML = `
+      <div style="
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 360px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      ">
+        <div style="font-size: 48px; margin-bottom: 16px;">💻</div>
+        <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Install app</h3>
+        <div style="text-align: left; margin-bottom: 24px; color: #6b7280; line-height: 1.6; white-space: pre-line;">${instructions.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+        <button type="button" style="
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white;
+          border: none;
+          padding: 14px 24px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          width: 100%;
+          font-size: 16px;
+        ">Got it!</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeModal = () => {
+      if (modal.parentNode) modal.remove();
+    };
+
+    modal.querySelector('button')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    setTimeout(() => {
+      if (modal.parentNode) modal.remove();
     }, 30000);
   }
 

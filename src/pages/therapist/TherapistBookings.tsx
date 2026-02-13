@@ -710,11 +710,11 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+    <div className="bg-white" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
       {/* Standardized Status Header */}
-      <div className="max-w-sm mx-auto px-4 pt-0 pb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+      <div className="max-w-sm mx-auto px-4 pt-0 pb-2">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-3">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
               <HelpTooltip 
@@ -871,8 +871,8 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
         <TherapistSchedule therapist={therapist} onBack={() => setActiveTab('bookings')} />
       ) : activeTab === 'availability' ? (
         /* Availability Management Content */
-        <main className="max-w-sm mx-auto px-4 py-6">
-          <div className="space-y-6">
+        <main className="max-w-sm mx-auto px-4 py-3">
+          <div className="space-y-4">
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="flex items-center gap-2 mb-2">
                 <h3 className="text-lg font-bold text-gray-900">{currentLabels.blockedDates}</h3>
@@ -988,8 +988,8 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
         </main>
       ) : (
         /* Bookings Content */
-      <main className="max-w-sm mx-auto px-4 py-6">
-        <div className="space-y-6">
+      <main className="max-w-sm mx-auto px-4 py-3">
+        <div className="space-y-4">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-4">
           <div className="border border-gray-200 rounded-lg p-4">

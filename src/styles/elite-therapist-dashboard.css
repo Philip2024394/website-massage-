@@ -60,7 +60,7 @@ input, textarea, select {
   }
   
   .therapist-layout-content {
-    padding: 0 0.5rem 0.5rem 0.5rem; /* No top padding - content flows under hero/breadcrumb */
+    padding: 0 0.5rem 0.25rem 0.5rem; /* Minimal - no extra white space */
     max-width: calc(100vw - 1rem);
   }
   
@@ -118,11 +118,11 @@ input, textarea, select {
   scroll-behavior: smooth;
   overscroll-behavior: contain;
   
-  /* Safe area support */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  /* No top padding – hero area must sit under header with zero white space */
+  padding-top: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
 }
 
 .therapist-layout-header {
@@ -403,9 +403,10 @@ input, textarea, select {
 }
 
 .elite-loading-container {
-  /* Stable loading container */
+  /* Stable loading container – no large min-height to avoid hero-area white space */
   contain: layout style paint;
-  min-height: 200px; /* Prevent layout shift */
+  min-height: 0;
+  padding: 1rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -433,8 +434,8 @@ input, textarea, select {
   }
   
   .therapist-layout-content {
-    /* Mobile content optimization */
-    min-height: calc(100 * var(--vh) - 60px);
+    /* Content height from content only - no forced viewport fill (removes white space) */
+    min-height: auto;
     overscroll-behavior: none;
   }
   
@@ -455,7 +456,7 @@ input, textarea, select {
   
   /* Tablet layout adjustments */
   .therapist-layout-content {
-    padding: 0 2rem 1rem 2rem; /* No top padding - content flows under hero */
+    padding: 0 1.5rem 0.75rem 1.5rem; /* Reduced - no extra white space */
     max-width: calc(100vw - 320px);
   }
   
@@ -512,7 +513,7 @@ input, textarea, select {
   }
   
   .therapist-layout-content {
-    padding: 0 3rem 2rem 3rem; /* No top padding - content flows under hero */
+    padding: 0 2rem 1rem 2rem; /* Reduced - no extra white space */
     max-width: calc(100% - var(--stable-sidebar-width));
   }
   
@@ -592,9 +593,10 @@ input, textarea, select {
  * ============================================================================ */
 
 .elite-stability-fallback {
-  /* Stable error container */
+  /* Stable error container – no fixed min-height to avoid hero white space */
   contain: layout style paint;
-  min-height: 200px;
+  min-height: 0;
+  padding: 1.5rem;
   
   /* Center content */
   display: flex;

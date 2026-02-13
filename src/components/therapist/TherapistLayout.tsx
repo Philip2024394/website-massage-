@@ -66,6 +66,7 @@ import { pushNotificationsService } from '../../lib/pushNotificationsService';
 import EnhancedNavigation from './EnhancedNavigation';
 import FloatingActionButton from './FloatingActionButton';
 import SmartBreadcrumb from './SmartBreadcrumb';
+import { getTherapistSidebarPage } from '../../config/therapistSidebarConfig';
 
 // Alias BarChart as BarChart3 for compatibility (BarChart3 doesn't exist in lucide-react)
 const BarChart3 = BarChart;
@@ -306,11 +307,12 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     setIsSidebarOpen(false);
     setShowEnhancedNav(false);
     
-    // Navigate with slight delay to ensure state cleanup
+    // Safe lock: resolve sidebar id to canonical page (prevents landing redirect)
+    const canonicalPage = getTherapistSidebarPage(pageId);
+    
     requestAnimationFrame(() => {
-      onNavigate(pageId);
+      onNavigate(canonicalPage);
       
-      // Reset navigation state after completion
       setTimeout(() => {
         setIsNavigating(false);
       }, 300);
@@ -353,15 +355,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     <div 
       className="bg-white w-full max-w-full therapist-page-container"
       style={{ 
-        // ✅ MODEL A: Natural document flow - NO viewport constraints
-        // ❌ REMOVED minHeight: '100vh' - was creating flexbox scroll trap
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'visible',  // ✅ Allows dashboard to scroll naturally
+        // Block layout (no flex column): header + main stack in normal flow, no flex-grow gap
+        display: 'block',
+        overflow: 'visible',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}
     >
-      {/* Elite Header - MODEL A: Sticky positioning for natural scroll */}
+      {/* Elite Header - Sticky, 60px */}
       <header 
         className="therapist-layout-header"
         style={{
@@ -529,7 +529,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       )}
 
-      {/* Breadcrumbs disabled on therapist dashboard - no strip, content sits under header */}
+      {/* Breadcrumbs OFF for all browsers (no strip); content sits directly under sticky header */}
       {false && showBreadcrumbs && currentPage !== 'home' && currentPage !== 'status' && (
         <SmartBreadcrumb
           currentPage={currentPage}
@@ -807,13 +807,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Main Content - no breadcrumb strip, no extra white space */}
+      {/* Main Content - block flow, no flex column */}
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
           paddingTop: 0,
           marginTop: 0,
-          paddingBottom: 'max(env(safe-area-inset-bottom, 10px), 20px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 8px), 12px)',
           WebkitOverflowScrolling: 'touch'
         }}
       >
@@ -822,7 +822,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           style={{
             paddingTop: 0,
             marginTop: 0,
-            paddingBottom: '10px'
+            paddingBottom: '6px'
           }}
         >
           {children}

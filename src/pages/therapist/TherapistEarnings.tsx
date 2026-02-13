@@ -349,8 +349,8 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
-      <main className="max-w-sm mx-auto px-4 pt-0 pb-6">
+    <div className="bg-gray-50">
+      <main className="max-w-sm mx-auto px-4 pt-0 pb-3">
         <div className="space-y-4">
         {/* Standardized Status Header */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

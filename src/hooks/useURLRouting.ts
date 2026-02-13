@@ -56,8 +56,9 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapist-calendar': '/dashboard/therapist/calendar',
         'therapist-legal': '/dashboard/therapist/legal',
         
-        // Short aliases for therapist dashboard pages (used by navigation)
-        'dashboard': '/dashboard/therapist', // therapist profile/upload page – must not fall back to '/' (landing)
+        // Short aliases for therapist dashboard pages (used by side drawer – must not fall back to '/' (landing))
+        'status': '/dashboard/therapist/status',
+        'dashboard': '/dashboard/therapist',
         'payment': '/dashboard/therapist/payment',
         'payment-status': '/dashboard/therapist/payment-status',
         'bookings': '/dashboard/therapist/bookings',
@@ -65,6 +66,14 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'calendar': '/dashboard/therapist/calendar',
         'schedule': '/dashboard/therapist/schedule',
         'custom-menu': '/dashboard/therapist/menu',
+        'legal': '/dashboard/therapist/legal',
+        'analytics': '/dashboard/therapist/analytics',
+        'commission-payment': '/dashboard/therapist/commission',
+        'therapist-analytics': '/dashboard/therapist/analytics',
+        'therapist-how-it-works': '/dashboard/therapist/how-it-works',
+        'therapist-hotel-villa-safe-pass': '/dashboard/therapist/safe-pass',
+        'send-discount': '/dashboard/therapist/send-discount',
+        'customers': '/dashboard/therapist/customers',
         
         'massagePlaceLogin': '/place-login',
         'placeDashboard': '/dashboard/massage-place',
@@ -86,6 +95,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'joinIndastreet': '/join',
         'signup': '/signup',
         'signin': '/signin',
+        'signIn': '/signin',  // drawer "Sign In" uses camelCase; must map so URL stays /signin not /
         'login': '/login',
         'createAccount': '/create-account',
         'onboarding-package': '/onboarding/package',
@@ -269,6 +279,26 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 }
                 if (path === '/dashboard/therapist/legal') {
                     setPage('therapist-legal');
+                    return;
+                }
+                if (path === '/dashboard/therapist/analytics') {
+                    setPage('therapist-analytics');
+                    return;
+                }
+                if (path === '/dashboard/therapist/customers') {
+                    setPage('customers');
+                    return;
+                }
+                if (path === '/dashboard/therapist/send-discount') {
+                    setPage('send-discount');
+                    return;
+                }
+                if (path === '/dashboard/therapist/how-it-works') {
+                    setPage('therapist-how-it-works');
+                    return;
+                }
+                if (path === '/dashboard/therapist/safe-pass') {
+                    setPage('therapist-hotel-villa-safe-pass');
                     return;
                 }
                 if (path === '/dashboard/therapist') {

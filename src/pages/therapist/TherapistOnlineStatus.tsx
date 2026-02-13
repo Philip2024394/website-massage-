@@ -818,67 +818,18 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         }
       }
       
-      // Fallback: No install prompt available - show enhanced instructions
-      console.log('ℹ️ Native PWA prompt not available - providing manual install guidance');
-      
-      // Detect browser type for specific instructions
-      const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-      const isSafari = navigator.userAgent.toLowerCase().includes('safari') && !navigator.userAgent.toLowerCase().includes('chrome');
-      const isChrome = navigator.userAgent.toLowerCase().includes('chrome');
-      const isEdge = navigator.userAgent.toLowerCase().includes('edg');
-      
-      let instructions = '';
-      let title = '📱 Manual Installation Available';
-      
-      if (isFirefox) {
-        title = '🦊 Firefox: Manual Installation';
-        instructions = 
-          '🦊 Firefox Installation:\n\n' +
-          '• Address Bar: Look for 🏠 "Install" icon\n' +
-          '• Menu: ☰ → "Install this site as an app"\n' +
-          '• Or bookmark for quick access\n\n' +
-          '🎵 Features: Notification sounds, vibration, chat alerts!';
-      } else if (isSafari) {
-        title = '🍎 Safari: Add to Home Screen';
-        instructions = 
-          '🍎 Safari Installation:\n\n' +
-          '• Tap Share button 📤\n' +
-          '• Select "Add to Home Screen" 📱\n' +
-          '• Enjoy full app experience!\n\n' +
-          '🎵 Features: Notification sounds, vibration, chat alerts!';
-      } else if (isChrome) {
-        title = '🌐 Chrome: App Installation';
-        instructions = 
-          '🌐 Chrome Installation:\n\n' +
-          '• Address Bar: Look for ⬇️ "Install" icon\n' +
-          '• Menu (⋮): "Install app" or "Create shortcut"\n' +
-          '• Or use keyboard: Ctrl+Shift+A\n\n' +
-          '🎵 Full Features: Notification music, vibration, chat alerts!';
-      } else if (isEdge) {
-        title = '🔷 Edge: App Installation';
-        instructions = 
-          '🔷 Edge Installation:\n\n' +
-          '• Address Bar: Look for + "Install app" icon\n' +
-          '• Menu (⋯): "Apps" → "Install this site as an app"\n' +
-          '• Enjoy enhanced experience!\n\n' +
-          '🎵 Features: Notification sounds, vibration, chat alerts!';
-      } else {
-        instructions = 
-          '📱 Manual Installation Options:\n\n' +
-          '• Chrome: Menu (⋮) → "Install app"\n' +
-          '• Edge: Menu (⋯) → "Apps" → "Install app"\n' +
-          '• Safari: Share → "Add to Home Screen"\n' +
-          '• Firefox: Menu → "Install this site as an app"\n\n' +
-          '🎵 Enhanced Features: Music, vibration, chat alerts!';
+      // Rock-solid fallback: use central installer (shows Android/iOS/Desktop modal, no toast-only)
+      console.log('ℹ️ Native PWA prompt not available - showing manual install modal');
+      const { PWAInstallationStatusChecker } = await import('../../utils/pwaInstallationStatus');
+      const result = await PWAInstallationStatusChecker.triggerInstallation();
+      if (result.success && result.result === 'manual-instructions-shown') {
+        setTimeout(() => {
+          localStorage.setItem('manual-pwa-install-guided', 'true');
+          showToast('💡 After installing, open the app from your home screen for notifications!', 'info', { duration: 5000 });
+        }, 500);
+      } else if (!result.success && result.error) {
+        showToast(result.error, 'info', { duration: 8000 });
       }
-      
-      showToast(instructions, 'info', { duration: 15000 });
-      
-      // Also enable enhanced features for manual installations
-      setTimeout(() => {
-        localStorage.setItem('manual-pwa-install-guided', 'true');
-        showToast('💡 Tip: After installation, return here to enable notifications!', 'info', { duration: 5000 });
-      }, 2000);
     } catch (error) {
       console.error('❌ Enhanced download error:', error);
       showToast('❌ Failed to install app. Please try again or use Chrome/Safari.', 'error', { duration: 4000 });
@@ -1149,8 +1100,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
-      <div className="max-w-sm mx-auto px-4 pt-0 pb-6 space-y-6">
+    <div className="bg-white">
+      <div className="max-w-sm mx-auto px-4 pt-0 pb-3 space-y-4">
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
