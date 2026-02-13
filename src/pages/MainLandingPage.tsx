@@ -894,7 +894,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const availableCities = useMemo(() => CITIES_BY_COUNTRY[countryCode] || [], [countryCode]);
 
     return (
-        <div className="landing-page-container mobile-optimized scrollable relative w-full bg-gray-900" style={{ 
+        <div data-landing-page="ready" className="landing-page-container mobile-optimized scrollable relative w-full bg-gray-900" style={{ 
             height: 'auto',
             minHeight: '100dvh',
             maxHeight: 'none',

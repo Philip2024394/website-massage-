@@ -241,7 +241,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       return;
     }
 
-    const therapistId = String(therapist.$id || therapist.id);
+    const therapistId = String((therapist as any).$id ?? (therapist as any).appwriteId ?? therapist.id);
     logger.debug('Starting real-time booking subscription for therapist:', { therapistId });
 
     try {
@@ -317,7 +317,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 logger.error('Failed to stop booking sound:', soundError);
               }
 
-              // Dispatch stop event
+              // Stop event is global for current therapist view (all cards stop sound)
               window.dispatchEvent(new Event('stopBookingNotification'));
             }
           }

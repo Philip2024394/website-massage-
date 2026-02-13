@@ -999,10 +999,8 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         onLogout={onLogout}
       >
       <div className="bg-white w-full">
-      
       {/* Main Content - MODEL A: NO top padding to eliminate white space */}
-      <main className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px', marginTop: '0px' }}>
-        
+      <div className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px', marginTop: '0px' }}>
         {/* Elite Connection Status - NO top margin */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3" style={{ marginTop: '0px' }}>
       <div className="bg-gradient-to-b from-green-50 to-blue-50 p-4 border-b border-gray-200">
@@ -1015,7 +1013,8 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 md:px-8 py-4 shadow-lg">
-          <div className="max-w-full sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">\n            <div className="flex items-center gap-3">
+          <div className="max-w-full sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
+            <div className="flex items-center gap-3">
               <span className="text-2xl animate-pulse">⏰</span>
               <div>
                 <p className="font-bold text-lg">Payment Due Tonight at 12:00 AM</p>
@@ -1880,6 +1879,8 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
           </div>
           </div>
       </main>
+      </div>
+      </div>
 
       {/* Payment Modal for Plus Members */}
       {showPaymentModal && (

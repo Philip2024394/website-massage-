@@ -2148,9 +2148,13 @@ const HomePage: React.FC<HomePageProps> = ({
                                 }))
                             });
 
+                            // OOM FIX: Cap initial cards to avoid memory crash on large lists (e.g. 200+ therapists)
+                            const MAX_INITIAL_THERAPIST_CARDS = 50;
+                            const therapistsToRender = preparedTherapists.slice(0, MAX_INITIAL_THERAPIST_CARDS);
+
                             // 🏷️ GROUP BY LOCATION AREA for display (sorted by distance within each group)
                             const therapistsByLocation: { [key: string]: any[] } = {};
-                            preparedTherapists.forEach((therapist: any) => {
+                            therapistsToRender.forEach((therapist: any) => {
                                 const area = therapist._locationArea || 'Unknown';
                                 if (!therapistsByLocation[area]) {
                                     therapistsByLocation[area] = [];
@@ -2162,7 +2166,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             const locationAreas = Object.keys(therapistsByLocation).sort();
                             
                             logger.debug('[STAGE 6 - Render] About to render therapist cards', {
-                                count: preparedTherapists.length,
+                                count: therapistsToRender.length,
+                                capped: preparedTherapists.length > MAX_INITIAL_THERAPIST_CARDS,
                                 locationAreas,
                                 therapistsByLocation: Object.keys(therapistsByLocation).map(k => `${k}: ${therapistsByLocation[k].length}`)
                             });

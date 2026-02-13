@@ -638,6 +638,36 @@ export const bookingLifecycleService = {
   },
 
   /**
+   * Spec 5.2: Check if slot is reserved (ACCEPTED or CONFIRMED booking for same provider + date + time).
+   * Used to block double-booking when creating a new scheduled booking.
+   */
+  async isSlotReserved(providerId: string, scheduledDate: string, scheduledTime: string): Promise<boolean> {
+    try {
+      const result = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.bookings || 'bookings',
+        [
+          Query.equal('therapistId', providerId),
+          Query.equal('scheduledDate', scheduledDate),
+          Query.equal('scheduledTime', scheduledTime),
+          Query.limit(10),
+        ]
+      );
+      const reserved = result.documents.some((doc: any) => {
+        const status = (doc.bookingStatus || doc.status || '').toString().toLowerCase();
+        return ['pending', 'accepted', 'confirmed', 'pending_accept', 'active'].includes(status);
+      });
+      if (reserved) {
+        console.log(`🔒 [SlotReserved] Provider ${providerId} slot ${scheduledDate} ${scheduledTime} is reserved`);
+      }
+      return reserved;
+    } catch (error) {
+      console.error(`❌ [BookingLifecycle] isSlotReserved failed:`, error);
+      return false; // fail open
+    }
+  },
+
+  /**
    * Get all bookings for a provider (therapist or business)
    */
   async getProviderBookings(providerId: string, providerType: 'therapist' | 'place' | 'facial'): Promise<BookingLifecycleRecord[]> {

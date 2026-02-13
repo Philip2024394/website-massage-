@@ -73,6 +73,7 @@ import { BookingNotificationBanner } from './BookingNotificationBanner';
 import { locationService } from '../services/locationService';
 import { therapistNotificationService, type BookingNotification } from '../services/therapistNotificationService';
 import { scheduledBookingPaymentService } from '../lib/services/scheduledBookingPaymentService';
+import { mp3NotificationService } from '../services/mp3NotificationService';
 
 // Extracted components
 import { ChatHeader } from '../modules/chat/ChatHeader';
@@ -249,6 +250,7 @@ export function PersistentChatWindow() {
     chatState,
     isLocked,
     isConnected,
+    openChat,
     minimizeChat,
     maximizeChat,
     closeChat,
@@ -262,12 +264,17 @@ export function PersistentChatWindow() {
     acceptBooking,
     rejectBooking,
     confirmBooking,
+    confirmPaymentReceived,
+    rejectPaymentProof,
+    updateBookingPaymentProof,
+    refundDeposit,
     cancelBooking,
     shareBankCard,
     confirmPayment,
     addSystemNotification,
     lockChat,
     unlockChat,
+    recordDepositTimeout,
     timerState,
   } = usePersistentChat();
 
@@ -348,9 +355,17 @@ export function PersistentChatWindow() {
   } = useBookingForm(chatState.isMinimized, chatState.bookingStep, chatState.therapist?.id);
   
   const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
-  const [therapistResponseCountdown, setTherapistResponseCountdown] = useState(300); // 5 minutes for therapist to respond
+  const [therapistResponseCountdown, setTherapistResponseCountdown] = useState(300); // 5 min BOOK_NOW; 30 min for SCHEDULED (set on reset)
   const [bookingNotifications, setBookingNotifications] = useState<BookingNotification[]>([]);
-  
+  // Suggested therapists/places after booking timeout (spec 1.1: only active therapists, open places)
+  const [suggestedTherapists, setSuggestedTherapists] = useState<Array<{ appwriteId: string; name: string; image?: string }>>([]);
+  const [suggestedPlaces, setSuggestedPlaces] = useState<Array<{ appwriteId: string; name: string; image?: string }>>([]);
+  const [suggestedLoading, setSuggestedLoading] = useState(false);
+  // Spec 2.2: 30 min deposit countdown when scheduled booking is accepted
+  const [depositCountdownSeconds, setDepositCountdownSeconds] = useState<number>(0);
+  const [uploadingProof, setUploadingProof] = useState(false);
+  const proofInputRef = useRef<HTMLInputElement>(null);
+
   // 🚨 ERROR TRACKING STATE - Tracks booking flow errors with detailed information
   const [bookingError, setBookingError] = useState<{
     errorPoint: string;
@@ -500,35 +515,119 @@ export function PersistentChatWindow() {
     return () => clearInterval(timer);
   }, []);
 
-  // Therapist response countdown timer
+  // Therapist response countdown timer (per spec: on expiry booking is cancelled, suggested list shown)
   useEffect(() => {
-    // Only run countdown if booking is pending/requested and waiting for therapist response
-    if (chatState.currentBooking && 
-        (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'waiting_others') &&
-        therapistResponseCountdown > 0) {
-      const timer = setInterval(() => {
-        setTherapistResponseCountdown(prev => {
-          const newCount = prev - 1;
-          if (newCount <= 0) {
-            // Auto-cancel booking when timer expires
-            addSystemNotification('⏰ Booking expired - No response from therapists. You can try booking again.');
-            // Optional: Auto-close chat or show rebooking options
+    if (!chatState.currentBooking || therapistResponseCountdown <= 0) return;
+    if (chatState.currentBooking.status !== 'pending' && chatState.currentBooking.status !== 'waiting_others') return;
+    const timer = setInterval(() => {
+      setTherapistResponseCountdown(prev => {
+        const newCount = prev - 1;
+        if (newCount <= 0) {
+          const docId = (chatState.currentBooking as { documentId?: string })?.documentId;
+          if (docId) {
+            import('../lib/services/bookingLifecycleService').then(({ bookingLifecycleService }) => {
+              bookingLifecycleService.expireBooking(docId, 'Therapist timeout').catch((err) => logger.error('Expire booking on countdown:', err));
+            });
           }
-          return Math.max(0, newCount);
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [chatState.currentBooking?.status, therapistResponseCountdown]);
+          addSystemNotification('⏰ Booking expired – no response in time. Suggested therapists and places are shown below.');
+        }
+        return Math.max(0, newCount);
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [chatState.currentBooking?.status, therapistResponseCountdown, chatState.currentBooking?.documentId, addSystemNotification]);
 
-  // Reset countdown timer when a new booking is created
+  // Reset countdown timer when a new booking is created (5 min BOOK_NOW, 30 min SCHEDULED per spec)
   useEffect(() => {
     if (chatState.currentBooking && 
         (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'waiting_others')) {
-      logger.debug('🔄 Resetting countdown timer for new booking:', { bookingId: chatState.currentBooking.id });
-      setTherapistResponseCountdown(300); // Reset to 5 minutes
+      const isScheduled = (chatState.currentBooking as { bookingType?: string })?.bookingType === 'SCHEDULED';
+      const seconds = isScheduled ? 30 * 60 : 5 * 60;
+      logger.debug('🔄 Resetting countdown timer for new booking:', { bookingId: chatState.currentBooking.id, isScheduled, seconds });
+      setTherapistResponseCountdown(seconds);
     }
   }, [chatState.currentBooking?.id]); // Only reset when booking ID changes (new booking)
+
+  // When booking expired or declined, fetch suggested therapists (active) and places (open) – spec 1.1 & 1.2
+  const lifecycleStatus = (chatState.currentBooking as { lifecycleStatus?: string })?.lifecycleStatus;
+  const bookingExpiredOrDeclined = chatState.currentBooking && (lifecycleStatus === 'EXPIRED' || lifecycleStatus === 'DECLINED');
+  useEffect(() => {
+    if (!bookingExpiredOrDeclined) {
+      setSuggestedTherapists([]);
+      setSuggestedPlaces([]);
+      return;
+    }
+    if (suggestedTherapists.length > 0 || suggestedLoading) return;
+    setSuggestedLoading(true);
+    (async () => {
+      try {
+        const currentProviderId = chatState.therapist?.appwriteId || (chatState.therapist as any)?.$id || '';
+        const { therapistService, placesService } = await import('../lib/appwriteService');
+        const [therapistsRaw, placesRaw] = await Promise.all([
+          therapistService.getTherapists().catch(() => []),
+          placesService.getPlaces().catch(() => []),
+        ]);
+        const exclude = (id: string) => id && id === currentProviderId;
+        const therapists = therapistsRaw
+          .filter((t: any) => (t.status || t.availability || '').toString().toLowerCase() === 'available' && !exclude(t.$id || t.id))
+          .slice(0, 10)
+          .map((t: any) => ({ appwriteId: t.$id || t.id, name: t.name || 'Therapist', image: t.mainImage || t.profilePicture || t.image }));
+        const places = placesRaw
+          .filter((p: any) => p.isLive !== false && (p.isOpen !== false || p.status === 'open' || p.status === 'OPEN') && !exclude(p.$id || p.id))
+          .slice(0, 10)
+          .map((p: any) => ({ appwriteId: p.$id || p.id, name: p.name || 'Place', image: p.mainImage || p.profilePicture }));
+        if (therapists.length === 0 && places.length === 0) {
+          setSuggestedTherapists([]);
+          setSuggestedPlaces([]);
+          addSystemNotification('No other active therapists or open places right now. You can try again later or browse the home page.');
+        } else {
+          setSuggestedTherapists(therapists);
+          setSuggestedPlaces(places);
+        }
+      } catch (e) {
+        logger.error('Failed to load suggested therapists/places', e);
+      } finally {
+        setSuggestedLoading(false);
+      }
+    })();
+  }, [bookingExpiredOrDeclined, suggestedLoading, suggestedTherapists.length, chatState.therapist?.appwriteId, addSystemNotification]);
+
+  // Spec 2.2: 30 min deposit countdown when scheduled booking accepted (same chat window as bank details)
+  const isScheduledAccepted = Boolean(
+    chatState.currentBooking &&
+    (chatState.currentBooking as { bookingType?: string })?.bookingType === 'SCHEDULED' &&
+    (chatState.currentBooking as { lifecycleStatus?: string })?.lifecycleStatus === 'ACCEPTED'
+  );
+  const acceptedAt = (chatState.currentBooking as { acceptedAt?: string })?.acceptedAt;
+  const depositDeadlineExtendedAt = (chatState.currentBooking as { depositDeadlineExtendedAt?: string })?.depositDeadlineExtendedAt;
+  const depositTimeoutRecordedRef = useRef(false);
+  useEffect(() => {
+    if (!isScheduledAccepted) {
+      setDepositCountdownSeconds(0);
+      depositTimeoutRecordedRef.current = false;
+      return;
+    }
+    const baseTime = depositDeadlineExtendedAt || acceptedAt;
+    if (!baseTime) {
+      setDepositCountdownSeconds(0);
+      return;
+    }
+    const deadline = new Date(baseTime).getTime() + 30 * 60 * 1000;
+    const tick = () => {
+      const secs = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+      setDepositCountdownSeconds(secs);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [isScheduledAccepted, acceptedAt, depositDeadlineExtendedAt]);
+  // Spec 2.3: when countdown hits 0, record deposit timeout once (for 2-attempt / 24h lock)
+  useEffect(() => {
+    if (!isScheduledAccepted || depositCountdownSeconds !== 0 || depositTimeoutRecordedRef.current) return;
+    depositTimeoutRecordedRef.current = true;
+    const providerId = chatState.therapist?.appwriteId || (chatState.therapist as any)?.$id;
+    if (providerId) recordDepositTimeout(providerId);
+  }, [isScheduledAccepted, depositCountdownSeconds, recordDepositTimeout, chatState.therapist]);
 
   // Format countdown to MM:SS
   const formatCountdown = (seconds: number) => {
@@ -536,6 +635,86 @@ export function PersistentChatWindow() {
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Spec 4.1: Therapist has 30 min to confirm/reject payment proof (scheduled + accepted + proof uploaded)
+  const firstPaymentProofAt = chatState.messages.find(m => m.messageType === 'payment_proof')?.createdAt;
+  const isScheduledAcceptedAsTherapist = Boolean(
+    chatState.isTherapistView &&
+    chatState.currentBooking &&
+    (chatState.currentBooking as { bookingType?: string })?.bookingType === 'SCHEDULED' &&
+    (chatState.currentBooking as { lifecycleStatus?: string })?.lifecycleStatus === 'ACCEPTED' &&
+    firstPaymentProofAt
+  );
+  const [therapistConfirmCountdownSeconds, setTherapistConfirmCountdownSeconds] = useState(0);
+  useEffect(() => {
+    if (!isScheduledAcceptedAsTherapist || !firstPaymentProofAt) {
+      setTherapistConfirmCountdownSeconds(0);
+      return;
+    }
+    const deadline = new Date(firstPaymentProofAt).getTime() + 30 * 60 * 1000;
+    const tick = () => {
+      setTherapistConfirmCountdownSeconds(Math.max(0, Math.floor((deadline - Date.now()) / 1000)));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [isScheduledAcceptedAsTherapist, firstPaymentProofAt]);
+
+  // Spec 4.3: One-time reminder when therapist's 30 min to confirm payment proof expires
+  const therapistConfirmReminderSentRef = useRef(false);
+  const prevTherapistConfirmCountdownRef = useRef<number>(therapistConfirmCountdownSeconds);
+  useEffect(() => {
+    if (!isScheduledAcceptedAsTherapist) {
+      therapistConfirmReminderSentRef.current = false;
+      prevTherapistConfirmCountdownRef.current = therapistConfirmCountdownSeconds;
+      return;
+    }
+    if (prevTherapistConfirmCountdownRef.current > 0 && therapistConfirmCountdownSeconds === 0 && !therapistConfirmReminderSentRef.current) {
+      addSystemNotification('Reminder: Please confirm or reject the payment proof. If no response within 24 hours, the booking may be expired.');
+      therapistConfirmReminderSentRef.current = true;
+    }
+    prevTherapistConfirmCountdownRef.current = therapistConfirmCountdownSeconds;
+  }, [isScheduledAcceptedAsTherapist, therapistConfirmCountdownSeconds, addSystemNotification]);
+  useEffect(() => {
+    if (!isScheduledAcceptedAsTherapist) return;
+    therapistConfirmReminderSentRef.current = false;
+  }, [firstPaymentProofAt, chatState.currentBooking?.documentId, isScheduledAcceptedAsTherapist]);
+
+  // Spec 7.2: Sound and optional browser notification when customer submits payment proof (therapist/place view)
+  const lastPaymentProofCountRef = useRef(0);
+  useEffect(() => {
+    if (!chatState.isTherapistView || !chatState.isOpen) return;
+    const paymentProofFromCustomer = chatState.messages.filter(
+      m => (m as { messageType?: string }).messageType === 'payment_proof' && m.senderId === 'customer'
+    );
+    const count = paymentProofFromCustomer.length;
+    if (count > lastPaymentProofCountRef.current) {
+      lastPaymentProofCountRef.current = count;
+      if (count > 0) {
+        mp3NotificationService.playNotification('payment_success', 0.7).catch(() => {});
+        // Browser notification when tab is in background
+        if (typeof document !== 'undefined' && document.hidden && typeof Notification !== 'undefined') {
+          if (Notification.permission === 'granted') {
+            new Notification('Payment proof received', {
+              body: 'Customer uploaded payment proof. Confirm or reject within 30 minutes.',
+              icon: '/favicon.ico',
+            });
+          } else if (Notification.permission === 'default') {
+            Notification.requestPermission().then(p => {
+              if (p === 'granted') {
+                new Notification('Payment proof received', {
+                  body: 'Customer uploaded payment proof. Confirm or reject within 30 minutes.',
+                  icon: '/favicon.ico',
+                });
+              }
+            });
+          }
+        }
+      }
+    } else {
+      lastPaymentProofCountRef.current = count;
+    }
+  }, [chatState.isTherapistView, chatState.isOpen, chatState.messages]);
 
   // ✅ CRITICAL FIX: Extract data BEFORE hooks to avoid Rules of Hooks violation
   const { therapist, messages, bookingStep, selectedDuration, isMinimized } = chatState;
@@ -938,7 +1117,6 @@ export function PersistentChatWindow() {
             } catch (schedError) {
               logger.error('❌ Scheduled booking failed:', schedError);
               
-              // 🚨 Set error state for display
               setBookingError({
                 errorPoint: 'Scheduled Booking Creation',
                 errorReason: (schedError as Error).message || 'Failed to create scheduled booking',
@@ -949,9 +1127,7 @@ export function PersistentChatWindow() {
                 timestamp: new Date().toLocaleString()
               });
               
-              // Still switch to chat even if booking fails
-              logger.debug('🔄 [FALLBACK] Switching to chat despite scheduled booking error...');
-              setBookingStep('chat');
+              unlockChat();
               throw schedError;
             }
           } else {
@@ -1107,7 +1283,6 @@ export function PersistentChatWindow() {
             } catch (bookingError) {
               logger.error('❌ createBooking threw error:', bookingError);
               
-              // 🚨 Set error state for display
               setBookingError({
                 errorPoint: 'Immediate Booking Creation',
                 errorReason: (bookingError as Error).message || 'Failed to create immediate booking',
@@ -1118,9 +1293,7 @@ export function PersistentChatWindow() {
                 timestamp: new Date().toLocaleString()
               });
               
-              // Still switch to chat even if booking fails
-              logger.debug('🔄 [FALLBACK] Switching to chat despite booking error...');
-              setBookingStep('chat');
+              unlockChat();
               throw bookingError;
             }
           }
@@ -1194,14 +1367,15 @@ export function PersistentChatWindow() {
       const depositAmount = Math.round(totalPrice * 0.30);
       setDepositAmount(depositAmount);
       
-      // Create scheduled booking with deposit requirement
+      const therapistDocId = (therapist as any).appwriteId || (therapist as any).$id || therapist.id;
+      const providerType = (therapist as { providerType?: 'therapist' | 'place' })?.providerType || 'therapist';
       const scheduledDeposit = await scheduledBookingPaymentService.createScheduledBookingWithDeposit({
         bookingId: `scheduled_${Date.now()}`,
         customerId: chatState.currentUserId || 'guest',
         customerName: chatState.customerName || 'Guest Customer',
-        therapistId: therapist.id,
+        therapistId: therapistDocId,
         therapistName: therapist.name,
-        providerType: 'therapist',
+        providerType,
         serviceType: bookingData.serviceType,
         duration: bookingData.duration,
         totalPrice: totalPrice,
@@ -1255,6 +1429,46 @@ export function PersistentChatWindow() {
       addSystemNotification('❌ Failed to process deposit payment. Please try again.');
     } finally {
       setIsProcessingDeposit(false);
+    }
+  };
+
+  // Spec 3.1 & 3.2: Upload payment proof in chat (jpg/png, max 5MB); visible to therapist
+  const handleUploadPaymentProof = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const allowed = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowed.includes(file.type)) {
+      addSystemNotification('❌ Please upload a JPG or PNG image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      addSystemNotification('❌ File must be 5MB or smaller.');
+      return;
+    }
+    setUploadingProof(true);
+    try {
+      const { appwriteStorage: storage } = await import('../lib/appwrite');
+      const { ID } = await import('appwrite');
+      const { APPWRITE_CONFIG } = await import('../lib/appwrite.config');
+      const fileId = ID.unique();
+      await storage.createFile('payment_proofs', fileId, file);
+      const url = `${APPWRITE_CONFIG.endpoint}/storage/buckets/payment_proofs/files/${fileId}/view`;
+      addMessage({
+        senderId: 'customer',
+        senderName: chatState.customerName || 'You',
+        type: 'payment_proof',
+        message: url,
+      });
+      if (chatState.currentBooking?.documentId) {
+        updateBookingPaymentProof(chatState.currentBooking.documentId, url).catch(() => {});
+      }
+      addSystemNotification('✅ Payment proof uploaded. Therapist can view it in this chat.');
+    } catch (err) {
+      logger.error('Upload payment proof failed', err);
+      addSystemNotification('❌ Failed to upload proof. Please try again.');
+    } finally {
+      setUploadingProof(false);
     }
   };
 
@@ -1440,6 +1654,76 @@ export function PersistentChatWindow() {
             onExpire={handleBookingExpire}
             isVisible={true}
           />
+        )}
+
+        {/* Spec 4.1 & 4.3: Therapist 30 min to confirm/reject payment proof (scheduled + accepted) */}
+        {isScheduledAcceptedAsTherapist && (
+          <div className="mx-4 mb-4 p-4 rounded-xl border-2 bg-gradient-to-br from-violet-50 to-indigo-50 border-violet-200">
+            <h4 className="font-bold text-violet-900 mb-2 flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              Confirm payment received
+            </h4>
+            <p className="text-sm text-violet-800 mb-3">
+              Customer submitted payment proof. Confirm or reject within 30 minutes. Once confirmed, the slot will be marked as booked (red) on your calendar.
+            </p>
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg border border-violet-200 mb-3">
+              <Clock className="w-6 h-6 text-violet-600" />
+              <span className="font-mono text-xl font-bold text-violet-800">
+                {formatCountdown(therapistConfirmCountdownSeconds)}
+              </span>
+              <span className="text-sm text-violet-700">remaining</span>
+            </div>
+            {therapistConfirmCountdownSeconds > 0 && (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => confirmPaymentReceived()}
+                  className="flex-1 py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm"
+                >
+                  Confirm payment received
+                </button>
+                <button
+                  type="button"
+                  onClick={() => rejectPaymentProof()}
+                  className="flex-1 py-2.5 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm"
+                >
+                  Reject proof
+                </button>
+              </div>
+            )}
+            {/* Spec 4.3: Show buttons even after 30 min so therapist can still confirm/reject; reminder sent once when countdown hit 0 */}
+            {therapistConfirmCountdownSeconds === 0 && (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => confirmPaymentReceived()}
+                  className="flex-1 py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm"
+                >
+                  Confirm payment received
+                </button>
+                <button
+                  type="button"
+                  onClick={() => rejectPaymentProof()}
+                  className="flex-1 py-2.5 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm"
+                >
+                  Reject proof
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Spec 8.2: Therapist/place can agree to refund deposit (exception flow) */}
+        {chatState.isTherapistView && chatState.currentBooking && (chatState.currentBooking as { bookingType?: string })?.bookingType === 'SCHEDULED' && ((chatState.currentBooking as { lifecycleStatus?: string })?.lifecycleStatus === 'ACCEPTED' || (chatState.currentBooking as { lifecycleStatus?: string })?.lifecycleStatus === 'CONFIRMED') && (
+          <div className="mx-4 mb-4">
+            <button
+              type="button"
+              onClick={() => window.confirm('Refund deposit to customer and cancel this booking?') && refundDeposit()}
+              className="text-xs text-amber-700 hover:text-amber-900 underline"
+            >
+              Refund deposit (exception: no-show / agree to refund)
+            </button>
+          </div>
         )}
       
       <div
@@ -2683,8 +2967,15 @@ export function PersistentChatWindow() {
                             {msg.senderName}
                           </div>
                         )}
-                        {/* 💬 CHAT MESSAGE - ALWAYS ORIGINAL LANGUAGE (NO TRANSLATION) */}
-                        <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                        {/* Payment proof image (spec 3.1 & 3.2) */}
+                        {(msg as ChatMessage & { messageType?: string }).messageType === 'payment_proof' && msg.message.startsWith('http') ? (
+                          <div className="space-y-1">
+                            <img src={msg.message} alt="Payment proof" className="max-w-full rounded-lg border border-gray-200 max-h-64 object-contain" />
+                            <p className="text-xs text-gray-500">Payment proof</p>
+                          </div>
+                        ) : (
+                          <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                        )}
                         <div className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? 'text-orange-100 justify-end' : 'text-gray-400'}`}>
                           {formatTime(msg.createdAt)}
                           {isOwn && msg.read && <Check className="w-3 h-3" />}
@@ -2704,6 +2995,91 @@ export function PersistentChatWindow() {
           {/* Status-specific UI Components based on booking status */}
           {chatState.currentBooking && (
               <>
+                {/* Spec 2.1 & 2.2: 30% deposit countdown in same chat window as bank details (scheduled + accepted) */}
+                {isScheduledAccepted && (
+                  <div className="mx-4 mb-4 p-4 rounded-xl border-2 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+                    <h4 className="font-bold text-emerald-900 mb-2 flex items-center gap-2">
+                      <CreditCard className="w-5 h-5" />
+                      Secure your booking – 30% deposit
+                    </h4>
+                    <p className="text-sm text-emerald-800 mb-3">
+                      Transfer 30% deposit and upload proof of payment in this chat within 30 minutes.
+                    </p>
+                    <p className="text-xs text-amber-800 mb-3 bg-amber-50/80 border border-amber-200 rounded-lg px-3 py-2">
+                      ⚠️ Deposit is non-refundable; you cannot switch therapist/place for this booking. Refund only if: no-show, service not provided, or therapist/place agrees to refund.
+                    </p>
+                    <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg border border-emerald-200">
+                      <Clock className="w-6 h-6 text-emerald-600" />
+                      <span className="font-mono text-xl font-bold text-emerald-800">
+                        {Math.floor(depositCountdownSeconds / 60)}:{(depositCountdownSeconds % 60).toString().padStart(2, '0')}
+                      </span>
+                      <span className="text-sm text-emerald-700">remaining</span>
+                    </div>
+                    {depositCountdownSeconds <= 0 && (
+                      <p className="text-sm text-amber-700 mt-2">Time’s up. Upload proof if you’ve already transferred, or the slot may be released.</p>
+                    )}
+                    <input
+                      ref={proofInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/jpg"
+                      className="hidden"
+                      onChange={handleUploadPaymentProof}
+                    />
+                    <button
+                      type="button"
+                      disabled={uploadingProof}
+                      onClick={() => proofInputRef.current?.click()}
+                      className="mt-3 w-full py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-medium text-sm flex items-center justify-center gap-2"
+                    >
+                      {uploadingProof ? 'Uploading…' : 'Upload payment proof (JPG/PNG, max 5MB)'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Suggested therapists & places after timeout or reject (spec 1.1 & 1.2: only active/open) */}
+                {bookingExpiredOrDeclined && (
+                  <div className="mx-4 mb-4 p-4 rounded-xl border-2 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                    <h4 className="font-bold text-amber-900 mb-2 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5" />
+                      Suggested therapists & places
+                    </h4>
+                    <p className="text-sm text-amber-800 mb-3">Click to view and book with an available therapist or open place.</p>
+                    {suggestedLoading ? (
+                      <p className="text-sm text-amber-700">Loading…</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {suggestedTherapists.map((t) => (
+                          <button
+                            key={t.appwriteId}
+                            type="button"
+                            onClick={() => openChat({ id: t.name, appwriteId: t.appwriteId, name: t.name, mainImage: t.image }, 'book', 'search')}
+                            className="w-full text-left p-3 rounded-lg bg-white/80 hover:bg-white border border-amber-200 flex items-center gap-3"
+                          >
+                            {t.image ? <img src={t.image} alt="" className="w-10 h-10 rounded-full object-cover" /> : <User className="w-10 h-10 text-amber-600" />}
+                            <span className="font-medium text-gray-800">{t.name}</span>
+                            <span className="text-xs text-amber-700 ml-auto">Therapist</span>
+                          </button>
+                        ))}
+                        {suggestedPlaces.map((p) => (
+                          <button
+                            key={p.appwriteId}
+                            type="button"
+                            onClick={() => openChat({ id: p.name, appwriteId: p.appwriteId, name: p.name, mainImage: p.image }, 'book', 'search')}
+                            className="w-full text-left p-3 rounded-lg bg-white/80 hover:bg-white border border-amber-200 flex items-center gap-3"
+                          >
+                            {p.image ? <img src={p.image} alt="" className="w-10 h-10 rounded-full object-cover" /> : <MapPin className="w-10 h-10 text-amber-600" />}
+                            <span className="font-medium text-gray-800">{p.name}</span>
+                            <span className="text-xs text-amber-700 ml-auto">Place</span>
+                          </button>
+                        ))}
+                        {!suggestedLoading && suggestedTherapists.length === 0 && suggestedPlaces.length === 0 && (
+                          <p className="text-sm text-amber-700">No suggested options right now. Try again later or search from the home page.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Removed duplicate waiting message - shown in BookingWelcomeBanner above */}
                 {false && (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'waiting_others') && (
                   <div className="mx-4 mb-4 p-4 rounded-xl border-2 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">

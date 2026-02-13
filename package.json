@@ -53,6 +53,7 @@
     "test:e2e:report:executive": "tsx e2e-tests/scripts/generate-executive-report.ts",
     "test:e2e:report:developer": "tsx e2e-tests/scripts/generate-developer-report.ts",
     "test:e2e:revenue-guard": "playwright test e2e-tests/flows/booking-flow.spec.ts",
+    "check:drawer-routes": "node scripts/check-drawer-routes.mjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:strict": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",

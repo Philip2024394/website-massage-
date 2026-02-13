@@ -588,6 +588,10 @@
           var root = document.getElementById('root');
           if (!root || root.children.length === 0) return false;
           
+          // FAST: Hide when React has rendered landing page (explicit signal from MainLandingPage)
+          if (root.querySelector('[data-landing-page="ready"]')) {
+            return true;
+          }
           // FAST: Hide when React has rendered loading gate (orange screen - seamless transition)
           if (root.querySelector('[data-loading-gate]')) {
             return true;

@@ -109,7 +109,8 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
             availabilityStatus: 'AVAILABLE',
             duration: 60, // Default duration
             clientPreferences: undefined, // Places don't have client preferences
-        });
+            providerType: 'place', // Spec 9: same scheduled flow as therapists
+        } as any);
     };
 
     return (

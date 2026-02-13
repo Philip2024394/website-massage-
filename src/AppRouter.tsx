@@ -10,7 +10,7 @@
  * - Performance optimized
  */
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useTranslations } from './lib/useTranslations';
 import { useLanguage } from './hooks/useLanguage';
 import { logger } from './utils/logger';
@@ -879,6 +879,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         case 'simple-signup':
+        case 'simpleSignup': // camelCase variant used by setPage elsewhere
             return renderRoute(authRoutes.simpleSignup.component, {
                 language: props.language || 'id'
             });
@@ -1797,6 +1798,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'admin':
         case 'adminDashboard': // camelCase variant
         case 'admin-dashboard':
+        case 'agentPortal': // drawer "Admin" / agent portal → same as admin dashboard
+        case 'agent-portal':
             return renderRoute(adminRoutes.dashboard.component, {
                 onNavigateHome: () => props.onNavigate('home')
             });
@@ -1859,32 +1862,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
 
         // ===== FALLBACK =====
-        // 🚫 DO NOT REDIRECT — FAIL VISIBLE
-        default:
-            logger.error('[ROUTE RESOLVE] Unknown route:', page);
-            logger.error('[ROUTE RESOLVE] Route type:', typeof page);
-            logger.error('[ROUTE RESOLVE] props.currentPage:', props.currentPage);
-            logger.error('[ROUTE RESOLVE] All props keys:', Object.keys(props));
-            return (
-                <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
-                    <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-                        <div className="text-6xl mb-4">⚠️</div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">Route Not Found</h2>
-                        <p className="text-gray-600 mb-4">Page exists but component not implemented yet</p>
-                        <div className="bg-gray-100 rounded p-3 mb-4">
-                            <code className="text-sm text-gray-700">Route: {page}</code>
-                            <br />
-                            <code className="text-sm text-gray-700">Type: {typeof page}</code>
-                        </div>
-                        <button
-                            onClick={() => props.onNavigate?.('home')}
-                            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-                        >
-                            Go to Home
-                        </button>
+        // Auto-redirect unknown routes to home so stray setPage('typo') never leaves user on a dead screen
+        default: {
+            logger.error('[ROUTE RESOLVE] Unknown route, redirecting to home:', page);
+            const UnknownRouteRedirect: React.FC<{ onNavigate?: (p: Page) => void }> = ({ onNavigate }) => {
+                useEffect(() => {
+                    onNavigate?.('home');
+                }, [onNavigate]);
+                return (
+                    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
+                        <p className="text-gray-600">Redirecting to home…</p>
                     </div>
-                </div>
-            );
+                );
+            };
+            return <UnknownRouteRedirect onNavigate={props.onNavigate} />;
+        }
                 }
             })()}
         </EnterpriseLoader>

@@ -17,32 +17,38 @@ const DeferredApp: React.FC = () => {
   const [FullApp, setFullApp] = useState<React.ComponentType | null>(null);
 
   useEffect(() => {
-    // Load full app with proper error handling
     const loadTimer = setTimeout(async () => {
       try {
         logger.debug('🚀 DeferredApp: Starting to load full App.tsx...');
         const module = await loadFullApp();
         logger.info('✅ DeferredApp: Full App.tsx loaded successfully');
         setFullApp(() => module.default);
-      } catch (error) {
+      } catch (error: any) {
+        const message = error?.message ?? String(error);
         logger.error('❌ DeferredApp: Failed to load full app:', error);
-        // Show error instead of reloading to prevent infinite reload loop
-        setFullApp(() => () => (
-          <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center p-4" style={{ backgroundColor: '#f97316' }}>
-            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
-              <h2 className="text-xl font-semibold text-red-600 mb-2">Loading Error</h2>
-              <p className="text-gray-600 mb-4">Unable to load the application. Please refresh the page.</p>
-              <button 
-                onClick={() => window.location.reload()}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              >
-                Refresh Page
-              </button>
+        setFullApp(() => function LoadErrorScreen() {
+          return (
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center p-4" style={{ backgroundColor: '#f97316' }}>
+              <div className="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
+                <h2 className="text-xl font-semibold text-red-600 mb-2">Loading Error</h2>
+                <p className="text-gray-600 mb-4">Unable to load the application. Please refresh the page.</p>
+                {message && (
+                  <div className="mb-4 text-left text-sm font-mono bg-gray-100 p-3 rounded overflow-auto max-h-32">
+                    <div className="text-red-700 break-words">{message}</div>
+                  </div>
+                )}
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                >
+                  Refresh Page
+                </button>
+              </div>
             </div>
-          </div>
-        ));
+          );
+        });
       }
-    }, 100); // Slightly longer delay for better error handling
+    }, 100);
 
     return () => clearTimeout(loadTimer);
   }, []);

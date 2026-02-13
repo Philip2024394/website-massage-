@@ -117,6 +117,8 @@ interface RoundButtonRowProps {
     onSchedule: () => void;
     onPriceSlider: () => void;
     hasScheduledBookings: boolean;
+    /** Spec 6.2: true when user has one scheduled in progress – disable Book and Schedule until payment confirmed or expired */
+    hasActiveScheduledBooking?: boolean;
     bookNowText: string;
     scheduleText: string;
     dynamicSpacing: string;
@@ -127,11 +129,19 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
     onSchedule,
     onPriceSlider,
     hasScheduledBookings,
+    hasActiveScheduledBooking = false,
     bookNowText,
     scheduleText,
     dynamicSpacing
 }) => {
     const [activeButton, setActiveButton] = useState<'book' | 'schedule' | 'price' | null>(null);
+    const bookScheduleDisabled = hasActiveScheduledBooking;
+    const scheduleUnavailable = !hasScheduledBookings;
+    const disabledTitle = bookScheduleDisabled
+        ? 'Complete or cancel your current scheduled booking first'
+        : scheduleUnavailable
+        ? 'Scheduled bookings require bank details and KTP in the provider dashboard'
+        : undefined;
     
     return (
         <div className={`flex gap-2 px-4 ${dynamicSpacing}`}>
@@ -140,12 +150,17 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (bookScheduleDisabled) return;
                     setActiveButton('book');
                     onBookNow();
                 }}
+                disabled={bookScheduleDisabled}
+                title={disabledTitle}
                 className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
-                    activeButton === 'book' 
-                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700' 
+                    bookScheduleDisabled
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : activeButton === 'book'
+                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
                         : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
                 } active:scale-95 shadow-md`}
             >
@@ -158,14 +173,14 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (hasScheduledBookings) {
-                        setActiveButton('schedule');
-                        onSchedule();
-                    }
+                    if (bookScheduleDisabled || !hasScheduledBookings) return;
+                    setActiveButton('schedule');
+                    onSchedule();
                 }}
-                disabled={!hasScheduledBookings}
+                disabled={!hasScheduledBookings || bookScheduleDisabled}
+                title={disabledTitle}
                 className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
-                    !hasScheduledBookings
+                    !hasScheduledBookings || bookScheduleDisabled
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : activeButton === 'schedule'
                         ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
@@ -299,7 +314,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     } = useTherapistCardCalculations(therapist);
     
     // 🔒 PERSISTENT CHAT - Facebook Messenger style chat window
-    const { openBookingChat, openScheduleChat, openPriceChat, openBookingWithService } = usePersistentChatIntegration();
+    const { openBookingChat, openScheduleChat, openPriceChat, openBookingWithService, hasActiveScheduledBooking } = usePersistentChatIntegration();
     
     // Debug modal state changes
     useEffect(() => {
@@ -1173,7 +1188,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     setBookingsCount(prev => prev + 1);
                 }}
                 onSchedule={async () => {
-                    if (therapist.bankName && therapist.accountNumber && therapist.accountName) {
+                    const hasBank = !!(therapist.bankName && therapist.accountNumber && therapist.accountName) || !!(therapist as any).bankCardDetails;
+                    const hasKtp = !!(therapist as any).ktpPhotoUrl;
+                    if (hasBank && hasKtp) {
                         try {
                             const bookingId = await enterpriseBookingFlowService.createBookingRequest({
                                 userId: 'current_user',
@@ -1194,14 +1211,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
                     } else {
-                        alert('This therapist does not accept scheduled bookings at this time.');
+                        alert('Scheduled bookings require the therapist to add bank details and KTP in their dashboard. Please choose another therapist or try again later.');
                     }
                 }}
                 onPriceSlider={() => {
                     logger.debug('💰 [PRICE SLIDER] Opening price modal...');
                     setShowPriceListModal(true);
                 }}
-                hasScheduledBookings={!!(therapist.bankName && therapist.accountNumber && therapist.accountName)}
+                hasScheduledBookings={!!((therapist.bankName && therapist.accountNumber && therapist.accountName) || (therapist as any).bankCardDetails) && !!((therapist as any).ktpPhotoUrl)}
+                hasActiveScheduledBooking={hasActiveScheduledBooking}
                 bookNowText={bookNowText}
                 scheduleText={scheduleText}
                 dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
