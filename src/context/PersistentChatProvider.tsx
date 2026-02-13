@@ -89,6 +89,8 @@ import {
 } from '../services/bookingTransaction.service';
 import { logger } from '../utils/logger';
 import { isSampleMenuServiceName, SAMPLE_BOOKING_DISPLAY_NAME } from '../utils/samplePriceUtils';
+import { setTherapistBusyForCountdown, setTherapistAvailableAfterBooking } from '../utils/therapistBookingStatusSync';
+import { hasActivePendingBookingForProvider } from '../lib/services/bookingLockHelper';
 
 // ─── Section 3: Permanent block after reject (spec 1.2) ─────────────────────
 const BOOKING_BLOCKS_KEY = 'booking_blocks';
@@ -521,6 +523,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   const [isGuestUser, setIsGuestUser] = useState<boolean>(true); // Track guest status for optimization
   const subscriptionRef = useRef<(() => void) | null>(null);
   const therapistIdRef = useRef<string | null>(null);
+  const addSystemNotificationRef = useRef<(message: string) => void>(() => {});
   // countdownTimerRef removed - timer managed by useBookingTimer hook
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -912,6 +915,16 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     logger.debug('🔍 DEBUGGING: Previous therapist:', { name: chatState.therapist?.name, id: chatState.therapist?.id });
     logger.debug('🔍 DEBUGGING: New therapist:', { name: therapist.name, id: therapist.id });
     logger.debug('�🔒 Locking chat to prevent accidental closure during booking');
+    
+    // Place lock: when a place has an active PENDING booking (5-min countdown), block other users until it's accepted/rejected
+    const providerTypeOpen = (therapist as { providerType?: 'therapist' | 'place' })?.providerType ?? 'therapist';
+    if (providerTypeOpen === 'place' && therapist.appwriteId) {
+      const placeLocked = await hasActivePendingBookingForProvider(therapist.appwriteId);
+      if (placeLocked) {
+        addSystemNotificationRef.current('Another customer is completing a booking with this place. Please try again in a few minutes.');
+        return;
+      }
+    }
     
     // 🔒 CRITICAL VALIDATION: Block if therapist.appwriteId is missing
     if (!therapist.appwriteId) {
@@ -1532,6 +1545,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     }));
   }, [chatState.therapist, setChatState]);
 
+  useEffect(() => {
+    addSystemNotificationRef.current = addSystemNotification;
+  }, [addSystemNotification]);
+
   // ═══════════════════════════════════════════════════════════════════════
   // TIMER EXPIRATION HANDLER (Lifecycle-Driven) - MUST be after addSystemNotification
   // ═══════════════════════════════════════════════════════════════════════
@@ -1546,6 +1563,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         if (event.documentId) {
           try {
             await bookingLifecycleService.expireBooking(event.documentId, 'Therapist timeout');
+            const expiredBooking = await bookingLifecycleService.getBookingById(event.documentId);
+            if (expiredBooking?.providerType === 'therapist' && expiredBooking.therapistId) {
+              setTherapistAvailableAfterBooking(expiredBooking.therapistId);
+            }
           } catch (error) {
             logger.error('[EXPIRATION] Failed to expire booking', error);
           }
@@ -1583,6 +1604,10 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         if (event.documentId) {
           try {
             await bookingLifecycleService.expireBooking(event.documentId, 'Customer confirmation timeout');
+            const expiredBooking = await bookingLifecycleService.getBookingById(event.documentId);
+            if (expiredBooking?.providerType === 'therapist' && expiredBooking.therapistId) {
+              setTherapistAvailableAfterBooking(expiredBooking.therapistId);
+            }
           } catch (error) {
             logger.error('[EXPIRATION] Failed to expire booking', error);
           }
@@ -1817,6 +1842,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     setIsChatWindowVisible(true);
     logger.debug('🔓 [COMMIT] Chat unlocked after timer start');
     
+    // Therapist busy: when 5-min countdown starts, show Busy on profile so others don't book same time
+    if (providerType === 'therapist') {
+      setTherapistBusyForCountdown(therapistDocumentId);
+    }
+    
     // Success notification - only for discount; booking status shown by BookingWelcomeBanner UI
     if (bookingData.discountCode) {
       addSystemNotification(`✅ Booking sent with ${bookingData.discountPercentage}% discount!`);
@@ -1880,6 +1910,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       } catch (error) {
         logger.error('❌ [BookingLifecycle] Failed to accept booking:', error);
       }
+    }
+    
+    // Clear therapist Busy status so profile shows Available again
+    const providerTypeAccept = (currentBooking as { providerType?: 'therapist' | 'place' })?.providerType ?? (chatState.therapist as { providerType?: 'therapist' | 'place' })?.providerType ?? 'therapist';
+    const therapistIdAccept = currentBooking?.therapistId || chatState.therapist?.appwriteId || (chatState.therapist as any)?.$id;
+    if (providerTypeAccept === 'therapist' && therapistIdAccept) {
+      setTherapistAvailableAfterBooking(therapistIdAccept);
     }
     
     // SINGLE state update (no status field - lifecycle only)
@@ -1953,6 +1990,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // Permanent block: user cannot book this therapist/place again (spec 1.2)
     const providerId = currentBooking?.therapistId || chatState.therapist?.appwriteId || (chatState.therapist as any)?.$id;
     const providerType = (currentBooking?.providerType === 'place' ? 'place' : 'therapist') as 'therapist' | 'place';
+    if (providerType === 'therapist' && providerId) {
+      setTherapistAvailableAfterBooking(providerId);
+    }
     if (providerId) {
       addBookingBlock(currentUserId || 'guest', providerId, providerType);
     }

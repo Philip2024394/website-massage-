@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 
 export function useTherapistCardState() {
     const [menuData, setMenuData] = useState<any[]>([]);
+    /** True after first attempt to load menu (success or fail). Used to avoid showing therapist-doc prices before menu loads (e.g. Anggi profile vs slider). */
+    const [menuLoadAttempted, setMenuLoadAttempted] = useState(false);
     const [userReferralCode, setUserReferralCode] = useState<string>('');
     const [selectedServiceIndex, setSelectedServiceIndex] = useState<number | null>(null);
     const [selectedDuration, setSelectedDuration] = useState<'60' | '90' | '120' | null>(null);
@@ -40,6 +42,8 @@ export function useTherapistCardState() {
     return {
         menuData,
         setMenuData,
+        menuLoadAttempted,
+        setMenuLoadAttempted,
         userReferralCode,
         setUserReferralCode,
         selectedServiceIndex,

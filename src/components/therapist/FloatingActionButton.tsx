@@ -98,7 +98,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     },
     {
       id: 'dashboard',
-      label: 'Dashboard',
+      label: 'Profile Upload',
       icon: Home,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100 hover:bg-blue-200',

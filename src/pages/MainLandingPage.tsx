@@ -22,21 +22,15 @@
 
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import Button from '../components/Button';
-import { deviceService } from '../services/deviceService';
 import { customerGPSService } from '../services/customerGPSCollectionService';
 import PageNumberBadge from '../components/PageNumberBadge';
 import PWAInstallIOSModal from '../components/PWAInstallIOSModal';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { MapPin, Play, Globe, X, ChevronUp as ChevronDown } from 'lucide-react';
+import { MapPin, X, ChevronUp as ChevronDown } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
-import UniversalHeader from '../components/shared/UniversalHeader';
-import { AppDrawer } from '../components/AppDrawerClean';
 import { loadLanguageResources } from '../lib/i18n';
-import { ipGeolocationService } from '../lib/ipGeolocationService';
-import { findCityByCoordinates, findCityByName } from '../constants/indonesianCities';
+import { findCityByName } from '../constants/indonesianCities';
 import { convertLocationStringToId } from '../utils/locationNormalizationV2';
-import { isPWA, shouldAllowRedirects } from '../utils/pwaDetection';
 import CountryRedirectNotice from '../components/CountryRedirectNotice';
 import { logger } from '../utils/logger';
 import type { UserLocation } from '../types';
@@ -442,9 +436,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const autoRedirectAttemptedRef = useRef(false);
     const [autoDetectState, setAutoDetectState] = useState<'idle' | 'checking' | 'success' | 'denied' | 'error'>('idle');
     const [autoDetectMessage, setAutoDetectMessage] = useState<string | null>(null);
-    
-    // Menu state for burger menu
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [gpsErrorMessage, setGpsErrorMessage] = useState<string | null>(null);
     
     // Use either prop name for backward compatibility
     const enterAppCallback = handleEnterApp || onEnterApp;
@@ -652,48 +644,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         navigateToHome(nextCityName);
     }, [currentLanguage, enterAppCallback, navigateToHome]);
 
-    // Restore stored location to UI only - do NOT auto-redirect to home
-    // User must explicitly select a city or click "Use My GPS Location" to proceed
+    // Always fresh landing: do not restore from localStorage. User must select city or GPS every time.
+    // Only set message when geolocation is not available at all.
     useEffect(() => {
-        if (!isMountedRef.current) return;
         if (typeof window === 'undefined') return;
-
-        const storedCityName = window.localStorage.getItem('user_city_name');
-        const storedLatValue = window.localStorage.getItem('user_city_lat');
-        const storedLngValue = window.localStorage.getItem('user_city_lng');
-        const storedAddress = window.localStorage.getItem('user_city_address') || undefined;
-
-        if (storedCityName) {
-            const parsedLat = storedLatValue ? Number.parseFloat(storedLatValue) : NaN;
-            const parsedLng = storedLngValue ? Number.parseFloat(storedLngValue) : NaN;
-            const lat = Number.isFinite(parsedLat) ? parsedLat : null;
-            const lng = Number.isFinite(parsedLng) ? parsedLng : null;
-
-            const payload = persistAndBuildLocation(storedCityName, lat, lng, storedAddress || storedCityName);
-            confirmLocation({
-                cityName: storedCityName,
-                latitude: lat,
-                longitude: lng,
-                locationText: payload.address
-            });
-            setSelectedCity(storedCityName);
-            if (lat !== null && lng !== null) {
-                setSelectedCoordinates({ lat, lng });
-            }
-            setAutoDetectState('success');
-            setAutoDetectMessage(null);
-            // Do NOT navigateToHome - user must explicitly select location or GPS to proceed
-        } else if (!('geolocation' in navigator)) {
+        if (!('geolocation' in navigator)) {
             logger.warn('📍 Browser does not support geolocation. Prompting manual selection.');
             setAutoDetectState('error');
             setAutoDetectMessage('Location services are unavailable. Please select your city below.');
         }
-    }, [confirmLocation, persistAndBuildLocation, setSelectedCoordinates]);
+    }, []);
 
     // Location selector handlers - NEW UX: Only city selection, country auto-detected
     const handleCitySelectNew = async (city: CityOption) => {
         if (isDetectingLocation) return;
         setIsDetectingLocation(true);
+        setGpsErrorMessage(null);
         setSelectedCity(city.name);
         setCity(city.name);
         autoRedirectAttemptedRef.current = true;
@@ -822,6 +788,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         console.log('📍 City not listed - requesting GPS to auto-detect location...');
         setCityNotListed(true);
         setIsDetectingLocation(true);
+        setGpsErrorMessage(null);
         
         try {
             // Use enhanced customer GPS service for precise location
@@ -881,7 +848,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             
         } catch (error) {
             console.error('❌ GPS detection failed:', error);
-            alert('Unable to detect your location automatically. Please select your city from the list.');
+            setGpsErrorMessage('Unable to detect your location. Please select your city from the list below.');
         } finally {
             if (isMountedRef.current) {
                 setIsDetectingLocation(false);
@@ -1023,6 +990,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                 </div>
                             </div>
                         </button>
+
+                        {/* GPS error - inline message instead of alert */}
+                        {gpsErrorMessage && (
+                            <div className="mb-3 px-4 py-2 bg-amber-950/80 border border-amber-600 rounded-lg">
+                                <p className="text-sm text-amber-200">{gpsErrorMessage}</p>
+                            </div>
+                        )}
 
                         {/* Divider */}
                         <div className="flex items-center gap-3 mb-3">

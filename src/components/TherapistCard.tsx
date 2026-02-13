@@ -45,7 +45,7 @@ import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { getOrCreateShareLink } from '../utils/shareLinkGenerator';
-import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/therapistCardHelpers';
+import { getAuthAppUrl, getDisplayStatus, isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay } from '../utils/therapistCardHelpers';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
@@ -281,6 +281,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const {
         menuData,
         setMenuData,
+        menuLoadAttempted,
+        setMenuLoadAttempted,
         userReferralCode,
         setUserReferralCode,
         selectedServiceIndex,
@@ -678,6 +680,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             } catch (outerError) {
                 logger.error('❌ Outer error in loadMenu:', outerError);
                 setMenuData([]);
+            } finally {
+                setMenuLoadAttempted(true);
             }
         };
         
@@ -722,78 +726,36 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         }
     };
     
-    // Parse pricing - support menu data, separate fields, and old JSON format
-    const getPricing = () => {
-        // First, check if we have menu data with a cheaper service than the default pricing
-        if (menuData && menuData.length > 0) {
-            // Only use menu items with complete 3-duration pricing (60/90/120)
-            const servicesWithFullPricing = menuData.filter(item => {
-                const hasAll = item.price60 && item.price90 && item.price120;
-                const valid60 = Number(item.price60) > 0;
-                const valid90 = Number(item.price90) > 0;
-                const valid120 = Number(item.price120) > 0;
-                return hasAll && valid60 && valid90 && valid120;
-            });
+    // Combined menu: real + Traditional from profile (if set) + sample fill to 5. Cheapest from this set for display (same as slider).
+    const combinedMenu = getCombinedMenuForDisplay(menuData, therapist);
 
-            if (servicesWithFullPricing.length > 0) {
-                // Get the default pricing first
-                const defaultPricing = (() => {
-                    const hasValidSeparateFields = (
-                        (therapist.price60 && parseInt(therapist.price60) > 0) ||
-                        (therapist.price90 && parseInt(therapist.price90) > 0) ||
-                        (therapist.price120 && parseInt(therapist.price120) > 0)
-                    );
+    // Parse pricing - use combined menu so profile shows same cheapest as menu slider
+    const getPricing = (): { "60": number; "90": number; "120": number } => {
+        if (!menuLoadAttempted) return { "60": 0, "90": 0, "120": 0 };
 
-                    if (hasValidSeparateFields) {
-                        return {
-                            "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
-                            "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
-                            "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
-                        };
-                    }
-                    
-                    const parsedPricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
-                    return {
-                        "60": parsedPricing["60"] * 1000,
-                        "90": parsedPricing["90"] * 1000,
-                        "120": parsedPricing["120"] * 1000
-                    };
-                })();
-
-                // Find the cheapest service (based on 60-minute price)
-                const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
-                    const cheapestPrice = parseFloat(cheapest.price60 || '999999');
-                    const currentPrice = parseFloat(current.price60 || '999999');
-                    return currentPrice < cheapestPrice ? current : cheapest;
-                });
-
-                // Convert menu prices to full IDR amounts (assume menu prices are in thousands)
+        if (combinedMenu.length > 0) {
+            const cheapest = getCheapestServiceByTotalPrice(combinedMenu);
+            if (cheapest) {
                 const menuPricing = {
-                    "60": parseFloat(cheapestService.price60) * 1000,
-                    "90": parseFloat(cheapestService.price90) * 1000,
-                    "120": parseFloat(cheapestService.price120) * 1000
+                    "60": Number(cheapest.price60) * 1000,
+                    "90": Number(cheapest.price90) * 1000,
+                    "120": Number(cheapest.price120) * 1000
                 };
-
-                // Use menu pricing if it has values and (therapist has no prices OR menu is cheaper)
-                const therapistHasNoPrices = defaultPricing["60"] === 0 && defaultPricing["90"] === 0 && defaultPricing["120"] === 0;
-                if (menuPricing["60"] > 0 && (therapistHasNoPrices || menuPricing["60"] < defaultPricing["60"])) {
-                    devLog(`💰 Using cheaper menu pricing for ${therapist.name}:`, {
-                        serviceName: cheapestService.name || cheapestService.serviceName,
-                        menuPricing,
-                        defaultPricing
+                if (menuPricing["60"] > 0 && menuPricing["90"] > 0 && menuPricing["120"] > 0) {
+                    devLog(`💰 Using lowest (combined menu) pricing for ${therapist.name}:`, {
+                        serviceName: cheapest.name || cheapest.serviceName,
+                        menuPricing
                     });
                     return menuPricing;
                 }
             }
         }
 
-        // Fallback to default pricing - only when ALL 3 containers (60/90/120) are set
         const hasAllThreePrices = (
             (therapist.price60 && parseInt(therapist.price60) > 0) &&
             (therapist.price90 && parseInt(therapist.price90) > 0) &&
             (therapist.price120 && parseInt(therapist.price120) > 0)
         );
-
         if (hasAllThreePrices) {
             return {
                 "60": parseInt(therapist.price60!) * 1000,
@@ -801,26 +763,17 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 "120": parseInt(therapist.price120!) * 1000
             };
         }
-        
-        // Fallback to old JSON format - only when ALL 3 prices are > 0
         const parsedPricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
         const fromJson = {
             "60": parsedPricing["60"] * 1000,
             "90": parsedPricing["90"] * 1000,
             "120": parsedPricing["120"] * 1000
         };
-        if (fromJson["60"] > 0 && fromJson["90"] > 0 && fromJson["120"] > 0) {
-            return fromJson;
-        }
-
-        // Display-only sample prices when therapist has no prices set
+        if (fromJson["60"] > 0 && fromJson["90"] > 0 && fromJson["120"] > 0) return fromJson;
         if (!hasActualPricing(therapist)) {
             const therapistId = String((therapist as any).$id || therapist.id || '');
-            if (therapistId) {
-                return getSamplePricing(therapistId);
-            }
+            if (therapistId) return getSamplePricing(therapistId);
         }
-
         return fromJson;
     };
 
@@ -1165,7 +1118,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     formatPrice={formatPrice}
                     getDynamicSpacing={getDynamicSpacing}
                     translatedDescriptionLength={translatedDescription.length}
-                    menuData={menuData}
+                    menuData={combinedMenu}
                     onPriceClick={() => {
                         logger.debug('💰 Price grid clicked - opening price modal');
                         setShowPriceListModal(true);

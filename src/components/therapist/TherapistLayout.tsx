@@ -223,7 +223,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     en: {
       status: 'Online Status',
       schedule: 'My Schedule',
-      dashboard: 'Dashboard',
+      dashboard: 'Profile Upload',
       bookings: 'Bookings',
       earnings: 'Earnings',
       payment: 'Payment Info',
@@ -246,7 +246,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     id: {
       status: 'Status Online',
       schedule: 'Jadwal Saya',
-      dashboard: 'Dashboard',
+      dashboard: 'Unggah Profil',
       bookings: 'Booking',
       earnings: 'Pendapatan',
       payment: 'Info Pembayaran',
@@ -529,8 +529,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       )}
 
-      {/* Smart Breadcrumb Navigation */}
-      {showBreadcrumbs && currentPage !== 'home' && (
+      {/* Breadcrumbs disabled on therapist dashboard - no strip, content sits under header */}
+      {false && showBreadcrumbs && currentPage !== 'home' && currentPage !== 'status' && (
         <SmartBreadcrumb
           currentPage={currentPage}
           onNavigate={handleNavigate}
@@ -807,27 +807,22 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Main Content - MODEL A: Natural document flow */}
+      {/* Main Content - no breadcrumb strip, no extra white space */}
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
-          // ✅ MODEL A: Natural content growth - NO flex constraints
-          // ❌ REMOVED flex: '1 1 auto' - was constraining content to parent bounds
-          // ❌ REMOVED minHeight: 0 - was preventing natural content growth
-          paddingTop: 0,  // ✅ No white space under header/breadcrumb - content flows up
+          paddingTop: 0,
+          marginTop: 0,
           paddingBottom: 'max(env(safe-area-inset-bottom, 10px), 20px)',
-          WebkitOverflowScrolling: 'touch'  // ✅ Smooth iOS scrolling
-          // ✅ Content now grows naturally - browser handles scroll
+          WebkitOverflowScrolling: 'touch'
         }}
       >
         <div 
           className="therapist-content-wrapper"
           style={{
-            // ✅ FIX: Eliminate white space at top - reduced from paddingBottom: '40px' to minimal
-            paddingBottom: '10px',
-            // ✅ MODEL A: NO minHeight calc() - content flows naturally with sticky header
-            // ✅ Sticky header means NO offset needed - content starts immediately after header
-            paddingTop: '0px'  // ✅ Ensure no top padding that creates white space
+            paddingTop: 0,
+            marginTop: 0,
+            paddingBottom: '10px'
           }}
         >
           {children}

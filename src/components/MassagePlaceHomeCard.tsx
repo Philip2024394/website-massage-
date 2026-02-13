@@ -504,19 +504,19 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                     <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                         <div className="text-xs text-gray-600 mb-1">60 min</div>
                         <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
-                            {pricing["60"] > 0 ? `Rp ${formatPrice(pricing["60"])}` : 'Contact'}
+                            {pricing["60"] > 0 ? `IDR ${formatPrice(pricing["60"])}` : 'Contact'}
                         </div>
                     </div>
                     <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                         <div className="text-xs text-gray-600 mb-1">90 min</div>
                         <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
-                            {pricing["90"] > 0 ? `Rp ${formatPrice(pricing["90"])}` : 'Contact'}
+                            {pricing["90"] > 0 ? `IDR ${formatPrice(pricing["90"])}` : 'Contact'}
                         </div>
                     </div>
                     <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                         <div className="text-xs text-gray-600 mb-1">120 min</div>
                         <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
-                            {pricing["120"] > 0 ? `Rp ${formatPrice(pricing["120"])}` : 'Contact'}
+                            {pricing["120"] > 0 ? `IDR ${formatPrice(pricing["120"])}` : 'Contact'}
                         </div>
                     </div>
                 </div>

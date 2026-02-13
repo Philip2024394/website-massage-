@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Therapist } from '../types';
-import { getRandomTherapistImage } from '../../utils/therapistImageUtils';
+import { getTherapistMainImage, getRandomTherapistImage } from '../../utils/therapistImageUtils';
 import { getDisplayRating, formatRating, getDisplayReviewCount } from '../../utils/ratingUtils';
 import { Share2 } from 'lucide-react';
 
@@ -19,17 +19,17 @@ const TherapistHeader = ({
   isDiscountActive,
   discountPercentage
 }: TherapistHeaderProps): JSX.Element => {
-  const mainImage = therapist.mainImage || getRandomTherapistImage(String(therapist.id));
-  
+  const mainImage = getTherapistMainImage(therapist as any);
+
   return (
     <div className="relative h-48 overflow-hidden rounded-t-2xl">
-      {/* Background Banner Image */}
+      {/* Background Banner Image - same as home card (single source of truth) */}
       <img
         src={mainImage}
         alt={therapist.name}
         className="w-full h-full object-cover"
         onError={(e) => {
-          (e.target as HTMLImageElement).src = getRandomTherapistImage(String(therapist.id));
+          (e.target as HTMLImageElement).src = getRandomTherapistImage(String(therapist.id || therapist.$id || ''));
         }}
       />
       

@@ -66,18 +66,21 @@ export class EnhancedMenuDataService {
   private static readonly DEFAULT_ASSIGNMENT_KEY = 'default_assignment_';
 
   /**
-   * Get complete menu data for a therapist
-   * Returns real menu + defaults (filtered to avoid duplicates)
+   * Profile prices from dashboard (60/90/120) - when set, become "Traditional Massage" in slider.
+   * Values in thousands (e.g. 100 = Rp 100,000). Only used when all three > 0.
    */
-  static async getTherapistMenu(therapistId: string): Promise<MenuLoadResult> {
+  static async getTherapistMenu(
+    therapistId: string,
+    profilePrices?: { price60: number; price90: number; price120: number } | null
+  ): Promise<MenuLoadResult> {
     try {
-      console.log(`📋 Loading menu for therapist ${therapistId}`);
+      console.log(`📋 Loading menu for therapist ${therapistId}`, profilePrices ? '(with profile prices)' : '');
       
       // 1. Load real menu from Appwrite (therapist_menus collection)
       const realMenuData = await this.loadRealMenuData(therapistId);
       
-      // 2. Get 5 sample menu items (for therapists without their own menu)
-      const defaultMenuData = await this.getDefaultMenuData(therapistId);
+      // 2. Get default/sample menu (5 items). When profile has 3 prices, first = "Traditional Massage" from dashboard.
+      const defaultMenuData = await this.getDefaultMenuData(therapistId, profilePrices || undefined);
       
       // 3. Combine: real items + (5 - realCount) samples. When realCount >= 5, samples = 0
       const combinedServices = await this.combineAndEnhanceServices(
@@ -168,13 +171,85 @@ export class EnhancedMenuDataService {
   }
 
   /**
-   * Get exactly 5 sample menu items for therapists without their own menu
-   * Samples disappear 1-by-1 as therapist adds real items (5 real = 0 samples)
-   * Uses display-only sample prices within limits (60≤170k, 90≤210k, 120≤250k)
+   * Get exactly 5 menu items for therapists without their own menu.
+   * When profilePrices is set (dashboard 3 prices): first item = "Traditional Massage" with those prices;
+   * remaining 4 = sample items. Otherwise 5 sample items (first sample can be "Traditional Massage" with sample price).
+   * Traditional Massage is the standard name used only for dashboard-set prices and in this default/slider list.
    */
-  private static async getDefaultMenuData(therapistId: string): Promise<MenuService[]> {
-    const defaultServices = DefaultMenuManager.getDefaultMenuForTherapist(therapistId, 5);
+  private static async getDefaultMenuData(
+    therapistId: string,
+    profilePrices?: { price60: number; price90: number; price120: number }
+  ): Promise<MenuService[]> {
+    const hasProfilePrices =
+      profilePrices &&
+      Number(profilePrices.price60) > 0 &&
+      Number(profilePrices.price90) > 0 &&
+      Number(profilePrices.price120) > 0;
+
+    const defaultServices = DefaultMenuManager.getDefaultMenuForTherapist(
+      therapistId,
+      hasProfilePrices ? 4 : 5
+    );
     const samplePrices = getSampleMenuItems(therapistId);
+
+    const p60 = (v: number) => Math.max(100, Math.round(Number(v)));
+    const p90 = (v: number) => Math.max(100, Math.round(Number(v)));
+    const p120 = (v: number) => Math.max(100, Math.round(Number(v)));
+
+    if (hasProfilePrices) {
+      const traditionalFromProfile: MenuService = {
+        id: `${therapistId}-traditional-profile`,
+        name: 'Traditional Massage',
+        serviceName: 'Traditional Massage',
+        description: '',
+        category: 'relaxation',
+        price60: p60(profilePrices.price60),
+        price90: p90(profilePrices.price90),
+        price120: p120(profilePrices.price120),
+        duration60: true,
+        duration90: true,
+        duration120: true,
+        popularity: 3,
+        isNew: false,
+        therapistId,
+        dateAdded: new Date(),
+        lastModified: new Date(),
+        isActive: true,
+        bookingCount: 0,
+        isCustomized: false,
+        originalDefaultId: 'traditional-profile',
+        isSampleMenu: true,
+        isDefault: true
+      } as MenuService;
+      const rest = defaultServices.map((service, index) => {
+        const sample = samplePrices[index + 1] || samplePrices[0];
+        const price60 = Math.round(sample.price60 / 1000);
+        const price90 = Math.round(sample.price90 / 1000);
+        const price120 = Math.round(sample.price120 / 1000);
+        return {
+          ...service,
+          id: service.id || `${therapistId}-default-${index + 2}`,
+          name: sample.name,
+          serviceName: sample.name,
+          price60,
+          price90,
+          price120,
+          duration60: true,
+          duration90: true,
+          duration120: true,
+          therapistId,
+          dateAdded: new Date(),
+          lastModified: new Date(),
+          isActive: true,
+          bookingCount: 0,
+          isCustomized: false,
+          originalDefaultId: service.id,
+          isSampleMenu: true,
+          isDefault: true
+        } as MenuService;
+      });
+      return [traditionalFromProfile, ...rest];
+    }
 
     return defaultServices.map((service, index) => {
       const sample = samplePrices[index] || samplePrices[0];
@@ -198,7 +273,7 @@ export class EnhancedMenuDataService {
         bookingCount: 0,
         isCustomized: false,
         originalDefaultId: service.id,
-        isSampleMenu: true // Cannot be edited - disappear when therapist adds 5 of their own
+        isSampleMenu: true
       } as MenuService;
     });
   }

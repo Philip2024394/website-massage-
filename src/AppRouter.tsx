@@ -65,6 +65,8 @@ class LazyLoadErrorBoundary extends React.Component<
   }
 }
 
+// Landing page error boundary: shows Try again/Reload if MainLandingPage throws (admin-approved for UX)
+import { LandingPageErrorBoundary } from './components/error-boundaries/LandingPageErrorBoundary';
 // Route configurations
 import { publicRoutes } from './router/routes/publicRoutes';
 import { authRoutes } from './router/routes/authRoutes';
@@ -497,14 +499,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     if (page === 'landing') {
         console.log('🧭 Router resolved - rendering landing page');
         const LandingComponent = publicRoutes.landing.component;
-        return <LandingComponent 
-            language={props.language}
-            onLanguageChange={props.onLanguageChange}
-            onLanguageSelect={props.handleLanguageSelect}
-            onEnterApp={props.handleEnterApp}
-            handleEnterApp={props.handleEnterApp}
-            handleLanguageSelect={props.handleLanguageSelect}
-        />;
+        return (
+            <LandingPageErrorBoundary>
+                <LandingComponent 
+                    language={props.language}
+                    onLanguageChange={props.onLanguageChange}
+                    onLanguageSelect={props.handleLanguageSelect}
+                    onEnterApp={props.handleEnterApp}
+                    handleEnterApp={props.handleEnterApp}
+                    handleLanguageSelect={props.handleLanguageSelect}
+                />
+            </LandingPageErrorBoundary>
+        );
     }
     
     return (
@@ -1477,15 +1483,44 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'payment-info':
             return renderRoute(PaymentInfoPage);
 
+        // ===== PROFILE / UPLOAD PROFILE (same as dashboard for therapist) =====
+        case 'profile':
+            if ((props.loggedInProvider as any)?.type === 'therapist' || (props.user as any)?.therapistId) {
+                return renderRoute(therapistRoutes.dashboard.component, {
+                    therapist: props.loggedInProvider || props.user,
+                    onLogout: props.handleLogout,
+                    onNavigate: props.onNavigate,
+                    onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
+                    onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
+                    onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),
+                    onNavigateToChat: () => props.onNavigate?.('therapist-chat'),
+                    onNavigateToNotifications: () => props.onNavigate?.('therapist-notifications'),
+                    onNavigateToLegal: () => props.onNavigate?.('therapist-legal'),
+                    onNavigateToCalendar: () => props.onNavigate?.('therapist-calendar'),
+                    onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
+                    onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
+                    onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
+                    onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
+                    onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
+                    onNavigateHome: () => props.onNavigate?.('home'),
+                    language: props.language
+                });
+            }
+            // fall through to dashboard when not therapist
+
         // ===== GENERIC DASHBOARD ROUTE - Redirects to appropriate dashboard =====
         case 'dashboard':
             // Redirect to appropriate dashboard based on logged-in user type
-            if (props.user) {
-                const userType = props.user.userType || props.user.role;
-                if (userType === 'therapist' || props.user.therapistId) {
-                    // Redirect to therapist dashboard
-                    return renderRoute(therapistRoutes.dashboard.component, {
-                        therapist: props.user,
+            const dashboardUser = props.user || props.loggedInProvider;
+            const isTherapist = dashboardUser && (
+                (dashboardUser as any).userType === 'therapist' ||
+                (dashboardUser as any).role === 'therapist' ||
+                (dashboardUser as any).therapistId ||
+                (props.loggedInProvider as any)?.type === 'therapist'
+            );
+            if (dashboardUser && isTherapist) {
+                return renderRoute(therapistRoutes.dashboard.component, {
+                        therapist: props.loggedInProvider || props.user,
                         onLogout: props.handleLogout,
                         onNavigate: props.onNavigate,
                         onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
@@ -1503,15 +1538,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onNavigateHome: () => props.onNavigate?.('home'),
                         language: props.language
                     });
-                } else if (userType === 'massage-place' || userType === 'massage_place') {
+                }
+            if (dashboardUser) {
+                const userType = (dashboardUser as any).userType || (dashboardUser as any).role;
+                if (userType === 'massage-place' || userType === 'massage_place') {
                     return renderRoute(placeRoutes.dashboard.component, {
-                        place: props.user,
+                        place: dashboardUser,
                         onBack: () => props.onNavigate?.('home'),
                         language: props.language
                     });
                 } else if (userType === 'facial-place' || userType === 'facial_place') {
                     return renderRoute(facialRoutes.dashboard.component, {
-                        place: props.user,
+                        place: dashboardUser,
                         onBack: () => props.onNavigate?.('home'),
                         language: props.language
                     });

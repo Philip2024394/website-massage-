@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Therapist } from '../../types';
-import { isDiscountActive } from '../../utils/therapistCardHelpers';
+import { isDiscountActive, getCheapestServiceByTotalPrice } from '../../utils/therapistCardHelpers';
 
 interface TherapistPricingGridProps {
     pricing: { '60': number; '90': number; '120': number };
@@ -62,14 +62,14 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
             return 'Traditional Massage';
         }
 
-        // Find the cheapest service (based on 60-minute price)
-        const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
-            const cheapestPrice = parseFloat(cheapest.price60 || '999999');
-            const currentPrice = parseFloat(current.price60 || '999999');
-            return currentPrice < cheapestPrice ? current : cheapest;
-        });
+        // Same as card: service with lowest total (60+90+120) so name matches the 3 containers
+        const cheapestService = getCheapestServiceByTotalPrice(servicesWithFullPricing);
+        if (!cheapestService) {
+            console.log(`🏷️ No cheapest service for ${therapist.name}, using Traditional Massage fallback`);
+            return 'Traditional Massage';
+        }
 
-        console.log(`🏷️ Cheapest service for ${therapist.name}:`, cheapestService);
+        console.log(`🏷️ Lowest-total service for ${therapist.name}:`, cheapestService);
 
         // Use full massage type name
         if (cheapestService.name || cheapestService.serviceName || cheapestService.title) {

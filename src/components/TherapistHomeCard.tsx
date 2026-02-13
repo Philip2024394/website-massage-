@@ -17,9 +17,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
+import { getTherapistMainImage } from '../utils/therapistImageUtils';
 import { bookingService } from '../lib/bookingService';
 import { therapistMenusService } from '../lib/appwriteService';
-import { isDiscountActive } from '../utils/therapistCardHelpers';
+import { isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
@@ -411,68 +412,32 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     const locationDisplay = getLocationDisplay();
 
-    // Parse pricing - support menu data, separate fields, and old JSON format
+    // Combined menu: real saved items + Traditional from profile (if set) + sample fill to 5. Cheapest from this set for display.
+    const combinedMenu = getCombinedMenuForDisplay(menuData, therapist);
+
+    // Parse pricing - use combined menu (slider + traditional + sample) so cheapest is same as menu slider
     const getPricing = () => {
-        // First, check if we have menu data with a cheaper service than the default pricing
-        if (menuData && menuData.length > 0) {
-            // Only use menu items with complete 3-duration pricing (60/90/120)
-            const servicesWithFullPricing = menuData.filter(item => {
-                const hasAll = item.price60 && item.price90 && item.price120;
-                const valid60 = Number(item.price60) > 0;
-                const valid90 = Number(item.price90) > 0;
-                const valid120 = Number(item.price120) > 0;
-                return hasAll && valid60 && valid90 && valid120;
-            });
-
-            if (servicesWithFullPricing.length > 0) {
-                // Get the default pricing first
-                const defaultPricing = (() => {
-                    const hasValidSeparateFields = (
-                        (therapist.price60 && parseInt(therapist.price60) > 0) ||
-                        (therapist.price90 && parseInt(therapist.price90) > 0) ||
-                        (therapist.price120 && parseInt(therapist.price120) > 0)
-                    );
-
-                    if (hasValidSeparateFields) {
-                        return {
-                            "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
-                            "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
-                            "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
-                        };
-                    }
-                    return { "60": 0, "90": 0, "120": 0 };
-                })();
-
-                // Find the cheapest service (based on 60-minute price)
-                const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
-                    const cheapestPrice = parseFloat(cheapest.price60 || '999999');
-                    const currentPrice = parseFloat(current.price60 || '999999');
-                    return currentPrice < cheapestPrice ? current : cheapest;
-                });
-
-                // Convert menu prices to full IDR amounts (assume menu prices are in thousands)
+        if (combinedMenu.length > 0) {
+            const cheapest = getCheapestServiceByTotalPrice(combinedMenu);
+            if (cheapest) {
                 const menuPricing = {
-                    "60": parseFloat(cheapestService.price60) * 1000,
-                    "90": parseFloat(cheapestService.price90) * 1000,
-                    "120": parseFloat(cheapestService.price120) * 1000
+                    "60": Number(cheapest.price60) * 1000,
+                    "90": Number(cheapest.price90) * 1000,
+                    "120": Number(cheapest.price120) * 1000
                 };
-
-                // Use menu pricing if it has values and (therapist has no prices OR menu is cheaper)
-                const therapistHasNoPrices = defaultPricing["60"] === 0 && defaultPricing["90"] === 0 && defaultPricing["120"] === 0;
-                if (menuPricing["60"] > 0 && (therapistHasNoPrices || menuPricing["60"] < defaultPricing["60"])) {
-                    logger.debug('🏠 Using cheaper menu pricing for', therapist.name, ':', menuPricing);
+                if (menuPricing["60"] > 0 && menuPricing["90"] > 0 && menuPricing["120"] > 0) {
+                    logger.debug('🏠 Using lowest (combined menu) pricing for', therapist.name, ':', menuPricing);
                     return menuPricing;
                 }
             }
         }
 
-        // Fallback to default pricing - only when ALL 3 containers (60/90/120) are set
+        // Fallback to therapist doc when no combined items
         const hasAllThreePrices = (
             (therapist.price60 && parseInt(therapist.price60) > 0) &&
             (therapist.price90 && parseInt(therapist.price90) > 0) &&
             (therapist.price120 && parseInt(therapist.price120) > 0)
         );
-
         if (hasAllThreePrices) {
             return {
                 "60": parseInt(therapist.price60!) * 1000,
@@ -480,66 +445,27 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 "120": parseInt(therapist.price120!) * 1000
             };
         }
-
-        // Display-only sample prices when therapist has no prices set
         if (!hasActualPricing(therapist)) {
             const therapistId = String((therapist as any).$id || therapist.id || '');
-            if (therapistId) {
-                return getSamplePricing(therapistId);
-            }
+            if (therapistId) return getSamplePricing(therapistId);
         }
-
         return { "60": 0, "90": 0, "120": 0 };
     };
 
     const pricing = getPricing();
 
-    // Determine service name based on menu data
+    // Service name = name of cheapest from combined menu (same as 3 containers)
     const getServiceName = (): string => {
-        logger.debug(`🏠 Determining service name for ${therapist.name}:`, { 
-            hasMenuData: !!menuData, 
-            menuLength: menuData?.length || 0
-        });
-
-        // If no menu data or empty menu, use sample service name when therapist has no prices
-        if (!menuData || menuData.length === 0) {
-            if (!hasActualPricing(therapist)) {
-                const therapistId = String((therapist as any).$id || therapist.id || '');
-                if (therapistId) {
-                    const sample = getSamplePricing(therapistId);
-                    return sample.serviceName || 'Traditional Massage';
+        if (combinedMenu.length > 0) {
+            const cheapest = getCheapestServiceByTotalPrice(combinedMenu);
+            if (cheapest) {
+                const name = cheapest.name || cheapest.serviceName || cheapest.title;
+                if (name) {
+                    logger.debug(`🏠 Service name for ${therapist.name}: "${name}"`);
+                    return name;
                 }
             }
-            return 'Traditional Massage';
         }
-
-        // Only use menu items with complete 3-duration pricing (60/90/120)
-        const servicesWithFullPricing = menuData.filter(item => {
-            const hasAll = item.price60 && item.price90 && item.price120;
-            const valid60 = Number(item.price60) > 0;
-            const valid90 = Number(item.price90) > 0;
-            const valid120 = Number(item.price120) > 0;
-            return hasAll && valid60 && valid90 && valid120;
-        });
-
-        if (servicesWithFullPricing.length === 0) {
-            return 'Traditional Massage';
-        }
-
-        // Find the cheapest service (based on 60-minute price)
-        const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
-            const cheapestPrice = parseFloat(cheapest.price60 || '999999');
-            const currentPrice = parseFloat(current.price60 || '999999');
-            return currentPrice < cheapestPrice ? current : cheapest;
-        });
-
-        // Use full massage type name from cheapest service
-        if (cheapestService.name || cheapestService.serviceName || cheapestService.title) {
-            const serviceName = cheapestService.name || cheapestService.serviceName || cheapestService.title;
-            logger.debug(`🏠 Service name for ${therapist.name}: "${serviceName}"`);
-            return serviceName;
-        }
-
         return 'Traditional Massage';
     };
 
@@ -638,7 +564,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             {/* Image Container - Fixed height for mobile stability */}
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                 <img
-                    src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
+                    src={getTherapistMainImage(therapist as any)}
                     alt={therapist.name}
                     className="w-full h-full object-cover transition-transform duration-500 rounded-t-2xl"
                     style={{ aspectRatio: '400/224', minHeight: '224px' }}
@@ -700,7 +626,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden relative">
                             <img 
                                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full" 
-                                src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
+                                src={(therapist as any).profilePicture || '/default-avatar.jpg'}
                                 alt={`${therapist.name} profile`}
                                 style={{ aspectRatio: '1/1' }}
                                 loading="lazy"

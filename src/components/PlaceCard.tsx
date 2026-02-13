@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Place } from '../types';
 import SocialSharePopup from './SocialSharePopup';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
+import { getUniqueMassageTypes } from '../utils/therapistCardHelpers';
 import { useLanguageContext } from '../context/LanguageContext';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { Share2 } from 'lucide-react';
@@ -269,7 +270,8 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                     } catch {
                         massageTypes = [];
                     }
-                    return Array.isArray(massageTypes) && massageTypes.length > 0 ? (
+                    const uniqueTypes = getUniqueMassageTypes(Array.isArray(massageTypes) ? massageTypes : []);
+                    return uniqueTypes.length > 0 ? (
                         <div className="mt-3">
                             <div className="flex items-center justify-between mb-1.5">
                                 <h4 className="text-xs font-semibold text-gray-700">Areas of Expertise</h4>
@@ -280,14 +282,14 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                                 )}
                             </div>
                             <div className="flex flex-wrap gap-1.5">
-                                {massageTypes.slice(0, 5).map((type, index) => (
+                                {uniqueTypes.slice(0, 5).map((type, index) => (
                                     <span key={index} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">
                                         {type}
                                     </span>
                                 ))}
-                                {massageTypes.length > 5 && (
+                                {uniqueTypes.length > 5 && (
                                     <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                                        +{massageTypes.length - 5} more
+                                        +{uniqueTypes.length - 5} more
                                     </span>
                                 )}
                             </div>
@@ -310,7 +312,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                                                         </div>
                                                     )}
                                                     <p className="text-gray-600">60 min</p>
-                                                    <p className="font-bold text-gray-800">Rp {String(pricing["60"]).padStart(3, '0')}k</p>
+                                                    <p className="font-bold text-gray-800">IDR {String(pricing["60"]).padStart(3, '0')}k</p>
                                                 </div>
                                                 <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
                                                     {/* Star Rating - Top Right */}
@@ -320,7 +322,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                                                         </div>
                                                     )}
                                                     <p className="text-gray-600">90 min</p>
-                                                    <p className="font-bold text-gray-800">Rp {String(pricing["90"]).padStart(3, '0')}k</p>
+                                                    <p className="font-bold text-gray-800">IDR {String(pricing["90"]).padStart(3, '0')}k</p>
                                                 </div>
                                                 <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
                                                     {/* Star Rating - Top Right */}
@@ -330,7 +332,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                                                         </div>
                                                     )}
                                                     <p className="text-gray-600">120 min</p>
-                                                    <p className="font-bold text-gray-800">Rp {String(pricing["120"]).padStart(3, '0')}k</p>
+                                                    <p className="font-bold text-gray-800">IDR {String(pricing["120"]).padStart(3, '0')}k</p>
                                                 </div>
                                             </div>
                                         );

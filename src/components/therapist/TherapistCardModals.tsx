@@ -4,7 +4,7 @@ import { X, Clock, FileText } from 'lucide-react';
 import type { Therapist } from '../types';
 import { getRandomTherapistImage } from '../../utils/therapistImageUtils';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../../utils/ratingUtils';
-import { isDiscountActive } from '../../utils/therapistCardHelpers';
+import { isDiscountActive, getUniqueMenuItemsByName } from '../../utils/therapistCardHelpers';
 import { StarIcon } from './TherapistIcons';
 import AnonymousReviewModal from '../AnonymousReviewModal';
 // REMOVED: BookingConfirmationPopup - using original booking system
@@ -203,9 +203,11 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                             </div>
                         </div>
 
-                        {/* Price List Content - Scrollable */}
+                        {/* Price List Content - Scrollable (deduplicated by service name so same type is not shown twice) */}
                         <div className="flex-1  p-4" style={{ height: 'calc(100vh - 180px)' }}>
-                            {menuData.length > 0 ? (
+                            {(() => {
+                                const uniqueMenu = getUniqueMenuItemsByName(menuData);
+                                return uniqueMenu.length > 0 ? (
                                 <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                                     <div className="grid grid-cols-12 gap-1.5 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
                                         <div className="col-span-3">Service</div>
@@ -216,7 +218,7 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                                     </div>
                                     
                                     <div className="divide-y divide-orange-100">
-                                        {menuData.map((service: any, index: number) => {
+                                        {uniqueMenu.map((service: any, index: number) => {
                                             const isRowSelected = selectedServiceIndex === index;
                                             return (
                                                 <div key={index} className={`grid grid-cols-12 gap-1.5 px-3 py-3 transition-colors items-center bg-white ${
@@ -299,7 +301,8 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                                     <FileText size={48} className="mx-auto mb-3 text-orange-200" />
                                     <p className="text-gray-600">{chatLang === 'id' ? 'Memuat menu harga...' : 'Loading price menu...'}</p>
                                 </div>
-                            )}
+                            );
+                            })()}
                         </div>
                         
                     </div>

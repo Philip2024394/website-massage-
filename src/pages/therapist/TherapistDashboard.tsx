@@ -624,12 +624,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     setSaving(true);
     
     try {
-      // REQUIRED FIELDS VALIDATION
+      // REQUIRED FIELDS VALIDATION (including Traditional Massage 3 prices – profile cannot save without them)
       const missingFields: string[] = [];
       if (!name.trim()) missingFields.push('Name');
       if (!whatsappNumber.trim() || whatsappNumber.trim() === '+62') missingFields.push('WhatsApp Number');
       if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location (MANDATORY - click SET GPS LOCATION button)');
-      
+      const minP = 100;
+      const pp60 = parseInt(price60, 10);
+      const pp90 = parseInt(price90, 10);
+      const pp120 = parseInt(price120, 10);
+      if (!price60.trim() || !price90.trim() || !price120.trim() || isNaN(pp60) || pp60 < minP || isNaN(pp90) || pp90 < minP || isNaN(pp120) || pp120 < minP) {
+        missingFields.push('Traditional Massage 3 prices (60/90/120 min, min 100 each)');
+      }
       if (missingFields.length > 0) {
         showToast(`❌ Required fields missing: ${missingFields.join(', ')}`, 'error');
         setSaving(false);
@@ -840,9 +846,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   };
 
   // Form validation for save button - GPS is MANDATORY
+  // Traditional Massage 3 prices are MANDATORY – profile cannot save without them
+  const MIN_PRICE_VAL = 100;
+  const p60Val = parseInt(price60, 10);
+  const p90Val = parseInt(price90, 10);
+  const p120Val = parseInt(price120, 10);
+  const hasValidThreePrices = price60.trim() !== '' && price90.trim() !== '' && price120.trim() !== '' &&
+    !isNaN(p60Val) && p60Val >= MIN_PRICE_VAL &&
+    !isNaN(p90Val) && p90Val >= MIN_PRICE_VAL &&
+    !isNaN(p120Val) && p120Val >= MIN_PRICE_VAL;
   const canSave = name.trim() && 
                   /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && 
-                  coordinates && coordinates.lat && coordinates.lng; // GPS is MANDATORY
+                  coordinates && coordinates.lat && coordinates.lng &&
+                  hasValidThreePrices; // GPS + Traditional Massage 3 prices MANDATORY
 
   // Handle "Go Live" button click
   const handleGoLive = async () => {
@@ -1763,11 +1779,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            {/* Pricing */}
+            {/* Pricing - Traditional Massage is the standard default; these 3 prices appear in the price slider and on profile when lowest */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Massage Prices (Min 100 = Rp 100,000)
+                Traditional Massage – 3 prices (Min 100 = Rp 100,000)
               </label>
+              <p className="text-xs text-gray-500 mb-2">
+                These prices are shown as &quot;Traditional Massage&quot; in your price slider and on your profile when they are your lowest.
+              </p>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-2 font-medium">60 minutes</label>
@@ -1835,6 +1854,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
                   {!coordinates && <li>• GPS Location (click "Set Location" button)</li>}
                   {(!coordinates || !coordinates.lat || !coordinates.lng) && <li>• GPS Location (click SET GPS LOCATION button)</li>}
+                  {!hasValidThreePrices && <li>• Traditional Massage – 3 prices (60, 90, 120 min, min 100 = Rp 100,000 each)</li>}
                 </ul>
               </div>
             )}
@@ -1891,6 +1911,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     if (!name.trim()) missingFields.push('First Name');
                     if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
                     if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location');
+                    if (!hasValidThreePrices) missingFields.push('Traditional Massage 3 prices (60/90/120 min)');
                     showToast(`⚠️ Please complete all required fields: ${missingFields.join(', ')}`, 'error');
                     return;
                   }

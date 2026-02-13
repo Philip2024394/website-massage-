@@ -56,11 +56,18 @@ interface UseEnhancedMenuDataResult {
   importMenu: (data: string) => boolean;
 }
 
+/** Profile prices from dashboard (60/90/120 in thousands). When set, "Traditional Massage" is added to slider from these. */
+export type ProfilePrices = { price60: number; price90: number; price120: number } | null | undefined;
+
 /**
  * 🎯 ENHANCED MENU DATA HOOK
- * Provides comprehensive menu management with default fallback and badge integration
+ * Provides comprehensive menu management with default fallback and badge integration.
+ * When profilePrices is provided (from dashboard 3 prices), "Traditional Massage" is injected into the slider with those prices.
  */
-export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataResult {
+export function useEnhancedMenuData(
+  therapistId: string,
+  profilePrices?: ProfilePrices
+): UseEnhancedMenuDataResult {
   const [menuLoadResult, setMenuLoadResult] = useState<MenuLoadResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +75,7 @@ export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataRes
   // Badge system integration
   const { refreshKey: badgeRefreshKey, refreshBadges } = useBadgeSession();
   
-  // Load menu data
+  // Load menu data (include profile prices so Traditional Massage from dashboard appears in slider)
   const loadMenu = useCallback(async () => {
     if (!therapistId) {
       console.warn('⚠️ useEnhancedMenuData: No therapist ID provided, cannot load menu');
@@ -81,9 +88,18 @@ export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataRes
       setIsLoading(true);
       setError(null);
       
-      console.log(`📋 useEnhancedMenuData: Loading enhanced menu for therapist: ${therapistId}`);
+      const hasProfilePrices =
+        profilePrices &&
+        Number(profilePrices.price60) > 0 &&
+        Number(profilePrices.price90) > 0 &&
+        Number(profilePrices.price120) > 0;
       
-      const result = await EnhancedMenuDataService.getTherapistMenu(therapistId);
+      console.log(`📋 useEnhancedMenuData: Loading enhanced menu for therapist: ${therapistId}`, hasProfilePrices ? '(with profile Traditional Massage)' : '');
+      
+      const result = await EnhancedMenuDataService.getTherapistMenu(
+        therapistId,
+        hasProfilePrices ? profilePrices! : undefined
+      );
       
       console.log(`✅ useEnhancedMenuData: Menu loaded successfully:`, {
         therapistId,
@@ -110,7 +126,7 @@ export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataRes
     } finally {
       setIsLoading(false);
     }
-  }, [therapistId]);
+  }, [therapistId, profilePrices]);
   
   // 🎯 GOLD STANDARD: Initial load with unmount cleanup
   useEffect(() => {
@@ -284,12 +300,24 @@ export function useEnhancedMenuData(therapistId: string): UseEnhancedMenuDataRes
 
 /**
  * 🔗 COMPATIBILITY HOOK
- * Provides backward compatibility with existing useTherapistCardState
+ * Provides backward compatibility with existing useTherapistCardState.
+ * When therapist is provided, their dashboard 3 prices (price60/90/120) are used to inject
+ * "Traditional Massage" into the price slider; if it is the lowest, it is shown on profile.
  */
-export function useCompatibleMenuData(therapistId: string) {
-  console.log('🔍 useCompatibleMenuData called with therapistId:', therapistId);
+export function useCompatibleMenuData(
+  therapistId: string,
+  therapist?: { price60?: string | number; price90?: string | number; price120?: string | number } | null
+) {
+  const profilePrices = useMemo(() => {
+    if (!therapist) return undefined;
+    const p60 = Number(therapist.price60) || 0;
+    const p90 = Number(therapist.price90) || 0;
+    const p120 = Number(therapist.price120) || 0;
+    if (p60 > 0 && p90 > 0 && p120 > 0) return { price60: p60, price90: p90, price120: p120 };
+    return undefined;
+  }, [therapist?.price60, therapist?.price90, therapist?.price120]);
   
-  const enhancedMenuData = useEnhancedMenuData(therapistId);
+  const enhancedMenuData = useEnhancedMenuData(therapistId, profilePrices);
   
   // Transform to legacy format
   const legacyFormat = useMemo(() => {

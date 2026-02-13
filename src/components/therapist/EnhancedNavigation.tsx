@@ -114,12 +114,12 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
     items: [
       {
         id: 'dashboard',
-        label: 'Dashboard',
+        label: 'Profile Upload',
         icon: User,
         color: 'text-blue-500',
         category: 'business',
         priority: 'high',
-        description: 'Your main dashboard and profile'
+        description: 'Upload and edit your profile'
       },
       {
         id: 'analytics',

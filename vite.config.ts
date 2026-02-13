@@ -144,11 +144,11 @@ export default defineConfig({
     }
   ],
   server: {
-    // 🔒 PRODUCTION-GRADE DEV SERVER LOCK (no fallback, explicit binding)
-    port: 3000,
+    // Use 3001 so dev runs on localhost:3001 (fallback 3002, 3003 if in use)
+    port: 3001,
     host: '127.0.0.1', // Explicit IPv4 binding (not 'true')
     open: false,
-    strictPort: false, // Allow fallback to next available port
+    strictPort: false, // Allow fallback to 3002, 3003 if 3001 is in use
     cors: true,
     headers: {
       'Cache-Control': 'no-store, no-cache, must-revalidate',

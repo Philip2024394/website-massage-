@@ -6859,7 +6859,8 @@ export const therapistMenusService = {
                         menuData,
                         isActive: true,
                         createdDate: now,
-                        updatedDate: now
+                        updatedDate: now,
+                        status: 'active' // Required by booking guard (validateTherapistBookingAccess)
                     },
                     [
                         Permission.read(Role.any()),

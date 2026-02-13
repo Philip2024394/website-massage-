@@ -664,7 +664,7 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
                             <div className={`text-sm font-bold ${
                               service.isDefault ? 'text-blue-600' : 'text-orange-600'
                             }`}>
-                              Rp {((Number(price) || 0) * 1000).toLocaleString('id-ID')}
+                              IDR {((Number(price) || 0) * 1000).toLocaleString('id-ID')}
                             </div>
                           )}
                         </div>

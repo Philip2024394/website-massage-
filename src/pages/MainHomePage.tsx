@@ -1976,11 +1976,7 @@ logger.debug('[DEBUG] Therapist filtering analysis', {
 
                             const preparedTherapists = baseList
                                 .map((therapist: any, index: number) => {
-                                    // Assign deterministic unique image from shuffled set; if more therapists than images, start second cycle
-                                    const assignedImage = shuffledHomeImages.length > 0 
-                                        ? shuffledHomeImages[index % shuffledHomeImages.length] 
-                                        : undefined; // undefined triggers fallback logic inside TherapistCard
-                                    
+                                    // Keep therapist image as-is so home card and profile page show the same main image (getTherapistMainImage in TherapistHomeCard)
                                     // Override location for featured samples when shown in non-home cities
                                     let displayLocation = therapist.location;
                                     let displayCity = therapist.city;
@@ -1992,7 +1988,6 @@ logger.debug('[DEBUG] Therapist filtering analysis', {
                                     
                                     return { 
                                         ...therapist, 
-                                        mainImage: assignedImage || therapist.mainImage,
                                         location: displayLocation,
                                         city: displayCity
                                     };

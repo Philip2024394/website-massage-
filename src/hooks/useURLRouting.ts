@@ -57,6 +57,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapist-legal': '/dashboard/therapist/legal',
         
         // Short aliases for therapist dashboard pages (used by navigation)
+        'dashboard': '/dashboard/therapist', // therapist profile/upload page – must not fall back to '/' (landing)
         'payment': '/dashboard/therapist/payment',
         'payment-status': '/dashboard/therapist/payment-status',
         'bookings': '/dashboard/therapist/bookings',

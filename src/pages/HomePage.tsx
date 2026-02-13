@@ -2108,12 +2108,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             // Removed sample therapist fallback: now show empty-state message below if none live
 
                             const preparedTherapists = baseList
-                                .map((therapist: any, index: number) => {
-                                    // Assign deterministic unique image from shuffled set; if more therapists than images, start second cycle
-                                    const assignedImage = shuffledHomeImages.length > 0 
-                                        ? shuffledHomeImages[index % shuffledHomeImages.length] 
-                                        : undefined; // undefined triggers fallback logic inside TherapistCard
-                                    
+                                .map((therapist: any) => {
+                                    // Keep therapist image as-is so home card and profile show same main image (getTherapistMainImage in TherapistHomeCard)
                                     // Override location for featured samples when shown in non-home cities
                                     let displayLocation = therapist.location;
                                     let displayCity = therapist.city;
@@ -2122,10 +2118,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                         displayCity = selectedCity;
                                         logger.debug(`Overriding featured sample ${therapist.name} location to ${selectedCity}`);
                                     }
-                                    
-                                    return { 
-                                        ...therapist, 
-                                        mainImage: assignedImage || therapist.mainImage,
+                                    return {
+                                        ...therapist,
                                         location: displayLocation,
                                         city: displayCity
                                     };

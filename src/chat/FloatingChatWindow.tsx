@@ -578,13 +578,27 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     }
   };
 
-  // Don't render anything if no subscription or loading
+  // Don't render anything if no subscription or loading (unless therapist – show "active" pill)
   if (!subscriptionActive && !isLoading) {
     console.log('🔌 [FloatingChatWindow] No subscription - not rendering');
     return null;
   }
 
+  // Therapist: always show a minimal "Bookings" pill when no rooms yet, so chat is displayed and active to receive Book Now / Order Now / scheduled bookings
+  const isTherapist = userRole === 'therapist';
   if (activeChatRooms.length === 0 && !isLoading) {
+    if (isTherapist) {
+      console.log('📭 [FloatingChatWindow] Therapist – showing active pill (no rooms yet)');
+      return (
+        <div
+          className="fixed bottom-6 right-6 z-[100] bg-orange-500 text-white px-4 py-3 rounded-full shadow-lg border border-orange-600 flex items-center gap-2"
+          title="Book Now, Order Now, and scheduled bookings will appear here"
+        >
+          <span className="text-sm font-medium">💬 Bookings</span>
+          <span className="text-xs text-orange-100">Active</span>
+        </div>
+      );
+    }
     console.log('📭 [FloatingChatWindow] No active chat rooms - not rendering');
     return null;
   }

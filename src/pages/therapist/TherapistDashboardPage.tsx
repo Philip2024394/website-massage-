@@ -551,13 +551,28 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       
       console.log('✅ Geopoint validation passed');
 
-      // Price minimum: 100 = Rp 100,000 for 60/90/120 min
+      // Traditional Massage 3 prices are REQUIRED – profile cannot save without them (min 100 = Rp 100,000 each)
       const MIN_PRICE = 100;
       const p60 = parseInt(price60, 10);
       const p90 = parseInt(price90, 10);
       const p120 = parseInt(price120, 10);
-      if ((price60 && !isNaN(p60) && p60 < MIN_PRICE) || (price90 && !isNaN(p90) && p90 < MIN_PRICE) || (price120 && !isNaN(p120) && p120 < MIN_PRICE)) {
-        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 60, 90, and 120 minutes.', 'error');
+      if (!price60.trim() || !price90.trim() || !price120.trim()) {
+        showToast('❌ Traditional Massage – all 3 prices (60, 90, 120 min) are required to save your profile.', 'error');
+        setSaving(false);
+        return;
+      }
+      if (!isNaN(p60) && p60 < MIN_PRICE) {
+        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 60 minutes.', 'error');
+        setSaving(false);
+        return;
+      }
+      if (!isNaN(p90) && p90 < MIN_PRICE) {
+        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 90 minutes.', 'error');
+        setSaving(false);
+        return;
+      }
+      if (!isNaN(p120) && p120 < MIN_PRICE) {
+        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 120 minutes.', 'error');
         setSaving(false);
         return;
       }
@@ -700,11 +715,20 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
     }
   };
 
-  // Form validation for save button - GPS is MANDATORY
+  // Form validation for save button - GPS + Traditional Massage 3 prices are MANDATORY (profile cannot save without them)
+  const MIN_PRICE_VAL = 100;
+  const p60Val = parseInt(price60, 10);
+  const p90Val = parseInt(price90, 10);
+  const p120Val = parseInt(price120, 10);
+  const hasValidThreePrices = price60.trim() !== '' && price90.trim() !== '' && price120.trim() !== '' &&
+    !isNaN(p60Val) && p60Val >= MIN_PRICE_VAL &&
+    !isNaN(p90Val) && p90Val >= MIN_PRICE_VAL &&
+    !isNaN(p120Val) && p120Val >= MIN_PRICE_VAL;
   const canSave = name.trim() && 
                   /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && 
                   selectedCity !== 'all' &&
-                  coordinates && coordinates.lat && coordinates.lng; // GPS is MANDATORY
+                  coordinates && coordinates.lat && coordinates.lng &&
+                  hasValidThreePrices; // GPS + Traditional Massage 3 prices MANDATORY
 
   // Handle "Go Live" button click
   const handleGoLive = async () => {
@@ -1726,11 +1750,14 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            {/* Pricing */}
+            {/* Pricing - Traditional Massage is the standard default; these 3 prices appear in the price slider and on profile when lowest */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Massage Prices (Min 100 = Rp 100,000)
+                Traditional Massage – 3 prices (Min 100 = Rp 100,000)
               </label>
+              <p className="text-xs text-gray-500 mb-2">
+                These prices are shown as &quot;Traditional Massage&quot; in your price slider and on your profile when they are your lowest.
+              </p>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-2 font-medium">60 minutes</label>
@@ -1798,6 +1825,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                   {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
                   {selectedCity === 'all' && <li>• City/Location</li>}
                   {(!coordinates || !coordinates.lat || !coordinates.lng) && <li>• GPS Location (click SET GPS LOCATION button)</li>}
+                  {!hasValidThreePrices && <li>• Traditional Massage – 3 prices (60, 90, 120 min, min 100 = Rp 100,000 each)</li>}
                 </ul>
               </div>
             )}
@@ -1854,6 +1882,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                     if (!name.trim()) missingFields.push('First Name');
                     if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
                     if (selectedCity === 'all') missingFields.push('Location');
+                    if (!hasValidThreePrices) missingFields.push('Traditional Massage 3 prices (60/90/120 min)');
                     showToast(`⚠️ Please complete all required fields: ${missingFields.join(', ')}`, 'error');
                     return;
                   }
