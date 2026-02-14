@@ -400,6 +400,9 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
             />
 
             <div className="max-w-4xl mx-auto px-4 py-6">
+                <p className="text-sm text-slate-500 mb-4">
+                    Only verified and registered IndaStreet members may publish listings. This protects our professional ecosystem and ensures quality opportunities.
+                </p>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Let's Find A Team Member */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">

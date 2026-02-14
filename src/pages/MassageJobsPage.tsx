@@ -6,7 +6,7 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
-import { Home, SlidersHorizontal, Search } from 'lucide-react';
+import { Home, SlidersHorizontal, Search, X } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
@@ -42,6 +42,9 @@ interface EmployerJobPosting {
     isVerified?: boolean;
     isUrgent?: boolean;
 }
+
+// Status for job seeking: available, busy, filled
+type TherapistJobStatus = 'available' | 'busy' | 'filled';
 
 interface TherapistJobListing {
     $id: string;
@@ -83,7 +86,151 @@ interface TherapistJobListing {
     isVerified?: boolean;
     isFeatured?: boolean;
     hasSafePass?: boolean;
+    isMock?: boolean;
+    // New fields for Trust & Performance card display
+    rating?: number;
+    totalReviews?: number;
+    completedSessions?: number;
+    yearsExperience?: number;
+    status?: TherapistJobStatus;
+    idVerified?: boolean;
+    topRated?: boolean;
+    jobSeekingActive?: boolean;
+    cvFileUrl?: string;
+    cvFileType?: string;
+    priorityScore?: number;
 }
+
+// 3 fixed mock therapist job listings from Indonesia (Bali, Jakarta, Surabaya) – realistic data, status busy, one Position Filled
+const MOCK_THERAPIST_LISTINGS: TherapistJobListing[] = [
+    {
+        $id: '674a0101000e64ca8d01',
+        therapistId: '674a0101000e64ca8d01',
+        therapistName: 'Ni Made Sari',
+        listingId: 101001,
+        jobTitle: 'Balinese Massage Therapist',
+        jobDescription: 'Certified Balinese massage therapist with 6 years experience. Specialized in traditional Boreh and Urut techniques. Currently at a luxury spa in Ubud, seeking new opportunities in wellness resorts.',
+        jobType: 'Massage Therapist',
+        location: 'Ubud, Bali',
+        requiredLicenses: 'Certified',
+        minimumSalary: 'Rp 6.000.000',
+        availability: 'full-time',
+        willingToRelocateDomestic: true,
+        willingToRelocateInternational: true,
+        accommodation: 'required',
+        preferredLocations: 'Bali, Lombok, Jakarta',
+        experienceYears: 6,
+        yearsExperience: 6,
+        massageTypes: ['Balinese Massage', 'Swedish Massage', 'Hot Stone', 'Aromatherapy'],
+        languages: ['Indonesian', 'English', 'Balinese'],
+        workedAbroadBefore: false,
+        hasReferences: true,
+        currentlyWorking: true,
+        contactWhatsApp: '6281234567801',
+        isActive: false,
+        status: 'filled',
+        listingDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+        expiryDate: new Date(Date.now() + 76 * 24 * 60 * 60 * 1000).toISOString(),
+        profileImage: 'https://ik.imagekit.io/7grri5v7d/therapist%205.png',
+        experienceLevel: 'Experienced',
+        isVerified: true,
+        isFeatured: true,
+        hasSafePass: true,
+        idVerified: true,
+        topRated: true,
+        jobSeekingActive: false,
+        rating: 4.7,
+        totalReviews: 48,
+        completedSessions: 87,
+        isMock: true,
+        $createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+        $updatedAt: new Date().toISOString(),
+    },
+    {
+        $id: '674a0101000e64ca8d02',
+        therapistId: '674a0101000e64ca8d02',
+        therapistName: 'Budi Santoso',
+        listingId: 101002,
+        jobTitle: 'Sports & Deep Tissue Massage Therapist',
+        jobDescription: 'Experienced sports massage therapist. Worked with athletes and corporate wellness programs. Seeking full-time position at hotel spa or fitness center in Jakarta or surrounding areas.',
+        jobType: 'Massage Therapist',
+        location: 'Jakarta, Indonesia',
+        requiredLicenses: 'Certified',
+        minimumSalary: 'Rp 7.500.000',
+        availability: 'full-time',
+        willingToRelocateDomestic: true,
+        willingToRelocateInternational: false,
+        accommodation: 'not-required',
+        preferredLocations: 'Jakarta, Tangerang, Bogor, Bandung',
+        experienceYears: 5,
+        yearsExperience: 5,
+        massageTypes: ['Deep Tissue', 'Sports Massage', 'Swedish Massage', 'Trigger Point'],
+        languages: ['Indonesian', 'English'],
+        workedAbroadBefore: false,
+        hasReferences: true,
+        currentlyWorking: true,
+        contactWhatsApp: '6281234567802',
+        isActive: true,
+        status: 'busy',
+        jobSeekingActive: true,
+        listingDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        expiryDate: new Date(Date.now() + 83 * 24 * 60 * 60 * 1000).toISOString(),
+        profileImage: 'https://ik.imagekit.io/7grri5v7d/therapist%203.png',
+        experienceLevel: 'Experienced',
+        isVerified: true,
+        isFeatured: true,
+        idVerified: true,
+        topRated: false,
+        rating: 4.8,
+        totalReviews: 32,
+        completedSessions: 112,
+        isMock: true,
+        $createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        $updatedAt: new Date().toISOString(),
+    },
+    {
+        $id: '674a0101000e64ca8d03',
+        therapistId: '674a0101000e64ca8d03',
+        therapistName: 'Dewi Kusuma',
+        listingId: 101003,
+        jobTitle: 'Thai & Reflexology Therapist',
+        jobDescription: 'Certified Thai massage and reflexology therapist. 4 years in luxury hotel spas. Open to domestic relocation. Experienced with international guests.',
+        jobType: 'Massage Therapist',
+        location: 'Surabaya, East Java',
+        requiredLicenses: 'Certified',
+        minimumSalary: 'Rp 5.500.000',
+        availability: 'part-time',
+        willingToRelocateDomestic: true,
+        willingToRelocateInternational: true,
+        accommodation: 'preferred',
+        preferredLocations: 'Surabaya, Bali, Jakarta, Malang',
+        experienceYears: 4,
+        yearsExperience: 4,
+        massageTypes: ['Thai Massage', 'Reflexology', 'Swedish Massage', 'Aromatherapy'],
+        languages: ['Indonesian', 'English', 'Javanese'],
+        workedAbroadBefore: false,
+        hasReferences: true,
+        currentlyWorking: true,
+        contactWhatsApp: '6281234567803',
+        isActive: true,
+        status: 'busy',
+        jobSeekingActive: true,
+        listingDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        expiryDate: new Date(Date.now() + 87 * 24 * 60 * 60 * 1000).toISOString(),
+        profileImage: 'https://ik.imagekit.io/7grri5v7d/therapist%204.png',
+        experienceLevel: 'Experienced',
+        isVerified: true,
+        isFeatured: false,
+        idVerified: true,
+        topRated: false,
+        rating: 4.5,
+        totalReviews: 18,
+        completedSessions: 45,
+        isMock: true,
+        $createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        $updatedAt: new Date().toISOString(),
+    },
+];
 
 interface MassageJobsPageProps {
     onBack: () => void;
@@ -93,6 +240,8 @@ interface MassageJobsPageProps {
     onCreateTherapistProfile?: () => void;
     onNavigate?: (page: string) => void;
     t?: any;
+    user?: { type?: string } | null;
+    loggedInProvider?: { type?: string } | null;
 }
 
 // Premium card style - matches homepage/HowItWorks
@@ -107,7 +256,9 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     onApplyForJob,
     onCreateTherapistProfile,
     onNavigate,
-    t
+    t,
+    user,
+    loggedInProvider,
 }) => {
     const { language } = useLanguage();
     const [activeTab, setActiveTab] = useState<'find-professionals' | 'post-job'>('find-professionals');
@@ -128,6 +279,29 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     const [filterJobType, setFilterJobType] = useState<string>('all');
     const [filterSalaryRange, setFilterSalaryRange] = useState<string>('all');
     const [filterVerifiedEmployers, setFilterVerifiedEmployers] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authModalContext, setAuthModalContext] = useState<'employer' | 'therapist'>('employer');
+    
+    const isEmployer = !!user && (user as any).type === 'employer';
+    const isServicePersonnel = !!(user && ((user as any).type === 'therapist' || (user as any).type === 'place')) || 
+        !!(loggedInProvider && ((loggedInProvider as any).type === 'therapist' || (loggedInProvider as any).type === 'place'));
+    
+    const handlePostJobClick = () => {
+        if (!isEmployer) {
+            setAuthModalContext('employer');
+            setShowAuthModal(true);
+        } else {
+            onPostJob();
+        }
+    };
+    const handleListAvailabilityClick = () => {
+        if (!isServicePersonnel) {
+            setAuthModalContext('therapist');
+            setShowAuthModal(true);
+        } else {
+            onCreateTherapistProfile?.();
+        }
+    };
     
     // Mock job posting data for display
     const mockJobPosting: EmployerJobPosting = {
@@ -205,7 +379,6 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
         setIsLoading(true);
         try {
             const queries = [
-                Query.equal('isActive', true),
                 Query.orderDesc('$createdAt'),
                 Query.limit(100),
             ];
@@ -222,45 +395,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
             const listingsRes = await databases.listDocuments(DATABASE_ID, COLLECTIONS.therapistJobListings, queries);
             const listings = listingsRes.documents as unknown as TherapistJobListing[];
 
-            let mockListings: TherapistJobListing[] = [];
-            try {
-                const therapistsRes = await databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.therapists || 'therapists_collection_id',
-                    [Query.limit(5)]
-                );
-                // 5 mock listings from real therapists – View Profile works (uses therapist ID from therapists collection)
-                mockListings = (therapistsRes.documents || []).slice(0, 5).map((t: any) => ({
-                $id: `mock-${t.$id}`,
-                therapistId: t.$id,
-                therapistName: t.name || t.email?.split('@')[0] || 'Therapist',
-                hasSafePass: t.hotelVillaSafePassStatus === 'active' || t.hasSafePassVerification === true,
-                jobTitle: t.specialization || 'Massage Therapist',
-                jobDescription: t.description || 'Experienced massage therapist seeking opportunities.',
-                jobType: t.specialization || 'Massage Therapist',
-                listingId: Math.floor(Math.random() * 900000) + 100000,
-                minimumSalary: 'Negotiable',
-                availability: 'full-time',
-                willingToRelocateDomestic: true,
-                willingToRelocateInternational: false,
-                accommodation: 'not-required',
-                preferredLocations: (t.location || t.city || 'Bali, Indonesia') as string,
-                isActive: true,
-                listingDate: new Date().toISOString(),
-                expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-                profileImage: t.profilePicture || t.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20solo.png',
-                experienceLevel: 'Experienced' as const,
-                massageTypes: (t.specialization ? [t.specialization] : ['Balinese Massage', 'Swedish Massage']),
-                isVerified: t.isVerified ?? true,
-                isFeatured: true,
-                $createdAt: t.$createdAt || new Date().toISOString(),
-                $updatedAt: t.$updatedAt || new Date().toISOString(),
-            }));
-            } catch (_e) {
-                // Therapists fetch failed – skip mock listings
-            }
-
-            setTherapistListings([...mockListings, ...listings]);
+            // Real listings first, then 3 fixed mock listings (Bali, Jakarta, Surabaya) – mocks move down when real ones exist
+            setTherapistListings([...listings, ...MOCK_THERAPIST_LISTINGS]);
         } catch (error: any) {
             if (error?.code === 401 || error?.code === 404) {
                 console.warn('Appwrite: Ensure therapist_job_listings exists with read(any) permission');
@@ -306,6 +442,30 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
         const matchesAvailability = filterAvailability === 'all' || (listing.availability || '').toLowerCase().includes(filterAvailability.toLowerCase());
         
         return matchesSearch && matchesLocation && matchesExperience && matchesVerified && matchesMassageType && matchesAvailability;
+    });
+
+    // When 5+ real therapist job listings exist, all mocks show Position Filled + deactivated View Profile
+    const realListingCount = therapistListings.filter(l => !l.isMock).length;
+    const isEffectivelyDeactivated = (listing: TherapistJobListing) =>
+        listing.status === 'filled' || !listing.isActive || (listing.isMock && realListingCount >= 5);
+
+    // Sorting: real first, jobSeekingActive, higher rating, higher completedSessions, newest, mocks last
+    const sortedTherapistListings = [...filteredTherapistListings].sort((a, b) => {
+        if (a.isMock && !b.isMock) return 1;
+        if (!a.isMock && b.isMock) return -1;
+        const aActive = a.jobSeekingActive !== false;
+        const bActive = b.jobSeekingActive !== false;
+        if (aActive && !bActive) return -1;
+        if (!aActive && bActive) return 1;
+        const aRating = a.rating ?? 0;
+        const bRating = b.rating ?? 0;
+        if (aRating !== bRating) return bRating - aRating;
+        const aSessions = a.completedSessions ?? 0;
+        const bSessions = b.completedSessions ?? 0;
+        if (aSessions !== bSessions) return bSessions - aSessions;
+        const aDate = new Date(a.$createdAt || 0).getTime();
+        const bDate = new Date(b.$createdAt || 0).getTime();
+        return bDate - aDate;
     });
 
     const formatSalary = (amount: number) => {
@@ -407,9 +567,9 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                         <button
                             onClick={() => {
                                 if (activeTab === 'post-job') {
-                                    onPostJob();
+                                    handlePostJobClick();
                                 } else if (onCreateTherapistProfile) {
-                                    onCreateTherapistProfile();
+                                    handleListAvailabilityClick();
                                 }
                             }}
                             className="flex items-center gap-2 py-3 px-6 bg-primary-500 text-white shadow-lg rounded-full transition-all duration-200 text-sm font-semibold whitespace-nowrap hover:bg-primary-600 hover:shadow-xl"
@@ -534,7 +694,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                         </div>
                         <h3 className="text-xl font-semibold text-slate-900 mb-2">{t?.jobs?.noJobsYet || 'Be the first to post in this area.'}</h3>
                         <p className="text-slate-600 mb-6">{t?.jobs?.noJobsDesc || 'Post your job listing and connect with qualified professionals.'}</p>
-                        <button onClick={onPostJob} className="px-6 py-3 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-all">
+                        <button onClick={handlePostJobClick} className="px-6 py-3 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-all">
                             {t?.jobs?.postJob || 'Post a Job'}
                         </button>
                     </div>
@@ -624,7 +784,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                 <p className="text-sm text-slate-600">{t?.jobs?.ctaDescription || `Create your professional profile and connect with employers. Listing fee: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(LISTING_FEE_THERAPIST)}`}</p>
                             </div>
                             <button
-                                onClick={() => onCreateTherapistProfile?.()}
+                                onClick={handleListAvailabilityClick}
                                 className="px-6 py-2.5 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-all whitespace-nowrap"
                             >
                                 {t?.jobs?.listAvailability || 'List Availability'}
@@ -647,7 +807,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                         {t?.jobs?.noTherapistsDesc || 'List your availability and connect with wellness employers.'}
                                     </p>
                                     <button
-                                        onClick={() => onCreateTherapistProfile?.()}
+                                        onClick={handleListAvailabilityClick}
                                         className="px-6 py-3 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-all"
                                     >
                                         {t?.jobs?.listAvailability || 'List Availability'}
@@ -656,87 +816,104 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {filteredTherapistListings.map((listing) => {
+                                {sortedTherapistListings.map((listing) => {
                                     const profileImg = listing.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.therapistName || '?')}&background=f97316&color=fff&size=256`;
+                                    const deactivated = isEffectivelyDeactivated(listing);
+                                    const effectiveStatus: TherapistJobStatus = deactivated ? 'filled' : (listing.status || (listing.currentlyWorking ? 'busy' : 'available'));
+                                    const yearsExp = listing.yearsExperience ?? listing.experienceYears ?? 0;
+                                    const primarySpec = listing.jobTitle || listing.massageTypes?.[0] || 'Professional';
                                     return (
-                                    <div key={listing.$id} className={cardClass}>
-                                        {/* Profile image only – circular avatar, no main image */}
-                                        <div className="p-5 pb-0 flex items-center gap-4">
+                                    <div key={listing.$id} className={`${cardClass} ${deactivated ? 'opacity-85 saturate-75' : ''}`}>
+                                        {/* TOP: Profile Image, Full Name, Location, Primary Specialization */}
+                                        <div className="p-5 pb-0 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                             <div className="relative flex-shrink-0">
                                                 <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-slate-200/80">
                                                     <img src={profileImg} alt={listing.therapistName} className="w-full h-full object-cover" />
-                                                </div>
-                                                <div className="absolute -top-1 -right-1 flex flex-wrap gap-1 max-w-[140px] justify-end">
-                                                    {listing.isVerified && <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded">VERIFIED</span>}
-                                                    {listing.hasSafePass && <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded">SAFE PASS</span>}
-                                                    {listing.isFeatured && !listing.isVerified && <span className="px-2 py-0.5 bg-primary-500 text-white text-[10px] font-bold rounded">FEATURED</span>}
-                                                    {!listing.isVerified && !listing.isFeatured && !listing.hasSafePass && <span className="px-2 py-0.5 bg-slate-600 text-white text-[10px] font-semibold rounded">PENDING</span>}
                                                 </div>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="text-lg font-bold text-slate-900 truncate">{listing.therapistName}</h3>
                                                 <p className="text-sm text-slate-600 mt-0.5 flex items-center gap-1">
                                                     <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                                    <span className="truncate">{listing.location || listing.preferredLocations || '—'}</span>
+                                                    <span className="truncate">{listing.location || listing.preferredLocations || 'Indonesia'}</span>
                                                 </p>
+                                                <p className="text-sm font-semibold text-primary-600 mt-1">{primarySpec}</p>
                                             </div>
+                                            {deactivated && (
+                                                <img src="https://ik.imagekit.io/7grri5v7d/position%20filled.png" alt="Position Filled" className="w-14 h-14 flex-shrink-0 object-contain" title="Position Filled" />
+                                            )}
+                                        </div>
+
+                                        {/* TRUST & PERFORMANCE: Rating, Sessions, Years */}
+                                        <div className="px-5 py-3 flex flex-wrap gap-3 text-sm text-slate-600">
+                                            {listing.totalReviews && listing.totalReviews > 0 && (listing.rating ?? 0) > 0 ? (
+                                                <span className="flex items-center gap-1">⭐ {listing.rating?.toFixed(1)} ({listing.totalReviews} {t?.jobs?.reviews || 'Reviews'})</span>
+                                            ) : (
+                                                <span className="text-amber-600 font-medium">{t?.jobs?.newTherapist || 'New Therapist'}</span>
+                                            )}
+                                            {(listing.completedSessions ?? 0) > 0 && (
+                                                <span className="flex items-center gap-1">🧾 {listing.completedSessions} {t?.jobs?.sessionsCompleted || 'Sessions Completed'}</span>
+                                            )}
+                                            {yearsExp > 0 && (
+                                                <span className="flex items-center gap-1">⏳ {yearsExp} {t?.jobs?.yearsExperience || 'Years Experience'}</span>
+                                            )}
+                                        </div>
+
+                                        {/* VERIFICATION BADGES – small icons row */}
+                                        <div className="px-5 pb-2 flex flex-wrap gap-2">
+                                            {listing.isVerified && <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded" title="Verified Therapist">✓ Verified</span>}
+                                            {listing.idVerified && <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded">ID Verified</span>}
+                                            {listing.topRated && <span className="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded">Top Rated</span>}
+                                            {listing.hasSafePass && <span className="px-2 py-0.5 bg-indigo-600 text-white text-[10px] font-bold rounded">Safe Pass</span>}
+                                            {!listing.isVerified && !listing.idVerified && !listing.topRated && !listing.hasSafePass && (
+                                                <span className="px-2 py-0.5 bg-slate-500 text-white text-[10px] font-semibold rounded">Pending</span>
+                                            )}
+                                        </div>
+
+                                        {/* STATUS BADGE – clear & visible */}
+                                        <div className="px-5 pb-3">
+                                            {effectiveStatus === 'available' && (
+                                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 font-semibold text-sm rounded-full">🟢 {t?.jobs?.available || 'Available'}</span>
+                                            )}
+                                            {effectiveStatus === 'busy' && (
+                                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-800 font-semibold text-sm rounded-full">🟡 {t?.jobs?.busy || 'Busy'}</span>
+                                            )}
+                                            {effectiveStatus === 'filled' && (
+                                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-800 font-semibold text-sm rounded-full">🔴 {t?.jobs?.positionFilled || 'Position Filled'}</span>
+                                            )}
                                         </div>
                                         
-                                        <div className="p-5 pt-4">
-                                            {/* Specialty / Job title */}
-                                            <p className="text-base font-semibold text-primary-600 mb-2">{listing.jobTitle || (listing.massageTypes?.[0] || 'Professional')}</p>
-                                            
-                                            {/* Experience + availability – similar to job type */}
-                                            <p className="text-sm text-slate-600 mb-2">
-                                                {listing.experienceYears !== undefined ? `${listing.experienceYears} years` : ''}
-                                                {listing.experienceYears !== undefined && listing.experienceLevel ? ' • ' : ''}
-                                                {listing.experienceLevel || ''}
-                                                {listing.availability ? ` • ${listing.availability}` : ''}
-                                            </p>
-
-                                            {/* Specialties – max 3 tags */}
-                                            {(listing.massageTypes && listing.massageTypes.length > 0) && (
-                                                <div className="flex flex-wrap gap-2 mb-3">
-                                                    {listing.massageTypes.slice(0, 3).map((type, idx) => (
-                                                        <span key={idx} className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-200/80">
-                                                            {type}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Short intro – 2 lines, same as Post Job description */}
+                                        <div className="p-5 pt-0">
+                                            {/* Short intro – 2 lines */}
                                             {(listing.jobDescription || listing.availability) && (
-                                                <p className="text-sm text-slate-600 mb-3 line-clamp-2 leading-relaxed">{listing.jobDescription || listing.availability}</p>
+                                                <p className="text-sm text-slate-600 mb-4 line-clamp-2 leading-relaxed">{listing.jobDescription || listing.availability}</p>
                                             )}
-
-                                            {/* Verification hint */}
                                             {!listing.isVerified && (
                                                 <p className="text-xs text-slate-500 mb-3">{t?.jobs?.livePendingVerification || 'Live – Pending Admin Verification'}</p>
                                             )}
 
-                                            {/* View Profile + Contact – single View Profile when no WhatsApp */}
-                                            <div className="flex gap-3">
+                                            {/* View Profile – disabled when filled */}
+                                            <button
+                                                onClick={() => {
+                                                    if (deactivated) return;
+                                                    const therapistId = listing.therapistId || listing.$id;
+                                                    const slug = (listing.therapistName || 'therapist').toLowerCase().replace(/\s+/g, '-');
+                                                    window.history.pushState({}, '', `/#/therapist-profile/${therapistId}-${slug}`);
+                                                    onNavigate?.('shared-therapist-profile');
+                                                }}
+                                                disabled={deactivated}
+                                                className={`w-full py-2.5 px-4 font-semibold text-sm rounded-xl transition-all duration-200 ${!deactivated ? 'bg-primary-500 hover:bg-primary-600 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
+                                            >
+                                                {t?.jobs?.viewProfile || 'View Profile'}
+                                            </button>
+                                            {listing.contactWhatsApp && !deactivated && (
                                                 <button
-                                                    onClick={() => {
-                                                        const therapistId = listing.therapistId || listing.$id;
-                                                        const slug = (listing.therapistName || 'therapist').toLowerCase().replace(/\s+/g, '-');
-                                                        window.history.pushState({}, '', `/#/therapist-profile/${therapistId}-${slug}`);
-                                                        onNavigate?.('shared-therapist-profile');
-                                                    }}
-                                                    className="flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold text-sm rounded-xl transition-all duration-200"
+                                                    onClick={() => window.open(`https://wa.me/${listing.contactWhatsApp.replace(/\D/g, '')}`, '_blank')}
+                                                    className="w-full mt-2 py-2 px-4 border border-primary-500 text-primary-600 font-semibold text-sm rounded-xl hover:bg-primary-50 transition-colors"
                                                 >
-                                                    {t?.jobs?.viewProfile || 'View Profile'}
+                                                    {t?.jobs?.contact || 'Contact'}
                                                 </button>
-                                                {listing.contactWhatsApp && (
-                                                    <button
-                                                        onClick={() => window.open(`https://wa.me/${listing.contactWhatsApp.replace(/\D/g, '')}`, '_blank')}
-                                                        className="flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold text-sm rounded-xl transition-all duration-200"
-                                                    >
-                                                        {t?.jobs?.contact || 'Contact'}
-                                                    </button>
-                                                )}
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                     );
@@ -748,6 +925,45 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                 </div>
             </div>
             </main>
+
+            {/* Auth Required Modal - Create Account / Login */}
+            {showAuthModal && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50" onClick={() => setShowAuthModal(false)}>
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            onClick={() => setShowAuthModal(false)}
+                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                            aria-label="Close"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <h3 className="text-xl font-bold text-slate-900 mb-3 pr-8">Create Your Professional Account</h3>
+                        <p className="text-slate-600 text-sm mb-6">
+                            To maintain platform integrity and protect both employers and professionals, job listings can only be posted by registered IndaStreet members.
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowAuthModal(false);
+                                    onNavigate?.(authModalContext === 'employer' ? 'employer-job-posting' : 'therapist-job-registration');
+                                }}
+                                className="w-full py-3 px-4 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-colors"
+                            >
+                                Create Account
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowAuthModal(false);
+                                    onNavigate?.(authModalContext === 'employer' ? 'employer-job-posting' : 'therapist-job-registration');
+                                }}
+                                className="w-full py-3 px-4 border-2 border-primary-500 text-primary-600 font-semibold rounded-xl hover:bg-primary-50 transition-colors"
+                            >
+                                Login
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

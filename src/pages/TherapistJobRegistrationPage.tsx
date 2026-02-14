@@ -1,10 +1,15 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
-import React, { useState } from 'react';
-import { databases, ID } from '../lib/appwrite';
+import React, { useState, useRef } from 'react';
+import { databases, storage, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { STORAGE_BUCKETS } from '../lib/appwrite';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
+const MAIN_BUCKET = APPWRITE_CONFIG.bucketId;
+const CV_BUCKET = STORAGE_BUCKETS.THERAPIST_DOCUMENTS;
+const CV_MAX_SIZE_MB = 5;
+const CV_ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 
 interface TherapistJobRegistrationPageProps {
     jobId?: string;
@@ -49,6 +54,8 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
         gender: '' as 'Male' | 'Female' | '',
         age: '',
         religion: '',
+        location: '',
+        primarySpecialization: '',
         jobTitle: '',
         jobDescription: '',
         yearsOfExperience: '',
@@ -59,19 +66,30 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
         minimumSalary: '',
         contactWhatsApp: '',
         availability: 'full-time' as 'full-time' | 'part-time' | 'both',
+        statusAvailability: 'available' as 'available' | 'busy',
+        jobSeekingActive: true,
         willingToRelocateDomestic: false,
         willingToRelocateInternational: false,
         accommodation: 'not-required' as 'required' | 'preferred' | 'not-required',
+        certifications: '',
         requiredLicenses: '',
         languages: [] as string[],
         preferredLocations: [] as string[],
         massageTypes: [] as string[],
         specializations: [] as string[],
-        profileImageUrl: ''
+        profileImageUrl: '',
+        profileImageFile: null as File | null,
+        cvFile: null as File | null,
+        cvFileUrl: '',
+        cvFileName: '',
+        cvFileType: ''
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const profileInputRef = useRef<HTMLInputElement>(null);
+    const cvInputRef = useRef<HTMLInputElement>(null);
 
     const handleInputChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -86,60 +104,127 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
         }));
     };
 
+    const validateCvFile = (file: File): string | null => {
+        if (!CV_ACCEPTED_TYPES.includes(file.type)) {
+            return `Invalid file type. Please upload: JPG, JPEG, PNG, or GIF.`;
+        }
+        const sizeMB = file.size / (1024 * 1024);
+        if (sizeMB > CV_MAX_SIZE_MB) {
+            return `File size exceeds ${CV_MAX_SIZE_MB}MB limit.`;
+        }
+        return null;
+    };
+
+    const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && (file.type.startsWith('image/'))) {
+            setFormData(prev => ({ ...prev, profileImageFile: file, profileImageUrl: '' }));
+        }
+        e.target.value = '';
+    };
+
+    const handleCvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const err = validateCvFile(file);
+            if (err) {
+                setError(err);
+                return;
+            }
+            setError('');
+            setFormData(prev => ({
+                ...prev,
+                cvFile: file,
+                cvFileName: file.name,
+                cvFileType: file.type
+            }));
+        }
+        e.target.value = '';
+    };
+
+    const removeCv = () => {
+        setFormData(prev => ({ ...prev, cvFile: null, cvFileUrl: '', cvFileName: '', cvFileType: '' }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setSuccessMessage('');
         setIsSubmitting(true);
 
         try {
-            // Validate required fields
-            if (!formData.therapistName || !formData.jobTitle || !formData.jobDescription || !formData.contactWhatsApp) {
-                throw new Error('Please fill in all required fields');
+            if (!formData.therapistName?.trim()) throw new Error('Full Name is required.');
+            if (!formData.primarySpecialization?.trim() && !formData.jobTitle?.trim()) throw new Error('Primary Specialization is required.');
+            if (!formData.jobDescription?.trim()) throw new Error('Professional Bio is required.');
+            if (!formData.contactWhatsApp?.trim()) throw new Error('WhatsApp Number is required.');
+            if (!formData.location?.trim()) throw new Error('Location is required.');
+            const years = formData.yearsOfExperience ? parseInt(formData.yearsOfExperience, 10) : NaN;
+            if (isNaN(years) || years < 0) throw new Error('Years of Experience must be a valid number.');
+
+            let profileImageUrl = formData.profileImageUrl?.trim();
+            if (formData.profileImageFile) {
+                const fileId = ID.unique();
+                await storage.createFile(MAIN_BUCKET, fileId, formData.profileImageFile);
+                profileImageUrl = storage.getFileView(MAIN_BUCKET, fileId).toString();
+            }
+            if (!profileImageUrl) {
+                throw new Error('Profile Image is required. Please upload a photo.');
             }
 
-            // Validate profile image requirement
-            if (!formData.profileImageUrl || formData.profileImageUrl.trim() === '') {
-                throw new Error('Profile Image Required!\n\nYou must provide a profile image URL before submitting your registration.\n\nPlease add:\n• A clear front or side view of your face\n• Well-lit, professional appearance\n• Recent photo (within 6 months)\n\nThis helps employers identify you and builds trust.');
+            let cvFileUrl = '';
+            let cvFileType = '';
+            if (formData.cvFile) {
+                const err = validateCvFile(formData.cvFile);
+                if (err) throw new Error(err);
+                const fileId = ID.unique();
+                await storage.createFile(CV_BUCKET, fileId, formData.cvFile);
+                cvFileUrl = storage.getFileView(CV_BUCKET, fileId).toString();
+                cvFileType = formData.cvFile.type;
             }
 
-            // Create job listing (pending payment - isActive: false until payment verified)
             const docId = ID.unique();
+            const therapistId = ID.unique();
             await databases.createDocument(
                 DATABASE_ID,
                 COLLECTIONS.therapistJobListings,
                 docId,
                 {
-                    // Required fields
-                    therapistId: ID.unique(), // In a real app, this would be the logged-in user ID
-                    therapistName: formData.therapistName,
+                    therapistId,
+                    therapistName: formData.therapistName.trim(),
                     listingId: Math.floor(Math.random() * 1000000) + 1,
-                    jobTitle: formData.jobTitle,
-                    jobDescription: formData.jobDescription,
-                    jobType: formData.jobTitle, // Using jobTitle as jobType for now
+                    jobTitle: formData.primarySpecialization || formData.jobTitle,
+                    jobDescription: formData.jobDescription.trim(),
+                    jobType: formData.primarySpecialization || formData.jobTitle,
+                    location: formData.location.trim(),
                     minimumSalary: formData.minimumSalary || 'Negotiable',
                     availability: formData.availability,
+                    status: formData.statusAvailability,
+                    jobSeekingActive: formData.jobSeekingActive,
                     willingToRelocateDomestic: formData.willingToRelocateDomestic,
                     willingToRelocateInternational: formData.willingToRelocateInternational,
                     accommodation: formData.accommodation,
-                    preferredLocations: formData.preferredLocations.join(', '), // Convert array to string
-                    isActive: false, // Pending payment - admin activates after payment verified
+                    preferredLocations: formData.preferredLocations.join(', '),
+                    isActive: false,
                     listingDate: new Date().toISOString(),
-                    expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days from now
-                    
-                    // Optional fields
-                    requiredLicenses: formData.requiredLicenses || null,
+                    expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+                    profileImage: profileImageUrl,
+                    requiredLicenses: formData.certifications || formData.requiredLicenses || null,
                     gender: formData.gender || null,
-                    age: formData.age ? parseInt(formData.age) : null,
+                    age: formData.age ? parseInt(formData.age, 10) : null,
                     religion: formData.religion || null,
-                    experienceYears: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : null,
+                    experienceYears: years,
+                    yearsExperience: years,
                     workedAbroadBefore: formData.workedAbroadBefore || null,
                     hasReferences: formData.hasReferences || null,
                     currentlyWorking: formData.currentlyWorking || null,
                     languages: formData.languages.length > 0 ? formData.languages : null,
-                    specializations: formData.massageTypes.length > 0 ? formData.massageTypes : null
+                    specializations: formData.massageTypes.length > 0 ? formData.massageTypes : null,
+                    cvFileUrl: cvFileUrl || null,
+                    cvFileType: cvFileType || null
                 }
             );
 
+            setSuccessMessage('Profile submitted successfully! Redirecting to payment...');
             if (onNavigateToPayment) {
                 onNavigateToPayment(docId);
             } else {
@@ -200,27 +285,32 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
 
             {/* Form */}
             <div className="max-w-4xl mx-auto p-6">
+                <p className="text-sm text-slate-500 mb-4">
+                    Only verified and registered IndaStreet members may publish listings. This protects our professional ecosystem and ensures quality opportunities.
+                </p>
                 <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 space-y-6">
                     {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                             {error}
                         </div>
                     )}
+                    {successMessage && (
+                        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg font-medium">
+                            {successMessage}
+                        </div>
+                    )}
 
-                    {/* Personal Information */}
+                    {/* Basic Info */}
                     <div className="space-y-4">
                         <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                             <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
-                            Personal Information
+                            Basic Info
                         </h2>
                         
                         <div>
                             <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-2">
-                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
                                 Full Name <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -233,7 +323,98 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-20">
+                        {/* Profile Image upload */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Profile Image <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                ref={profileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleProfileImageChange}
+                                className="hidden"
+                            />
+                            <div className="flex items-center gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => profileInputRef.current?.click()}
+                                    className="px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50/50 transition-colors text-sm font-medium text-gray-600"
+                                >
+                                    {formData.profileImageFile ? formData.profileImageFile.name : 'Choose Photo'}
+                                </button>
+                                {formData.profileImageFile && (
+                                    <div className="relative">
+                                        <img src={URL.createObjectURL(formData.profileImageFile)} alt="Preview" className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-200" />
+                                        <button type="button" onClick={() => setFormData(p => ({ ...p, profileImageFile: null }))} className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs">×</button>
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">JPG, PNG, GIF. Max 5MB.</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Location <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                value={formData.location}
+                                onChange={(e) => handleInputChange('location', e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                required
+                            >
+                                <option value="">Select city (Indonesia)</option>
+                                {indonesianCities.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Primary Specialization <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                value={formData.primarySpecialization}
+                                onChange={(e) => handleInputChange('primarySpecialization', e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                required
+                            >
+                                <option value="">Select primary specialization</option>
+                                {massageTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Secondary Specializations (optional)
+                            </label>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                                {massageTypes.filter(t => t !== formData.primarySpecialization).map(type => (
+                                    <label key={type} className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.massageTypes.includes(type)}
+                                            onChange={() => handleArrayToggle('massageTypes', type)}
+                                            className="w-4 h-4 text-orange-500 rounded"
+                                        />
+                                        <span className="text-sm">{type}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Years of Experience <span className="text-red-500">*</span></label>
+                                <input
+                                    type="number"
+                                    value={formData.yearsOfExperience}
+                                    onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                                    placeholder="0"
+                                    min="0"
+                                    required
+                                />
+                            </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Gender
@@ -289,23 +470,6 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
 
                         <div>
                             <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-2">
-                                <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                Job Title / Position <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.jobTitle}
-                                onChange={(e) => handleInputChange('jobTitle', e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                placeholder="e.g., Traditional Healing & Spa Expert"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-2">
                                 <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                                 </svg>
@@ -332,11 +496,8 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                         </h2>
 
                         <div>
-                            <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-2">
-                                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                About You / Job Description <span className="text-red-500">*</span>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Professional Bio <span className="text-red-500">*</span>
                             </label>
                             <textarea
                                 value={formData.jobDescription}
@@ -348,36 +509,20 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Years of Experience
-                                </label>
-                                <input
-                                    type="number"
-                                    value={formData.yearsOfExperience}
-                                    onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="0"
-                                    min="0"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Experience Level
-                                </label>
-                                <select
-                                    value={formData.experienceLevel}
-                                    onChange={(e) => handleInputChange('experienceLevel', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    aria-label="Select experience level"
-                                >
-                                    <option value="Experienced">Experienced</option>
-                                    <option value="Basic Skill">Basic Skill</option>
-                                    <option value="Require Training">Require Training</option>
-                                </select>
-                            </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Experience Level
+                            </label>
+                            <select
+                                value={formData.experienceLevel}
+                                onChange={(e) => handleInputChange('experienceLevel', e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                aria-label="Select experience level"
+                            >
+                                <option value="Experienced">Experienced</option>
+                                <option value="Basic Skill">Basic Skill</option>
+                                <option value="Require Training">Require Training</option>
+                            </select>
                         </div>
 
                         <div>
@@ -397,23 +542,39 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                         </div>
 
                         <div>
-                            <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-2">
-                                <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Availability
-                            </label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Availability (status)</label>
+                            <select
+                                value={formData.statusAvailability}
+                                onChange={(e) => handleInputChange('statusAvailability', e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            >
+                                <option value="available">🟢 Available</option>
+                                <option value="busy">🟡 Busy</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Work Schedule</label>
                             <select
                                 value={formData.availability}
                                 onChange={(e) => handleInputChange('availability', e.target.value)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                aria-label="Select availability"
                             >
                                 <option value="full-time">Full-time</option>
                                 <option value="part-time">Part-time</option>
                                 <option value="both">Both</option>
                             </select>
                         </div>
+
+                        <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={formData.jobSeekingActive}
+                                onChange={(e) => handleInputChange('jobSeekingActive', e.target.checked)}
+                                className="w-5 h-5 text-orange-500 rounded"
+                            />
+                            <span className="text-sm font-medium text-gray-700">Job Seeking Active (show my profile to employers)</span>
+                        </label>
 
                         {/* Work History */}
                         <div className="space-y-3 pt-4 border-t border-gray-200">
@@ -532,41 +693,70 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                         </div>
                     </div>
 
-                    {/* Optional Information */}
+                    {/* Certifications & CV */}
                     <div className="space-y-4">
-                        <h2 className="text-xl font-bold text-gray-900">Additional Information (Optional)</h2>
+                        <h2 className="text-xl font-bold text-gray-900">Certifications & CV</h2>
                         
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Licenses & Certifications
-                            </label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Certifications</label>
                             <input
                                 type="text"
-                                value={formData.requiredLicenses}
-                                onChange={(e) => handleInputChange('requiredLicenses', e.target.value)}
+                                value={formData.certifications}
+                                onChange={(e) => handleInputChange('certifications', e.target.value)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 placeholder="e.g., Certified Massage Therapist, Spa License"
                             />
                         </div>
 
+                        {/* CV Upload */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Profile Image URL
-                            </label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">CV / Resume Upload (optional)</label>
+                            <p className="text-xs text-gray-500 mb-2">Accepted: JPG, JPEG, PNG, GIF. Max {CV_MAX_SIZE_MB}MB.</p>
                             <input
-                                type="url"
-                                value={formData.profileImageUrl}
-                                onChange={(e) => handleInputChange('profileImageUrl', e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                placeholder="https://example.com/profile.jpg"
+                                ref={cvInputRef}
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.gif,image/jpeg,image/jpg,image/png,image/gif"
+                                onChange={handleCvChange}
+                                className="hidden"
                             />
+                            <div className="flex items-center gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => cvInputRef.current?.click()}
+                                    className="px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50/50 transition-colors text-sm font-medium text-gray-600"
+                                >
+                                    {formData.cvFileName || 'Choose CV File'}
+                                </button>
+                                {formData.cvFile && (
+                                    <>
+                                        <span className="text-sm text-gray-600">{formData.cvFileName}</span>
+                                        {formData.cvFile.type.startsWith('image/') && (
+                                            <img src={URL.createObjectURL(formData.cvFile)} alt="CV preview" className="w-16 h-16 object-cover rounded border" />
+                                        )}
+                                        <button type="button" onClick={removeCv} className="text-red-600 text-sm font-medium hover:underline">
+                                            Remove
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Note about main images */}
-                        <div className="p-4 pb-20 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p className="text-sm text-blue-700">
-                                <span className="font-medium">Note:</span> Main card images are automatically assigned from our curated collection to ensure consistent quality and design.
-                            </p>
+                        {/* Languages Spoken */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Languages Spoken</label>
+                            <div className="flex flex-wrap gap-2">
+                                {['Indonesian', 'English', 'Javanese', 'Balinese', 'Sundanese', 'Chinese', 'Japanese', 'Arabic'].map(lang => (
+                                    <label key={lang} className="flex items-center gap-2 cursor-pointer px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 hover:border-orange-300">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.languages.includes(lang)}
+                                            onChange={() => handleArrayToggle('languages', lang)}
+                                            className="w-4 h-4 text-orange-500 rounded"
+                                        />
+                                        <span className="text-sm">{lang}</span>
+                                    </label>
+                                ))}
+                            </div>
                         </div>
                     </div>
 

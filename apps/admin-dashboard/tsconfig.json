@@ -24,9 +24,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    
-    /* Suppress deprecation warnings */
-    "ignoreDeprecations": "6.0",
 
     /* Path aliases */
     "baseUrl": ".",

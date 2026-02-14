@@ -34,7 +34,7 @@ Registration Date: ${new Date(data.registrationDate).toLocaleString()}
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                access_key: '46ce7d7f-e9d5-4d49-8f14-0b0e3c3e1f5a', // Web3Forms free API key (replace with your own)
+                access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || '',
                 subject: `New ${data.type === 'therapist' ? 'Therapist' : 'Massage Place'} Registration`,
                 from_name: 'IndaStreet Registration System',
                 email: 'indastreet.id@gmail.com',
@@ -6619,7 +6619,7 @@ Please review and approve/decline within 7 days.
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    access_key: '46ce7d7f-e9d5-4d49-8f14-0b0e3c3e1f5a',
+                    access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || '',
                     subject: `🔔 New Payment Proof Submitted - ${confirmation.memberType}`,
                     from_name: 'IndaStreet Payment System',
                     email: 'indastreet.id@gmail.com',
