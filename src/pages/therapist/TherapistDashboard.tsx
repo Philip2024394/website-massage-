@@ -83,10 +83,10 @@ function PWADashboardIndicator() {
       className={`flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full font-medium ${
         installed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
       }`}
-      title={installed ? 'App installed on device – notifications & sounds active' : 'Download app to home screen for notifications & sounds'}
+      title={installed ? 'App downloaded – notifications & sounds active' : 'Press download manually – Android/iOS'}
     >
       <span className={`w-2 h-2 rounded-full flex-shrink-0 ${installed ? 'bg-green-500' : 'bg-red-500'}`} />
-      {installed ? 'App installed' : 'Need download'}
+      {installed ? 'App downloaded' : 'Press download manually'}
     </span>
   );
 }

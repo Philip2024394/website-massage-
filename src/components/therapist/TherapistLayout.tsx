@@ -67,6 +67,7 @@ import EnhancedNavigation from './EnhancedNavigation';
 import FloatingActionButton from './FloatingActionButton';
 import SmartBreadcrumb from './SmartBreadcrumb';
 import { getTherapistSidebarPage } from '../../config/therapistSidebarConfig';
+import ToastContainer from './ToastContainer';
 
 // Alias BarChart as BarChart3 for compatibility (BarChart3 doesn't exist in lucide-react)
 const BarChart3 = BarChart;
@@ -843,6 +844,9 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           showLabel={false}
         />
       )}
+
+      {/* Toast notifications for success/error feedback (e.g. Download App) */}
+      <ToastContainer />
     </div>
   );
 };

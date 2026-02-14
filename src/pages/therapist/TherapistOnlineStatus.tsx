@@ -772,6 +772,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         return;
       }
 
+      // Immediate feedback so user knows the button was pressed
+      showToast('📱 Preparing app installation...', 'info', { duration: 2000 });
+
       // Play download initiation sound
       try {
         await pwaNotificationSoundHandler.playNotificationSound('booking');
@@ -787,6 +790,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       if (isIOSDevice) {
         console.log('📱 iOS detected - showing install instructions modal');
         setShowIOSInstructions(true);
+        showToast('📱 Follow the instructions below to add the app to your home screen', 'info', { duration: 5000 });
         return;
       }
       
@@ -1404,9 +1408,20 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           )}
         </div>
         
-        {/* ENHANCED: Download App Section with White Background */}
-        {showPWAInstallSection && (
+        {/* ELITE: Download App Section - Green/Red status indicator + standard button */}
+        {showPWAInstallSection && (() => {
+          const statusLabel = isAppInstalled ? 'App downloaded' : 'Press download manually';
+          const statusDot = isAppInstalled ? 'bg-green-500' : 'bg-red-500';
+          const statusBg = isAppInstalled ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+          const statusText = isAppInstalled ? 'text-green-800' : 'text-red-800';
+          return (
         <div className="rounded-xl p-6 border-2 bg-white border-orange-200 shadow-lg">
+          {/* ELITE: Green/Red dot status indicator */}
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border mb-4 ${statusBg}`}>
+            <span className={`w-3 h-3 rounded-full flex-shrink-0 ${statusDot} ${isAppInstalled ? 'animate-pulse' : ''}`} />
+            <span className={`text-sm font-semibold ${statusText}`}>{statusLabel}</span>
+          </div>
+
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
@@ -1419,7 +1434,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                   <h3 className={`text-lg font-bold ${
                     isAppInstalled ? 'text-green-800' : 'text-orange-800'
                   }`}>
-                    {isAppInstalled ? '✅ Aplikasi Terunduh' : '📱 Unduh Aplikasi'}
+                    {isAppInstalled ? 'Aplikasi Terunduh' : 'Unduh Aplikasi'}
                   </h3>
                   <HelpTooltip 
                     {...onlineStatusHelp.downloadApp}
@@ -1432,9 +1447,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 }`}>
                   {isAppInstalled 
                     ? (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches 
-                        ? '🚀 PWA Active! Running in full app mode with enhanced features'
-                        : '🎵 Aplikasi siap dengan fitur lengkap: notifikasi, suara & getaran')
-                    : '🎆 Dapatkan fitur lengkap: notifikasi musik, getaran, chat real-time'
+                        ? 'PWA Active – notifications & sounds enabled'
+                        : 'App ready – notifications, sound & vibration enabled')
+                    : 'Download for Android/iOS – notifications, sound, chat'
                   }
                 </p>
               </div>
@@ -1449,44 +1464,26 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             </button>
           </div>
           
-          {/* Custom Download Button with Image */}
+          {/* Standard elite Download App button (no image) */}
           <button
             onClick={handleSimpleDownload}
             disabled={isAppInstalled}
-            className={`w-full relative overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${
+            className={`w-full rounded-xl py-4 px-6 flex items-center justify-center gap-3 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${
               isAppInstalled
-                ? 'cursor-not-allowed opacity-75'
-                : 'hover:shadow-xl'
+                ? 'bg-gradient-to-r from-green-500 to-green-600 text-white cursor-not-allowed opacity-80'
+                : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl hover:from-orange-600 hover:to-orange-700'
             }`}
-            style={{ minHeight: '60px' }}
           >
             {isAppInstalled ? (
-              <div className="bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 rounded-xl flex items-center justify-center gap-3 font-semibold">
+              <>
                 <Lock className="w-6 h-6" />
-                <span>✅ Terunduh & Aktif</span>
-              </div>
+                <span>App downloaded</span>
+              </>
             ) : (
-              <div className="relative">
-                <img 
-                  src="https://ik.imagekit.io/7grri5v7d/download_button-removebg-preview.png?updatedAt=1770465162327"
-                  alt="Download Therapist App"
-                  className="w-full h-auto max-h-16 object-contain"
-                  style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}
-                  onError={(e) => {
-                    // Fallback if image fails to load
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.nextElementSibling?.classList.remove('hidden');
-                  }}
-                />
-                {/* Fallback button if image fails */}
-                <div className="fallback-button hidden w-full">
-                  <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl flex items-center justify-center gap-3 font-bold text-lg shadow-lg">
-                    <Download className="w-6 h-6" />
-                    <span>🚀 UNDUH SEKARANG</span>
-                  </div>
-                </div>
-              </div>
+              <>
+                <Download className="w-6 h-6" />
+                <span>Download App</span>
+              </>
             )}
           </button>
           
@@ -1511,6 +1508,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                   <span className="font-medium">Chat Real-time</span>
                 </div>
               </div>
+              <p className="mt-2 text-xs text-orange-600">
+                Android: Menu (⋮) → Install app • iOS: Share (⬆️) → Add to Home Screen
+              </p>
             </div>
           )}
           
@@ -1525,7 +1525,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             </button>
           )}
         </div>
-        )}
+          );
+        })()}
       </div>
     </div>
     </TherapistLayout>
