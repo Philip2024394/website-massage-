@@ -1,7 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawerClean';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import UniversalHeader from '../components/shared/UniversalHeader';
 
 interface BlogPost {
@@ -19,6 +18,8 @@ interface BlogPost {
 
 interface BlogIndexPageProps {
     onNavigate?: (page: string) => void;
+    onLanguageChange?: (lang: string) => void;
+    language?: 'en' | 'id';
     t?: any;
     // Add navigation props for the drawer
     onMassageJobsClick?: () => void;
@@ -37,6 +38,8 @@ interface BlogIndexPageProps {
 
 const BlogIndexPage: React.FC<BlogIndexPageProps> = ({ 
     onNavigate,
+    onLanguageChange,
+    language = 'id',
     t,
     onMassageJobsClick,
 
@@ -217,33 +220,14 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
 
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-purple-50 via-white to-blue-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-orange-500">IndaStreet</span>
-                    </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
-                        {/* Home Button */}
-                        <button 
-                            onClick={() => {
-                                if (onNavigate) {
-                                    onNavigate('home');
-                                }
-                            }} 
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
-                            title="Home"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-                        
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
-                           <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
-                </div>
-            </header>
+            {/* Universal Header - same as home page */}
+            <UniversalHeader
+                language={language}
+                onLanguageChange={onLanguageChange}
+                onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={() => onNavigate?.('home')}
+                showHomeButton={true}
+            />
             
             {/* Global App Drawer */}
             <AppDrawer
@@ -264,9 +248,9 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 places={places}
             />
 
-            {/* Hero Section */}
+            {/* Hero Section - pt for fixed header */}
             <div 
-                className="relative h-96 bg-cover bg-center"
+                className="relative h-96 bg-cover bg-center pt-16"
                 style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20therapist%20indonisea.png?updatedAt=1761563061042')" }}
             >
             </div>

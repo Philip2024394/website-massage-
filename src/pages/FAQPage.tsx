@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Search, MessageCircle, Phone, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, Plus, X } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -17,6 +16,7 @@ interface FAQ {
 
 interface FAQPageProps {
     onNavigate?: (page: string) => void;
+    onLanguageChange?: (lang: string) => void;
     onMassageJobsClick?: () => void;
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
@@ -32,6 +32,7 @@ interface FAQPageProps {
 
 const FAQPage: React.FC<FAQPageProps> = ({ 
     onNavigate,
+    onLanguageChange,
     onMassageJobsClick,
     onVillaPortalClick,
     onTherapistPortalClick,
@@ -44,7 +45,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
     therapists = [],
     places = []
 }) => {
-    const { language } = useLanguage();
+    const { language, setLanguage } = useLanguage();
     const { t } = useTranslations(language as 'en' | 'id');
     const [activeCategory, setActiveCategory] = useState<string>('general');
     const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
@@ -521,9 +522,13 @@ const FAQPage: React.FC<FAQPageProps> = ({
 
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
+            {/* Universal Header - same as home page */}
             <UniversalHeader
-                onNavigate={onNavigate}
-                onMenuToggle={() => setIsMenuOpen(true)}
+                language={language}
+                onLanguageChange={onLanguageChange ?? setLanguage}
+                onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={() => onNavigate?.('home')}
+                showHomeButton={true}
                 title="IndaStreet Help Center"
             />
             
@@ -543,38 +548,9 @@ const FAQPage: React.FC<FAQPageProps> = ({
                     animation: fade-in-down 0.3s ease-out;
                 }
             `}</style>
-            
-            {/* Header */}
-            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                        <span className="text-gray-400 text-lg ml-2 font-normal">Help Center</span>
-                    </h1>
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => onNavigate?.('home')}
-                            className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
-                            title="Home"
-                        >
-                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-                        <button 
-                            onClick={() => setIsMenuOpen(true)} 
-                            className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
-                            title="Menu"
-                        >
-                            <BurgerMenuIcon className="w-5 h-5 text-gray-600" />
-                        </button>
-                    </div>
-                </div>
-            </header>
 
-            {/* Hero Section - Minimalistic */}
-            <section className="relative py-16 md:py-24 px-4">
+            {/* Hero Section - Minimalistic (pt for fixed header) */}
+            <section className="relative pt-24 md:pt-28 pb-16 md:pb-24 px-4">
                 <div className="max-w-4xl mx-auto">
                     {/* Back Arrow */}
                     <button

@@ -18,6 +18,7 @@ import UniversalHeader from '../components/shared/UniversalHeader';
 
 interface AboutUsPageProps {
     onNavigate: (page: string) => void;
+    onLanguageChange?: (lang: string) => void;
     onBack?: () => void;
     t?: any;
     // Add navigation props for the drawer
@@ -36,7 +37,8 @@ interface AboutUsPageProps {
 }
 
 const AboutUsPage: React.FC<AboutUsPageProps> = ({ 
-    onNavigate, 
+    onNavigate,
+    onLanguageChange,
     onMassageJobsClick,
     onHotelPortalClick,
     onVillaPortalClick,
@@ -50,16 +52,19 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
     therapists = [],
     places = []
 }) => {
-    const { language } = useLanguage();
+    const { language, setLanguage } = useLanguage();
     const { t } = useTranslations(language as 'en' | 'id');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
-            {/* Universal Header */}
+            {/* Universal Header - same as home page */}
             <UniversalHeader 
+                language={language}
+                onLanguageChange={onLanguageChange ?? setLanguage}
                 onMenuClick={() => setIsMenuOpen(true)}
-                showLanguageSelector={false}
+                onHomeClick={() => onNavigate?.('home')}
+                showHomeButton={true}
             />
             {/* Global App Drawer - same content as Home */}
             <React19SafeWrapper condition={isMenuOpen}>

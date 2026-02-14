@@ -681,25 +681,6 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
                 showCityInfo={false}
             />
             
-            {/* 🔒 CONTENT PROTECTION NOTICE */}
-            <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mx-4 mt-2 mb-6 rounded-r-lg shadow-sm">
-                <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                        <span className="text-2xl">🛡️</span>
-                    </div>
-                    <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-amber-800 mb-1">
-                            SEALED OWNER-CONTROLLED JEWEL STANDARD ACTIVE
-                        </h3>
-                        <p className="text-xs text-amber-700">
-                            This page content is protected under executive-level curation standards. 
-                            <span className="font-medium"> Only contact interactions are permitted.</span> 
-                            All content modifications are restricted and monitored.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
             {/* Global App Drawer */}
             <React19SafeWrapper condition={isMenuOpen}>
                 <AppDrawer
