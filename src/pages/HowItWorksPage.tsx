@@ -46,6 +46,7 @@ const THERAPIST_FAQ_ITEMS: { q: string; a: string }[] = [
     { q: 'I am under 18. Can I join?', a: 'Therapists must be at least 18 years old. Minors are not permitted to offer services unless legally approved and accompanied by an adult at all times.' },
     { q: 'I\'m new and need help setting up my account.', a: 'Our support team is available to guide you through setup. We\'ll ensure your profile is correctly positioned and optimized.' },
     { q: 'What does IndaStreet use commission for?', a: 'Commission supports: marketing & visibility, platform maintenance, security monitoring, customer service, and system improvements. It keeps your profile active, secure, and visible.' },
+    { q: 'What is Safe Pass for hotel and villa service?', a: 'Safe Pass is a certification for therapists who provide services at hotels and villas. It confirms professional verification, identity approval, and platform compliance—enabling access to gated communities and secured properties. Qualified therapists can apply for Safe Pass in their dashboard.' },
 ];
 
 /** Skin Clinic FAQ – Safety, qualifications, verification, and policies */
@@ -69,6 +70,7 @@ const SPA_FAQ_ITEMS: { q: string; a: string }[] = [
     { q: 'How do payouts work for spas?', a: 'Earnings are tracked in your dashboard. Payout terms depend on your agreement with IndaStreet. You maintain control over how and when you receive payments.' },
     { q: 'Can we offer both in-spa and outcall services?', a: 'Yes. You can list in-spa treatments and, if your team does outcall, add those options. Clear service descriptions help customers choose the right booking type.' },
     { q: 'What if we need to close temporarily?', a: 'You can set your spa to "Closed" or reduce availability in your dashboard. Your listing and reviews remain; you can go live again when you reopen.' },
+    { q: 'What is Safe Pass for places (hotels/villas)?', a: 'Spas and places that work with hotels or villas can apply for Safe Pass certification. It confirms your establishment meets IndaStreet standards for hosting professional therapists. Apply in your Place Dashboard if you offer services at hotels or villa properties.' },
 ];
 
 /** Booking Process – Customer reviews from different countries */
@@ -88,6 +90,35 @@ const BOOKING_PROCESS_FAQ_ITEMS: { q: string; a: string }[] = [
     { q: 'Do I pay upfront?', a: 'For scheduled bookings, a deposit may be required to secure your slot. For instant (Book Now) bookings, payment is typically made after the service. Payment terms are shown before you confirm.' },
     { q: 'What if I need to cancel?', a: 'Cancellation policies vary by provider and booking type. Check the booking confirmation for cancellation terms. Deposits may be non-refundable for last-minute cancellations.' },
     { q: 'Are all providers on IndaStreet verified?', a: 'Anyone can create an account. IndaStreet Verified is a status we grant after reviewing credentials and business details. Look for the Verified badge—it means IndaStreet has reviewed that provider.' },
+    { q: 'What if I have an issue or need support?', a: 'Use the Contact Us page or Help section to reach our support team. We can assist with booking issues, provider concerns, or general questions. Response times vary by topic—urgent issues can be escalated.' },
+    { q: 'Can I book for international travel or from abroad?', a: 'Yes. IndaStreet serves customers booking for hotel, villa, or home visits in our service areas. Payment and confirmation work the same—deposits for scheduled bookings may apply. Check provider availability for your travel dates.' },
+];
+
+/** Hotel Partners FAQ */
+const HOTEL_FAQ_ITEMS: { q: string; a: string }[] = [
+    { q: 'How do I register my hotel?', a: 'Contact IndaStreet or use the partnership application to register your property. You will need hotel details, compliance information, and to meet our standards. Our team will guide you through setup.' },
+    { q: 'What are IndaStreet compliance standards for hotels?', a: 'We verify business legitimacy, property details, and operational standards. Qualified hotels receive free room display materials. Specific requirements are communicated during registration.' },
+    { q: 'Is there a fee to partner?', a: 'Partnership terms vary. Qualified hotels that meet our standards receive free room display stands. Commission or fees may apply to therapist bookings—details are provided when you join.' },
+    { q: 'How do I book therapists for my guests?', a: 'Use the hotel dashboard or platform to browse IndaStreet Verified therapists with Safe Pass. Request bookings by specialty and availability. Therapists are available 24/7 for hassle-free service.' },
+    { q: 'Who do I contact for hotel partnerships?', a: 'Use the Contact Us page or partnership application. Our team will respond and guide you through registration and setup.' },
+];
+
+/** Villa Partners FAQ */
+const VILLA_FAQ_ITEMS: { q: string; a: string }[] = [
+    { q: 'How do I register my villa?', a: 'Contact IndaStreet or use the partnership application to register your property. You will need villa details, compliance information, and to meet our standards. Our team will guide you through setup.' },
+    { q: 'What are IndaStreet compliance standards for villas?', a: 'We verify business legitimacy, property details, and operational standards. Qualified villas receive free room display materials. Specific requirements are communicated during registration.' },
+    { q: 'Is there a fee to partner?', a: 'Partnership terms vary. Qualified villas that meet our standards receive free room display stands. Commission or fees may apply to therapist bookings—details are provided when you join.' },
+    { q: 'How do I book therapists for my guests?', a: 'Use the villa dashboard or platform to browse IndaStreet Verified therapists with Safe Pass. Request bookings by specialty and availability. Therapists are available 24/7 for in-villa service.' },
+    { q: 'Who do I contact for villa partnerships?', a: 'Use the Contact Us page or partnership application. Our team will respond and guide you through registration and setup.' },
+];
+
+/** Employers FAQ */
+const EMPLOYER_FAQ_ITEMS: { q: string; a: string }[] = [
+    { q: 'How much does it cost to unlock a therapist\'s contact?', a: 'Employers pay a one-time fee (e.g. IDR 300,000) to unlock full contact information including WhatsApp and full name. This filters serious employers and protects therapist privacy.' },
+    { q: 'How do I post a job?', a: 'Use the Massage Jobs or Employer Job Posting section. Create your job listing with requirements, and service providers can reply. Providers must submit CV with recommendations or have positive IndaStreet reviews.' },
+    { q: 'What does "confirmation at selected fee rate" mean?', a: 'IndaStreet can help verify or confirm therapist credentials, employment history, or references for employers—at a selected fee. Contact us for details on confirmation services.' },
+    { q: 'What is the translation service for international hiring?', a: 'IndaStreet offers translation support when employers hire therapists for international or cross-language roles. Fee and scope depend on your needs—contact us for a quote.' },
+    { q: 'How do I know if a therapist has CV/recommendations vs IndaStreet reviews?', a: 'Provider profiles show their path: either CV with past service history and recommendations, or active IndaStreet presence with positive reviews over time. Check the profile before unlocking contact.' },
 ];
 
 interface MassageTherapistHowItWorksProps {
@@ -2899,6 +2930,27 @@ function HotelPartnersHowItWorks({ t, glassCardClass }: { t?: any; glassCardClas
                     </div>
                 </div>
             </motion.div>
+
+            {/* FAQ */}
+            <motion.div
+                className={`${glassCardClass} overflow-hidden`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={MOTION_VIEW}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+                <div className="p-6 md:p-10">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">{t?.howItWorks?.hotelFaqTitle || 'Hotel Partners FAQ'}</h3>
+                    <div className="space-y-6">
+                        {HOTEL_FAQ_ITEMS.map((item, i) => (
+                            <motion.div key={i} className="border-b border-slate-200 pb-6 last:border-0 last:pb-0" initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={MOTION_VIEW} transition={{ duration: 0.35, delay: i * 0.05 }}>
+                                <p className="font-semibold text-gray-900 mb-2">{item.q}</p>
+                                <p className="text-gray-600 text-sm leading-relaxed">{item.a}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
         </div>
     );
 }
@@ -3070,6 +3122,221 @@ function VillaPartnersHowItWorks({ t, glassCardClass }: { t?: any; glassCardClas
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* FAQ */}
+            <motion.div
+                className={`${glassCardClass} overflow-hidden`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={MOTION_VIEW}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+                <div className="p-6 md:p-10">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">{t?.howItWorks?.villaFaqTitle || 'Villa Partners FAQ'}</h3>
+                    <div className="space-y-6">
+                        {VILLA_FAQ_ITEMS.map((item, i) => (
+                            <motion.div key={i} className="border-b border-slate-200 pb-6 last:border-0 last:pb-0" initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={MOTION_VIEW} transition={{ duration: 0.35, delay: i * 0.05 }}>
+                                <p className="font-semibold text-gray-900 mb-2">{item.q}</p>
+                                <p className="text-gray-600 text-sm leading-relaxed">{item.a}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+    );
+}
+
+/** Employers – How It Works for employers hiring massage & skin care service providers */
+function EmployersHowItWorks({ t, glassCardClass }: { t?: any; glassCardClass: string }) {
+    return (
+        <div className="space-y-12">
+            {/* Hero */}
+            <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
+                <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%)' }}>
+                    {t?.howItWorks?.employerSectionTitle || 'How Employers Hire on IndaStreet'}
+                </h2>
+                <p className="text-xl text-gray-600 mb-2">
+                    {t?.howItWorks?.employerSectionSubtitle || 'Qualified therapists offering massage & skin care—looking for employment'}
+                </p>
+                <p className="text-base text-gray-500 max-w-3xl mx-auto">
+                    {t?.howItWorks?.employerSectionTagline || 'Employers can easily view job listing pages for qualified therapists who offer massage service, skin care service, and are looking for employment. Listed providers display full qualifications and are available for local inland work or internationally.'}
+                </p>
+            </motion.div>
+
+            {/* View Job Listings – qualified providers */}
+            <motion.div
+                className={`${glassCardClass} overflow-hidden border-2 border-orange-200/60`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={MOTION_VIEW}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+                <div className="p-6 md:p-10">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                        <span aria-hidden>🔍</span>
+                        {t?.howItWorks?.employerViewListingsTitle || 'View Qualified Service Providers'}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                        {t?.howItWorks?.employerViewListingsIntro || 'Employers can easily browse job listing pages for qualified therapists offering massage service, skin care service, and looking for employment. Listed service providers display all details of qualifications and are available for local inland work or internationally.'}
+                    </p>
+                    <ul className="space-y-2 text-gray-700">
+                        {[
+                            t?.howItWorks?.employerViewListings1 ?? 'Massage service providers seeking employment',
+                            t?.howItWorks?.employerViewListings2 ?? 'Skin care service providers seeking employment',
+                            t?.howItWorks?.employerViewListings3 ?? 'Full qualification details displayed on profiles',
+                            t?.howItWorks?.employerViewListings4 ?? 'Available for local inland or international work',
+                        ].map((item, i) => (
+                            <li key={i} className="flex items-center gap-2">
+                                <CheckIcon />
+                                {item}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </motion.div>
+
+            {/* IndaStreet Support – confirmation & translation */}
+            <motion.div
+                className={`${glassCardClass} overflow-hidden`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={MOTION_VIEW}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+                <div className="p-6 md:p-10">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                        <span aria-hidden>🤝</span>
+                        {t?.howItWorks?.employerSupportTitle || 'IndaStreet Can Help'}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                        {t?.howItWorks?.employerSupportIntro || 'IndaStreet offers support to employers at selected fee rates:'}
+                    </p>
+                    <ul className="space-y-2 text-gray-700">
+                        {[
+                            t?.howItWorks?.employerSupport1 ?? 'Confirmation services at selected fee rate',
+                            t?.howItWorks?.employerSupport2 ?? 'Translation service for international hiring',
+                        ].map((item, i) => (
+                            <li key={i} className="flex items-center gap-2">
+                                <CheckIcon />
+                                {item}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </motion.div>
+
+            {/* Post Job Positions & Provider Requirements */}
+            <motion.div
+                className={`${glassCardClass} overflow-hidden`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={MOTION_VIEW}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+                <div className="p-6 md:p-10">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <span aria-hidden>📋</span>
+                        {t?.howItWorks?.employerPostJobsTitle || 'Post Job Positions & Provider Requirements'}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                        {t?.howItWorks?.employerPostJobsIntro || 'Employers can post job positions for service providers to reply. All service providers must meet one of the following:'}
+                    </p>
+                    <div className="space-y-4">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+                            <p className="font-semibold text-gray-900 mb-2">{t?.howItWorks?.employerProviderReq1Title || 'Option 1: Submit CV with history'}</p>
+                            <p className="text-gray-600 text-sm">{t?.howItWorks?.employerProviderReq1Desc || 'Submit CV with past service history and recommendations.'}</p>
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+                            <p className="font-semibold text-gray-900 mb-2">{t?.howItWorks?.employerProviderReq2Title || 'Option 2: Active on IndaStreet Massage'}</p>
+                            <p className="text-gray-600 text-sm">{t?.howItWorks?.employerProviderReq2Desc || 'Be active on IndaStreet Massage with positive reviews for a length of time.'}</p>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* 4-step flow cards */}
+            <div className="grid md:grid-cols-2 gap-8">
+                {[
+                    { icon: '🔍', title: t?.howItWorks?.employerCard1Title || 'Browse Job Seekers', desc: t?.howItWorks?.employerCard1Desc || 'Search our marketplace for qualified massage and skin care professionals actively seeking employment. Filter by specialty, experience, and location.', items: [t?.howItWorks?.employerCard1Item1 || 'Filter by specialty, experience, location', t?.howItWorks?.employerCard1Item2 || 'View certifications and full qualifications', t?.howItWorks?.employerCard1Item3 || 'Local or international availability shown'] },
+                    { icon: '🔓', title: t?.howItWorks?.employerCard2Title || 'Unlock Contact Details', desc: t?.howItWorks?.employerCard2Desc || 'Pay one-time fee to unlock full contact information including WhatsApp number and full name.', items: [t?.howItWorks?.employerCard2Item1 || 'Secure payment via bank transfer', t?.howItWorks?.employerCard2Item2 || 'Instant access after verification', t?.howItWorks?.employerCard2Item3 || 'Direct WhatsApp communication'] },
+                    { icon: '📝', title: t?.howItWorks?.employerCard3Title || 'Post Job Positions', desc: t?.howItWorks?.employerCard3Desc || 'Employers can post job positions for service providers to reply. Service providers must submit CV with recommendations or have positive IndaStreet reviews.', items: [t?.howItWorks?.employerCard3Item1 || 'Post your job requirements', t?.howItWorks?.employerCard3Item2 || 'Providers apply with CV or IndaStreet history', t?.howItWorks?.employerCard3Item3 || 'Interview and hire directly'] },
+                    { icon: '⭐', title: t?.howItWorks?.employerCard4Title || 'Interview & Leave Reviews', desc: t?.howItWorks?.employerCard4Desc || 'Contact therapists directly via WhatsApp. Conduct interviews, check references, and make your hiring decision. Leave honest reviews after hiring.', items: [t?.howItWorks?.employerCard4Item1 || 'Rate professionalism', t?.howItWorks?.employerCard4Item2 || 'Share your experience', t?.howItWorks?.employerCard4Item3 || 'Help build community trust'] },
+                ].map((card, i) => (
+                    <motion.div
+                        key={i}
+                        className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100"
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={MOTION_VIEW}
+                        transition={{ duration: 0.4, delay: i * 0.1 }}
+                    >
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl" style={{ background: stepIconGradient, boxShadow: '0 4px 20px rgba(249,115,22,0.35)' }}>
+                                {card.icon}
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">{card.title}</h3>
+                        </div>
+                        <p className="text-gray-600 mb-4">{card.desc}</p>
+                        <ul className="space-y-2 text-gray-600">
+                            {card.items.map((item: string, j: number) => (
+                                <li key={j} className="flex items-start gap-2">
+                                    <CheckIcon />
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Privacy Model */}
+            <motion.div
+                className={`${glassCardClass} overflow-hidden border-2 border-orange-200/60`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={MOTION_VIEW}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+                <div className="p-6 md:p-10">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">{t?.howItWorks?.employerPrivacyTitle || 'Why Our Privacy Model Works'}</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 className="font-bold text-gray-900 mb-2">🛡️ {t?.howItWorks?.employerPrivacyTherapist || 'For Therapists:'}</h4>
+                            <p className="text-gray-600">
+                                {t?.howItWorks?.employerPrivacyTherapistDesc || 'Protects them from spam, harassment, and unwanted contact. Only serious employers who pay can reach them.'}
+                            </p>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-gray-900 mb-2">✅ {t?.howItWorks?.employerPrivacyEmployer || 'For Employers:'}</h4>
+                            <p className="text-gray-600">
+                                {t?.howItWorks?.employerPrivacyEmployerDesc || 'Ensures access to serious job seekers. Small fee filters out time-wasters and ensures quality candidates.'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* FAQ */}
+            <motion.div
+                className={`${glassCardClass} overflow-hidden`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={MOTION_VIEW}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+                <div className="p-6 md:p-10">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">{t?.howItWorks?.employerFaqTitle || 'Employers FAQ'}</h3>
+                    <div className="space-y-6">
+                        {EMPLOYER_FAQ_ITEMS.map((item, i) => (
+                            <motion.div key={i} className="border-b border-slate-200 pb-6 last:border-0 last:pb-0" initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={MOTION_VIEW} transition={{ duration: 0.35, delay: i * 0.05 }}>
+                                <p className="font-semibold text-gray-900 mb-2">{item.q}</p>
+                                <p className="text-gray-600 text-sm leading-relaxed">{item.a}</p>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
             </motion.div>
@@ -3364,160 +3631,7 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
 
                 {/* Employers */}
                 {activeTab === 'employers' && (
-                    <div className="space-y-12">
-                        <div className="text-center mb-12">
-                            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t?.howItWorks?.employerSectionTitle || 'How Employers Hire on IndaStreet'}</h2>
-                            <p className="text-xl text-gray-600">{t?.howItWorks?.employerSectionSubtitle || 'Privacy-protected job marketplace for contract hiring'}</p>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="bg-white rounded-2xl p-8 shadow-lg">
-                                <div className="flex items-center gap-4 pb-20 mb-6">
-                                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                                        <span className="text-2xl">🔍</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-900">{t?.howItWorks?.employerCard1Title || 'Browse Job Seekers'}</h3>
-                                </div>
-                                <p className="text-gray-600 mb-4">
-                                    {t?.howItWorks?.employerCard1Desc || 'Search our "Therapist For Contract" marketplace to find qualified professionals actively seeking employment opportunities.'}
-                                </p>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard1Item1 || 'Filter by specialty, experience, location'}</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard1Item2 || 'View certifications and work history'}</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard1Item3 || 'Names protected until you unlock'}</span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-8 shadow-lg">
-                                <div className="flex items-center gap-4 pb-20 mb-6">
-                                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                                        <span className="text-2xl">🔓</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-900">{t?.howItWorks?.employerCard2Title || 'Unlock Contact Details'}</h3>
-                                </div>
-                                <p className="text-gray-600 mb-4">
-                                    {t?.howItWorks?.employerCard2Desc || 'Pay one-time fee of IDR 300,000 to unlock full contact information including WhatsApp number and full name.'}
-                                </p>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard2Item1 || 'Secure payment via bank transfer'}</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard2Item2 || 'Instant access after verification'}</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard2Item3 || 'Direct WhatsApp communication'}</span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-8 shadow-lg">
-                                <div className="flex items-center gap-4 pb-20 mb-6">
-                                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                                        <span className="text-2xl">💬</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-900">{t?.howItWorks?.employerCard3Title || 'Interview & Hire'}</h3>
-                                </div>
-                                <p className="text-gray-600 mb-4">
-                                    {t?.howItWorks?.employerCard3Desc || 'Contact therapists directly via WhatsApp. Conduct interviews, check references, and make your hiring decision.'}
-                                </p>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard3Item1 || 'No platform fees on hiring'}</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard3Item2 || 'Negotiate terms directly'}</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard3Item3 || 'Verify certifications yourself'}</span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-8 shadow-lg">
-                                <div className="flex items-center gap-4 pb-20 mb-6">
-                                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                                        <span className="text-2xl">⭐</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-900">{t?.howItWorks?.employerCard4Title || 'Leave Reviews'}</h3>
-                                </div>
-                                <p className="text-gray-600 mb-4">
-                                    {t?.howItWorks?.employerCard4Desc || 'After hiring, leave honest reviews to help other employers and build the therapist\'s reputation on the platform.'}
-                                </p>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard4Item1 || 'Rate professionalism'}</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard4Item2 || 'Share your experience'}</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>{t?.howItWorks?.employerCard4Item3 || 'Help build community trust'}</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-8 border-2 border-purple-200">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4">{t?.howItWorks?.employerPrivacyTitle || 'Why Our Privacy Model Works'}</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div>
-                                    <h4 className="font-bold text-purple-900 mb-2">🛡️ {t?.howItWorks?.employerPrivacyTherapist || 'For Therapists:'}</h4>
-                                    <p className="text-gray-600">
-                                        {t?.howItWorks?.employerPrivacyTherapistDesc || 'Protects them from spam, harassment, and unwanted contact. Only serious employers who pay can reach them.'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-purple-900 mb-2">✅ {t?.howItWorks?.employerPrivacyEmployer || 'For Employers:'}</h4>
-                                    <p className="text-gray-600">
-                                        {t?.howItWorks?.employerPrivacyEmployerDesc || 'Ensures access to serious job seekers. Small fee filters out time-wasters and ensures quality candidates.'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <EmployersHowItWorks t={t} glassCardClass={glassCardClass} />
                 )}
 
                 {/* Common CTA — Massage Therapist: register CTA; other tabs: support CTA */}
