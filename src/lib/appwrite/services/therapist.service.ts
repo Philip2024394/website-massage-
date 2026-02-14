@@ -6,6 +6,7 @@
 import { databases, storage, APPWRITE_CONFIG, account, rateLimitedDb } from '../config';
 import { ID, Query } from 'appwrite';
 import { duplicateAccountDetectionService } from '../../../services/duplicateAccountDetection.service';
+import { getRandomTherapistImage } from '../../../utils/therapistImageUtils';
 
 // Import services with proper fallbacks
 let sendAdminNotification: any;
@@ -208,15 +209,9 @@ export const therapistService = {
                 // ⚠️ DISABLED: Persistence logic causes mass 400 errors and rate limiting
                 // Images are now set directly in SharedTherapistProfile.tsx with official URLs
                 
-                // Priority: use existing mainImage, fallback to heroImageUrl, then placeholder
-                let assignedMainImage = therapist.mainImage || therapist.heroImageUrl;
-                
-                if (!assignedMainImage || assignedMainImage === '') {
-                    // Compute placeholder for display only (not persisted)
-                    assignedMainImage = getNonRepeatingMainImage(index);
-                } else if (assignedMainImage.includes('appwrite.io')) {
-                    console.log(`✅ [REAL IMAGE EXISTS] ${therapist.name} → ${assignedMainImage}`);
-                }
+                // Main image = pool of ~20 images by therapist ID (therapists only upload profile image, not main image)
+                const therapistId = (therapist as any).$id || therapist.id || '';
+                const assignedMainImage = getRandomTherapistImage(therapistId);
                 
                 // Normalize status from database (lowercase) to enum format (capitalized)
                 const normalizeStatus = (status: string) => {

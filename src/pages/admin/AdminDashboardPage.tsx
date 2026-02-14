@@ -34,6 +34,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminGuardDev, adminLogout } from '../../lib/adminGuard';
 import { adminTherapistService, adminPlacesService, adminBookingService } from '../../lib/adminServices';
+import AdminSupportDashboard from '../../components/admin/AdminSupportDashboard';
 
 // =====================================================================
 // ICON COMPONENTS (Emoji fallbacks for lucide-react compatibility)
@@ -57,6 +58,7 @@ const ShieldCheck = ({ className }: { className?: string }) => <IconWrapper emoj
 const RefreshCw = ({ className }: { className?: string }) => <IconWrapper emoji="🔄" className={className} />;
 const LogOut = ({ className }: { className?: string }) => <IconWrapper emoji="🚪" className={className} />;
 const Home = ({ className }: { className?: string }) => <IconWrapper emoji="🏠" className={className} />;
+const Headphones = ({ className }: { className?: string }) => <IconWrapper emoji="🎧" className={className} />;
 
 // =====================================================================
 // TYPES
@@ -87,7 +89,8 @@ type AdminView =
     | 'settings'
     | 'achievements'
     | 'system-health'
-    | 'analytics';
+    | 'analytics'
+    | 'support';
 
 // =====================================================================
 // ADMIN DASHBOARD COMPONENT
@@ -193,6 +196,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
         { id: 'therapists', label: 'Therapists', icon: <Users className="w-5 h-5" /> },
         { id: 'bookings', label: 'Bookings', icon: <Calendar className="w-5 h-5" /> },
         { id: 'chat', label: 'Chat Center', icon: <MessageSquare className="w-5 h-5" /> },
+        { id: 'support', label: 'Support Tickets', icon: <Headphones className="w-5 h-5" /> },
         { id: 'revenue', label: 'Revenue', icon: <DollarSign className="w-5 h-5" /> },
         { id: 'commissions', label: 'Commissions', icon: <Activity className="w-5 h-5" /> },
         { id: 'ktp-verification', label: 'KTP Verification', icon: <FileCheck className="w-5 h-5" /> },
@@ -308,6 +312,8 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 return <SystemHealth />;
             case 'settings':
                 return <SettingsPanel />;
+            case 'support':
+                return <AdminSupportDashboard />;
             default:
                 return renderDashboard();
         }

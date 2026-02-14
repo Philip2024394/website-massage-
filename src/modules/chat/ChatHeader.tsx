@@ -39,7 +39,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
       <div className="relative flex-shrink-0">
         <img 
-          src={therapist.image || '/placeholder-avatar.jpg'} 
+          src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || therapist.image || (therapist as any).profileImage || '/placeholder-avatar.jpg'} 
           alt={therapist.name}
           className="w-12 h-12 rounded-full object-cover border-2 border-white/50 flex-shrink-0"
           style={{minWidth: '48px', minHeight: '48px'}}

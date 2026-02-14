@@ -10,7 +10,7 @@
  * - Performance optimized
  */
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useTranslations } from './lib/useTranslations';
 import { useLanguage } from './hooks/useLanguage';
 import { logger } from './utils/logger';
@@ -65,6 +65,8 @@ class LazyLoadErrorBoundary extends React.Component<
   }
 }
 
+// Landing page error boundary: shows Try again/Reload if MainLandingPage throws (admin-approved for UX)
+import { LandingPageErrorBoundary } from './components/error-boundaries/LandingPageErrorBoundary';
 // Route configurations
 import { publicRoutes } from './router/routes/publicRoutes';
 import { authRoutes } from './router/routes/authRoutes';
@@ -95,12 +97,14 @@ const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage')
 const LeadAcceptPage = React.lazy(() => import('./pages/LeadAcceptPage'));
 const LeadDeclinePage = React.lazy(() => import('./pages/LeadDeclinePage'));
 const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
+const ApplyForJobPage = React.lazy(() => import('./pages/ApplyForJobPage'));
 const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
 const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
 const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipApplicationPage'));
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
+const TherapistListingPaymentPage = React.lazy(() => import('./pages/TherapistListingPaymentPage'));
 const AppwriteDiagnostic = React.lazy(() => import('./pages/AppwriteDiagnostic').then(m => ({ default: m.AppwriteDiagnostic })));
 const DiagnosticPage = React.lazy(() => import('./pages/DiagnosticPage').then(m => ({ default: m.DiagnosticPage })));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
@@ -497,14 +501,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     if (page === 'landing') {
         console.log('🧭 Router resolved - rendering landing page');
         const LandingComponent = publicRoutes.landing.component;
-        return <LandingComponent 
-            language={props.language}
-            onLanguageChange={props.onLanguageChange}
-            onLanguageSelect={props.handleLanguageSelect}
-            onEnterApp={props.handleEnterApp}
-            handleEnterApp={props.handleEnterApp}
-            handleLanguageSelect={props.handleLanguageSelect}
-        />;
+        return (
+            <LandingPageErrorBoundary>
+                <LandingComponent 
+                    language={props.language}
+                    onLanguageChange={props.onLanguageChange}
+                    onLanguageSelect={props.handleLanguageSelect}
+                    onEnterApp={props.handleEnterApp}
+                    handleEnterApp={props.handleEnterApp}
+                    handleLanguageSelect={props.handleLanguageSelect}
+                />
+            </LandingPageErrorBoundary>
+        );
     }
     
     return (
@@ -866,11 +874,63 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(authRoutes.therapistLogin.component, {
                 language: props.language || 'id'
             });
+
+        case 'therapist-login-for-jobs':
+            return renderRoute(authRoutes.therapistLogin.component, {
+                language: props.language || 'id',
+                restoreUserSession: props.restoreUserSession,
+                onNavigate: (p: string) => props.onNavigate?.(p === 'therapist' ? 'therapist-job-registration' : p),
+                onSuccess: () => props.onNavigate?.('therapist-job-registration'),
+            });
+
+        case 'place-login-for-jobs':
+            return renderRoute(authRoutes.placeLogin.component, {
+                language: props.language || 'id',
+                onSuccess: async (_placeId: string) => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate?.('therapist-job-registration');
+                },
+                onBack: () => props.onNavigate?.('massage-jobs'),
+            });
+
+        case 'therapist-signup-for-jobs':
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'therapist',
+                onAuthSuccess: async () => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate?.('therapist-job-registration');
+                },
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                language: props.language || 'id',
+            });
+
+        case 'place-signup-for-jobs':
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'massage-place',
+                onAuthSuccess: async () => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate?.('therapist-job-registration');
+                },
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                language: props.language || 'id',
+            });
         
         case 'place-login':
         case 'massagePlaceLogin':
             return renderRoute(authRoutes.placeLogin.component, {
                 language: props.language || 'id'
+            });
+
+        case 'employer-login':
+            return renderRoute(authRoutes.employerLogin.component, {
+                onSuccess: async (employerId: string) => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate?.('employer-job-posting');
+                },
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                returnTo: 'employer-job-posting',
             });
         
         case 'facial-portal':
@@ -879,6 +939,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         case 'simple-signup':
+        case 'simpleSignup': // camelCase variant used by setPage elsewhere
             return renderRoute(authRoutes.simpleSignup.component, {
                 language: props.language || 'id'
             });
@@ -1327,8 +1388,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'confirm-therapists':
             return renderRoute(ConfirmTherapistsPage);
         
-        case 'employer-job-posting':
-            return renderRoute(EmployerJobPostingPage);
+        case 'employer-job-posting': {
+            const isEmployer = props.user && (props.user as any).type === 'employer';
+            if (!isEmployer) {
+                return renderRoute(authRoutes.employerLogin.component, {
+                    onSuccess: async (employerId: string) => {
+                        if (props.restoreUserSession) await props.restoreUserSession();
+                        props.onNavigate?.('employer-job-posting');
+                    },
+                    onBack: () => props.onNavigate?.('massage-jobs'),
+                    returnTo: 'employer-job-posting',
+                });
+            }
+            return renderRoute(EmployerJobPostingPage, {
+                onNavigateToPayment: (jobId: string) => {
+                    props.setSelectedJobId?.(jobId);
+                    props.onNavigate?.('job-posting-payment');
+                },
+                onNavigate: props.onNavigate,
+                onMassageJobsClick: () => props.onNavigate?.('massage-jobs'),
+            });
+        }
         
         case 'indastreet-partners':
             return renderRoute(IndastreetPartnersPage);
@@ -1382,7 +1462,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(LeadDeclinePage);
         
         case 'job-posting-payment':
-            return renderRoute(JobPostingPaymentPage);
+            return renderRoute(JobPostingPaymentPage, {
+                jobId: props.selectedJobId || '',
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                onNavigate: props.onNavigate,
+            });
+        
+        case 'apply-for-job':
+            return renderRoute(ApplyForJobPage, {
+                jobId: props.selectedJobId || '',
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                onNavigate: props.onNavigate,
+            });
         
         case 'browse-jobs':
         case 'browseJobs':
@@ -1390,13 +1481,54 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'massage-jobs':
         case 'massageJobs':
-            return renderRoute(MassageJobsPage);
+            return renderRoute(MassageJobsPage, {
+                onBack: () => props.setPage('home'),
+                onPostJob: () => props.onNavigate?.('employer-job-posting'),
+                onNavigateToPayment: (jobId?: string) => {
+                    if (jobId) {
+                        (props as any).setSelectedJobId?.(jobId);
+                        props.onNavigate?.('job-posting-payment');
+                    } else {
+                        props.onNavigate?.('job-unlock-payment');
+                    }
+                },
+                onApplyForJob: (jobId: string) => {
+                    (props as any).setSelectedJobId?.(jobId);
+                    props.onNavigate?.('apply-for-job');
+                },
+                onCreateTherapistProfile: () => props.onNavigate?.('therapist-job-registration'),
+                onNavigate: props.onNavigate,
+            });
         
         case 'partnership-application':
             return renderRoute(PartnershipApplicationPage);
         
-        case 'therapist-job-registration':
-            return renderRoute(TherapistJobRegistrationPage);
+        case 'therapist-job-registration': {
+            const isServicePersonnel = props.user && (
+                (props.user as any).type === 'therapist' ||
+                (props.user as any).type === 'place' ||
+                (props.loggedInProvider as any)?.type === 'therapist' ||
+                (props.loggedInProvider as any)?.type === 'place'
+            );
+            if (!isServicePersonnel) {
+                return renderRoute(authRoutes.servicePersonnelLogin.component, {
+                    onTherapistLogin: () => props.onNavigate?.('therapist-login-for-jobs'),
+                    onPlaceLogin: () => props.onNavigate?.('place-login-for-jobs'),
+                    onTherapistSignup: () => props.onNavigate?.('therapist-signup-for-jobs'),
+                    onPlaceSignup: () => props.onNavigate?.('place-signup-for-jobs'),
+                    onBack: () => props.onNavigate?.('massage-jobs'),
+                });
+            }
+            return renderRoute(TherapistJobRegistrationPage, {
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                onSuccess: () => props.onNavigate?.('massage-jobs'),
+                onNavigateToPayment: (listingId: string) => {
+                    (props as any).setSelectedJobId?.(listingId);
+                    props.onNavigate?.('therapist-listing-payment');
+                },
+                onNavigate: props.onNavigate,
+            });
+        }
         
         case 'reviews':
             return renderRoute(ReviewsPage, {
@@ -1405,6 +1537,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'job-unlock-payment':
             return renderRoute(JobUnlockPaymentPage);
+
+        case 'therapist-listing-payment':
+            return renderRoute(TherapistListingPaymentPage, {
+                listingId: props.selectedJobId || '',
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                onNavigate: props.onNavigate,
+            });
         
         case 'customer-reviews':
             return renderRoute(CustomerReviewsPage, {
@@ -1476,17 +1615,46 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'payment-info':
             return renderRoute(PaymentInfoPage);
 
+        // ===== PROFILE / UPLOAD PROFILE (same as dashboard for therapist) =====
+        case 'profile':
+            if ((props.loggedInProvider as any)?.type === 'therapist' || (props.user as any)?.therapistId) {
+                return renderRoute(therapistRoutes.dashboard.component, {
+                    therapist: props.loggedInProvider || props.user,
+                    onLogout: props.handleLogout,
+                    onNavigate: props.onNavigate,
+                    onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
+                    onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
+                    onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),
+                    onNavigateToChat: () => props.onNavigate?.('therapist-chat'),
+                    onNavigateToNotifications: () => props.onNavigate?.('therapist-notifications'),
+                    onNavigateToLegal: () => props.onNavigate?.('therapist-legal'),
+                    onNavigateToCalendar: () => props.onNavigate?.('therapist-calendar'),
+                    onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
+                    onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
+                    onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
+                    onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
+                    onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
+                    onNavigateHome: () => props.onNavigate?.('home'),
+                    language: props.language
+                });
+            }
+            // fall through to dashboard when not therapist
+
         // ===== GENERIC DASHBOARD ROUTE - Redirects to appropriate dashboard =====
         case 'dashboard':
             // Redirect to appropriate dashboard based on logged-in user type
-            if (props.user) {
-                const userType = props.user.userType || props.user.role;
-                if (userType === 'therapist' || props.user.therapistId) {
-                    // Redirect to therapist dashboard
-                    return renderRoute(therapistRoutes.dashboard.component, {
-                        therapist: props.user,
-                        onNavigate: props.onNavigate,
+            const dashboardUser = props.user || props.loggedInProvider;
+            const isTherapist = dashboardUser && (
+                (dashboardUser as any).userType === 'therapist' ||
+                (dashboardUser as any).role === 'therapist' ||
+                (dashboardUser as any).therapistId ||
+                (props.loggedInProvider as any)?.type === 'therapist'
+            );
+            if (dashboardUser && isTherapist) {
+                return renderRoute(therapistRoutes.dashboard.component, {
+                        therapist: props.loggedInProvider || props.user,
                         onLogout: props.handleLogout,
+                        onNavigate: props.onNavigate,
                         onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
                         onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
                         onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),
@@ -1502,15 +1670,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onNavigateHome: () => props.onNavigate?.('home'),
                         language: props.language
                     });
-                } else if (userType === 'massage-place' || userType === 'massage_place') {
+                }
+            if (dashboardUser) {
+                const userType = (dashboardUser as any).userType || (dashboardUser as any).role;
+                if (userType === 'massage-place' || userType === 'massage_place') {
                     return renderRoute(placeRoutes.dashboard.component, {
-                        place: props.user,
+                        place: dashboardUser,
                         onBack: () => props.onNavigate?.('home'),
                         language: props.language
                     });
                 } else if (userType === 'facial-place' || userType === 'facial_place') {
                     return renderRoute(facialRoutes.dashboard.component, {
-                        place: props.user,
+                        place: dashboardUser,
                         onBack: () => props.onNavigate?.('home'),
                         language: props.language
                     });
@@ -1797,6 +1968,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'admin':
         case 'adminDashboard': // camelCase variant
         case 'admin-dashboard':
+        case 'agentPortal': // drawer "Admin" / agent portal → same as admin dashboard
+        case 'agent-portal':
             return renderRoute(adminRoutes.dashboard.component, {
                 onNavigateHome: () => props.onNavigate('home')
             });
@@ -1859,32 +2032,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
 
         // ===== FALLBACK =====
-        // 🚫 DO NOT REDIRECT — FAIL VISIBLE
-        default:
-            logger.error('[ROUTE RESOLVE] Unknown route:', page);
-            logger.error('[ROUTE RESOLVE] Route type:', typeof page);
-            logger.error('[ROUTE RESOLVE] props.currentPage:', props.currentPage);
-            logger.error('[ROUTE RESOLVE] All props keys:', Object.keys(props));
-            return (
-                <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
-                    <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-                        <div className="text-6xl mb-4">⚠️</div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">Route Not Found</h2>
-                        <p className="text-gray-600 mb-4">Page exists but component not implemented yet</p>
-                        <div className="bg-gray-100 rounded p-3 mb-4">
-                            <code className="text-sm text-gray-700">Route: {page}</code>
-                            <br />
-                            <code className="text-sm text-gray-700">Type: {typeof page}</code>
-                        </div>
-                        <button
-                            onClick={() => props.onNavigate?.('home')}
-                            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-                        >
-                            Go to Home
-                        </button>
+        // Auto-redirect unknown routes to home so stray setPage('typo') never leaves user on a dead screen
+        default: {
+            logger.error('[ROUTE RESOLVE] Unknown route, redirecting to home:', page);
+            const UnknownRouteRedirect: React.FC<{ onNavigate?: (p: Page) => void }> = ({ onNavigate }) => {
+                useEffect(() => {
+                    onNavigate?.('home');
+                }, [onNavigate]);
+                return (
+                    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
+                        <p className="text-gray-600">Redirecting to home…</p>
                     </div>
-                </div>
-            );
+                );
+            };
+            return <UnknownRouteRedirect onNavigate={props.onNavigate} />;
+        }
                 }
             })()}
         </EnterpriseLoader>

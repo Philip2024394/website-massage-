@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Place } from '../types';
 import SocialSharePopup from './SocialSharePopup';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
+import { getUniqueMassageTypes } from '../utils/therapistCardHelpers';
 import { useLanguageContext } from '../context/LanguageContext';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { Share2 } from 'lucide-react';
@@ -102,14 +103,15 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
         openBookingChat({
             appwriteId: place.$id,  // ✅ REQUIRED: Appwrite document ID
             name: place.name,
-            image: place.profilePicture || place.mainImage,
+            image: place.mainImage || (place as any).profileImageUrl || (place as any).image || place.profileImage || place.profilePicture,
             pricing: getParsedPricing(),
             whatsapp: (place as any).whatsapp || (place as any).phoneNumber,
             status: 'AVAILABLE', // Places are always available (no BUSY status)
             availabilityStatus: 'AVAILABLE',
             duration: 60, // Default duration
             clientPreferences: undefined, // Places don't have client preferences
-        });
+            providerType: 'place', // Spec 9: same scheduled flow as therapists
+        } as any);
     };
 
     return (
@@ -177,9 +179,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                     className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
                     aria-label="Share this place"
                 >
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
+                    <Share2 className="w-5 h-5 text-white" color="white" strokeWidth={2.5} aria-hidden />
                 </button>
             </div>
             
@@ -270,7 +270,8 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                     } catch {
                         massageTypes = [];
                     }
-                    return Array.isArray(massageTypes) && massageTypes.length > 0 ? (
+                    const uniqueTypes = getUniqueMassageTypes(Array.isArray(massageTypes) ? massageTypes : []);
+                    return uniqueTypes.length > 0 ? (
                         <div className="mt-3">
                             <div className="flex items-center justify-between mb-1.5">
                                 <h4 className="text-xs font-semibold text-gray-700">Areas of Expertise</h4>
@@ -281,14 +282,14 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                                 )}
                             </div>
                             <div className="flex flex-wrap gap-1.5">
-                                {massageTypes.slice(0, 5).map((type, index) => (
+                                {uniqueTypes.slice(0, 5).map((type, index) => (
                                     <span key={index} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">
                                         {type}
                                     </span>
                                 ))}
-                                {massageTypes.length > 5 && (
+                                {uniqueTypes.length > 5 && (
                                     <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                                        +{massageTypes.length - 5} more
+                                        +{uniqueTypes.length - 5} more
                                     </span>
                                 )}
                             </div>
@@ -311,7 +312,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                                                         </div>
                                                     )}
                                                     <p className="text-gray-600">60 min</p>
-                                                    <p className="font-bold text-gray-800">Rp {String(pricing["60"]).padStart(3, '0')}k</p>
+                                                    <p className="font-bold text-gray-800">IDR {String(pricing["60"]).padStart(3, '0')}k</p>
                                                 </div>
                                                 <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
                                                     {/* Star Rating - Top Right */}
@@ -321,7 +322,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                                                         </div>
                                                     )}
                                                     <p className="text-gray-600">90 min</p>
-                                                    <p className="font-bold text-gray-800">Rp {String(pricing["90"]).padStart(3, '0')}k</p>
+                                                    <p className="font-bold text-gray-800">IDR {String(pricing["90"]).padStart(3, '0')}k</p>
                                                 </div>
                                                 <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
                                                     {/* Star Rating - Top Right */}
@@ -331,7 +332,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                                                         </div>
                                                     )}
                                                     <p className="text-gray-600">120 min</p>
-                                                    <p className="font-bold text-gray-800">Rp {String(pricing["120"]).padStart(3, '0')}k</p>
+                                                    <p className="font-bold text-gray-800">IDR {String(pricing["120"]).padStart(3, '0')}k</p>
                                                 </div>
                                             </div>
                                         );

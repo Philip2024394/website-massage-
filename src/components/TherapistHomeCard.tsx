@@ -17,9 +17,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
+import { getTherapistMainImage } from '../utils/therapistImageUtils';
 import { bookingService } from '../lib/bookingService';
 import { therapistMenusService } from '../lib/appwriteService';
-import { isDiscountActive } from '../utils/therapistCardHelpers';
+import { isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
@@ -29,6 +30,7 @@ import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModa
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { Share2 } from 'lucide-react';
 import { logger } from '../utils/logger';
+import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import SafePassModal from './modals/SafePassModal';
 import HomePageBookingSlider, { HomePageBookingType } from './HomePageBookingSlider';
 
@@ -410,115 +412,60 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     const locationDisplay = getLocationDisplay();
 
-    // Parse pricing - support menu data, separate fields, and old JSON format
+    // Combined menu: real saved items + Traditional from profile (if set) + sample fill to 5. Cheapest from this set for display.
+    const combinedMenu = getCombinedMenuForDisplay(menuData, therapist);
+
+    // Parse pricing - use combined menu (slider + traditional + sample) so cheapest is same as menu slider
     const getPricing = () => {
-        // First, check if we have menu data with a cheaper service than the default pricing
-        if (menuData && menuData.length > 0) {
-            // Find services that have 60/90/120 minute pricing
-            const servicesWithFullPricing = menuData.filter(item => {
-                return item.duration60 && item.duration90 && item.duration120 &&
-                       item.price60 && item.price90 && item.price120;
-            });
-
-            if (servicesWithFullPricing.length > 0) {
-                // Get the default pricing first
-                const defaultPricing = (() => {
-                    const hasValidSeparateFields = (
-                        (therapist.price60 && parseInt(therapist.price60) > 0) ||
-                        (therapist.price90 && parseInt(therapist.price90) > 0) ||
-                        (therapist.price120 && parseInt(therapist.price120) > 0)
-                    );
-
-                    if (hasValidSeparateFields) {
-                        return {
-                            "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
-                            "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
-                            "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
-                        };
-                    }
-                    return { "60": 0, "90": 0, "120": 0 };
-                })();
-
-                // Find the cheapest service (based on 60-minute price)
-                const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
-                    const cheapestPrice = parseFloat(cheapest.price60 || '999999');
-                    const currentPrice = parseFloat(current.price60 || '999999');
-                    return currentPrice < cheapestPrice ? current : cheapest;
-                });
-
-                // Convert menu prices to full IDR amounts (assume menu prices are in thousands)
+        if (combinedMenu.length > 0) {
+            const cheapest = getCheapestServiceByTotalPrice(combinedMenu);
+            if (cheapest) {
                 const menuPricing = {
-                    "60": parseFloat(cheapestService.price60) * 1000,
-                    "90": parseFloat(cheapestService.price90) * 1000,
-                    "120": parseFloat(cheapestService.price120) * 1000
+                    "60": Number(cheapest.price60) * 1000,
+                    "90": Number(cheapest.price90) * 1000,
+                    "120": Number(cheapest.price120) * 1000
                 };
-
-                // Use menu pricing if it's cheaper than default pricing
-                if (menuPricing["60"] < defaultPricing["60"] && menuPricing["60"] > 0) {
-                    logger.debug('🏠 Using cheaper menu pricing for', therapist.name, ':', menuPricing);
+                if (menuPricing["60"] > 0 && menuPricing["90"] > 0 && menuPricing["120"] > 0) {
+                    logger.debug('🏠 Using lowest (combined menu) pricing for', therapist.name, ':', menuPricing);
                     return menuPricing;
                 }
             }
         }
 
-        // Fallback to default pricing logic
-        const hasValidSeparateFields = (
-            (therapist.price60 && parseInt(therapist.price60) > 0) ||
-            (therapist.price90 && parseInt(therapist.price90) > 0) ||
+        // Fallback to therapist doc when no combined items
+        const hasAllThreePrices = (
+            (therapist.price60 && parseInt(therapist.price60) > 0) &&
+            (therapist.price90 && parseInt(therapist.price90) > 0) &&
             (therapist.price120 && parseInt(therapist.price120) > 0)
         );
-
-        if (hasValidSeparateFields) {
+        if (hasAllThreePrices) {
             return {
-                "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
-                "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
-                "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
+                "60": parseInt(therapist.price60!) * 1000,
+                "90": parseInt(therapist.price90!) * 1000,
+                "120": parseInt(therapist.price120!) * 1000
             };
         }
-        
+        if (!hasActualPricing(therapist)) {
+            const therapistId = String((therapist as any).$id || therapist.id || '');
+            if (therapistId) return getSamplePricing(therapistId);
+        }
         return { "60": 0, "90": 0, "120": 0 };
     };
 
     const pricing = getPricing();
 
-    // Determine service name based on menu data
+    // Service name = name of cheapest from combined menu (same as 3 containers)
     const getServiceName = (): string => {
-        logger.debug(`🏠 Determining service name for ${therapist.name}:`, { 
-            hasMenuData: !!menuData, 
-            menuLength: menuData?.length || 0
-        });
-
-        // If no menu data or empty menu, default to "Traditional Massage"
-        if (!menuData || menuData.length === 0) {
-            return 'Traditional Massage';
+        if (combinedMenu.length > 0) {
+            const cheapest = getCheapestServiceByTotalPrice(combinedMenu);
+            if (cheapest) {
+                const name = cheapest.name || cheapest.serviceName || cheapest.title;
+                if (name) {
+                    logger.debug(`🏠 Service name for ${therapist.name}: "${name}"`);
+                    return name;
+                }
+            }
         }
-
-        // Find services that have 60/90/120 minute pricing
-        const servicesWithFullPricing = menuData.filter(item => {
-            return item.duration60 && item.duration90 && item.duration120 &&
-                   item.price60 && item.price90 && item.price120;
-        });
-
-        if (servicesWithFullPricing.length === 0) {
-            return 'Traditional Massage';
-        }
-
-        // Find the cheapest service (based on 60-minute price)
-        const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
-            const cheapestPrice = parseFloat(cheapest.price60 || '999999');
-            const currentPrice = parseFloat(current.price60 || '999999');
-            return currentPrice < cheapestPrice ? current : cheapest;
-        });
-
-        // Extract service name - use first word + "Massage"
-        if (cheapestService.name || cheapestService.serviceName || cheapestService.title) {
-            const serviceName = cheapestService.name || cheapestService.serviceName || cheapestService.title;
-            const firstWord = serviceName.split(' ')[0];
-            const result = `${firstWord} Massage`;
-            logger.debug(`🏠 Generated service name for ${therapist.name}: "${result}"`);
-            return result;
-        }
-
         return 'Traditional Massage';
     };
 
@@ -617,7 +564,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             {/* Image Container - Fixed height for mobile stability */}
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                 <img
-                    src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
+                    src={getTherapistMainImage(therapist as any)}
                     alt={therapist.name}
                     className="w-full h-full object-cover transition-transform duration-500 rounded-t-2xl"
                     style={{ aspectRatio: '400/224', minHeight: '224px' }}
@@ -679,7 +626,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden relative">
                             <img 
                                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full" 
-                                src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
+                                src={(therapist as any).profilePicture || '/default-avatar.jpg'}
                                 alt={`${therapist.name} profile`}
                                 style={{ aspectRatio: '1/1' }}
                                 loading="lazy"
@@ -812,6 +759,36 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-2 text-left">
                         {therapist.description}
                     </p>
+                </div>
+            )}
+
+            {/* 3 Price Containers - Lowest menu item with complete 60/90/120 pricing */}
+            {pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 && (
+                <div className="mx-4 mb-4">
+                    {/* Massage type name above the 3 containers */}
+                    <h3 className="text-gray-800 font-bold text-sm tracking-wide text-center mb-2">
+                        {serviceName}
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
+                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">60 min</p>
+                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                                IDR {formatPrice(pricing["60"])}
+                            </p>
+                        </div>
+                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
+                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">90 min</p>
+                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                                IDR {formatPrice(pricing["90"])}
+                            </p>
+                        </div>
+                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
+                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">120 min</p>
+                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                                IDR {formatPrice(pricing["120"])}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
 

@@ -1034,7 +1034,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       language={language}
       onLogout={onLogout}
     >
-    <div className="max-w-sm mx-auto px-4 py-4 space-y-6">
+    <div className="max-w-sm mx-auto px-4 pt-0 pb-4 space-y-6">
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between mb-6">

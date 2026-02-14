@@ -585,7 +585,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                     title="Share this partner"
                                     aria-label="Share this partner"
                                 >
-                                    <Share2 className="w-5 h-5 text-white" />
+                                    <Share2 className="w-5 h-5 text-white" color="white" strokeWidth={2.5} />
                                 </button>
                             </div>
                             

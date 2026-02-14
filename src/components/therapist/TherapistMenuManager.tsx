@@ -109,8 +109,12 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
     onServiceChange?.(totalServices);
   }, [totalServices, onServiceChange]);
 
-  // Handle service editing
+  // Sample menu items cannot be edited - they disappear when therapist adds 5 of their own
+  const isSampleItem = (service: MenuService) => !!(service as any).isSampleMenu;
+
+  // Handle service editing (blocked for sample items)
   const startEditing = (service: MenuService) => {
+    if (isSampleItem(service)) return; // Sample items cannot be edited
     setEditingServices(prev => ({
       ...prev,
       [service.id]: { ...service, isEditing: true }
@@ -127,7 +131,15 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
 
   const saveEditing = async (serviceId: string) => {
     const editingService = editingServices[serviceId];
-    if (!editingService) return;
+    if (!editingService || isSampleItem(editingService as MenuService)) return;
+
+    const p60 = Number(editingService.price60) ?? 0;
+    const p90 = Number(editingService.price90) ?? 0;
+    const p120 = Number(editingService.price120) ?? 0;
+    if (p60 < MIN_PRICE || p90 < MIN_PRICE || p120 < MIN_PRICE) {
+      alert(`Minimum price is Rp 100,000 (enter 100 or higher) for 60, 90, and 120 minutes.`);
+      return;
+    }
 
     try {
       await updateService(serviceId, editingService);
@@ -144,10 +156,19 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
     }));
   };
 
+  const MIN_PRICE = 100; // Rp 100,000 minimum for 60/90/120 min
+
   // Handle adding new service
   const handleAddService = async () => {
     if (!newService.name?.trim()) {
       alert('Service name is required');
+      return;
+    }
+    const p60 = Number(newService.price60) || 0;
+    const p90 = Number(newService.price90) || 0;
+    const p120 = Number(newService.price120) || 0;
+    if (p60 < MIN_PRICE || p90 < MIN_PRICE || p120 < MIN_PRICE) {
+      alert(`Minimum price is Rp 100,000 (enter 100 or higher) for 60, 90, and 120 minutes.`);
       return;
     }
 
@@ -168,8 +189,9 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
     }
   };
 
-  // Handle delete with confirmation
+  // Handle delete with confirmation (sample items cannot be deleted)
   const handleDeleteService = async (service: MenuService) => {
+    if (isSampleItem(service)) return; // Sample items cannot be deleted
     const confirmMessage = service.isDefault 
       ? `Delete default service "${service.name}"? This will remove it from your menu.`
       : `Delete "${service.name}"? This action cannot be undone.`;
@@ -255,14 +277,14 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-semibold text-blue-800 mb-2">
-                Default Menu Items Active
+                Sample Menu Items Active
               </h3>
               <p className="text-sm text-blue-700 leading-relaxed">
-                <strong>Note:</strong> If you haven't uploaded your own menu yet, we've added example services to your menu so users can book immediately. All example services are traditional massage types with service-focused names. These items are fully bookable using your existing prices (60, 90, 120 min). Once you upload your real services, the example items will automatically disappear.
+                <strong>Note:</strong> Sample menu items (names and prices) cannot be edited. These are display-only so customers can book immediately. When you add 5 of your own menu items, the 5 sample items will automatically disappear.
               </p>
               <div className="mt-3 flex items-center text-xs text-blue-600">
                 <CheckCircle className="w-4 h-4 mr-1" />
-                All default services are fully bookable now
+                Sample items are fully bookable – add your own to replace them
               </div>
             </div>
           </div>
@@ -299,8 +321,8 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
               <div className="mt-3 flex items-center text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-lg">
                 <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span>
-                  Your example services are <strong>live and bookable</strong> now. 
-                  Edit them below or add your own services to get started!
+                  Sample items are <strong>live and bookable</strong> now. 
+                  Add 5 of your own services to replace them!
                 </span>
               </div>
             )}
@@ -344,22 +366,12 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
               Add New Service
             </button>
             
-            {hasDefaultMenu && (
-              <button
-                onClick={clearDefaultAssignments}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                title="This will remove all example services and reset your default menu"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Clear Example Services
-              </button>
-            )}
             
             {hasDefaultMenu && !hasRealMenu && (
               <div className="text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200 flex items-center">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 <span>
-                  <strong>Tip:</strong> Edit any example service to make it your own, or add completely new services above.
+                  <strong>Tip:</strong> Add 5 of your own menu items – sample items will disappear automatically.
                 </span>
               </div>
             )}
@@ -418,29 +430,32 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">60min Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">60min (min 100)</label>
                 <input
                   type="number"
+                  min={MIN_PRICE}
                   value={newService.price60 || 150}
-                  onChange={(e) => setNewService(prev => ({ ...prev, price60: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewService(prev => ({ ...prev, price60: Math.max(MIN_PRICE, parseInt(e.target.value) || MIN_PRICE) }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">90min Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">90min (min 100)</label>
                 <input
                   type="number"
+                  min={MIN_PRICE}
                   value={newService.price90 || 200}
-                  onChange={(e) => setNewService(prev => ({ ...prev, price90: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewService(prev => ({ ...prev, price90: Math.max(MIN_PRICE, parseInt(e.target.value) || MIN_PRICE) }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">120min Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">120min (min 100)</label>
                 <input
                   type="number"
+                  min={MIN_PRICE}
                   value={newService.price120 || 280}
-                  onChange={(e) => setNewService(prev => ({ ...prev, price120: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewService(prev => ({ ...prev, price120: Math.max(MIN_PRICE, parseInt(e.target.value) || MIN_PRICE) }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
@@ -549,11 +564,10 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
                           </p>
                         )}
                         
-                        {service.isDefault && (
-                          <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
-                            <p className="text-xs text-blue-700">
-                              💡 <strong>Live Example Service:</strong> This service uses your existing pricing structure. 
-                              Customers can book this immediately. Edit or delete as needed – it will convert to your custom service.
+                        {isSampleItem(service) && (
+                          <div className="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
+                            <p className="text-xs text-amber-800">
+                              Sample item – cannot be edited. Add 5 of your own menu items to replace sample items.
                             </p>
                           </div>
                         )}
@@ -561,10 +575,14 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
                     )}
                   </div>
 
-                  {/* Action buttons */}
+                  {/* Action buttons - sample items cannot be edited or deleted */}
                   {allowEdit && (
                     <div className="flex items-center gap-2 ml-4">
-                      {isEditing ? (
+                      {isSampleItem(service) ? (
+                        <span className="text-xs px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-medium">
+                          Sample – cannot be edited
+                        </span>
+                      ) : isEditing ? (
                         <>
                           <button
                             onClick={() => saveEditing(service.id)}
@@ -635,9 +653,10 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
                           {isEditing ? (
                             <input
                               type="number"
-                              value={Number(price) || 0}
+                              min={MIN_PRICE}
+                              value={Number(price) || MIN_PRICE}
                               onChange={(e) => updateEditingService(service.id, { 
-                                [priceKey]: parseInt(e.target.value) 
+                                [priceKey]: Math.max(MIN_PRICE, parseInt(e.target.value) || MIN_PRICE) 
                               })}
                               className="w-full text-center border border-gray-300 rounded px-2 py-1 text-sm font-bold focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             />
@@ -645,7 +664,7 @@ const TherapistMenuManager: React.FC<TherapistMenuManagerProps> = ({
                             <div className={`text-sm font-bold ${
                               service.isDefault ? 'text-blue-600' : 'text-orange-600'
                             }`}>
-                              Rp {((Number(price) || 0) * 1000).toLocaleString('id-ID')}
+                              IDR {((Number(price) || 0) * 1000).toLocaleString('id-ID')}
                             </div>
                           )}
                         </div>

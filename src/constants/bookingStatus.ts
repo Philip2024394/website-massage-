@@ -32,6 +32,12 @@ export const DEFAULT_BOOKING_STATUS = BOOKING_STATUS.PENDING_ACCEPT;
 export const SEARCHING_BOOKING_STATUS = BOOKING_STATUS.SEARCHING;
 
 /**
+ * Scheduled booking: therapist/place has this many minutes to Accept/Reject (per SCHEDULED_BOOKING_FLOW_SPEC).
+ * BOOK_NOW uses 5 minutes elsewhere.
+ */
+export const SCHEDULED_RESPONSE_MINUTES = 30;
+
+/**
  * Normalize booking status to valid Appwrite enum value
  * Maps legacy/invalid statuses to valid ones
  * 

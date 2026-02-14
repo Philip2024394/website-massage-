@@ -53,11 +53,12 @@ body,
  * FLEX CONTAINER HEIGHT FIXES
  * ============================================================================ */
 
-/* Fix flex: 1 inside height-constrained parents */
+/* Main must NOT grow (flex: 0) so content sits under header with no white gap.
+   flex: 1 1 auto was causing main to fill viewport below header = empty white space. */
 .therapist-page-container main,
 .therapist-layout-content main,
 [class*="therapist"] main {
-  flex: 1 1 auto !important;
+  flex: 0 1 auto !important;
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;

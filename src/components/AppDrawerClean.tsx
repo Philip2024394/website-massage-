@@ -3,7 +3,23 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles, Hotel } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
+import type { Page } from '../types/pageTypes';
+import { getSafeDrawerPage, DRAWER_NAV_ITEMS } from '../config/drawerConfig';
 import CitySwitcher from './CitySwitcher';
+
+const DRAWER_ICON_MAP = {
+  Home,
+  Users,
+  Briefcase,
+  HelpCircle,
+  Info,
+  Building,
+  Phone,
+  Hotel,
+  BookOpen,
+  Heart,
+  Sparkles,
+} as const;
 
 // Helper function to get auth app URL for development and production
 const getAuthAppUrl = (): string => {
@@ -28,7 +44,7 @@ interface AppDrawerProps {
   language?: 'en' | 'id' | 'gb';
   currentLanguage?: 'en' | 'id' | 'gb';
   onLanguageChange?: (lang: string) => void;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: Page) => void;
   onMassageJobsClick?: () => void;
   onHotelPortalClick?: () => void;
   onVillaPortalClick?: () => void;
@@ -51,7 +67,7 @@ const drawerTranslations = {
   en: {
     partners: 'Partners',
     joinIndaStreet: 'Join Indastreet Today',
-    massageJobs: 'Massage Jobs',
+    massageJobs: 'Job Positions',
     howItWorks: 'How It Works',
     aboutUs: 'About Us',
     companyProfile: 'Company Profile',
@@ -75,7 +91,7 @@ const drawerTranslations = {
   id: {
     partners: 'Mitra',
     joinIndaStreet: 'Gabung Indastreet Hari Ini',
-    massageJobs: 'Lowongan Pijat',
+    massageJobs: 'Lowongan Kerja',
     howItWorks: 'Cara Kerja',
     aboutUs: 'Tentang Kami',
     companyProfile: 'Profil Perusahaan',
@@ -170,12 +186,13 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
       }
       onClose();
     } else if (fallbackPage && onNavigate) {
+      const pageToUse = getSafeDrawerPage(fallbackPage);
+      if (pageToUse === 'home' && fallbackPage !== 'home') {
+        console.warn('[AppDrawer] Unknown drawer page, redirecting to home:', fallbackPage);
+      }
       try {
-        console.log('✅ Navigating to page:', fallbackPage);
-        console.log('🔍 onNavigate type:', typeof onNavigate);
-        console.log('🔍 Calling onNavigate with:', fallbackPage);
-        onNavigate(fallbackPage);
-        console.log('✅ onNavigate called successfully');
+        console.log('✅ Navigating to page:', pageToUse);
+        onNavigate(pageToUse);
       } catch (error) {
         console.error('❌ Navigation error:', error);
       }
@@ -260,7 +277,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button 
                     onClick={() => handleItemClick(undefined, 'createAccount')} 
                     className="
-                      flex items-center justify-center gap-3 w-full rounded-xl 
+                      flex items-center gap-3 w-full rounded-xl text-left
                       bg-gradient-to-r from-orange-500 to-orange-600 
                       hover:from-orange-600 hover:to-orange-700 
                       shadow-lg hover:shadow-xl transform hover:scale-105 
@@ -277,15 +294,17 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     aria-label="Create new account"
                     style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
-                    <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
+                    <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                      <UserPlus className="w-5 h-5 text-white" />
+                    </span>
                     <span className="text-sm text-white font-bold">Create Account</span>
                   </button>
                   
                   {/* Sign In Button */}
                   <button 
-                    onClick={() => handleItemClick(undefined, 'login')} 
+                    onClick={() => handleItemClick(onLoginClick, 'login')} 
                     className="
-                      flex items-center justify-center gap-3 w-full rounded-xl 
+                      flex items-center gap-3 w-full rounded-xl text-left
                       border-2 border-orange-500 bg-white hover:bg-orange-50 
                       shadow-md hover:shadow-lg transform hover:scale-105 
                       transition-all duration-200 touch-manipulation
@@ -301,7 +320,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     aria-label="Sign in to your account"
                     style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
-                    <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                    <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                      <Users className="w-5 h-5 text-orange-500" />
+                    </span>
                     <span className="text-sm text-orange-500 font-bold">Sign In</span>
                   </button>
                 </div>
@@ -314,7 +335,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   className="
                     flex items-center gap-3 w-full rounded-lg bg-teal-50 
                     hover:bg-teal-100 transition-colors border-2 border-teal-200
-                    touch-manipulation
+                    touch-manipulation text-left
                     /* Mobile: 56px minimum height */
                     py-3 px-3 min-h-[56px]
                     /* Tablet: 48px minimum height */
@@ -327,8 +348,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   aria-label={`Current city: ${city}. Click to change city`}
                   style={{ touchAction: 'manipulation' } as React.CSSProperties}
                 >
-                  <MapPin className="w-5 h-5 text-teal-600 flex-shrink-0" />
-                  <div className="flex-grow text-left">
+                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                    <MapPin className="w-5 h-5 text-teal-600" />
+                  </span>
+                  <div className="flex-grow text-left min-w-0">
                     <span className="text-sm text-gray-700 font-medium block">
                       {language === 'id' ? 'Kota Saat Ini' : 'Current City'}
                     </span>
@@ -343,84 +366,42 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   </div>
                 )}
                 
-                <button onClick={() => handleItemClick(undefined, 'indastreet-partners')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.partners}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'partnership-application')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.joinIndaStreet}</span>
-                </button>
-                <button onClick={() => handleItemClick(onMassageJobsClick, 'massageJobs')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Briefcase className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.massageJobs}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'how-it-works')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.howItWorks}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'about')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Info className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.aboutUs}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'company')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Building className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.companyProfile}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'contact')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Phone className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.contact}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'hotels-and-villas')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Hotel className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.hotelsVillas}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'blog')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.blog}</span>
-                </button>
-              </div>
-
-              <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
-                <button onClick={() => handleItemClick(undefined, 'massage-bali')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.massageInBali}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'massage-types')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.massageDirectory}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'facial-types')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.facialDirectory}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'balinese-massage')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.balineseMassage}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'deep-tissue-massage')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.deepTissueMassage}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'faq')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{dt.faq}</span>
-                </button>
-                <button onClick={() => handleItemClick(undefined, 'verifiedProBadge')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                  <Sparkles className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Massage Therapist Standards</span>
-                </button>
-                <div className="space-y-2">
-                  <button onClick={() => handleItemClick(undefined, 'simple-signup')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                    <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">Sign Up</span>
-                  </button>
-                  <button onClick={() => handleItemClick(undefined, 'website-management')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                    <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">{dt.websitePartners}</span>
-                  </button>
-                </div>
-              </div>
+                {Array.isArray(DRAWER_NAV_ITEMS) && (() => {
+                  const breakIndex = DRAWER_NAV_ITEMS.findIndex((i) => i.sectionBreak);
+                  const first = breakIndex < 0 ? DRAWER_NAV_ITEMS : DRAWER_NAV_ITEMS.slice(0, breakIndex);
+                  const second = breakIndex < 0 ? [] : DRAWER_NAV_ITEMS.slice(breakIndex);
+                  const renderItem = (item: (typeof DRAWER_NAV_ITEMS)[number]) => {
+                    const IconComp = DRAWER_ICON_MAP[item?.icon] ?? Home;
+                    const callback = item.id === 'massage-jobs' ? onMassageJobsClick : undefined;
+                    const label = typeof item.labelOverride === 'string'
+                      ? item.labelOverride
+                      : (dt && typeof dt === 'object' && item.labelKey && (dt[item.labelKey as keyof typeof dt] ?? item.labelKey)) || item.labelKey || '';
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleItemClick(callback, item.id)}
+                        className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left"
+                      >
+                        <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                          <IconComp className="w-5 h-5 text-orange-500" />
+                        </span>
+                        <span className="text-sm text-gray-700 font-medium">{label}</span>
+                      </button>
+                    );
+                  };
+                  return (
+                    <>
+                      <div className="space-y-2">
+                        {first.map(renderItem)}
+                      </div>
+                      {second.length > 0 && (
+                        <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
+                          {second.map(renderItem)}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
               {/* Admin Access - Footer Text Link */}
               <div className="border-t border-gray-200 pt-4 mt-4">
@@ -431,6 +412,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   {dt.admin} Portal
                 </button>
               </div>
+            </div>
             </div>
           </nav>
         </div>

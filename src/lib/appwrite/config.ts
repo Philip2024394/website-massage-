@@ -97,6 +97,7 @@ function getConfig() {
         membershipUpgrades: import.meta.env.VITE_MEMBERSHIP_UPGRADES_COLLECTION_ID || 'Membership Upgrades',
         deactivationRequests: import.meta.env.VITE_DEACTIVATION_REQUESTS_COLLECTION_ID || 'Deactivation Requests',
         leads: optionalEnv('VITE_LEADS_COLLECTION_ID'),
+        contactInquiries: import.meta.env.VITE_CONTACT_INQUIRIES_COLLECTION_ID || 'contact_inquiries',
         
         // Jobs - OPTIONAL
         employerJobPostings: 'Employer Job Postings',

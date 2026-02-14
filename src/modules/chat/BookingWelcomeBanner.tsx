@@ -4,18 +4,20 @@
  */
 
 import React from 'react';
-import { Clock, Sparkles, User, MapPin, CreditCard, Calendar, Tag } from 'lucide-react';
+import { Clock, Sparkles, User, MapPin, CreditCard, Calendar, Tag, X } from 'lucide-react';
 import { formatPrice } from './utils/chatHelpers';
 
 interface BookingBannerProps {
   currentBooking: {
     status: string;
     serviceType: string;
+    providerType?: 'therapist' | 'place' | 'facial';
     duration: number;
     customerName: string;
     locationZone?: string;
     totalPrice: number;
     bookingType: string;
+    massageFor?: string;
     scheduledDate?: string;
     scheduledTime?: string;
     bookingId?: string;
@@ -82,7 +84,18 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
         
         {/* 5-Minute Countdown Timer */}
         {Number.isFinite(bookingCountdown) && bookingCountdown !== null && bookingCountdown > 0 && (
-          <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border-2 border-orange-300 mb-3 shadow-md">
+          <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border-2 border-orange-300 mb-3 shadow-md relative">
+            {/* Small cancel button - top right */}
+            {onCancelBooking && (currentBooking.status === 'pending' || currentBooking.status === 'waiting_others') && (
+              <button
+                onClick={onCancelBooking}
+                className="absolute top-3 right-3 p-1.5 rounded-lg text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                title="Cancel booking"
+                aria-label="Cancel booking"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
             <div className="text-center mb-2">
               <p className="text-xs font-semibold text-orange-800 uppercase tracking-wide">
                 ⏰ Therapist Response Countdown
@@ -122,14 +135,20 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
       {/* Booking Details - Enhanced visibility */}
       <div className="px-4 py-3 bg-white border-t border-gray-100">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          {/* Service Details - More prominent */}
+          {/* Service Details - Massage | Massage Spa | Facial Clinic */}
           <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
             <Sparkles className="w-4 h-4 text-gray-600" />
             <div>
               <div className="text-xs text-gray-500">Service</div>
               <div className="font-bold text-gray-800">
-                {currentBooking.serviceType} ({currentBooking.duration}min)
+                {currentBooking.providerType === 'facial' ? 'Facial Clinic' : currentBooking.providerType === 'place' ? 'Massage Spa' : 'Massage'}
+                {currentBooking.duration ? ` (${currentBooking.duration} min)` : ''}
               </div>
+              {currentBooking.massageFor && (
+                <div className="text-xs text-gray-600 mt-0.5">
+                  For: {currentBooking.massageFor === 'male' ? 'Male' : currentBooking.massageFor === 'female' ? 'Female' : currentBooking.massageFor === 'children' ? 'Children' : currentBooking.massageFor}
+                </div>
+              )}
             </div>
           </div>
           
@@ -164,14 +183,15 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
             </div>
           )}
           
-          {/* Booking Type & Time */}
+          {/* Massage Type - Service name user booked */}
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-blue-500" />
             <span className="text-gray-600">Type:</span>
             <span className="font-medium text-gray-800">
-              {currentBooking.bookingType === 'book_now' ? '🔥 Book Now' : '📅 Scheduled'}
-              {currentBooking.scheduledDate && (
-                ` - ${currentBooking.scheduledDate} ${currentBooking.scheduledTime}`
+              {currentBooking.serviceType || 'Professional Massage'}
+              {currentBooking.duration ? ` (${currentBooking.duration} min)` : ''}
+              {currentBooking.bookingType === 'scheduled' && currentBooking.scheduledDate && (
+                ` · ${currentBooking.scheduledDate} ${currentBooking.scheduledTime || ''}`
               )}
             </span>
           </div>
@@ -186,4 +206,4 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
       </div>
     </div>
   );
-};
+};;

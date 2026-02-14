@@ -10,7 +10,7 @@ import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
 import { Query } from 'appwrite';
 
 export interface SessionUser {
-    type: 'admin' | 'hotel' | 'villa' | 'agent' | 'therapist' | 'place' | 'user';
+    type: 'admin' | 'hotel' | 'villa' | 'agent' | 'therapist' | 'place' | 'employer' | 'user';
     id: string;
     email: string;
     documentId: string;
@@ -318,6 +318,35 @@ async function determineUserType(userId: string, email: string): Promise<Session
             }
         } catch {
             console.warn('⚠️ Place check failed or timeout, skipping');
+        }
+
+        // Check Employers (job posting) with timeout
+        try {
+            const employerProfiles = COLLECTIONS.EMPLOYER_PROFILES;
+            if (employerProfiles) {
+                const employers = await Promise.race([
+                    databases.listDocuments(
+                        DATABASE_ID,
+                        employerProfiles,
+                        [Query.equal('email', email)]
+                    ),
+                    new Promise<any>((_, reject) =>
+                        setTimeout(() => reject(new Error('Employer query timeout')), 3000)
+                    )
+                ]);
+                if (employers.documents.length > 0) {
+                    const employer = employers.documents[0];
+                    return {
+                        type: 'employer',
+                        id: employer.$id,
+                        email,
+                        documentId: employer.$id,
+                        data: employer
+                    };
+                }
+            }
+        } catch {
+            console.warn('⚠️ Employer check failed or timeout, skipping');
         }
 
         // Check Regular Users with timeout

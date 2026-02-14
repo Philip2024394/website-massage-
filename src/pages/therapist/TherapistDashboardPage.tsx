@@ -551,6 +551,32 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       
       console.log('✅ Geopoint validation passed');
 
+      // Traditional Massage 3 prices are REQUIRED – profile cannot save without them (min 100 = Rp 100,000 each)
+      const MIN_PRICE = 100;
+      const p60 = parseInt(price60, 10);
+      const p90 = parseInt(price90, 10);
+      const p120 = parseInt(price120, 10);
+      if (!price60.trim() || !price90.trim() || !price120.trim()) {
+        showToast('❌ Traditional Massage – all 3 prices (60, 90, 120 min) are required to save your profile.', 'error');
+        setSaving(false);
+        return;
+      }
+      if (!isNaN(p60) && p60 < MIN_PRICE) {
+        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 60 minutes.', 'error');
+        setSaving(false);
+        return;
+      }
+      if (!isNaN(p90) && p90 < MIN_PRICE) {
+        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 90 minutes.', 'error');
+        setSaving(false);
+        return;
+      }
+      if (!isNaN(p120) && p120 < MIN_PRICE) {
+        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 120 minutes.', 'error');
+        setSaving(false);
+        return;
+      }
+
       const updateData: any = {
         name: name.trim(),
         description: description.trim(),
@@ -689,11 +715,20 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
     }
   };
 
-  // Form validation for save button - GPS is MANDATORY
+  // Form validation for save button - GPS + Traditional Massage 3 prices are MANDATORY (profile cannot save without them)
+  const MIN_PRICE_VAL = 100;
+  const p60Val = parseInt(price60, 10);
+  const p90Val = parseInt(price90, 10);
+  const p120Val = parseInt(price120, 10);
+  const hasValidThreePrices = price60.trim() !== '' && price90.trim() !== '' && price120.trim() !== '' &&
+    !isNaN(p60Val) && p60Val >= MIN_PRICE_VAL &&
+    !isNaN(p90Val) && p90Val >= MIN_PRICE_VAL &&
+    !isNaN(p120Val) && p120Val >= MIN_PRICE_VAL;
   const canSave = name.trim() && 
                   /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && 
                   selectedCity !== 'all' &&
-                  coordinates && coordinates.lat && coordinates.lng; // GPS is MANDATORY
+                  coordinates && coordinates.lat && coordinates.lng &&
+                  hasValidThreePrices; // GPS + Traditional Massage 3 prices MANDATORY
 
   // Handle "Go Live" button click
   const handleGoLive = async () => {
@@ -941,6 +976,10 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         console.log('[NAV CLICK] \u2192 Navigating to SafePass page');
         onNavigate?.('therapist-hotel-villa-safe-pass');
         break;
+      case 'therapist-profile':
+        console.log('[NAV CLICK] \u2192 Navigating to public therapist profile');
+        onNavigate?.('therapist-profile');
+        break;
       case 'logout':
         console.log('[NAV CLICK] \u2192 Calling onLogout()');
         onLogout?.();
@@ -984,10 +1023,8 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         onLogout={onLogout}
       >
       <div className="bg-white w-full">
-      
       {/* Main Content - MODEL A: NO top padding to eliminate white space */}
-      <main className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px', marginTop: '0px' }}>
-        
+      <div className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px', marginTop: '0px' }}>
         {/* Elite Connection Status - NO top margin */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3" style={{ marginTop: '0px' }}>
       <div className="bg-gradient-to-b from-green-50 to-blue-50 p-4 border-b border-gray-200">
@@ -1000,7 +1037,8 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 md:px-8 py-4 shadow-lg">
-          <div className="max-w-full sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">\n            <div className="flex items-center gap-3">
+          <div className="max-w-full sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
+            <div className="flex items-center gap-3">
               <span className="text-2xl animate-pulse">⏰</span>
               <div>
                 <p className="font-bold text-lg">Payment Due Tonight at 12:00 AM</p>
@@ -1018,7 +1056,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       )}
 
       {/* Main Content */}
-      <main className="max-w-sm mx-auto px-4 py-6">
+      <main className="max-w-sm mx-auto px-4 pt-0 pb-6">
           
           {/* Page Header with Status Badge and Stats - EXACT MATCH TO HOME PAGE */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
@@ -1712,11 +1750,14 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            {/* Pricing */}
+            {/* Pricing - Traditional Massage is the standard default; these 3 prices appear in the price slider and on profile when lowest */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Massage Prices (100 = Rp 100,000)
+                Traditional Massage – 3 prices (Min 100 = Rp 100,000)
               </label>
+              <p className="text-xs text-gray-500 mb-2">
+                These prices are shown as &quot;Traditional Massage&quot; in your price slider and on your profile when they are your lowest.
+              </p>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-2 font-medium">60 minutes</label>
@@ -1726,6 +1767,10 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                     onChange={e => {
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice60(value);
+                    }}
+                    onBlur={() => {
+                      const n = parseInt(price60, 10);
+                      if (price60 && !isNaN(n) && n < 100) setPrice60('100');
                     }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="100"
@@ -1741,6 +1786,10 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice90(value);
                     }}
+                    onBlur={() => {
+                      const n = parseInt(price90, 10);
+                      if (price90 && !isNaN(n) && n < 100) setPrice90('100');
+                    }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="150"
                     maxLength={3}
@@ -1754,6 +1803,10 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                     onChange={e => {
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice120(value);
+                    }}
+                    onBlur={() => {
+                      const n = parseInt(price120, 10);
+                      if (price120 && !isNaN(n) && n < 100) setPrice120('100');
                     }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="200"
@@ -1772,6 +1825,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                   {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
                   {selectedCity === 'all' && <li>• City/Location</li>}
                   {(!coordinates || !coordinates.lat || !coordinates.lng) && <li>• GPS Location (click SET GPS LOCATION button)</li>}
+                  {!hasValidThreePrices && <li>• Traditional Massage – 3 prices (60, 90, 120 min, min 100 = Rp 100,000 each)</li>}
                 </ul>
               </div>
             )}
@@ -1828,6 +1882,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                     if (!name.trim()) missingFields.push('First Name');
                     if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
                     if (selectedCity === 'all') missingFields.push('Location');
+                    if (!hasValidThreePrices) missingFields.push('Traditional Massage 3 prices (60/90/120 min)');
                     showToast(`⚠️ Please complete all required fields: ${missingFields.join(', ')}`, 'error');
                     return;
                   }
@@ -1853,6 +1908,8 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
           </div>
           </div>
       </main>
+      </div>
+      </div>
 
       {/* Payment Modal for Plus Members */}
       {showPaymentModal && (

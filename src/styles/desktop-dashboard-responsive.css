@@ -36,7 +36,7 @@
 
 .therapist-layout-content {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0 0.5rem 0.25rem 0.5rem; /* Minimal padding - no extra white space */
 }
 
 /* Desktop: Expand to full app width */
@@ -52,7 +52,7 @@
   }
   
   .therapist-layout-content {
-    padding: 2rem;
+    padding: 0 1.5rem 1rem 1.5rem; /* Reduced - no extra white space */
     max-width: none; /* ❌ Remove mobile constraint */
   }
   
@@ -87,6 +87,16 @@
   height: auto !important;
   min-height: unset !important;
   margin-bottom: 0 !important;
+}
+
+/* Therapist dashboard: zero white space in hero area (under header) */
+.therapist-page-container .therapist-layout-content,
+.therapist-page-container .therapist-content-wrapper,
+.therapist-layout-content > *:first-child,
+.therapist-content-wrapper > *:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  min-height: 0 !important;
 }
 
 /* Inner content of hero sections should be contained */
@@ -252,7 +262,7 @@
   }
   
   .therapist-layout-content {
-    padding: 1.5rem;
+    padding: 0 1.5rem 1.5rem 1.5rem; /* No top padding - content flows under header */
   }
   
   /* Tablet 2-column layouts */

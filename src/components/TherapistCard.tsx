@@ -39,13 +39,13 @@ import { AvailabilityStatus } from '../types';
 import { logger } from '../utils/logger';
 import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
-import { getRandomTherapistImage } from '../utils/therapistImageUtils';
-import { getRandomSharedProfileImage } from '../lib/sharedProfileImages';
+import { getTherapistMainImage } from '../utils/therapistImageUtils';
+import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { getOrCreateShareLink } from '../utils/shareLinkGenerator';
-import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/therapistCardHelpers';
+import { getAuthAppUrl, getDisplayStatus, isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay } from '../utils/therapistCardHelpers';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
@@ -117,6 +117,8 @@ interface RoundButtonRowProps {
     onSchedule: () => void;
     onPriceSlider: () => void;
     hasScheduledBookings: boolean;
+    /** Spec 6.2: true when user has one scheduled in progress – disable Book and Schedule until payment confirmed or expired */
+    hasActiveScheduledBooking?: boolean;
     bookNowText: string;
     scheduleText: string;
     dynamicSpacing: string;
@@ -127,11 +129,19 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
     onSchedule,
     onPriceSlider,
     hasScheduledBookings,
+    hasActiveScheduledBooking = false,
     bookNowText,
     scheduleText,
     dynamicSpacing
 }) => {
     const [activeButton, setActiveButton] = useState<'book' | 'schedule' | 'price' | null>(null);
+    const bookScheduleDisabled = hasActiveScheduledBooking;
+    const scheduleUnavailable = !hasScheduledBookings;
+    const disabledTitle = bookScheduleDisabled
+        ? 'Complete or cancel your current scheduled booking first'
+        : scheduleUnavailable
+        ? 'Scheduled bookings require bank details and KTP in the provider dashboard'
+        : undefined;
     
     return (
         <div className={`flex gap-2 px-4 ${dynamicSpacing}`}>
@@ -140,12 +150,17 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (bookScheduleDisabled) return;
                     setActiveButton('book');
                     onBookNow();
                 }}
+                disabled={bookScheduleDisabled}
+                title={disabledTitle}
                 className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
-                    activeButton === 'book' 
-                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700' 
+                    bookScheduleDisabled
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : activeButton === 'book'
+                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
                         : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
                 } active:scale-95 shadow-md`}
             >
@@ -158,14 +173,14 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (hasScheduledBookings) {
-                        setActiveButton('schedule');
-                        onSchedule();
-                    }
+                    if (bookScheduleDisabled || !hasScheduledBookings) return;
+                    setActiveButton('schedule');
+                    onSchedule();
                 }}
-                disabled={!hasScheduledBookings}
+                disabled={!hasScheduledBookings || bookScheduleDisabled}
+                title={disabledTitle}
                 className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
-                    !hasScheduledBookings
+                    !hasScheduledBookings || bookScheduleDisabled
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : activeButton === 'schedule'
                         ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
@@ -266,6 +281,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const {
         menuData,
         setMenuData,
+        menuLoadAttempted,
+        setMenuLoadAttempted,
         userReferralCode,
         setUserReferralCode,
         selectedServiceIndex,
@@ -299,7 +316,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     } = useTherapistCardCalculations(therapist);
     
     // 🔒 PERSISTENT CHAT - Facebook Messenger style chat window
-    const { openBookingChat, openScheduleChat, openPriceChat, openBookingWithService } = usePersistentChatIntegration();
+    const { openBookingChat, openScheduleChat, openPriceChat, openBookingWithService, hasActiveScheduledBooking } = usePersistentChatIntegration();
     
     // Debug modal state changes
     useEffect(() => {
@@ -663,6 +680,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             } catch (outerError) {
                 logger.error('❌ Outer error in loadMenu:', outerError);
                 setMenuData([]);
+            } finally {
+                setMenuLoadAttempted(true);
             }
         };
         
@@ -707,91 +726,57 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         }
     };
     
-    // Parse pricing - support menu data, separate fields, and old JSON format
-    const getPricing = () => {
-        // First, check if we have menu data with a cheaper service than the default pricing
-        if (menuData && menuData.length > 0) {
-            // Find services that have 60/90/120 minute pricing
-            const servicesWithFullPricing = menuData.filter(item => {
-                return item.duration60 && item.duration90 && item.duration120 &&
-                       item.price60 && item.price90 && item.price120;
-            });
+    // Combined menu: real + Traditional from profile (if set) + sample fill to 5. Cheapest from this set for display (same as slider).
+    const combinedMenu = getCombinedMenuForDisplay(menuData, therapist);
 
-            if (servicesWithFullPricing.length > 0) {
-                // Get the default pricing first
-                const defaultPricing = (() => {
-                    const hasValidSeparateFields = (
-                        (therapist.price60 && parseInt(therapist.price60) > 0) ||
-                        (therapist.price90 && parseInt(therapist.price90) > 0) ||
-                        (therapist.price120 && parseInt(therapist.price120) > 0)
-                    );
+    // Parse pricing - use combined menu so profile shows same cheapest as menu slider
+    const getPricing = (): { "60": number; "90": number; "120": number } => {
+        if (!menuLoadAttempted) return { "60": 0, "90": 0, "120": 0 };
 
-                    if (hasValidSeparateFields) {
-                        return {
-                            "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
-                            "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
-                            "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
-                        };
-                    }
-                    
-                    const parsedPricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
-                    return {
-                        "60": parsedPricing["60"] * 1000,
-                        "90": parsedPricing["90"] * 1000,
-                        "120": parsedPricing["120"] * 1000
-                    };
-                })();
-
-                // Find the cheapest service (based on 60-minute price)
-                const cheapestService = servicesWithFullPricing.reduce((cheapest, current) => {
-                    const cheapestPrice = parseFloat(cheapest.price60 || '999999');
-                    const currentPrice = parseFloat(current.price60 || '999999');
-                    return currentPrice < cheapestPrice ? current : cheapest;
-                });
-
-                // Convert menu prices to full IDR amounts (assume menu prices are in thousands)
+        if (combinedMenu.length > 0) {
+            const cheapest = getCheapestServiceByTotalPrice(combinedMenu);
+            if (cheapest) {
                 const menuPricing = {
-                    "60": parseFloat(cheapestService.price60) * 1000,
-                    "90": parseFloat(cheapestService.price90) * 1000,
-                    "120": parseFloat(cheapestService.price120) * 1000
+                    "60": Number(cheapest.price60) * 1000,
+                    "90": Number(cheapest.price90) * 1000,
+                    "120": Number(cheapest.price120) * 1000
                 };
-
-                // Use menu pricing if it's cheaper than default pricing
-                if (menuPricing["60"] < defaultPricing["60"] && menuPricing["60"] > 0) {
-                    devLog(`💰 Using cheaper menu pricing for ${therapist.name}:`, {
-                        serviceName: cheapestService.name || cheapestService.serviceName,
-                        menuPricing,
-                        defaultPricing
+                if (menuPricing["60"] > 0 && menuPricing["90"] > 0 && menuPricing["120"] > 0) {
+                    devLog(`💰 Using lowest (combined menu) pricing for ${therapist.name}:`, {
+                        serviceName: cheapest.name || cheapest.serviceName,
+                        menuPricing
                     });
                     return menuPricing;
                 }
             }
         }
 
-        // Fallback to default pricing logic
-        const hasValidSeparateFields = (
-            (therapist.price60 && parseInt(therapist.price60) > 0) ||
-            (therapist.price90 && parseInt(therapist.price90) > 0) ||
+        const hasAllThreePrices = (
+            (therapist.price60 && parseInt(therapist.price60) > 0) &&
+            (therapist.price90 && parseInt(therapist.price90) > 0) &&
             (therapist.price120 && parseInt(therapist.price120) > 0)
         );
-
-        if (hasValidSeparateFields) {
+        if (hasAllThreePrices) {
             return {
-                "60": therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
-                "90": therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
-                "120": therapist.price120 ? parseInt(therapist.price120) * 1000 : 0
+                "60": parseInt(therapist.price60!) * 1000,
+                "90": parseInt(therapist.price90!) * 1000,
+                "120": parseInt(therapist.price120!) * 1000
             };
         }
-        
-        // Fallback to old JSON format - multiply by 1000 to get full IDR amounts
         const parsedPricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
-        return {
+        const fromJson = {
             "60": parsedPricing["60"] * 1000,
             "90": parsedPricing["90"] * 1000,
             "120": parsedPricing["120"] * 1000
         };
+        if (fromJson["60"] > 0 && fromJson["90"] > 0 && fromJson["120"] > 0) return fromJson;
+        if (!hasActualPricing(therapist)) {
+            const therapistId = String((therapist as any).$id || therapist.id || '');
+            if (therapistId) return getSamplePricing(therapistId);
+        }
+        return fromJson;
     };
-    
+
     const pricing = getPricing();
 
     const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
@@ -830,12 +815,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             return "Contact"; // Show "Contact" instead of "0k" when no price is set
         }
         
-        // Convert to thousands and ensure 3-digit format (100-999)
+        // Convert to thousands - allow any positive value (e.g. 50k, 75k, 100k+)
         let priceInThousands = Math.round(numPrice / 1000);
-        
-        // Ensure 3-digit display (100k-999k range)
-        if (priceInThousands < 100) {
-            priceInThousands = 100; // Minimum 100k
+
+        if (priceInThousands < 1) {
+            priceInThousands = 1; // Minimum 1k for display
         } else if (priceInThousands > 999) {
             priceInThousands = 999; // Maximum 999k for 4-char display
         }
@@ -844,36 +828,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return `${priceInThousands}k`;
     };
     
-    // Get main image from therapist data - PRIORITY: mainImage FIRST (large banner)
-    // Priority: mainImage > profileImageUrl > profileImage > profilePicture
-    // Skip data: base64 URLs (match TopTherapistsPage validation)
-    const mainImageRaw = (therapist as any).mainImage && !(therapist as any).mainImage.startsWith('data:') ? (therapist as any).mainImage : null;
-    const profileImageUrl = (therapist as any).profileImageUrl && !(therapist as any).profileImageUrl.startsWith('data:') ? (therapist as any).profileImageUrl : null;
-    const profileImage = therapist.profileImage && !therapist.profileImage.startsWith('data:') ? therapist.profileImage : null;
-    const profilePicture = (therapist as any).profilePicture && !(therapist as any).profilePicture.startsWith('data:') ? (therapist as any).profilePicture : null;
+    // Single source of truth: same image as profile page (home card + profile page must match exactly)
+    const displayImage = getTherapistMainImage(therapist as any);
     
-    const mainImage = mainImageRaw || profileImageUrl || profileImage || profilePicture;
-    
-    // Use therapist's image or shared profile image pool (better than gray placeholders)
-    const displayImage = mainImage || getRandomSharedProfileImage();
-    
-    // ✅ VALIDATE: Ensure displayImage is a valid URL string
-    const isValidUrl = typeof displayImage === 'string' && /^https?:\/\/.+/.test(displayImage);
     const isSvgPlaceholder = typeof displayImage === 'string' && displayImage.startsWith('data:image/svg+xml');
     
     logger.debug('%c🖼️ [TherapistCard] Image Debug', 'background: #9C27B0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
-    logger.debug('Therapist:', therapist.name);
-    logger.debug('mainImage (1st priority - BANNER):', (therapist as any).mainImage || 'NOT SET', mainImageRaw ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('profileImageUrl (2nd priority):', (therapist as any).profileImageUrl || 'NOT SET', profileImageUrl ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('profileImage (3rd priority):', therapist.profileImage || 'NOT SET', profileImage ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('profilePicture (4th priority - PHOTO):', (therapist as any).profilePicture || 'NOT SET', profilePicture ? '✅ VALID' : '❌ INVALID/EMPTY');
-    logger.debug('Selected mainImage:', mainImage || 'NONE - using fallback');
-    logger.debug('Final displayImage:', displayImage);
-    logger.debug('displayImage TYPE:', typeof displayImage);
-    logger.debug('Using fallback?', !mainImage ? '✅ YES (SharedProfile pool)' : '❌ NO');
-    logger.debug('Is Valid URL?', isValidUrl ? '✅ YES' : '❌ NO');
-    logger.debug('Is SVG Placeholder?', isSvgPlaceholder ? '⚠️ YES (GRAY BOX)' : '✅ NO');
-    logger.debug('Display Image Length:', displayImage?.length || 0);
+    logger.debug('Therapist:', therapist.name, 'displayImage:', displayImage?.slice?.(0, 60) + '...');
     
     if (isSvgPlaceholder) {
         logger.error('%c❌ SVG PLACEHOLDER DETECTED!', 'background: red; color: white; padding: 4px 8px; font-weight: bold;');
@@ -1062,27 +1023,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 )}
             </div>
             
-            {/* 🔍 MAIN IMAGE TROUBLESHOOTING - Remove after debugging */}
-            {window.location.pathname.includes('/shared') || window.location.hash.includes('therapist-profile') ? (
-                <div className="fixed bottom-4 left-4 bg-red-900/90 text-white p-4 rounded-lg shadow-2xl max-w-md z-50 text-xs font-mono">
-                    <div className="font-bold text-yellow-400 mb-2">🖼️ MAIN IMAGE DEBUG</div>
-                    <div className="space-y-1">
-                        <div><strong>Therapist:</strong> {therapist.name}</div>
-                        <div><strong>mainImage:</strong> {(therapist as any).mainImage ? String((therapist as any).mainImage).substring(0, 40) + '...' : '❌ NULL'}</div>
-                        <div><strong>profileImage:</strong> {therapist.profileImage ? String(therapist.profileImage).substring(0, 40) + '...' : '❌ NULL'}</div>
-                        <div><strong>displayImage:</strong> {String(displayImage).substring(0, 40)}...</div>
-                        <div><strong>TYPE:</strong> {typeof displayImage}</div>
-                        <div><strong>Valid URL?:</strong> {isValidUrl ? '✅ YES' : '❌ NO'}</div>
-                        <div><strong>SVG Placeholder?:</strong> {isSvgPlaceholder ? '⚠️ YES (GRAY)' : '✅ NO'}</div>
-                        <div className="mt-2 pt-2 border-t border-gray-400">
-                            {isSvgPlaceholder && <div className="text-red-300">❌ Will show gray box!</div>}
-                            {!isValidUrl && !isSvgPlaceholder && <div className="text-red-300">❌ Invalid URL!</div>}
-                            {isValidUrl && <div className="text-green-300">✅ Should display!</div>}
-                        </div>
-                    </div>
-                </div>
-            ) : null}
-            
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
             <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8">
                 <TherapistCardHeader
@@ -1168,20 +1108,23 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
 
 
-            <TherapistPricingGrid
-                pricing={pricing}
-                therapist={therapist}
-                displayRating={displayRating}
-                animatedPriceIndex={animatedPriceIndex}
-                formatPrice={formatPrice}
-                getDynamicSpacing={getDynamicSpacing}
-                translatedDescriptionLength={translatedDescription.length}
-                menuData={menuData}
-                onPriceClick={() => {
-                    logger.debug('💰 Price grid clicked - opening price modal');
-                    setShowPriceListModal(true);
-                }}
-            />
+            {/* Only show 3 price containers when we have complete 60/90/120 pricing */}
+            {pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 && (
+                <TherapistPricingGrid
+                    pricing={pricing}
+                    therapist={therapist}
+                    displayRating={displayRating}
+                    animatedPriceIndex={animatedPriceIndex}
+                    formatPrice={formatPrice}
+                    getDynamicSpacing={getDynamicSpacing}
+                    translatedDescriptionLength={translatedDescription.length}
+                    menuData={combinedMenu}
+                    onPriceClick={() => {
+                        logger.debug('💰 Price grid clicked - opening price modal');
+                        setShowPriceListModal(true);
+                    }}
+                />
+            )}
 
             {/* Round Button Row - Book Now | Scheduled Bookings | Price Slider */}
             <RoundButtonRow
@@ -1198,7 +1141,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     setBookingsCount(prev => prev + 1);
                 }}
                 onSchedule={async () => {
-                    if (therapist.bankName && therapist.accountNumber && therapist.accountName) {
+                    const hasBank = !!(therapist.bankName && therapist.accountNumber && therapist.accountName) || !!(therapist as any).bankCardDetails;
+                    const hasKtp = !!(therapist as any).ktpPhotoUrl;
+                    if (hasBank && hasKtp) {
                         try {
                             const bookingId = await enterpriseBookingFlowService.createBookingRequest({
                                 userId: 'current_user',
@@ -1219,14 +1164,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
                     } else {
-                        alert('This therapist does not accept scheduled bookings at this time.');
+                        alert('Scheduled bookings require the therapist to add bank details and KTP in their dashboard. Please choose another therapist or try again later.');
                     }
                 }}
                 onPriceSlider={() => {
                     logger.debug('💰 [PRICE SLIDER] Opening price modal...');
                     setShowPriceListModal(true);
                 }}
-                hasScheduledBookings={!!(therapist.bankName && therapist.accountNumber && therapist.accountName)}
+                hasScheduledBookings={!!((therapist.bankName && therapist.accountNumber && therapist.accountName) || (therapist as any).bankCardDetails) && !!((therapist as any).ktpPhotoUrl)}
+                hasActiveScheduledBooking={hasActiveScheduledBooking}
                 bookNowText={bookNowText}
                 scheduleText={scheduleText}
                 dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}

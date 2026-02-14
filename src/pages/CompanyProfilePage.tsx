@@ -1,16 +1,21 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
-import React from 'react';
-import { ArrowLeft, Building2, Globe, Award, Users, TrendingUp, Shield, Target, Heart, CheckCircle, Download, Share2, MapPin, Mail, Phone, Facebook, Instagram, Linkedin, Home, MessageCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Building2, Globe, Award, Users, TrendingUp, Shield, Target, Heart, CheckCircle, Download, Share2, MapPin, Mail, Phone, Facebook, Instagram, Linkedin, Home, MessageCircle } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 import UniversalHeader from '../components/shared/UniversalHeader';
+import { AppDrawer } from '../components/AppDrawerClean';
 
 interface CompanyProfilePageProps {
-  onBack: () => void;
+  onBack?: () => void;
+  onNavigate?: (page: string) => void;
+  onLanguageChange?: (lang: string) => void;
   t?: any;
   language?: 'en' | 'id';
 }
 
-function CompanyProfilePage({ onBack, t, language }: CompanyProfilePageProps) {
+function CompanyProfilePage({ onBack, onNavigate, onLanguageChange, t, language = 'id' }: CompanyProfilePageProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const handleHome = () => onNavigate?.('home') ?? onBack?.();
   const handleShare = () => {
     // Create proper company profile URL
     const baseUrl = window.location.origin;
@@ -88,28 +93,23 @@ function CompanyProfilePage({ onBack, t, language }: CompanyProfilePageProps) {
 
   return (
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <PageContainer className="py-3">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl font-bold">
-              <span className="text-gray-900">Inda</span>
-              <span className="text-orange-500">street</span>
-            </h1>
-            <button 
-              onClick={onBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group p-2 rounded-lg hover:bg-gray-100"
-            >
-              <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
-              <span className="font-medium hidden sm:inline">
-                {language === 'id' ? 'Kembali' : 'Back'}
-              </span>
-            </button>
-          </div>
-        </PageContainer>
-      </header>
+      {/* Universal Header - same as home page */}
+      <UniversalHeader
+        language={language}
+        onLanguageChange={onLanguageChange}
+        onMenuClick={() => setIsMenuOpen(true)}
+        onHomeClick={handleHome}
+        showHomeButton={true}
+      />
+      
+      <AppDrawer
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onNavigate={onNavigate}
+        language={language}
+      />
 
-      <main>
+      <main className="pt-16">
         {/* Hero Section */}
         <section 
           className="relative bg-gradient-to-r from-orange-600 to-orange-500 text-white py-20 bg-cover bg-center"

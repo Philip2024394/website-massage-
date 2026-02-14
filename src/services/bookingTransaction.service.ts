@@ -26,6 +26,7 @@
 import { BookingLifecycleStatus } from '../lib/services/bookingLifecycleService';
 import { BookingData } from '../types';
 import { TimerPhase } from '../hooks/useBookingTimer';
+import { normalizeBookingStatus, SCHEDULED_RESPONSE_MINUTES } from '../constants/bookingStatus';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPE DEFINITIONS
@@ -62,6 +63,9 @@ export interface BookingTransactionParams {
   scheduledDate?: string;
   scheduledTime?: string;
   bookingType?: 'BOOK_NOW' | 'SCHEDULED';
+  
+  // Provider type (Spec 9: same flow for places as therapists)
+  providerType?: 'therapist' | 'place';
   
   // Discount
   discountCode?: string;
@@ -242,6 +246,22 @@ async function prepareBookingData(
   }
   
   console.log('✅ [PREPARE] No duplicate found - proceeding');
+
+  // Spec 5.2: Slot reserved on accept – block new scheduled booking if slot already taken (ACCEPTED/CONFIRMED)
+  if (params.bookingType === 'SCHEDULED' && params.scheduledDate && params.scheduledTime) {
+    const { bookingLifecycleService } = await import('../lib/services/bookingLifecycleService');
+    const reserved = await bookingLifecycleService.isSlotReserved(
+      params.therapist.appwriteId,
+      params.scheduledDate,
+      params.scheduledTime
+    );
+    if (reserved) {
+      return {
+        success: false,
+        error: 'This date and time are no longer available. Please choose another slot.',
+      };
+    }
+  }
   
   // ═════════════════════════════════════════════════════════════════════════
   // 🚨 TESTING GATE REQUIREMENT 1: SERVER-SIDE BOOKING ID GENERATION
@@ -254,9 +274,10 @@ async function prepareBookingData(
   console.log('✅ [PREPARE] Server-generated booking ID:', bookingId);
   
   // ─────────────────────────────────────────────────────────────────────────
-  // Calculate Expiration
+  // Calculate Expiration (30 min for SCHEDULED per spec, 5 min for BOOK_NOW)
   // ─────────────────────────────────────────────────────────────────────────
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
+  const responseMinutes = params.bookingType === 'SCHEDULED' ? SCHEDULED_RESPONSE_MINUTES : 5;
+  const expiresAt = new Date(Date.now() + responseMinutes * 60 * 1000).toISOString();
   
   // ─────────────────────────────────────────────────────────────────────────
   // Format Customer Phone (strip + prefix for Appwrite compatibility)
@@ -272,10 +293,10 @@ async function prepareBookingData(
     customerName: params.customerName,
     customerphone: customerPhone, // lowercase to match schema
     customerWhatsApp: customerPhone, // Use phone for validation
-    therapistId: params.therapist.appwriteId, // CRITICAL: Use Appwrite document ID
+    therapistId: params.therapist.appwriteId, // CRITICAL: Use Appwrite document ID (same field for therapist or place)
     therapistAppwriteId: params.therapist.appwriteId, // For validation
     therapistName: params.therapist.name,
-    therapistType: 'therapist' as const,
+    therapistType: (params.providerType || 'therapist') as 'therapist' | 'place',
     serviceType: params.serviceType || 'Traditional Massage',
     duration: params.duration,
     price: params.totalPrice,
@@ -288,7 +309,12 @@ async function prepareBookingData(
     date: new Date().toISOString(),
     customerPhone: customerPhone, // camelCase for TypeScript
     time: params.scheduledTime || new Date().toLocaleTimeString('en-US', { hour12: false }),
-    status: 'pending' as const,
+    status: normalizeBookingStatus('pending'), // Schema-aligned (e.g. pending_accept)
+    ...(params.scheduledDate && params.scheduledTime && {
+      scheduledDate: params.scheduledDate,
+      scheduledTime: params.scheduledTime,
+    }),
+    responseDeadline: expiresAt,
     responcedeadline: expiresAt, // typo preserved
     notes: params.discountCode ? `Discount: ${params.discountPercentage}%` : undefined,
   };
@@ -381,15 +407,15 @@ async function confirmBookingState(
       // ═══════════════════════════════════════════════════════════════════
       lifecycleStatus: BookingLifecycleStatus.PENDING,
       
-      // Provider info
+      // Provider info (Spec 9: places use same flow)
       therapistId: appwriteBooking.therapistId,
       therapistName: appwriteBooking.therapistName,
-      providerType: 'therapist',
+      providerType: (params.providerType || appwriteBooking.therapistType || appwriteBooking.providerType || 'therapist') as 'therapist' | 'place',
       
-      // Customer info
+      // Customer info (fallback to params - Appwrite may return different casing)
       customerId: appwriteBooking.customerId,
-      customerName: appwriteBooking.customerName,
-      customerPhone: appwriteBooking.customerPhone,
+      customerName: appwriteBooking.customerName || appwriteBooking.customer_name || params.customerName,
+      customerPhone: appwriteBooking.customerPhone || appwriteBooking.customerphone || params.customerPhone,
       
       // Service details
       serviceType: appwriteBooking.serviceType,

@@ -66,6 +66,7 @@ import { pushNotificationsService } from '../../lib/pushNotificationsService';
 import EnhancedNavigation from './EnhancedNavigation';
 import FloatingActionButton from './FloatingActionButton';
 import SmartBreadcrumb from './SmartBreadcrumb';
+import { getTherapistSidebarPage } from '../../config/therapistSidebarConfig';
 
 // Alias BarChart as BarChart3 for compatibility (BarChart3 doesn't exist in lucide-react)
 const BarChart3 = BarChart;
@@ -223,7 +224,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     en: {
       status: 'Online Status',
       schedule: 'My Schedule',
-      dashboard: 'Dashboard',
+      dashboard: 'Profile Upload',
       bookings: 'Bookings',
       earnings: 'Earnings',
       payment: 'Payment Info',
@@ -246,7 +247,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     id: {
       status: 'Status Online',
       schedule: 'Jadwal Saya',
-      dashboard: 'Dashboard',
+      dashboard: 'Unggah Profil',
       bookings: 'Booking',
       earnings: 'Pendapatan',
       payment: 'Info Pembayaran',
@@ -306,11 +307,12 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     setIsSidebarOpen(false);
     setShowEnhancedNav(false);
     
-    // Navigate with slight delay to ensure state cleanup
+    // Safe lock: resolve sidebar id to canonical page (prevents landing redirect)
+    const canonicalPage = getTherapistSidebarPage(pageId);
+    
     requestAnimationFrame(() => {
-      onNavigate(pageId);
+      onNavigate(canonicalPage);
       
-      // Reset navigation state after completion
       setTimeout(() => {
         setIsNavigating(false);
       }, 300);
@@ -353,15 +355,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     <div 
       className="bg-white w-full max-w-full therapist-page-container"
       style={{ 
-        // ✅ MODEL A: Natural document flow - NO viewport constraints
-        // ❌ REMOVED minHeight: '100vh' - was creating flexbox scroll trap
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'visible',  // ✅ Allows dashboard to scroll naturally
+        // Block layout (no flex column): header + main stack in normal flow, no flex-grow gap
+        display: 'block',
+        overflow: 'visible',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}
     >
-      {/* Elite Header - MODEL A: Sticky positioning for natural scroll */}
+      {/* Elite Header - Sticky, 60px */}
       <header 
         className="therapist-layout-header"
         style={{
@@ -529,8 +529,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       )}
 
-      {/* Smart Breadcrumb Navigation */}
-      {showBreadcrumbs && currentPage !== 'home' && (
+      {/* Breadcrumbs OFF for all browsers (no strip); content sits directly under sticky header */}
+      {false && showBreadcrumbs && currentPage !== 'home' && currentPage !== 'status' && (
         <SmartBreadcrumb
           currentPage={currentPage}
           onNavigate={handleNavigate}
@@ -669,7 +669,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                   {language === 'en' ? 'My Dashboard' : 'Dashboard Saya'}
                 </span>
               </button>
-
               {/* View My Public Profile Button */}
               <button
                 onClick={(e) => {
@@ -694,7 +693,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                   {language === 'en' ? 'View My Public Profile' : 'Lihat Profil Publik Saya'}
                 </span>
               </button>
-              
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
@@ -809,26 +807,22 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Main Content - MODEL A: Natural document flow */}
+      {/* Main Content - block flow, no flex column */}
       <main 
         className="relative w-full therapist-layout-content" 
         style={{ 
-          // ✅ MODEL A: Natural content growth - NO flex constraints
-          // ❌ REMOVED flex: '1 1 auto' - was constraining content to parent bounds
-          // ❌ REMOVED minHeight: 0 - was preventing natural content growth
-          paddingBottom: 'max(env(safe-area-inset-bottom, 10px), 20px)',
-          WebkitOverflowScrolling: 'touch'  // ✅ Smooth iOS scrolling
-          // ✅ Content now grows naturally - browser handles scroll
+          paddingTop: 0,
+          marginTop: 0,
+          paddingBottom: 'max(env(safe-area-inset-bottom, 8px), 12px)',
+          WebkitOverflowScrolling: 'touch'
         }}
       >
         <div 
           className="therapist-content-wrapper"
           style={{
-            // ✅ FIX: Eliminate white space at top - reduced from paddingBottom: '40px' to minimal
-            paddingBottom: '10px',
-            // ✅ MODEL A: NO minHeight calc() - content flows naturally with sticky header
-            // ✅ Sticky header means NO offset needed - content starts immediately after header
-            paddingTop: '0px'  // ✅ Ensure no top padding that creates white space
+            paddingTop: 0,
+            marginTop: 0,
+            paddingBottom: '6px'
           }}
         >
           {children}

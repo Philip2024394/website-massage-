@@ -138,7 +138,7 @@ export const useAppState = () => {
         if (hashPath.startsWith('/dashboard/therapist') || hashPath.startsWith('/therapist')) {
           console.log('🔗 [INIT] Therapist route detected in hash:', hashPath);
           if (hashPath === '/therapist' || hashPath === '/therapist-dashboard' || hashPath === '/dashboard/therapist') {
-            return 'dashboard';
+            return 'therapist-dashboard';
           } else if (hashPath === '/dashboard/therapist/status' || hashPath === '/therapist/status') {
             return 'therapist-status';
           } else if (hashPath === '/dashboard/therapist/bookings' || hashPath === '/therapist/bookings') {
@@ -242,9 +242,9 @@ export const useAppState = () => {
         return 'hotelVillaMenu';
       }
 
-      // Default: always start at landing on fresh app arrival
-      console.log('🚪 Fresh arrival: starting at landing page');
-      return 'landing';
+      // Default: start at loading (orange first paint) → coordinator switches to landing after 300ms
+      console.log('🚪 Fresh arrival: starting at loading page (fast first paint)');
+      return 'loading';
     } catch {
       console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
       return 'landing';

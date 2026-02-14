@@ -633,11 +633,11 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
       language={language}
       onLogout={onLogout}
     >
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-      {/* Standardized Status Header */}
-      <div className="w-full px-4 pt-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+    <div className="bg-white" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+      {/* Standardized Status Header - tight spacing, no extra white padding */}
+      <div className="w-full px-4 pt-0 pb-2">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-3">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
               <HelpTooltip 
@@ -719,7 +719,7 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
       </div>
       
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-200 bg-white px-4 pt-4">
+      <div className="flex gap-2 border-b border-gray-200 bg-white px-4 pt-2">
         <button
           onClick={() => setActiveTab('bookings')}
           className={`px-6 py-3 font-semibold transition-all relative ${
@@ -742,12 +742,12 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
         </button>
       </div>
 
-      {/* Tab Content */}
+      {/* Tab Content - reduced padding to remove white space */}
       {activeTab === 'schedule' ? (
         <TherapistSchedule therapist={therapist} onBack={() => setActiveTab('bookings')} />
       ) : (
-      <main className="w-full px-4 py-6">
-        <div className="space-y-6">
+      <main className="w-full px-4 py-3">
+        <div className="space-y-4">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-4">
           <div className="border border-gray-200 rounded-lg p-4">

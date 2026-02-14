@@ -1,6 +1,7 @@
 import type { Therapist } from '../types';
 import { AvailabilityStatus } from '../types';
 import { devLog } from './devMode';
+import { getSampleMenuItems } from './samplePriceUtils';
 
 /**
  * Get auth app URL for development and production
@@ -188,3 +189,146 @@ export const formatCountdown = (seconds: number): string => {
     .toString()
     .padStart(2, '0')}`;
 };
+
+/**
+ * Normalize service/massage name from menu item (name, serviceName, or title).
+ */
+export const getMenuItemDisplayName = (item: { name?: string; serviceName?: string; title?: string }): string => {
+  const raw = (item?.name ?? item?.serviceName ?? item?.title ?? '').toString().trim();
+  return raw || 'Traditional Massage';
+};
+
+/**
+ * Deduplicate menu items by display name so the same massage type is not shown twice
+ * on profile or in the price slider. Keeps the cheapest item per name (by 60-min price).
+ */
+export const getUniqueMenuItemsByName = (menuData: any[]): any[] => {
+  if (!menuData?.length) return [];
+  const byName = new Map<string, any>();
+  for (const item of menuData) {
+    const name = getMenuItemDisplayName(item);
+    const price60 = parseFloat(item?.price60) ?? 999999;
+    const existing = byName.get(name);
+    const existingPrice = existing != null ? parseFloat(existing?.price60) ?? 999999 : 999999;
+    if (existing == null || price60 < existingPrice) {
+      byName.set(name, {
+        ...item,
+        name,
+        serviceName: item?.serviceName ?? item?.name ?? item?.title ?? name
+      });
+    }
+  }
+  return Array.from(byName.values());
+};
+
+/**
+ * Deduplicate massage type strings (e.g. for place cards) so the same type is not shown twice.
+ */
+export const getUniqueMassageTypes = (types: string[]): string[] => {
+  if (!Array.isArray(types) || types.length === 0) return [];
+  const seen = new Set<string>();
+  return types.filter((t) => {
+    const n = String(t ?? '').trim();
+    if (!n || seen.has(n)) return false;
+    seen.add(n);
+    return true;
+  });
+};
+
+/**
+ * Sum of 60+90+120 for a menu item (prices typically in thousands). Used to find lowest-total service.
+ */
+function totalPrice(item: { price60?: any; price90?: any; price120?: any }): number {
+  const p60 = parseFloat(item?.price60) || 0;
+  const p90 = parseFloat(item?.price90) || 0;
+  const p120 = parseFloat(item?.price120) || 0;
+  return p60 + p90 + p120;
+}
+
+/** Menu item shape for display (prices in thousands for comparison). */
+export interface CombinedMenuItem {
+  price60: number;
+  price90: number;
+  price120: number;
+  name?: string;
+  serviceName?: string;
+  title?: string;
+}
+
+/**
+ * Build the same combined list as the menu slider: real saved items first, then fill to 5 with
+ * default items (Traditional from profile when set, then sample items). When realCount >= 5, no
+ * samples. Used so profile/home/shared pick cheapest from this full set.
+ */
+export function getCombinedMenuForDisplay(
+  menuData: any[] | null | undefined,
+  therapist: { price60?: string | number; price90?: string | number; price120?: string | number; $id?: string; id?: string }
+): CombinedMenuItem[] {
+  const therapistId = String(therapist?.$id ?? therapist?.id ?? '');
+  const realItems: CombinedMenuItem[] = (menuData || [])
+    .filter((item: any) => {
+      const p60 = Number(item?.price60);
+      const p90 = Number(item?.price90);
+      const p120 = Number(item?.price120);
+      return p60 > 0 && p90 > 0 && p120 > 0;
+    })
+    .map((item: any) => ({
+      price60: Number(item.price60),
+      price90: Number(item.price90),
+      price120: Number(item.price120),
+      name: item.name ?? item.serviceName ?? item.title,
+      serviceName: item.serviceName ?? item.name ?? item.title,
+      title: item.title ?? item.name ?? item.serviceName
+    }));
+
+  const fillCount = Math.max(0, 5 - realItems.length);
+  if (fillCount === 0 || !therapistId) return realItems;
+
+  const hasProfilePrices =
+    Number(therapist?.price60) > 0 &&
+    Number(therapist?.price90) > 0 &&
+    Number(therapist?.price120) > 0;
+
+  const defaultItems: CombinedMenuItem[] = [];
+  if (hasProfilePrices) {
+    defaultItems.push({
+      price60: Math.max(100, Math.round(Number(therapist.price60))),
+      price90: Math.max(100, Math.round(Number(therapist.price90))),
+      price120: Math.max(100, Math.round(Number(therapist.price120))),
+      name: 'Traditional Massage',
+      serviceName: 'Traditional Massage',
+      title: 'Traditional Massage'
+    });
+  }
+  const samples = getSampleMenuItems(therapistId);
+  const sampleCount = hasProfilePrices ? 4 : 5;
+  for (let i = 0; i < sampleCount && i < samples.length; i++) {
+    const s = samples[i];
+    defaultItems.push({
+      price60: Math.round(s.price60 / 1000),
+      price90: Math.round(s.price90 / 1000),
+      price120: Math.round(s.price120 / 1000),
+      name: s.name,
+      serviceName: s.name,
+      title: s.name
+    });
+  }
+  for (let i = 0; i < fillCount && i < defaultItems.length; i++) {
+    realItems.push(defaultItems[i]);
+  }
+  return realItems;
+}
+
+/**
+ * From menu items with full 60/90/120 pricing, return the one with the lowest total (60+90+120).
+ * This is the service whose 3 prices are shown on home and profile cards, with its massage type name.
+ * Includes Traditional Massage and any custom menu items.
+ */
+export function getCheapestServiceByTotalPrice<T extends { price60?: any; price90?: any; price120?: any }>(items: T[]): T | null {
+  if (!items?.length) return null;
+  return items.reduce((best, current) => {
+    const bestSum = totalPrice(best);
+    const currentSum = totalPrice(current);
+    return currentSum < bestSum ? current : best;
+  });
+}

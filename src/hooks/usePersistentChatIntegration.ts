@@ -21,13 +21,54 @@ import { useCallback } from 'react';
 import { usePersistentChat, ChatTherapist, SelectedService } from '../context/PersistentChatProvider';
 import type { Therapist } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
+import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 
 /**
  * Hook to integrate TherapistCard buttons with PersistentChatWindow
+ * Uses PersistentChatWindow only - FloatingChatWindow is NOT triggered (avoids duplicate chat UI)
  */
 export function usePersistentChatIntegration() {
-  const { openChat, openChatWithService, chatState, minimizeChat, maximizeChat } = usePersistentChat();
-  
+  const ctx = usePersistentChat();
+  const { openChat, openChatWithService, chatState, minimizeChat, maximizeChat } = ctx;
+  const hasActiveScheduledBooking = ctx.hasActiveScheduledBooking === true;
+
+  const safeAlert = useCallback((message: string) => {
+    try {
+      window.alert(message);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const getTherapistStatus = useCallback((therapist: Therapist): 'available' | 'busy' | 'offline' | 'unknown' => {
+    const raw = (therapist.status || (therapist as any).availability || '').toString().trim().toLowerCase();
+    if (raw === 'available' || raw === 'online') return 'available';
+    if (raw === 'busy') return 'busy';
+    if (raw === 'offline') return 'offline';
+    return 'unknown';
+  }, []);
+
+  const assertTherapistCanOpenChat = useCallback((therapist: Therapist, mode: 'book' | 'schedule' | 'price' | 'service'): boolean => {
+    if (hasActiveScheduledBooking && (mode === 'book' || mode === 'schedule')) {
+      safeAlert('You have a scheduled booking in progress. Please complete or cancel it (and wait for payment to be confirmed or the booking to expire) before booking again.');
+      console.log(`❌ [PersistentChatIntegration] ${mode} blocked - user has active scheduled booking`);
+      return false;
+    }
+    const status = getTherapistStatus(therapist);
+    if (status === 'busy') {
+      safeAlert('⚠️ Therapist is not active in service. Please check back later.');
+      console.log(`❌ [PersistentChatIntegration] ${mode} blocked - therapist is BUSY`);
+      return false;
+    }
+    if (status === 'offline') {
+      safeAlert('⚠️ Therapist has no service at this time. Please choose a therapist with available status.');
+      console.log(`❌ [PersistentChatIntegration] ${mode} blocked - therapist is OFFLINE`);
+      return false;
+    }
+    return true;
+  }, [hasActiveScheduledBooking, getTherapistStatus, safeAlert]);
+
   /**
    * Convert Therapist type to ChatTherapist type
    */
@@ -80,35 +121,60 @@ export function usePersistentChatIntegration() {
     });
     
     // Parse pricing using existing helper - MUST match therapist profile prices exactly
-    const pricing = parsePricing(therapist.pricing);
-    
-    // CRITICAL: If pricing fails to parse, log error - don't use fallback
-    // This ensures prices always match therapist profile
-    if (!pricing || Object.keys(pricing).length === 0) {
-      console.error('⚠️ PRICING ERROR: Could not parse pricing for therapist', therapist.name, therapist.pricing);
-      console.error('⚠️ This will cause price mismatch between profile and chat window!');
-      // Use fallback only as last resort
-      const fallbackPricing = {
-        '30': 250000,
-        '60': 350000,
-        '90': 450000,
-        '120': 550000,
+    const parsedPricing = parsePricing(therapist.pricing);
+    const hasSeparatePrices = (therapist.price60 && Number(therapist.price60) > 0) ||
+      (therapist.price90 && Number(therapist.price90) > 0) ||
+      (therapist.price120 && Number(therapist.price120) > 0);
+
+    // Build pricing - use actual if available, else sample (display-only) when no prices set
+    let pricing = parsedPricing;
+    let price60: string | undefined = therapist.price60 != null ? String(therapist.price60) : undefined;
+    let price90: string | undefined = therapist.price90 != null ? String(therapist.price90) : undefined;
+    let price120: string | undefined = therapist.price120 != null ? String(therapist.price120) : undefined;
+
+    const pricingEmpty = !pricing || !(pricing["60"] > 0 || pricing["90"] > 0 || pricing["120"] > 0);
+    if (pricingEmpty && !hasSeparatePrices && !hasActualPricing(therapist)) {
+      const sample = getSamplePricing(therapistDocumentId);
+      pricing = {
+        "30": Math.round(sample["60"] * 0.6 / 1000),
+        "60": Math.round(sample["60"] / 1000),
+        "90": Math.round(sample["90"] / 1000),
+        "120": Math.round(sample["120"] / 1000),
       };
-      console.warn('⚠️ Using fallback pricing - should fix therapist profile data!');
-      
-      // appwriteId already validated above - must be present
+      price60 = String(Math.round(sample["60"] / 1000));
+      price90 = String(Math.round(sample["90"] / 1000));
+      price120 = String(Math.round(sample["120"] / 1000));
+      console.log('📋 Using display-only sample pricing for chat:', { price60, price90, price120 });
+    } else if (pricingEmpty && !hasSeparatePrices) {
+      console.error('⚠️ PRICING ERROR: Could not parse pricing for therapist', therapist.name, therapist.pricing);
+      const fallbackPricing = { '30': 250, '60': 350, '90': 450, '120': 550 };
+      pricing = fallbackPricing;
+      price60 = price60 ?? '350';
+      price90 = price90 ?? '450';
+      price120 = price120 ?? '550';
+    }
+
+    if (!pricingEmpty && pricing && !price60 && pricing["60"]) {
+      price60 = String(Math.round(pricing["60"]));
+      price90 = String(Math.round(pricing["90"]));
+      price120 = String(Math.round(pricing["120"]));
+    }
+
+    if (!pricing || Object.keys(pricing).length === 0) {
+      const imgUrl = (therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).mainimage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage(therapistDocumentId);
       const fallbackChatTherapist = {
-        id: therapistName, // ✅ Use NAME as ID
+        id: therapistName,
         name: therapistName,
-        image: (therapist as any).mainImage || (therapist as any).profilePicture,
-        status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
-        pricing: fallbackPricing,
-        // ✅ CRITICAL: Include separate price fields for fallback too
-        price60: therapist.price60 || '350',
-        price90: therapist.price90 || '450', 
-        price120: therapist.price120 || '550',
+        image: imgUrl,
+        mainImage: imgUrl,
+        profileImageUrl: imgUrl,
+        profilePicture: (therapist as any).profilePicture || imgUrl,
+        status: (therapist as any).availability_status || (therapist as any).availabilityStatus || (therapist as any).availability || (therapist as any).status || 'available',
+        pricing: { '30': 250, '60': 350, '90': 450, '120': 550 },
+        price60: price60 || '350',
+        price90: price90 || '450',
+        price120: price120 || '550',
         duration: 60,
-        // 🔒 REQUIRED: Document ID (appwriteId or $id)
         appwriteId: therapistDocumentId,
       };
       
@@ -123,20 +189,26 @@ export function usePersistentChatIntegration() {
     
     console.log('✅ Therapist pricing loaded:', therapist.name, pricing);
     
-    // Document ID already validated above - must be present
+    // Align with price modal: profilePicture (avatar) first, then mainImage (banner)
+    const imgUrl = (therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).mainimage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage(therapistDocumentId);
     const chatTherapist = {
-      id: therapistName, // ✅ Use NAME as ID for easy debugging
+      id: therapistName,
       name: therapistName,
-      image: (therapist as any).mainImage || (therapist as any).profilePicture,
-      status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
-      pricing, // Use therapist's exact profile prices
+      image: imgUrl,
+      mainImage: imgUrl,
+      profileImageUrl: imgUrl,
+      profilePicture: (therapist as any).profilePicture || imgUrl,
+      status: (therapist as any).availability_status || (therapist as any).availabilityStatus || (therapist as any).availability || (therapist as any).status || 'available',
+      pricing, // Use therapist's exact profile prices (or sample when none set)
       // ✅ CRITICAL: Include separate price fields for chat window pricing
-      price60: therapist.price60,
-      price90: therapist.price90,
-      price120: therapist.price120,
+      price60: price60 ?? therapist.price60,
+      price90: price90 ?? therapist.price90,
+      price120: price120 ?? therapist.price120,
       duration: 60,
       // 🔒 REQUIRED: Document ID (appwriteId or $id)
       appwriteId: therapistDocumentId,
+      // Spec 9: same flow for places as therapists (providerType flows to booking)
+      providerType: (therapist as { providerType?: 'therapist' | 'place' }).providerType || 'therapist',
     };
     
     console.log('✅ CONVERT: ChatTherapist created:', {
@@ -154,144 +226,91 @@ export function usePersistentChatIntegration() {
   
   /**
    * Open chat for "Book Now" button
-   * - Opens chat in booking mode
-   * - Starts at duration selection
-   * - Validates therapist status before opening
-   * @param therapist - Therapist to book
-   * @param source - Optional source tracking ('share' for shared links)
    */
   const openBookingChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
     console.log('🔒 [PersistentChatIntegration] Opening booking chat for:', therapist.name);
-    
-    // Check therapist status - block booking if busy or offline
-    const therapistStatus = (therapist.status || therapist.availability || '').toLowerCase();
-    
-    if (therapistStatus === 'busy') {
-      alert('⚠️ Therapist is not active in service. Please check back later for book now service.');
-      console.log('❌ [PersistentChatIntegration] Booking blocked - therapist is BUSY');
-      return;
+    if (!assertTherapistCanOpenChat(therapist, 'book')) return;
+    try {
+      const chatTherapist = convertToChatTherapist(therapist);
+      openChat(chatTherapist, 'book', source);
+    } catch (e: any) {
+      console.error('❌ [PersistentChatIntegration] Failed to open booking chat:', e);
+      safeAlert('Sorry — booking chat could not be opened for this therapist. Please try another therapist.');
     }
-    
-    if (therapistStatus === 'offline') {
-      alert('⚠️ Therapist has no service at this time. Please choose therapist with available status.');
-      console.log('❌ [PersistentChatIntegration] Booking blocked - therapist is OFFLINE');
-      return;
-    }
-    
-    const chatTherapist = convertToChatTherapist(therapist);
-    openChat(chatTherapist, 'book', source);
-  }, [openChat, convertToChatTherapist]);
+  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert]);
   
   /**
    * Open chat for "Schedule" button
-   * - Opens chat in schedule mode
-   * - Starts at duration selection
-   * - Validates therapist status before opening
    */
-  const openScheduleChat = useCallback((therapist: Therapist) => {
+  const openScheduleChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
     console.log('🔒 [PersistentChatIntegration] Opening schedule chat for:', therapist.name);
-    
-    // Check therapist status - block scheduling if busy or offline
-    const therapistStatus = (therapist.status || therapist.availability || '').toLowerCase();
-    
-    if (therapistStatus === 'busy') {
-      alert('⚠️ Therapist is not active in service. Please check back later for book now service.');
-      console.log('❌ [PersistentChatIntegration] Schedule booking blocked - therapist is BUSY');
+    if (!assertTherapistCanOpenChat(therapist, 'schedule')) return;
+    const hasBank = !!((therapist as any).bankName && (therapist as any).accountNumber && (therapist as any).accountName) || !!(therapist as any).bankCardDetails;
+    const hasKtp = !!(therapist as any).ktpPhotoUrl;
+    if (!hasBank || !hasKtp) {
+      safeAlert('Scheduled bookings require the provider to add bank details and KTP in their dashboard. This provider is not accepting scheduled bookings at this time.');
       return;
     }
-    
-    if (therapistStatus === 'offline') {
-      alert('⚠️ Therapist has no service at this time. Please choose therapist with available status.');
-      console.log('❌ [PersistentChatIntegration] Schedule booking blocked - therapist is OFFLINE');
-      return;
+    try {
+      const chatTherapist = convertToChatTherapist(therapist);
+      openChat(chatTherapist, 'schedule', source);
+    } catch (e: any) {
+      console.error('❌ [PersistentChatIntegration] Failed to open schedule chat:', e);
+      safeAlert('Sorry — schedule chat could not be opened for this therapist. Please try another therapist.');
     }
-    
-    const chatTherapist = convertToChatTherapist(therapist);
-    openChat(chatTherapist, 'schedule');
-  }, [openChat, convertToChatTherapist]);
+  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert]);
   
   /**
    * Open chat for "View Prices" / Price slider
-   * - Opens chat in price mode
-   * - Starts at duration selection with prices visible
-   * - Validates therapist status before opening
    */
-  const openPriceChat = useCallback((therapist: Therapist) => {
+  const openPriceChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
     console.log('🔒 [PersistentChatIntegration] Opening price chat for:', therapist.name);
-    
-    // Check therapist status - block booking if busy or offline
-    const therapistStatus = (therapist.status || therapist.availability || '').toLowerCase();
-    
-    if (therapistStatus === 'busy') {
-      alert('⚠️ Therapist is not active in service. Please check back later for book now service.');
-      console.log('❌ [PersistentChatIntegration] Price chat blocked - therapist is BUSY');
-      return;
+    if (!assertTherapistCanOpenChat(therapist, 'price')) return;
+    try {
+      const chatTherapist = convertToChatTherapist(therapist);
+      openChat(chatTherapist, 'price', source);
+    } catch (e: any) {
+      console.error('❌ [PersistentChatIntegration] Failed to open price chat:', e);
+      safeAlert('Sorry — price chat could not be opened for this therapist. Please try another therapist.');
     }
-    
-    if (therapistStatus === 'offline') {
-      alert('⚠️ Therapist has no service at this time. Please choose therapist with available status.');
-      console.log('❌ [PersistentChatIntegration] Price chat blocked - therapist is OFFLINE');
-      return;
-    }
-    
-    const chatTherapist = convertToChatTherapist(therapist);
-    openChat(chatTherapist, 'price');
-  }, [openChat, convertToChatTherapist]);
+  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert]);
   
   /**
    * Open chat with pre-selected service from Menu Harga
-   * - Enhanced to support both immediate and scheduled bookings with deposits
-   * - Skips duration selection for immediate bookings
-   * - Triggers deposit modal for scheduled bookings
-   * - Validates therapist status before opening
    */
   const openBookingWithService = useCallback((
-    therapist: Therapist, 
+    therapist: Therapist,
     service: { serviceName: string; duration: number; price: number },
-    options?: { bookingType?: 'immediate' | 'scheduled' }
+    options?: { bookingType?: 'immediate' | 'scheduled'; source?: 'share' | 'profile' | 'search' | null }
   ) => {
     console.log('🔒 [PersistentChatIntegration] Opening chat with service and options:', {
       therapist: therapist.name,
       service,
       options
     });
-
-    // Check therapist status - block booking if busy or offline
-    const therapistStatus = (therapist.status || therapist.availability || '').toLowerCase();
-    
-    if (therapistStatus === 'busy') {
-      alert('⚠️ Therapist is not active in service. Please check back later for book now service.');
-      console.log('❌ [PersistentChatIntegration] Service booking blocked - therapist is BUSY');
-      return;
-    }
-    
-    if (therapistStatus === 'offline') {
-      alert('⚠️ Therapist has no service at this time. Please choose therapist with available status.');
-      console.log('❌ [PersistentChatIntegration] Service booking blocked - therapist is OFFLINE');
-      return;
-    }
-
+    if (!assertTherapistCanOpenChat(therapist, 'service')) return;
     const bookingType = options?.bookingType || 'immediate';
-    const chatTherapist = convertToChatTherapist(therapist);
-
-    // For scheduled bookings, mark as scheduled (deposit happens AFTER therapist accepts)
-    if (bookingType === 'scheduled') {
-      console.log('📅 [PersistentChatIntegration] Opening scheduled booking (deposit after acceptance)');
-      openChatWithService(chatTherapist, service, {
-        isScheduled: true
-      });
-    } else {
-      // For immediate bookings - no deposit ever
-      console.log('🚀 [PersistentChatIntegration] Opening immediate booking (no deposit)');
-      openChatWithService(chatTherapist, service);
+    try {
+      const chatTherapist = convertToChatTherapist(therapist);
+      if (bookingType === 'scheduled') {
+        console.log('📅 [PersistentChatIntegration] Opening scheduled booking (deposit after acceptance)');
+        openChatWithService(chatTherapist, service, { isScheduled: true, source: options?.source ?? null });
+      } else {
+        console.log('🚀 [PersistentChatIntegration] Opening immediate booking (no deposit)');
+        openChatWithService(chatTherapist, service, { source: options?.source ?? null });
+      }
+    } catch (e: any) {
+      console.error('❌ [PersistentChatIntegration] Failed to open service chat:', e);
+      safeAlert('Sorry — booking chat could not be opened for this service. Please try again.');
     }
-  }, [openChatWithService, convertToChatTherapist]);
+  }, [openChatWithService, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert]);
   
   /**
    * Check if chat is currently open for a specific therapist
+   * Uses appwriteId (real identifier); chatState.therapist.id is therapist name for display.
    */
   const isChatOpenFor = useCallback((therapistId: string | number) => {
-    return chatState.isOpen && chatState.therapist?.id === therapistId.toString();
+    return chatState.isOpen && (chatState.therapist?.appwriteId || '').toString() === therapistId.toString();
   }, [chatState.isOpen, chatState.therapist]);
   
   /**
@@ -309,12 +328,13 @@ export function usePersistentChatIntegration() {
     openBookingChat,
     openScheduleChat,
     openPriceChat,
-    openBookingWithService, // From Menu Harga with pre-selected service
+    openBookingWithService,
     isChatOpenFor,
     toggleMinimize,
     isChatOpen: chatState.isOpen,
     isMinimized: chatState.isMinimized,
     currentTherapist: chatState.therapist,
+    hasActiveScheduledBooking,
   };
 }
 

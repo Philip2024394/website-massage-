@@ -142,7 +142,7 @@ const TherapistCustomersPage: React.FC<TherapistCustomersPageProps> = ({
     >
       <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-6">
+        <div className="bg-white border-b border-gray-200 px-6 pt-0 pb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-orange-600" />

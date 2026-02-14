@@ -212,11 +212,24 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         logger.debug('📍 Updating page state to:', newPage);
         _setPage(newPage);
         
+        // Pages that use path-based URLs (e.g. /therapist-profile/:id) - caller sets full URL
+        // Don't overwrite hash or we lose the ID (fixes View Profile redirect bug)
+        const pathBasedPages = [
+            'shared-therapist-profile', 'therapist-profile', 'massage-place-profile',
+            'share-place', 'share-facial', 'accept-booking', 'decline-booking',
+        ];
+        const isPathBasedPage = pathBasedPages.includes(newPage);
+        
         // Sync page state with URL hash AFTER state update to prevent conflicts
         setTimeout(() => {
             if (newPage !== 'landing') {
-                logger.debug('📍 Setting hash to:', `#${newPage}`);
-                window.location.hash = `#${newPage}`;
+                if (isPathBasedPage) {
+                    // Preserve existing hash - caller (e.g. MassageJobsPage View Profile) already set correct URL
+                    logger.debug('📍 Path-based page – preserving hash:', window.location.hash);
+                } else {
+                    logger.debug('📍 Setting hash to:', `#${newPage}`);
+                    window.location.hash = `#${newPage}`;
+                }
             } else {
                 logger.debug('📍 Clearing hash for landing page');
                 window.location.hash = '';

@@ -98,7 +98,7 @@ export const ShareTherapistProfile: React.FC<ShareTherapistProfileProps> = ({
                 aria-expanded={isOpen}
                 aria-haspopup="menu"
             >
-                <Share2 className="w-4 h-4" />
+                <Share2 className="w-4 h-4 flex-shrink-0" aria-hidden />
                 {showLabel && <span>Share Profile</span>}
             </button>
 

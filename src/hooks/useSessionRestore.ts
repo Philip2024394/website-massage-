@@ -133,6 +133,11 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                     setLoggedInUser(userData);
                     console.log('✅ [SESSION RESTORE] Customer state set using single source');
                     break;
+
+                case 'employer':
+                    setLoggedInUser(userData);
+                    console.log('✅ [SESSION RESTORE] Employer state set');
+                    break;
                 
                 default:
                     console.warn('⚠️ [SESSION RESTORE] Unknown user type:', sessionUser.type);

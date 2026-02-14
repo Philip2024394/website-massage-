@@ -1,5 +1,4 @@
 import React from 'react';
-import { Home, Star, HelpCircle, Tag, Users, Building2, Sparkles } from 'lucide-react';
 
 interface FloatingPageFooterProps {
     currentLanguage?: 'en' | 'id';
@@ -7,25 +6,26 @@ interface FloatingPageFooterProps {
     className?: string;
 }
 
+const essentialLinks = [
+    { id: 'how-it-works' as const, labelEn: 'How It Works', labelId: 'Cara Kerja' },
+    { id: 'about' as const, labelEn: 'About', labelId: 'Tentang' },
+    { id: 'terms' as const, labelEn: 'Terms', labelId: 'Syarat & Ketentuan' },
+    { id: 'privacy-policy' as const, labelEn: 'Privacy', labelId: 'Privasi' },
+    { id: 'help-faq' as const, labelEn: 'Help', labelId: 'Bantuan' },
+];
+
 const FloatingPageFooter: React.FC<FloatingPageFooterProps> = ({ 
     currentLanguage = 'en',
     onNavigate,
     className = '' 
 }) => {
-    const quickLinks = [
-        {
-            id: 'home',
-            icon: Home,
-            labelEn: 'Home',
-            labelId: 'Beranda'
-        },
-        {
-            id: 'women-reviews',
-            icon: Star,
-            labelEn: 'Reviews',
-            labelId: 'Ulasan'
+    const handleLinkClick = (pageId: string) => {
+        if (onNavigate) {
+            onNavigate(pageId);
+        } else {
+            window.location.href = `/?page=${pageId}`;
         }
-    ];
+    };
 
     const socialLinks = [
         {
@@ -49,6 +49,22 @@ const FloatingPageFooter: React.FC<FloatingPageFooterProps> = ({
         <div className={`w-full ${className}`}>
             {/* Integrated Footer Items - No Container */}
             <div className="max-w-6xl mx-auto px-4 py-8">
+                {/* Essential Links - minimal row with separators */}
+                <div className="flex flex-wrap justify-center items-center gap-x-1 gap-y-2 mb-8">
+                    {essentialLinks.map((link, i) => (
+                        <span key={link.id} className="flex items-center">
+                            {i > 0 && <span className="text-gray-300 text-xs mx-2" aria-hidden>·</span>}
+                            <button
+                                type="button"
+                                onClick={() => handleLinkClick(link.id)}
+                                className="text-xs text-gray-500 hover:text-orange-600 transition-colors"
+                            >
+                                {currentLanguage === 'id' ? link.labelId : link.labelEn}
+                            </button>
+                        </span>
+                    ))}
+                </div>
+
                 {/* Social Media Section - Integrated */}
                 <div className="mb-8">
                     <h3 className="text-lg font-bold text-gray-900 mb-6 text-center">

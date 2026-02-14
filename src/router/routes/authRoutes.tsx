@@ -10,6 +10,8 @@ import { lazy } from 'react';
 import AuthPage from '../../pages/auth/AuthPage';
 import TherapistLoginPage from '../../pages/auth/TherapistLoginPage';
 import MassagePlaceLoginPage from '../../pages/auth/MassagePlaceLoginPage';
+import EmployerLoginPage from '../../pages/auth/EmployerLoginPage';
+import ServicePersonnelLoginPage from '../../pages/auth/ServicePersonnelLoginPage';
 
 const FacialPortalPage = lazy(() => import('../../pages/FacialPortalPage'));
 const PackageOnboarding = lazy(() => import('../../pages/PackageOnboarding'));
@@ -54,6 +56,16 @@ export const authRoutes = {
     path: '/place-login',
     component: MassagePlaceLoginPage,
     name: 'placeLogin'
+  },
+  employerLogin: {
+    path: '/employer-login',
+    component: EmployerLoginPage,
+    name: 'employerLogin'
+  },
+  servicePersonnelLogin: {
+    path: '/service-personnel-login',
+    component: ServicePersonnelLoginPage,
+    name: 'servicePersonnelLogin'
   },
   facialPortal: {
     path: '/facial-portal',

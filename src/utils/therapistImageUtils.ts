@@ -1,30 +1,20 @@
+import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
+
 /**
  * Random Therapist Image Assignment Utility
- * Provides a collection of curated Appwrite URLs for therapist main images
- * to ensure consistent branding and professional appearance
+ * Uses the Appwrite therapist main image gallery (same as imageService) so home and profile
+ * show the correct gallery. Therapists only upload profile image (avatar); main image
+ * is assigned from this pool by therapist ID for consistency.
  */
 
-// Curated collection of professional therapist/massage images from Appwrite
-const APPWRITE_THERAPIST_IMAGES = [
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4181001758526d84/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4182001d05a11a19/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4183001a3a6fd0de/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4184003b76cb5e94/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4185002b1b9a9f91/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe41860026f1e0cec5/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4187002166c85e5b/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe41880033c86a0901/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4189000f847d1ea0/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418a00159e88de97/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418b003b5dd26c5a/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418c00355b8b4b69/view?project=68f23b11000d25eb3664'
-];
+/** Pool of main/cover images from Appwrite storage – single source for home + profile. */
+const THERAPIST_IMAGES = THERAPIST_MAIN_IMAGES;
 
 /**
- * Get a random therapist image URL from the curated Appwrite collection
+ * Get a therapist image URL from the Appwrite main image gallery
  * Uses therapist ID for consistent image assignment (same therapist gets same image)
  * @param therapistId - Unique therapist identifier for consistent randomization
- * @returns Appwrite URL for therapist main image
+ * @returns Appwrite storage URL for therapist main image
  */
 export const getRandomTherapistImage = (therapistId: string): string => {
     // Use therapist ID to create deterministic randomization
@@ -37,36 +27,45 @@ export const getRandomTherapistImage = (therapistId: string): string => {
     }
     
     // Use absolute value to ensure positive index
-    const index = Math.abs(hash) % APPWRITE_THERAPIST_IMAGES.length;
-    const selectedImage = APPWRITE_THERAPIST_IMAGES[index];
-    
-    // Verbose logging removed for performance (runs on every card render)
+    const index = Math.abs(hash) % THERAPIST_IMAGES.length;
+    const selectedImage = THERAPIST_IMAGES[index];
     
     return selectedImage;
 };
 
 /**
  * Get a completely random therapist image (for testing or non-persistent assignments)
- * @returns Random Appwrite URL for therapist main image
+ * @returns Random URL from Appwrite gallery for therapist main image
  */
 export const getRandomTherapistImageRandom = (): string => {
-    const index = Math.floor(Math.random() * APPWRITE_THERAPIST_IMAGES.length);
-    return APPWRITE_THERAPIST_IMAGES[index];
+    const index = Math.floor(Math.random() * THERAPIST_IMAGES.length);
+    return THERAPIST_IMAGES[index];
 };
 
 /**
  * Get all available therapist images (for admin panels or selection interfaces)
- * @returns Array of all Appwrite therapist image URLs
+ * @returns Array of all Appwrite therapist main image URLs
  */
 export const getAllTherapistImages = (): string[] => {
-    return [...APPWRITE_THERAPIST_IMAGES];
+    return [...THERAPIST_IMAGES];
 };
 
 /**
- * Validate if a given URL is from our curated Appwrite collection
+ * Validate if a given URL is from our Appwrite main image gallery
  * @param imageUrl - URL to validate
  * @returns Boolean indicating if URL is from our collection
  */
 export const isValidTherapistImage = (imageUrl: string): boolean => {
-    return APPWRITE_THERAPIST_IMAGES.includes(imageUrl);
+    return THERAPIST_IMAGES.includes(imageUrl);
+};
+
+/**
+ * Get therapist main image - SINGLE SOURCE OF TRUTH for home page card AND profile page.
+ * Therapists/places only upload their profile image (avatar). They never set main image.
+ * Main image = pool from Appwrite storage (imageService), assigned by therapist ID
+ * so the same therapist always gets the same image on home and profile.
+ */
+export const getTherapistMainImage = (therapist: { [key: string]: unknown }): string => {
+    const therapistId = String(therapist.$id || therapist.id || therapist.name || '');
+    return getRandomTherapistImage(therapistId);
 };

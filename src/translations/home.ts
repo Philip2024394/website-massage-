@@ -83,7 +83,7 @@ export const homeTranslations = {
         },
         // Job posting
         joinIndastreet: 'Join Indastreet',
-        massageJobs: 'Massage Jobs',
+        massageJobs: 'Job Positions',
         massageJobsDesc: 'Find opportunities',
         // Login portals
         hotel: 'Hotel',

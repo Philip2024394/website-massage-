@@ -16,6 +16,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { StarIcon } from '../../components/therapist/TherapistIcons';
 import { useCompatibleMenuData } from '../../hooks/useEnhancedMenuData';
+import { getUniqueMenuItemsByName } from '../../utils/therapistCardHelpers';
 
 interface TherapistPriceListModalProps {
     showPriceListModal: boolean;
@@ -93,16 +94,18 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
         source: therapist?.appwriteId ? 'appwriteId' : therapist?.$id ? '$id' : therapist?.id ? 'id' : 'NONE'
     });
 
-    // 🎯 ENHANCED MENU DATA INTEGRATION
+    // 🎯 ENHANCED MENU DATA INTEGRATION (pass therapist so dashboard 3 prices → "Traditional Massage" in slider)
     const {
         menuData: enhancedMenuData,
         enhancedMenuData: enhancedMenu,
         isDefaultMenu,
         hasAnyMenu
-    } = useCompatibleMenuData(therapistDocumentId);
+    } = useCompatibleMenuData(therapistDocumentId, therapist);
 
     // Use enhanced menu data if available, fallback to legacy prop
-    const activeMenuData = hasAnyMenu ? enhancedMenuData : (legacyMenuData || []);
+    const rawMenuData = hasAnyMenu ? enhancedMenuData : (legacyMenuData || []);
+    // Deduplicate by service name so the same massage type is not shown twice (e.g. "Traditional Massage")
+    const activeMenuData = useMemo(() => getUniqueMenuItemsByName(rawMenuData), [rawMenuData]);
     
     // Track booking events for badge updates
     const handleServiceBooking = async (service: any, bookingType: 'immediate' | 'scheduled') => {

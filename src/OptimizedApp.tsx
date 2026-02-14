@@ -3,23 +3,19 @@ import { AppShell, AppShellSkeleton } from './components/AppShell';
 
 /**
  * 🚀 OPTIMIZED APP ENTRY POINT
- * 
- * This replaces the heavy App.tsx (1467 lines) with a lightweight shell
- * that renders instantly while the full app loads in background.
- * 
- * Performance Impact:
- * - Before: 3000-8000ms to first paint
- * - After: 200-500ms to first paint
+ *
+ * Renders AppShell immediately, then lazy-loads the full App in one chunk.
+ * Single React.lazy(import('./App')) avoids "Failed to fetch dynamically imported module"
+ * that occurred with the two-stage DeferredApp → import('./App.tsx') flow in dev.
  */
 
-// Lazy load the full application
-const DeferredApp = React.lazy(() => import('./DeferredApp'));
+const App = React.lazy(() => import('./App'));
 
 const OptimizedApp: React.FC = () => {
   return (
     <AppShell>
       <Suspense fallback={<AppShellSkeleton />}>
-        <DeferredApp />
+        <App />
       </Suspense>
     </AppShell>
   );

@@ -1,8 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (3 fixes)
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { MASSAGE_TYPES_CATEGORIZED, getMassageTypeImage, getMassageTypeDetails } from '../constants';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
 import { Page } from '../types/pageTypes';
@@ -13,6 +11,7 @@ import { React19SafeWrapper } from '../components/React19SafeWrapper';
 interface MassageTypesPageProps {
     _onBack?: () => void;
     onNavigate?: (page: Page) => void;
+    onLanguageChange?: (lang: string) => void;
     onFindTherapists?: (massageType: string) => void;
     onFindPlaces?: (massageType: string) => void;
     t?: any;
@@ -61,6 +60,7 @@ interface MassageType {
 const MassageTypesPage: React.FC<MassageTypesPageProps> = ({ 
     _onBack, 
     onNavigate,
+    onLanguageChange,
     onFindTherapists, 
     onFindPlaces, 
     t: propT,
@@ -78,7 +78,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
     therapists = [],
     places = []
 }) => {
-    const { language } = useLanguage();
+    const { language, setLanguage } = useLanguage();
     const { t: hookT } = useTranslations(language as 'en' | 'id');
     const t = propT || hookT; // Use prop t if provided, otherwise use hook
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -231,49 +231,15 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
 
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
+            {/* Universal Header - same as home page */}
             <UniversalHeader
-                onNavigate={onNavigate}
-                onMenuToggle={() => setIsMenuOpen(true)}
+                language={language}
+                onLanguageChange={onLanguageChange ?? setLanguage}
+                onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={showBackButton ? handleBackClick : () => onNavigate?.('home')}
+                showHomeButton={true}
                 title="Massage Types"
             />
-            
-            {/* Header matching HomePage */}
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
-                        {showBackButton ? (
-                            <button 
-                                onClick={handleBackClick} 
-                                title="Back to Therapist Profile"
-                                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
-                            >
-                                <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
-                                <span className="font-medium hidden sm:inline">
-                                    {language === 'id' ? 'Kembali' : 'Back'}
-                                </span>
-                            </button>
-                        ) : (
-                            <button 
-                                onClick={() => onNavigate?.('home')} 
-                                title="Home"
-                                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
-                            >
-                                <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
-                                <span className="font-medium hidden sm:inline">
-                                    {language === 'id' ? 'Beranda' : 'Home'}
-                                </span>
-                            </button>
-                        )}
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
-                           <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
-                </div>
-            </header>
 
             {/* App Drawer - Same as HomePage */}
             <React19SafeWrapper condition={isMenuOpen}>
@@ -296,7 +262,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="p-4 pb-20  max-w-full">
+            <main className="p-4 pt-20 pb-20 max-w-full">
                 <div className="flex flex-col gap-4 max-w-full">
                     {massageTypes.map((massage, index) => (
                         <div 

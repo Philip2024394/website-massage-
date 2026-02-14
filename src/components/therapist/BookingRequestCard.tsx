@@ -91,14 +91,11 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
         return () => clearInterval(interval);
     }, [pendingBookings]);
 
+    // List is driven by booking_acknowledgments (getTherapistStats). Real-time sound
+    // for new bookings comes from TherapistDashboard subscription (main bookings collection).
     const loadPendingBookings = async () => {
         try {
-            // In production, fetch from Appwrite
-            // For now, using mock data or actual service
             const stats = await bookingAcknowledgmentService.getTherapistStats(therapistId);
-            
-            // If there are pending bookings, fetch them
-            // This would be implemented with proper Appwrite query
             logger.debug('Loading pending bookings for:', therapistId);
         } catch (error) {
             logger.error('Error loading pending bookings:', error);
@@ -106,15 +103,9 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
     };
 
     const handleNewBooking = (event: any) => {
-        const { bookingId, therapistId: notificationTherapistId } = event.detail;
-        
-        if (notificationTherapistId === therapistId && soundEnabled) {
-            // Start both old and new sound systems for maximum alerting
-            playNotificationSound();
-            bookingSoundService.startBookingAlert(bookingId, 'pending');
-        }
-        
-        // Reload bookings
+        const { therapistId: notificationTherapistId } = event.detail;
+        if (notificationTherapistId !== therapistId) return;
+        // Sound is started only in TherapistDashboard subscription (single place to avoid duplicate)
         loadPendingBookings();
     };
 
@@ -364,7 +355,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                             <div className="flex items-center gap-2">
                                 <span className="font-semibold text-gray-700">💰 Price:</span>
                                 <span className="text-gray-900 font-bold">
-                                    Rp {booking.servicePrice.toLocaleString('id-ID')}
+                                    IDR {booking.servicePrice.toLocaleString('id-ID')}
                                 </span>
                             </div>
                         </div>

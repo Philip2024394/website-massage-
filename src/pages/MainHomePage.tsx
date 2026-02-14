@@ -1499,20 +1499,21 @@ logger.debug('[DEBUG] Therapist filtering analysis', {
             // 🔍 DEBUG: Log therapist data to understand filtering issues
             logger.debug('[DEBUG] Total therapists received', { count: therapists?.length || 0 });
             if (therapists && therapists.length > 0) {
-                logger.debug('[DEBUG] First 3 therapists data', { 
+                logger.debug('[DEBUG] First 3 therapists data', {
                     therapists: therapists.slice(0, 3).map((t: any) => ({
-                    name: t.name,
-                    id: t.$id || t.id,
-                    hasCoordinates: !!t.coordinates,
-                    hasGeopoint: !!t.geopoint,
-                    coordinates: t.coordinates,
-                    geopoint: t.geopoint,
-                    location: t.location,
-                    city: t.city,
-                    isLive: t.isLive,
-                    status: t.status,
-                    availability: t.availability
-                })));
+                        name: t.name,
+                        id: t.$id || t.id,
+                        hasCoordinates: !!t.coordinates,
+                        hasGeopoint: !!t.geopoint,
+                        coordinates: t.coordinates,
+                        geopoint: t.geopoint,
+                        location: t.location,
+                        city: t.city,
+                        isLive: t.isLive,
+                        status: t.status,
+                        availability: t.availability
+                    }))
+                });
             }
             
             let therapistsWithDistance = cityFilteredTherapists
@@ -1975,11 +1976,7 @@ logger.debug('[DEBUG] Therapist filtering analysis', {
 
                             const preparedTherapists = baseList
                                 .map((therapist: any, index: number) => {
-                                    // Assign deterministic unique image from shuffled set; if more therapists than images, start second cycle
-                                    const assignedImage = shuffledHomeImages.length > 0 
-                                        ? shuffledHomeImages[index % shuffledHomeImages.length] 
-                                        : undefined; // undefined triggers fallback logic inside TherapistCard
-                                    
+                                    // Keep therapist image as-is so home card and profile page show the same main image (getTherapistMainImage in TherapistHomeCard)
                                     // Override location for featured samples when shown in non-home cities
                                     let displayLocation = therapist.location;
                                     let displayCity = therapist.city;
@@ -1991,7 +1988,6 @@ logger.debug('[DEBUG] Therapist filtering analysis', {
                                     
                                     return { 
                                         ...therapist, 
-                                        mainImage: assignedImage || therapist.mainImage,
                                         location: displayLocation,
                                         city: displayCity
                                     };
@@ -2014,9 +2010,13 @@ logger.debug('[DEBUG] Therapist filtering analysis', {
                                 }))
                             });
 
+                            // OOM FIX: Cap initial cards to avoid memory crash on large lists
+                            const MAX_INITIAL_THERAPIST_CARDS = 50;
+                            const therapistsToRender = preparedTherapists.slice(0, MAX_INITIAL_THERAPIST_CARDS);
+
                             // 🏷️ GROUP BY LOCATION AREA for display (sorted by distance within each group)
                             const therapistsByLocation: { [key: string]: any[] } = {};
-                            preparedTherapists.forEach((therapist: any) => {
+                            therapistsToRender.forEach((therapist: any) => {
                                 const area = therapist._locationArea || 'Unknown';
                                 if (!therapistsByLocation[area]) {
                                     therapistsByLocation[area] = [];
@@ -2027,7 +2027,7 @@ logger.debug('[DEBUG] Therapist filtering analysis', {
                             // Render grouped therapists with section headers
                             const locationAreas = Object.keys(therapistsByLocation).sort();
                             
-                            logger.debug('[STAGE 6 - Render] About to render therapist cards', { count: preparedTherapists.length });
+                            logger.debug('[STAGE 6 - Render] About to render therapist cards', { count: therapistsToRender.length, capped: preparedTherapists.length > MAX_INITIAL_THERAPIST_CARDS });
                             logger.debug('[STAGE 6] Location areas', { areas: locationAreas });
                             logger.debug('[STAGE 6] Therapists by location', { byLocation: Object.keys(therapistsByLocation).map(k => `${k}: ${therapistsByLocation[k].length}`) });
                             

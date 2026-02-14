@@ -10,7 +10,7 @@ import DistanceDisplay from './DistanceDisplay';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
 import MassagePlaceJoinPopup from './MassagePlaceJoinPopup';
-import { getAuthAppUrl } from '../utils/therapistCardHelpers';
+import { getAuthAppUrl, getUniqueMenuItemsByName, getUniqueMassageTypes } from '../utils/therapistCardHelpers';
 import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing, generatePlaceShareableURL } from '../constants/cardConstants.tsx';
 import { useChatProvider } from '../hooks/useChatProvider';
 
@@ -279,7 +279,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
 
     const parsedMassageTypes = parseMassageTypes((place as any).massageTypes) || [];
     const massageTypesDisplay = Array.isArray(parsedMassageTypes) && parsedMassageTypes.length > 0 
-        ? parsedMassageTypes.slice(0, 6) 
+        ? getUniqueMassageTypes(parsedMassageTypes).slice(0, 6) 
         : ['Traditional Balinese', 'Deep Tissue', 'Swedish', 'Aromatherapy', 'Hot Stone']; // Mock data
 
     const parsedLanguages = parseLanguages((place as any).languages) || [];
@@ -628,9 +628,11 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                             </div>
                         </div>
 
-                        {/* Price List Content - Scrollable */}
+                        {/* Price List Content - Scrollable (deduplicated by service name so same type is not shown twice) */}
                         <div className="flex-1  p-4" style={{ height: 'calc(100vh - 180px)' }}>
-                            {menuData.length > 0 ? (
+                            {(() => {
+                                const uniqueMenu = getUniqueMenuItemsByName(menuData);
+                                return uniqueMenu.length > 0 ? (
                                 <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                                     {/* Table Header - Hidden on mobile */}
                                     <div className="hidden sm:grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
@@ -643,7 +645,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
 
                                     {/* Table Rows */}
                                     <div className="divide-y divide-orange-100">
-                                        {menuData.map((service: any, index: number) => {
+                                        {uniqueMenu.map((service: any, index: number) => {
                                             const isRowSelected = selectedServiceIndex === index;
 
                                             return (
@@ -844,7 +846,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                         </div>
                                     </div>
                                 </div>
-                            )}
+                            );
+                            })()}
                         </div>
                     </div>
                 </div>

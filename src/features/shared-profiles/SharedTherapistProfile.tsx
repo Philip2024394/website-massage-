@@ -25,10 +25,11 @@
 
 import React, { useState, useEffect } from 'react';
 import TherapistProfileBase from '../../components/TherapistProfileBase';
+import { usePersistentChatIntegration } from '../../hooks/usePersistentChatIntegration';
 import type { Therapist, UserLocation } from '../../types';
 import { generateTherapistShareURL } from './utils/shareUrlBuilder';
 import { PREVIEW_IMAGES } from '../../config/previewImages';
-import { getHeroImageForTherapist } from '../../config/heroImages';
+import { getTherapistMainImage } from '../../utils/therapistImageUtils';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from '../../lib/appwrite';
 import { shareLinkService } from '../../lib/services/shareLinkService';
 import PWAInstallBanner from '../../components/PWAInstallBanner';
@@ -146,26 +147,38 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         language
     });
     console.log('🧩'.repeat(40) + '\n');
+
+    // 🔒 PERSISTENT CHAT - Must be called at top level (Rules of Hooks)
+    const { openBookingChat } = usePersistentChatIntegration();
     
     // 🔷 OFFICIAL INDASTREET MASSAGE IMAGES - Use these for all shared profiles
     const OFFICIAL_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258';
     const OFFICIAL_MAIN_IMAGE = 'https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082';
     
     /**
-     * Apply official branded images to any therapist object
-     * This ensures consistent branding across all shared profiles
+     * Apply images - use therapist's main image URL (same as home page) when available.
+     * Only fall back to official branded images when therapist has no valid main image.
      */
     const applyOfficialImages = (therapist: any): any => {
         const heroImageUrl = therapist.heroImageUrl;
         const shouldUseOfficialHero = !heroImageUrl || heroImageUrl === '' || String(heroImageUrl).startsWith('data:image/svg+xml');
         
-        console.log('🔷 [OFFICIAL IMAGES] Applying to therapist:', therapist.name);
-        console.log('   Main: Official Garden Forest (always)');
+        // Main image: use therapist's mainImage/profileImageUrl/heroImageUrl (Appwrite URL only)
+        const isUrl = (u: any) => u && typeof u === 'string' && !u.startsWith('data:') && /^https?:\/\//.test(u);
+        const therapistMainImage = isUrl((therapist as any).mainImage) ? (therapist as any).mainImage
+            : isUrl((therapist as any).mainimage) ? (therapist as any).mainimage
+            : isUrl((therapist as any).profileImageUrl) ? (therapist as any).profileImageUrl
+            : isUrl((therapist as any).heroImageUrl) ? (therapist as any).heroImageUrl
+            : null;
+        const mainImage = therapistMainImage || OFFICIAL_MAIN_IMAGE;
+        
+        console.log('🔷 [IMAGES] Applying to therapist:', therapist.name);
+        console.log('   Main:', therapistMainImage ? 'Therapist URL (same as home page)' : 'Official fallback');
         console.log('   Hero:', shouldUseOfficialHero ? 'Official Logo' : 'Database value');
         
         return {
             ...therapist,
-            mainImage: OFFICIAL_MAIN_IMAGE,
+            mainImage,
             heroImageUrl: shouldUseOfficialHero ? OFFICIAL_HERO_IMAGE : heroImageUrl
         };
     };
@@ -446,8 +459,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         const description = `✨ Book ${therapist.name} for professional massage therapy in ${city}. ⭐ Verified therapist • 💬 Instant chat • 🔒 Secure booking`;
         const shareUrl = generateTherapistShareURL(therapist);
         
-        // Use hero image from pool for social sharing
-        const previewImage = getHeroImageForTherapist(therapist.$id, ((therapist.location || 'Yogyakarta') as string));
+        // Use same image as home page and profile page for social sharing
+        const previewImage = getTherapistMainImage(therapist as any);
         
         console.log('📱 Social Media Preview:', { 
             therapist: therapist.name, 
@@ -672,18 +685,9 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             return;
         }
         
-        // Otherwise, trigger booking chat with 'share' source marker
-        // This ensures booking goes directly to this therapist (no broadcast)
-        try {
-            const { usePersistentChatIntegration } = await import('../../hooks/usePersistentChatIntegration');
-            const { openBookingChat } = usePersistentChatIntegration();
-            
-            // Mark as shared link booking source
-            console.log('✅ [SHARED LINK] Opening booking chat with source=share');
-            await openBookingChat(therapist, 'share');
-        } catch (error) {
-            console.error('❌ [SHARED LINK] Failed to open booking chat:', error);
-        }
+        // Otherwise, open persistent chat with 'share' source (direct booking, no broadcast)
+        console.log('✅ [SHARED LINK] Opening booking chat with source=share');
+        openBookingChat(therapist, 'share');
     };
 
     // RENDER PHASE MONITORING

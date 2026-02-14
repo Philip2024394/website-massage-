@@ -11,6 +11,7 @@
 
 import { databases } from '../appwrite';
 import { Query } from 'appwrite';
+import { APPWRITE_CONFIG } from '../appwrite.config';
 import type { ShareLink } from './shareLinkService';
 
 // Define TherapistMenu interface locally since types export has issues
@@ -24,9 +25,12 @@ interface TherapistMenu {
   [key: string]: any;
 }
 
-const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
-const THERAPIST_MENUS_COLLECTION_ID = import.meta.env.VITE_THERAPIST_MENUS_COLLECTION_ID;
-const SHARE_LINKS_COLLECTION_ID = import.meta.env.VITE_SHARE_LINKS_COLLECTION_ID;
+// Use env first; fall back to APPWRITE_CONFIG so prefetch works when env vars are missing
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || APPWRITE_CONFIG.databaseId;
+const THERAPIST_MENUS_COLLECTION_ID =
+  import.meta.env.VITE_THERAPIST_MENUS_COLLECTION_ID || APPWRITE_CONFIG.collections.therapistMenus;
+const SHARE_LINKS_COLLECTION_ID =
+  import.meta.env.VITE_SHARE_LINKS_COLLECTION_ID || (APPWRITE_CONFIG as any).collections?.share_links;
 
 interface BulkTherapistMenusResult {
   byTherapistId: Map<string, TherapistMenu>;

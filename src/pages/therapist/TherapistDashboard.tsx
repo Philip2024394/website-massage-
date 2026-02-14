@@ -58,9 +58,38 @@ import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, H
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { profileEditHelp } from './constants/helpContent';
+import { PWAInstallationStatusChecker } from '../../utils/pwaInstallationStatus';
 import { client, databases, DATABASE_ID } from '../../lib/appwrite';
 import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
 import { bookingSoundService } from '../../services/bookingSound.service';
+
+/* PWA dashboard indicator: green = downloaded, red = need download */
+function PWADashboardIndicator() {
+  const [installed, setInstalled] = useState(() => PWAInstallationStatusChecker.checkStatus().isInstalled);
+  useEffect(() => {
+    const update = () => setInstalled(PWAInstallationStatusChecker.checkStatus().isInstalled);
+    window.addEventListener('appinstalled', update);
+    window.addEventListener('beforeinstallprompt', update);
+    const mq = window.matchMedia('(display-mode: standalone)');
+    mq.addEventListener('change', update);
+    return () => {
+      window.removeEventListener('appinstalled', update);
+      window.removeEventListener('beforeinstallprompt', update);
+      mq.removeEventListener('change', update);
+    };
+  }, []);
+  return (
+    <span
+      className={`flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full font-medium ${
+        installed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+      }`}
+      title={installed ? 'App installed on device – notifications & sounds active' : 'Download app to home screen for notifications & sounds'}
+    >
+      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${installed ? 'bg-green-500' : 'bg-red-500'}`} />
+      {installed ? 'App installed' : 'Need download'}
+    </span>
+  );
+}
 
 /* P0 FIX: App-sized dashboard layout for proper desktop/mobile rendering */
 
@@ -241,7 +270,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       return;
     }
 
-    const therapistId = String(therapist.$id || therapist.id);
+    const therapistId = String((therapist as any).$id ?? (therapist as any).appwriteId ?? therapist.id);
     logger.debug('Starting real-time booking subscription for therapist:', { therapistId });
 
     try {
@@ -317,7 +346,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 logger.error('Failed to stop booking sound:', soundError);
               }
 
-              // Dispatch stop event
+              // Stop event is global for current therapist view (all cards stop sound)
               window.dispatchEvent(new Event('stopBookingNotification'));
             }
           }
@@ -624,12 +653,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     setSaving(true);
     
     try {
-      // REQUIRED FIELDS VALIDATION
+      // REQUIRED FIELDS VALIDATION (including Traditional Massage 3 prices – profile cannot save without them)
       const missingFields: string[] = [];
       if (!name.trim()) missingFields.push('Name');
       if (!whatsappNumber.trim() || whatsappNumber.trim() === '+62') missingFields.push('WhatsApp Number');
       if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location (MANDATORY - click SET GPS LOCATION button)');
-      
+      const minP = 100;
+      const pp60 = parseInt(price60, 10);
+      const pp90 = parseInt(price90, 10);
+      const pp120 = parseInt(price120, 10);
+      if (!price60.trim() || !price90.trim() || !price120.trim() || isNaN(pp60) || pp60 < minP || isNaN(pp90) || pp90 < minP || isNaN(pp120) || pp120 < minP) {
+        missingFields.push('Traditional Massage 3 prices (60/90/120 min, min 100 each)');
+      }
       if (missingFields.length > 0) {
         showToast(`❌ Required fields missing: ${missingFields.join(', ')}`, 'error');
         setSaving(false);
@@ -694,6 +729,17 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       logger.debug('🏷️ GPS-derived city (ONLY SOURCE)', { derivedLocationId });
       
       logger.debug('✅ Geopoint validation passed');
+
+      // Price minimum: 100 = Rp 100,000 for 60/90/120 min
+      const MIN_PRICE = 100;
+      const p60 = parseInt(price60, 10);
+      const p90 = parseInt(price90, 10);
+      const p120 = parseInt(price120, 10);
+      if ((price60 && !isNaN(p60) && p60 < MIN_PRICE) || (price90 && !isNaN(p90) && p90 < MIN_PRICE) || (price120 && !isNaN(p120) && p120 < MIN_PRICE)) {
+        showToast('❌ Minimum price is Rp 100,000 (enter 100 or higher) for 60, 90, and 120 minutes.', 'error');
+        setSaving(false);
+        return;
+      }
 
       const updateData: any = {
         name: name.trim(),
@@ -829,9 +875,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   };
 
   // Form validation for save button - GPS is MANDATORY
+  // Traditional Massage 3 prices are MANDATORY – profile cannot save without them
+  const MIN_PRICE_VAL = 100;
+  const p60Val = parseInt(price60, 10);
+  const p90Val = parseInt(price90, 10);
+  const p120Val = parseInt(price120, 10);
+  const hasValidThreePrices = price60.trim() !== '' && price90.trim() !== '' && price120.trim() !== '' &&
+    !isNaN(p60Val) && p60Val >= MIN_PRICE_VAL &&
+    !isNaN(p90Val) && p90Val >= MIN_PRICE_VAL &&
+    !isNaN(p120Val) && p120Val >= MIN_PRICE_VAL;
   const canSave = name.trim() && 
                   /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && 
-                  coordinates && coordinates.lat && coordinates.lng; // GPS is MANDATORY
+                  coordinates && coordinates.lat && coordinates.lng &&
+                  hasValidThreePrices; // GPS + Traditional Massage 3 prices MANDATORY
 
   // Handle "Go Live" button click
   const handleGoLive = async () => {
@@ -1080,6 +1136,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         logger.debug('[NAV CLICK] Navigating to SafePass page');
         onNavigate?.('therapist-hotel-villa-safe-pass');
         break;
+      case 'therapist-profile':
+        logger.debug('[NAV CLICK] Navigating to public therapist profile');
+        onNavigate?.('therapist-profile');
+        break;
       case 'logout':
         logger.debug('[NAV CLICK] Calling onLogout()');
         onLogout?.();
@@ -1115,13 +1175,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         onLogout={onLogout}
       >
       <div
-        className="bg-white w-full max-w-full therapist-page-container"
+        className="bg-white w-full max-w-full"
         style={{ 
           WebkitOverflowScrolling: 'touch', 
           touchAction: 'pan-y pan-x',
           paddingBottom: 'max(env(safe-area-inset-bottom, 15px), 20px)',
-          marginBottom: 0,
-          flex: '1 1 auto'
+          marginBottom: 0
         }}
       >
       {/* Payment Pending Banner - Show when payment not submitted */}
@@ -1148,7 +1207,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       {/* Main Content - MODEL A: NO top padding, sticky header provides spacing */}
       <main className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px' }}>
 
-          {/* 🆕 ELITE FIX: Therapist Connection Status Indicator (Facebook/Amazon Standard) */}
+          {/* 🆕 ELITE FIX: Therapist Connection Status + PWA Download Indicator (green = installed, red = need download) */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1162,30 +1221,21 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full font-mono">
                   Active
                 </span>
+                {/* PWA status: green = downloaded, red = need download */}
+                <PWADashboardIndicator />
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    // Check if PWA is installable
-                    if ('BeforeInstallPromptEvent' in window || ('standalone' in navigator && !(navigator as any).standalone)) {
-                      const event = (window as any).deferredPWAPrompt;
-                      if (event) {
-                        event.prompt();
-                        event.userChoice.then((choiceResult: any) => {
-                          if (choiceResult.outcome === 'accepted') {
-                            showToast('✅ App installation started!', 'success');
-                          }
-                          (window as any).deferredPWAPrompt = null;
-                        });
-                      } else {
-                        showToast('📱 To install: Use browser menu → "Add to Home Screen"', 'info');
-                      }
-                    } else {
-                      showToast('📱 To install: Use browser menu → "Install App"', 'info');
+                  onClick={async () => {
+                    const result = await PWAInstallationStatusChecker.triggerInstallation();
+                    if (result.success && result.result === 'accepted') {
+                      showToast('✅ App installation started!', 'success');
+                    } else if (!result.success && result.error) {
+                      showToast(result.error, 'info', { duration: 8000 });
                     }
                   }}
                   className="text-xs bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-1 shadow-sm"
-                  title="Install as mobile app for 97% reliability"
+                  title="Install as mobile app – notifications & sounds when on home screen"
                 >
                   <img 
                     src="https://ik.imagekit.io/7grri5v7d/download_button-removebg-preview.png" 
@@ -1748,11 +1798,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            {/* Pricing */}
+            {/* Pricing - Traditional Massage is the standard default; these 3 prices appear in the price slider and on profile when lowest */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Massage Prices (100 = Rp 100,000)
+                Traditional Massage – 3 prices (Min 100 = Rp 100,000)
               </label>
+              <p className="text-xs text-gray-500 mb-2">
+                These prices are shown as &quot;Traditional Massage&quot; in your price slider and on your profile when they are your lowest.
+              </p>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-2 font-medium">60 minutes</label>
@@ -1762,6 +1815,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     onChange={e => {
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice60(value);
+                    }}
+                    onBlur={() => {
+                      const n = parseInt(price60, 10);
+                      if (price60 && !isNaN(n) && n < 100) setPrice60('100');
                     }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="100"
@@ -1777,6 +1834,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice90(value);
                     }}
+                    onBlur={() => {
+                      const n = parseInt(price90, 10);
+                      if (price90 && !isNaN(n) && n < 100) setPrice90('100');
+                    }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="150"
                     maxLength={3}
@@ -1790,6 +1851,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     onChange={e => {
                       const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                       setPrice120(value);
+                    }}
+                    onBlur={() => {
+                      const n = parseInt(price120, 10);
+                      if (price120 && !isNaN(n) && n < 100) setPrice120('100');
                     }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="200"
@@ -1808,6 +1873,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
                   {!coordinates && <li>• GPS Location (click "Set Location" button)</li>}
                   {(!coordinates || !coordinates.lat || !coordinates.lng) && <li>• GPS Location (click SET GPS LOCATION button)</li>}
+                  {!hasValidThreePrices && <li>• Traditional Massage – 3 prices (60, 90, 120 min, min 100 = Rp 100,000 each)</li>}
                 </ul>
               </div>
             )}
@@ -1864,6 +1930,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     if (!name.trim()) missingFields.push('First Name');
                     if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
                     if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location');
+                    if (!hasValidThreePrices) missingFields.push('Traditional Massage 3 prices (60/90/120 min)');
                     showToast(`⚠️ Please complete all required fields: ${missingFields.join(', ')}`, 'error');
                     return;
                   }

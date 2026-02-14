@@ -69,6 +69,7 @@ export const APPWRITE_CONFIG = {
         analyticsEvents: 'analytics_events',
         therapistJobListings: 'therapist_job_listings',
         employerJobPostings: 'employer_job_postings',
+        employerProfiles: 'employer_profiles',
         bankDetails: 'bank_details',
         paymentTransactions: 'payment_transactions',
         premiumPayments: 'premium_payments',
@@ -95,6 +96,7 @@ export const APPWRITE_CONFIG = {
         membershipAgreements: 'membership_agreements',
         membershipUpgrades: 'membership_upgrades',
         deactivationRequests: 'deactivation_requests',
+        contactInquiries: 'contact_inquiries', // Contact/support form submissions
         coins: 'Coins',
         referrals: 'Referrals',
         activeDiscounts: 'active_discounts',

@@ -88,6 +88,76 @@ import {
   BookingTransactionParams 
 } from '../services/bookingTransaction.service';
 import { logger } from '../utils/logger';
+import { isSampleMenuServiceName, SAMPLE_BOOKING_DISPLAY_NAME } from '../utils/samplePriceUtils';
+import { setTherapistBusyForCountdown, setTherapistAvailableAfterBooking } from '../utils/therapistBookingStatusSync';
+import { hasActivePendingBookingForProvider } from '../lib/services/bookingLockHelper';
+
+// ─── Section 3: Permanent block after reject (spec 1.2) ─────────────────────
+const BOOKING_BLOCKS_KEY = 'booking_blocks';
+type BlockEntry = { userId: string; providerId: string; providerType: 'therapist' | 'place' };
+function getBookingBlocks(): BlockEntry[] {
+  try {
+    const raw = localStorage.getItem(BOOKING_BLOCKS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+function addBookingBlock(userId: string, providerId: string, providerType: 'therapist' | 'place'): void {
+  const blocks = getBookingBlocks();
+  if (blocks.some(b => b.userId === userId && b.providerId === providerId)) return;
+  blocks.push({ userId, providerId, providerType });
+  localStorage.setItem(BOOKING_BLOCKS_KEY, JSON.stringify(blocks));
+}
+function getBlockEntry(userId: string, providerId: string): BlockEntry | null {
+  return getBookingBlocks().find(b => b.userId === userId && b.providerId === providerId) ?? null;
+}
+function isBookingBlocked(userId: string, providerId: string): boolean {
+  return getBlockEntry(userId, providerId) !== null;
+}
+
+// Section 5: 2 failed deposit attempts (no proof in time) → 24h lock for that provider
+const DEPOSIT_ATTEMPTS_KEY = 'deposit_attempts';
+const DEPOSIT_LOCK_HOURS = 24;
+interface DepositAttempt { userId: string; providerId: string; failedAt: string; }
+function getDepositAttempts(): DepositAttempt[] {
+  try {
+    const raw = localStorage.getItem(DEPOSIT_ATTEMPTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+function recordDepositFailure(userId: string, providerId: string): void {
+  const attempts = getDepositAttempts();
+  attempts.push({ userId, providerId, failedAt: new Date().toISOString() });
+  localStorage.setItem(DEPOSIT_ATTEMPTS_KEY, JSON.stringify(attempts));
+}
+function countDepositFailures(userId: string, providerId: string): number {
+  return getDepositAttempts().filter(
+    (a) => a.userId === userId && a.providerId === providerId
+  ).length;
+}
+function isDepositLocked(userId: string, providerId: string): boolean {
+  const attempts = getDepositAttempts().filter(
+    (a) => a.userId === userId && a.providerId === providerId
+  );
+  if (attempts.length < 2) return false;
+  const secondAt = new Date(attempts[1].failedAt).getTime();
+  const expiry = secondAt + DEPOSIT_LOCK_HOURS * 60 * 60 * 1000;
+  return Date.now() < expiry;
+}
+function getDepositLockExpiry(userId: string, providerId: string): Date | null {
+  const attempts = getDepositAttempts().filter(
+    (a) => a.userId === userId && a.providerId === providerId
+  );
+  if (attempts.length < 2) return null;
+  const secondAt = new Date(attempts[1].failedAt).getTime();
+  return new Date(secondAt + DEPOSIT_LOCK_HOURS * 60 * 60 * 1000);
+}
+// ───────────────────────────────────────────────────────────────────────────
 
 // Re-export lifecycle status for UI components
 export { BookingLifecycleStatus, BookingType, TherapistAvailabilityStatus };
@@ -157,6 +227,8 @@ export interface BookingData {
   completedAt?: string;
   declinedAt?: string;
   expiredAt?: string;
+  /** Spec 4.2: when therapist rejects payment proof, user gets new 30 min; server sets this */
+  depositDeadlineExtendedAt?: string;
   
   // Schedule (for SCHEDULED bookings)
   scheduledDate?: string;
@@ -178,6 +250,7 @@ export interface ChatTherapist {
   image?: string;
   mainImage?: string; // Main profile image
   profileImage?: string; // Profile image
+  profilePicture?: string; // Avatar (Appwrite standard - used in price modal)
   location?: string; // Location/address
   city?: string; // City
   pricing?: Record<string, number>;
@@ -207,7 +280,7 @@ export interface ChatMessage {
   message: string;
   createdAt: string;
   read: boolean;
-  messageType: 'text' | 'file' | 'location' | 'system' | 'booking';
+  messageType: 'text' | 'file' | 'location' | 'system' | 'booking' | 'payment_proof';
   roomId: string;
   isSystemMessage?: boolean;
 }
@@ -219,7 +292,7 @@ export interface LegacyMessage {
   senderName: string;
   message: string;
   timestamp: Date;
-  type: 'text' | 'system' | 'booking';
+  type: 'text' | 'system' | 'booking' | 'payment_proof';
 }
 
 // Booking flow step
@@ -262,6 +335,8 @@ export interface ChatWindowState {
   // 🆕 ELITE FIX: Facebook/Amazon Standard - Transparent degradation visibility
   isAppwriteDegraded: boolean; // True when Appwrite fails but system continues
   degradationReason: string | null; // User-friendly explanation of degradation
+  /** Spec 6.1/6.2: One scheduled at a time; Book now disabled until this is null */
+  activeScheduledBookingId: string | null;
 }
 
 // ============================================================================
@@ -300,7 +375,7 @@ interface PersistentChatContextValue {
   isLocked: boolean;
   isConnected: boolean;
   openChat: (therapist: ChatTherapist, mode?: 'book' | 'schedule' | 'price', source?: 'share' | 'profile' | 'search' | null) => void;
-  openChatWithService: (therapist: ChatTherapist, service: SelectedService, options?: { isScheduled?: boolean }) => void; // Enhanced Menu Harga integration
+  openChatWithService: (therapist: ChatTherapist, service: SelectedService, options?: { isScheduled?: boolean; source?: 'share' | 'profile' | 'search' | null }) => void;
   minimizeChat: () => void;
   maximizeChat: () => void;
   closeChat: () => void;
@@ -323,15 +398,27 @@ interface PersistentChatContextValue {
   acceptBooking: () => void;    // Therapist accepts
   rejectBooking: () => void;    // Therapist rejects
   confirmBooking: () => void;   // User confirms therapist
+  /** Spec 4.1: Therapist confirms payment received → CONFIRMED, calendar red */
+  confirmPaymentReceived: () => void;
+  /** Spec 4.2: Therapist rejects proof → user's 30 min deposit timer resets */
+  rejectPaymentProof: () => void;
+  /** Spec 3.3: Link payment proof to booking document (paymentProofUrl, paymentProofSubmittedAt) */
+  updateBookingPaymentProof: (documentId: string, paymentProofUrl: string) => Promise<void>;
+  /** Spec 8.2: Therapist/place agrees to refund deposit → booking cancelled, deposit refunded */
+  refundDeposit: () => void;
   cancelBooking: () => void;    // Cancel booking
   setOnTheWay: () => void;      // Therapist starts journey
   completeBooking: () => void;  // Service completed
   shareBankCard: () => void;    // Share bank card details
   confirmPayment: (method: 'cash' | 'bank_transfer') => void;
   addSystemNotification: (message: string) => void;
+  // Spec 2.3: record deposit timeout (no proof in time) for 2-attempt / 24h lock
+  recordDepositTimeout: (providerId: string) => void;
   // ⏱️ Timer state and control
   timerState: { isActive: boolean; remainingSeconds: number; phase: string | null; bookingId: string | null };
   resumeTimerIfNeeded: (bookingId: string) => void;
+  /** Spec 6.2: true when user has a scheduled booking in progress (no Book now / no second Schedule until payment confirmed or expired) */
+  hasActiveScheduledBooking: boolean;
 }
 
 const PersistentChatContext = createContext<PersistentChatContextValue | null>(null);
@@ -370,6 +457,7 @@ const initialState: ChatWindowState = {
   // 🆕 ELITE FIX: Initialize degradation tracking
   isAppwriteDegraded: false,
   degradationReason: null,
+  activeScheduledBookingId: null,
 };
 
 export function PersistentChatProvider({ children, setIsChatWindowVisible }: { 
@@ -402,7 +490,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         ...persistedState, 
         // KEEP CHAT CLOSED - User must explicitly open it
         isOpen: false,      // Changed from true
-        isMinimized: false  // Keep minimized state
+        isMinimized: false, // Keep minimized state
+        // Ensure Section 7 state exists (persisted state may be from before this was added)
+        activeScheduledBookingId: (persistedState as any).activeScheduledBookingId ?? initialState.activeScheduledBookingId ?? null,
       }
     : initialState;
 
@@ -433,6 +523,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   const [isGuestUser, setIsGuestUser] = useState<boolean>(true); // Track guest status for optimization
   const subscriptionRef = useRef<(() => void) | null>(null);
   const therapistIdRef = useRef<string | null>(null);
+  const addSystemNotificationRef = useRef<(message: string) => void>(() => {});
   // countdownTimerRef removed - timer managed by useBookingTimer hook
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -483,81 +574,21 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     initUser();
   }, []);
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // TIMER EXPIRATION HANDLER (Lifecycle-Driven)
-  // ═══════════════════════════════════════════════════════════════════════
-  const handleTimerExpiration = useCallback(async (event: TimerExpirationEvent) => {
-    logger.info('[EXPIRATION] Timer expired', { phase: event.phase, bookingId: event.bookingId, lifecycle: event.lifecycleStatus });
-    
-    if (event.phase === 'THERAPIST_RESPONSE') {
-      // PENDING → EXPIRED (therapist didn't respond)
-      if (event.lifecycleStatus === BookingLifecycleStatus.PENDING) {
-        logger.info('[EXPIRATION] Therapist timeout - transitioning to EXPIRED');
-        
-        if (event.documentId) {
-          try {
-            await bookingLifecycleService.expireBooking(event.documentId, 'Therapist timeout');
-          } catch (error) {
-            logger.error('[EXPIRATION] Failed to expire booking', error);
-          }
-        }
-        
-        // Update UI state
-        setChatState(prev => ({
-          ...prev,
-          currentBooking: prev.currentBooking ? {
-            ...prev.currentBooking,
-            lifecycleStatus: BookingLifecycleStatus.EXPIRED,
-          } : null,
-        }));
-        
-        const therapistName = chatState.therapist?.name;
-        const message = therapistName
-          ? `${therapistName} unfortunately is busy to accept your booking. We will locate an alternative replacement now. Please hold while we are processing your booking.`
-          : 'Unfortunately the therapist is busy to accept your booking. We will locate an alternative replacement now. Please hold while we are processing your booking.';
-        
-        addSystemNotification(`⚠️ ${message}`);
-      } else {
-        logger.warn('[EXPIRATION] Cannot expire THERAPIST_RESPONSE - unexpected status', { status: event.lifecycleStatus });
-      }
-      
-    } else if (event.phase === 'CUSTOMER_CONFIRMATION') {
-      // ACCEPTED → EXPIRED (customer didn't confirm)
-      if (event.lifecycleStatus === BookingLifecycleStatus.ACCEPTED) {
-        logger.info('[EXPIRATION] Customer timeout - transitioning to EXPIRED');
-        
-        if (event.documentId) {
-          try {
-            await bookingLifecycleService.expireBooking(event.documentId, 'Customer confirmation timeout');
-          } catch (error) {
-            logger.error('[EXPIRATION] Failed to expire booking', error);
-          }
-        }
-        
-        // Update UI state
-        setChatState(prev => ({
-          ...prev,
-          currentBooking: prev.currentBooking ? {
-            ...prev.currentBooking,
-            lifecycleStatus: BookingLifecycleStatus.EXPIRED,
-          } : null,
-        }));
-        
-        addSystemNotification(
-          '❌ Booking expired - confirmation not received in time.'
-        );
-      } else {
-        logger.warn('[EXPIRATION] Cannot expire CUSTOMER_CONFIRMATION - unexpected status', { status: event.lifecycleStatus });
-      }
-    }
-  }, []);
-  
-  // Register expiration handler on mount
+  // Spec 6.1: Restore active scheduled booking id from localStorage (e.g. after refresh)
   useEffect(() => {
-    setExpirationHandler(handleTimerExpiration);
-    logger.info('[TIMER] Expiration handler registered');
-  }, [handleTimerExpiration, setExpirationHandler]);
-  
+    const uid = currentUserId || 'guest';
+    if (!uid) return;
+    _setChatState(prev => {
+      if (prev.activeScheduledBookingId) return prev;
+      try {
+        const stored = localStorage.getItem(`active_scheduled_booking_${uid}`);
+        return stored ? { ...prev, activeScheduledBookingId: stored } : prev;
+      } catch {
+        return prev;
+      }
+    });
+  }, [currentUserId]);
+
   // ═══════════════════════════════════════════════════════════════════════
   // BOOKING STATE REF SYNC (Timer reads latest state via ref - zero closures)
   // ═══════════════════════════════════════════════════════════════════════
@@ -885,6 +916,16 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     logger.debug('🔍 DEBUGGING: New therapist:', { name: therapist.name, id: therapist.id });
     logger.debug('�🔒 Locking chat to prevent accidental closure during booking');
     
+    // Place lock: when a place has an active PENDING booking (5-min countdown), block other users until it's accepted/rejected
+    const providerTypeOpen = (therapist as { providerType?: 'therapist' | 'place' })?.providerType ?? 'therapist';
+    if (providerTypeOpen === 'place' && therapist.appwriteId) {
+      const placeLocked = await hasActivePendingBookingForProvider(therapist.appwriteId);
+      if (placeLocked) {
+        addSystemNotificationRef.current('Another customer is completing a booking with this place. Please try again in a few minutes.');
+        return;
+      }
+    }
+    
     // 🔒 CRITICAL VALIDATION: Block if therapist.appwriteId is missing
     if (!therapist.appwriteId) {
       const errorMsg = `CRITICAL: Cannot open chat - therapist.appwriteId is missing for ${therapist.name}. ` +
@@ -938,12 +979,12 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         selectedService: null, // Reset pre-selected service
         bookingSource: source, // Track booking entry point
         chatRoomId,
-        messages: prev.therapist?.id === therapist.id ? prev.messages : [],
+        messages: prev.therapist?.appwriteId === therapist.appwriteId ? prev.messages : [],
         bookingData: {
           ...prev.bookingData,
           bookingId: draftBookingId,
           status: 'pending',
-          therapistId: therapist.id,
+          therapistId: therapist.appwriteId || therapist.$id || therapist.id, // Document ID for booking
           therapistName: therapist.name,
         } as BookingData,
       };
@@ -979,9 +1020,21 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
           
           return newState;
         });
+        // Spec 4.2: Refetch booking so user gets depositDeadlineExtendedAt after therapist rejects proof
+        const bookingDocId = chatState.currentBooking?.documentId;
+        const match = bookingDocId && chatState.currentBooking && (chatState.currentBooking.therapistId === therapistIdForQuery || (chatState.therapist?.appwriteId === therapistIdForQuery));
+        if (match && bookingDocId && APPWRITE_CONFIG.collections.bookings) {
+          try {
+            const doc = await databases.getDocument(APPWRITE_CONFIG.databaseId, APPWRITE_CONFIG.collections.bookings, bookingDocId);
+            const extended = (doc as any).depositDeadlineExtendedAt;
+            if (extended) {
+              setChatState(prev => prev.currentBooking?.documentId === bookingDocId ? { ...prev, currentBooking: { ...prev.currentBooking!, depositDeadlineExtendedAt: extended } } : prev);
+            }
+          } catch (_) { /* ignore */ }
+        }
       }
     }
-  }, [currentUserId, loadMessages, setIsChatWindowVisible, setIsLocked]);
+  }, [currentUserId, loadMessages, setIsChatWindowVisible, setIsLocked, chatState.currentBooking, chatState.therapist?.appwriteId]);
 
   // Add local message (legacy compatibility) - MOVED HERE to fix initialization order
   const addMessage = useCallback((message: Omit<LegacyMessage, 'id' | 'timestamp'>) => {
@@ -995,7 +1048,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       message: message.message,
       createdAt: new Date().toISOString(),
       read: false,
-      messageType: message.type === 'booking' ? 'booking' : message.type === 'system' ? 'system' : 'text',
+      messageType: message.type === 'booking' ? 'booking' : message.type === 'system' ? 'system' : message.type === 'payment_proof' ? 'payment_proof' : 'text',
       roomId: '',
       isSystemMessage: message.type === 'system',
     };
@@ -1011,7 +1064,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
   const openChatWithService = useCallback(async (
     therapist: ChatTherapist, 
     service: { serviceName: string; duration: number; price: number },
-    options?: { isScheduled?: boolean; depositRequired?: boolean; depositPercentage?: number }
+    options?: { isScheduled?: boolean; depositRequired?: boolean; depositPercentage?: number; source?: 'share' | 'profile' | 'search' | null }
   ) => {
     logger.debug('💬 Opening chat with pre-selected service:', { name: therapist.name, service, options });
     
@@ -1046,19 +1099,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     
     const isScheduled = options?.isScheduled || false;
     
-    // 🆔 AUTO-CREATE BOOKING ID immediately
-    const generateDraftBookingId = (): string => {
-      try {
-        const counter = parseInt(localStorage.getItem('booking_id_counter') || '1000', 10);
-        const newId = counter + 1;
-        localStorage.setItem('booking_id_counter', newId.toString());
-        return `BK${newId}`;
-      } catch (error) {
-        return `BK${Date.now()}`;
-      }
-    };
-    
-    const draftBookingId = generateDraftBookingId();
+    const draftBookingId = `DRAFT_${Date.now()}`; // Same convention as openChat
     logger.debug('🆔 Auto-created booking ID:', { draftBookingId });
     
     // 🔒 ENSURE therapist object has appwriteId field set with resolved ID
@@ -1092,12 +1133,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         isScheduled
         // Deposit info will be added AFTER therapist accepts
       }, // Store the pre-selected service details
-      messages: prev.therapist?.id === therapist.id ? prev.messages : [],
+      bookingSource: options?.source ?? null,
+      messages: prev.therapist?.appwriteId === therapistWithResolvedId.appwriteId ? prev.messages : [],
       bookingData: {
         ...prev.bookingData,
         bookingId: draftBookingId,
         status: 'pending',
-        therapistId: therapist.id,
+        therapistId: therapistDocumentId, // Document ID for booking
         therapistName: therapist.name,
       } as BookingData,
     }));
@@ -1126,19 +1168,9 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
 
-    // Add system message about the booking type
-    const systemMessage = isScheduled 
-      ? `📅 Scheduled booking selected: ${service.serviceName} (${service.duration} min) - Total: Rp ${service.price.toLocaleString('id-ID')} (Deposit required after therapist accepts)`
-      : `🚀 Immediate booking selected: ${service.serviceName} (${service.duration} min) - Total: Rp ${service.price.toLocaleString('id-ID')}`;
-    
-    addMessage({
-      senderId: 'system',
-      senderName: 'System',
-      message: systemMessage,
-      type: 'system'
-    });
+    // No system message - booking confirmation UI (BookingWelcomeBanner) shows service details in chat window
 
-  }, [currentUserId, loadMessages, addMessage, setIsChatWindowVisible, setIsLocked]);
+  }, [currentUserId, loadMessages, setIsChatWindowVisible, setIsLocked]);
 
   // Minimize chat - reset booking flow to duration selection
   const minimizeChat = useCallback(() => {
@@ -1513,12 +1545,145 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     }));
   }, [chatState.therapist, setChatState]);
 
+  useEffect(() => {
+    addSystemNotificationRef.current = addSystemNotification;
+  }, [addSystemNotification]);
+
   // ═══════════════════════════════════════════════════════════════════════
-  // OLD TIMER FUNCTIONS REMOVED - Now managed by useBookingTimer hook
+  // TIMER EXPIRATION HANDLER (Lifecycle-Driven) - MUST be after addSystemNotification
   // ═══════════════════════════════════════════════════════════════════════
-  // startCountdown() → Replaced by startTimer() from useBookingTimer
-  // stopCountdown() → Replaced by stopTimer() from useBookingTimer
-  // Timer logic is now single-authority with zero closure capture
+  const expirationWasScheduledRef = useRef(false);
+  const handleTimerExpiration = useCallback(async (event: TimerExpirationEvent) => {
+    logger.info('[EXPIRATION] Timer expired', { phase: event.phase, bookingId: event.bookingId, lifecycle: event.lifecycleStatus });
+    expirationWasScheduledRef.current = false;
+
+    if (event.phase === 'THERAPIST_RESPONSE') {
+      if (event.lifecycleStatus === BookingLifecycleStatus.PENDING) {
+        logger.info('[EXPIRATION] Therapist timeout - transitioning to EXPIRED');
+        if (event.documentId) {
+          try {
+            await bookingLifecycleService.expireBooking(event.documentId, 'Therapist timeout');
+            const expiredBooking = await bookingLifecycleService.getBookingById(event.documentId);
+            if (expiredBooking?.providerType === 'therapist' && expiredBooking.therapistId) {
+              setTherapistAvailableAfterBooking(expiredBooking.therapistId);
+            }
+          } catch (error) {
+            logger.error('[EXPIRATION] Failed to expire booking', error);
+          }
+        }
+        setChatState(prev => {
+          const booking = prev.currentBooking;
+          const serviceType = booking?.serviceType || prev.selectedService?.serviceName;
+          const isSample = isSampleMenuServiceName(serviceType);
+          const wasScheduled = (booking as any)?.bookingType === 'SCHEDULED';
+          if (wasScheduled) expirationWasScheduledRef.current = true;
+          return {
+            ...prev,
+            currentBooking: booking ? {
+              ...booking,
+              lifecycleStatus: BookingLifecycleStatus.EXPIRED,
+              ...(isSample && { serviceType: SAMPLE_BOOKING_DISPLAY_NAME }),
+            } : null,
+            selectedService: prev.selectedService && isSample ? { ...prev.selectedService, serviceName: SAMPLE_BOOKING_DISPLAY_NAME } : prev.selectedService,
+            ...(wasScheduled ? { activeScheduledBookingId: null } : {}),
+          };
+        });
+        setTimeout(() => {
+          if (expirationWasScheduledRef.current) {
+            try { localStorage.removeItem(`active_scheduled_booking_${currentUserId || 'guest'}`); } catch (_) { /* ignore */ }
+            expirationWasScheduledRef.current = false;
+          }
+        }, 0);
+        addSystemNotification('⏰ Booking cancelled – no response in time. Suggested therapists and places are shown below (active/open only). Click one to view and book.');
+      } else {
+        logger.warn('[EXPIRATION] Cannot expire THERAPIST_RESPONSE - unexpected status', { status: event.lifecycleStatus });
+      }
+    } else if (event.phase === 'CUSTOMER_CONFIRMATION') {
+      if (event.lifecycleStatus === BookingLifecycleStatus.ACCEPTED) {
+        logger.info('[EXPIRATION] Customer timeout - transitioning to EXPIRED');
+        if (event.documentId) {
+          try {
+            await bookingLifecycleService.expireBooking(event.documentId, 'Customer confirmation timeout');
+            const expiredBooking = await bookingLifecycleService.getBookingById(event.documentId);
+            if (expiredBooking?.providerType === 'therapist' && expiredBooking.therapistId) {
+              setTherapistAvailableAfterBooking(expiredBooking.therapistId);
+            }
+          } catch (error) {
+            logger.error('[EXPIRATION] Failed to expire booking', error);
+          }
+        }
+        setChatState(prev => {
+          const booking = prev.currentBooking;
+          const serviceType = booking?.serviceType || prev.selectedService?.serviceName;
+          const isSample = isSampleMenuServiceName(serviceType);
+          const wasScheduled = (booking as any)?.bookingType === 'SCHEDULED';
+          if (wasScheduled) expirationWasScheduledRef.current = true;
+          return {
+            ...prev,
+            currentBooking: booking ? {
+              ...booking,
+              lifecycleStatus: BookingLifecycleStatus.EXPIRED,
+              ...(isSample && { serviceType: SAMPLE_BOOKING_DISPLAY_NAME }),
+            } : null,
+            selectedService: prev.selectedService && isSample
+              ? { ...prev.selectedService, serviceName: SAMPLE_BOOKING_DISPLAY_NAME }
+              : prev.selectedService,
+            ...(wasScheduled ? { activeScheduledBookingId: null } : {}),
+          };
+        });
+        setTimeout(() => {
+          if (expirationWasScheduledRef.current) {
+            try { localStorage.removeItem(`active_scheduled_booking_${currentUserId || 'guest'}`); } catch (_) { /* ignore */ }
+            expirationWasScheduledRef.current = false;
+          }
+        }, 0);
+        addSystemNotification(
+          '❌ Booking expired - confirmation not received in time.'
+        );
+      } else {
+        logger.warn('[EXPIRATION] Cannot expire CUSTOMER_CONFIRMATION - unexpected status', { status: event.lifecycleStatus });
+      }
+    }
+  }, [currentUserId, setChatState, addSystemNotification]);
+
+  useEffect(() => {
+    setExpirationHandler(handleTimerExpiration);
+    logger.info('[TIMER] Expiration handler registered');
+  }, [handleTimerExpiration, setExpirationHandler]);
+
+  // Spec 4.3: Auto-expire if therapist/place does nothing for 24h after payment proof submitted
+  const providerConfirmExpiredDoneRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const booking = chatState.currentBooking;
+    const messages = chatState.messages;
+    if (!booking?.documentId || (booking as any)?.bookingType !== 'SCHEDULED' || (booking as any)?.lifecycleStatus !== 'ACCEPTED') return;
+    const firstProof = messages.find((m: ChatMessage & { messageType?: string }) => m.messageType === 'payment_proof');
+    if (!firstProof?.createdAt) return;
+    const proofAt = new Date(firstProof.createdAt).getTime();
+    const now = Date.now();
+    if (now - proofAt < 24 * 60 * 60 * 1000) return;
+    if (providerConfirmExpiredDoneRef.current.has(booking.documentId)) return;
+    providerConfirmExpiredDoneRef.current.add(booking.documentId);
+    (async () => {
+      try {
+        await bookingLifecycleService.declineBooking(booking.documentId!, 'Payment confirmation window expired (24h).');
+      } catch (e) {
+        logger.error('[Spec 4.3] Failed to auto-expire provider confirm window', e);
+        providerConfirmExpiredDoneRef.current.delete(booking.documentId!);
+        return;
+      }
+      setChatState(prev => ({
+        ...prev,
+        currentBooking: prev.currentBooking ? { ...prev.currentBooking, lifecycleStatus: BookingLifecycleStatus.DECLINED } : null,
+        activeScheduledBookingId: null,
+      }));
+      try { localStorage.removeItem(`active_scheduled_booking_${currentUserId || 'guest'}`); } catch (_) { /* ignore */ }
+      addSystemNotification('Booking expired: no confirm/reject within 24 hours. Slot released.');
+      if (booking.bookingId) {
+        updateBookingStateRef({ bookingId: booking.bookingId, documentId: booking.documentId!, lifecycleStatus: BookingLifecycleStatus.DECLINED, isActive: false });
+      }
+    })();
+  }, [chatState.currentBooking, chatState.messages, setChatState, currentUserId, addSystemNotification, updateBookingStateRef]);
 
   // ═══════════════════════════════════════════════════════════════════════
   // ATOMIC BOOKING CREATION (Transaction-Style with Rollback)
@@ -1530,12 +1695,35 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // Prepare transaction parameters
     // ═══════════════════════════════════════════════════════════════════════
     const therapist = chatState.therapist;
-    if (!therapist?.id || !therapist?.appwriteId) {
+    const therapistDocId = therapist?.appwriteId || therapist?.$id || (therapist as any)?.id;
+    if (!therapistDocId || !therapist?.name) {
       addSystemNotification('❌ Invalid therapist data. Please refresh and try again.');
       return false;
     }
     
-    const customerName = currentUserName || chatState.customerName;
+    // Spec 1.2: block booking if user was permanently blocked after reject
+    const uid = currentUserId || 'guest';
+    if (isBookingBlocked(uid, therapistDocId)) {
+      const entry = getBlockEntry(uid, therapistDocId);
+      const msg = entry?.providerType === 'place' ? 'This date and time has been filled.' : 'Therapist is not available on the date.';
+      addSystemNotification(`❌ ${msg} You cannot book with this provider again. Please choose another therapist or place.`);
+      return false;
+    }
+    
+    // Spec 2.3: 2 failed deposit attempts → 24h lock (spam filter)
+    if (isDepositLocked(uid, therapistDocId)) {
+      const expiry = getDepositLockExpiry(uid, therapistDocId);
+      const when = expiry ? expiry.toLocaleString() : '24 hours';
+      addSystemNotification(`⏳ Spam filter: you're temporarily blocked from booking this provider. Try again after ${when} or choose another therapist or place.`);
+      return false;
+    }
+    
+    if ((bookingData as any).bookingType === 'SCHEDULED' && chatState.activeScheduledBookingId) {
+      addSystemNotification('You already have a scheduled booking in progress. Complete or cancel it (payment confirmed or expired) before creating another.');
+      return false;
+    }
+    
+    const customerName = (bookingData as any).customerName || currentUserName || chatState.customerName;
     if (!customerName) {
       addSystemNotification('❌ Customer name is required.');
       return false;
@@ -1551,21 +1739,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     const duration = bookingData.duration || chatState.selectedDuration || 60;
     const totalPrice = bookingData.totalPrice || (bookingData as any).price || 0;
     
-    // 🔒 CRITICAL: Resolve therapist document ID with proper fallback chain
-    const therapistDocumentId = therapist.appwriteId || therapist.$id || therapist.id;
-    
-    if (!therapistDocumentId) {
-      logger.error('❌ CRITICAL: No valid therapist ID found:', therapist);
-      addSystemNotification('❌ Invalid therapist data. Please refresh and try again.');
-      return false;
-    }
-    
+    const therapistDocumentId = therapistDocId;
     logger.debug('✅ Therapist Document ID resolved:', { therapistDocumentId });
     
+    const providerType = (therapist as { providerType?: 'therapist' | 'place' })?.providerType || 'therapist';
     const transactionParams: BookingTransactionParams = {
       therapist: {
-        id: therapist.id,
-        appwriteId: therapistDocumentId, // Use resolved document ID
+        id: therapistDocumentId, // Use document ID (not display name)
+        appwriteId: therapistDocumentId,
         name: therapist.name || ''
       },
       customerId: currentUserId || 'guest',
@@ -1584,6 +1765,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       scheduledDate: bookingData.scheduledDate || chatState.selectedDate || undefined,
       scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
       bookingType: (bookingData as any).bookingType || 'BOOK_NOW',
+      providerType, // Spec 9: same flow for places as therapists
       discountCode: bookingData.discountCode,
       discountPercentage: bookingData.discountPercentage,
       originalPrice: bookingData.originalPrice,
@@ -1615,12 +1797,24 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // ═══════════════════════════════════════════════════════════════════════
     const { booking, lifecycleStatus, timerPhase } = result.data!;
     
+    const displayCustomerName = booking.customerName || (booking as any).customer_name || customerName || chatState.customerName;
+    const isScheduled = (booking as any).bookingType === 'SCHEDULED' || transactionParams.bookingType === 'SCHEDULED';
     setChatState(prev => ({
       ...prev,
-      currentBooking: booking,
+      currentBooking: {
+        ...booking,
+        customerName: displayCustomerName
+      },
+      customerName: displayCustomerName,
       bookingStep: 'chat' as BookingStep,
-      // NO bookingCountdown - managed by timer hook
+      // Spec 6.1: one scheduled at a time – track so Book now stays disabled until payment confirmed or expired
+      ...(isScheduled && booking.documentId ? { activeScheduledBookingId: booking.documentId } : {}),
     }));
+    if (isScheduled && booking.documentId) {
+      try {
+        localStorage.setItem(`active_scheduled_booking_${currentUserId || 'guest'}`, booking.documentId);
+      } catch (_) { /* ignore */ }
+    }
     
     logger.debug('✅ [COMMIT] State updated with booking:', { bookingId: booking.bookingId });
     
@@ -1648,11 +1842,14 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     setIsChatWindowVisible(true);
     logger.debug('🔓 [COMMIT] Chat unlocked after timer start');
     
-    // Success notification
+    // Therapist busy: when 5-min countdown starts, show Busy on profile so others don't book same time
+    if (providerType === 'therapist') {
+      setTherapistBusyForCountdown(therapistDocumentId);
+    }
+    
+    // Success notification - only for discount; booking status shown by BookingWelcomeBanner UI
     if (bookingData.discountCode) {
       addSystemNotification(`✅ Booking sent with ${bookingData.discountPercentage}% discount!`);
-    } else {
-      addSystemNotification('✅ Booking request sent to therapist');
     }
     
     logger.info('✅ [TRANSACTION] Booking creation complete');
@@ -1685,6 +1882,19 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     }));
   }, [setChatState]);
 
+  // Spec 2.3: record deposit timeout (no proof in 30 min) for 2-attempt then 24h lock
+  const recordDepositTimeout = useCallback((providerId: string) => {
+    const uid = currentUserId || 'guest';
+    recordDepositFailure(uid, providerId);
+    const count = countDepositFailures(uid, providerId);
+    if (count >= 2) {
+      addSystemNotification('⏳ Spam filter: you\'re temporarily blocked from booking this provider for 24 hours. Please try another therapist or place.');
+    }
+    // Spec 6.1: slot released – clear so user can Book now / Schedule again
+    setChatState(prev => (prev.activeScheduledBookingId ? { ...prev, activeScheduledBookingId: null } : prev));
+    try { localStorage.removeItem(`active_scheduled_booking_${uid}`); } catch (_) { /* ignore */ }
+  }, [currentUserId, addSystemNotification, setChatState]);
+
   // Therapist accepts booking (PENDING → ACCEPTED)
   // 🔒 AUTO-INJECTS BANK CARD DETAILS FOR SCHEDULED BOOKINGS
   const acceptBooking = useCallback(async () => {
@@ -1700,6 +1910,13 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       } catch (error) {
         logger.error('❌ [BookingLifecycle] Failed to accept booking:', error);
       }
+    }
+    
+    // Clear therapist Busy status so profile shows Available again
+    const providerTypeAccept = (currentBooking as { providerType?: 'therapist' | 'place' })?.providerType ?? (chatState.therapist as { providerType?: 'therapist' | 'place' })?.providerType ?? 'therapist';
+    const therapistIdAccept = currentBooking?.therapistId || chatState.therapist?.appwriteId || (chatState.therapist as any)?.$id;
+    if (providerTypeAccept === 'therapist' && therapistIdAccept) {
+      setTherapistAvailableAfterBooking(therapistIdAccept);
     }
     
     // SINGLE state update (no status field - lifecycle only)
@@ -1723,30 +1940,41 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       logger.debug('🔄 [LIFECYCLE] Booking state ref updated: PENDING → ACCEPTED');
     }
     
-    // Notify user
-    addSystemNotification(`✅ Therapist ${therapistName} accepted your booking. You have 1 minute to confirm or the booking is canceled.`);
+    // Notify user (enhanced message per booking chat flow spec)
+    const massageTypes = (currentBooking as any).massageFor || currentBooking?.serviceType || 'Massage';
+    const locationArea = currentBooking?.locationZone || 'Your location';
+    if (isScheduledBooking) {
+      addSystemNotification(`✅ Your booking has been accepted by ${therapistName}.\nArea of massage: ${massageTypes}\nLocation: ${locationArea}\n\nTo secure your booking, transfer 30% deposit within 30 minutes and upload proof of payment in this chat.`);
+      addSystemNotification('⚠️ The deposit is non-refundable. You cannot switch to another therapist or place for this booking. Refund only if: therapist no-show, place does not provide the service, or therapist/place agrees to refund.');
+    } else {
+      addSystemNotification(`✅ Your booking has been accepted by ${therapistName}.\nArea of massage: ${massageTypes}\nLocation: ${locationArea}\nYou have 1 minute to cancel the booking if needed.`);
+    }
     
-    // 🔒 AUTO-INJECT BANK CARD FOR SCHEDULED BOOKINGS
+    // 🔒 AUTO-INJECT BANK CARD FOR SCHEDULED BOOKINGS (spec 2.1: same details from dashboard, in chat)
     if (isScheduledBooking && therapist?.bankCardDetails) {
       const bankCard = secureBankCardService.parseBankCardString(therapist.bankCardDetails);
       const bookingAmount = currentBooking?.totalPrice;
       const bankCardMessage = secureBankCardService.formatSystemMessage(bankCard, bookingAmount);
-      
-      // Inject bank card details as system message
       setTimeout(() => {
         addSystemNotification(bankCardMessage);
+        addSystemNotification('⏱️ You have 30 minutes to transfer 30% deposit and upload proof in this chat to secure your booking.');
         logger.debug('💳 [SecureBankCard] Auto-injected bank details for scheduled booking');
-      }, 500); // Small delay for better UX
+      }, 500);
+    } else if (isScheduledBooking) {
+      setTimeout(() => {
+        addSystemNotification('Bank details will be shared by the therapist/place in chat. ⏱️ You have 30 minutes to transfer 30% deposit and upload proof in this chat to secure your booking.');
+      }, 500);
     }
+    // Spec 8.2: non-refundable already sent above for scheduled
     
-    // Start customer confirmation timer (1 minute)
-    if (currentBooking?.bookingId) {
+    // Start customer confirmation timer (1 min BOOK_NOW only; scheduled uses 30 min deposit countdown in chat)
+    if (currentBooking?.bookingId && !isScheduledBooking) {
       startTimer('CUSTOMER_CONFIRMATION', currentBooking.bookingId);
       logger.debug('⏱️ [TIMER] Started CUSTOMER_CONFIRMATION timer (60s)');
     }
   }, [chatState.therapist, chatState.currentBooking, startTimer, addSystemNotification, setChatState, updateBookingStateRef]);
 
-  // Therapist rejects booking (PENDING/ACCEPTED → DECLINED)
+  // Therapist rejects booking (PENDING/ACCEPTED → DECLINED). Spec 1.2: permanent block + message.
   const rejectBooking = useCallback(async () => {
     const currentBooking = chatState.currentBooking;
     
@@ -1759,28 +1987,50 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
-    // Update state (lifecycle only - no status field)
+    // Permanent block: user cannot book this therapist/place again (spec 1.2)
+    const providerId = currentBooking?.therapistId || chatState.therapist?.appwriteId || (chatState.therapist as any)?.$id;
+    const providerType = (currentBooking?.providerType === 'place' ? 'place' : 'therapist') as 'therapist' | 'place';
+    if (providerType === 'therapist' && providerId) {
+      setTherapistAvailableAfterBooking(providerId);
+    }
+    if (providerId) {
+      addBookingBlock(currentUserId || 'guest', providerId, providerType);
+    }
+    
+    // Spec 1.2 messages: therapist vs place
+    const rejectMessage = providerType === 'place'
+      ? 'This date and time has been filled.'
+      : 'Therapist is not available on the date.';
+    addSystemNotification(`❌ ${rejectMessage} You can view and book other available therapists or open places below.`);
+    
+    const wasScheduled = (currentBooking as any)?.bookingType === 'SCHEDULED';
+    const serviceType = currentBooking?.serviceType || chatState.selectedService?.serviceName;
+    const isSample = isSampleMenuServiceName(serviceType);
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
-        lifecycleStatus: BookingLifecycleStatus.DECLINED
+        lifecycleStatus: BookingLifecycleStatus.DECLINED,
+        ...(isSample && { serviceType: SAMPLE_BOOKING_DISPLAY_NAME }),
       } : null,
+      selectedService: prev.selectedService && isSample
+        ? { ...prev.selectedService, serviceName: SAMPLE_BOOKING_DISPLAY_NAME }
+        : prev.selectedService,
+      ...(wasScheduled ? { activeScheduledBookingId: null } : {}),
     }));
-    
-    // Update booking state ref IMMEDIATELY (timer needs DECLINED status)
+    if (wasScheduled) {
+      try { localStorage.removeItem(`active_scheduled_booking_${currentUserId || 'guest'}`); } catch (_) { /* ignore */ }
+    }
     if (currentBooking) {
       updateBookingStateRef({
         bookingId: currentBooking.bookingId,
         documentId: currentBooking.documentId || null,
         lifecycleStatus: BookingLifecycleStatus.DECLINED,
-        isActive: false // DECLINED is inactive - timer will stop
+        isActive: false
       });
       logger.debug('🔄 [LIFECYCLE] Booking state ref updated: → DECLINED');
     }
-    
-    addSystemNotification('❌ Booking rejected. Your request is being sent to other available therapists.');
-  }, [addSystemNotification, chatState.currentBooking, setChatState, updateBookingStateRef]);
+  }, [addSystemNotification, chatState.currentBooking, chatState.therapist, currentUserId, setChatState, updateBookingStateRef]);
 
   // User confirms booking after therapist accepted (ACCEPTED → CONFIRMED)
   const confirmBooking = useCallback(async () => {
@@ -1795,7 +2045,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
-    // Update state (lifecycle only - no status field)
+    const wasScheduled = (currentBooking as any)?.bookingType === 'SCHEDULED';
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
@@ -1803,22 +2053,127 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
         lifecycleStatus: BookingLifecycleStatus.CONFIRMED,
         confirmedAt: new Date().toISOString(),
       } : null,
+      ...(wasScheduled ? { activeScheduledBookingId: null } : {}),
     }));
-    
-    // Update booking state ref IMMEDIATELY (timer needs CONFIRMED status)
+    if (wasScheduled) {
+      try { localStorage.removeItem(`active_scheduled_booking_${currentUserId || 'guest'}`); } catch (_) { /* ignore */ }
+    }
     if (currentBooking) {
       updateBookingStateRef({
         bookingId: currentBooking.bookingId,
         documentId: currentBooking.documentId || null,
         lifecycleStatus: BookingLifecycleStatus.CONFIRMED,
-        isActive: false // CONFIRMED is inactive - timer stops
+        isActive: false
       });
       logger.debug('🔄 [LIFECYCLE] Booking state ref updated: ACCEPTED → CONFIRMED');
     }
-    
     const therapistName = chatState.therapist?.name || 'Therapist';
     addSystemNotification(`🎉 Booking confirmed! ${therapistName} will notify you when they are on the way.`);
-  }, [chatState.therapist, chatState.currentBooking, addSystemNotification, setChatState, updateBookingStateRef]);
+  }, [chatState.therapist, chatState.currentBooking, currentUserId, addSystemNotification, setChatState, updateBookingStateRef]);
+
+  // Spec 4.1: Therapist confirms payment received → booking CONFIRMED, calendar updated (slot red)
+  const confirmPaymentReceived = useCallback(async () => {
+    const currentBooking = chatState.currentBooking;
+    if (!currentBooking?.documentId) return;
+    try {
+      await bookingLifecycleService.confirmBooking(currentBooking.documentId);
+    } catch (error) {
+      logger.error('❌ [BookingLifecycle] Failed to confirm payment (confirmBooking):', error);
+      return;
+    }
+    const wasScheduled = (currentBooking as any)?.bookingType === 'SCHEDULED';
+    setChatState(prev => ({
+      ...prev,
+      currentBooking: prev.currentBooking ? {
+        ...prev.currentBooking,
+        lifecycleStatus: BookingLifecycleStatus.CONFIRMED,
+        confirmedAt: new Date().toISOString(),
+      } : null,
+      ...(wasScheduled ? { activeScheduledBookingId: null } : {}),
+    }));
+    if (wasScheduled) {
+      try { localStorage.removeItem(`active_scheduled_booking_${currentUserId || 'guest'}`); } catch (_) { /* ignore */ }
+    }
+    if (currentBooking) {
+      updateBookingStateRef({
+        bookingId: currentBooking.bookingId,
+        documentId: currentBooking.documentId || null,
+        lifecycleStatus: BookingLifecycleStatus.CONFIRMED,
+        isActive: false,
+      });
+    }
+    addSystemNotification('✅ Payment confirmed. Booking is now active and the slot is reserved.');
+  }, [chatState.currentBooking, currentUserId, setChatState, updateBookingStateRef, addSystemNotification]);
+
+  // Spec 4.2: Therapist rejects proof → user's 30 min deposit timer resets
+  const rejectPaymentProof = useCallback(async () => {
+    const currentBooking = chatState.currentBooking;
+    if (!currentBooking?.documentId) return;
+    const now = new Date().toISOString();
+    try {
+      await databases.updateDocument(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.bookings || 'bookings',
+        currentBooking.documentId,
+        { depositDeadlineExtendedAt: now }
+      );
+    } catch (error) {
+      logger.error('❌ Failed to extend deposit deadline on reject proof:', error);
+    }
+    addSystemNotification('Proof rejected. Please upload a clear screenshot within 30 minutes.');
+    setChatState(prev => ({
+      ...prev,
+      currentBooking: prev.currentBooking ? {
+        ...prev.currentBooking,
+        depositDeadlineExtendedAt: now,
+      } : null,
+    }));
+  }, [chatState.currentBooking, setChatState, addSystemNotification]);
+
+  // Spec 3.3: Link payment proof to booking document (paymentProofUrl, paymentProofSubmittedAt)
+  const updateBookingPaymentProof = useCallback(async (documentId: string, paymentProofUrl: string) => {
+    const now = new Date().toISOString();
+    try {
+      await databases.updateDocument(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.bookings || 'bookings',
+        documentId,
+        { paymentProofUrl, paymentProofSubmittedAt: now }
+      );
+    } catch (error) {
+      logger.error('❌ Failed to link payment proof to booking', error);
+    }
+  }, []);
+
+  // Spec 8.2: Therapist/place agrees to refund deposit → booking cancelled, user notified
+  const refundDeposit = useCallback(async () => {
+    const currentBooking = chatState.currentBooking;
+    if (!currentBooking?.documentId) return;
+    try {
+      await bookingLifecycleService.declineBooking(currentBooking.documentId, 'Refund agreed by provider');
+    } catch (error) {
+      logger.error('❌ [BookingLifecycle] Failed to refund (decline):', error);
+      return;
+    }
+    const wasScheduled = (currentBooking as any)?.bookingType === 'SCHEDULED';
+    addSystemNotification('Therapist/place has agreed to refund your deposit. Booking cancelled.');
+    setChatState(prev => ({
+      ...prev,
+      currentBooking: prev.currentBooking ? { ...prev.currentBooking, lifecycleStatus: BookingLifecycleStatus.DECLINED } : null,
+      ...(wasScheduled ? { activeScheduledBookingId: null } : {}),
+    }));
+    if (wasScheduled) {
+      try { localStorage.removeItem(`active_scheduled_booking_${currentUserId || 'guest'}`); } catch (_) { /* ignore */ }
+    }
+    if (currentBooking) {
+      updateBookingStateRef({
+        bookingId: currentBooking.bookingId,
+        documentId: currentBooking.documentId || null,
+        lifecycleStatus: BookingLifecycleStatus.DECLINED,
+        isActive: false,
+      });
+    }
+  }, [chatState.currentBooking, currentUserId, addSystemNotification, setChatState, updateBookingStateRef]);
 
   // Enhanced cancel booking with directory redirection
   const cancelBooking = useCallback(async () => {
@@ -1833,27 +2188,29 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     }
     
-    // Update state (lifecycle only - no status field)
-    addSystemNotification('❌ Booking canceled. Please select a new therapist from the homepage.');
+    const wasScheduled = (currentBooking as any)?.bookingType === 'SCHEDULED';
+    addSystemNotification('Your booking has been cancelled. We will look for another therapist.');
     setChatState(prev => ({
       ...prev,
-      currentBooking: prev.currentBooking ? { 
-        ...prev.currentBooking, 
-        lifecycleStatus: BookingLifecycleStatus.DECLINED 
+      currentBooking: prev.currentBooking ? {
+        ...prev.currentBooking,
+        lifecycleStatus: BookingLifecycleStatus.DECLINED
       } : null,
+      ...(wasScheduled ? { activeScheduledBookingId: null } : {}),
     }));
-    
-    // Update booking state ref IMMEDIATELY (timer needs DECLINED status)
+    if (wasScheduled) {
+      try { localStorage.removeItem(`active_scheduled_booking_${currentUserId || 'guest'}`); } catch (_) { /* ignore */ }
+    }
     if (currentBooking) {
       updateBookingStateRef({
         bookingId: currentBooking.bookingId,
         documentId: currentBooking.documentId || null,
         lifecycleStatus: BookingLifecycleStatus.DECLINED,
-        isActive: false // DECLINED is inactive - timer will stop
+        isActive: false
       });
       logger.debug('🔄 [LIFECYCLE] Booking state ref updated: → CANCELLED/DECLINED');
     }
-  }, [chatState.currentBooking, addSystemNotification, setChatState, updateBookingStateRef]);
+  }, [chatState.currentBooking, currentUserId, addSystemNotification, setChatState, updateBookingStateRef]);
 
   // Therapist is on the way (remains CONFIRMED, just adds timestamp)
   const setOnTheWay = useCallback(async () => {
@@ -1875,7 +2232,7 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     // No ref update needed - lifecycle status unchanged (still CONFIRMED)
     logger.debug('🚗 [OPERATIONAL] Therapist on the way (lifecycle: CONFIRMED)');
     
-    addSystemNotification(`🚗 ${therapistName} is on the way!`);
+    addSystemNotification(`🚗 Your therapist is on the way!`);
   }, [chatState.therapist, chatState.currentBooking, addSystemNotification, setChatState]);
 
   // Complete booking (CONFIRMED → COMPLETED) - This is the only state that generates commission
@@ -2015,14 +2372,20 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     acceptBooking,
     rejectBooking,
     confirmBooking,
+    confirmPaymentReceived,
+    rejectPaymentProof,
+    updateBookingPaymentProof,
+    refundDeposit,
     cancelBooking,
     setOnTheWay,
     completeBooking,
     shareBankCard,
     confirmPayment,
     addSystemNotification,
+    recordDepositTimeout,
     timerState,
     resumeTimerIfNeeded,
+    hasActiveScheduledBooking: !!(chatState.activeScheduledBookingId ?? null),
   }), [
     chatState,
     isLocked,
@@ -2049,12 +2412,17 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     acceptBooking,
     rejectBooking,
     confirmBooking,
+    confirmPaymentReceived,
+    rejectPaymentProof,
+    updateBookingPaymentProof,
+    refundDeposit,
     cancelBooking,
     setOnTheWay,
     completeBooking,
     shareBankCard,
     confirmPayment,
     addSystemNotification,
+    recordDepositTimeout,
     timerState,
     resumeTimerIfNeeded,
   ]);
