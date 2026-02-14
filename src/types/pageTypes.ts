@@ -187,6 +187,13 @@ export type Page =
     | 'real-chat-test' // 🔗 Real Chat Integration Test
     | 'therapist-login'
     | 'place-login'
+    | 'employer-login'
+    | 'service-personnel-login'
+    | 'therapist-login-for-jobs'
+    | 'place-login-for-jobs'
+    | 'therapist-signup-for-jobs'
+    | 'place-signup-for-jobs'
+    | 'therapist-listing-payment'
     | 'facial-portal'
     | 'simple-signup'
     | 'shared-therapist-profile'  // Legacy shared profile URL
@@ -212,6 +219,7 @@ export type Page =
     | 'employer-job-posting'
     | 'guest-profile'
     | 'job-posting-payment'
+    | 'apply-for-job'
     | 'browse-jobs'
     | 'massage-jobs'
     | 'therapist-job-registration'

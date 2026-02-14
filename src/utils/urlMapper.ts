@@ -29,6 +29,7 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'therapistLogin': '/therapist-login',
     'place-login': '/place-login',
     'massagePlaceLogin': '/place-login',
+    'employer-login': '/employer-login',
     'facial-portal': '/facial-portal',
     'simple-signup': '/signup',
     'simpleSignup': '/signup',
@@ -115,6 +116,7 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     // Specialized pages
     'confirm-therapists': '/confirm-therapists',
     'employer-job-posting': '/employer-job-posting',
+    'therapist-listing-payment': '/therapist-listing-payment',
     'indastreet-partners': '/indastreet-partners',
     'website-management': '/website-management',
     'guest-profile': '/guest-profile',

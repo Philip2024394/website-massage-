@@ -181,7 +181,7 @@ export const membershipTranslations = {
       joinFree: 'Join Free',
       browseJobs: 'Browse Jobs',
       postJob: 'Post a Job',
-      massageJobs: 'Massage Jobs',
+      massageJobs: 'Job Positions',
       therapistJobs: 'Therapist Jobs',
       aboutUs: 'About Us',
       contactUs: 'Contact Us',

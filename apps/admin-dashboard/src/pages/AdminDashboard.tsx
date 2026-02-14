@@ -48,6 +48,7 @@ const TrendingUp = ({ className }: { className?: string }) => <IconWrapper emoji
 const Clock = ({ className }: { className?: string }) => <IconWrapper emoji="🕐" className={className} />;
 const Share2 = ({ className }: { className?: string }) => <IconWrapper emoji="🔗" className={className} />;
 const Trash2 = ({ className }: { className?: string }) => <IconWrapper emoji="🗑️" className={className} />;
+const Briefcase = ({ className }: { className?: string }) => <IconWrapper emoji="💼" className={className} />;
 
 // Additional services (analytics, etc.)
 const analyticsService = {
@@ -74,6 +75,7 @@ import AdminChatCenter from './AdminChatCenter';
 import AdminChatMonitor from './AdminChatMonitor';
 import ShareAnalytics from '../components/ShareAnalytics';
 import AdminAchievementManager from '../components/AdminAchievementManager';
+import AdminJobListings from './AdminJobListings';
 
 // Simple component fallbacks
 const PageNumberBadge = ({ pageNumber }: any) => <span>Page {pageNumber}</span>;
@@ -183,7 +185,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'chat-monitor' | 'analytics' | 'email' | 'payments' | 'commission-deposits' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics' | 'revenue' | 'achievements'>('dashboard');
+    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'chat-monitor' | 'analytics' | 'email' | 'payments' | 'commission-deposits' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics' | 'revenue' | 'achievements' | 'job-listings'>('dashboard');
     
     // Card editing states
     const [therapists, setTherapists] = useState<CardData[]>([]);
@@ -1114,6 +1116,12 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
         );
     }
 
+    if (activeView === 'job-listings') {
+        return (
+            <AdminJobListings onBack={() => setActiveView('dashboard')} />
+        );
+    }
+
     if (activeView === 'therapists' || activeView === 'places' || activeView === 'facials') {
         let cards, title;
         if (activeView === 'therapists') {
@@ -1773,6 +1781,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             >
                                 <Calendar className="w-4 h-4" />
                                 <span>Bookings</span>
+                            </button>
+
+                            {/* Job Listings (Work Marketplace) button */}
+                            <button
+                                onClick={() => setActiveView('job-listings')}
+                                className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+                            >
+                                <Briefcase className="w-4 h-4" />
+                                <span>Job Listings</span>
                             </button>
 
                             {/* Reviews Management button */}

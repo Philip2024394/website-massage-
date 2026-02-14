@@ -28,6 +28,8 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'balinese-massage': '/balinese-massage',
         'deep-tissue-massage': '/deep-tissue-massage',
         'massage-jobs': '/massage-jobs',
+        'employer-job-posting': '/employer-job-posting',
+        'therapist-job-registration': '/therapist-job-registration',
         'verified-pro-badge': '/verified-badge',
         'admin': '/admin',
         'admin-dashboard': '/admin',
@@ -76,6 +78,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'customers': '/dashboard/therapist/customers',
         
         'massagePlaceLogin': '/place-login',
+        'employer-login': '/employer-login',
         'placeDashboard': '/dashboard/massage-place',
         'massagePlacePortal': '/dashboard/massage-place',
         'massagePlaceProfile': '/dashboard/massage-place/profile',
@@ -148,14 +151,17 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
     // Update URL when page changes
     useEffect(() => {
         // Don't modify URL for shared therapist profiles - preserve the full path with ID and slug
+        // Job Positions: preserve so List Availability / Post a Job don't redirect to landing
         if (page === 'shared-therapist-profile' || 
             page === 'therapist-profile' || // CRITICAL: Preserve customer-facing profile URLs
             page === 'share-therapist' || 
-            page === 'share-place' || 
+            page === 'share-place' ||
             page === 'share-facial' ||
             page === 'massage-place-profile' ||
             page === 'facial-place-profile' ||
-            page === 'mobile-terms-and-conditions') {
+            page === 'mobile-terms-and-conditions' ||
+            page === 'employer-job-posting' ||
+            page === 'therapist-job-registration') {
             console.log('🔒 URL Routing: Preserving URL for:', page, '| Current:', window.location.pathname);
             return;
         }
@@ -387,18 +393,48 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         console.log('   📍 window.location.href:', window.location.href);
         console.log('   📍 window.location.search:', window.location.search);
         
-        // PRIORITY: Handle hash routing first (for therapist dashboard)
+        // PRIORITY: Handle hash routing first (for therapist dashboard + Job Positions)
         if (initialHash) {
-            const hashPath = initialHash.substring(1); // Remove the '#'
-            console.log('🔗 Hash detected:', hashPath);
+            const hashPath = initialHash.substring(1).replace(/^\/+/, ''); // Remove '#' and leading slashes
+            const hashPathWithSlash = initialHash.substring(1); // Keep for path-style matches
+            console.log('🔗 Hash detected:', hashPath, 'raw:', initialHash);
             
-            // Map hash routes to pages
-            if (hashPath === '/therapist-status' || hashPath === '/status') {
+            // Job Positions – List Availability / Post a Job (fixes redirect to landing)
+            if (hashPath === 'employer-job-posting') {
+                console.log('✅ Hash route matched: employer-job-posting');
+                setPage('employer-job-posting');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            if (hashPath === 'therapist-job-registration') {
+                console.log('✅ Hash route matched: therapist-job-registration');
+                setPage('therapist-job-registration');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            if (hashPath === 'massage-jobs') {
+                console.log('✅ Hash route matched: massage-jobs');
+                setPage('massage-jobs');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            
+            // View Profile from Job Listings – #/therapist-profile/:id must not fall through to root → landing
+            if (hashPathWithSlash.startsWith('/therapist-profile/') || hashPath.startsWith('therapist-profile/')) {
+                console.log('✅ Hash route matched: shared-therapist-profile (View Profile)');
+                setPage('shared-therapist-profile');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            if (hashPathWithSlash.startsWith('/share/therapist/') || hashPath.startsWith('share/therapist/')) {
+                console.log('✅ Hash route matched: shared-therapist-profile (share therapist)');
+                setPage('shared-therapist-profile');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            
+            // Map hash routes to pages (path-style with leading slash)
+            if (hashPathWithSlash === '/therapist-status' || hashPathWithSlash === '/status') {
                 console.log('✅ Hash route matched: therapist-status');
                 setPage('therapist-status');
                 return () => window.removeEventListener('popstate', handlePopState);
             }
-            if (hashPath === '/therapist' || hashPath === '/therapist-dashboard') {
+            if (hashPathWithSlash === '/therapist' || hashPathWithSlash === '/therapist-dashboard') {
                 console.log('✅ Hash route matched: therapist-dashboard');
                 setPage('therapist-dashboard');
                 return () => window.removeEventListener('popstate', handlePopState);
@@ -497,9 +533,14 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 setPage(targetPage);
             }
         } else {
-            // CRITICAL FIX: Explicitly handle root path to ensure landing page loads
-            // Only set if current page is not already landing or home
-            if (page !== 'landing' && page !== 'home') {
+            // Root path (pathname === '/') – only treat as landing if hash is empty or landing/home
+            // Do NOT force landing when hash is #/therapist-profile/... (View Profile from job listings)
+            const hashForRoot = (window.location.hash || '').replace('#', '');
+            const isProfileOrShareHash = hashForRoot.startsWith('/therapist-profile/') || hashForRoot.startsWith('/share/therapist/') || hashForRoot.startsWith('therapist-profile/');
+            if (isProfileOrShareHash) {
+                console.log('🔗 Root path but hash is therapist profile – keeping shared-therapist-profile');
+                setPage('shared-therapist-profile');
+            } else if (page !== 'landing' && page !== 'home') {
                 console.log(`🎯 Root URL detected → landing (current page: ${page})`);
                 setPage('landing');
             }

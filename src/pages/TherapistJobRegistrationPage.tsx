@@ -10,6 +10,7 @@ interface TherapistJobRegistrationPageProps {
     jobId?: string;
     onBack: () => void;
     onSuccess?: () => void;
+    onNavigateToPayment?: (listingId: string) => void;
     onNavigate?: (page: any) => void;
     t?: any;
 }
@@ -42,7 +43,7 @@ const massageTypes = [
     'Head Massage'
 ];
 
-const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> = ({ onBack, onSuccess }) => {
+const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> = ({ onBack, onSuccess, onNavigateToPayment }) => {
     const [formData, setFormData] = useState({
         therapistName: '',
         gender: '' as 'Male' | 'Female' | '',
@@ -101,11 +102,12 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                 throw new Error('Profile Image Required!\n\nYou must provide a profile image URL before submitting your registration.\n\nPlease add:\n• A clear front or side view of your face\n• Well-lit, professional appearance\n• Recent photo (within 6 months)\n\nThis helps employers identify you and builds trust.');
             }
 
-            // Create job listing
+            // Create job listing (pending payment - isActive: false until payment verified)
+            const docId = ID.unique();
             await databases.createDocument(
                 DATABASE_ID,
                 COLLECTIONS.therapistJobListings,
-                ID.unique(),
+                docId,
                 {
                     // Required fields
                     therapistId: ID.unique(), // In a real app, this would be the logged-in user ID
@@ -120,7 +122,7 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                     willingToRelocateInternational: formData.willingToRelocateInternational,
                     accommodation: formData.accommodation,
                     preferredLocations: formData.preferredLocations.join(', '), // Convert array to string
-                    isActive: true,
+                    isActive: false, // Pending payment - admin activates after payment verified
                     listingDate: new Date().toISOString(),
                     expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days from now
                     
@@ -138,7 +140,11 @@ const TherapistJobRegistrationPage: React.FC<TherapistJobRegistrationPageProps> 
                 }
             );
 
-            onSuccess?.();
+            if (onNavigateToPayment) {
+                onNavigateToPayment(docId);
+            } else {
+                onSuccess?.();
+            }
         } catch (err: any) {
             console.error('Error creating therapist listing:', err);
             setError(err.message || 'Failed to create listing. Please try again.');

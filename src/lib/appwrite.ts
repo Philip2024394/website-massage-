@@ -33,7 +33,8 @@ export const COLLECTIONS = {
     LOGIN_BACKGROUNDS: '', // ⚠️ DISABLED - Collection doesn't exist
     TRANSLATIONS: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
     COMMISSION_RECORDS: '', // ⚠️ DISABLED - Collection doesn't exist
-    ATTRIBUTES: '' // ⚠️ DISABLED - Collection doesn't exist
+    ATTRIBUTES: '', // ⚠️ DISABLED - Collection doesn't exist
+    EMPLOYER_PROFILES: 'employer_profiles' // ✅ Job posting employers
 };
 
 // Initialize client (safe for client-side only apps)

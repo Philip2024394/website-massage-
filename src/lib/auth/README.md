@@ -73,3 +73,15 @@ When adding new auth types:
 - Place Auth: ✅  
 - Hotel Auth: ✅
 - Customer Auth: ✅
+- Employer Auth: ✅ (Job posting employers - requires `employer_profiles` collection)
+
+### employer_profiles Collection (Appwrite Console)
+
+Create collection `employer_profiles` with attributes:
+- `id` (string)
+- `employerId` (string)
+- `email` (string)
+- `userId` (string) - Appwrite user ID
+- `name` (string)
+- `businessName` (string, optional)
+- `createdAt` (datetime)

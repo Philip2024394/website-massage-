@@ -97,12 +97,14 @@ const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage')
 const LeadAcceptPage = React.lazy(() => import('./pages/LeadAcceptPage'));
 const LeadDeclinePage = React.lazy(() => import('./pages/LeadDeclinePage'));
 const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
+const ApplyForJobPage = React.lazy(() => import('./pages/ApplyForJobPage'));
 const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
 const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
 const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipApplicationPage'));
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
+const TherapistListingPaymentPage = React.lazy(() => import('./pages/TherapistListingPaymentPage'));
 const AppwriteDiagnostic = React.lazy(() => import('./pages/AppwriteDiagnostic').then(m => ({ default: m.AppwriteDiagnostic })));
 const DiagnosticPage = React.lazy(() => import('./pages/DiagnosticPage').then(m => ({ default: m.DiagnosticPage })));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
@@ -872,11 +874,63 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(authRoutes.therapistLogin.component, {
                 language: props.language || 'id'
             });
+
+        case 'therapist-login-for-jobs':
+            return renderRoute(authRoutes.therapistLogin.component, {
+                language: props.language || 'id',
+                restoreUserSession: props.restoreUserSession,
+                onNavigate: (p: string) => props.onNavigate?.(p === 'therapist' ? 'therapist-job-registration' : p),
+                onSuccess: () => props.onNavigate?.('therapist-job-registration'),
+            });
+
+        case 'place-login-for-jobs':
+            return renderRoute(authRoutes.placeLogin.component, {
+                language: props.language || 'id',
+                onSuccess: async (_placeId: string) => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate?.('therapist-job-registration');
+                },
+                onBack: () => props.onNavigate?.('massage-jobs'),
+            });
+
+        case 'therapist-signup-for-jobs':
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'therapist',
+                onAuthSuccess: async () => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate?.('therapist-job-registration');
+                },
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                language: props.language || 'id',
+            });
+
+        case 'place-signup-for-jobs':
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'massage-place',
+                onAuthSuccess: async () => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate?.('therapist-job-registration');
+                },
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                language: props.language || 'id',
+            });
         
         case 'place-login':
         case 'massagePlaceLogin':
             return renderRoute(authRoutes.placeLogin.component, {
                 language: props.language || 'id'
+            });
+
+        case 'employer-login':
+            return renderRoute(authRoutes.employerLogin.component, {
+                onSuccess: async (employerId: string) => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate?.('employer-job-posting');
+                },
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                returnTo: 'employer-job-posting',
             });
         
         case 'facial-portal':
@@ -1334,8 +1388,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'confirm-therapists':
             return renderRoute(ConfirmTherapistsPage);
         
-        case 'employer-job-posting':
-            return renderRoute(EmployerJobPostingPage);
+        case 'employer-job-posting': {
+            const isEmployer = props.user && (props.user as any).type === 'employer';
+            if (!isEmployer) {
+                return renderRoute(authRoutes.employerLogin.component, {
+                    onSuccess: async (employerId: string) => {
+                        if (props.restoreUserSession) await props.restoreUserSession();
+                        props.onNavigate?.('employer-job-posting');
+                    },
+                    onBack: () => props.onNavigate?.('massage-jobs'),
+                    returnTo: 'employer-job-posting',
+                });
+            }
+            return renderRoute(EmployerJobPostingPage, {
+                onNavigateToPayment: (jobId: string) => {
+                    props.setSelectedJobId?.(jobId);
+                    props.onNavigate?.('job-posting-payment');
+                },
+                onNavigate: props.onNavigate,
+                onMassageJobsClick: () => props.onNavigate?.('massage-jobs'),
+            });
+        }
         
         case 'indastreet-partners':
             return renderRoute(IndastreetPartnersPage);
@@ -1389,7 +1462,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(LeadDeclinePage);
         
         case 'job-posting-payment':
-            return renderRoute(JobPostingPaymentPage);
+            return renderRoute(JobPostingPaymentPage, {
+                jobId: props.selectedJobId || '',
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                onNavigate: props.onNavigate,
+            });
+        
+        case 'apply-for-job':
+            return renderRoute(ApplyForJobPage, {
+                jobId: props.selectedJobId || '',
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                onNavigate: props.onNavigate,
+            });
         
         case 'browse-jobs':
         case 'browseJobs':
@@ -1397,13 +1481,54 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'massage-jobs':
         case 'massageJobs':
-            return renderRoute(MassageJobsPage);
+            return renderRoute(MassageJobsPage, {
+                onBack: () => props.setPage('home'),
+                onPostJob: () => props.onNavigate?.('employer-job-posting'),
+                onNavigateToPayment: (jobId?: string) => {
+                    if (jobId) {
+                        (props as any).setSelectedJobId?.(jobId);
+                        props.onNavigate?.('job-posting-payment');
+                    } else {
+                        props.onNavigate?.('job-unlock-payment');
+                    }
+                },
+                onApplyForJob: (jobId: string) => {
+                    (props as any).setSelectedJobId?.(jobId);
+                    props.onNavigate?.('apply-for-job');
+                },
+                onCreateTherapistProfile: () => props.onNavigate?.('therapist-job-registration'),
+                onNavigate: props.onNavigate,
+            });
         
         case 'partnership-application':
             return renderRoute(PartnershipApplicationPage);
         
-        case 'therapist-job-registration':
-            return renderRoute(TherapistJobRegistrationPage);
+        case 'therapist-job-registration': {
+            const isServicePersonnel = props.user && (
+                (props.user as any).type === 'therapist' ||
+                (props.user as any).type === 'place' ||
+                (props.loggedInProvider as any)?.type === 'therapist' ||
+                (props.loggedInProvider as any)?.type === 'place'
+            );
+            if (!isServicePersonnel) {
+                return renderRoute(authRoutes.servicePersonnelLogin.component, {
+                    onTherapistLogin: () => props.onNavigate?.('therapist-login-for-jobs'),
+                    onPlaceLogin: () => props.onNavigate?.('place-login-for-jobs'),
+                    onTherapistSignup: () => props.onNavigate?.('therapist-signup-for-jobs'),
+                    onPlaceSignup: () => props.onNavigate?.('place-signup-for-jobs'),
+                    onBack: () => props.onNavigate?.('massage-jobs'),
+                });
+            }
+            return renderRoute(TherapistJobRegistrationPage, {
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                onSuccess: () => props.onNavigate?.('massage-jobs'),
+                onNavigateToPayment: (listingId: string) => {
+                    (props as any).setSelectedJobId?.(listingId);
+                    props.onNavigate?.('therapist-listing-payment');
+                },
+                onNavigate: props.onNavigate,
+            });
+        }
         
         case 'reviews':
             return renderRoute(ReviewsPage, {
@@ -1412,6 +1537,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'job-unlock-payment':
             return renderRoute(JobUnlockPaymentPage);
+
+        case 'therapist-listing-payment':
+            return renderRoute(TherapistListingPaymentPage, {
+                listingId: props.selectedJobId || '',
+                onBack: () => props.onNavigate?.('massage-jobs'),
+                onNavigate: props.onNavigate,
+            });
         
         case 'customer-reviews':
             return renderRoute(CustomerReviewsPage, {

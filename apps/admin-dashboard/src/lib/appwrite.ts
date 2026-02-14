@@ -28,7 +28,9 @@ export const COLLECTIONS = {
     achievements: 'achievements_collection_id',
     therapistAchievements: 'therapist_achievements_collection_id',
     chatRooms: 'chat_rooms',
-    messages: 'messages'
+    messages: 'messages',
+    employerJobPostings: 'employer_job_postings',
+    therapistJobListings: 'therapist_job_listings'
 };
 
 // Legacy APPWRITE_CONFIG for backward compatibility

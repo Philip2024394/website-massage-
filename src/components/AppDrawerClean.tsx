@@ -67,7 +67,7 @@ const drawerTranslations = {
   en: {
     partners: 'Partners',
     joinIndaStreet: 'Join Indastreet Today',
-    massageJobs: 'Massage Jobs',
+    massageJobs: 'Job Positions',
     howItWorks: 'How It Works',
     aboutUs: 'About Us',
     companyProfile: 'Company Profile',
@@ -91,7 +91,7 @@ const drawerTranslations = {
   id: {
     partners: 'Mitra',
     joinIndaStreet: 'Gabung Indastreet Hari Ini',
-    massageJobs: 'Lowongan Pijat',
+    massageJobs: 'Lowongan Kerja',
     howItWorks: 'Cara Kerja',
     aboutUs: 'Tentang Kami',
     companyProfile: 'Profil Perusahaan',
@@ -277,7 +277,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button 
                     onClick={() => handleItemClick(undefined, 'createAccount')} 
                     className="
-                      flex items-center justify-center gap-3 w-full rounded-xl 
+                      flex items-center gap-3 w-full rounded-xl text-left
                       bg-gradient-to-r from-orange-500 to-orange-600 
                       hover:from-orange-600 hover:to-orange-700 
                       shadow-lg hover:shadow-xl transform hover:scale-105 
@@ -294,7 +294,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     aria-label="Create new account"
                     style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
-                    <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
+                    <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                      <UserPlus className="w-5 h-5 text-white" />
+                    </span>
                     <span className="text-sm text-white font-bold">Create Account</span>
                   </button>
                   
@@ -302,7 +304,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button 
                     onClick={() => handleItemClick(onLoginClick, 'login')} 
                     className="
-                      flex items-center justify-center gap-3 w-full rounded-xl 
+                      flex items-center gap-3 w-full rounded-xl text-left
                       border-2 border-orange-500 bg-white hover:bg-orange-50 
                       shadow-md hover:shadow-lg transform hover:scale-105 
                       transition-all duration-200 touch-manipulation
@@ -318,7 +320,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     aria-label="Sign in to your account"
                     style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
-                    <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                    <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                      <Users className="w-5 h-5 text-orange-500" />
+                    </span>
                     <span className="text-sm text-orange-500 font-bold">Sign In</span>
                   </button>
                 </div>
@@ -331,7 +335,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   className="
                     flex items-center gap-3 w-full rounded-lg bg-teal-50 
                     hover:bg-teal-100 transition-colors border-2 border-teal-200
-                    touch-manipulation
+                    touch-manipulation text-left
                     /* Mobile: 56px minimum height */
                     py-3 px-3 min-h-[56px]
                     /* Tablet: 48px minimum height */
@@ -344,8 +348,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   aria-label={`Current city: ${city}. Click to change city`}
                   style={{ touchAction: 'manipulation' } as React.CSSProperties}
                 >
-                  <MapPin className="w-5 h-5 text-teal-600 flex-shrink-0" />
-                  <div className="flex-grow text-left">
+                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                    <MapPin className="w-5 h-5 text-teal-600" />
+                  </span>
+                  <div className="flex-grow text-left min-w-0">
                     <span className="text-sm text-gray-700 font-medium block">
                       {language === 'id' ? 'Kota Saat Ini' : 'Current City'}
                     </span>
@@ -374,9 +380,11 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       <button
                         key={item.id}
                         onClick={() => handleItemClick(callback, item.id)}
-                        className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors"
+                        className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left"
                       >
-                        <IconComp className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                        <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                          <IconComp className="w-5 h-5 text-orange-500" />
+                        </span>
                         <span className="text-sm text-gray-700 font-medium">{label}</span>
                       </button>
                     );

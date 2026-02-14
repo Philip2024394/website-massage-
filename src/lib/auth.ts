@@ -692,6 +692,64 @@ export const agentAuth = {
     },
 };
 
+// Employer Authentication (job posting employers)
+export const employerAuth = {
+    async signUp(email: string, password: string, name?: string, businessName?: string): Promise<AuthResponse> {
+        try {
+            const normalizedEmail = email.toLowerCase().trim();
+            if (!checkRateLimit('employer-signup', 5, 60000)) {
+                return { success: false, error: formatRateLimitError('signup') };
+            }
+            sessionCache.clear();
+            try { await account.deleteSession('current'); } catch {}
+            const user = await createAccountRateLimited(normalizedEmail, password);
+            const employerId = ID.unique();
+            const employerCollection = APPWRITE_CONFIG.collections.employerProfiles || COLLECTIONS.EMPLOYER_PROFILES || 'employer_profiles';
+            await databases.createDocument(
+                DATABASE_ID,
+                employerCollection,
+                employerId,
+                {
+                    id: employerId,
+                    employerId,
+                    email: normalizedEmail,
+                    userId: user.$id,
+                    name: name || normalizedEmail.split('@')[0],
+                    businessName: businessName || name || '',
+                    createdAt: new Date().toISOString(),
+                }
+            );
+            try { await account.deleteSession('current'); } catch {}
+            return { success: true, userId: user.$id, documentId: employerId };
+        } catch (error: any) {
+            const errorMsg = handleAppwriteError(error, 'signup');
+            return { success: false, error: errorMsg };
+        }
+    },
+    async signIn(email: string, password: string): Promise<AuthResponse> {
+        try {
+            const normalizedEmail = email.toLowerCase().trim();
+            if (!checkRateLimit('employer-login', 10, 60000)) {
+                return { success: false, error: formatRateLimitError('login') };
+            }
+            sessionCache.clear();
+            try { await account.deleteSession('current'); } catch {}
+            await createSessionRateLimited(email, password);
+            const user = await account.get();
+            const employerCollection = APPWRITE_CONFIG.collections.employerProfiles || COLLECTIONS.EMPLOYER_PROFILES || 'employer_profiles';
+            const result = await databases.listDocuments(DATABASE_ID, employerCollection, [Query.equal('email', normalizedEmail)]);
+            const employer = result.documents.find((doc: any) => (doc.email || '').toLowerCase().trim() === normalizedEmail) || result.documents[0];
+            if (!employer) {
+                throw new Error('Employer profile not found. Please create an account first.');
+            }
+            return { success: true, userId: user.$id, documentId: employer.$id };
+        } catch (error: any) {
+            const errorMsg = handleAppwriteError(error, 'login');
+            return { success: false, error: errorMsg };
+        }
+    },
+};
+
 // Sign Out (common for all)
 export const signOut = async (): Promise<boolean> => {
     try {

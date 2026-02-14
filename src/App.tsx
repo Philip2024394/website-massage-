@@ -760,21 +760,9 @@ const App = () => {
         try {
             // � CRITICAL FIX: If user explicitly navigates to root (/), clear any stale hash FIRST
             // This prevents unexpected redirects to previously visited therapist profiles
-            const currentPath = window.location.pathname || '';
-            const currentHash = window.location.hash || '';
-            
-            if (currentPath === '/' && currentHash && !window.location.search) {
-                // Check if hash contains a profile URL (stale from previous navigation)
-                if (currentHash.includes('/profile/therapist/') || currentHash.includes('/therapist-profile/')) {
-                    logger.debug('[ROOT NAVIGATION] User navigated to root, clearing stale profile hash', { hash: currentHash });
-                    window.history.replaceState(null, '', '/');
-                    // Set to landing page (will redirect to home based on app logic)
-                    if (state.page !== 'landing' && state.page !== 'home') {
-                        state.setPage('landing');
-                    }
-                    return; // Stop processing to allow clean start
-                }
-            }
+            // Note: Do NOT clear therapist-profile hash when pathname is '/'.
+            // In hash-based SPAs, pathname is always '/' – the real route is in the hash.
+            // Clearing #/therapist-profile/xxx would break View Profile from job listings.
             
             // 🔥 CRITICAL FIX: Parse hash for hash URLs (/#/path)
             // For /#/therapist-profile/123, pathname = "/" and hash = "#/therapist-profile/123"
@@ -1379,7 +1367,7 @@ const App = () => {
                     adminMessages={state.adminMessages}
                     providerAuthInfo={state.providerAuthInfo}
 
-                    selectedJobId={null}
+                    selectedJobId={state.jobPostingId || null}
                     venueMenuId={state.venueMenuId}
                     hotelVillaLogo={null}
                     impersonatedAgent={state.impersonatedAgent}
@@ -1489,7 +1477,7 @@ const App = () => {
 
 
 
-                    setSelectedJobId={() => {}}
+                    setSelectedJobId={(id) => state.setJobPostingId?.(id || '')}
                 />
                 {/* </Suspense> */}
             </div>
