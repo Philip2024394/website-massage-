@@ -6,6 +6,7 @@
  */
 
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
+import { enterpriseWebSocketService } from '../services/enterpriseWebSocketService';
 
 export interface AuthenticationResult {
     success: boolean;
@@ -156,6 +157,13 @@ export const performSafeLogout = async (
     console.log('🚪 Performing safe logout...');
     
     try {
+        // Disconnect WebSocket/realtime before session clear (reduces "WebSocket CLOSING" heartbeat errors)
+        try {
+            enterpriseWebSocketService.disconnect();
+        } catch (e) {
+            // Ignore - service may not be initialized
+        }
+        
         // Clear all authentication states
         clearAllAuthenticationStates(stateSetters);
         

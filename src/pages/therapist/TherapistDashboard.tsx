@@ -53,9 +53,7 @@ import { locations } from '../../../locations';
 import { logger } from '../../utils/logger';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import ProPlanWarnings from '../../components/therapist/ProPlanWarnings';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
 import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
-import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock } from 'lucide-react';
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
@@ -1140,20 +1138,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
   return (
     <>
-      <TherapistLayout
-        therapist={therapist}
-        currentPage="dashboard"
-        onNavigate={handleNavigate}
-        language={language}
-        onLogout={onLogout}
-      >
-      <TherapistPageHeader
+      <TherapistSimplePageLayout
         title="Edit Profil"
         subtitle="Unggah foto, informasi pribadi, dan pengaturan profil"
-        onBackToStatus={() => handleNavigate('therapist-status')}
+        onBackToStatus={() => onNavigate?.('therapist-status')}
+        onNavigate={(page) => onNavigate?.(page)}
+        therapist={therapist}
+        currentPage="dashboard"
+        language={language}
+        onLogout={onLogout}
         icon={<User className="w-6 h-6 text-orange-600" />}
-        actions={<HelpTooltip {...profileEditHelp.overview} position="bottom" size="sm" />}
-      />
+        headerActions={<HelpTooltip {...profileEditHelp.overview} position="bottom" size="sm" />}
+      >
       <div
         className="bg-white w-full max-w-full"
         style={{ 
@@ -1928,7 +1924,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         </div>
       )}
       </div>
-      </TherapistLayout>
+      </TherapistSimplePageLayout>
     {/* Floating Chat Window */}
     <EliteTherapistDashboardWrapper 
       title="Therapist Profile Dashboard" 

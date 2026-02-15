@@ -110,14 +110,14 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
     id: 'business',
     label: 'Business',
     icon: TrendingUp,
-    color: 'text-blue-600',
+    color: 'text-orange-600',
     collapsed: false,
     items: [
       {
         id: 'dashboard',
         label: 'Profile Upload',
         icon: User,
-        color: 'text-blue-500',
+        color: 'text-orange-500',
         category: 'business',
         priority: 'high',
         description: 'Upload and edit your profile'
@@ -126,7 +126,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         id: 'analytics',
         label: 'Analytics',
         icon: BarChart,
-        color: 'text-blue-500',
+        color: 'text-orange-500',
         category: 'business',
         priority: 'medium',
         description: 'Performance metrics and insights'
@@ -135,7 +135,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         id: 'more-customers',
         label: 'More Customers',
         icon: Users,
-        color: 'text-blue-500',
+        color: 'text-orange-500',
         category: 'business',
         priority: 'medium',
         description: 'Grow your customer base'
@@ -170,7 +170,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
       },
       {
         id: 'custom-menu',
-        label: 'Service Menu',
+        label: 'Massage Menu',
         icon: Clipboard,
         color: 'text-orange-500',
         category: 'bookings',
@@ -183,14 +183,14 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
     id: 'financial',
     label: 'Financial',
     icon: DollarSign,
-    color: 'text-green-600',
+    color: 'text-orange-600',
     collapsed: false,
     items: [
       {
         id: 'earnings',
         label: 'Earnings',
         icon: DollarSign,
-        color: 'text-green-500',
+        color: 'text-orange-500',
         category: 'financial',
         priority: 'high',
         description: 'View your income'
@@ -199,7 +199,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         id: 'payment',
         label: 'Payment',
         icon: CreditCard,
-        color: 'text-green-500',
+        color: 'text-orange-500',
         category: 'financial',
         priority: 'medium',
         description: 'Submit payment proof'
@@ -208,7 +208,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         id: 'payment-status',
         label: 'Payment Status',
         icon: FileText,
-        color: 'text-green-500',
+        color: 'text-orange-500',
         category: 'financial',
         priority: 'medium',
         description: 'Track payment status'
@@ -217,7 +217,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         id: 'commission-payment',
         label: 'Commission',
         icon: Wallet,
-        color: 'text-green-500',
+        color: 'text-orange-500',
         category: 'financial',
         priority: 'medium',
         description: 'Commission payments'
@@ -228,14 +228,14 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
     id: 'tools',
     label: 'Tools & Marketing',
     icon: Gift,
-    color: 'text-purple-600',
+    color: 'text-orange-600',
     collapsed: true,
     items: [
       {
         id: 'send-discount',
         label: 'Send Discount',
         icon: Gift,
-        color: 'text-purple-500',
+        color: 'text-orange-500',
         category: 'tools',
         priority: 'low',
         description: 'Create discount campaigns'
@@ -244,7 +244,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         id: 'notifications',
         label: 'Notifications',
         icon: Bell,
-        color: 'text-purple-500',
+        color: 'text-orange-500',
         category: 'tools',
         priority: 'medium',
         badge: 3,

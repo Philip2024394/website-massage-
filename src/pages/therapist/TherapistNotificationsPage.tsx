@@ -557,7 +557,7 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 bg-orange-500 rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-orange-600" />
+                <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-gray-900">Skor Kesehatan Akun</h3>

@@ -333,24 +333,6 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
       language={language}
       onLogout={onLogout}
       icon={<CreditCard className="w-6 h-6 text-orange-600" />}
-      headerActions={
-        <div className="flex items-center gap-2">
-          <HelpTooltip
-            title={therapistDashboardHelp.paymentInfo.directPayment.title}
-            content={therapistDashboardHelp.paymentInfo.directPayment.content}
-            benefits={therapistDashboardHelp.paymentInfo.directPayment.benefits}
-            size="sm"
-            position="bottom"
-          />
-          <HelpTooltip
-            title={therapistDashboardHelp.paymentInfo.commissionSystem.title}
-            content={therapistDashboardHelp.paymentInfo.commissionSystem.content}
-            benefits={therapistDashboardHelp.paymentInfo.commissionSystem.benefits}
-            size="sm"
-            position="bottom"
-          />
-        </div>
-      }
     >
       <div className="bg-gray-50 min-h-full">
         <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
@@ -361,7 +343,16 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
                 <CreditCard className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="text-base font-semibold text-gray-900 mb-2">Sistem Pembayaran P2P Langsung</h2>
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-base font-semibold text-gray-900">Sistem Pembayaran P2P Langsung</h2>
+                  <HelpTooltip
+                    title={therapistDashboardHelp.paymentInfo.directPayment.title}
+                    content={therapistDashboardHelp.paymentInfo.directPayment.content}
+                    benefits={therapistDashboardHelp.paymentInfo.directPayment.benefits}
+                    size="sm"
+                    position="bottom"
+                  />
+                </div>
                 <p className="text-sm text-gray-600 mb-3">
                   Platform kami memfasilitasi koneksi antara Anda dan pelanggan, tetapi tidak memproses pembayaran.
                   Semua pembayaran dilakukan langsung dari pelanggan kepada Anda setelah layanan selesai.

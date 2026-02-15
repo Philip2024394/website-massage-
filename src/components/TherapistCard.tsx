@@ -182,9 +182,7 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                 className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
                     !hasScheduledBookings || bookScheduleDisabled
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : activeButton === 'schedule'
-                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
-                        : 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
+                        : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
                 } active:scale-95 shadow-md`}
             >
                 <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />

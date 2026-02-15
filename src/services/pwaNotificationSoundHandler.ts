@@ -150,6 +150,7 @@ class PWANotificationSoundHandler {
     const preloadPromises = Object.values(SOUND_FILES).map(url => {
       return new Promise<void>((resolve) => {
         const audio = new Audio();
+        audio.addEventListener('error', () => resolve(), { once: true }); // Handle ERR_CACHE_OPERATION_NOT_SUPPORTED during cache clear
         audio.src = url;
         audio.addEventListener('canplaythrough', () => resolve(), { once: true });
         audio.addEventListener('error', () => resolve(), { once: true }); // Resolve even on error

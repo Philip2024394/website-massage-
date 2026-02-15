@@ -53,7 +53,9 @@ const homePageBookingTypes: HomePageBookingType[] = [
 ];
 
 /**
- * Check if therapist has completed verification requirements for scheduled bookings
+ * Check if therapist has completed requirements for scheduled bookings.
+ * Requires: KTP uploaded (ktpPhotoUrl) + bank details (bankName, accountName, accountNumber).
+ * When both are complete, scheduled booking button becomes active (orange).
  */
 const checkTherapistVerification = (therapist: Therapist) => {
   const hasBankDetails = !!(
@@ -62,15 +64,15 @@ const checkTherapistVerification = (therapist: Therapist) => {
     therapist.accountNumber
   );
   
-  const hasKTPVerification = !!therapist.ktpVerified;
+  const hasKtpUploaded = !!(therapist as any).ktpPhotoUrl;
   
   return {
     hasBankDetails,
-    hasKTPVerification,
-    isFullyVerified: hasBankDetails && hasKTPVerification,
+    hasKtpUploaded,
+    isFullyVerified: hasBankDetails && hasKtpUploaded,
     missingRequirements: [
       ...(!hasBankDetails ? ['Detail bank'] : []),
-      ...(!hasKTPVerification ? ['Verifikasi KTP'] : [])
+      ...(!hasKtpUploaded ? ['Upload KTP'] : [])
     ]
   };
 };
@@ -124,9 +126,13 @@ export const HomePageBookingSlider: React.FC<HomePageBookingSliderProps> = ({
     }
     
     if (isActive) {
+      // Scheduled button turns orange when active (KTP + bank complete); Book Now stays orange/red
+      const activeColor = type.id === 'scheduled' && verificationStatus.isFullyVerified
+        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
+        : type.color + ' text-white shadow-lg';
       return {
         containerClass: 'opacity-100',
-        buttonClass: type.color + ' text-white shadow-lg',
+        buttonClass: activeColor,
         iconColor: 'text-white'
       };
     }
@@ -149,7 +155,7 @@ export const HomePageBookingSlider: React.FC<HomePageBookingSliderProps> = ({
             rounded-lg shadow-lg transition-transform duration-300 ease-in-out
             ${activeType === 'scheduled' 
               ? (verificationStatus.isFullyVerified 
-                ? 'bg-gradient-to-r from-blue-500 to-purple-500 translate-x-full' 
+                ? 'bg-gradient-to-r from-orange-500 to-orange-600 translate-x-full' 
                 : 'bg-gray-300 translate-x-full'
               )
               : 'bg-gradient-to-r from-orange-500 to-red-500 translate-x-0'

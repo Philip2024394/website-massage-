@@ -131,7 +131,7 @@ const PAGE_HIERARCHY: Record<string, {
   },
   'custom-menu': {
     parent: 'bookings',
-    label: 'Service Menu',
+    label: 'Massage Menu',
     icon: Settings,
     category: 'settings',
     color: 'text-gray-600',

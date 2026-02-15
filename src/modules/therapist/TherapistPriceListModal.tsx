@@ -83,6 +83,12 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
     // Deduplicate by service name so the same massage type is not shown twice (e.g. "Traditional Massage")
     const activeMenuData = useMemo(() => getUniqueMenuItemsByName(rawMenuData), [rawMenuData]);
     
+    // Scheduled booking requires KTP upload + bank details (same as TherapistCard)
+    const hasScheduledBookings = !!((
+      (therapist?.bankName && therapist?.accountNumber && therapist?.accountName) ||
+      (therapist as any)?.bankCardDetails
+    ) && (therapist as any)?.ktpPhotoUrl);
+    
     // Track booking events for badge updates
     const handleServiceBooking = async (service: any, bookingType: 'immediate' | 'scheduled') => {
         try {
@@ -365,13 +371,18 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                         </button>
                                                         
                                                         <button
+                                                            disabled={!hasScheduledBookings}
+                                                            title={!hasScheduledBookings ? (chatLang === 'id' ? 'Penyedia perlu mengunggah KTP dan detail bank' : 'Provider needs to upload KTP and bank details') : undefined}
                                                             className={`px-6 py-3 font-semibold rounded-lg border-2 transition-all duration-200 flex items-center justify-center gap-2 ${
-                                                                isRowSelected && selectedDuration
-                                                                    ? 'border-green-500 bg-green-500 text-white hover:bg-green-600 shadow-lg'
-                                                                    : 'border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                                !hasScheduledBookings
+                                                                    ? 'border-gray-300 bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                                    : isRowSelected && selectedDuration
+                                                                    ? 'border-orange-500 bg-orange-500 text-white hover:bg-orange-600 shadow-lg'
+                                                                    : 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
                                                             }`}
                                             onClick={async (e) => {
                                                 e.stopPropagation();
+                                                if (!hasScheduledBookings) return;
                                                 
                                                 if (isRowSelected && selectedDuration) {
                                                     const priceNum = Number(service[`price${selectedDuration}`]);
