@@ -186,6 +186,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     const [therapist, setTherapist] = useState<Therapist | null>(selectedTherapist || null);
     const [loading, setLoading] = useState(!selectedTherapist);
     const [error, setError] = useState<string | null>(null);
+    const [attemptedTherapistId, setAttemptedTherapistId] = useState<string | null>(null);
     
     // Monitor unmount
     React.useEffect(() => {
@@ -309,6 +310,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             console.log('🔌 Appwrite client initialized:', !!true);
             console.log('📡'.repeat(40) + '\n');
             
+            setAttemptedTherapistId(therapistId);
             try {
                 console.log('⏳ [STATE UPDATE] Setting loading = true');
                 setLoading(true);
@@ -437,6 +439,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.error('❌'.repeat(40) + '\n');
                 
                 console.log('⏳ [STATE UPDATE] Setting error state');
+                setAttemptedTherapistId(therapistId);
                 setError(err.message || 'Failed to load therapist profile');
             } finally {
                 console.log('\n' + '🏁'.repeat(40));
@@ -806,20 +809,28 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             );
         }
         
+        const fullUrl = window.location.pathname + (window.location.hash || '');
+        const looksLikePlaceholder = attemptedTherapistId && /^therapist_\d+$/i.test(attemptedTherapistId);
         return (
             <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md bg-white p-8 rounded-lg shadow-lg">
                     <div className="mb-4 text-6xl">😔</div>
                     <h2 className="text-xl font-bold text-gray-800 mb-2">Profile Not Found</h2>
-                    <p className="text-sm text-red-600 mb-4 font-mono bg-red-50 p-2 rounded">
+                    <p className="text-sm text-red-600 mb-4 font-mono bg-red-50 p-2 rounded break-all">
                         {errorMessage}
                     </p>
                     <p className="text-sm text-gray-600 mb-4">
                         This therapist profile could not be loaded. The link may be invalid or the therapist is no longer available.
                     </p>
+                    {looksLikePlaceholder && (
+                        <p className="text-sm text-amber-700 mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                            The ID <strong>{attemptedTherapistId}</strong> looks like a sample or demo link. Real therapist profiles use a different ID format. Try browsing from the homepage to find a therapist.
+                        </p>
+                    )}
                     <div className="text-xs text-gray-500 mb-4 p-3 bg-gray-100 rounded">
                         <div className="font-semibold mb-1">Debug Info:</div>
-                        <div>URL: {window.location.pathname}</div>
+                        <div>URL: {fullUrl || window.location.pathname || '/'}</div>
+                        {attemptedTherapistId && <div>Attempted ID: {attemptedTherapistId}</div>}
                         <div>Error: {errorMessage}</div>
                         <div>Check console for detailed logs</div>
                     </div>

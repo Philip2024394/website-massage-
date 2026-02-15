@@ -263,6 +263,8 @@ interface AppRouterProps {
 const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => {
     const [therapist, setTherapist] = React.useState<any>(null);
     const [error, setError] = React.useState<string | null>(null);
+    const attemptedId = therapistId || null;
+    const looksLikePlaceholder = attemptedId && /^therapist_\d+$/i.test(attemptedId);
     
     // 🚀 ENTERPRISE LOADING: Component-specific loading state
     const { isLoading, setLoading } = useComponentLoading(`therapist-profile-${therapistId}`);
@@ -319,12 +321,21 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
     }
 
     if (error || !therapist) {
+        const errMsg = error || 'Unable to load therapist profile';
         return (
             <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
                     <div className="text-6xl mb-4">❌</div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Profile Not Found</h2>
-                    <p className="text-gray-600 mb-4">{error || 'Unable to load therapist profile'}</p>
+                    <p className="text-gray-600 mb-2 font-mono text-sm break-all">{errMsg}</p>
+                    {looksLikePlaceholder && (
+                        <p className="text-sm text-amber-700 mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                            The ID <strong>{attemptedId}</strong> looks like a sample or demo link. Browse from the homepage to find a therapist.
+                        </p>
+                    )}
+                    {attemptedId && !looksLikePlaceholder && (
+                        <p className="text-xs text-gray-500 mb-4">Attempted ID: {attemptedId}</p>
+                    )}
                     <button
                         onClick={() => props.onNavigate?.('home')}
                         className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
@@ -705,8 +716,26 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // ===== JOIN ROUTES =====
         case 'joinIndastreet':
-            // Redirect Join Indastreet to role selection page
-            return renderRoute(RoleSelectionPage);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(RoleSelectionPage, {
+                onNavigate: props.onNavigate,
+                language: props.language,
+                onLanguageChange: props.onLanguageChange,
+                onMassageJobsClick: () => props.onNavigate('massage-jobs'),
+                onHotelPortalClick: props.onHotelPortalClick,
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: () => props.handleAdminLogin?.(),
+                onTermsClick: () => props.onNavigate('terms'),
+                onPrivacyClick: () => props.onNavigate('privacy'),
+                onLoginClick: props.handleNavigateToTherapistLogin,
+                therapists: props.therapists,
+                places: props.places,
+                t: t,
+            }));
 
         // ===== AUTH ROUTES =====
         case 'auth':
@@ -1551,6 +1580,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 jobId: props.selectedJobId || '',
                 onBack: () => props.onNavigate?.('massage-jobs'),
                 onNavigate: props.onNavigate,
+                language: props.language,
+                onLanguageChange: props.onLanguageChange,
+                onMassageJobsClick: () => props.onNavigate?.('massage-jobs'),
+                onTermsClick: () => props.onNavigate?.('terms'),
+                onPrivacyClick: () => props.onNavigate?.('privacy'),
+                therapists: props.therapists,
+                places: props.places,
             });
         
         case 'browse-jobs':

@@ -12,6 +12,7 @@ import { EMPLOYER_ACCESS_FEE_IDR } from '../constants/businessLogic';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
+const POSITION_FILLED_BADGE_URL = 'https://ik.imagekit.io/7grri5v7d/position%20filled.png?updatedAt=1771076784587';
 
 interface EmployerJobPosting {
     $id: string;
@@ -428,6 +429,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
             (filterSalaryRange === 'high' && maxSal > 15_000_000);
         return matchesSearch && matchesType && matchesLocation && matchesVerified && matchesSalary;
     })];
+    const activePostings = filteredPostings.filter(p => (p as any).status !== 'filled');
+    const filledPostings = filteredPostings.filter(p => (p as any).status === 'filled');
 
     const filteredTherapistListings = therapistListings.filter(listing => {
         const matchesSearch = !searchQuery.trim() ||
@@ -700,8 +703,71 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredPostings.map((posting) => {
+                    <>
+                    {/* Active listings */}
+                    {activePostings.length > 0 && (
+                    <div className="mb-6">
+                        <h3 className="text-base font-semibold text-slate-800 mb-3">{t?.jobs?.activeListings ?? 'Active listings'}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {activePostings.map((posting) => {
+                            const jobImageUrl = (posting as any).imageurl || (posting as any).imageUrl || 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188';
+                            const isPositionFilled = (posting as any).status === 'filled';
+                            return (
+                            <div key={posting.$id} className={cardClass}>
+                                <div className="relative w-full h-40 overflow-hidden rounded-t-[20px] bg-slate-100">
+                                    <img src={jobImageUrl} alt={posting.businessName} className="w-full h-full object-cover" />
+                                    <div className="absolute top-3 right-3 flex gap-2 flex-wrap justify-end">
+                                        {posting.isUrgent && <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">URGENT</span>}
+                                        {posting.isVerified && <span className="px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">VERIFIED</span>}
+                                        {!posting.isVerified && !posting.isUrgent && (
+                                            <span className="px-2.5 py-1 bg-slate-700 text-white text-xs font-semibold rounded-lg">NEW</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="p-5">
+                                    <h3 className="text-lg font-bold text-slate-900 mb-1 truncate">{posting.businessName}</h3>
+                                    <p className="text-sm text-slate-600 mb-2 flex items-center gap-1">
+                                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+                                        {posting.location}
+                                    </p>
+                                    <p className="text-base font-semibold text-primary-600 mb-2">{posting.jobTitle}</p>
+                                    <p className="text-sm text-slate-600 mb-2">
+                                        {posting.employmentType?.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                                        {posting.numberOfPositions > 0 && ` • ${posting.numberOfPositions} ${posting.numberOfPositions > 1 ? (t?.jobs?.positionsPlural || 'positions') : (t?.jobs?.positions || 'position')}`}
+                                    </p>
+                                    {(posting.salaryRangeMin > 0 || posting.salaryRangeMax > 0) && (
+                                        <p className="text-sm font-medium text-slate-800 mb-2">
+                                            {formatSalary(posting.salaryRangeMin)} – {formatSalary(posting.salaryRangeMax)}
+                                        </p>
+                                    )}
+                                    <p className="text-sm text-slate-600 mb-3 line-clamp-2 leading-relaxed">{posting.jobDescription}</p>
+                                    {posting.$createdAt && (
+                                        <p className="text-xs text-slate-500 mb-3">
+                                            {new Date(posting.$createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </p>
+                                    )}
+                                    {!posting.isVerified && (
+                                        <p className="text-xs text-slate-500 mb-3">{t?.jobs?.livePendingVerification || 'Live – Pending Admin Verification'}</p>
+                                    )}
+                                    <button
+                                        onClick={() => onApplyForJob?.(posting.$id)}
+                                        className="w-full py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all duration-200"
+                                    >
+                                        {t?.jobs?.apply || 'Apply'}
+                                    </button>
+                                </div>
+                            </div>
+                            );
+                        })}
+                        </div>
+                    </div>
+                    )}
+                    {/* Position filled listings */}
+                    {filledPostings.length > 0 && (
+                    <div>
+                        <h3 className="text-base font-semibold text-slate-800 mb-3">{t?.jobs?.positionFilled ?? 'Position filled'}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filledPostings.map((posting) => {
                             const jobImageUrl = (posting as any).imageurl || (posting as any).imageUrl || 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188';
                             const isPositionFilled = (posting as any).status === 'filled';
                             return (
@@ -711,9 +777,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     <img src={jobImageUrl} alt={posting.businessName} className="w-full h-full object-cover" />
                                     <div className="absolute top-3 right-3 flex gap-2 flex-wrap justify-end">
                                         {isPositionFilled && (
-                                            <span className="px-2.5 py-1 bg-slate-600 text-white text-xs font-bold rounded-lg" title="Position Filled">
-                                                Position Filled
-                                            </span>
+                                            <img src={POSITION_FILLED_BADGE_URL} alt={t?.jobs?.positionFilled ?? 'Position Filled'} className="h-8 w-auto object-contain" title={t?.jobs?.positionFilled ?? 'Position Filled'} />
                                         )}
                                         {!isPositionFilled && posting.isUrgent && <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">URGENT</span>}
                                         {!isPositionFilled && posting.isVerified && <span className="px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">VERIFIED</span>}
@@ -777,9 +841,12 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                             </div>
                             );
                         })}
+                        </div>
                     </div>
-                )}
+                    )}
                     </>
+                )}
+                </>
                 ) : (
                 /* Find Professionals - Therapist Listings */
                     <div className="max-w-7xl mx-auto px-4 pb-8">

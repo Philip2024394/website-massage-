@@ -13,6 +13,63 @@ interface ServiceTermsPageProps {
 const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactNumber: _contactNumber, acceptMode, onAccept }) => {
     const safeT = t || {};
 
+    /* Same style as user Terms popup: black backdrop, orange border, dark content (therapist/place sign-in) */
+    if (acceptMode && onAccept) {
+        return (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black p-4">
+                <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-lg border-2 border-orange-500 bg-gray-900 shadow-2xl overflow-hidden">
+                    <div className="flex-shrink-0 px-6 py-4 border-b border-orange-500/50 bg-gray-900">
+                        <h1 className="text-xl font-bold text-white">IndaStreet Massage</h1>
+                        <p className="text-xs text-gray-400 mt-0.5">{safeT.effectiveDate}</p>
+                    </div>
+                    <div
+                        className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 min-h-0 service-terms-modal-scroll"
+                        style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgb(249 115 22) rgb(31 41 55)' }}
+                    >
+                        <div className="service-terms-modal-dark">
+                            <ServiceTermsPageContent safeT={safeT} />
+                        </div>
+                    </div>
+                    <div className="flex-shrink-0 px-6 py-4 border-t border-orange-500/50 bg-gray-900">
+                        <button
+                            type="button"
+                            onClick={onAccept}
+                            className="w-full py-3.5 rounded-lg font-semibold text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors shadow-md border border-orange-400/50"
+                        >
+                            Agree to terms and conditions
+                        </button>
+                    </div>
+                </div>
+                <style>{`
+                    .service-terms-modal-scroll::-webkit-scrollbar { width: 8px; }
+                    .service-terms-modal-scroll::-webkit-scrollbar-track { background: rgb(31 41 55); border-radius: 4px; }
+                    .service-terms-modal-scroll::-webkit-scrollbar-thumb { background: rgb(249 115 22); border-radius: 4px; }
+                    .service-terms-modal-dark { color: rgb(209 213 219); }
+                    .service-terms-modal-dark h3 { color: rgb(251 146 60); }
+                    .service-terms-modal-dark h4 { color: rgb(253 186 116); }
+                    .service-terms-modal-dark p, .service-terms-modal-dark li { color: rgb(209 213 219); }
+                    .service-terms-modal-dark .bg-orange-100 { background: rgba(251,146,60,0.2); }
+                    .service-terms-modal-dark .text-orange-900 { color: rgb(253 186 116); }
+                    .service-terms-modal-dark .bg-amber-50\\/80 { background: rgba(251,191,36,0.2); }
+                    .service-terms-modal-dark .bg-red-50\\/80 { background: rgba(239,68,68,0.2); }
+                    .service-terms-modal-dark .bg-green-50 { background: rgba(34,197,94,0.2); }
+                    .service-terms-modal-dark .text-green-900 { color: rgb(134 239 172); }
+                    .service-terms-modal-dark .bg-yellow-50 { background: rgba(234,179,8,0.2); }
+                    .service-terms-modal-dark .border-yellow-200 { border-color: rgba(234,179,8,0.5); }
+                    .service-terms-modal-dark .text-gray-800 { color: rgb(229 231 235); }
+                    .service-terms-modal-dark .text-gray-700 { color: rgb(209 213 219); }
+                    .service-terms-modal-dark .text-gray-600 { color: rgb(156 163 175); }
+                    .service-terms-modal-dark .text-red-700 { color: rgb(252 165 165); }
+                    .service-terms-modal-dark .text-green-700 { color: rgb(134 239 172); }
+                    .service-terms-modal-dark .bg-blue-50 { background: rgba(59,130,246,0.2); }
+                    .service-terms-modal-dark .border-blue-200 { border-color: rgba(59,130,246,0.5); }
+                    .service-terms-modal-dark .bg-gray-100 { background: rgb(55 65 81); }
+                    .service-terms-modal-dark .border-orange-200 { border-color: rgba(251,146,60,0.5); }
+                `}</style>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
@@ -32,6 +89,28 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
             </header>
 
             <main className="p-6 space-y-6 text-gray-700 pb-24 max-w-4xl mx-auto">
+                <ServiceTermsPageContent safeT={safeT} />
+                {acceptMode && onAccept && (
+                    <div className="sticky bottom-0 left-0 right-0 pt-6 pb-8 -mx-6 px-6 bg-gray-50 border-t border-gray-200">
+                        <button
+                            type="button"
+                            onClick={onAccept}
+                            className="w-full py-4 rounded-xl font-semibold text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors shadow-md"
+                        >
+                            Agree to terms and conditions
+                        </button>
+                    </div>
+                )}
+            </main>
+
+            <style>{`\n                @keyframes float {\n                    0%, 100% { transform: translateY(0); }\n                    50% { transform: translateY(-5px); }\n                }\n                .animate-float {\n                    animation: float 2s ease-in-out infinite;\n                }\n            `}</style>
+        </div>
+    );
+};
+
+/** Shared terms content: used in full page (light) and in accept-mode modal (dark via .service-terms-modal-dark) */
+const ServiceTermsPageContent: React.FC<{ safeT: Record<string, any> }> = ({ safeT }) => (
+    <>
                 <div className="bg-orange-100 border-l-4 border-orange-500 p-4 mb-6">
                     <p className="text-sm font-semibold text-orange-900">{safeT.effectiveDate}</p>
                 </div>
@@ -216,25 +295,7 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                     <h3 className="font-bold text-gray-800 text-lg">{safeT.contactInformation?.title}</h3>
                     <p className="text-sm leading-relaxed">{safeT.contactInformation?.content}</p>
                 </div>
-
-                {acceptMode && onAccept && (
-                    <div className="sticky bottom-0 left-0 right-0 pt-6 pb-8 -mx-6 px-6 bg-gray-50 border-t border-gray-200">
-                        <button
-                            type="button"
-                            onClick={onAccept}
-                            className="w-full py-4 rounded-xl font-semibold text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors shadow-md"
-                        >
-                            Agree to terms and conditions
-                        </button>
-                    </div>
-                )}
-            </main>
-
-            {/* Navigation footer removed: GlobalFooter now handles persistent navigation */}
-
-            <style>{`\n                @keyframes float {\n                    0%, 100% { transform: translateY(0); }\n                    50% { transform: translateY(-5px); }\n                }\n                .animate-float {\n                    animation: float 2s ease-in-out infinite;\n                }\n            `}</style>
-        </div>
-    );
-};
+    </>
+);
 
 export default ServiceTermsPage;

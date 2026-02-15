@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
 import React, { useState } from 'react';
-import { User, Building2, Sparkles, ArrowLeft, CheckCircle, Globe, Star, Users, TrendingUp, Shield, Award, MapPin, Calendar, Clock } from 'lucide-react';
+import { User, UserCheck, Building2, Sparkles, ArrowLeft, CheckCircle, Globe, Star, Users, TrendingUp, Shield, Award, MapPin, Calendar, Clock } from 'lucide-react';
 import UniversalHeader from '../../components/shared/UniversalHeader';
 import { AppDrawer } from '../../components/AppDrawerClean';
 import { type SupportedLanguage } from '../../context/LanguageContext';
@@ -68,11 +68,10 @@ const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({
   return (
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       {/* Universal Header - Same as HomePage */}
-      <UniversalHeader 
+      <UniversalHeader
         language={language}
-        onLanguageChange={onLanguageChange}
+        onLanguageChange={onLanguageChange as (lang: string) => void}
         onMenuClick={() => setIsMenuOpen(true)}
-        showCityInfo={false}
       />
       
       {/* App Drawer - Same as HomePage */}

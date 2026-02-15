@@ -1314,32 +1314,11 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
 
           {/* Profile Form Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Live Status Banner */}
-          {therapist.isLive && (
-            <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-8 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                  <div>
-                    <p className="text-white font-bold text-lg">🟢 Profil Anda AKTIF!</p>
-                    <p className="text-orange-100 text-sm">Pelanggan dapat melihat dan membooking Anda di halaman utama</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    // 🔐 PREVIEW MODE: Generate URL with previewTherapistId to show listing regardless of GPS
-                    const therapistId = therapist.$id || therapist.id;
-                    const previewUrl = `/?previewTherapistId=${therapistId}`;
-                    window.open(previewUrl, '_blank');
-                  }}
-                  className="px-4 py-2 bg-white text-orange-600 rounded-lg font-bold hover:bg-orange-50 transition-all shadow-sm text-sm"
-                  title="Lihat listing langsung Anda dengan mode preview (melewati batasan GPS)"
-                >
-                  👁️ Lihat Listing Langsung
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Profile section header */}
+          <div className="px-6 pt-6 pb-1">
+            <h2 className="text-xl font-bold text-gray-900">Therapist Profile</h2>
+            <p className="text-sm text-gray-600 mt-0.5">A polished, professional profile helps you stand out and attract more bookings.</p>
+          </div>
 
           {/* Form Content */}
           <div className="p-6 space-y-5">
@@ -1513,11 +1492,6 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                   </p>
                 </div>
 
-                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
-                  <p className="text-xs font-medium text-yellow-900">
-                    ⚠️ <strong>Important:</strong> Custom locations require GPS verification below. Your exact location ensures customers can find and filter you correctly.
-                  </p>
-                </div>
               </div>
             )}
 

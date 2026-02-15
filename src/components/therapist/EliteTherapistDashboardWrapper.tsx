@@ -263,8 +263,7 @@ export const EliteTherapistDashboardWrapper: React.FC<EliteTherapistDashboardWra
           {children}
         </Suspense>
         
-        {/* Stability Metrics (Development Only) */}
-        <StabilityMetricsDisplay show={showMetrics} />
+        {/* Stability Metrics - removed per product: green button no longer shown */}
       </EliteErrorBoundary>
     </EliteStabilityProvider>
   );
