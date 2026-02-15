@@ -5,7 +5,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { BarChart as BarChart3, TrendingUp, DollarSign, Calendar, Star, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import { bookingService } from '../../lib/bookingService';
 
 interface AnalyticsData {
@@ -132,33 +132,18 @@ const TherapistAnalyticsPage: React.FC<TherapistAnalyticsPageProps> = ({
   );
 
   return (
-    <TherapistLayout
+    <TherapistSimplePageLayout
+      title={language === 'id' ? 'Analitik & Performa' : 'Analytics & Performance'}
+      subtitle={language === 'id' ? 'Statistik booking dan pendapatan Anda' : 'Your booking statistics and earnings'}
+      onBackToStatus={onBack || (() => onNavigate?.('therapist-status'))}
+      onNavigate={onNavigate}
       therapist={therapist}
       currentPage="analytics"
-      onNavigate={onNavigate || (() => {})}
-      onLogout={onLogout}
       language={language}
+      onLogout={onLogout}
+      icon={<BarChart3 className="w-6 h-6 text-orange-600" />}
     >
-      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 pt-0 pb-6">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-orange-600" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {language === 'id' ? 'Analitik & Performa' : 'Analytics & Performance'}
-              </h1>
-              <p className="text-sm text-gray-600">
-                {language === 'id' 
-                  ? 'Statistik booking dan pendapatan Anda' 
-                  : 'Your booking statistics and earnings'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
+      <div className="bg-gray-50 p-6" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
@@ -289,9 +274,8 @@ const TherapistAnalyticsPage: React.FC<TherapistAnalyticsPageProps> = ({
               </div>
             </div>
           )}
-        </div>
       </div>
-    </TherapistLayout>
+    </TherapistSimplePageLayout>
   );
 };
 

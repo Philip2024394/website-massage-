@@ -2,7 +2,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3, X, XCircle, DollarSign } from 'lucide-react';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import { analyticsService } from '../../lib/services/analyticsService';
 import { paymentService, bookingService } from '../../lib/appwriteService';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
@@ -305,9 +305,9 @@ const TherapistEarningsPage: React.FC<TherapistEarningsProps> = ({ therapist, on
 
   const getStatusBadge = (status: Payment['status']) => {
     const badges = {
-      pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      processing: 'bg-blue-100 text-blue-800 border-blue-300',
-      paid: 'bg-green-100 text-green-800 border-green-300',
+      pending: 'bg-amber-50 text-amber-800 border-amber-200',
+      processing: 'bg-blue-50 text-blue-800 border-blue-200',
+      paid: 'bg-green-50 text-green-800 border-green-200',
     };
     return badges[status];
   };
@@ -327,295 +327,188 @@ const TherapistEarningsPage: React.FC<TherapistEarningsProps> = ({ therapist, on
   };
 
   return (
-    <TherapistLayout
+    <TherapistSimplePageLayout
+      title={currentLabels.title}
+      subtitle={currentLabels.subtitle}
+      onBackToStatus={onBack}
+      onNavigate={handleNavigate}
       therapist={therapist}
       currentPage="earnings"
-      onNavigate={handleNavigate}
       language={language}
       onLogout={onLogout}
+      icon={<DollarSign className="w-6 h-6 text-orange-600" />}
     >
-    <div className="bg-gray-50">
-      <main className="max-w-sm mx-auto px-4 pt-0 pb-3">
-        <div className="space-y-4">
-        {/* Standardized Status Header */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-              <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
-              <span className="text-xs text-gray-500">bulan ini</span>
-            </div>
-          </div>
-
-          {/* Status Grid */}
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => console.log('Status change: available')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'bg-green-50 border-green-500'
-                  : 'border-gray-200 hover:border-green-300'
-              }`}
-            >
-              <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'text-green-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'text-green-700'
-                  : 'text-gray-600'
-              }`}>Tersedia</p>
-            </button>
-
-            <button
-              onClick={() => console.log('Status change: busy')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'busy'
-                  ? 'bg-amber-50 border-amber-500'
-                  : 'border-gray-200 hover:border-amber-300'
-              }`}
-            >
-              <Clock className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-700'
-                  : 'text-gray-600'
-              }`}>Sibuk</p>
-            </button>
-
-            <button
-              onClick={() => console.log('Status change: offline')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.availability === 'offline'
-                  ? 'bg-red-50 border-red-500'
-                  : 'border-gray-200 hover:border-red-300'
-              }`}
-            >
-              <XCircle className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-700'
-                  : 'text-gray-600'
-              }`}>Offline</p>
-            </button>
-          </div>
-        </div>
-        
-        {/* Booking-Based Stats Cards */}
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 p-4 mb-4">
-          <div className="flex items-center justify-between mb-3">
+    <div className="bg-gray-50 min-h-full">
+      <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+        {/* Stats - same style as home: rounded-lg, border, orange tint */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-              <h3 className="text-sm font-bold text-gray-900">Total Earnings (Completed)</h3>
+              <div className="p-2 bg-orange-500 rounded-lg">
+                <CheckCircle className="w-4 h-4 text-white" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900">Total Earnings (Completed)</h3>
               <HelpTooltip {...earningsHelp.completedEarnings} position="bottom" size="sm" />
             </div>
-            <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-bold rounded-full">
+            <span className="px-2 py-1 bg-orange-50 text-orange-800 text-xs font-medium rounded-lg border border-orange-200">
               {bookingStats.completedCount} bookings
             </span>
           </div>
-          <p className="text-2xl font-bold text-green-700 mb-1">
+          <p className="text-2xl font-bold text-gray-900">
             Rp {bookingStats.netEarnings.toLocaleString('id-ID')}
           </p>
-          <p className="text-xs text-green-600">
+          <p className="text-xs text-gray-500">
             From Rp {bookingStats.totalRevenue.toLocaleString('id-ID')} (70% after commission)
           </p>
         </div>
 
-        {/* Lost Earnings Alert */}
         {bookingStats.totalLost > 0 && (
-          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl border-2 border-red-200 p-4 mb-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 border-red-200 bg-red-50/50">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <XCircle className="w-6 h-6 text-red-600" />
-                <h3 className="text-sm font-bold text-gray-900">Lost Earnings</h3>
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <XCircle className="w-4 h-4 text-red-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900">Lost Earnings</h3>
                 <HelpTooltip {...earningsHelp.lostEarnings} position="bottom" size="sm" />
               </div>
-              <span className="px-2 py-1 bg-red-200 text-red-800 text-xs font-bold rounded-full">
+              <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-lg border border-red-200">
                 {bookingStats.expiredCount + bookingStats.declinedCount + bookingStats.cancelledCount} missed
               </span>
             </div>
-            <p className="text-2xl font-bold text-red-700 mb-2">
+            <p className="text-xl font-bold text-red-700 mb-2">
               Rp {bookingStats.totalLost.toLocaleString('id-ID')}
             </p>
-            <div className="space-y-1 text-xs">
+            <div className="space-y-1 text-xs text-red-700">
               {bookingStats.expiredCount > 0 && (
-                <div className="flex justify-between text-red-600">
-                  <span>⏰ Expired (5-min timeout):</span>
-                  <span className="font-semibold">Rp {bookingStats.lostFromExpired.toLocaleString('id-ID')} ({bookingStats.expiredCount})</span>
-                </div>
+                <div className="flex justify-between"><span>⏰ Expired:</span><span className="font-medium">Rp {bookingStats.lostFromExpired.toLocaleString('id-ID')} ({bookingStats.expiredCount})</span></div>
               )}
               {bookingStats.declinedCount > 0 && (
-                <div className="flex justify-between text-red-600">
-                  <span>❌ Declined:</span>
-                  <span className="font-semibold">Rp {bookingStats.lostFromDeclined.toLocaleString('id-ID')} ({bookingStats.declinedCount})</span>
-                </div>
+                <div className="flex justify-between"><span>❌ Declined:</span><span className="font-medium">Rp {bookingStats.lostFromDeclined.toLocaleString('id-ID')} ({bookingStats.declinedCount})</span></div>
               )}
               {bookingStats.cancelledCount > 0 && (
-                <div className="flex justify-between text-red-600">
-                  <span>🚫 Cancelled:</span>
-                  <span className="font-semibold">Rp {bookingStats.lostFromCancelled.toLocaleString('id-ID')} ({bookingStats.cancelledCount})</span>
-                </div>
+                <div className="flex justify-between"><span>🚫 Cancelled:</span><span className="font-medium">Rp {bookingStats.lostFromCancelled.toLocaleString('id-ID')} ({bookingStats.cancelledCount})</span></div>
               )}
             </div>
           </div>
         )}
 
         {/* Service Duration Breakdown */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
-            <DollarSign className="w-5 h-5 text-orange-500" />
-            <h3 className="text-sm font-bold text-gray-900">Service Duration Breakdown</h3>
+            <div className="p-2 bg-orange-500 rounded-lg"><DollarSign className="w-4 h-4 text-white" /></div>
+            <h3 className="text-sm font-semibold text-gray-900">Service Duration Breakdown</h3>
             <HelpTooltip {...earningsHelp.serviceBreakdown} position="bottom" size="sm" />
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+          <ul className="space-y-2 list-none m-0 p-0">
+            <li className="flex justify-between items-center py-2.5 px-3 bg-orange-50/80 rounded-lg border border-orange-100">
               <span className="text-sm font-medium text-gray-700">60 minutes</span>
               <div className="text-right">
                 <p className="text-sm font-bold text-gray-900">Rp {bookingStats.earnings60min.toLocaleString('id-ID')}</p>
                 <p className="text-xs text-gray-500">{bookingStats.count60min} bookings</p>
               </div>
-            </div>
-            <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+            </li>
+            <li className="flex justify-between items-center py-2.5 px-3 bg-orange-50/80 rounded-lg border border-orange-100">
               <span className="text-sm font-medium text-gray-700">90 minutes</span>
               <div className="text-right">
                 <p className="text-sm font-bold text-gray-900">Rp {bookingStats.earnings90min.toLocaleString('id-ID')}</p>
                 <p className="text-xs text-gray-500">{bookingStats.count90min} bookings</p>
               </div>
-            </div>
-            <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+            </li>
+            <li className="flex justify-between items-center py-2.5 px-3 bg-orange-50/80 rounded-lg border border-orange-100">
               <span className="text-sm font-medium text-gray-700">120 minutes</span>
               <div className="text-right">
                 <p className="text-sm font-bold text-gray-900">Rp {bookingStats.earnings120min.toLocaleString('id-ID')}</p>
                 <p className="text-xs text-gray-500">{bookingStats.count120min} bookings</p>
               </div>
-            </div>
-          </div>
+            </li>
+          </ul>
         </div>
 
         {/* Book Now vs Scheduled */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <h3 className="text-sm font-bold text-gray-900">Booking Types</h3>
-            <HelpTooltip {...earningsHelp.bookingTypes} position="bottom" size="sm" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-500 rounded-lg"><Clock className="w-4 h-4 text-white" /></div>
+              <span className="text-xs font-medium text-gray-600">Book Now</span>
+            </div>
+            <p className="text-base font-bold text-gray-900">Rp {bookingStats.bookNowEarnings.toLocaleString('id-ID')}</p>
+            <p className="text-xs text-gray-500">{bookingStats.bookNowCount} bookings</p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-orange-500" />
-                <span className="text-xs text-gray-600 font-semibold">Book Now</span>
-              </div>
-              <p className="text-base font-bold text-gray-900">
-                Rp {bookingStats.bookNowEarnings.toLocaleString('id-ID')}
-              </p>
-              <p className="text-xs text-gray-500">{bookingStats.bookNowCount} bookings</p>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-500 rounded-lg"><Calendar className="w-4 h-4 text-white" /></div>
+              <span className="text-xs font-medium text-gray-600">Scheduled</span>
             </div>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4 text-orange-500" />
-                <span className="text-xs text-gray-600 font-semibold">Scheduled</span>
-              </div>
-              <p className="text-base font-bold text-gray-900">
-                Rp {bookingStats.scheduledEarnings.toLocaleString('id-ID')}
-              </p>
-              <p className="text-xs text-gray-500">{bookingStats.scheduledCount} bookings</p>
-            </div>
+            <p className="text-base font-bold text-gray-900">Rp {bookingStats.scheduledEarnings.toLocaleString('id-ID')}</p>
+            <p className="text-xs text-gray-500">{bookingStats.scheduledCount} bookings</p>
           </div>
         </div>
 
         {/* Monthly Stats */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-orange-500" />
-            <span className="text-xs text-gray-500 font-semibold">{currentLabels.thisMonth}</span>
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-2 bg-orange-500 rounded-lg"><TrendingUp className="w-4 h-4 text-white" /></div>
+            <span className="text-xs font-medium text-gray-500">{currentLabels.thisMonth}</span>
             <HelpTooltip {...earningsHelp.monthlyEarnings} position="bottom" size="sm" />
           </div>
-          <p className="text-xl font-bold text-gray-900">
-            Rp {bookingStats.monthlyEarnings.toLocaleString('id-ID')}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">From completed bookings</p>
+          <p className="text-xl font-bold text-gray-900">Rp {bookingStats.monthlyEarnings.toLocaleString('id-ID')}</p>
+          <p className="text-xs text-gray-500">From completed bookings</p>
         </div>
 
         {/* Data Source Badge */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
           <div className="flex items-start gap-2">
-            <p className="text-xs text-blue-800 flex-1">
-              <span className="font-bold">✅ Connected to Appwrite:</span> All earnings calculated from bookings collection in real-time
+            <p className="text-xs text-orange-800 flex-1">
+              <span className="font-semibold">✅ Connected to Appwrite:</span> All earnings calculated from bookings collection in real-time
             </p>
             <HelpTooltip {...earningsHelp.dataSource} position="left" size="sm" />
           </div>
         </div>
 
-        {/* Premium Analytics Upsell */}
+        {/* Premium Analytics Upsell - home style */}
         {membershipTier === 'free' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <BarChart3 className="w-5 h-5 text-orange-500" />
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-orange-500 rounded-lg"><BarChart3 className="w-4 h-4 text-white" /></div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-900">{currentLabels.bestTimesAnalytics}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">{currentLabels.bestTimesAnalytics}</h3>
                   <p className="text-xs text-gray-500">{currentLabels.premiumFeature}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-400 rounded-lg">
-                <Crown className="w-4 h-4 text-gray-900" />
-                <span className="text-xs font-bold text-gray-900">Premium</span>
-              </div>
+              <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-medium rounded-lg flex items-center gap-1">
+                <Crown className="w-3 h-3" /> Premium
+              </span>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
-              <div className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 bg-orange-500 rounded-full mt-1.5"></div>
-                  <span className="text-sm text-gray-700">{currentLabels.peakBookingHours}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 bg-orange-500 rounded-full mt-1.5"></div>
-                  <span className="text-sm text-gray-700">{currentLabels.busyDaysHeatmap}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 bg-orange-500 rounded-full mt-1.5"></div>
-                  <span className="text-sm text-gray-700">{currentLabels.customerDemographics}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 bg-orange-500 rounded-full mt-1.5"></div>
-                  <span className="text-sm text-gray-700">{currentLabels.optimalSchedule}</span>
-                </div>
-              </div>
-            </div>
-            <button className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm">
+            <ul className="space-y-1.5 mb-4 list-none m-0 p-0">
+              <li className="flex items-center gap-2 py-2 px-3 bg-orange-50/80 rounded-lg border border-orange-100 text-sm text-gray-700">• {currentLabels.peakBookingHours}</li>
+              <li className="flex items-center gap-2 py-2 px-3 bg-orange-50/80 rounded-lg border border-orange-100 text-sm text-gray-700">• {currentLabels.busyDaysHeatmap}</li>
+              <li className="flex items-center gap-2 py-2 px-3 bg-orange-50/80 rounded-lg border border-orange-100 text-sm text-gray-700">• {currentLabels.customerDemographics}</li>
+              <li className="flex items-center gap-2 py-2 px-3 bg-orange-50/80 rounded-lg border border-orange-100 text-sm text-gray-700">• {currentLabels.optimalSchedule}</li>
+            </ul>
+            <button className="w-full py-2.5 px-4 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-colors">
               {currentLabels.upgradeToPremium}
             </button>
           </div>
         )}
 
-        {/* Premium/Elite Analytics */}
+        {/* Premium/Elite Analytics - home style */}
         {(membershipTier === 'premium' || membershipTier === 'elite' || membershipTier === 'plus') && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-5">
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-orange-500" />
-                <h2 className="text-base font-bold text-gray-900">{currentLabels.bestTimesAnalytics}</h2>
+                <div className="p-2 bg-orange-500 rounded-lg"><BarChart3 className="w-4 h-4 text-white" /></div>
+                <h2 className="text-sm font-semibold text-gray-900">{currentLabels.bestTimesAnalytics}</h2>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-400 rounded-lg">
-                <Crown className="w-4 h-4 text-gray-900" />
-                <span className="text-xs font-bold text-gray-900">Premium</span>
-              </div>
+              <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-medium rounded-lg flex items-center gap-1">
+                <Crown className="w-3 h-3" /> Premium
+              </span>
             </div>
 
-            {/* Peak Hours Chart */}
-            <div className="mb-5">
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="font-semibold text-gray-900 text-sm">Peak Booking Hours</h3>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-medium text-gray-900 text-sm">Peak Booking Hours</h3>
                 <HelpTooltip {...earningsHelp.peakHours} position="bottom" size="sm" />
               </div>
               <div className="space-y-2">
@@ -631,20 +524,16 @@ const TherapistEarningsPage: React.FC<TherapistEarningsProps> = ({ therapist, on
                       <span className="text-gray-500">{slot.bookings} bookings</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div
-                        className="bg-gradient-to-r from-orange-500 to-orange-600 h-1.5 rounded-full"
-                        style={{ width: `${slot.percentage}%` }}
-                      ></div>
+                      <div className="bg-orange-600 h-1.5 rounded-full" style={{ width: `${slot.percentage}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Busy Days */}
-            <div className="mb-5">
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="font-semibold text-gray-900 text-sm">Busiest Days</h3>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-medium text-gray-900 text-sm">Busiest Days</h3>
                 <HelpTooltip {...earningsHelp.busiestDays} position="bottom" size="sm" />
               </div>
               <div className="grid grid-cols-7 gap-1.5 mb-4">
@@ -656,35 +545,26 @@ const TherapistEarningsPage: React.FC<TherapistEarningsProps> = ({ therapist, on
                   { day: 'Fri', intensity: 95 },
                   { day: 'Sat', intensity: 60 },
                   { day: 'Sun', intensity: 40 },
-                ]).map((dayData, index) => {
+                ]).map((dayData) => {
                   const day = dayData.day;
-                  const intensity = dayData.intensity;
                   const isSelected = selectedDay === day;
                   return (
                     <button
                       key={day}
                       onClick={() => setSelectedDay(isSelected ? null : day)}
-                      className="text-center transition-all"
+                      className="text-center transition-colors"
                     >
-                      <div
-                        className={`rounded-lg p-2 mb-1 ${
-                          isSelected 
-                            ? 'bg-green-500' 
-                            : 'bg-orange-500'
-                        }`}
-                      >
+                      <div className={`rounded-lg p-2 mb-1 ${isSelected ? 'bg-green-600' : 'bg-orange-500'}`}>
                         <span className="text-xs font-bold text-white">{day}</span>
                       </div>
-                      <span className="text-xs text-gray-600">{intensity}%</span>
+                      <span className="text-xs text-gray-600">{dayData.intensity}%</span>
                     </button>
                   );
                 })}
               </div>
-              
-              {/* Busy Times for Selected Day */}
               {selectedDay && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 animate-fadeIn">
-                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">{selectedDay} - Busy Times</h4>
+                <div className="bg-orange-50/80 border border-orange-200 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3 text-sm">{selectedDay} - Busy Times</h4>
                   <div className="space-y-2">
                     {(selectedDaySlots.length > 0 ? selectedDaySlots : [
                       { time: '9:00 - 11:00 AM', bookings: 8, percentage: 75 },
@@ -699,10 +579,7 @@ const TherapistEarningsPage: React.FC<TherapistEarningsProps> = ({ therapist, on
                           <span className="text-gray-500">{slot.bookings} bookings</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="bg-gradient-to-r from-orange-500 to-orange-600 h-1.5 rounded-full"
-                            style={{ width: `${slot.percentage}%` }}
-                          ></div>
+                          <div className="bg-orange-600 h-1.5 rounded-full" style={{ width: `${slot.percentage}%` }} />
                         </div>
                       </div>
                     ))}
@@ -711,10 +588,9 @@ const TherapistEarningsPage: React.FC<TherapistEarningsProps> = ({ therapist, on
               )}
             </div>
 
-            {/* Recommendations */}
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <h4 className="font-semibold text-orange-900 mb-2 text-sm">💡 Recommendations</h4>
-              <ul className="space-y-1 text-xs text-orange-800">
+              <h4 className="font-medium text-orange-900 mb-2 text-sm">💡 Recommendations</h4>
+              <ul className="space-y-1 text-xs text-orange-800 list-none m-0 p-0">
                 <li>• Mon-Fri 9AM-4PM shows highest bookings</li>
                 <li>• Sunday has low demand - ideal rest day</li>
                 <li>• Friday peaks at 95% - maximize availability</li>
@@ -723,62 +599,51 @@ const TherapistEarningsPage: React.FC<TherapistEarningsProps> = ({ therapist, on
           </div>
         )}
 
-        {/* Payments List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-          <h2 className="text-base font-bold text-gray-900 mb-4">Payment History</h2>
+        {/* Payment History - home style list */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <h2 className="text-sm font-semibold text-gray-900 mb-3">Payment History</h2>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto mb-3"></div>
-              <p className="text-sm text-gray-600">Loading payments...</p>
+            <div className="border border-gray-200 rounded-lg p-6 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-orange-500 border-t-transparent mx-auto mb-2" />
+              <p className="text-sm text-gray-600">{currentLabels.loadingPayments}</p>
+            </div>
+          ) : payments.length === 0 ? (
+            <div className="border border-gray-200 rounded-lg p-6 text-center">
+              <Banknote className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm font-medium text-gray-700">{currentLabels.noPayments}</p>
+              <p className="text-xs text-gray-500 mt-1">{currentLabels.newPayments}</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <ul className="space-y-2 list-none m-0 p-0">
               {payments.map((payment) => (
-                <div
+                <li
                   key={payment.$id}
-                  className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-orange-50/50 transition-colors"
                 >
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h4 className="font-semibold text-gray-900 text-sm">{payment.customerName}</h4>
+                      <h4 className="font-medium text-gray-900 text-sm">{payment.customerName}</h4>
                       <p className="text-xs text-gray-500">ID: {payment.bookingId}</p>
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold border flex items-center gap-1 ${getStatusBadge(payment.status)}`}>
+                    <span className={`px-2 py-1 rounded-lg text-xs font-medium border flex items-center gap-1 ${getStatusBadge(payment.status)}`}>
                       {getStatusIcon(payment.status)}
                       {payment.status.toUpperCase()}
                     </span>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Total:</span>
-                      <p className="font-bold text-gray-900">Rp {payment.amount.toLocaleString('id-ID')}</p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Admin 30%:</span>
-                      <p className="font-bold text-orange-600">- Rp {payment.adminCommission.toLocaleString('id-ID')}</p>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-300">
-                      <span className="text-gray-900 font-semibold">Your Earning:</span>
-                      <p className="font-bold text-green-600 text-base">Rp {payment.netEarning.toLocaleString('id-ID')}</p>
-                    </div>
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-gray-500 text-xs">Date:</span>
-                      <p className="font-medium text-gray-700 text-xs">{new Date(payment.date).toLocaleDateString('id-ID', { 
-                        day: 'numeric', 
-                        month: 'short', 
-                        year: 'numeric' 
-                      })}</p>
-                    </div>
+                  <div className="space-y-1.5 text-sm">
+                    <div className="flex justify-between"><span className="text-gray-600">Total:</span><span className="font-medium text-gray-900">Rp {payment.amount.toLocaleString('id-ID')}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Admin 30%:</span><span className="font-medium text-orange-600">- Rp {payment.adminCommission.toLocaleString('id-ID')}</span></div>
+                    <div className="flex justify-between pt-2 border-t border-gray-200"><span className="font-medium text-gray-900">Your Earning:</span><span className="font-bold text-green-600">Rp {payment.netEarning.toLocaleString('id-ID')}</span></div>
+                    <div className="flex justify-between text-xs text-gray-500">{currentLabels.date}: {new Date(payment.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
       </div>
-      </main>
     </div>
-    </TherapistLayout>
+    </TherapistSimplePageLayout>
   );
 };
 

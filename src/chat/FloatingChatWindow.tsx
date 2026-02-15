@@ -578,26 +578,13 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     }
   };
 
-  // Don't render anything if no subscription or loading (unless therapist – show "active" pill)
-  if (!subscriptionActive && !isLoading) {
-    console.log('🔌 [FloatingChatWindow] No subscription - not rendering');
-    return null;
-  }
-
-  // Therapist: always show a minimal "Bookings" pill when no rooms yet, so chat is displayed and active to receive Book Now / Order Now / scheduled bookings
   const isTherapist = userRole === 'therapist';
+
+  // When no chat rooms: therapist booking status is shown in the Install App container on the Status page (no floating pill).
   if (activeChatRooms.length === 0 && !isLoading) {
-    if (isTherapist) {
-      console.log('📭 [FloatingChatWindow] Therapist – showing active pill (no rooms yet)');
-      return (
-        <div
-          className="fixed bottom-6 right-6 z-[100] bg-orange-500 text-white px-4 py-3 rounded-full shadow-lg border border-orange-600 flex items-center gap-2"
-          title="Book Now, Order Now, and scheduled bookings will appear here"
-        >
-          <span className="text-sm font-medium">💬 Bookings</span>
-          <span className="text-xs text-orange-100">Active</span>
-        </div>
-      );
+    if (!subscriptionActive) {
+      console.log('🔌 [FloatingChatWindow] No subscription - not rendering');
+      return null;
     }
     console.log('📭 [FloatingChatWindow] No active chat rooms - not rendering');
     return null;
@@ -617,7 +604,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
             key={chatRoom.$id}
             ref={isSelected ? windowRef : null}
             className={`
-              fixed bg-white rounded-t-2xl shadow-2xl border border-gray-200 z-50
+              fixed bg-white rounded-t-2xl shadow-2xl border border-gray-200 z-[60]
               transition-all duration-300 ease-in-out
               ${isMinimized ? 'h-16' : 'max-h-[80vh] h-auto min-h-[400px]'}
               w-96
@@ -635,6 +622,15 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
               onMouseDown={isSelected ? handleMouseDown : undefined}
             >
               <div className="flex items-center gap-3">
+                {/* Chat status dot: green flashing when active, red when error (for selected room) */}
+                <span
+                  className={`relative flex h-2.5 w-2.5 flex-shrink-0 rounded-full ${
+                    isSelected && messagesError ? 'bg-red-400' : 'bg-green-300'
+                  }`}
+                  title={isSelected && messagesError ? 'Connection issue' : 'Chat active'}
+                >
+                  {isSelected && !messagesError && <span className="absolute inline-flex h-full w-full rounded-full bg-green-300 animate-ping opacity-75" />}
+                </span>
                 {/* Profile Image */}
                 <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-orange-400 flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {(chatRoom as any).providerProfilePicture || (chatRoom as any).profilePicture ? (

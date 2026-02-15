@@ -807,10 +807,10 @@ button, .btn, .clickable, [role="button"] {
   z-index: 70;
 }
 
-/* Fix z-index stacking context */
+/* Fix z-index stacking context - sticky (not fixed) so content flows under header with no gap */
 .therapist-layout-header {
   z-index: 100 !important;
-  position: fixed !important;
+  position: sticky !important;
   display: flex !important;
   visibility: visible !important;
 }

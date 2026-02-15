@@ -2747,8 +2747,9 @@ const HomePage: React.FC<HomePageProps> = ({
                         <div className="fixed bottom-[140px] right-6 flex flex-col gap-3 z-[60] animate-slideUp pr-2">
                             {/* Advanced Search - Moved to top */}
                             <button
-                                onClick={() => {
-                                    onNavigate?.('advanced-search');
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    (onNavigate || (window as any).setPage)?.('advanced-search');
                                     setFabMenuOpen(false);
                                 }}
                                 className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 hover:scale-105 border border-white/10 will-change-transform"
@@ -2759,8 +2760,9 @@ const HomePage: React.FC<HomePageProps> = ({
                             
                             {/* Women Reviews */}
                             <button
-                                onClick={() => {
-                                    onNavigate?.('women-reviews');
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    (onNavigate || (window as any).setPage)?.('women-reviews');
                                     setFabMenuOpen(false);
                                 }}
                                 className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 hover:scale-105 border border-white/10"
@@ -2771,8 +2773,9 @@ const HomePage: React.FC<HomePageProps> = ({
                             
                             {/* Help & FAQ */}
                             <button
-                                onClick={() => {
-                                    onNavigate?.('help-faq');
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    (onNavigate || (window as any).setPage)?.('help-faq');
                                     setFabMenuOpen(false);
                                 }}
                                 className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 hover:scale-105 border border-white/10"
@@ -2783,8 +2786,9 @@ const HomePage: React.FC<HomePageProps> = ({
                             
                             {/* Top 5 Therapists */}
                             <button
-                                onClick={() => {
-                                    onNavigate?.('top-therapists');
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    (onNavigate || (window as any).setPage)?.('top-therapists');
                                     setFabMenuOpen(false);
                                 }}
                                 className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 hover:scale-105 border border-white/10"
@@ -2795,8 +2799,9 @@ const HomePage: React.FC<HomePageProps> = ({
                             
                             {/* Special Offers */}
                             <button
-                                onClick={() => {
-                                    onNavigate?.('special-offers');
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    (onNavigate || (window as any).setPage)?.('special-offers');
                                     setFabMenuOpen(false);
                                 }}
                                 className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 hover:scale-105 border border-white/10"
@@ -2807,8 +2812,9 @@ const HomePage: React.FC<HomePageProps> = ({
                             
                             {/* Video Center */}
                             <button
-                                onClick={() => {
-                                    onNavigate?.('video-center');
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    (onNavigate || (window as any).setPage)?.('video-center');
                                     setFabMenuOpen(false);
                                 }}
                                 className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 hover:scale-105 border border-white/10"

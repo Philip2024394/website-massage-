@@ -120,25 +120,24 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
 
   return (
     <div className={`relative inline-block ${className}`}>
-      {/* Help Icon Button */}
+      {/* Help Icon Button - small yellow circle with help icon */}
       <button
         ref={buttonRef}
         onClick={toggleTooltip}
         className={`
           help-button
-          ${sizeClasses[size]} 
-          text-orange-500 hover:text-orange-600 
+          w-6 h-6 rounded-full
+          bg-yellow-200 hover:bg-yellow-300 text-yellow-800
           transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 rounded-lg
-          flex items-center justify-center
-          p-2
+          focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
+          flex items-center justify-center flex-shrink-0
         `}
         aria-label={`Help: ${title}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         type="button"
       >
-        <HelpCircle className="w-full h-full" />
+        <HelpCircle className="w-4 h-4" />
       </button>
 
       {/* Popover */}

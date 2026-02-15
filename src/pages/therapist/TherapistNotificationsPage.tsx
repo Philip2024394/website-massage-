@@ -5,9 +5,9 @@ import {
   Bell, Calendar, MessageCircle, AlertCircle, CheckCircle, Clock, X, ExternalLink, 
   TrendingUp, User, DollarSign, Eye, Star, Settings, Zap, Target, BarChart,
   CreditCard, Heart, Shield, Award, Flame, Gauge, Users, MapPin, Camera,
-  Edit3, Globe, Phone, Mail, FileText, Image, Sparkles, Timer, Home, Briefcase
+  Edit3, Globe, Phone, Mail, FileText, Image, Sparkles, Home, Briefcase
 } from 'lucide-react';
-import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import ChatWindow from '../../components/therapist/ChatWindow';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { notificationsHelp } from './constants/helpContent';
@@ -49,6 +49,7 @@ interface AccountHealth {
 interface TherapistNotificationsProps {
   therapist: any;
   onBack: () => void;
+  onNavigate?: (page: string) => void;
   onNavigateToBookings?: () => void;
   onNavigateToChat?: () => void;
   onNavigateToProfile?: () => void;
@@ -59,6 +60,7 @@ interface TherapistNotificationsProps {
 const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({ 
   therapist, 
   onBack,
+  onNavigate,
   onNavigateToBookings,
   onNavigateToChat,
   onNavigateToProfile,
@@ -537,219 +539,127 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
 
   const filteredNotifications = getFilteredNotifications();
 
-  const dict = {
-    therapistDashboard: {
-      thisMonth: 'this month'
-    }
-  };
-
   return (
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-      {/* Page Header */}
-      <TherapistPageHeader
-        title="Notifications"
-        subtitle="Pantau kesehatan akun, booking, dan performa bisnis Anda"
-        onBackToStatus={onBack}
-        icon={<Bell className="w-6 h-6 text-orange-600" />}
-        actions={
-          <div className="flex items-center gap-3">
-            <HelpTooltip {...notificationsHelp.overview} position="left" size="md" />
-            {/* Unread Count Badge */}
-            {unreadCount > 0 && (
-              <div className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full animate-pulse">
-                {unreadCount > 99 ? '99+' : unreadCount} unread
-              </div>
-            )}
-            {/* Online Time */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-              <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{accountHealth.onlineHoursThisMonth.toFixed(1)}h</span>
-              <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
-            </div>
-          </div>
-        }
-      />
-
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Account Health Score Card */}
-        <div className="bg-gradient-to-r from-white to-orange-50 rounded-xl border border-gray-200 p-6 mb-6 shadow-lg">
+    <TherapistSimplePageLayout
+      title="Notifications"
+      subtitle="Pantau kesehatan akun, booking, dan performa bisnis Anda"
+      onBackToStatus={onBack}
+      onNavigate={onNavigate}
+      therapist={therapist}
+      currentPage="therapist-notifications"
+      icon={<Bell className="w-6 h-6 text-orange-600" />}
+      headerActions={<HelpTooltip {...notificationsHelp.overview} position="left" size="md" />}
+    >
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Account Health Score */}
+        <section className="bg-white rounded-lg border border-gray-200 p-4 sm:p-5" aria-labelledby="health-heading">
+          <h2 id="health-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Ringkasan Akun</h2>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Shield className={`w-6 h-6 ${
-                  accountHealth.score >= 90 ? 'text-white' :
-                  accountHealth.score >= 70 ? 'text-white' : 'text-white'
-                }`} />
+              <div className="w-11 h-11 bg-orange-500 rounded-lg flex items-center justify-center">
+                <Shield className="w-6 h-6 text-orange-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Account Health Score</h3>
-                <p className="text-sm text-gray-600">Overall performance rating</p>
+                <h3 className="text-base font-bold text-gray-900">Skor Kesehatan Akun</h3>
+                <p className="text-xs text-gray-600">Rating performa Anda</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold text-gray-900">{accountHealth.score}%</p>
-              <p className={`text-sm font-semibold ${
+              <p className="text-2xl font-bold text-gray-900">{accountHealth.score}%</p>
+              <p className={`text-xs font-semibold ${
                 accountHealth.score >= 90 ? 'text-green-600' :
-                accountHealth.score >= 70 ? 'text-yellow-600' : 'text-red-600'
+                accountHealth.score >= 70 ? 'text-amber-600' : 'text-red-600'
               }`}>
-                {accountHealth.score >= 90 ? 'Excellent' : accountHealth.score >= 70 ? 'Good' : 'Needs Attention'}
+                {accountHealth.score >= 90 ? 'Sangat baik' : accountHealth.score >= 70 ? 'Baik' : 'Perlu perhatian'}
               </p>
             </div>
           </div>
-          
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-3 border shadow-sm">
-              <div className="flex items-center gap-2 mb-1">
-                <Eye className="w-4 h-4 text-blue-500" />
-                <span className="text-xs text-gray-600">Traffic</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Eye className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-xs font-medium text-gray-600">Traffic</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.trafficViews}</p>
-              <p className="text-xs text-green-600">+{accountHealth.trafficIncrease}% this week</p>
+              <p className="text-xs text-gray-500">+{accountHealth.trafficIncrease}% minggu ini</p>
             </div>
-            <div className="bg-white rounded-lg p-3 border shadow-sm">
-              <div className="flex items-center gap-2 mb-1">
-                <Star className="w-4 h-4 text-yellow-500" />
-                <span className="text-xs text-gray-600">Rating</span>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Star className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-xs font-medium text-gray-600">Rating</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.averageRating}</p>
-              <p className="text-xs text-gray-600">from {accountHealth.monthlyBookings} bookings</p>
+              <p className="text-xs text-gray-500">{accountHealth.monthlyBookings} booking</p>
             </div>
-            <div className="bg-white rounded-lg p-3 border shadow-sm">
-              <div className="flex items-center gap-2 mb-1">
-                <Target className="w-4 h-4 text-purple-500" />
-                <span className="text-xs text-gray-600">Profile</span>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Target className="w-3.5 h-3.5 text-purple-600" />
+                <span className="text-xs font-medium text-gray-600">Profil</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.profileCompleteness}%</p>
-              <p className="text-xs text-gray-600">complete</p>
+              <p className="text-xs text-gray-500">lengkap</p>
             </div>
-            <div className="bg-white rounded-lg p-3 border shadow-sm">
-              <div className="flex items-center gap-2 mb-1">
-                <Gauge className="w-4 h-4 text-green-500" />
-                <span className="text-xs text-gray-600">Response</span>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Gauge className="w-3.5 h-3.5 text-green-600" />
+                <span className="text-xs font-medium text-gray-600">Respons</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.responseRate}%</p>
-              <p className="text-xs text-gray-600">rate</p>
+              <p className="text-xs text-gray-500">response rate</p>
             </div>
           </div>
-        </div>
+        </section>
         
-        {/* Critical Alerts Banner */}
+        {/* Critical Alerts */}
         {notifications.filter(n => n.priority === 'critical' && !n.read).length > 0 && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+          <section className="bg-red-50 border border-red-200 rounded-lg p-4" aria-label="Alert kritis">
             <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600" />
-              <div>
-                <h4 className="text-sm font-bold text-red-800">⚠️ Immediate Attention Required!</h4>
-                <p className="text-xs text-red-700 mt-1">
-                  {notifications.filter(n => n.priority === 'critical' && !n.read).length} critical issues need immediate action
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-red-800">Perhatian diperlukan</h4>
+                <p className="text-xs text-red-700 mt-0.5">
+                  {notifications.filter(n => n.priority === 'critical' && !n.read).length} item butuh tindakan segera
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setFilter('critical')}
-                className="ml-auto px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors"
+                className="flex-shrink-0 px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700"
               >
-                View Now
+                Lihat
               </button>
             </div>
-          </div>
+          </section>
         )}
-        
-        {/* Notifications Guide */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-          <div>
-            <h4 className="text-sm font-bold text-gray-900 mb-2">Yang Akan Muncul di Halaman Ini:</h4>
-            <ul className="space-y-1.5 text-xs text-gray-700">
-              <li className="flex items-start gap-2">
-                <Calendar className="w-3.5 h-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
-                <span><strong>Booking Baru:</strong> Notifikasi saat pelanggan membuat booking dengan Anda</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <MessageCircle className="w-3.5 h-3.5 text-purple-500 mt-0.5 flex-shrink-0" />
-                <span><strong>Pesan Pelanggan:</strong> Chat dari pelanggan tentang booking mereka</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Clock className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
-                <span><strong>Reminder:</strong> Pengingat 3 jam sebelum sesi dimulai</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span><strong>Pembayaran:</strong> Konfirmasi pembayaran dari pelanggan</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <AlertCircle className="w-3.5 h-3.5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span><strong>Sistem:</strong> Update penting dari admin dan sistem</span>
-              </li>
-            </ul>
-          </div>
-        </div>
 
-        {/* Status Grid */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => console.log('Status change: available')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'bg-green-50 border-green-500'
-                  : 'border-gray-200 hover:border-green-300'
-              }`}
-            >
-              <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'text-green-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'text-green-700'
-                  : 'text-gray-600'
-              }`}>Tersedia</p>
-            </button>
+        {/* What appears on this page - clear guide */}
+        <section className="bg-white rounded-lg border border-gray-200 p-4" aria-labelledby="guide-heading">
+          <h2 id="guide-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Jenis notifikasi di halaman ini</h2>
+          <ul className="space-y-2 text-sm text-gray-700">
+            <li className="flex items-start gap-2">
+              <Calendar className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <span><strong>Booking baru</strong> — Saat pelanggan memesan dengan Anda</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <MessageCircle className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+              <span><strong>Pesan pelanggan</strong> — Chat tentang booking</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Clock className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+              <span><strong>Reminder</strong> — Pengingat 3 jam sebelum sesi</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+              <span><strong>Pembayaran</strong> — Konfirmasi pembayaran diterima</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+              <span><strong>Sistem</strong> — Update dari admin</span>
+            </li>
+          </ul>
+        </section>
 
-            <button
-              onClick={() => console.log('Status change: busy')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'busy'
-                  ? 'bg-amber-50 border-amber-500'
-                  : 'border-gray-200 hover:border-amber-300'
-              }`}
-            >
-              <Clock className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-700'
-                  : 'text-gray-600'
-              }`}>Sibuk</p>
-            </button>
-
-            <button
-              onClick={() => console.log('Status change: offline')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.availability === 'offline'
-                  ? 'bg-red-50 border-red-500'
-                  : 'border-gray-200 hover:border-red-300'
-              }`}
-            >
-              <X className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-700'
-                  : 'text-gray-600'
-              }`}>Offline</p>
-            </button>
-          </div>
-        </div>
       </div>
-      
+
       {/* Filter Buttons */}
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3">
@@ -845,21 +755,6 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
                 </div>
                 <p className="text-3xl font-bold text-gray-900 mb-1">{notifications.length}</p>
                 <p className="text-xs text-gray-600 font-medium">Total Notifikasi</p>
-              </div>
-
-              {/* Unread Notifications */}
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 p-4 hover:shadow-lg transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm relative">
-                    <AlertCircle className="w-5 h-5 text-orange-500" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse"></span>
-                    )}
-                  </div>
-                  <span className="text-xs font-medium text-orange-700 bg-white px-2 py-0.5 rounded-full">Baru</span>
-                </div>
-                <p className="text-3xl font-bold text-orange-600 mb-1">{unreadCount}</p>
-                <p className="text-xs text-orange-700 font-medium">Belum Dibaca</p>
               </div>
 
               {/* Booking Notifications */}
@@ -1096,7 +991,7 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
         </div>
       )}
 
-    </div>
+    </TherapistSimplePageLayout>
   );
 };
 

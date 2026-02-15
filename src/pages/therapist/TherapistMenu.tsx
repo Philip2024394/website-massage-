@@ -4,7 +4,7 @@ import { FloatingChatWindow } from '../../chat';
 import { Therapist } from '../../types';
 import { therapistMenusService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
-import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2, Clock, ChevronDown, ChevronRight, FileText, DollarSign, Eye, Target, BookOpen, Wrench } from 'lucide-react';
+import { Plus, Trash2, Save, CheckCircle2, Clock, ChevronDown, ChevronRight, FileText, DollarSign, Eye, Target, BookOpen, Wrench } from 'lucide-react';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { menuHelp } from './constants/helpContent';
@@ -294,7 +294,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
           <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-4">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <MenuIcon className="w-5 h-5 text-white" />
+                <BookOpen className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Panduan Lengkap Menu Harga</h2>
@@ -313,8 +313,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Nama Layanan</span>
                 </div>
@@ -343,8 +343,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Clock className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Kotak "Min" (Durasi Minimum)</span>
                 </div>
@@ -374,8 +374,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <DollarSign className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Strategi Harga (x1000)</span>
                 </div>
@@ -405,8 +405,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Eye className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Eye className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Yang Dilihat Pelanggan</span>
                 </div>
@@ -435,8 +435,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Target className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Target className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Best Practices</span>
                 </div>
@@ -467,8 +467,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <BookOpen className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Contoh Menu Sukses</span>
                 </div>
@@ -505,8 +505,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Wrench className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Wrench className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Troubleshooting</span>
                 </div>

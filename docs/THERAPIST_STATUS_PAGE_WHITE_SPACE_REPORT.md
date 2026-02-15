@@ -1,5 +1,7 @@
 # Therapist Dashboard – Status Page White Space & Drawer Profile Link Report
 
+> **Quick fix for future white space issues:** See `docs/guides/WHITE_SPACE_FIX_QUICK_REFERENCE.md` – the reliable fix is to use a **simple structure** (no TherapistLayout wrapper) like How it works and Hotel Safe Pass. The Status page was converted to this structure in Feb 2026.
+
 ## 1. What is stopping the status page from moving up under the header (white padding)
 
 ### Root causes

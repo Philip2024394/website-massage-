@@ -5,7 +5,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Users, Calendar, DollarSign, Gift, Search, X } from 'lucide-react';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import { bookingService } from '../../lib/bookingService';
 import { showToast } from '../../utils/showToastPortal';
 
@@ -133,53 +133,32 @@ const TherapistCustomersPage: React.FC<TherapistCustomersPageProps> = ({
   };
 
   return (
-    <TherapistLayout
+    <TherapistSimplePageLayout
+      title={language === 'id' ? 'Pelanggan Saya' : 'My Customers'}
+      subtitle={`${customers.length} ${language === 'id' ? 'Total Pelanggan' : 'Total Customers'}`}
+      onBackToStatus={onBack || (() => onNavigate?.('therapist-status'))}
+      onNavigate={onNavigate}
       therapist={therapist}
       currentPage="customers"
-      onNavigate={onNavigate || (() => {})}
-      onLogout={onLogout}
       language={language}
+      onLogout={onLogout}
+      icon={<Users className="w-6 h-6 text-white" />}
     >
-      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 pt-0 pb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-orange-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {language === 'id' ? 'Pelanggan Saya' : 'My Customers'}
-                </h1>
-                <p className="text-sm text-gray-600">
-                  {language === 'id' 
-                    ? 'Riwayat booking pelanggan & kirim voucher diskon' 
-                    : 'Customer booking history & send discount vouchers'}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-orange-600">{customers.length}</div>
-              <div className="text-sm text-gray-600">
-                {language === 'id' ? 'Total Pelanggan' : 'Total Customers'}
-              </div>
-            </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={language === 'id' ? 'Cari nama atau jenis massage...' : 'Search name or massage type...'}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-            />
-          </div>
+      <div className="bg-gray-50 px-6 pt-4 pb-6" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+        {/* Search Bar */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={language === 'id' ? 'Cari nama atau jenis massage...' : 'Search name or massage type...'}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          />
         </div>
 
         {/* Customer List */}
-        <div className="p-6">
+        <div className="pt-2">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
@@ -213,8 +192,8 @@ const TherapistCustomersPage: React.FC<TherapistCustomersPageProps> = ({
                     <div className="flex-1">
                       {/* Customer Name & Phone */}
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                          <Users className="w-6 h-6 text-orange-600" />
+                        <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                          <Users className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
@@ -289,7 +268,7 @@ const TherapistCustomersPage: React.FC<TherapistCustomersPageProps> = ({
           )}
         </div>
       </div>
-    </TherapistLayout>
+    </TherapistSimplePageLayout>
   );
 };
 

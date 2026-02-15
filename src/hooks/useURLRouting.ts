@@ -34,6 +34,12 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'admin': '/admin',
         'admin-dashboard': '/admin',
         'todays-discounts': '/discounts',
+        'women-reviews': '/women-reviews',
+        'advanced-search': '/advanced-search',
+        'help-faq': '/help-faq',
+        'top-therapists': '/top-therapists',
+        'special-offers': '/special-offers',
+        'video-center': '/video-center',
         'therapistLogin': '/therapist-login',
         'therapistPortal': '/dashboard/therapist',
         'therapistDashboard': '/dashboard/therapist',
@@ -76,6 +82,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapist-hotel-villa-safe-pass': '/dashboard/therapist/safe-pass',
         'send-discount': '/dashboard/therapist/send-discount',
         'customers': '/dashboard/therapist/customers',
+        'more-customers': '/dashboard/therapist/more-customers',
         
         'massagePlaceLogin': '/place-login',
         'employer-login': '/employer-login',
@@ -293,6 +300,10 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 }
                 if (path === '/dashboard/therapist/customers') {
                     setPage('customers');
+                    return;
+                }
+                if (path === '/dashboard/therapist/more-customers') {
+                    setPage('more-customers');
                     return;
                 }
                 if (path === '/dashboard/therapist/send-discount') {

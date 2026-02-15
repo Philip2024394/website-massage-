@@ -238,7 +238,7 @@ export const HelpIcon: React.FC<HelpIconProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 transition-colors flex-shrink-0 ${className}`}
+      className={`inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-200 hover:bg-yellow-300 text-yellow-800 transition-colors flex-shrink-0 ${className}`}
       aria-label={ariaLabel}
       type="button"
     >

@@ -73,3 +73,57 @@ body,
 .therapist-layout-content { outline: 2px solid blue !important; }
 .therapist-content-wrapper { outline: 2px solid green !important; }
 */
+
+/* ✅ FIX: White gap = margin (no box). Restore sticky header so content flows naturally. */
+.therapist-layout-header {
+  position: sticky !important; /* Override index.css fixed - sticky keeps header in flow, no offset needed */
+}
+.therapist-page-container main,
+.therapist-page-container .therapist-layout-content,
+.therapist-page-container .therapist-content-wrapper,
+.therapist-layout-content,
+.therapist-content-wrapper,
+.therapist-content-wrapper > *:first-child,
+.therapist-content-wrapper > * {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* CRITICAL: Payment Status works because TherapistPageHeader is first; other pages use
+   min-h-[calc(100vh-...)] on root which creates white space. Override to match Payment Status. */
+.therapist-content-wrapper > * {
+  min-height: 0 !important;
+}
+
+/* ============================================================================
+ * MOBILE FIX: White space under header (desktop OK, mobile shows gap)
+ * Cause: body padding-top + 100vh/min-height on mobile viewport
+ * ============================================================================ */
+
+@media (max-width: 768px) {
+  /* Therapist dashboard: no body top padding (header handles safe area) */
+  body:has(.therapist-page-container) {
+    padding-top: 0 !important;
+    padding-left: env(safe-area-inset-left, 0) !important;
+    padding-right: env(safe-area-inset-right, 0) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  }
+  /* Header absorbs safe area so content starts immediately below */
+  .therapist-page-container .therapist-layout-header {
+    padding-top: env(safe-area-inset-top, 0) !important;
+    min-height: calc(60px + env(safe-area-inset-top, 0px)) !important;
+    height: auto !important;
+  }
+  /* #root: use 100dvh on mobile to avoid 100vh "tall viewport" gap */
+  #root:has(.therapist-page-container) {
+    min-height: 100dvh !important;
+  }
+  /* Prevent any content wrapper from creating extra top space */
+  .therapist-page-container .therapist-layout-content,
+  .therapist-page-container .therapist-content-wrapper,
+  .therapist-page-container main {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    min-height: 0 !important;
+  }
+}

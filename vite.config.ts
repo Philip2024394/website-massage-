@@ -146,8 +146,8 @@ export default defineConfig({
   server: {
     // Use 3001 so dev runs on localhost:3001 (fallback 3002, 3003 if in use)
     port: 3001,
-    host: '127.0.0.1', // Explicit IPv4 binding (not 'true')
-    open: false,
+    host: true, // Listen on all interfaces - enables Simple Browser & external access
+    open: true, // Auto-open default browser when dev starts
     strictPort: false, // Allow fallback to 3002, 3003 if 3001 is in use
     cors: true,
     headers: {

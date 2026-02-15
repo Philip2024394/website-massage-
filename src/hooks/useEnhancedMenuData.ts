@@ -142,7 +142,6 @@ export function useEnhancedMenuData(
     
     return () => {
       isMounted = false;
-      console.log('⚠️ useEnhancedMenuData: Component unmounting, cleaning up');
     };
   }, [loadMenu]);
   
@@ -334,13 +333,6 @@ export function useCompatibleMenuData(
       min90: '90',
       min120: '120'
     }));
-    
-    console.log('🔍 useCompatibleMenuData transformed:', {
-      therapistId,
-      originalCount: enhancedMenuData.menuData.length,
-      transformedCount: transformed.length,
-      services: transformed.map(s => s.serviceName)
-    });
     
     return transformed;
   }, [enhancedMenuData.menuData, therapistId]);

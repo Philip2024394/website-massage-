@@ -1166,7 +1166,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                 {booking.isScheduled && (
                   <div className="mb-5 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-orange-200 rounded-xl">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-yellow-500 flex items-center justify-center">
                         <span className="text-lg">📅</span>
                       </div>
                       <h4 className="font-bold text-orange-900">{currentLabels.scheduledBooking}</h4>
@@ -1223,7 +1223,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                         {!booking.depositPaid && (
                           <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 rounded bg-yellow-100 flex items-center justify-center">
+                              <div className="w-6 h-6 rounded bg-yellow-500 flex items-center justify-center">
                                 <span className="text-sm">⏳</span>
                               </div>
                               <p className="text-sm font-semibold text-yellow-800">{currentLabels.waitingPayment}</p>

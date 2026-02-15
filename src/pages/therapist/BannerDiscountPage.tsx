@@ -5,7 +5,7 @@
  */
 import React, { useState } from 'react';
 import { Gift, Send, Check, Copy, ArrowLeft } from 'lucide-react';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import { showToast } from '../../utils/showToastPortal';
 import chatService from '../../lib/simpleChatService';
 
@@ -171,45 +171,18 @@ const BannerDiscountPage: React.FC<BannerDiscountPageProps> = ({
   };
 
   return (
-    <TherapistLayout
+    <TherapistSimplePageLayout
+      title={language === 'id' ? 'Kirim Voucher Diskon' : 'Send Discount Voucher'}
+      subtitle={customer ? `${language === 'id' ? 'Untuk: ' : 'To: '}${customer.customerName}${customer.lastMassageType ? ` • ${customer.lastMassageType}` : ''}` : undefined}
+      onBackToStatus={onBack}
+      onNavigate={onNavigate}
       therapist={therapist}
-      currentPage="banner-discount"
-      onNavigate={onNavigate || (() => {})}
-      onLogout={onLogout}
+      currentPage="send-discount"
       language={language}
+      onLogout={onLogout}
+      icon={<Gift className="w-6 h-6 text-orange-600" />}
     >
-      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 pt-0 pb-6">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">
-              {language === 'id' ? 'Kembali ke Pelanggan' : 'Back to Customers'}
-            </span>
-          </button>
-
-          <div className="flex items-center gap-3">
-            <Gift className="w-8 h-8 text-orange-600" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {language === 'id' ? 'Kirim Voucher Diskon' : 'Send Discount Voucher'}
-              </h1>
-              {customer && (
-                <p className="text-sm text-gray-600">
-                  {language === 'id' ? 'Untuk: ' : 'To: '}
-                  <span className="font-semibold">{customer.customerName}</span>
-                  {customer.lastMassageType && (
-                    <span className="text-gray-500"> • {customer.lastMassageType}</span>
-                  )}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
+      <div className="bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
         {/* Content */}
         <div className="p-6 max-w-4xl mx-auto">
           {!sent ? (
@@ -353,7 +326,7 @@ const BannerDiscountPage: React.FC<BannerDiscountPageProps> = ({
           )}
         </div>
       </div>
-    </TherapistLayout>
+    </TherapistSimplePageLayout>
   );
 };
 

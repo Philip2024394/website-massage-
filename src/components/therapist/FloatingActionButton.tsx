@@ -185,9 +185,9 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isExpanded]);
 
-  // Position classes
+  // Position classes - below floating chat button (chat is above, FAB under)
   const positionClasses = {
-    'bottom-right': 'bottom-6 right-6',
+    'bottom-right': 'top-32 right-4 sm:top-28 sm:right-6',
     'bottom-left': 'bottom-6 left-6',
     'bottom-center': 'bottom-6 left-1/2 transform -translate-x-1/2'
   };
@@ -212,11 +212,11 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   return (
     <div
       ref={fabRef}
-      className={`fixed z-50 ${positionClasses[position]} ${className}`}
+      className={`fixed z-40 ${positionClasses[position]} ${className}`}
     >
-      {/* Quick Action Items */}
+      {/* Quick Action Items - black glass effect, icons, stacked above main button */}
       {isExpanded && (
-        <div className="absolute bottom-20 right-0 space-y-3 animate-fadeIn">
+        <div className="absolute bottom-full right-0 mb-3 space-y-2 animate-fadeIn flex flex-col-reverse">
           {visibleActions.map((action, index) => {
             const Icon = action.icon;
             return (
@@ -230,9 +230,9 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
                     action.onClick();
                     setIsExpanded(false);
                   }}
-                  className={`w-12 h-12 rounded-full shadow-lg ${action.bgColor} ${action.color} 
-                    flex items-center justify-center transition-all duration-200 transform hover:scale-110 
-                    focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 relative`}
+                  className="w-12 h-12 rounded-full shadow-lg backdrop-blur-md bg-black/40 border border-white/20 text-white
+                    flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:bg-black/60
+                    focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent relative"
                   aria-label={action.label}
                 >
                   <Icon className="w-5 h-5" />
@@ -246,14 +246,14 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
                   )}
                 </button>
                 
-                {/* Label */}
+                {/* Label - left of button on hover */}
                 {(showLabel || size === 'sm') && (
-                  <div className="absolute right-16 top-1/2 transform -translate-y-1/2 
-                    bg-gray-900 text-white text-sm px-3 py-1 rounded-lg whitespace-nowrap 
-                    opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  <div className="absolute right-14 top-1/2 transform -translate-y-1/2 
+                    bg-black/80 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-lg whitespace-nowrap 
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none border border-white/10">
                     {action.label}
                     <div className="absolute left-full top-1/2 transform -translate-y-1/2 
-                      border-l-4 border-l-gray-900 border-y-4 border-y-transparent"></div>
+                      border-l-4 border-l-black/80 border-y-4 border-y-transparent"></div>
                   </div>
                 )}
               </div>

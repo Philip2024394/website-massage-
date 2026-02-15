@@ -303,8 +303,8 @@ select {
     -ms-text-size-adjust: 100%;
   }
   
-  /* Safe area insets for notch devices */
-  body {
+  /* Safe area insets for notch devices (exclude therapist dashboard - it handles safe area in header) */
+  body:not(:has(.therapist-page-container)) {
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 }

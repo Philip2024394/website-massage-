@@ -4,7 +4,7 @@
  */
 import React, { useState } from 'react';
 import { FileText, Shield, ChevronDown, ChevronUp, Clock } from 'lucide-react';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { legalHelp } from './constants/helpContent';
 
@@ -133,15 +133,19 @@ Data dikumpulkan hanya dengan persetujuan Anda dan sesuai hukum yang berlaku.`
   const content = activeTab === 'terms' ? termsContent : privacyContent;
 
   return (
-    <TherapistLayout
+    <TherapistSimplePageLayout
+      title={language === 'id' ? 'Syarat & Ketentuan' : 'Terms & Conditions'}
+      subtitle={language === 'id' ? 'Syarat, Kebijakan Privasi, dan Dukungan' : 'Terms, Privacy Policy, and Support'}
+      onBackToStatus={onBack}
+      onNavigate={onNavigate}
       therapist={therapist}
       currentPage="legal"
-      onNavigate={onNavigate}
       language={language}
       onLogout={onLogout}
+      icon={<FileText className="w-6 h-6 text-orange-600" />}
     >
-      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
-        <div className="max-w-sm mx-auto px-4 py-6">
+      <div className="bg-white">
+        <div className="max-w-sm mx-auto px-4 pt-0 pb-6">
           {/* Tab Switcher */}
           <div className="mb-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex gap-2">
@@ -214,7 +218,7 @@ Data dikumpulkan hanya dengan persetujuan Anda dan sesuai hukum yang berlaku.`
           </div>
         </div>
       </div>
-    </TherapistLayout>
+    </TherapistSimplePageLayout>
   );
 };
 

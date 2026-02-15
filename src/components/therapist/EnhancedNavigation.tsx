@@ -28,6 +28,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Home, User, Calendar, DollarSign, Bell, Settings, Search, Plus, Star, Clock, TrendingUp, Zap, Play as ChevronRight, ChevronDown, Star as Bookmark, Clock as History, Zap as Command, Users, CreditCard, BarChart, Shield, FileText, Gift, FileText as Clipboard, DollarSign as Wallet, MessageCircle} from 'lucide-react';
+import { getTherapistSidebarPage } from '../../config/therapistSidebarConfig';
 
 export interface NavigationItem {
   id: string;
@@ -204,6 +205,15 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         description: 'Submit payment proof'
       },
       {
+        id: 'payment-status',
+        label: 'Payment Status',
+        icon: FileText,
+        color: 'text-green-500',
+        category: 'financial',
+        priority: 'medium',
+        description: 'Track payment status'
+      },
+      {
         id: 'commission-payment',
         label: 'Commission',
         icon: Wallet,
@@ -292,8 +302,6 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
   const [categories, setCategories] = useState<NavigationCategory[]>(NAVIGATION_CATEGORIES);
   const [recentItems, setRecentItems] = useState<string[]>([]);
   const [favoriteItems, setFavoriteItems] = useState<string[]>([]);
-  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
-
   // Load user preferences
   useEffect(() => {
     const stored = localStorage.getItem('therapist_nav_preferences');
@@ -390,82 +398,81 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
       if (e.key === 'Escape' && onClose) {
         onClose();
       }
-      
-      // Show shortcuts with ?
-      if (e.key === '?' && !e.shiftKey) {
-        e.preventDefault();
-        setShowKeyboardShortcuts(true);
-      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  /* List item style: slight orange shade, ul design; quick-booking-check → bookings, status → therapist-status via config */
   const NavigationItem: React.FC<{ item: NavigationItem; showCategory?: boolean }> = ({ 
     item, 
     showCategory = false 
   }) => {
     const Icon = item.icon;
-    const isActive = currentPage === item.id;
+    const canonicalPage = getTherapistSidebarPage(item.id);
+    const isActive = currentPage === canonicalPage;
     const isFavorite = favoriteItems.includes(item.id);
     
     return (
-      <div className={`group relative flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer ${
-        isActive 
-          ? 'bg-orange-100 border-l-4 border-orange-500' 
-          : 'hover:bg-gray-50 hover:border-l-4 hover:border-gray-300'
+      <li className={`group relative list-none rounded-lg transition-colors ${
+        isActive ? 'bg-orange-100 border border-orange-200' : 'bg-orange-50/80 hover:bg-orange-100 border border-orange-100'
       }`}>
         <button
           onClick={() => handleNavigate(item.id)}
-          className="flex items-center gap-3 flex-1 text-left"
+          className="flex items-center gap-3 w-full py-2.5 px-3 pr-10 rounded-lg transition-colors text-left"
         >
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-            isActive ? 'bg-orange-500 text-white' : 'bg-gray-100 group-hover:bg-gray-200'
-          }`}>
-            <Icon className="w-5 h-5" />
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className={`font-medium truncate ${
-                isActive ? 'text-orange-900' : 'text-gray-900'
-              }`}>
-                {item.label}
-              </span>
-              {item.badge && (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                  {item.badge}
-                </span>
-              )}
-              {showCategory && (
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                  {categories.find(c => c.id === item.category)?.label}
-                </span>
-              )}
-            </div>
-            {item.description && (
-              <p className="text-sm text-gray-500 truncate">{item.description}</p>
-            )}
-          </div>
+          <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+            <Icon className={`w-5 h-5 ${isActive ? 'text-orange-600' : 'text-orange-500'}`} />
+          </span>
+          <span className={`text-sm font-medium flex-1 min-w-0 truncate ${isActive ? 'text-orange-800' : 'text-gray-700'}`}>
+            {item.label}
+          </span>
+          {item.badge && (
+            <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+              {item.badge}
+            </span>
+          )}
+          {showCategory && (
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+              {categories.find(c => c.id === item.category)?.label}
+            </span>
+          )}
         </button>
-        
         <button
           onClick={() => toggleFavorite(item.id)}
-          className={`opacity-0 group-hover:opacity-100 p-2 rounded-lg transition-all ${
+          className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2 rounded-lg transition-all flex-shrink-0 ${
             isFavorite ? 'text-yellow-500 opacity-100' : 'text-gray-400 hover:text-yellow-500'
           }`}
         >
           <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
         </button>
-      </div>
+      </li>
     );
   };
 
   return (
-    <div className={`bg-white rounded-xl shadow-xl border border-gray-200 ${className}`}>
-      {/* Header with Search */}
-      <div className="p-4 border-b border-gray-200">
+    <div className={`bg-white rounded-xl shadow-xl border border-gray-200 flex flex-col h-full ${className}`}>
+      {/* Header - same as home page AppDrawer: Inda Street + border-b border-black */}
+      <div className="p-6 flex justify-between items-center border-b border-black flex-shrink-0">
+        <h2 className="font-bold text-2xl">
+          <span className="text-black">Inda</span>
+          <span className="text-orange-500">Street</span>
+        </h2>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full min-w-[56px] min-h-[56px] w-14 h-14 md:min-w-[48px] md:min-h-[48px] md:w-12 md:h-12 flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+            aria-label="Close menu"
+          >
+            <span className="sr-only">Close</span>
+            <svg className="w-6 h-6 md:w-5 md:h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        )}
+      </div>
+      {/* Search & Quick Actions */}
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -491,14 +498,20 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;
+              const canonicalPage = getTherapistSidebarPage(action.id);
+              const isActive = currentPage === canonicalPage;
               return (
                 <button
                   key={action.id}
                   onClick={() => handleNavigate(action.id)}
-                  className="flex items-center gap-2 p-2 bg-gray-50 hover:bg-orange-50 rounded-lg transition-colors text-left"
+                  className={`flex items-center gap-2 p-2.5 rounded-lg border transition-colors text-left ${
+                    isActive
+                      ? 'bg-orange-100 border-orange-200 text-orange-800'
+                      : 'bg-orange-50/80 hover:bg-orange-100 border-orange-100 text-gray-700'
+                  }`}
                 >
-                  <Icon className={`w-4 h-4 ${action.color}`} />
-                  <span className="text-sm font-medium text-gray-700 truncate">
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-orange-600' : 'text-orange-500'}`} />
+                  <span className="text-sm font-medium truncate">
                     {action.label}
                   </span>
                   {action.badge && (
@@ -513,25 +526,25 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
         </div>
       </div>
 
-      {/* Navigation Content */}
-      <div className="p-4 max-h-96 ">
+      {/* Navigation Content - scrollable so footer stays visible */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-4">
         {/* Search Results */}
         {searchQuery && (
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">
               Search Results ({filteredItems.length})
             </h3>
-            <div className="space-y-1">
-              {filteredItems.length === 0 ? (
-                <p className="text-gray-500 text-sm py-4 text-center">
-                  No results found for "{searchQuery}"
-                </p>
-              ) : (
-                filteredItems.map(item => (
+            {filteredItems.length === 0 ? (
+              <p className="text-gray-500 text-sm py-4 text-center">
+                No results found for "{searchQuery}"
+              </p>
+            ) : (
+              <ul className="space-y-1.5 list-none m-0 p-0">
+                {filteredItems.map(item => (
                   <NavigationItem key={item.id} item={item} showCategory />
-                ))
-              )}
-            </div>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
@@ -544,11 +557,11 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
                   <History className="w-4 h-4 text-gray-500" />
                   Recent
                 </h3>
-                <div className="space-y-1">
+                <ul className="space-y-1.5 list-none m-0 p-0">
                   {recentItemsData.slice(0, 3).map(item => (
                     <NavigationItem key={item.id} item={item} />
                   ))}
-                </div>
+                </ul>
               </div>
             )}
             
@@ -558,11 +571,11 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
                   <Bookmark className="w-4 h-4 text-yellow-500" />
                   Favorites
                 </h3>
-                <div className="space-y-1">
+                <ul className="space-y-1.5 list-none m-0 p-0">
                   {favoriteItemsData.map(item => (
                     <NavigationItem key={item.id} item={item} />
                   ))}
-                </div>
+                </ul>
               </div>
             )}
           </div>
@@ -594,11 +607,11 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
                   </button>
                   
                   {!category.collapsed && (
-                    <div className="ml-4 mt-2 space-y-1">
+                    <ul className="ml-4 mt-2 space-y-1.5 list-none m-0 p-0">
                       {category.items.map(item => (
                         <NavigationItem key={item.id} item={item} />
                       ))}
-                    </div>
+                    </ul>
                   )}
                 </div>
               );
@@ -606,48 +619,6 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <span>Press ? for shortcuts</span>
-          <button
-            onClick={() => setShowKeyboardShortcuts(true)}
-            className="text-orange-500 hover:text-orange-600 font-medium"
-          >
-            View shortcuts
-          </button>
-        </div>
-      </div>
-
-      {/* Keyboard Shortcuts Modal */}
-      {showKeyboardShortcuts && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold mb-4">Keyboard Shortcuts</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span>Search navigation</span>
-                <kbd className="px-2 py-1 bg-gray-100 rounded text-sm">⌘ K</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span>Close panel</span>
-                <kbd className="px-2 py-1 bg-gray-100 rounded text-sm">Esc</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span>Show shortcuts</span>
-                <kbd className="px-2 py-1 bg-gray-100 rounded text-sm">?</kbd>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowKeyboardShortcuts(false)}
-              className="w-full mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-            >
-              Got it!
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

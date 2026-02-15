@@ -62,37 +62,13 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
     handleBookNowClick,
     closeAllModals,
     showBadges = true,
-    badgesRefreshKey = Date.now().toString() // Dynamic refresh key for session-based badge updates
+    badgesRefreshKey = '' // Stable default; pass a value only when badges need refresh
 }) => {
-    // 🎯 CRITICAL DEBUG: Log EVERY render
-    console.log('🔄 [PriceListModal] RENDER', {
-        showPriceListModal,
-        therapistName: therapist?.name,
-        timestamp: new Date().toISOString()
-    });
-
-    // 🔍 DEBUG: Component lifecycle
-    React.useEffect(() => {
-        console.log('🟢 [PriceListModal] MOUNTED');
-        return () => {
-            console.log('🔴 [PriceListModal] UNMOUNTED');
-            console.log('   🚨 If modal was open, unmount destroyed it!');
-        };
-    }, []);
-
     // 🎯 GOLD STANDARD: Stabilize therapist ID with useMemo to prevent cascading re-renders
     const therapistDocumentId = useMemo(() => 
         therapist?.appwriteId || therapist?.$id || therapist?.id?.toString() || '',
         [therapist?.appwriteId, therapist?.$id, therapist?.id]
     );
-    
-    console.log('🔍 [PriceListModal] Resolving therapist ID:', {
-        appwriteId: therapist?.appwriteId,
-        $id: therapist?.$id,
-        id: therapist?.id,
-        resolved: therapistDocumentId,
-        source: therapist?.appwriteId ? 'appwriteId' : therapist?.$id ? '$id' : therapist?.id ? 'id' : 'NONE'
-    });
 
     // 🎯 ENHANCED MENU DATA INTEGRATION (pass therapist so dashboard 3 prices → "Traditional Massage" in slider)
     const {
@@ -110,18 +86,6 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
     // Track booking events for badge updates
     const handleServiceBooking = async (service: any, bookingType: 'immediate' | 'scheduled') => {
         try {
-            // 🔍 DIAGNOSTIC: Log therapist data structure
-            console.log('📋 [PriceListModal] handleServiceBooking called with:', {
-                therapistId: therapist?.id,
-                therapistAppwriteId: therapist?.appwriteId,
-                therapist$id: therapist?.$id,
-                therapistName: therapist?.name,
-                serviceId: service.id,
-                serviceName: service.serviceName,
-                bookingType,
-                fullTherapist: therapist
-            });
-
             // 🔒 CRITICAL: Ensure therapist has at least one valid ID field
             const therapistDocumentId = therapist?.appwriteId || therapist?.$id || therapist?.id?.toString();
             
@@ -131,8 +95,6 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                 alert('⚠️ Unable to create booking: Therapist data is incomplete. Please refresh the page and try again.');
                 return;
             }
-            
-            console.log('✅ [PriceListModal] Therapist ID resolved:', therapistDocumentId);
 
             // Track the booking for badge system
             if (enhancedMenu?.markServiceBooked && service.id) {

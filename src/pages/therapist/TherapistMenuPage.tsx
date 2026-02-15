@@ -4,8 +4,8 @@ import { FloatingChatWindow } from '../../chat';
 import { Therapist } from '../../types';
 import { therapistMenusService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
-import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2, Clock, ChevronDown, ChevronRight, FileText, DollarSign, Eye, Target, BookOpen, Wrench } from 'lucide-react';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
+import { Plus, Trash2, Save, CheckCircle2, Clock, ChevronDown, ChevronRight, FileText, DollarSign, Eye, Target, BookOpen, Wrench } from 'lucide-react';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { menuHelp } from './constants/helpContent';
 
@@ -260,49 +260,19 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
   };
 
   return (
-    <TherapistLayout
+    <TherapistSimplePageLayout
+      title="Panduan Lengkap Menu Harga"
+      subtitle="Cara menggunakan sistem menu pricing"
+      onBackToStatus={() => onNavigate?.('therapist-status')}
+      onNavigate={handleNavigate}
       therapist={therapist}
       currentPage="custom-menu"
-      onNavigate={handleNavigate}
       language={language}
       onLogout={onLogout}
+      icon={<BookOpen className="w-6 h-6 text-orange-600" />}
     >
-    <main className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x', paddingBottom: 'max(env(safe-area-inset-bottom, 15px), 80px)' }}>
-      <div className="max-w-sm mx-auto bg-white shadow-sm">
-
-        {/* Content Area */}
-        <div className="px-8 pt-0 pb-6">
-          <div className="flex items-center gap-2 mb-4">
-              
-              {/* Data Size Indicator */}
-              {services.length > 0 && (() => {
-                const validServices = services.filter(s => s.serviceName.trim());
-                const dataSize = new Blob([JSON.stringify(validServices)]).size;
-                const percentage = (dataSize / 50000) * 100;
-                const isNearLimit = percentage > 80;
-                const isOverLimit = dataSize > 50000;
-                
-                // Return empty since we removed the display
-                return null;
-              })()}
-            </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-4 sm:p-6 space-y-4">
-          {/* Page Header */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <MenuIcon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Panduan Lengkap Menu Harga</h2>
-                <p className="text-sm text-gray-500">Cara menggunakan sistem menu pricing</p>
-              </div>
-            </div>
-          </div>
-
+    <div className="bg-white">
+      <div className="max-w-sm mx-auto px-4 pt-0 pb-3 space-y-4">
           {/* Collapsible Guide Sections */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             
@@ -313,8 +283,8 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Nama Layanan</span>
                 </div>
@@ -343,8 +313,8 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Clock className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Kotak "Min" (Durasi Minimum)</span>
                 </div>
@@ -374,8 +344,8 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <DollarSign className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Strategi Harga (x1000)</span>
                 </div>
@@ -405,8 +375,8 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Eye className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Eye className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Yang Dilihat Pelanggan</span>
                 </div>
@@ -435,8 +405,8 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Target className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Target className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Best Practices</span>
                 </div>
@@ -467,8 +437,8 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <BookOpen className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Contoh Menu Sukses</span>
                 </div>
@@ -505,8 +475,8 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Wrench className="w-4 h-4 text-orange-600" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Wrench className="w-4 h-4 text-white" />
                   </div>
                   <span className="font-semibold text-gray-800">Troubleshooting</span>
                 </div>
@@ -727,8 +697,7 @@ const TherapistMenuPage: React.FC<TherapistMenuProps> = ({ therapist, onNavigate
               </>
           </div>
         </div>
-      </main>
-    </TherapistLayout>
+    </TherapistSimplePageLayout>
     );
 };
 

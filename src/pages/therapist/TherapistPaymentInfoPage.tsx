@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { KTP_VERIFICATION_STATES, VERIFICATION_BADGE_BOOKING_INCREASE_PERCENTAGE } from '../../constants/businessLogic';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import { therapistDashboardService } from '../../lib/appwrite/services/therapistDashboard.service';
 import { showToast } from '../../utils/showToastPortal';
 import PaymentCard from '../../components/PaymentCard';
@@ -297,148 +297,72 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
   // Debug log to confirm page is rendering
   console.log('🏦 TherapistPaymentInfoPage RENDER - therapist:', therapist?.name || 'null', 'loading:', loading);
 
-  // Show loading state while fetching dashboard data
   if (loading) {
     return (
-      <TherapistLayout
+      <TherapistSimplePageLayout
+        title={currentLabels.title}
+        subtitle="Komisi 30% per booking"
+        onBackToStatus={onBack}
+        onNavigate={handleNavigate}
         therapist={therapist}
         currentPage="payment"
-        onNavigate={handleNavigate}
         language={language}
         onLogout={onLogout}
+        icon={<CreditCard className="w-6 h-6 text-orange-600" />}
       >
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">{language === 'id' ? 'Memuat data...' : 'Loading data...'}</p>
+        <div className="bg-gray-50 min-h-full">
+          <div className="max-w-2xl mx-auto px-4 py-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-orange-500 border-t-transparent mx-auto mb-3" />
+              <p className="text-sm text-gray-600">{language === 'id' ? 'Memuat data...' : 'Loading data...'}</p>
+            </div>
           </div>
         </div>
-      </TherapistLayout>
+      </TherapistSimplePageLayout>
     );
   }
 
   return (
-    <TherapistLayout
+    <TherapistSimplePageLayout
+      title={currentLabels.title}
+      subtitle="Komisi 30% per booking"
+      onBackToStatus={onBack}
+      onNavigate={handleNavigate}
       therapist={therapist}
       currentPage="payment"
-      onNavigate={handleNavigate}
       language={language}
       onLogout={onLogout}
+      icon={<CreditCard className="w-6 h-6 text-orange-600" />}
+      headerActions={
+        <div className="flex items-center gap-2">
+          <HelpTooltip
+            title={therapistDashboardHelp.paymentInfo.directPayment.title}
+            content={therapistDashboardHelp.paymentInfo.directPayment.content}
+            benefits={therapistDashboardHelp.paymentInfo.directPayment.benefits}
+            size="sm"
+            position="bottom"
+          />
+          <HelpTooltip
+            title={therapistDashboardHelp.paymentInfo.commissionSystem.title}
+            content={therapistDashboardHelp.paymentInfo.commissionSystem.content}
+            benefits={therapistDashboardHelp.paymentInfo.commissionSystem.benefits}
+            size="sm"
+            position="bottom"
+          />
+        </div>
+      }
     >
-      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
-        {/* Main Content */}
-        <main className="max-w-sm mx-auto px-4 py-6">
-          <div className="space-y-6">
-            {/* Standardized Status Header */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
-                    <HelpTooltip
-                      title={therapistDashboardHelp.paymentInfo.directPayment.title}
-                      content={therapistDashboardHelp.paymentInfo.directPayment.content}
-                      benefits={therapistDashboardHelp.paymentInfo.directPayment.benefits}
-                      size="sm"
-                      position="bottom"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm text-gray-600">Komisi 30% per booking</p>
-                    <HelpTooltip
-                      title={therapistDashboardHelp.paymentInfo.commissionSystem.title}
-                      content={therapistDashboardHelp.paymentInfo.commissionSystem.content}
-                      benefits={therapistDashboardHelp.paymentInfo.commissionSystem.benefits}
-                      size="sm"
-                      position="bottom"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
-                <span className="text-xs text-gray-500">bulan ini</span>
-              </div>
-            </div>
-
-            {/* Status Grid */}
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={() => console.log('Status change: available')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'available' && therapist?.availability === 'online'
-                    ? 'bg-green-50 border-green-500'
-                    : 'border-gray-200 hover:border-green-300'
-                }`}
-              >
-                <CheckCircle2 className={`w-6 h-6 mx-auto mb-2 ${
-                  therapist?.status === 'available' && therapist?.availability === 'online'
-                    ? 'text-green-600'
-                    : 'text-gray-400'
-                }`} />
-                <p className={`text-sm font-semibold ${
-                  therapist?.status === 'available' && therapist?.availability === 'online'
-                    ? 'text-green-700'
-                    : 'text-gray-600'
-                }`}>Tersedia</p>
-              </button>
-
-              <button
-                onClick={() => console.log('Status change: busy')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'busy'
-                    ? 'bg-amber-50 border-amber-500'
-                    : 'border-gray-200 hover:border-amber-300'
-                }`}
-              >
-                <Clock className={`w-6 h-6 mx-auto mb-2 ${
-                  therapist?.status === 'busy'
-                    ? 'text-amber-600'
-                    : 'text-gray-400'
-                }`} />
-                <p className={`text-sm font-semibold ${
-                  therapist?.status === 'busy'
-                    ? 'text-amber-700'
-                    : 'text-gray-600'
-                }`}>Sibuk</p>
-              </button>
-
-              <button
-                onClick={() => console.log('Status change: offline')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.availability === 'offline'
-                    ? 'bg-red-50 border-red-500'
-                    : 'border-gray-200 hover:border-red-300'
-                }`}
-              >
-                <AlertCircle className={`w-6 h-6 mx-auto mb-2 ${
-                  therapist?.availability === 'offline'
-                    ? 'text-red-600'
-                    : 'text-gray-400'
-                }`} />
-                <p className={`text-sm font-semibold ${
-                  therapist?.availability === 'offline'
-                    ? 'text-red-700'
-                    : 'text-gray-600'
-                }`}>Offline</p>
-              </button>
-            </div>
-          </div>
-          
-          {/* Info Section */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <CreditCard className="w-6 h-6 text-orange-600" />
+      <div className="bg-gray-50 min-h-full">
+        <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+          {/* Info Section - home style */}
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-orange-500 rounded-lg flex-shrink-0">
+                <CreditCard className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">Sistem Pembayaran P2P Langsung</h2>
-                <p className="text-sm text-gray-600 mb-4">
+                <h2 className="text-base font-semibold text-gray-900 mb-2">Sistem Pembayaran P2P Langsung</h2>
+                <p className="text-sm text-gray-600 mb-3">
                   Platform kami memfasilitasi koneksi antara Anda dan pelanggan, tetapi tidak memproses pembayaran.
                   Semua pembayaran dilakukan langsung dari pelanggan kepada Anda setelah layanan selesai.
                 </p>
@@ -465,14 +389,14 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
           </div>
 
           {/* KTP ID Card Upload Section */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <FileCheck className="w-6 h-6 text-orange-600" />
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 bg-orange-500 rounded-lg flex-shrink-0">
+                <FileCheck className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-lg font-semibold text-gray-900">Verifikasi KTP Diperlukan</h2>
+                  <h2 className="text-base font-semibold text-gray-900">Verifikasi KTP Diperlukan</h2>
                   <HelpTooltip
                     title={therapistDashboardHelp.paymentInfo.ktpVerification.title}
                     content={therapistDashboardHelp.paymentInfo.ktpVerification.content}
@@ -552,7 +476,7 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
                   </div>
                 </div>
               ) : (
-                <label className="block w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-colors">
+                <label className="block w-full border border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/50 transition-colors">
                   <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
                   <p className="text-sm font-medium text-gray-700 mb-1">Klik untuk upload foto KTP</p>
                   <p className="text-xs text-gray-500">PNG, JPG maksimal 5MB</p>
@@ -579,10 +503,10 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
 
           {/* Live Preview Section */}
           {(bankName.trim() || accountName.trim() || accountNumber.trim()) && (
-            <div className="border border-gray-200 rounded-lg p-6">
-              <div className="text-center mb-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="text-center mb-4">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900">Preview Langsung</h3>
+                  <h3 className="text-base font-semibold text-gray-900">Preview Langsung</h3>
                   <HelpTooltip
                     title={therapistDashboardHelp.paymentInfo.livePreview.title}
                     content={therapistDashboardHelp.paymentInfo.livePreview.content}
@@ -602,10 +526,10 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
                 />
               </div>
               
-              <div className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-orange-100 rounded">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="bg-orange-50/80 border border-orange-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <div className="p-2 bg-orange-500 rounded-lg">
+                    <div className="w-2 h-2 bg-white rounded-full" />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-900 mb-3">Fitur Kartu Pembayaran</h4>
@@ -634,9 +558,9 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
           )}
 
           {/* Bank Details Form */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Detail Rekening Bank</h3>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-sm font-semibold text-gray-900">Detail Rekening Bank</h3>
               <HelpTooltip
                 title={therapistDashboardHelp.paymentInfo.bankDetails.title}
                 content={therapistDashboardHelp.paymentInfo.bankDetails.content}
@@ -646,7 +570,7 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
               />
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Nama Bank <span className="text-orange-600">*</span>
@@ -718,10 +642,10 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
             </div>
           </div>
 
-          {/* Save Button */}
-          <div className="pt-2">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <span className="text-sm text-gray-600">Data Anda disimpan dengan aman</span>
+          {/* Save Button - home style: solid, no gradient, no scale */}
+          <div className="pt-1">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-xs text-gray-500">Data Anda disimpan dengan aman</span>
               <HelpTooltip
                 title={therapistDashboardHelp.paymentInfo.dataSource.title}
                 content={therapistDashboardHelp.paymentInfo.dataSource.content}
@@ -733,11 +657,11 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
             <button
               onClick={handleSave}
               disabled={saving || !bankName.trim() || !accountName.trim() || !accountNumber.trim()}
-              className="w-full px-6 py-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold text-lg hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] disabled:transform-none flex items-center justify-center gap-3 border border-orange-500/20"
+              className="w-full py-2.5 px-4 rounded-lg bg-orange-600 text-white font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {saving ? (
                 <>
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                   </svg>
@@ -745,7 +669,7 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
                 </>
               ) : (
                 <>
-                  <Save className="w-5 h-5" />
+                  <Save className="w-4 h-4" />
                   Simpan Informasi Pembayaran
                 </>
               )}
@@ -758,9 +682,8 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
             )}
           </div>
         </div>
-        </main>
       </div>
-    </TherapistLayout>
+    </TherapistSimplePageLayout>
   );
 };
 

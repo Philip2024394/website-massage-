@@ -1,11 +1,10 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (6 fixes)
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, XCircle, AlertCircle, Calendar, CreditCard, DollarSign, FileText, RefreshCw } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, AlertCircle, Calendar, CreditCard, DollarSign, FileText, RefreshCw, Menu } from 'lucide-react';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import { paymentConfirmationService } from '../../lib/appwriteService';
 import type { Therapist } from '../../types';
-import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { paymentStatusHelp } from './constants/helpContent';
 
 interface TherapistPaymentStatusProps {
@@ -78,23 +77,23 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
         switch (status) {
             case 'pending':
                 return (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs sm:text-sm font-bold">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-800 rounded-lg text-xs sm:text-sm font-semibold border border-orange-200">
                         <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                        Pending Review
+                        Menunggu Review
                     </span>
                 );
             case 'approved':
                 return (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-black rounded-lg text-xs sm:text-sm font-bold">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-800 rounded-lg text-xs sm:text-sm font-semibold border border-green-200">
                         <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                        Approved
+                        Disetujui
                     </span>
                 );
             case 'declined':
                 return (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-200 text-black rounded-lg text-xs sm:text-sm font-bold">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-50 text-red-800 rounded-lg text-xs sm:text-sm font-semibold border border-red-200">
                         <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                        Declined
+                        Ditolak
                     </span>
                 );
             default:
@@ -104,74 +103,104 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
 
     if (loading) {
         return (
-            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex items-center justify-center  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
                 <div className="text-center">
                     <RefreshCw className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-                    <p className="text-gray-600">Loading payment history...</p>
+                    <p className="text-gray-600">Memuat riwayat pembayaran...</p>
                 </div>
             </div>
         );
     }
 
+    const submitHelp = paymentStatusHelp.submitProof;
+    const historyHelp = paymentStatusHelp.paymentHistory;
+    const expiryHelp = paymentStatusHelp.expiryDate;
+
     return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
             {/* Standardized Page Header */}
             <TherapistPageHeader
-                title="Payment Status"
-                subtitle="Track your payment submissions and approvals"
+                title="Riwayat Pembayaran"
+                subtitle="Lacak pengajuan dan persetujuan pembayaran Anda"
                 onBackToStatus={onBack}
                 icon={<CreditCard className="w-6 h-6 text-orange-600" />}
                 actions={
-                    <div className="flex items-center gap-2">
-                        <HelpTooltip 
-                            {...paymentStatusHelp.submitProof}
-                            position="left"
-                            size="md"
-                        />
-                        <button
-                            onClick={loadPayments}
-                            className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
-                            title="Refresh payment list"
-                        >
-                            <RefreshCw className="w-5 h-5 text-orange-600" />
-                        </button>
-                    </div>
+                    <button
+                        onClick={onBack}
+                        className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+                        aria-label="Open menu"
+                        title="Menu"
+                    >
+                        <Menu className="w-5 h-5 text-orange-600" />
+                    </button>
                 }
             />
 
-            <div className="p-3 sm:p-5 space-y-4 max-w-7xl mx-auto">
-                {/* Info Banner */}
-                <div className="bg-white border border-gray-300 rounded-lg p-3 sm:p-4">
-                    <div className="flex gap-2 sm:gap-3">
-                        <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                        <div className="text-xs sm:text-sm text-gray-700">
-                            <p className="font-bold text-black mb-1">Payment Review Process</p>
-                            <ul className="space-y-1">
-                                <li>• Admin reviews all payments within 7 days</li>
-                                <li>• Approved payments activate your membership immediately</li>
-                                <li>• Declined payments can be resubmitted with correct proof</li>
-                            </ul>
+            <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+                {/* Info Banner - review process */}
+                <section className="bg-white border border-gray-200 rounded-lg p-4" aria-labelledby="review-heading">
+                    <h2 id="review-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Proses Review</h2>
+                    <div className="flex gap-3">
+                        <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                        <ul className="text-sm text-gray-700 space-y-1">
+                            <li>• Admin memeriksa pembayaran dalam 7 hari</li>
+                            <li>• Pembayaran disetujui mengaktifkan membership langsung</li>
+                            <li>• Pembayaran ditolak dapat dikirim ulang dengan bukti yang benar</li>
+                        </ul>
+                    </div>
+                </section>
+
+                {/* Help content - on page */}
+                <section className="bg-white border border-gray-200 rounded-lg p-4" aria-labelledby="help-heading">
+                    <h2 id="help-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Panduan</h2>
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-900 mb-1">{submitHelp.title}</h3>
+                            <p className="text-xs text-gray-600 mb-2">{submitHelp.content}</p>
+                            {submitHelp.benefits && submitHelp.benefits.length > 0 && (
+                                <ul className="text-xs text-gray-600 space-y-0.5">
+                                    {submitHelp.benefits.map((b, i) => <li key={i}>• {b}</li>)}
+                                </ul>
+                            )}
+                        </div>
+                        <div className="border-t border-gray-200 pt-4">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-1">{historyHelp.title}</h3>
+                            <p className="text-xs text-gray-600 mb-2">{historyHelp.content}</p>
+                            {historyHelp.benefits && historyHelp.benefits.length > 0 && (
+                                <ul className="text-xs text-gray-600 space-y-0.5">
+                                    {historyHelp.benefits.map((b, i) => <li key={i}>• {b}</li>)}
+                                </ul>
+                            )}
+                        </div>
+                        <div className="border-t border-gray-200 pt-4">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-1">{expiryHelp.title}</h3>
+                            <p className="text-xs text-gray-600 mb-2">{expiryHelp.content}</p>
+                            {expiryHelp.benefits && expiryHelp.benefits.length > 0 && (
+                                <ul className="text-xs text-gray-600 space-y-0.5">
+                                    {expiryHelp.benefits.map((b, i) => <li key={i}>• {b}</li>)}
+                                </ul>
+                            )}
                         </div>
                     </div>
-                </div>
+                </section>
 
                 {/* Payment List */}
                 {payments.length === 0 ? (
-                    <div className="bg-white border border-gray-300 rounded-lg p-8 sm:p-12 text-center">
-                        <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-base sm:text-lg font-bold text-black mb-2">No Payment History</h3>
-                        <p className="text-sm text-gray-600 mb-6">
-                            You haven't submitted any payment proofs yet.
+                    <section className="bg-white border border-gray-200 rounded-lg p-8 text-center" aria-label="Riwayat pembayaran kosong">
+                        <FileText className="w-14 h-14 text-gray-300 mx-auto mb-3" />
+                        <h3 className="text-base font-bold text-gray-900 mb-1">Belum Ada Riwayat Pembayaran</h3>
+                        <p className="text-sm text-gray-600 mb-5">
+                            Anda belum mengirim bukti pembayaran. Silakan ke Membership untuk mengajukan pembayaran.
                         </p>
                         <button
                             onClick={() => onBack()}
-                            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm"
+                            className="px-5 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium text-sm"
                         >
-                            Go to Membership
+                            Ke Membership
                         </button>
-                    </div>
+                    </section>
                 ) : (
-                    <div className="space-y-4">
+                    <section className="space-y-4" aria-label="Daftar pembayaran">
                         {payments.map((payment) => {
                             const daysRemaining = getDaysRemaining(payment.expiresAt);
                             const isExpiringSoon = daysRemaining <= 2 && payment.status === 'pending';
@@ -179,8 +208,8 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                             return (
                                 <div
                                     key={payment.$id}
-                                    className={`bg-white border rounded-lg p-4 sm:p-6 ${
-                                        isExpiringSoon ? 'border-orange-500 border-2' : 'border-gray-300'
+                                    className={`bg-white border rounded-lg p-4 ${
+                                        isExpiringSoon ? 'border-orange-400 border-2' : 'border-gray-200'
                                     }`}
                                 >
                                     {/* Status and Date */}
@@ -200,7 +229,7 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                                         <div className="flex items-center gap-3">
                                             <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                                             <div>
-                                                <p className="text-xs text-gray-600">Package</p>
+                                                <p className="text-xs text-gray-600">Paket</p>
                                                 <p className="text-sm font-bold text-black">
                                                     {payment.packageType || 'Membership'}
                                                 </p>
@@ -210,7 +239,7 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                                         <div className="flex items-center gap-3">
                                             <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                                             <div>
-                                                <p className="text-xs text-gray-600">Amount</p>
+                                                <p className="text-xs text-gray-600">Jumlah</p>
                                                 <p className="text-sm font-bold text-black">
                                                     IDR {payment.amount.toLocaleString()}
                                                 </p>
@@ -221,7 +250,7 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                                             <div className="flex items-center gap-3">
                                                 <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                                                 <div>
-                                                    <p className="text-xs text-gray-600">Duration</p>
+                                                    <p className="text-xs text-gray-600">Durasi</p>
                                                     <p className="text-sm font-bold text-black">
                                                         {payment.packageDuration.replace('_', ' ')}
                                                     </p>
@@ -235,15 +264,13 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <Clock className="w-4 h-4 text-orange-600" />
-                                                <p className="text-xs sm:text-sm font-bold text-black">
-                                                    {isExpiringSoon
-                                                        ? '⚠️ Review Expiring Soon!'
-                                                        : 'Under Review'}
-                                                </p>
+                                            <p className="text-xs sm:text-sm font-bold text-black">
+                                                {isExpiringSoon ? '⚠️ Segera kadaluarsa!' : 'Menunggu review'}
+                                            </p>
                                             </div>
                                             <p className="text-xs sm:text-sm text-gray-700">
-                                                Admin will review within {daysRemaining} day{daysRemaining !== 1 ? 's' : ''}.
-                                                {isExpiringSoon && ' Please be patient, admin will respond soon.'}
+                                                Admin akan memeriksa dalam {daysRemaining} hari.
+                                                {isExpiringSoon && ' Mohon bersabar, admin akan merespons segera.'}
                                             </p>
                                         </div>
                                     )}
@@ -253,12 +280,12 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                                             <div className="flex items-center gap-2 mb-1">
                                                 <CheckCircle className="w-4 h-4 text-black" />
                                                 <p className="text-xs sm:text-sm font-bold text-black">
-                                                    Payment Confirmed ✅
-                                                </p>
+                                                Pembayaran Dikonfirmasi ✅
+                                            </p>
                                             </div>
                                             <p className="text-xs sm:text-sm text-gray-700">
-                                                Approved on {new Date(payment.reviewedAt).toLocaleDateString()}
-                                                {' • '}Your membership is now active!
+                                                Disetujui {new Date(payment.reviewedAt).toLocaleDateString('id-ID')}
+                                                {' • '}Membership Anda aktif!
                                             </p>
                                         </div>
                                     )}
@@ -268,17 +295,17 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                                             <div className="flex items-center gap-2 mb-1">
                                                 <XCircle className="w-4 h-4 text-black" />
                                                 <p className="text-xs sm:text-sm font-bold text-black">
-                                                    Payment Not Received
-                                                </p>
+                                                Pembayaran Ditolak
+                                            </p>
                                             </div>
                                             <p className="text-xs sm:text-sm text-gray-700 mb-2">
-                                                {payment.declineReason || 'Please check your payment proof and resubmit.'}
+                                                {payment.declineReason || 'Periksa bukti pembayaran dan kirim ulang.'}
                                             </p>
                                             <button
                                                 onClick={() => onBack()}
-                                                className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 font-bold underline"
+                                                className="text-xs sm:text-sm text-orange-600 hover:text-orange-700 font-semibold"
                                             >
-                                                Submit New Payment Proof
+                                                Kirim Bukti Pembayaran Baru
                                             </button>
                                         </div>
                                     )}
@@ -288,12 +315,12 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                                         onClick={() => setSelectedProof(payment.paymentProofUrl)}
                                         className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm font-semibold"
                                     >
-                                        📄 View Payment Proof
+                                        Lihat Bukti Pembayaran
                                     </button>
                                 </div>
                             );
                         })}
-                    </div>
+                    </section>
                 )}
 
                 {/* Image Modal */}
@@ -305,9 +332,9 @@ const TherapistPaymentStatusPage: React.FC<TherapistPaymentStatusProps> = ({ the
                         <div className="relative max-w-sm w-full">
                             <button
                                 onClick={() => setSelectedProof(null)}
-                                className="absolute -top-12 right-0 text-white hover:text-gray-300 text-xl font-bold"
+                                className="absolute -top-12 right-0 text-white hover:text-gray-300 text-sm font-semibold"
                             >
-                                ✕ Close
+                                Tutup
                             </button>
                             <img
                                 src={selectedProof}

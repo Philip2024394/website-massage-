@@ -54,42 +54,15 @@ import { logger } from '../../utils/logger';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import ProPlanWarnings from '../../components/therapist/ProPlanWarnings';
 import TherapistLayout from '../../components/therapist/TherapistLayout';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
+import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock } from 'lucide-react';
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { profileEditHelp } from './constants/helpContent';
-import { PWAInstallationStatusChecker } from '../../utils/pwaInstallationStatus';
 import { client, databases, DATABASE_ID } from '../../lib/appwrite';
 import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
 import { bookingSoundService } from '../../services/bookingSound.service';
-
-/* PWA dashboard indicator: green = downloaded, red = need download */
-function PWADashboardIndicator() {
-  const [installed, setInstalled] = useState(() => PWAInstallationStatusChecker.checkStatus().isInstalled);
-  useEffect(() => {
-    const update = () => setInstalled(PWAInstallationStatusChecker.checkStatus().isInstalled);
-    window.addEventListener('appinstalled', update);
-    window.addEventListener('beforeinstallprompt', update);
-    const mq = window.matchMedia('(display-mode: standalone)');
-    mq.addEventListener('change', update);
-    return () => {
-      window.removeEventListener('appinstalled', update);
-      window.removeEventListener('beforeinstallprompt', update);
-      mq.removeEventListener('change', update);
-    };
-  }, []);
-  return (
-    <span
-      className={`flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full font-medium ${
-        installed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-      }`}
-      title={installed ? 'App downloaded – notifications & sounds active' : 'Press download manually – Android/iOS'}
-    >
-      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${installed ? 'bg-green-500' : 'bg-red-500'}`} />
-      {installed ? 'App downloaded' : 'Press download manually'}
-    </span>
-  );
-}
 
 /* P0 FIX: App-sized dashboard layout for proper desktop/mobile rendering */
 
@@ -1174,6 +1147,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         language={language}
         onLogout={onLogout}
       >
+      <TherapistPageHeader
+        title="Edit Profil"
+        subtitle="Unggah foto, informasi pribadi, dan pengaturan profil"
+        onBackToStatus={() => handleNavigate('therapist-status')}
+        icon={<User className="w-6 h-6 text-orange-600" />}
+        actions={<HelpTooltip {...profileEditHelp.overview} position="bottom" size="sm" />}
+      />
       <div
         className="bg-white w-full max-w-full"
         style={{ 
@@ -1206,165 +1186,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
       {/* Main Content - MODEL A: NO top padding, sticky header provides spacing */}
       <main className="w-full px-2" style={{ paddingBottom: '10px', paddingTop: '0px' }}>
-
-          {/* 🆕 ELITE FIX: Therapist Connection Status + PWA Download Indicator (green = installed, red = need download) */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
-                  </div>
-                  <span className="text-sm font-semibold text-gray-700">Real-Time Connection</span>
-                </div>
-                <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full font-mono">
-                  Active
-                </span>
-                {/* PWA status: green = downloaded, red = need download */}
-                <PWADashboardIndicator />
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={async () => {
-                    const result = await PWAInstallationStatusChecker.triggerInstallation();
-                    if (result.success && result.result === 'accepted') {
-                      showToast('✅ App installation started!', 'success');
-                    } else if (!result.success && result.error) {
-                      showToast(result.error, 'info', { duration: 8000 });
-                    }
-                  }}
-                  className="text-xs bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-1 shadow-sm"
-                  title="Install as mobile app – notifications & sounds when on home screen"
-                >
-                  <img 
-                    src="https://ik.imagekit.io/7grri5v7d/download_button-removebg-preview.png" 
-                    alt="Download" 
-                    className="w-3.5 h-3.5" 
-                  />
-                  Install App
-                </button>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="text-xs text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Refresh
-                </button>
-              </div>
-            </div>
-            <p className="text-xs text-gray-600 mt-2">
-              ✅ WebSocket connected • Booking notifications enabled • Real-time chat active • PWA ready
-            </p>
-          </div>
-          
-          {/* Page Header with Status Badge and Stats - EXACT MATCH TO HOME PAGE */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-gray-900">Edit Profil</h2>
-                <HelpTooltip {...profileEditHelp.overview} position="bottom" size="sm" />
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-                <Clock className="w-4 h-4 text-gray-500" />
-                {(() => {
-                  const status = therapist?.status || therapist?.availability;
-                  const statusStr = String(status).toLowerCase();
-                  
-                  // ❌ Timer logic removed (THERAPIST_AUTO_OFFLINE_TIMER_DISABLED.md)
-                  // Status now manual-only, no countdown timers
-                  
-                  if (statusStr === 'available') {
-                    return (
-                      <>
-                        <span className="text-sm font-semibold text-green-600">
-                          Active
-                        </span>
-                        <span className="text-xs text-gray-500">Manual control</span>
-                      </>
-                    );
-                  } else if (statusStr === 'busy') {
-                    return (
-                      <>
-                        <span className="text-sm font-semibold text-red-700">Timer Expired</span>
-                        <span className="text-xs text-gray-500">set available</span>
-                      </>
-                    );
-                  } else {
-                    return (
-                      <>
-                        <span className="text-sm font-semibold text-gray-700">12h 0m</span>
-                        <span className="text-xs text-gray-500">when available</span>
-                      </>
-                    );
-                  }
-                })()}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {/* Available */}
-              <button
-                onClick={() => {
-                  // Status change logic would go here
-                  logger.debug('Status changed', { status: 'Available' });
-                }}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'Available' || therapist?.availability === 'Available'
-                    ? 'bg-green-500 border-green-500 shadow-lg'
-                    : 'bg-white border-gray-300 hover:border-green-500 hover:shadow-md'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <CheckCircle className={`w-8 h-8 ${therapist?.status === 'Available' || therapist?.availability === 'Available' ? 'text-white' : 'text-green-600'}`} />
-                  <div className="text-center">
-                    <h3 className={`text-sm font-bold ${therapist?.status === 'Available' || therapist?.availability === 'Available' ? 'text-white' : 'text-gray-800'}`}>Tersedia</h3>
-                  </div>
-                </div>
-              </button>
-
-              {/* Busy */}
-              <button
-                onClick={() => {
-                  logger.debug('Status changed', { status: 'Busy' });
-                }}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'Busy' || therapist?.availability === 'Busy'
-                    ? 'bg-amber-500 border-amber-500 shadow-lg'
-                    : 'bg-white border-gray-300 hover:border-amber-400 hover:shadow-md'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <Clock className={`w-8 h-8 ${therapist?.status === 'Busy' || therapist?.availability === 'Busy' ? 'text-white' : 'text-yellow-600'}`} />
-                  <div className="text-center">
-                    <h3 className={`text-sm font-bold ${therapist?.status === 'Busy' || therapist?.availability === 'Busy' ? 'text-white' : 'text-gray-800'}`}>Sibuk</h3>
-                  </div>
-                </div>
-              </button>
-
-              {/* Offline */}
-              <button
-                onClick={() => {
-                  logger.debug('Status changed', { status: 'Offline' });
-                }}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'Offline' || therapist?.availability === 'Offline'
-                    ? 'bg-red-500 border-red-500 shadow-lg'
-                    : 'bg-white border-gray-300 hover:border-red-400 hover:shadow-md'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <X className={`w-8 h-8 ${therapist?.status === 'Offline' || therapist?.availability === 'Offline' ? 'text-white' : 'text-red-600'}`} />
-                  <div className="text-center">
-                    <h3 className={`text-sm font-bold ${therapist?.status === 'Offline' || therapist?.availability === 'Offline' ? 'text-white' : 'text-gray-800'}`}>Offline</h3>
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
-          
           {/* Booking Request Cards */}
           {therapist?.$id && (
             <div>

@@ -5,7 +5,6 @@ import { Therapist, Booking } from '../../types';
 import { therapistService } from '../../lib/appwriteService';
 import { showToast } from '../../utils/showToastPortal';
 import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
-import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { scheduleHelp } from './constants/helpContent';
 
 interface TherapistScheduleProps {
@@ -324,105 +323,58 @@ const TherapistSchedulePage: React.FC<TherapistScheduleProps> = ({ therapist, on
 
   return (
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white pb-20  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-      {/* Standardized Status Header */}
-      <div className="max-w-md mx-auto px-4 pt-6 pb-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Jadwal Saya</h2>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-              <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
-              <span className="text-xs text-gray-500">bulan ini</span>
-            </div>
-          </div>
-
-          {/* Status Grid */}
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => console.log('Status change: available')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'bg-green-50 border-green-500'
-                  : 'border-gray-200 hover:border-green-300'
-              }`}
-            >
-              <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'text-green-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'text-green-700'
-                  : 'text-gray-600'
-              }`}>Tersedia</p>
-            </button>
-
-            <button
-              onClick={() => console.log('Status change: busy')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'busy'
-                  ? 'bg-amber-50 border-amber-500'
-                  : 'border-gray-200 hover:border-amber-300'
-              }`}
-            >
-              <Clock className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-700'
-                  : 'text-gray-600'
-              }`}>Sibuk</p>
-            </button>
-
-            <button
-              onClick={() => console.log('Status change: offline')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.availability === 'offline'
-                  ? 'bg-red-50 border-red-500'
-                  : 'border-gray-200 hover:border-red-300'
-              }`}
-            >
-              <X className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-700'
-                  : 'text-gray-600'
-              }`}>Offline</p>
-            </button>
-          </div>
-        </div>
-      </div>
-      
       <TherapistPageHeader
-        title=""
-        subtitle="Manage your appointments and schedule"
+        title="Jadwal Saya"
+        subtitle="Kelola jadwal dan booking harian"
         onBackToStatus={onBack || (() => {})}
         icon={<Calendar className="w-6 h-6 text-orange-500" />}
         actions={
-          <div className="flex items-center gap-2">
-            <HelpTooltip {...scheduleHelp.overview} position="left" size="md" />
-            <button
-              onClick={() => setShowScheduleSettings(true)}
-              className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
-              aria-label="Schedule settings"
-            >
-              <Clock className="w-5 h-5 text-orange-500" />
-            </button>
-          </div>
+          <button
+            onClick={() => setShowScheduleSettings(true)}
+            className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+            aria-label="Schedule settings"
+          >
+            <Clock className="w-5 h-5 text-orange-500" />
+          </button>
         }
       />
 
       <div className="max-w-sm mx-auto px-4 py-4 space-y-4">
+        {/* Calendar explanation - replaces status buttons */}
+        <section className="bg-white border border-gray-200 rounded-lg p-4" aria-labelledby="calendar-help-heading">
+          <h2 id="calendar-help-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Tentang Kalender</h2>
+          <p className="text-sm text-gray-700 mb-3">
+            Kalender ini menampilkan jadwal harian dan booking Anda. Gunakan kalender untuk melihat tanggal, menambah booking manual, dan mengelola jadwal hari ini.
+          </p>
+          <ul className="text-xs text-gray-600 space-y-1">
+            <li>• <strong>Kalender bulanan</strong> — Lihat dan pilih tanggal</li>
+            <li>• <strong>Today&apos;s Bookings</strong> — Booking hari ini dari sistem dan manual</li>
+            <li>• <strong>Tambah (Add)</strong> — Tambah booking manual untuk waktu kosong</li>
+            <li>• <strong>Tombol jam</strong> (atas kanan) — Atur jam kerja mingguan</li>
+          </ul>
+        </section>
+
+        {/* Panduan - help content moved from header */}
+        <section className="bg-white border border-gray-200 rounded-lg p-4" aria-labelledby="panduan-heading">
+          <h2 id="panduan-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Panduan</h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">{scheduleHelp.setAvailability.title}</h3>
+              <p className="text-xs text-gray-600">{scheduleHelp.setAvailability.content}</p>
+            </div>
+            <div className="border-t border-gray-200 pt-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">{scheduleHelp.blockTimeSlots.title}</h3>
+              <p className="text-xs text-gray-600">{scheduleHelp.blockTimeSlots.content}</p>
+            </div>
+            <div className="border-t border-gray-200 pt-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">{scheduleHelp.bufferTime.title}</h3>
+              <p className="text-xs text-gray-600">{scheduleHelp.bufferTime.content}</p>
+            </div>
+          </div>
+        </section>
+
         {/* Monthly Calendar */}
-        <div className="bg-white rounded-lg border border-black p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           {renderCalendar()}
         </div>
 

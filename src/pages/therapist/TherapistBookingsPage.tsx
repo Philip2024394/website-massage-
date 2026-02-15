@@ -14,14 +14,13 @@ import { BANK_DETAILS_REQUIRED_FOR_SCHEDULED_BOOKINGS, SCHEDULED_BOOKING_DEPOSIT
 import { FloatingChatWindow } from '../../chat';
 import { Calendar, Clock, MapPin, User, Phone, DollarSign, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock, Banknote } from 'lucide-react';
 import ChatWindow from '../../components/therapist/ChatWindow';
-import TherapistLayout from '../../components/therapist/TherapistLayout';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import { devLog, devWarn } from '../../utils/devMode';
 import TherapistSchedule from './TherapistSchedulePage';
 import DepositApprovalCard from '../../components/booking/DepositApprovalCard';
 import { pushNotificationsService } from '../../lib/pushNotificationsService';
 import { adminCommissionNotificationService } from '../../lib/services/adminCommissionNotificationService';
 import { trackBookingAcceptance } from '../../lib/services/universalBookingAcceptanceTracker';
-import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { bookingsScheduleHelp } from './constants/helpContent';
 import { showErrorToast, showWarningToast } from '../../lib/toastUtils';
 import { TherapistOnTheWayButton } from '../../components/TherapistOnTheWayButton';
@@ -599,10 +598,10 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
 
   const getStatusBadge = (status: Booking['status']) => {
     const badges = {
-      pending: 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-300 shadow-sm',
-      confirmed: 'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 border-blue-300 shadow-sm',
-      completed: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300 shadow-sm',
-      cancelled: 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-300 shadow-sm',
+      pending: 'bg-amber-50 text-amber-800 border border-amber-200',
+      confirmed: 'bg-blue-50 text-blue-800 border border-blue-200',
+      completed: 'bg-green-50 text-green-800 border border-green-200',
+      cancelled: 'bg-red-50 text-red-800 border border-red-200',
     };
     return badges[status] || badges.pending;
   };
@@ -626,119 +625,41 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
 
   return (
     <>
-    <TherapistLayout
+    <TherapistSimplePageLayout
+      title={currentLabels.title}
+      subtitle={currentLabels.subtitle}
+      onBackToStatus={onBack}
+      onNavigate={handleNavigate}
       therapist={therapist}
       currentPage="bookings"
-      onNavigate={handleNavigate}
       language={language}
       onLogout={onLogout}
+      icon={<Calendar className="w-6 h-6 text-orange-600" />}
     >
-    <div className="bg-white" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-      {/* Standardized Status Header - tight spacing, no extra white padding */}
-      <div className="w-full px-4 pt-0 pb-2">
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
-              <HelpTooltip 
-                {...bookingsScheduleHelp.manageBookings}
-                position="bottom"
-                size="md"
-              />
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-              <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
-              <span className="text-xs text-gray-500">bulan ini</span>
-            </div>
-          </div>
-
-          {/* Status Grid */}
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => console.log('Status change: available')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'bg-green-50 border-green-500'
-                  : 'border-gray-200 hover:border-green-300'
-              }`}
-            >
-              <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'text-green-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
-                  ? 'text-green-700'
-                  : 'text-gray-600'
-              }`}>Tersedia</p>
-            </button>
-
-            <button
-              onClick={() => console.log('Status change: busy')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'busy'
-                  ? 'bg-amber-50 border-amber-500'
-                  : 'border-gray-200 hover:border-amber-300'
-              }`}
-            >
-              <Clock className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-700'
-                  : 'text-gray-600'
-              }`}>Sibuk</p>
-            </button>
-
-            <button
-              onClick={() => console.log('Status change: offline')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.availability === 'offline'
-                  ? 'bg-red-50 border-red-500'
-                  : 'border-gray-200 hover:border-red-300'
-              }`}
-            >
-              <XCircle className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-700'
-                  : 'text-gray-600'
-              }`}>Offline</p>
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-200 bg-white px-4 pt-2">
+    <div className="bg-gray-50 min-h-full" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
+      {/* Tab Navigation - same style as home page drawer links */}
+      <div className="flex gap-2 p-4 border-b border-black bg-white">
         <button
           onClick={() => setActiveTab('bookings')}
-          className={`px-6 py-3 font-semibold transition-all relative ${
+          className={`flex items-center gap-2 py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
             activeTab === 'bookings'
-              ? 'text-orange-600 border-b-2 border-orange-600'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-orange-100 border-orange-200 text-orange-800'
+              : 'bg-orange-50/80 border-orange-100 text-gray-700 hover:bg-orange-100 hover:text-orange-800'
           }`}
         >
-          📋 {currentLabels.bookings}
+          <Calendar className="w-4 h-4" />
+          {currentLabels.bookings}
         </button>
         <button
           onClick={() => setActiveTab('schedule')}
-          className={`px-6 py-3 font-semibold transition-all relative ${
+          className={`flex items-center gap-2 py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
             activeTab === 'schedule'
-              ? 'text-orange-600 border-b-2 border-orange-600'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-orange-100 border-orange-200 text-orange-800'
+              : 'bg-orange-50/80 border-orange-100 text-gray-700 hover:bg-orange-100 hover:text-orange-800'
           }`}
         >
-          🕐 {currentLabels.schedule}
+          <Clock className="w-4 h-4" />
+          {currentLabels.schedule}
         </button>
       </div>
 
@@ -746,193 +667,193 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
       {activeTab === 'schedule' ? (
         <TherapistSchedule therapist={therapist} onBack={() => setActiveTab('bookings')} />
       ) : (
-      <main className="w-full px-4 py-3">
+      <main className="w-full max-w-2xl mx-auto px-4 py-4">
         <div className="space-y-4">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-4">
-          <div className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Clock className="w-5 h-5 text-orange-600" />
-              </div>
-              <span className="text-sm font-medium text-gray-700">{currentLabels.received}</span>
-            </div>
-            <p className="text-3xl font-black text-gray-900 mb-1">{stats.received}</p>
-            <p className="text-xs text-gray-500 font-medium">{currentLabels.pendingApproval}</p>
-          </div>
+        {/* Panduan - help moved from header */}
+        <section className="bg-white border border-gray-200 rounded-lg p-4" aria-labelledby="bookings-panduan-heading">
+          <h2 id="bookings-panduan-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Panduan</h2>
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">{bookingsScheduleHelp.manageBookings.title}</h3>
+          <p className="text-xs text-gray-600 mb-2">{bookingsScheduleHelp.manageBookings.content}</p>
+          {bookingsScheduleHelp.manageBookings.benefits && bookingsScheduleHelp.manageBookings.benefits.length > 0 && (
+            <ul className="text-xs text-gray-600 space-y-0.5">
+              {bookingsScheduleHelp.manageBookings.benefits.map((b, i) => <li key={i}>• {b}</li>)}
+            </ul>
+          )}
+        </section>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{currentLabels.scheduled}</span>
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-blue-500" />
+        {/* Stats Cards - same style as home: rounded-lg, border, slight orange tint */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-500 rounded-lg">
+                <Clock className="w-4 h-4 text-white" />
               </div>
+              <span className="text-xs font-medium text-gray-600">{currentLabels.received}</span>
             </div>
-            <p className="text-3xl font-black text-gray-900 mb-1">{stats.scheduled}</p>
-            <p className="text-xs text-gray-500 font-medium">{currentLabels.confirmedBookings}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.received}</p>
+            <p className="text-xs text-gray-500">{currentLabels.pendingApproval}</p>
           </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{currentLabels.completed}</span>
-              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-500" />
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-500 rounded-lg">
+                <Calendar className="w-4 h-4 text-white" />
               </div>
+              <span className="text-xs font-medium text-gray-600">{currentLabels.scheduled}</span>
             </div>
-            <p className="text-3xl font-black text-gray-900 mb-1">{stats.completed}</p>
-            <p className="text-xs text-gray-500 font-medium">{currentLabels.finishedSessions}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.scheduled}</p>
+            <p className="text-xs text-gray-500">{currentLabels.confirmedBookings}</p>
           </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{currentLabels.earnings}</span>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
-                <Banknote className="w-5 h-5 text-orange-600" />
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-500 rounded-lg">
+                <CheckCircle className="w-4 h-4 text-white" />
               </div>
+              <span className="text-xs font-medium text-gray-600">{currentLabels.completed}</span>
             </div>
-            <p className="text-2xl font-black text-gray-900 mb-1">
-              Rp {stats.totalEarnings.toLocaleString('id-ID')}
-            </p>
-            <p className="text-xs text-gray-500 font-medium">Total completed</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+            <p className="text-xs text-gray-500">{currentLabels.finishedSessions}</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-500 rounded-lg">
+                <Banknote className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xs font-medium text-gray-600">{currentLabels.earnings}</span>
+            </div>
+            <p className="text-lg font-bold text-gray-900">Rp {stats.totalEarnings.toLocaleString('id-ID')}</p>
+            <p className="text-xs text-gray-500">Total completed</p>
           </div>
         </div>
 
-        {/* Filters and Search */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <div className="flex flex-col gap-4">
-            {/* Filter Buttons */}
-            <div className="flex gap-2">
-              {(['all', 'received', 'scheduled', 'completed'] as const).map((f) => (
+        {/* Filters and Search - same style as home page */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <ul className="flex flex-wrap gap-2 list-none m-0 p-0 mb-4">
+            {(['all', 'received', 'scheduled', 'completed'] as const).map((f) => (
+              <li key={f}>
                 <button
-                  key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${
+                  className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-colors ${
                     filter === f
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-200 scale-105'
-                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-orange-100 border-orange-200 text-orange-800'
+                      : 'bg-orange-50/80 border-orange-100 text-gray-700 hover:bg-orange-100 hover:text-orange-800'
                   }`}
                 >
                   {currentLabels[f]}
                 </button>
-              ))}
-            </div>
-
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={currentLabels.searchPlaceholder}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-50 focus:outline-none transition-all bg-gray-50 focus:bg-white font-medium"
-              />
-            </div>
+              </li>
+            ))}
+          </ul>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={currentLabels.searchPlaceholder}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-50 focus:outline-none text-sm bg-white"
+            />
           </div>
         </div>
 
         {/* Bookings List */}
         {loading ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center">
-            <div className="animate-spin rounded-full h-14 w-14 border-4 border-gray-100 border-t-orange-500 mx-auto mb-5"></div>
-            <p className="text-gray-700 font-semibold text-lg">{currentLabels.loadingBookings}</p>
-            <p className="text-gray-500 text-sm mt-2">{currentLabels.pleaseWait}</p>
+          <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-200 border-t-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-700 font-medium text-sm">{currentLabels.loadingBookings}</p>
+            <p className="text-gray-500 text-xs mt-1">{currentLabels.pleaseWait}</p>
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center">
-            <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-5">
-              <Calendar className="w-10 h-10 text-gray-300" />
+          <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+            <div className="w-16 h-16 rounded-lg bg-orange-500 flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-white" />
             </div>
-            <p className="text-gray-800 font-bold text-xl mb-2">{currentLabels.noBookings}</p>
-            <p className="text-gray-500 font-medium">
+            <p className="text-gray-800 font-semibold text-base mb-1">{currentLabels.noBookings}</p>
+            <p className="text-gray-500 text-sm">
               {searchQuery ? currentLabels.adjustSearch : 'New bookings will appear here'}
             </p>
           </div>
         ) : (
-          <div className="space-y-5">
+          <ul className="space-y-4 list-none m-0 p-0">
             {filteredBookings.map((booking) => (
+              <li key={booking.$id}>
               <div
-                key={booking.$id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200 hover:border-orange-100"
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-orange-50/50 hover:border-orange-100 transition-colors"
               >
-                <div className="flex items-start justify-between mb-5">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl flex items-center justify-center shadow-sm">
-                      <User className="w-7 h-7 text-orange-600" />
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
+                      <User className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-900 text-lg">{booking.customerName}</h3>
-                      <p className="text-sm text-gray-500 flex items-center gap-1">
+                      <h3 className="font-semibold text-gray-900 text-base">{booking.customerName}</h3>
+                      <p className="text-xs text-gray-500 flex items-center gap-1">
                         <MessageCircle className="w-3 h-3" />
                         Use in-app chat to contact
                       </p>
                     </div>
                   </div>
-                  <span className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide shadow-sm ${getStatusBadge(booking.status)}`}>
+                  <span className={`px-3 py-1 rounded-lg text-xs font-semibold uppercase ${getStatusBadge(booking.status)}`}>
                     {booking.status}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 mb-5">
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-                      <Calendar className="w-4 h-4 text-orange-600" />
+                <div className="grid grid-cols-1 gap-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-3.5 h-3.5 text-white" />
                     </div>
                     <span className="text-gray-700"><strong className="text-gray-900 font-semibold">Date:</strong> {new Date(booking.date).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-orange-600" />
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-3.5 h-3.5 text-white" />
                     </div>
-                    <span className="text-gray-700"><strong className="text-gray-900 font-semibold">Time:</strong> {booking.time}</span>
+                    <span className="text-gray-700"><strong className="text-gray-900 font-medium">Time:</strong> {booking.time}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-                      <span className="text-base">💆</span>
-                    </div>
-                    <span className="text-gray-700"><strong className="text-gray-900 font-semibold">Service:</strong> {booking.serviceType}</span>
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0"><span className="text-sm">💆</span></div>
+                    <span className="text-gray-700"><strong className="text-gray-900 font-medium">Service:</strong> {booking.serviceType}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-orange-600" />
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-3.5 h-3.5 text-white" />
                     </div>
-                    <span className="text-gray-700"><strong className="text-gray-900 font-semibold">Duration:</strong> {booking.duration} min</span>
+                    <span className="text-gray-700"><strong className="text-gray-900 font-medium">Duration:</strong> {booking.duration} min</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-                      <MapPin className="w-4 h-4 text-orange-600" />
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-3.5 h-3.5 text-white" />
                     </div>
-                    <span className="text-gray-700"><strong className="text-gray-900 font-semibold">Location:</strong> {booking.location}</span>
+                    <span className="text-gray-700 truncate"><strong className="text-gray-900 font-medium">Location:</strong> {booking.location}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-                      <Banknote className="w-4 h-4 text-orange-600" />
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                      <Banknote className="w-3.5 h-3.5 text-white" />
                     </div>
-                    <span className="text-gray-700"><strong className="text-gray-900 font-semibold">Price:</strong> Rp {booking.price.toLocaleString('id-ID')}</span>
+                    <span className="text-gray-700"><strong className="text-gray-900 font-medium">Price:</strong> Rp {booking.price.toLocaleString('id-ID')}</span>
                   </div>
                 </div>
 
                 {booking.notes && (
-                  <div className="mb-5 p-4 bg-gradient-to-r from-blue-50 to-blue-50/50 border border-blue-100 rounded-xl">
-                    <p className="text-sm text-blue-900 font-medium">
-                      <strong className="font-bold">💬 Notes:</strong> {booking.notes}
+                  <div className="mb-4 p-3 bg-orange-50/80 border border-orange-100 rounded-lg">
+                    <p className="text-sm text-gray-800 font-medium">
+                      <strong>💬 Notes:</strong> {booking.notes}
                     </p>
                   </div>
                 )}
 
                 {/* Deposit and Payment Proof Section */}
                 {booking.isScheduled && (
-                  <div className="mb-5 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-orange-200 rounded-xl">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
-                        <span className="text-lg">📅</span>
+                  <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm">📅</span>
                       </div>
-                      <h4 className="font-bold text-orange-900">{currentLabels.scheduledBooking}</h4>
+                      <h4 className="font-semibold text-orange-900 text-sm">{currentLabels.scheduledBooking}</h4>
                     </div>
-                    
                     {booking.depositRequired && (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-orange-200">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-orange-200">
                           <div>
                             <p className="text-sm font-semibold text-orange-800">{currentLabels.depositRequired}</p>
                             <p className="text-xs text-orange-600">Rp {booking.depositAmount?.toLocaleString('id-ID')}</p>
@@ -981,7 +902,7 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
                         {!booking.depositPaid && (
                           <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 rounded bg-yellow-100 flex items-center justify-center">
+                              <div className="w-6 h-6 rounded bg-yellow-500 flex items-center justify-center">
                                 <span className="text-sm">⏳</span>
                               </div>
                               <p className="text-sm font-semibold text-yellow-800">{currentLabels.waitingPayment}</p>
@@ -1005,39 +926,39 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
                  booking.depositStatus === 'pending_approval' && (
                   <DepositApprovalCard
                     booking={booking}
-                    onApprove={() => handleApproveDeposit(booking)}
-                    onReject={() => handleRejectDeposit(booking)}
-                    onRequestReupload={() => handleRequestReupload(booking)}
+                    onApproveDeposit={() => handleApproveDeposit(booking.$id)}
+                    onRejectDeposit={(reason) => handleRejectDeposit(booking.$id, reason)}
+                    onRequestReupload={(message) => handleRequestReupload(booking.$id, message)}
+                    language={language}
                   />
                 )}
 
-                {/* Action Buttons */}
-                <div className="flex gap-3">
+                {/* Action Buttons - same style as home: rounded-lg, solid colors */}
+                <div className="flex gap-2">
                   {booking.status === 'pending' && (
                     <>
                       <button
                         onClick={() => handleAcceptBooking(booking.$id)}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-green-500 via-green-600 to-green-700 text-white rounded-2xl hover:from-green-600 hover:via-green-700 hover:to-green-800 font-bold transition-all shadow-lg shadow-green-300/50 hover:shadow-xl hover:shadow-green-400/60 hover:-translate-y-0.5"
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm transition-colors"
                       >
-                        <CheckCircle className="w-5 h-5" />
+                        <CheckCircle className="w-4 h-4" />
                         Accept
                       </button>
                       <button
                         onClick={() => handleRejectBooking(booking.$id)}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white rounded-2xl hover:from-red-600 hover:via-red-700 hover:to-red-800 font-bold transition-all shadow-lg shadow-red-300/50 hover:shadow-xl hover:shadow-red-400/60 hover:-translate-y-0.5"
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm transition-colors"
                       >
-                        <XCircle className="w-5 h-5" />
+                        <XCircle className="w-4 h-4" />
                         Reject
                       </button>
                     </>
                   )}
                   {booking.status === 'confirmed' && (
-                    <div className="space-y-4">
-                      {/* On The Way Button Component - Full Width */}
+                    <div className="w-full space-y-3">
                       <TherapistOnTheWayButton
                         bookingId={booking.$id}
-                        therapistId={currentTherapist?.$id || ''}
-                        therapistName={currentTherapist?.name || 'Therapist'}
+                        therapistId={therapist?.$id || ''}
+                        therapistName={therapist?.name || 'Therapist'}
                         customerName={booking.customerName}
                         customerPhone={booking.customerPhone}
                         customerAddress={booking.location}
@@ -1046,24 +967,22 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
                           console.log('Journey status updated for booking:', booking.$id, status);
                         }}
                       />
-                      
-                      {/* Action Buttons - Flex Row */}
-                      <div className="flex gap-3">
+                      <div className="flex gap-2">
                         <button
                           onClick={() => {
                             setSelectedBooking(booking);
                             setChatOpen(true);
                           }}
-                          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white rounded-2xl hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 font-bold transition-all shadow-lg shadow-orange-300/50 hover:shadow-xl hover:shadow-orange-400/60 hover:-translate-y-0.5"
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium text-sm transition-colors"
                         >
-                          <MessageCircle className="w-5 h-5" />
+                          <MessageCircle className="w-4 h-4" />
                           Chat Customer
                         </button>
                         <button
                           onClick={() => handleCompleteBooking(booking.$id)}
-                          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 font-bold transition-all shadow-lg shadow-blue-300/50 hover:shadow-xl hover:shadow-blue-400/60 hover:-translate-y-0.5"
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors"
                         >
-                          <CheckCircle className="w-5 h-5" />
+                          <CheckCircle className="w-4 h-4" />
                           Mark Complete
                         </button>
                       </div>
@@ -1075,28 +994,29 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
                         setSelectedBooking(booking);
                         setChatOpen(true);
                       }}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 text-blue-700 rounded-2xl hover:from-blue-200 hover:via-blue-300 hover:to-blue-400 font-bold transition-all shadow-lg shadow-blue-300/50 hover:shadow-xl hover:shadow-blue-400/60 hover:-translate-y-0.5"
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-orange-50 border border-orange-200 text-orange-800 rounded-lg hover:bg-orange-100 font-medium text-sm transition-colors"
                     >
-                      <MessageCircle className="w-5 h-5" />
+                      <MessageCircle className="w-4 h-4" />
                       View Chat
                     </button>
                   )}
                 </div>
               </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
 
-      {/* Bank Details Required Alert */}
+      {/* Bank Details Required Alert - same style as home */}
       {showBankDetailsAlert && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md mx-auto">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-md w-full">
+            <div className="text-center mb-5">
+              <div className="w-14 h-14 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <span className="text-2xl">🏦</span>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Bank Details Required</h3>
+              <h3 className="text-base font-bold text-gray-900 mb-2">Bank Details Required</h3>
               <p className="text-sm text-gray-600">
                 {language === 'en' 
                   ? 'To accept scheduled bookings, you must complete your bank account information first.'
@@ -1104,20 +1024,19 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
                 }
               </p>
             </div>
-
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={() => setShowBankDetailsAlert(false)}
-                className="flex-1 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 py-2.5 px-4 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium text-sm transition-colors"
               >
                 {language === 'en' ? 'Cancel' : 'Batal'}
               </button>
               <button
                 onClick={() => {
                   setShowBankDetailsAlert(false);
-                  onNavigate?.('bank-details'); // Navigate to bank details page
+                  onNavigate?.('bank-details');
                 }}
-                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                className="flex-1 py-2.5 px-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium text-sm transition-colors"
               >
                 {language === 'en' ? 'Add Bank Details' : 'Tambah Rekening'}
               </button>
@@ -1153,7 +1072,7 @@ const TherapistBookingsPage: React.FC<TherapistBookingsProps> = ({ therapist, on
       </main>
       )}
     </div>
-    </TherapistLayout>
+    </TherapistSimplePageLayout>
     {/* Floating Chat Window */}
     <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
     </>

@@ -11,7 +11,7 @@ import { Gift, Search, User, MessageCircle, Clock, Plus, TrendingUp, Users, Perc
 import { databases, Query } from '../../lib/appwrite';
 import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
 import SendDiscountModal from '../../components/SendDiscountModal';
-import TherapistPageHeader from '../../components/therapist/TherapistPageHeader';
+import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { sendDiscountHelp } from './constants/helpContent';
 import { showErrorToast } from '../../lib/toastUtils';
@@ -29,9 +29,10 @@ interface SendDiscountPageProps {
   therapist: any;
   language: 'en' | 'id';
   onBack?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language, onBack }) => {
+const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language, onBack, onNavigate }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -342,36 +343,25 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
   };
 
   return (
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-20  " style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y pan-x' }}>
-      {/* Standardized Page Header */}
-      <TherapistPageHeader
-        title={labels.title}
-        subtitle={labels.subtitle}
-        onBackToStatus={onBack || (() => {})}
-        icon={<Gift className="w-6 h-6 text-orange-600" />}
-        actions={
-          <div className="px-2.5 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-300 flex items-center gap-1">
-            <CheckCircle className="w-3 h-3" />
-            Confirm Added
-          </div>
-        }
-      />
-
-      {/* Discount Banners - Mobile Optimized */}
-      <div className="px-4 pt-4 pb-3">
+    <TherapistSimplePageLayout
+      title={labels.title}
+      subtitle={labels.subtitle}
+      onBackToStatus={onBack || (() => {})}
+      onNavigate={onNavigate}
+      therapist={therapist}
+      currentPage="send-discount"
+      icon={<Gift className="w-6 h-6 text-orange-600" />}
+      headerActions={<HelpTooltip {...sendDiscountHelp.selectCustomers} position="left" size="md" />}
+    >
+      <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+      {/* Discount Banners - Home page style */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h3 className="text-base font-bold text-gray-900">Discount Banners</h3>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {selectedBanner ? labels.customerSelectable : labels.selectBanner}
-              </p>
-            </div>
-            <HelpTooltip 
-              {...sendDiscountHelp.selectCustomers}
-              position="left"
-              size="sm"
-            />
+          <div className="mb-3">
+            <h3 className="text-base font-bold text-gray-900">Discount Banners</h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {selectedBanner ? labels.customerSelectable : labels.selectBanner}
+            </p>
           </div>
           
           {/* 2 Banners Per Row - Clickable */}
@@ -412,91 +402,71 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
         </div>
       </div>
 
-      {/* Stats - Minimalistic */}
-      <div className="px-4 pb-3">
-        <div className="bg-white rounded-xl border border-gray-200 p-3 shadow-sm">
-          <div className="grid grid-cols-3 gap-3">
-            {/* Total Sent */}
-            <div className="text-center">
-              <TrendingUp className="w-4 h-4 text-orange-500 mx-auto mb-1" />
-              <p className="text-xl font-bold text-gray-900">{stats.totalDiscountsSent}</p>
-              <p className="text-xs text-gray-500">{labels.totalSent}</p>
+      {/* Stats - Home page style: rounded-lg, border, solid orange icon boxes */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-orange-500 rounded-lg">
+              <TrendingUp className="w-4 h-4 text-white" />
             </div>
-
-            {/* Active Now */}
-            <div className="text-center border-x border-gray-200">
-              <CheckCircle className="w-4 h-4 text-green-500 mx-auto mb-1" />
-              <p className="text-xl font-bold text-green-600">{stats.activeDiscounts}</p>
-              <p className="text-xs text-gray-500">{labels.activeNow}</p>
-            </div>
-
-            {/* Used */}
-            <div className="text-center">
-              <Percent className="w-4 h-4 text-blue-500 mx-auto mb-1" />
-              <p className="text-xl font-bold text-blue-600">{stats.usedDiscounts}</p>
-              <p className="text-xs text-gray-500">Used</p>
-            </div>
-
+            <span className="text-xs font-medium text-gray-600">{labels.totalSent}</span>
           </div>
+          <p className="text-2xl font-bold text-gray-900">{stats.totalDiscountsSent}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-orange-500 rounded-lg">
+              <CheckCircle className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-xs font-medium text-gray-600">{labels.activeNow}</span>
+          </div>
+          <p className="text-2xl font-bold text-green-600">{stats.activeDiscounts}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-orange-500 rounded-lg">
+              <Percent className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-xs font-medium text-gray-600">Used</span>
+          </div>
+          <p className="text-2xl font-bold text-blue-600">{stats.usedDiscounts}</p>
         </div>
       </div>
 
-      {/* Search & Filters - Minimalistic */}
-      <div className="px-4 pb-3">
-        {/* Search Bar */}
-        <div className="relative mb-2">
+      {/* Search & Filters - Home page style */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder={labels.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-50 focus:border-orange-500 bg-white"
           />
         </div>
-
-        {/* Compact Filter Buttons */}
-        <div className="flex items-center gap-2 overflow-x-auto">
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-              filterType === 'all'
-                ? 'bg-orange-500 text-white'
-                : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            All
-          </button>
-          
-          <button
-            onClick={() => setFilterType('active')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-              filterType === 'active'
-                ? 'bg-green-500 text-white'
-                : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            Active
-          </button>
-          
-          <button
-            onClick={() => setFilterType('no-discount')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-              filterType === 'no-discount'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            No Discount
-          </button>
+        <div className="flex flex-wrap gap-2">
+          {(['all', 'active', 'no-discount'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilterType(f)}
+              className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                filterType === f
+                  ? 'bg-orange-100 border-orange-200 text-orange-800'
+                  : 'bg-orange-50/80 border-orange-100 text-gray-700 hover:bg-orange-100 hover:text-orange-800'
+              }`}
+            >
+              {f === 'all' ? labels.allCustomers : f === 'active' ? labels.withDiscount : labels.noDiscount}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Customer List - Minimalistic */}
-      <div className="px-4">
+      {/* Customer List - Home page style */}
+      <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-gray-700\">Customers</h3>
-          <span className="text-xs text-gray-500\">{filteredCustomers.length} total</span>
+          <h3 className="text-sm font-semibold text-gray-700">Customers</h3>
+          <span className="text-xs text-gray-500">{filteredCustomers.length} total</span>
         </div>
         
         {loading ? (
@@ -570,6 +540,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
             })}
           </div>
         )}
+      </div>
       </div>
 
       {/* Confirmation Dialog */}
@@ -684,7 +655,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
           }}
         />
       )}
-    </div>
+    </TherapistSimplePageLayout>
   );
 };
 

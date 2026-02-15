@@ -175,10 +175,10 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   // Facebook-standard features
   const { totalUnread, unreadByRoom } = useUnreadBadge();
   
-  // Gesture swipe to open/close drawer
+  // Gesture swipe for right-side drawer: swipe right = close, swipe left = open
   const { handlers: swipeHandlers } = useGestureSwipe(
-    () => setIsSidebarOpen(false), // Swipe left to close
-    () => setIsSidebarOpen(true),  // Swipe right to open
+    () => setIsSidebarOpen(false), // Swipe right to close
+    () => setIsSidebarOpen(true),  // Swipe left to open
     undefined,
     undefined,
     { threshold: 50, direction: 'horizontal' }
@@ -478,16 +478,16 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
               <BarChart className="w-5 h-5" />
             </button>
             
-            {/* Burger Menu - Enhanced Responsive Design */}
+            {/* Burger Menu - opens side drawer from right; selected when drawer open */}
             <button
               onClick={handleSidebarToggle}
-              className="burger-menu-btn relative flex items-center justify-center transition-all duration-200 ease-in-out rounded-lg
+              className={`burger-menu-btn relative flex items-center justify-center transition-all duration-200 ease-in-out rounded-lg
                          min-w-[56px] min-h-[56px] p-2
                          sm:min-w-[48px] sm:min-h-[48px] sm:p-2
                          lg:min-w-[44px] lg:min-h-[44px] lg:p-2
-                         hover:bg-gray-100 active:bg-gray-200 active:scale-95
                          touch-manipulation select-none cursor-pointer
-                         focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                         focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2
+                         ${isSidebarOpen ? 'bg-orange-100' : 'hover:bg-gray-100 active:bg-gray-200 active:scale-95'}`}
               style={{
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
@@ -568,243 +568,160 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         />
       )}
 
-      {/* Sidebar with gesture support - Enhanced responsive design */}
+      {/* Side drawer - same design as home page AppDrawer (right, width, header, link style) */}
       <aside
         {...swipeHandlers}
         id="therapist-sidebar"
-        className={`fixed top-0 right-0 bg-white shadow-2xl z-[120] transform transition-transform duration-300 ease-in-out
-                   w-80 max-w-[90vw] sm:w-72 sm:max-w-[80vw] lg:w-80 lg:max-w-[400px]
+        className={`fixed top-0 right-0 bg-white shadow-2xl z-[120] transform transition-transform duration-300 ease-out flex flex-col
+                   w-[75%] max-w-[280px] sm:w-[320px] sm:max-w-[320px] md:w-[350px] md:max-w-[350px] lg:w-[380px] lg:max-w-[380px]
                    ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
         style={{
           willChange: 'transform',
           backfaceVisibility: 'hidden',
           pointerEvents: isSidebarOpen ? 'auto' : 'none',
           visibility: isSidebarOpen ? 'visible' : 'hidden',
-          height: '100vh',
-          maxHeight: '100vh',
+          height: '100dvh',
+          maxHeight: '100dvh',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           overflowY: 'auto',
+          overflowX: 'hidden',
           contain: 'layout style paint'
         }}
         aria-label="Therapist navigation menu"
         role="navigation"
-        // ✅ ACCESSIBILITY FIX: Use inert instead of aria-hidden to properly handle focus
-        {...(isSidebarOpen ? {} : { inert: '' as any })}
+        // ✅ ACCESSIBILITY FIX: Use inert when closed so sidebar is non-interactive (React expects boolean, not empty string)
+        inert={!isSidebarOpen}
       >
         <div className="flex flex-col h-full">
-          {/* Sidebar Header - Reduced padding for cleaner layout */}
-          <div className="p-4 border-b border-black">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold">
-                <span className="text-black">Inda</span>
-                <span className="text-orange-500">Street</span>
-              </h2>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsSidebarOpen(false);
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                }}
-                className="sidebar-close-btn flex items-center justify-center transition-all duration-200 ease-in-out rounded-full
-                           min-w-[48px] min-h-[48px] p-2
-                           hover:bg-gray-100 active:bg-gray-200 active:scale-95
-                           touch-manipulation cursor-pointer select-none
-                           focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-                style={{
-                  WebkitTapHighlightColor: 'transparent',
-                  userSelect: 'none',
-                  touchAction: 'manipulation'
-                }}
-                aria-label="Close navigation menu"
-                role="button"
-                tabIndex={0}
-              >
-                <X className="w-6 h-6 text-gray-700" />
-              </button>
-            </div>
-            
-            {/* Therapist Info */}
-            <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
+          {/* Header - same as home page AppDrawer */}
+          <div className="p-6 flex justify-between items-center border-b border-black flex-shrink-0">
+            <h2 id="therapist-drawer-title" className="font-bold text-2xl">
+              <span className="text-black">Inda</span>
+              <span className="text-orange-500">Street</span>
+            </h2>
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsSidebarOpen(false); }}
+              className="rounded-full transition-all duration-200 touch-manipulation flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 min-w-[56px] min-h-[56px] w-14 h-14 md:min-w-[48px] md:min-h-[48px] md:w-12 md:h-12 lg:min-w-[44px] lg:min-h-[44px] lg:w-11 lg:h-11"
+              aria-label="Close navigation menu"
+              title="Close navigation menu"
+              type="button"
+              style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' } as React.CSSProperties}
+            >
+              <X className="w-6 h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-black" />
+            </button>
+          </div>
+
+          {/* Therapist info block - same pattern as home drawer City Switcher */}
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 border-2 border-orange-200">
               {therapist?.profilePicture ? (
-                <img 
-                  src={therapist?.profilePicture} 
-                  alt={therapist?.name || 'Therapist'} 
-                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                />
+                <img src={therapist.profilePicture} alt={therapist?.name || 'Therapist'} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
               ) : (
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-7 h-7 text-white" />
+                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-5 h-5 text-white" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {therapist?.name || 'Therapist'}
-                </p>
-                <p className="text-xs text-gray-600 truncate">
-                  {therapist?.email || 'therapist@example.com'}
-                </p>
+                <p className="text-sm font-medium text-gray-900 truncate">{therapist?.name || 'Therapist'}</p>
+                <p className="text-xs text-gray-600 truncate">{therapist?.email || ''}</p>
               </div>
             </div>
           </div>
 
-          {/* Navigation Menu */}
-          <nav className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-2">
-              {/* Dashboard Quick Access */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleNavigate('dashboard');
-                }}
-                className="flex items-center gap-3 w-full min-h-[48px] py-3 px-4 rounded-lg transition-all transform active:scale-98 touch-manipulation cursor-pointer select-none bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md hover:from-orange-600 hover:to-orange-700 mb-2"
-                style={{ 
-                  willChange: 'transform',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
-              >
-                <User className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm">
-                  {language === 'en' ? 'My Dashboard' : 'Dashboard Saya'}
-                </span>
-              </button>
-              {/* View My Public Profile Button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const therapistId = therapist?.$id || therapist?.id;
-                  if (therapistId) {
-                    onNavigate('therapist-profile');
-                    // Update URL to show profile
-                    const slug = therapist?.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
-                    window.history.pushState({}, '', `/#/therapist-profile/${therapistId}-${slug}`);
-                  }
-                }}
-                className="flex items-center gap-3 w-full min-h-[48px] py-3 px-4 rounded-lg transition-all transform active:scale-98 touch-manipulation cursor-pointer select-none bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md hover:from-blue-600 hover:to-blue-700 mb-4"
-                style={{ 
-                  willChange: 'transform',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
-              >
-                <Eye className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm">
-                  {language === 'en' ? 'View My Public Profile' : 'Lihat Profil Publik Saya'}
-                </span>
-              </button>
+          {/* Navigation - list design with slight orange shade on items */}
+          <nav className="flex-grow p-4 overflow-y-auto" aria-label="Therapist navigation">
+            <ul className="space-y-1.5 list-none m-0 p-0">
+              <li>
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNavigate('dashboard'); }}
+                  className={`flex items-center gap-3 w-full py-2.5 px-3 rounded-lg transition-colors text-left border border-transparent ${
+                    currentPage === getTherapistSidebarPage('dashboard')
+                      ? 'bg-orange-100 border-orange-200 text-orange-800'
+                      : 'bg-orange-50/80 hover:bg-orange-100 border-orange-100 text-gray-700 hover:text-orange-800'
+                  }`}
+                  type="button"
+                >
+                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                    <User className={`w-5 h-5 ${currentPage === getTherapistSidebarPage('dashboard') ? 'text-orange-600' : 'text-orange-500'}`} />
+                  </span>
+                  <span className="text-sm font-medium">
+                    {language === 'en' ? 'My Dashboard' : 'Dashboard Saya'}
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const therapistId = therapist?.$id || therapist?.id;
+                    if (therapistId) {
+                      onNavigate('therapist-profile');
+                      const slug = therapist?.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                      window.history.pushState({}, '', `/#/therapist-profile/${therapistId}-${slug}`);
+                    }
+                  }}
+                  className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg bg-orange-50/80 hover:bg-orange-100 border border-orange-200 text-orange-700 font-medium transition-colors text-left"
+                  type="button"
+                >
+                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                    <Eye className="w-5 h-5 text-orange-500" />
+                  </span>
+                  <span className="text-sm">
+                    {language === 'en' ? 'View My Public Profile' : 'Lihat Profil Publik Saya'}
+                  </span>
+                </button>
+              </li>
+
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = currentPage === item.id;
-                
+                const canonicalPage = getTherapistSidebarPage(item.id);
+                const isActive = currentPage === canonicalPage;
                 return (
-                  <button
-                    key={item.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      
-                      // Enhanced debounce with visual feedback
-                      if (e.currentTarget?.dataset?.clicking === 'true') {
-                        console.log('🚫 Click debounced for:', item.id);
-                        return;
-                      }
-                      
-                      if (e.currentTarget?.dataset) {
-                        e.currentTarget.dataset.clicking = 'true';
-                        
-                        // Visual feedback
-                        e.currentTarget.style.transform = 'scale(0.98)';
-                        e.currentTarget.style.backgroundColor = isActive ? '#fed7aa' : '#fff7ed';
-                        
-                        setTimeout(() => {
-                          if (e.currentTarget?.dataset) {
-                            e.currentTarget.dataset.clicking = 'false';
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.backgroundColor = '';
-                          }
-                        }, 200);
-                      }
-                      
-                      console.log('📱 Sidebar navigation click:', item.id);
-                      handleNavigate(item.id);
-                    }}
-                    onTouchStart={(e) => {
-                      // Remove preventDefault - causes passive listener warning
-                      e.currentTarget.style.transform = 'scale(0.98)';
-                    }}
-                    onTouchEnd={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                    className={`flex items-center gap-3 w-full min-h-[48px] py-3 px-4 rounded-lg transition-all transform active:scale-98 touch-manipulation cursor-pointer select-none ${
-                      isActive
-                        ? 'bg-orange-500 text-white font-semibold shadow-md ring-2 ring-orange-300'
-                        : 'hover:bg-orange-50 active:bg-orange-100 text-gray-700 hover:text-orange-600'
-                    }`}
-                    style={{
-                      WebkitTapHighlightColor: 'rgba(249, 115, 22, 0.3)',
-                      userSelect: 'none',
-                      touchAction: 'manipulation'
-                    }}
-                  >
-                    <div className="relative">
-                      <Icon className={`w-6 h-6 flex-shrink-0 transition-colors ${
-                        isActive ? 'text-white' : item.color
-                      }`} />
-                      
-                      {/* Unread badge for chat */}
-                      {item.id === 'chat' && totalUnread > 0 && (
-                        <FloatingUnreadBadge count={totalUnread} size="sm" />
-                      )}
-                      
-                      {/* Active indicator dot */}
-                      {isActive && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-300 rounded-full animate-pulse"></div>
-                      )}
-                    </div>
-                    <span className={`text-sm font-medium flex-1 transition-colors ${
-                      isActive ? 'text-white' : 'text-gray-700'
-                    }`}>
-                      {item.label}
-                    </span>
-                    
-                    {/* Booking Badge for Bookings Menu Item */}
-                    {item.id === 'bookings' && (
-                      <BookingBadge className="ml-auto" size="sm" />
-                    )}
-                  </button>
+                  <li key={item.id}>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNavigate(item.id); }}
+                      className={`flex items-center gap-3 w-full py-2.5 px-3 rounded-lg transition-colors text-left border border-transparent ${
+                        isActive
+                          ? 'bg-orange-100 border-orange-200 text-orange-800'
+                          : 'bg-orange-50/80 hover:bg-orange-100 border-orange-100 text-gray-700 hover:text-orange-800'
+                      }`}
+                      type="button"
+                    >
+                      <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                        <Icon className={`w-5 h-5 ${isActive ? 'text-orange-600' : 'text-orange-500'}`} />
+                      </span>
+                      <span className="text-sm font-medium flex-1 text-left">
+                        {item.label}
+                      </span>
+                      {item.id === 'bookings' && <BookingBadge className="ml-auto flex-shrink-0" size="sm" />}
+                    </button>
+                  </li>
                 );
               })}
-            </div>
-          </nav>
+            </ul>
 
-          {/* Logout Button */}
-          {onLogout && (
-            <div className="p-4 border-t border-gray-300">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (onLogout) onLogout();
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                }}
-                className="flex items-center gap-3 w-full py-3 px-3 rounded-lg bg-red-50 hover:bg-red-100 active:bg-red-200 transition-colors touch-manipulation cursor-pointer select-none"
-                style={{
-                  WebkitTapHighlightColor: 'transparent',
-                  userSelect: 'none',
-                  touchAction: 'manipulation'
-                }}
-              >
-                <LogOut className="w-5 h-5 text-red-600 flex-shrink-0" />
-                <span className="text-sm font-semibold text-red-600">
-                  {language === 'id' ? 'Keluar' : 'Logout'}
-                </span>
-              </button>
-            </div>
-          )}
+            {/* Logout - footer */}
+            {onLogout && (
+              <ul className="list-none m-0 p-0 border-t border-gray-200 pt-4 mt-4 space-y-1.5">
+                <li>
+                  <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onLogout(); }}
+                    className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg bg-gray-50 hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors text-left"
+                    type="button"
+                  >
+                    <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                      <LogOut className="w-5 h-5 text-red-600" />
+                    </span>
+                    <span className="text-sm font-medium">
+                      {language === 'id' ? 'Keluar' : 'Logout'}
+                    </span>
+                  </button>
+                </li>
+              </ul>
+            )}
+          </nav>
         </div>
       </aside>
 

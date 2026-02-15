@@ -1920,7 +1920,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             logger.debug('[ROUTE RESOLVE] therapist-hotel-villa-safe-pass → TherapistHotelVillaSafePassPage');
             return renderRoute(therapistRoutes.hotelVillaSafePass.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
+                onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
         
