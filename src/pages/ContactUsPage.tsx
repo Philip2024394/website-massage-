@@ -400,7 +400,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-400 to-transparent opacity-60" aria-hidden />
                 <div className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-12 md:py-16">
                     <div className="text-center">
-                        <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-orange-100 text-orange-700 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+                        <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
                             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             Typically respond within 24 hours
                         </span>
@@ -414,16 +414,16 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
                             <a
                                 href={`mailto:${SUPPORT_EMAIL}`}
-                                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-black/70 backdrop-blur-md border border-black/30 text-orange-400 text-sm sm:text-base font-medium shadow-lg hover:bg-black/80 hover:text-orange-300 transition-all duration-300"
+                                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 text-white text-sm sm:text-base font-medium shadow-lg hover:bg-black/70 transition-all duration-300"
                             >
-                                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 text-white" />
+                                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                                 Email us
                             </a>
                             <a
                                 href={WHATSAPP_URL}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#25D366] text-white text-sm sm:text-base font-medium shadow-sm hover:bg-[#20BD5A] hover:shadow-md transition-all duration-300"
+                                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#25D366]/80 backdrop-blur-xl border border-white/20 text-white text-sm sm:text-base font-medium shadow-lg hover:bg-[#25D366]/90 transition-all duration-300"
                             >
                                 <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                                 WhatsApp
@@ -535,20 +535,6 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                             </p>
                         </div>
                         
-                        <p className="text-center mb-6">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setSelectedRole('browsing');
-                                    setSelectedCategory('other');
-                                    setCurrentStep(4);
-                                    setProblemSolved(false);
-                                }}
-                                className="text-orange-500 hover:text-orange-600 font-medium underline underline-offset-2"
-                            >
-                                Or contact us directly →
-                            </button>
-                        </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             {USER_ROLES.map((role) => {
                                 const IconComponent = role.icon;
@@ -719,7 +705,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                 <CheckCircle className="w-9 h-9 text-green-600" />
                             </div>
                             <h2 className="text-xl font-semibold text-gray-900 mb-2">Request received</h2>
-                            <p className="text-gray-600 text-sm mb-6">
+                            <p className="text-orange-600 text-sm mb-6 font-medium">
                                 We typically respond within 24 hours. Check your email for updates.
                             </p>
                             <button
@@ -971,7 +957,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                 <div className="text-center p-6 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-orange-100 transition-all duration-300">
                                     <Clock className="w-8 h-8 text-orange-500 mx-auto mb-3" />
                                     <h4 className="font-medium text-gray-900 mb-1">Quick Response</h4>
-                                    <p className="text-sm text-gray-600 font-light">We typically respond within 24 hours</p>
+                                    <p className="text-sm text-orange-600 font-medium">We typically respond within 24 hours</p>
                                 </div>
                                 <div className="text-center p-6 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-orange-100 transition-all duration-300">
                                     <Shield className="w-8 h-8 text-orange-500 mx-auto mb-3" />

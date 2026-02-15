@@ -1,5 +1,5 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (10 fixes)
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Badge, AlertTriangle, X, Lock, Menu } from "lucide-react";
 import { therapistService } from '../../lib/appwriteService';
 import { AvailabilityStatus } from "../../types";
@@ -23,6 +23,7 @@ import { showToast, showErrorToast, showWarningToast, showConfirmationToast } fr
 import UniversalPWAInstall from '../../components/UniversalPWAInstall';
 import IOSInstallInstructions from '../../components/IOSInstallInstructions';
 import { pwaNotificationSoundHandler } from '../../services/pwaNotificationSoundHandler';
+import { isEmergencyWindowActive, triggerEmergencyAlert, type BookingForEmergency } from '../../services/emergencyAlertService';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -186,6 +187,113 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     return true;
   });
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+
+  // Emergency button: 3 taps in 4s to trigger; active during booking windows
+  const [providerBookings, setProviderBookings] = useState<BookingForEmergency[]>([]);
+  const [emergencyTapCount, setEmergencyTapCount] = useState(0);
+  const emergencyTapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [emergencySending, setEmergencySending] = useState(false);
+  const [localEmergencyActive, setLocalEmergencyActive] = useState(false); // true after alert sent: flashing + MP3 until 3-tap again
+  const emergencyAudioRef = useRef<HTMLAudioElement | null>(null);
+  const isEmergencyActive = isEmergencyWindowActive(providerBookings);
+  const canUseEmergency = isEmergencyActive || localEmergencyActive; // button works when in window OR when clearing active emergency
+
+  // Fetch provider bookings for emergency window
+  useEffect(() => {
+    if (!therapist?.$id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { bookingService } = await import('../../lib/appwrite/services/booking.service');
+        const list = await bookingService.getByProvider(therapist.$id, 'therapist');
+        if (!cancelled) setProviderBookings(Array.isArray(list) ? list : []);
+      } catch {
+        if (!cancelled) setProviderBookings([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [therapist?.$id]);
+
+  const handleEmergencyTap = () => {
+    if (!canUseEmergency || emergencySending) return;
+    const newCount = emergencyTapCount + 1;
+    setEmergencyTapCount(newCount);
+    if (emergencyTapTimeoutRef.current) clearTimeout(emergencyTapTimeoutRef.current);
+    if (newCount >= 3) {
+      setEmergencyTapCount(0);
+
+      // Already in active emergency: second 3-tap = stop sound and clear
+      if (localEmergencyActive) {
+        if (emergencyAudioRef.current) {
+          emergencyAudioRef.current.pause();
+          emergencyAudioRef.current.currentTime = 0;
+          emergencyAudioRef.current = null;
+        }
+        setLocalEmergencyActive(false);
+        showToast(propLanguage === 'en' ? 'Emergency cleared. Sound stopped.' : 'Darurat dibatalkan. Suara dihentikan.', 'success');
+        return;
+      }
+
+      // First 3-tap: send alert, then set active + start music
+      (async () => {
+        setEmergencySending(true);
+        try {
+          const pos = await new Promise<{ lat: number; lng: number }>((resolve, reject) => {
+            if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
+            navigator.geolocation.getCurrentPosition(
+              (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+              reject,
+              { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+          });
+          const now = new Date().toISOString();
+          const relevant = providerBookings[0];
+          const result = await triggerEmergencyAlert({
+            therapistId: therapist.$id,
+            therapistName: therapist.name || 'Therapist',
+            providerType: 'therapist',
+            lat: pos.lat,
+            lng: pos.lng,
+            triggeredAt: now,
+            bookingId: relevant?.$id,
+            customerName: relevant?.customerName || relevant?.userName,
+            bookingSummary: relevant ? `${relevant.customerName || relevant.userName || 'Customer'} • ${relevant.duration || 60} min` : undefined
+          });
+          if (result.success) {
+            setLocalEmergencyActive(true); // triggers flashing + MP3 in useEffect
+            showToast(propLanguage === 'en' ? 'Emergency alert sent. Tap 3x again to stop sound.' : 'Alert darurat terkirim. Ketuk 3x lagi untuk hentikan suara.', 'success');
+          } else {
+            showErrorToast(result.error || (propLanguage === 'en' ? 'Failed to send alert' : 'Gagal mengirim alert'));
+          }
+        } catch (e: any) {
+          showErrorToast(e?.message || (propLanguage === 'en' ? 'Could not get location or send alert' : 'Lokasi atau pengiriman alert gagal'));
+        } finally {
+          setEmergencySending(false);
+        }
+      })();
+      return;
+    }
+    emergencyTapTimeoutRef.current = setTimeout(() => setEmergencyTapCount(0), 4000);
+  };
+
+  // When local emergency is active: start MP3 loop; when cleared: stop
+  useEffect(() => {
+    if (!localEmergencyActive) return;
+    try {
+      const audio = new Audio('/sounds/alert-notification.mp3');
+      audio.loop = true;
+      audio.volume = 0.9;
+      audio.play().catch(() => {});
+      emergencyAudioRef.current = audio;
+      return () => {
+        audio.pause();
+        audio.currentTime = 0;
+        emergencyAudioRef.current = null;
+      };
+    } catch {
+      // ignore
+    }
+  }, [localEmergencyActive]);
 
   // Load initial data once on mount
   useEffect(() => {
@@ -1196,6 +1304,57 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 </div>
               </div>
             </button>
+          </div>
+
+          {/* Emergency button – active during bookings; 3 taps to send (then flashing + MP3 until 3 taps again to stop) */}
+          <div className="mt-4 rounded-xl border-2 border-red-200 bg-red-50 p-4">
+            <button
+              type="button"
+              onClick={handleEmergencyTap}
+              disabled={!canUseEmergency || emergencySending}
+              className={`w-full py-4 rounded-xl border-2 font-bold text-lg flex flex-col items-center justify-center gap-2 transition-all ${
+                localEmergencyActive
+                  ? 'bg-red-600 border-red-700 text-white animate-pulse shadow-lg shadow-red-400/50'
+                  : canUseEmergency && !emergencySending
+                    ? 'bg-red-600 border-red-700 text-white hover:bg-red-700 active:scale-[0.98]'
+                    : 'bg-gray-200 border-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <AlertTriangle className="w-10 h-10" />
+              <span>
+                {emergencySending
+                  ? (propLanguage === 'en' ? 'Sending…' : 'Mengirim…')
+                  : localEmergencyActive
+                    ? (propLanguage === 'en' ? 'ACTIVE EMERGENCY — Tap 3x to stop sound' : 'DARURAT AKTIF — Ketuk 3x hentikan suara')
+                    : isEmergencyActive
+                      ? (propLanguage === 'en' ? 'EMERGENCY — Tap 3 times' : 'DARURAT — Ketuk 3 kali')
+                      : (propLanguage === 'en' ? 'Emergency (active during bookings)' : 'Darurat (aktif saat ada booking)')}
+              </span>
+              {canUseEmergency && emergencyTapCount > 0 && !localEmergencyActive && (
+                <span className="text-sm opacity-90">{emergencyTapCount}/3</span>
+              )}
+              {localEmergencyActive && (
+                <span className="text-sm opacity-90">{(propLanguage === 'en' ? 'Music playing' : 'Musik menyala')} — 3x to stop</span>
+              )}
+            </button>
+            <p className="text-xs text-center text-gray-600 mt-2">
+              {localEmergencyActive
+                ? (propLanguage === 'en'
+                  ? 'Tap the button 3 times within 4 seconds to stop the sound and clear active emergency.'
+                  : 'Ketuk tombol 3 kali dalam 4 detik untuk hentikan suara dan batalkan darurat aktif.')
+                : propLanguage === 'en'
+                  ? 'Active 1h before, during, and 3h after each booking. Admin is notified. After sending, music plays until you tap 3x again.'
+                  : 'Aktif 1 jam sebelum, selama, dan 3 jam setelah setiap booking. Admin diberitahu. Setelah kirim, musik menyala sampai Anda ketuk 3x lagi.'}
+            </p>
+            <div className="mt-3 pt-3 border-t border-red-200">
+              <p className="text-[11px] text-center text-gray-700 leading-relaxed">
+                {propLanguage === 'en' ? (
+                  <>To activate: tap the emergency button <strong>3 times within 4 seconds</strong>. IndaStreet is notified <strong>immediately</strong> with your location and GPS coordinates. Police may be contacted and/or IndaStreet representatives are on the way. Tap 3 times again to stop the alert sound and clear.</>
+                ) : (
+                  <>Untuk mengaktifkan: ketuk tombol darurat <strong>3 kali dalam 4 detik</strong>. IndaStreet diberitahu <strong>segera</strong> dengan lokasi dan koordinat GPS Anda. Polisi dapat dihubungi dan/atau perwakilan IndaStreet sedang dalam perjalanan. Ketuk 3 kali lagi untuk hentikan suara dan batalkan.</>
+                )}
+              </p>
+            </div>
           </div>
         </div>
         

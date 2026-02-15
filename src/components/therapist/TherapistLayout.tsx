@@ -57,7 +57,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Menu, X, User, Calendar, DollarSign, Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart, Home, Eye} from 'lucide-react';
+  Menu, X, User, Calendar, DollarSign, Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut, Users, BarChart, Home, Eye, Briefcase, HelpCircle, Scale, History } from 'lucide-react';
 import BookingBadge from './BookingBadge';
 import { useUnreadBadge } from "../../chat/hooks/useUnreadBadge";
 import { useGestureSwipe } from "../../hooks/useGestureSwipe";
@@ -127,6 +127,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     };
     localStorage.setItem('therapist_nav_enhanced_prefs', JSON.stringify(currentPrefs));
   }, [enableFloatingActions, showBreadcrumbs]);
+
+  // Scroll to top when therapist dashboard section changes (Bookings, Earnings, etc.)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  }, [currentPage]);
   
   // Elite error recovery mechanism - only for critical errors
   const recoverFromError = useCallback(() => {
@@ -236,13 +243,14 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       calendar: 'Calendar',
       legal: 'Legal',
       'custom-menu': 'Menu Prices',
-      'commission-payment': 'Payments 30%',
+      'commission-payment': 'Commission (30%)',
       'send-discount': 'Send Discount',
       'hotel-villa-safe-pass': 'Hotel Safe Pass',
       'more-customers': 'More Customers',
       analytics: 'Analytics',
       menu: 'Menu',
       'how-it-works': 'How It Works',
+      'job-applications': 'Job Applications',
       logout: 'Logout',
     },
     id: {
@@ -258,13 +266,14 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       calendar: 'Kalender',
       legal: 'Hukum',
       'custom-menu': 'Harga Menu',
-      'commission-payment': 'Pembayaran 30%',
+      'commission-payment': 'Komisi (30%)',
       'send-discount': 'Kirim Diskon',
       'hotel-villa-safe-pass': 'Hotel Safe Pass',
       'more-customers': 'Lebih Banyak Pelanggan',
       analytics: 'Analitik',
       menu: 'Menu',
       'how-it-works': 'Cara Kerja',
+      'job-applications': 'Lamaran Pekerjaan',
       logout: 'Keluar',
     },
   };
@@ -273,20 +282,21 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   
   const menuItems = [
     { id: 'status', label: labels.status, icon: Clock, color: 'text-orange-500' },
-    { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: FileText, color: 'text-orange-500' },
+    { id: 'therapist-how-it-works', label: labels['how-it-works'], icon: HelpCircle, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
     { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-orange-500' },
     { id: 'customers', label: labels['more-customers'], icon: Users, color: 'text-orange-500' },
     { id: 'send-discount', label: labels['send-discount'], icon: Gift, color: 'text-orange-500' },
     { id: 'earnings', label: labels.earnings, icon: DollarSign, color: 'text-orange-500' },
     { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-orange-500' },
-    { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-orange-500' },
+    { id: 'payment-status', label: labels['payment-status'], icon: History, color: 'text-orange-500' },
     { id: 'commission-payment', label: labels['commission-payment'], icon: Wallet, color: 'text-orange-500' },
     { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-500' },
     { id: 'analytics', label: labels.analytics, icon: BarChart3, color: 'text-orange-500' },
     { id: 'therapist-hotel-villa-safe-pass', label: labels['hotel-villa-safe-pass'], icon: Shield, color: 'text-orange-500' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-orange-500' },
-    { id: 'legal', label: labels.legal, icon: FileText, color: 'text-orange-500' },
+    { id: 'job-applications', label: labels['job-applications'], icon: Briefcase, color: 'text-orange-500' },
+    { id: 'legal', label: labels.legal, icon: Scale, color: 'text-orange-500' },
   ];
 
   // ============================================================================
@@ -568,12 +578,12 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         />
       )}
 
-      {/* Side drawer - same design as home page AppDrawer (right, width, header, link style) */}
+      {/* Side drawer - 60% viewport width, therapist profile in header */}
       <aside
         {...swipeHandlers}
         id="therapist-sidebar"
         className={`fixed top-0 right-0 bg-white shadow-2xl z-[120] transform transition-transform duration-300 ease-out flex flex-col
-                   w-[75%] max-w-[280px] sm:w-[320px] sm:max-w-[320px] md:w-[350px] md:max-w-[350px] lg:w-[380px] lg:max-w-[380px]
+                   w-[60%] max-w-[360px]
                    ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
         style={{
           willChange: 'transform',
@@ -594,62 +604,40 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         inert={!isSidebarOpen}
       >
         <div className="flex flex-col h-full">
-          {/* Header - same as home page AppDrawer */}
-          <div className="p-6 flex justify-between items-center border-b border-black flex-shrink-0">
-            <h2 id="therapist-drawer-title" className="font-bold text-2xl">
-              <span className="text-black">Inda</span>
-              <span className="text-orange-500">Street</span>
-            </h2>
+          {/* Header: branding + therapist profile picture + close */}
+          <div className="p-4 flex items-center justify-between gap-3 border-b border-gray-200 flex-shrink-0 bg-white">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <h2 id="therapist-drawer-title" className="font-bold text-xl shrink-0">
+                <span className="text-black">Inda</span>
+                <span className="text-orange-500">Street</span>
+              </h2>
+              {therapist?.profilePicture ? (
+                <img src={therapist.profilePicture} alt={therapist?.name || 'Therapist'} className="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-orange-200" />
+              ) : (
+                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 shrink-0">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900 truncate">{therapist?.name || 'Therapist'}</p>
+                <p className="text-xs text-gray-600 truncate">{therapist?.email || ''}</p>
+              </div>
+            </div>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsSidebarOpen(false); }}
-              className="rounded-full transition-all duration-200 touch-manipulation flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 min-w-[56px] min-h-[56px] w-14 h-14 md:min-w-[48px] md:min-h-[48px] md:w-12 md:h-12 lg:min-w-[44px] lg:min-h-[44px] lg:w-11 lg:h-11"
+              className="rounded-full transition-all duration-200 touch-manipulation flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 min-w-[44px] min-h-[44px] w-11 h-11 shrink-0"
               aria-label="Close navigation menu"
               title="Close navigation menu"
               type="button"
               style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' } as React.CSSProperties}
             >
-              <X className="w-6 h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-black" />
+              <X className="w-5 h-5 text-black" />
             </button>
-          </div>
-
-          {/* Therapist info block - same pattern as home drawer City Switcher */}
-          <div className="p-4 border-b border-gray-200 flex-shrink-0">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 border-2 border-orange-200">
-              {therapist?.profilePicture ? (
-                <img src={therapist.profilePicture} alt={therapist?.name || 'Therapist'} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{therapist?.name || 'Therapist'}</p>
-                <p className="text-xs text-gray-600 truncate">{therapist?.email || ''}</p>
-              </div>
-            </div>
           </div>
 
           {/* Navigation - list design with slight orange shade on items */}
           <nav className="flex-grow p-4 overflow-y-auto" aria-label="Therapist navigation">
             <ul className="space-y-1.5 list-none m-0 p-0">
-              <li>
-                <button
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNavigate('dashboard'); }}
-                  className={`flex items-center gap-3 w-full py-2.5 px-3 rounded-lg transition-colors text-left border border-transparent ${
-                    currentPage === getTherapistSidebarPage('dashboard')
-                      ? 'bg-orange-100 border-orange-200 text-orange-800'
-                      : 'bg-orange-50/80 hover:bg-orange-100 border-orange-100 text-gray-700 hover:text-orange-800'
-                  }`}
-                  type="button"
-                >
-                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
-                    <User className={`w-5 h-5 ${currentPage === getTherapistSidebarPage('dashboard') ? 'text-orange-600' : 'text-orange-500'}`} />
-                  </span>
-                  <span className="text-sm font-medium">
-                    {language === 'en' ? 'My Dashboard' : 'Dashboard Saya'}
-                  </span>
-                </button>
-              </li>
               <li>
                 <button
                   onClick={(e) => {
@@ -662,13 +650,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                       window.history.pushState({}, '', `/#/therapist-profile/${therapistId}-${slug}`);
                     }
                   }}
-                  className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg bg-orange-50/80 hover:bg-orange-100 border border-orange-200 text-orange-700 font-medium transition-colors text-left"
+                  className="flex items-center w-full py-2.5 px-3 rounded-lg bg-orange-50/80 hover:bg-orange-100 border border-orange-200 text-orange-700 font-medium transition-colors text-left"
                   type="button"
                 >
-                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                  <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
                     <Eye className="w-5 h-5 text-orange-500" />
                   </span>
-                  <span className="text-sm">
+                  <span className="flex-1 min-w-0 text-left text-sm pl-2">
                     {language === 'en' ? 'View My Public Profile' : 'Lihat Profil Publik Saya'}
                   </span>
                 </button>
@@ -682,17 +670,17 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                   <li key={item.id}>
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNavigate(item.id); }}
-                      className={`flex items-center gap-3 w-full py-2.5 px-3 rounded-lg transition-colors text-left border border-transparent ${
+                      className={`flex items-center w-full py-2.5 px-3 rounded-lg transition-colors text-left border border-transparent ${
                         isActive
                           ? 'bg-orange-100 border-orange-200 text-orange-800'
                           : 'bg-orange-50/80 hover:bg-orange-100 border-orange-100 text-gray-700 hover:text-orange-800'
                       }`}
                       type="button"
                     >
-                      <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                      <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
                         <Icon className={`w-5 h-5 ${isActive ? 'text-orange-600' : 'text-orange-500'}`} />
                       </span>
-                      <span className="text-sm font-medium flex-1 text-left">
+                      <span className="flex-1 min-w-0 text-left text-sm font-medium pl-2">
                         {item.label}
                       </span>
                       {item.id === 'bookings' && <BookingBadge className="ml-auto flex-shrink-0" size="sm" />}
@@ -708,13 +696,13 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                 <li>
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onLogout(); }}
-                    className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg bg-gray-50 hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors text-left"
+                    className="flex items-center w-full py-2.5 px-3 rounded-lg bg-gray-50 hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors text-left"
                     type="button"
                   >
-                    <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                    <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
                       <LogOut className="w-5 h-5 text-red-600" />
                     </span>
-                    <span className="text-sm font-medium">
+                    <span className="flex-1 min-w-0 text-left text-sm font-medium pl-2">
                       {language === 'id' ? 'Keluar' : 'Logout'}
                     </span>
                   </button>

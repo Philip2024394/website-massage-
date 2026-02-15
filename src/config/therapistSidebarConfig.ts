@@ -46,6 +46,7 @@ export const THERAPIST_SIDEBAR_IDS = [
   'therapist-hotel-villa-safe-pass',
   'notifications',
   'legal',
+  'job-applications',
 ] as const;
 
 export type TherapistSidebarId = (typeof THERAPIST_SIDEBAR_IDS)[number];
@@ -73,6 +74,7 @@ export const THERAPIST_SIDEBAR_TO_PAGE: Record<string, Page> = {
   'therapist-hotel-villa-safe-pass': 'therapist-hotel-villa-safe-pass',
   notifications: 'therapist-notifications',
   legal: 'therapist-legal',
+  'job-applications': 'therapist-job-applications',
 };
 
 const SIDEBAR_IDS_SET = new Set<string>(THERAPIST_SIDEBAR_IDS);

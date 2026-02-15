@@ -54,6 +54,7 @@ import TherapistCustomersPage from '../../pages/therapist/TherapistCustomersPage
 import TherapistAnalyticsPage from '../../pages/therapist/TherapistAnalyticsPage';
 import BannerDiscountPage from '../../pages/therapist/BannerDiscountPage.tsx';
 import TherapistSafePassWrapper from '../../pages/therapist/TherapistSafePassWrapper';
+import TherapistJobApplicationsPage from '../../pages/therapist/TherapistJobApplicationsPage';
 
 export const therapistRoutes = {
   dashboard: {
@@ -96,6 +97,12 @@ export const therapistRoutes = {
     path: '/therapist/legal',
     component: TherapistLegalPage,
     name: 'therapist-legal',
+    requiresAuth: true
+  },
+  jobApplications: {
+    path: '/therapist/job-applications',
+    component: TherapistJobApplicationsPage,
+    name: 'therapist-job-applications',
     requiresAuth: true
   },
   howItWorks: {

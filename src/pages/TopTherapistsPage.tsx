@@ -1,12 +1,14 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
+// Top 5 Therapists: good reviews, bookings, detailed menu, account health. Rotates weekly per location.
 import React, { useState, useMemo } from 'react';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { ArrowLeft, Star, Calendar, Eye } from 'lucide-react';
+import { Star, Calendar, Eye, CheckCircle2 } from 'lucide-react';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 import { logger } from '../utils/logger';
+import { getWeekSeed, seededShuffle } from '../utils/weekSeedUtils';
 
 interface TopTherapistsPageProps {
     t: any;
@@ -37,57 +39,69 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
         setLoadedImages(prev => new Set(prev).add(therapistId));
     };
     
-    // Filter and sort therapists by user's location and bookings
-    const getTopTherapistsByLocation = () => {
-        logger.debug('🏆 [TOP5] Filtering therapists', { 
-            totalCount: therapists.length, 
-            userCity,
-            sampleTherapist: therapists[0] ? {
-                id: therapists[0].$id || therapists[0].id,
-                name: therapists[0].name,
-                rating: therapists[0].rating,
-                reviewCount: therapists[0].reviewCount,
-                totalBookings: therapists[0].totalBookings
-            } : null
-        });
-        
-        // Filter by user's city if provided
-        let filtered = therapists;
-        if (userCity) {
-            filtered = therapists.filter(t => 
-                t.city && t.city.toLowerCase() === userCity.toLowerCase()
-            );
-        }
-        
-        // Sort by bookings (last 30 days) or online time, then by rating
-        // RELAXED FILTER: Include therapists even without rating/reviews
-        const sorted = filtered
-            .sort((a, b) => {
-                // Sort by bookings first (if available), otherwise by rating
-                const aBookings = a.totalBookings || a.reviewCount || 0;
-                const bBookings = b.totalBookings || b.reviewCount || 0;
-                
-                if (bBookings !== aBookings) {
-                    return bBookings - aBookings;
-                }
-                return (b.rating || 0) - (a.rating || 0);
-            })
-            .slice(0, 5);
-        
-        logger.debug('🏆 [TOP5] Top therapists computed', {
-            count: sorted.length,
-            therapists: sorted.map(t => ({
-                id: t.$id || t.id,
-                name: t.name,
-                bookings: t.totalBookings || t.reviewCount || 0,
-                rating: t.rating || 0
-            }))
-        });
-        
-        return sorted;
+    // Score therapist for "top 5" eligibility: good reviews, bookings, detailed menu, account health.
+    // We take top N by score, then apply weekly seeded shuffle so the displayed 5 change each week per location.
+    const scoreTherapist = (t: any): number => {
+        const reviews = (t.rating || 0) * (Math.max(0, t.reviewCount || 0) + 1);
+        const bookings = t.totalBookings || t.reviewCount || 0;
+        const hasDetailedMenu = !!(t.pricing && (t.pricing['60'] || t.pricing['90'] || t.pricing['120'] || (t.services && t.services.length > 0)));
+        const accountHealth = (t.isVerified || (t as any).verifiedBadge) ? 100 : 0;
+        const activity = (t.$updatedAt || t.updatedAt) ? 10 : 0; // proxy for "time online" / recent activity
+        return reviews * 2 + bookings * 5 + (hasDetailedMenu ? 50 : 0) + accountHealth + activity;
     };
-    
+
+    const isTherapistAvailableOnline = (t: any): boolean => {
+        const isLive = t.isLive === true || (typeof t.isLive !== 'boolean' && t.isLive !== false);
+        const status = (t.status || t.availability || t.availabilityStatus || '')
+            .toString().trim().toLowerCase();
+        const available = status === 'available' || status === 'online';
+        return !!(isLive && available);
+    };
+
+    const getTopTherapistsByLocation = (): any[] => {
+        logger.debug('🏆 [TOP5] Filtering therapists', { totalCount: therapists.length, userCity });
+
+        let filtered = therapists.filter(isTherapistAvailableOnline);
+        if (userCity) {
+            filtered = filtered.filter(t => t.city && String(t.city).toLowerCase() === userCity.toLowerCase());
+        }
+
+        const scored = filtered.map(t => ({ therapist: t, score: scoreTherapist(t) }));
+        scored.sort((a, b) => b.score - a.score);
+        const topPool = scored.slice(0, 20).map(s => s.therapist);
+        if (topPool.length <= 5) return topPool;
+
+        const seed = getWeekSeed(userCity || null);
+        const best = topPool[0];
+        const rest = topPool.slice(1);
+        const shuffledRest = seededShuffle([...rest], seed);
+        const selected = [best, ...shuffledRest.slice(0, 4)];
+
+        logger.debug('🏆 [TOP5] Top 5 this week', { count: selected.length, userCity, weekSeed: seed });
+        return selected;
+    };
+
     const topTherapists = useMemo(() => getTopTherapistsByLocation(), [therapists, userCity]);
+
+    type BadgeKey = 'most-popular' | 'newest-menu-prices' | 'rating-climbing' | 'booking-success';
+    const badgeAssignments = useMemo((): Record<number, BadgeKey> => {
+        const out: Record<number, BadgeKey> = { 0: 'most-popular' };
+        if (topTherapists.length < 2) return out;
+        const seed = getWeekSeed(userCity || null);
+        const badgeSeed = seed + 12345;
+        const positions = seededShuffle([1, 2, 3, 4].filter(i => i < topTherapists.length), badgeSeed);
+        const twoPositions = positions.slice(0, 2);
+        const badgeTypes: BadgeKey[] = ['newest-menu-prices', 'rating-climbing', 'booking-success'];
+        const shuffledBadges = seededShuffle([...badgeTypes], badgeSeed + 1);
+        const firstBadge = shuffledBadges[0];
+        let secondBadge = shuffledBadges[1];
+        if (firstBadge === 'newest-menu-prices' && secondBadge === 'newest-menu-prices') {
+            secondBadge = shuffledBadges[2] ?? 'rating-climbing';
+        }
+        out[twoPositions[0]] = firstBadge;
+        out[twoPositions[1]] = secondBadge;
+        return out;
+    }, [topTherapists.length, userCity]);
     
     // Get consistent Appwrite image for each therapist
     // FIX: Appwrite stores profile images as 'profilePicture', not 'profileImageUrl'
@@ -127,14 +141,6 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
             />
 
             <div className="max-w-4xl mx-auto px-4 py-8">
-                {/* Back Button */}
-                <button
-                    onClick={() => onNavigate?.('home')}
-                    className="mt-5 mb-4 ml-2 w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 will-change-transform"
-                >
-                    <ArrowLeft className="w-6 h-6" />
-                </button>
-
                 {/* Header */}
                 <div className="mb-8">
                     {/* Hero Image */}
@@ -150,22 +156,63 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                         <span className="text-4xl">🏆</span>
                         {currentLanguage === 'id' ? 'Top 5 Terapis' : 'Top 5 Therapists'}
                     </h2>
-                    <p className="text-gray-600 text-lg mb-6 text-center">
-                        {currentLanguage === 'id' 
-                            ? 'Terapis terpopuler berdasarkan jumlah booking dalam 30 hari terakhir.'
-                            : 'Most popular therapists based on bookings in the last 30 days.'
-                        }
+                    <p className="text-gray-600 text-lg mb-2 text-center">
+                        {currentLanguage === 'id'
+                            ? 'Trending Bulan Ini untuk Performa dan Layanan Terbaik.'
+                            : 'Trending This Month For Top Performance And Service.'}
                     </p>
 
                     {/* Location Badge */}
                     {userCity && (
-                        <div className="flex justify-center mb-6">
+                        <div className="flex justify-center mb-4">
                             <div className="px-6 py-3 rounded-full bg-orange-500 text-white font-semibold shadow-md flex items-center gap-2">
                                 <span>📍</span>
                                 <span>{userCity}</span>
                             </div>
                         </div>
                     )}
+
+                    {/* Why these therapists? Standard criteria text */}
+                    <div className="mb-6 rounded-2xl border border-slate-200/80 bg-slate-50 p-5 text-left">
+                        <h3 className="text-base font-bold text-slate-900 mb-3">
+                            {currentLanguage === 'id' ? 'Mengapa Terapis Ini Masuk Top 5?' : 'Why Are These Therapists in the Top 5?'}
+                        </h3>
+                        <p className="text-slate-600 text-sm mb-3 leading-relaxed">
+                            {currentLanguage === 'id'
+                                ? 'Top 5 profesional kami diakui karena konsisten memberikan layanan berkualitas tinggi dan mempertahankan standar profesional yang kuat. Pemilihan berdasarkan performa keseluruhan dan kepuasan klien, dan terapis yang ditampilkan diperbarui secara berkala untuk menonjolkan berbagai profesional unggulan.'
+                                : 'Our Top 5 professionals are recognized for consistently delivering high-quality service and maintaining strong professional standards. Selection is based on overall performance and client satisfaction, and the featured therapists are refreshed regularly to highlight a variety of outstanding professionals.'}
+                        </p>
+                        <p className="text-slate-700 text-sm font-semibold mb-2">
+                            {currentLanguage === 'id' ? 'Pemilihan berdasarkan:' : 'Selection is based on:'}
+                        </p>
+                        <ul className="space-y-2 text-sm text-slate-700">
+                            <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                                <span>{currentLanguage === 'id' ? 'Ulasan Klien yang Sangat Baik – Umpan balik positif yang konsisten dari klien.' : 'Excellent Client Reviews – Consistently positive feedback from clients.'}</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                                <span>{currentLanguage === 'id' ? 'Kehadiran Aktif & Mapan – Keandalan dan keterlibatan berkelanjutan di platform.' : 'Active & Established Presence – Demonstrated reliability and ongoing engagement on the platform.'}</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                                <span>{currentLanguage === 'id' ? 'Performa Booking yang Kuat – Permintaan tinggi dan janji temu klien yang konsisten.' : 'Strong Booking Performance – High demand and consistent client appointments.'}</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                                <span>{currentLanguage === 'id' ? 'Informasi Layanan Lengkap – Menu layanan yang jelas dan rinci serta harga transparan.' : 'Comprehensive Service Information – Clear, detailed service menus and transparent pricing.'}</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                                <span>{currentLanguage === 'id' ? 'Standar Akun Profesional – Profil yang terpelihara dengan baik dan memenuhi standar kualitas platform.' : 'Professional Account Standing – Well-maintained profiles that meet platform quality standards.'}</span>
+                            </li>
+                        </ul>
+                        <p className="text-slate-600 text-sm mt-3 leading-relaxed">
+                            {currentLanguage === 'id'
+                                ? 'Profesional unggulan kami dirotasi secara berkala agar beragam terapis berkinerja terbaik mendapat visibilitas.'
+                                : 'Our featured professionals rotate periodically to ensure visibility for a diverse range of top-performing therapists.'}
+                        </p>
+                    </div>
                 </div>
 
                 {/* Therapists List */}
@@ -249,33 +296,28 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                                 </div>
                                             )}
                                         </div>
+                                        <p className="text-xs text-slate-500 mt-1.5">
+                                            {currentLanguage === 'id'
+                                                ? 'Masuk Top 5: ulasan, booking, menu lengkap, kesehatan akun.'
+                                                : 'In Top 5 for: reviews, bookings, detailed menu, account health.'}
+                                        </p>
                                     </div>
 
-                                    {/* View Profile Button */}
+                                    {/* View Profile Button - diverts to therapist profile page */}
                                     <button
                                         onClick={() => {
-                                            logger.debug('🏆 [TOP5] Therapist clicked', {
-                                                id: therapist.$id || therapist.id,
-                                                name: therapist.name,
-                                                bookings: therapist.totalBookings || therapist.reviewCount || 0,
-                                                rating: therapist.rating || 0
-                                            });
-                                            
+                                            const therapistId = therapist.$id || therapist.id;
+                                            const slug = (therapist.name || 'therapist').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                                            logger.debug('🏆 [TOP5] View profile clicked', { id: therapistId, name: therapist.name });
                                             try {
-                                                // CRITICAL: Set selected therapist before navigation
                                                 if (onSelectTherapist) {
                                                     onSelectTherapist(therapist);
-                                                    logger.debug('🏆 [TOP5] Therapist selected successfully');
-                                                } else {
-                                                    logger.warn('🏆 [TOP5] onSelectTherapist handler missing!');
                                                 }
-                                                
-                                                // Navigate to profile
+                                                if (typeof window !== 'undefined' && window.history) {
+                                                    window.history.pushState({}, '', `#/therapist-profile/${therapistId}-${slug}`);
+                                                }
                                                 if (onNavigate) {
                                                     onNavigate('therapist-profile');
-                                                    logger.debug('🏆 [TOP5] Navigation initiated');
-                                                } else {
-                                                    logger.error('🏆 [TOP5] onNavigate handler missing!');
                                                 }
                                             } catch (error) {
                                                 logger.error('🏆 [TOP5] Navigation failed', error);
@@ -290,11 +332,22 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                     </button>
                                 </div>
 
-                                {/* Trophy Animation for #1 */}
-                                {index === 0 && (
+                                {/* Badge: #1 always Most Popular; 2 of the other 4 get random badges (Newest Menu/Prices max once) */}
+                                {badgeAssignments[index] && (
                                     <div className="mt-3 text-center">
                                         <span className="inline-block px-4 py-1 bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 font-bold text-xs rounded-full">
-                                            🏆 {currentLanguage === 'id' ? 'TERAPIS TERPOPULER' : 'MOST POPULAR THERAPIST'}
+                                            {badgeAssignments[index] === 'most-popular' && (
+                                                <>🏆 {currentLanguage === 'id' ? 'TERAPIS TERPOPULER' : 'MOST POPULAR THERAPIST'}</>
+                                            )}
+                                            {badgeAssignments[index] === 'newest-menu-prices' && (
+                                                <>{currentLanguage === 'id' ? '✨ Menu & Harga Terbaru' : '✨ Newest Menu & Prices'}</>
+                                            )}
+                                            {badgeAssignments[index] === 'rating-climbing' && (
+                                                <>{currentLanguage === 'id' ? '📈 Rating Naik' : '📈 Account Rating Climbing'}</>
+                                            )}
+                                            {badgeAssignments[index] === 'booking-success' && (
+                                                <>{currentLanguage === 'id' ? '✅ 98% Booking Sukses' : '✅ 98% Booking Success'}</>
+                                            )}
                                         </span>
                                     </div>
                                 )}

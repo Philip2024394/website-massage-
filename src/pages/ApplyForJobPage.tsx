@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Briefcase, MapPin, Send, CheckCircle } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { containsContactSpam, CONTACT_SPAM_MESSAGE_EN } from '../utils/contactSpam';
 
 const cardClass = 'rounded-[20px] shadow-lg border border-slate-200/80 bg-white';
 
@@ -25,7 +26,10 @@ interface JobDetails {
     [key: string]: any;
 }
 
-const ApplyForJobPage: React.FC<ApplyForJobPageProps> = ({ jobId, onBack, onNavigate }) => {
+const APPLY_FOR_JOB_STORAGE_KEY = 'indastreet_apply_for_job_id';
+
+const ApplyForJobPage: React.FC<ApplyForJobPageProps> = ({ jobId: jobIdProp, onBack, onNavigate }) => {
+    const jobId = jobIdProp || (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(APPLY_FOR_JOB_STORAGE_KEY) : null) || '';
     const [jobDetails, setJobDetails] = useState<JobDetails | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [submitted, setSubmitted] = useState(false);
@@ -41,7 +45,14 @@ const ApplyForJobPage: React.FC<ApplyForJobPageProps> = ({ jobId, onBack, onNavi
 
     useEffect(() => {
         if (jobId) fetchJobDetails();
+        else setIsLoading(false);
     }, [jobId]);
+
+    useEffect(() => {
+        return () => {
+            try { sessionStorage.removeItem(APPLY_FOR_JOB_STORAGE_KEY); } catch (_) {}
+        };
+    }, []);
 
     const fetchJobDetails = async () => {
         try {
@@ -63,6 +74,10 @@ const ApplyForJobPage: React.FC<ApplyForJobPageProps> = ({ jobId, onBack, onNavi
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (containsContactSpam(formData.experience) || containsContactSpam(formData.specialties) || containsContactSpam(formData.coverLetter)) {
+            alert(CONTACT_SPAM_MESSAGE_EN);
+            return;
+        }
         const msg = `Hi, I'm interested in the *${jobDetails?.jobTitle || 'position'}* at *${jobDetails?.businessName || 'your company'}*.\n\n` +
             `*Name:* ${formData.name}\n` +
             `*Email:* ${formData.email}\n` +
@@ -72,7 +87,7 @@ const ApplyForJobPage: React.FC<ApplyForJobPageProps> = ({ jobId, onBack, onNavi
             (formData.coverLetter ? `*Message:* ${formData.coverLetter}\n` : '') +
             `\nI found this opportunity on IndaStreet.`;
         
-        const wa = formData.whatsapp || formData.phone || jobDetails?.contactWhatsApp || '';
+        const wa = formData.whatsapp || formData.phone || jobDetails?.contactWhatsApp || (jobDetails as any)?.contactPhone || '';
         const clean = wa.replace(/\D/g, '');
         const num = clean.startsWith('62') ? clean : clean.startsWith('0') ? '62' + clean.slice(1) : '62' + clean;
         window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');

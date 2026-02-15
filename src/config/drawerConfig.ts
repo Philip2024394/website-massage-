@@ -10,6 +10,7 @@ import type { Page } from '../types/pageTypes';
 
 /** Page ids the drawer is allowed to navigate to (must have routes in AppRouter). */
 export const DRAWER_PAGE_IDS = [
+  'home',
   'createAccount',
   'login',
   'indastreet-partners',
@@ -21,6 +22,7 @@ export const DRAWER_PAGE_IDS = [
   'contact',
   'hotels-and-villas',
   'blog',
+  'indastreet-news',
   'massage-bali',
   'massage-types',
   'facial-types',
@@ -55,6 +57,7 @@ export const DRAWER_NAV_ITEMS: ReadonlyArray<{
   { id: 'contact', labelKey: 'contact', icon: 'Phone' },
   { id: 'hotels-and-villas', labelKey: 'hotelsVillas', icon: 'Hotel' },
   { id: 'blog', labelKey: 'blog', icon: 'BookOpen' },
+  { id: 'indastreet-news', labelKey: 'indastreetNews', icon: 'BookOpen' },
   { id: 'massage-bali', labelKey: 'massageInBali', icon: 'Heart', sectionBreak: true },
   { id: 'massage-types', labelKey: 'massageDirectory', icon: 'BookOpen' },
   { id: 'facial-types', labelKey: 'facialDirectory', icon: 'BookOpen' },

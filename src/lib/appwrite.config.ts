@@ -97,6 +97,8 @@ export const APPWRITE_CONFIG = {
         membershipUpgrades: 'membership_upgrades',
         deactivationRequests: 'deactivation_requests',
         contactInquiries: 'contact_inquiries', // Contact/support form submissions
+        indastreetNews: 'indastreet_news', // Indastreet News – massage & skin clinic headlines
+        indastreetBlog: 'indastreet_blog', // Indastreet Blog – articles for blog index & view post
         coins: 'Coins',
         referrals: 'Referrals',
         activeDiscounts: 'active_discounts',
@@ -111,6 +113,7 @@ export const APPWRITE_CONFIG = {
     // Storage bucket IDs
     bucketId: '68f76bdd002387590584', // Main storage bucket
     facialPlacesBucketId: '6932f43700113926eb80', // Facial places images bucket
+    blogImagesBucketId: getEnvVar('VITE_APPWRITE_BLOG_BUCKET_ID', 'bogimages'), // Blog hero/in-article images (Appwrite Storage bucket)
     
     // Google Maps Integration
     googleMaps: {

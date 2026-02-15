@@ -206,21 +206,23 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
         expiresAt: new Date(therapist.discountEndTime)
     } : null;
 
-    // Hero image = EXACT same as home page card (single source of truth)
-    const heroImage = mode === 'shared' ? getTherapistMainImage(therapist as any) : '';
+    // Hero image = Indastreet logo on shared/profile view (from Top 5 or shared link)
+    const heroImage = mode === 'shared'
+        ? 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258'
+        : '';
     const welcomeText = HERO_WELCOME_TEXT[language] || HERO_WELCOME_TEXT.id;
     
-    // SEO-optimized image alt text
-    // Ensure location is a string - handle cases where it might be an object
+    // Ensure location is a string; display in capital letters
     const locationStr = typeof therapist.location === 'string' 
         ? therapist.location 
         : (therapist.location?.name || therapist.location?.city || 'a');
     const city = locationStr.split(' ')[0];
-    const heroImageAlt = `Professional massage therapy in ${city} - ${therapist.name} - Terapis pijat panggilan ${city}`;
+    const cityUpper = city ? city.toUpperCase() : city;
+    const heroImageAlt = `Professional massage therapy in ${cityUpper} - ${therapist.name.toUpperCase()} - Terapis pijat panggilan ${cityUpper}`;
     
-    // Replace {city} placeholder with actual location
-    const heroTitle = welcomeText.title.replace('{city}', city);
-    const heroSubtitle = welcomeText.subtitle.replace(/{city}/g, city);
+    // Replace {city} placeholder with location in capital letters
+    const heroTitle = welcomeText.title.replace('{city}', cityUpper);
+    const heroSubtitle = welcomeText.subtitle.replace(/{city}/g, cityUpper);
 
     return (
         <div className="bg-white">
@@ -238,11 +240,14 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                             />
                         </div>
                         <div className="space-y-2">
-                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 uppercase">
                                 {heroTitle}
                             </h1>
-                            <p className="text-base md:text-lg text-gray-700">
+                            <p className="text-base md:text-lg text-gray-700 uppercase">
                                 {heroSubtitle}
+                            </p>
+                            <p className="text-lg font-semibold text-gray-800 uppercase">
+                                {therapist.name}
                             </p>
                         </div>
                     </div>

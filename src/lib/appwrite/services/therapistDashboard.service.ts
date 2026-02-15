@@ -47,6 +47,14 @@ export interface TherapistDashboardData {
   selfieUrl?: string;
   selfieVerified?: boolean;
   
+  // Job applications / CV (optional – for applying to employer job postings)
+  cvFileId?: string;
+  cvFileName?: string;
+  cvUrl?: string;
+  jobSeekerExperience?: string;
+  jobSeekerSpecialties?: string;
+  jobSeekerCoverLetter?: string;
+
   // Timestamps
   createdAt?: string;
   updatedAt?: string;
@@ -175,6 +183,31 @@ export const therapistDashboardService = {
     }
   },
   
+  /**
+   * Upload CV file (PDF/DOC) for job applications
+   */
+  async uploadCv(therapistId: string, file: File): Promise<{ fileId: string; url: string }> {
+    try {
+      const bucketId = APPWRITE_CONFIG.bucketId;
+      if (!bucketId) throw new Error('Storage bucket not configured');
+
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) throw new Error('File too large. Maximum 5MB allowed.');
+
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error('Invalid file type. Only PDF and DOC/DOCX are allowed.');
+      }
+
+      const uploadedFile = await storage.createFile(bucketId, ID.unique(), file);
+      const fileUrl = storage.getFileView(bucketId, (uploadedFile as any).$id);
+      return { fileId: (uploadedFile as any).$id, url: String(fileUrl) };
+    } catch (error) {
+      console.error('❌ [DASHBOARD] Error uploading CV:', error);
+      throw error;
+    }
+  },
+
   /**
    * Save bank details and KTP information
    */

@@ -97,7 +97,7 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                                 );
                             })()}
                             
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 uppercase">
                                 {therapist.name}
                             </h3>
                         </div>

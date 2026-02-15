@@ -74,6 +74,7 @@ const drawerTranslations = {
     contact: 'Contact',
     hotelsVillas: 'Hotels & Villas',
     blog: 'Blog',
+    indastreetNews: 'Indastreet News',
     massageInBali: 'Massage in Bali',
     massageDirectory: 'Massage Directory',
     facialDirectory: 'Facial Directory',
@@ -98,6 +99,7 @@ const drawerTranslations = {
     contact: 'Kontak',
     hotelsVillas: 'Hotel & Villa',
     blog: 'Blog',
+    indastreetNews: 'Indastreet News',
     massageInBali: 'Pijat di Bali',
     massageDirectory: 'Direktori Pijat',
     facialDirectory: 'Direktori Facial',
@@ -270,6 +272,27 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 
           <nav className="flex-grow p-4" id="drawer-description" aria-label="Main navigation">
             <div className="space-y-3">
+              {/* Home – top of drawer for easy access from any page */}
+              <button
+                onClick={() => handleItemClick(onNavigate ? () => onNavigate('home') : undefined, 'home')}
+                className="
+                  flex items-center gap-3 w-full rounded-xl text-left
+                  bg-slate-100 hover:bg-primary-50 border border-slate-200/80
+                  transition-all duration-200 touch-manipulation
+                  py-3 px-4 min-h-[48px]
+                "
+                type="button"
+                aria-label="Go to Home page"
+                style={{ touchAction: 'manipulation' } as React.CSSProperties}
+              >
+                <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-white border border-slate-200/80" aria-hidden="true">
+                  <Home className="w-5 h-5 text-primary-600" />
+                </span>
+                <span className="flex-1 min-w-0 text-sm font-semibold text-slate-800 pl-2">
+                  {language === 'id' ? 'Beranda' : 'Home'}
+                </span>
+              </button>
+
               {/* Authentication Section - Separate Buttons */}
               <div className="border-b border-gray-200 pb-4 mb-4">
                 <div className="space-y-3">
@@ -294,10 +317,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     aria-label="Create new account"
                     style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
-                    <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                    <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
                       <UserPlus className="w-5 h-5 text-white" />
                     </span>
-                    <span className="text-sm text-white font-bold">Create Account</span>
+                    <span className="flex-1 min-w-0 text-left text-sm text-white font-bold pl-2">Create Account</span>
                   </button>
                   
                   {/* Sign In Button */}
@@ -320,10 +343,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     aria-label="Sign in to your account"
                     style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
-                    <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                    <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
                       <Users className="w-5 h-5 text-orange-500" />
                     </span>
-                    <span className="text-sm text-orange-500 font-bold">Sign In</span>
+                    <span className="flex-1 min-w-0 text-left text-sm text-orange-500 font-bold pl-2">Sign In</span>
                   </button>
                 </div>
               </div>
@@ -348,10 +371,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   aria-label={`Current city: ${city}. Click to change city`}
                   style={{ touchAction: 'manipulation' } as React.CSSProperties}
                 >
-                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                  <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
                     <MapPin className="w-5 h-5 text-teal-600" />
                   </span>
-                  <div className="flex-grow text-left min-w-0">
+                  <div className="flex-1 min-w-0 text-left pl-2">
                     <span className="text-sm text-gray-700 font-medium block">
                       {language === 'id' ? 'Kota Saat Ini' : 'Current City'}
                     </span>
@@ -372,7 +395,12 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   const second = breakIndex < 0 ? [] : DRAWER_NAV_ITEMS.slice(breakIndex);
                   const renderItem = (item: (typeof DRAWER_NAV_ITEMS)[number]) => {
                     const IconComp = DRAWER_ICON_MAP[item?.icon] ?? Home;
-                    const callback = item.id === 'massage-jobs' ? onMassageJobsClick : undefined;
+                    const callback =
+                      item.id === 'massage-jobs'
+                        ? onMassageJobsClick
+                        : onNavigate
+                          ? () => onNavigate(item.id as Page)
+                          : undefined;
                     const label = typeof item.labelOverride === 'string'
                       ? item.labelOverride
                       : (dt && typeof dt === 'object' && item.labelKey && (dt[item.labelKey as keyof typeof dt] ?? item.labelKey)) || item.labelKey || '';
@@ -380,12 +408,12 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       <button
                         key={item.id}
                         onClick={() => handleItemClick(callback, item.id)}
-                        className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left"
+                        className="flex items-center w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left"
                       >
-                        <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+                        <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
                           <IconComp className="w-5 h-5 text-orange-500" />
                         </span>
-                        <span className="text-sm text-gray-700 font-medium">{label}</span>
+                        <span className="flex-1 min-w-0 text-left text-sm text-gray-700 font-medium pl-2">{label}</span>
                       </button>
                     );
                   };

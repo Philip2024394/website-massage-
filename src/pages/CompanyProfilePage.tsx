@@ -1,19 +1,50 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
-import { Building2, Globe, Award, Users, TrendingUp, Shield, Target, Heart, CheckCircle, Download, Share2, MapPin, Mail, Phone, Facebook, Instagram, Linkedin, Home, MessageCircle } from 'lucide-react';
+import { CheckCircle, Download, Share2, Mail, Phone, MessageCircle } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface CompanyProfilePageProps {
   onBack?: () => void;
   onNavigate?: (page: string) => void;
   onLanguageChange?: (lang: string) => void;
   t?: any;
-  language?: 'en' | 'id';
+  language?: 'en' | 'id' | 'gb';
+  onMassageJobsClick?: () => void;
+  onHotelPortalClick?: () => void;
+  onVillaPortalClick?: () => void;
+  onTherapistPortalClick?: () => void;
+  onMassagePlacePortalClick?: () => void;
+  onAgentPortalClick?: () => void;
+  onCustomerPortalClick?: () => void;
+  onAdminPortalClick?: () => void;
+  onTermsClick?: () => void;
+  onPrivacyClick?: () => void;
+  therapists?: any[];
+  places?: any[];
 }
 
-function CompanyProfilePage({ onBack, onNavigate, onLanguageChange, t, language = 'id' }: CompanyProfilePageProps) {
+function CompanyProfilePage({
+  onBack,
+  onNavigate,
+  onLanguageChange,
+  t,
+  language = 'id',
+  onMassageJobsClick,
+  onHotelPortalClick,
+  onVillaPortalClick,
+  onTherapistPortalClick,
+  onMassagePlacePortalClick,
+  onAgentPortalClick,
+  onCustomerPortalClick,
+  onAdminPortalClick,
+  onTermsClick,
+  onPrivacyClick,
+  therapists = [],
+  places = [],
+}: CompanyProfilePageProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const handleHome = () => onNavigate?.('home') ?? onBack?.();
   const handleShare = () => {

@@ -650,6 +650,11 @@ const App = () => {
     useEffect(() => {
         logger.debug('Route changed', { page: state.page });
         
+        // Scroll to top so every page is viewed from the top
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+        if (document.body) document.body.scrollTop = 0;
+        
         // Close all modals on route change
         setIsStatusTrackerOpen(false);
         

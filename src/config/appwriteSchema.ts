@@ -186,8 +186,73 @@ export const COLLECTIONS = {
       receiverId: { type: 'string', required: true },
       message: { type: 'string', required: true }
     }
+  } as CollectionSchema,
+
+  /**
+   * INDASTREET_NEWS COLLECTION
+   * News feed for massage & skin clinic: techniques, producers, places, headlines.
+   * Create in Appwrite Console with collection ID: indastreet_news, or run:
+   *   APPWRITE_API_KEY=... npx ts-node scripts/setup-indastreet-news-collection.ts
+   */
+  INDASTREET_NEWS: {
+    name: 'indastreet_news',
+    collectionId: 'indastreet_news',
+    attributes: {
+      headline: { type: 'string', required: true, size: 500 },
+      excerpt: { type: 'string', required: true, size: 2000 },
+      date: { type: 'string', required: true, size: 50 },
+      category: {
+        type: 'enum',
+        required: true,
+        enumValues: ['techniques', 'producers', 'places-opening', 'places-closing', 'good-news', 'negative', 'headlines']
+      },
+      imageSrc: { type: 'string', required: false, size: 1000 },
+      published: { type: 'boolean', required: false, default: true },
+      order: { type: 'integer', required: false }
+    }
+  } as CollectionSchema,
+
+  /**
+   * INDASTREET_BLOG COLLECTION
+   * Blog articles for wellness, massage, skin clinic – listing and view-post pages.
+   * Create in Appwrite Console with collection ID: indastreet_blog
+   * Image storage: use Storage bucket blog_images (see STORAGE_BUCKETS below).
+   */
+  INDASTREET_BLOG: {
+    name: 'indastreet_blog',
+    collectionId: 'indastreet_blog',
+    attributes: {
+      title: { type: 'string', required: true, size: 500 },
+      slug: { type: 'string', required: true, size: 255 },
+      excerpt: { type: 'string', required: true, size: 2000 },
+      body: { type: 'string', required: true, size: 100000 },
+      category: {
+        type: 'enum',
+        required: true,
+        enumValues: ['international', 'industry', 'techniques', 'career', 'wellness']
+      },
+      author: { type: 'string', required: true, size: 255 },
+      date: { type: 'string', required: true, size: 50 },
+      readTime: { type: 'string', required: true, size: 50 },
+      image: { type: 'string', required: false, size: 2000 },
+      imageFileId: { type: 'string', required: false, size: 100 },
+      featured: { type: 'boolean', required: false, default: false },
+      published: { type: 'boolean', required: false, default: true },
+      order: { type: 'integer', required: false }
+    }
   } as CollectionSchema
 
+} as const;
+
+/**
+ * STORAGE BUCKETS (Appwrite Storage)
+ * Create buckets in Appwrite Console → Storage. Use these IDs in config.
+ */
+export const STORAGE_BUCKETS = {
+  /** Main app bucket (therapist images, etc.) */
+  default: '68f76bdd002387590584',
+  /** Blog hero and in-article images (Appwrite Storage bucket ID) */
+  blog_images: 'bogimages'
 } as const;
 
 /**
@@ -338,11 +403,34 @@ export interface ChatMessageDocument {
 }
 
 /**
+ * Blog document (from INDASTREET_BLOG collection)
+ */
+export interface IndastreetBlogDocument {
+  $id?: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  category: 'international' | 'industry' | 'techniques' | 'career' | 'wellness';
+  author: string;
+  date: string;
+  readTime: string;
+  image?: string;
+  imageFileId?: string;
+  featured?: boolean;
+  published?: boolean;
+  order?: number;
+  $createdAt?: string;
+  $updatedAt?: string;
+}
+
+/**
  * EXPORT HELPERS FOR EASY IMPORTS
  */
 export const getBookingSchema = () => COLLECTIONS.BOOKINGS;
 export const getMessageSchema = () => COLLECTIONS.MESSAGES;
 export const getChatMessageSchema = () => COLLECTIONS.CHAT_MESSAGES;
 export const getAdminMessageSchema = () => COLLECTIONS.ADMIN_MESSAGES;
+export const getIndastreetBlogSchema = () => COLLECTIONS.INDASTREET_BLOG;
 
 export default COLLECTIONS;

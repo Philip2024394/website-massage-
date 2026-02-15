@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
-import { Search, MessageCircle, Phone, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, Plus, X } from 'lucide-react';
+import { Search, MessageCircle, Phone, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, X, Briefcase, Building2 } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
@@ -53,50 +53,17 @@ const FAQPage: React.FC<FAQPageProps> = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [faqFeedback, setFaqFeedback] = useState<{[key: number]: 'like' | 'dislike' | null}>({});
 
-    // Modern category design with icons
+    // Categories – same theme as home & jobs: slate, white, primary accent
     const categories = [
-        { 
-            id: 'general', 
-            name: 'General', 
-            icon: HelpCircle, 
-            color: 'from-blue-500 to-blue-600',
-            count: 8
-        },
-        { 
-            id: 'booking', 
-            name: 'Bookings', 
-            icon: Clock, 
-            color: 'from-emerald-500 to-emerald-600',
-            count: 12
-        },
-        { 
-            id: 'therapist', 
-            name: 'For Therapists', 
-            icon: Users, 
-            color: 'from-purple-500 to-purple-600',
-            count: 15
-        },
-        { 
-            id: 'business', 
-            name: 'For Businesses', 
-            icon: MapPin, 
-            color: 'from-orange-500 to-orange-600',
-            count: 10
-        },
-        { 
-            id: 'payment', 
-            name: 'Payments', 
-            icon: CreditCard, 
-            color: 'from-pink-500 to-pink-600',
-            count: 7
-        },
-        { 
-            id: 'safety', 
-            name: 'Safety & Privacy', 
-            icon: Shield, 
-            color: 'from-red-500 to-red-600',
-            count: 6
-        }
+        { id: 'general', name: 'General', icon: HelpCircle },
+        { id: 'booking', name: 'Bookings', icon: Clock },
+        { id: 'therapist', name: 'For Therapists', icon: Users },
+        { id: 'employers', name: 'Employers & Jobs', icon: Briefcase },
+        { id: 'partners', name: 'Partners (Hotel & Villa)', icon: Building2 },
+        { id: 'business', name: 'For Businesses', icon: MapPin },
+        { id: 'payment', name: 'Payments', icon: CreditCard },
+        { id: 'safety', name: 'Safety & Verification', icon: Shield },
+        { id: 'standards', name: 'Verification Standards', icon: Shield },
     ];
 
     // Comprehensive FAQ data
@@ -451,7 +418,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
         {
             category: 'safety',
             question: 'What safety measures are in place?',
-            answer: 'GPS tracking during sessions, 24/7 emergency support hotline, therapist check-ins, client verification, and immediate incident response protocols. All sessions are logged and monitored.',
+            answer: 'GPS tracking during sessions, 24/7 emergency support hotline, therapist check-ins, client verification, and immediate incident response protocols. All sessions are logged and monitored. Our therapists and places agree in our terms that we may use location monitoring for your safety and theirs—so you can book with confidence.',
             tags: ['safety measures', 'GPS tracking', 'emergency support', 'monitoring']
         },
         {
@@ -477,7 +444,85 @@ const FAQPage: React.FC<FAQPageProps> = ({
             question: 'How do you handle complaints and disputes?',
             answer: 'Our customer service team investigates all complaints within 24 hours. We mediate disputes fairly, provide appropriate compensation when warranted, and take corrective actions to prevent future issues.',
             tags: ['complaints', 'disputes', 'investigation', 'resolution']
-        }
+        },
+
+        // EMPLOYERS & JOB LISTINGS
+        {
+            category: 'employers',
+            question: 'How do I post a job for massage therapists?',
+            answer: 'Go to Massage Jobs from the menu, choose "Post a Job", and sign in or register as an employer. Create your job listing with title, description, location, employment type, and salary range. Pay the one-time job posting fee (IDR 170,000) and submit payment proof. After admin approval, your job goes live and therapists can apply.',
+            tags: ['job posting', 'employer', 'hire', 'massage jobs']
+        },
+        {
+            category: 'employers',
+            question: 'What does it cost to post a job or list as a therapist?',
+            answer: 'Job posting (employers): one-time fee of IDR 170,000 per job. Therapist listing (find work): one-time fee of IDR 150,000. Fees are shown on the Massage Jobs page. Payment is made after creating your listing; upload payment proof for admin approval.',
+            tags: ['fees', 'job posting', 'therapist listing', 'pricing']
+        },
+        {
+            category: 'employers',
+            question: 'How do I unlock therapist contact details as an employer?',
+            answer: 'On the Massage Jobs page, under "Find Professionals", you can pay a one-time fee for 1 month of full access to all listed job seekers: profiles, WhatsApp numbers, and CVs. This filters serious employers and protects therapist privacy.',
+            tags: ['unlock contact', 'employer access', 'WhatsApp', 'CV']
+        },
+        {
+            category: 'employers',
+            question: 'What happens after I post a job?',
+            answer: 'After you submit payment proof, our team approves the listing (usually within 24–48 hours). Once active, therapists can view your job and apply. You can contact them via WhatsApp to interview and hire. Mark the position as "Position Filled" when done.',
+            tags: ['job status', 'approval', 'applications', 'hiring']
+        },
+        {
+            category: 'employers',
+            question: 'Are employer job listings verified?',
+            answer: 'Employers can be marked as verified after our team checks business details. Verified employers get a badge on their job cards. Job listings may show as "Live – Pending Admin Verification" until verified.',
+            tags: ['verified employer', 'verification', 'badge']
+        },
+
+        // PARTNERS (HOTEL & VILLA)
+        {
+            category: 'partners',
+            question: 'What are IndaStreet Partners (Hotel & Villa)?',
+            answer: 'Partners are verified hotels and villas that offer 24-hour in-room massage services to guests. When you stay at a partner property, you can book a massage therapist to come to your room. Each partner is vetted for quality and safety.',
+            tags: ['partners', 'hotel', 'villa', '24 hour', 'in-room']
+        },
+        {
+            category: 'partners',
+            question: 'How do I book massage at a partner hotel or villa?',
+            answer: 'Open IndaStreet Partners from the menu, choose Massage Hotel or Massage Villa, and browse the list. Each card shows the property name, location, and "Book Reservation". Use that to contact the property via WhatsApp and arrange your in-room massage.',
+            tags: ['book', 'reservation', 'WhatsApp', 'partner']
+        },
+        {
+            category: 'partners',
+            question: 'How can my hotel or villa become a partner?',
+            answer: 'Apply via "Join Indastreet" on the Partners page or the Partnership Application. We review your property and, if approved, list you so guests can book 24-hour in-room massage. Partners get visibility and we ensure quality standards.',
+            tags: ['join', 'partnership', 'apply', 'hotel', 'villa']
+        },
+        {
+            category: 'partners',
+            question: 'What standards do partner properties meet?',
+            answer: 'Partners are selected to support the IndaStreet brand: quality facilities, clear communication, and reliable in-room massage service. Verified partners display a VERIFIED badge. You can leave reviews to help other guests.',
+            tags: ['standards', 'verified', 'quality', 'reviews']
+        },
+
+        // VERIFICATION STANDARDS
+        {
+            category: 'standards',
+            question: 'What does the Verified badge mean?',
+            answer: 'The Verified badge means the therapist or place has met our verification standards: identity checks, qualifications, hygiene and safety requirements, and professional conduct. Verified sets the standard for premium service, professionalism, and peace of mind.',
+            tags: ['verified', 'badge', 'standards', 'quality']
+        },
+        {
+            category: 'standards',
+            question: 'Where can I see full verification standards?',
+            answer: 'Open "Massage Therapist Standards" (Verified Pro Badge) from the menu or How It Works. There you will see all verification standards we use: products & materials, hygiene, facility requirements, staff qualifications, safety protocols, and more.',
+            tags: ['verification standards', 'verified pro badge', 'how it works']
+        },
+        {
+            category: 'standards',
+            question: 'Why should I choose a verified therapist or place?',
+            answer: 'Verified therapists and places have passed our checks and agree to our standards. You get higher quality, clearer expectations, and peace of mind. We recommend choosing verified providers when possible.',
+            tags: ['verified', 'quality', 'safety', 'recommendation']
+        },
     ];
 
     // Filter FAQs based on search query and category
@@ -511,15 +556,6 @@ const FAQPage: React.FC<FAQPageProps> = ({
         return faqs.filter(faq => faq.category === categoryId).length;
     };
 
-    // Debug logging
-    console.log('FAQ Page Render:', {
-        totalFAQs: faqs.length,
-        filteredFAQs: filteredFAQs.length,
-        activeCategory,
-        expandedFAQ,
-        searchQuery
-    });
-
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Universal Header - same as home page */}
@@ -549,60 +585,48 @@ const FAQPage: React.FC<FAQPageProps> = ({
                 }
             `}</style>
 
-            {/* Hero Section - Minimalistic (pt for fixed header) */}
-            <section className="relative pt-24 md:pt-28 pb-16 md:pb-24 px-4">
+            {/* Hero – same theme as home & jobs: slate, white, primary accent */}
+            <section className="relative pt-24 md:pt-28 pb-12 md:pb-16 px-4 bg-white">
                 <div className="max-w-4xl mx-auto">
-                    {/* Back Arrow */}
                     <button
                         onClick={() => onNavigate?.('home')}
-                        className="mb-8 ml-2 w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 will-change-transform"
+                        className="mb-6 ml-2 w-12 h-12 rounded-full bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
                         title="Back to Home"
                     >
                         <ArrowLeft className="w-6 h-6" />
                     </button>
-                    
                     <div className="text-center">
-                        {/* Hero Image */}
-                        <div className="mb-6 -mt-10">
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
-                                alt="IndaStreet Massage Logo" 
-                                className="w-60 h-60 object-contain mx-auto"
-                            />
+                        <div className="inline-flex items-center justify-center w-14 h-14 bg-slate-100 rounded-2xl mb-4">
+                            <HelpCircle className="w-7 h-7 text-primary-600" />
                         </div>
-                        
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-2xl mb-6">
-                            <HelpCircle className="w-8 h-8 text-orange-600" />
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                        <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
                             How can we help you?
                         </h1>
-                        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                        Find answers to common questions about booking massages, becoming a therapist, and using IndaStreet
-                    </p>
-                    
-                    {/* Search Bar */}
-                    <div className="relative max-w-xl mx-auto">
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search for answers..."
-                            value={searchQuery}
-                            onChange={handleSearchChange}
-                            className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:border-orange-500 focus:outline-none transition-colors bg-white shadow-sm"
-                        />
-                    </div>
+                        <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
+                            Find answers about booking, therapists, employers, partners, payments, and standards.
+                        </p>
+                        <div className="relative max-w-xl mx-auto">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search for answers..."
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200/80 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                            />
+                        </div>
                     </div>
                 </div>
             </section>
 
             <div className="max-w-7xl mx-auto px-4 pb-16">
-                {/* Category Navigation */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+                {/* Category tabs – same style as jobs page: slate bg, white active, primary accent */}
+                <div className="flex flex-wrap gap-2 mb-8 p-2 rounded-[20px] bg-slate-100 border border-slate-200/80">
                     {categories.map((category) => {
                         const IconComponent = category.icon;
                         const isActive = activeCategory === category.id;
-                        
+                        const count = getCategoryCount(category.id);
+                        if (count === 0) return null;
                         return (
                             <button
                                 key={category.id}
@@ -612,147 +636,89 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                     setSearchQuery('');
                                 }}
                                 className={`
-                                    relative p-6 rounded-2xl transition-all duration-300 group
-                                    ${isActive 
-                                        ? `bg-gradient-to-br ${category.color} text-white shadow-lg scale-105` 
-                                        : 'text-gray-700 hover:bg-gray-50/50'
-                                    }
+                                    flex items-center gap-2 py-2.5 px-4 rounded-[18px] text-sm font-semibold transition-all
+                                    ${isActive
+                                        ? 'bg-white text-primary-600 shadow-md border border-slate-200/80'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'}
                                 `}
                             >
-                                <div className="flex flex-col items-center text-center">
-                                    <div className={`
-                                        p-3 rounded-xl mb-3 transition-colors
-                                        ${isActive 
-                                            ? 'bg-white/20' 
-                                            : 'bg-gray-100 group-hover:bg-gray-200'
-                                        }
-                                    `}>
-                                        <IconComponent className={`
-                                            w-6 h-6 
-                                            ${isActive ? 'text-white' : 'text-gray-600'}
-                                        `} />
-                                    </div>
-                                    <h3 className="font-semibold text-sm mb-1">{category.name}</h3>
-                                    <span className={`
-                                        text-xs px-2 py-1 rounded-full
-                                        ${isActive 
-                                            ? 'bg-white/20 text-white' 
-                                            : 'bg-gray-200 text-gray-600'
-                                        }
-                                    `}>
-                                        {getCategoryCount(category.id)} questions
-                                    </span>
-                                </div>
+                                <IconComponent className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate max-w-[120px] sm:max-w-none">{category.name}</span>
+                                <span className="text-xs opacity-80">({count})</span>
                             </button>
                         );
                     })}
                 </div>
 
-                {/* FAQ List */}
+                {/* FAQ List – cards same style as job cards: rounded-[20px], border-slate-200/80 */}
                 <div className="max-w-4xl mx-auto">
                     {searchQuery && (
-                        <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                            <p className="text-blue-800">
-                                <span className="font-medium">{filteredFAQs.length}</span> results found for 
-                                <span className="font-medium"> "{searchQuery}"</span>
+                        <div className="mb-6 p-4 rounded-xl border border-slate-200/80 bg-slate-50/50">
+                            <p className="text-slate-700">
+                                <span className="font-semibold">{filteredFAQs.length}</span> results for
+                                <span className="font-semibold"> "{searchQuery}"</span>
                             </p>
                         </div>
                     )}
 
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                         {filteredFAQs.map((faq, index) => {
                             const isExpanded = expandedFAQ === index;
                             const currentFeedback = faqFeedback[index];
-                            
                             return (
-                                <div 
-                                    key={index} 
-                                    className="rounded-2xl transition-all duration-300 overflow-hidden"
+                                <div
+                                    key={index}
+                                    className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm overflow-hidden hover:shadow-md transition-all duration-300"
                                 >
-                                    {/* Question Container */}
-                                    <div 
+                                    <button
+                                        type="button"
                                         onClick={() => toggleFAQ(index)}
-                                        className="cursor-pointer p-6 flex items-start justify-between gap-4 hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 transition-all duration-300 group"
+                                        className="w-full cursor-pointer p-5 flex items-start justify-between gap-4 text-left hover:bg-slate-50/50 transition-colors group"
                                     >
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-orange-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                                                    {index + 1}
-                                                </div>
-                                                <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 text-xs font-semibold rounded-full">
-                                                    {categories.find(cat => cat.id === faq.category)?.name || 'General'}
-                                                </span>
-                                            </div>
-                                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors leading-tight">
+                                        <div className="flex-1 min-w-0">
+                                            <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg mb-2">
+                                                {categories.find(cat => cat.id === faq.category)?.name || 'General'}
+                                            </span>
+                                            <h3 className="text-base font-bold text-slate-900 group-hover:text-primary-600 transition-colors leading-tight">
                                                 {faq.question}
                                             </h3>
                                         </div>
-                                        <Plus className={`
-                                            w-7 h-7 text-gray-400 flex-shrink-0 transition-all duration-300 mt-1
-                                            ${isExpanded ? 'rotate-45 text-orange-500 scale-110' : 'group-hover:text-orange-500 group-hover:scale-110'}
-                                        `} />
-                                    </div>
-                                    
-                                    {/* Answer Container */}
+                                        <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isExpanded ? 'bg-primary-500 text-white rotate-180' : 'bg-slate-100 text-slate-500 group-hover:bg-primary-50 group-hover:text-primary-600'}`}>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </span>
+                                    </button>
                                     {isExpanded && (
-                                        <div className="px-6 pb-6 animate-fade-in-down">
-                                            <div className="rounded-xl p-5">
-                                                <div className="flex items-start gap-3 mb-4">
-                                                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
-                                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-gray-800 leading-relaxed whitespace-pre-line text-base">
-                                                            {faq.answer}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                
-                                                {faq.tags && (
-                                                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
+                                        <div className="px-5 pb-5 pt-0 animate-fade-in-down border-t border-slate-100">
+                                            <div className="pt-4">
+                                                <p className="text-slate-700 leading-relaxed whitespace-pre-line text-sm">
+                                                    {faq.answer}
+                                                </p>
+                                                {faq.tags && faq.tags.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
                                                         {faq.tags.map((tag, tagIndex) => (
-                                                            <span 
-                                                                key={tagIndex}
-                                                                className="px-3 py-1.5 bg-white text-gray-600 text-xs font-medium rounded-full border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors"
-                                                            >
+                                                            <span key={tagIndex} className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg">
                                                                 #{tag}
                                                             </span>
                                                         ))}
                                                     </div>
                                                 )}
                                             </div>
-                                            
-                                            {/* Like/Dislike Buttons */}
-                                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                                                <span className="text-sm font-medium text-gray-600">Was this helpful?</span>
-                                                <div className="flex items-center gap-3">
+                                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+                                                <span className="text-sm font-medium text-slate-500">Was this helpful?</span>
+                                                <div className="flex items-center gap-2">
                                                     <button
-                                                        onClick={() => handleFeedback(index, 'like')}
-                                                        className={`
-                                                            flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 border-2
-                                                            ${currentFeedback === 'like' 
-                                                                ? 'bg-green-500 text-white border-green-500 shadow-lg scale-105' 
-                                                                : 'bg-white text-gray-600 border border-gray-300 hover:bg-green-50 hover:text-green-600 hover:border-green-300'
-                                                            }
-                                                        `}
+                                                        type="button"
+                                                        onClick={(e) => { e.stopPropagation(); handleFeedback(index, 'like'); }}
+                                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${currentFeedback === 'like' ? 'bg-primary-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-primary-50 hover:text-primary-600'}`}
                                                     >
-                                                        <ThumbsUp className="w-4 h-4" />
-                                                        <span className="text-sm font-medium">Yes</span>
+                                                        <ThumbsUp className="w-4 h-4" /> Yes
                                                     </button>
                                                     <button
-                                                        onClick={() => handleFeedback(index, 'dislike')}
-                                                        className={`
-                                                            flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 border-2
-                                                            ${currentFeedback === 'dislike' 
-                                                                ? 'bg-red-500 text-white border-red-500 shadow-lg scale-105' 
-                                                                : 'bg-white text-gray-600 border border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
-                                                            }
-                                                        `}
+                                                        type="button"
+                                                        onClick={(e) => { e.stopPropagation(); handleFeedback(index, 'dislike'); }}
+                                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${currentFeedback === 'dislike' ? 'bg-slate-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                                                     >
-                                                        <X className="w-4 h-4" />
-                                                        <span className="text-sm font-medium">No</span>
+                                                        <X className="w-4 h-4" /> No
                                                     </button>
                                                 </div>
                                             </div>
@@ -764,20 +730,16 @@ const FAQPage: React.FC<FAQPageProps> = ({
                     </div>
 
                     {filteredFAQs.length === 0 && (
-                        <div className="text-center py-16">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Search className="w-8 h-8 text-gray-400" />
+                        <div className="text-center py-16 rounded-[20px] border border-slate-200/80 bg-white">
+                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Search className="w-8 h-8 text-slate-400" />
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No results found</h3>
-                            <p className="text-gray-600 mb-4">
-                                Try adjusting your search or browse different categories
-                            </p>
+                            <h3 className="text-xl font-semibold text-slate-900 mb-2">No results found</h3>
+                            <p className="text-slate-600 mb-4">Try different keywords or browse categories above.</p>
                             <button
-                                onClick={() => {
-                                    setSearchQuery('');
-                                    setActiveCategory('general');
-                                }}
-                                className="px-6 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors"
+                                type="button"
+                                onClick={() => { setSearchQuery(''); setActiveCategory('general'); }}
+                                className="px-6 py-2.5 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-colors"
                             >
                                 Clear search
                             </button>
@@ -785,33 +747,32 @@ const FAQPage: React.FC<FAQPageProps> = ({
                     )}
                 </div>
 
-                {/* Contact Support Section */}
+                {/* Contact Support – same theme as home/jobs */}
                 <div className="max-w-4xl mx-auto mt-16">
-                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-8 md:p-12 text-center border border-orange-200">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-2xl mb-6">
-                            <MessageCircle className="w-8 h-8 text-white" />
+                    <div className="rounded-[20px] border border-slate-200/80 bg-slate-50/50 p-8 md:p-12 text-center">
+                        <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-500 rounded-2xl mb-4">
+                            <MessageCircle className="w-7 h-7 text-white" />
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                        <h2 className="text-2xl font-bold text-slate-900 mb-2">
                             Still need help?
                         </h2>
-                        <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
-                            Our friendly support team is here to help you with any questions or concerns
+                        <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
+                            Our support team typically responds within 24 hours. Reach out for booking issues, verification, or general questions.
                         </p>
-                        
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button 
-                                onClick={() => window.open('https://wa.me/62XXX', '_blank')}
-                                className="inline-flex items-center gap-3 px-6 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-colors shadow-lg"
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <button
+                                type="button"
+                                onClick={() => window.open('https://wa.me/6281392000050', '_blank')}
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#25D366] text-white font-semibold rounded-xl hover:opacity-90 transition-all"
                             >
-                                <Phone className="w-5 h-5" />
-                                WhatsApp Support
+                                <Phone className="w-5 h-5" /> WhatsApp
                             </button>
-                            <button 
+                            <button
+                                type="button"
                                 onClick={() => onNavigate?.('contact')}
-                                className="inline-flex items-center gap-3 px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-colors shadow-lg border-2 border-orange-200"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-primary-600 font-semibold rounded-xl border border-slate-200/80 hover:bg-primary-50 transition-all"
                             >
-                                <Mail className="w-5 h-5" />
-                                Email Us
+                                <Mail className="w-5 h-5" /> Contact Us
                             </button>
                         </div>
                     </div>
@@ -842,6 +803,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                 onPrivacyClick={onPrivacyClick}
                 therapists={therapists}
                 places={places}
+                language={language as 'en' | 'id' | 'gb'}
             />
         </div>
     );

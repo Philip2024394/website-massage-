@@ -78,7 +78,7 @@ function getConfig() {
         hotelBookings: requireEnv('VITE_HOTEL_BOOKINGS_COLLECTION_ID', 'hotel_bookings'),
         partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
         
-        // Content - OPTIONAL
+        // Content - OPTIONAL (Massage Directory page uses static MASSAGE_TYPES_CATEGORIZED; this is for optional CMS)
         massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'Massage Types',
         customLinks: optionalEnv('VITE_CUSTOM_LINKS_COLLECTION_ID'),
         imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'Image Assets',
@@ -112,7 +112,8 @@ function getConfig() {
         pushSubscriptions: 'Push Subscriptions',
         appConfig: 'App Config',
         uiConfig: 'UI Config',
-        attributes: 'ATTRIBUTES'
+        attributes: 'ATTRIBUTES',
+        emergency_alerts: import.meta.env.VITE_EMERGENCY_ALERTS_COLLECTION_ID || 'emergency_alerts'
       }
     };
   }

@@ -1,15 +1,19 @@
-// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
+// 🎯 Job listing: 170,000 IDR until placement filled or employer deactivates. Admin approves all; employer uploads payment proof.
 import React, { useState, useEffect } from 'react';
-import { CreditCard, AlertCircle, CheckCircle, Copy, ArrowLeft, DollarSign, Calendar } from 'lucide-react';
-import { databases } from '../lib/appwrite';
+import { CreditCard, AlertCircle, CheckCircle, Copy, ArrowLeft, DollarSign, Upload, X } from 'lucide-react';
+import { databases, storage, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
- 
+import { JOB_LISTING_PRICE_IDR, JOB_LISTING_STATUS } from '../constants/businessLogic';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
     </svg>
 );
+
+const COLLECTION = APPWRITE_CONFIG.collections?.employerJobPostings || 'employer_job_postings';
+const DB_ID = APPWRITE_CONFIG.databaseId;
+const BUCKET_ID = APPWRITE_CONFIG.bucketId || '68f76bdd002387590584';
 
 interface JobPostingPaymentPageProps {
     jobId: string;
@@ -18,49 +22,24 @@ interface JobPostingPaymentPageProps {
     onOpenMenu?: () => void;
 }
 
-const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({ 
-    jobId, 
+const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
+    jobId,
     onBack,
     onNavigate,
     onOpenMenu
 }) => {
-    const [selectedPlan, setSelectedPlan] = useState<'standard' | 'premium'>('standard');
     const [jobDetails, setJobDetails] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [whatsappSent, setWhatsappSent] = useState(false);
+    const [paymentProof, setPaymentProof] = useState<File | null>(null);
+    const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
+    const [proofSubmitted, setProofSubmitted] = useState(false);
+    const [deactivated, setDeactivated] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
-    // Bank details
     const bankAccount = {
         name: 'BCA (Bank Central Asia)',
         accountNumber: '1234567890',
         accountName: 'IndaStreet Platform',
-    };
-
-    const plans = {
-        standard: {
-            name: '3-Month Standard Listing',
-            price: 200000,
-            duration: '3 months',
-            features: [
-                'Job posting visible for 3 months',
-                'Therapists must unlock to view contact details',
-                'Standard listing placement',
-                'Email notifications for applications'
-            ]
-        },
-        premium: {
-            name: 'Premium Open Access Listing',
-            price: 500000,
-            duration: '3 months',
-            features: [
-                'Job posting visible for 3 months',
-                'Contact details visible to all therapists - Open Listing',
-                'No unlock required',
-                'Priority listing placement',
-                'Email notifications for applications',
-                'Featured badge on posting'
-            ]
-        }
     };
 
     useEffect(() => {
@@ -69,12 +48,15 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
 
     const fetchJobDetails = async () => {
         try {
-            const response = await databases.getDocument(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.employerJobPostings || 'employer_job_postings',
-                jobId
-            );
+            const response = await databases.getDocument(DB_ID, COLLECTION, jobId);
             setJobDetails(response);
+            const status = (response as any)?.status;
+            if (status === JOB_LISTING_STATUS.PENDING_APPROVAL || (response as any)?.paymentProofUrl) {
+                setProofSubmitted(true);
+            }
+            if (status === JOB_LISTING_STATUS.FILLED) {
+                setDeactivated(true);
+            }
         } catch (error) {
             console.error('Error fetching job details:', error);
         } finally {
@@ -88,50 +70,66 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
     };
 
     const formatCurrency = (amount: number) => {
-        return 'Rp ' + new Intl.NumberFormat('id-ID', {
-            minimumFractionDigits: 0,
-        }).format(amount);
+        return 'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(amount);
     };
 
-    const sendPaymentDetailsViaWhatsApp = async () => {
-        const plan = plans[selectedPlan];
-        const message = `Hi IndaStreet,\n\nI have completed payment for my job posting:\n\n` +
-            `Job Title: ${jobDetails?.jobTitle || 'N/A'}\n` +
-            `Business Name: ${jobDetails?.businessName || 'N/A'}\n` +
-            `Plan: ${plan.name}\n` +
-            `Amount Paid: ${formatCurrency(plan.price)}\n` +
-            `Job ID: ${jobId}\n\n` +
-            `[Please attach your payment screenshot when sending this message]\n\n` +
-            `Thank you!`;
-
-        const whatsappNumber = '6281392000050'; // IndaStreet WhatsApp customer service
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-        
-        // Update job posting to mark that WhatsApp was opened
-        // Note: Appwrite field names are lowercase: whatsappsent, whatsappsentat, selectedplanprice
-        try {
-            await databases.updateDocument(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.employerJobPostings || 'employer_job_postings',
-                jobId,
-                {
-                    whatsappsent: true,
-                    whatsappsentat: new Date().toISOString(),
-                    selectedplanprice: `${plan.price}`, // String format in Appwrite
-                }
-            );
-            console.log('✅ Updated job posting - WhatsApp opened', {
-                plan: selectedPlan,
-                price: plan.price
-            });
-        } catch (error) {
-            console.error('Error updating job posting:', error);
-            // Continue anyway - don't block WhatsApp from opening
+    const handleProofChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload an image file (JPG, PNG).');
+            return;
         }
-        
-        window.open(whatsappUrl, '_blank');
-        setWhatsappSent(true);
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image must be less than 5MB.');
+            return;
+        }
+        setPaymentProof(file);
+        const reader = new FileReader();
+        reader.onload = (ev) => setPaymentProofPreview(ev.target?.result as string);
+        reader.readAsDataURL(file);
+    };
+
+    const submitPaymentProof = async () => {
+        if (!paymentProof || !paymentProofPreview) {
+            alert('Please upload your payment proof image first.');
+            return;
+        }
+        setUploading(true);
+        try {
+            const blob = await fetch(paymentProofPreview).then((r) => r.blob());
+            const file = new File([blob], paymentProof.name, { type: paymentProof.type });
+            const uploaded = await storage.createFile(BUCKET_ID, ID.unique(), file);
+            const fileUrl = `${APPWRITE_CONFIG.endpoint || 'https://syd.cloud.appwrite.io/v1'}/storage/buckets/${BUCKET_ID}/files/${(uploaded as any).$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+
+            await databases.updateDocument(DB_ID, COLLECTION, jobId, {
+                status: JOB_LISTING_STATUS.PENDING_APPROVAL,
+                paymentProofUrl: fileUrl,
+                paymentProofSubmittedAt: new Date().toISOString(),
+            });
+            setProofSubmitted(true);
+            setPaymentProof(null);
+            setPaymentProofPreview(null);
+        } catch (err) {
+            console.error('Submit payment proof:', err);
+            alert('Failed to submit proof. Please try again.');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const deactivateListing = async () => {
+        if (!confirm('Mark this listing as Position Filled? It will no longer accept applications.')) return;
+        try {
+            await databases.updateDocument(DB_ID, COLLECTION, jobId, {
+                status: JOB_LISTING_STATUS.FILLED,
+                deactivatedAt: new Date().toISOString(),
+            });
+            setDeactivated(true);
+        } catch (err) {
+            console.error('Deactivate listing:', err);
+            alert('Failed to update. Please try again.');
+        }
     };
 
     if (isLoading) {
@@ -187,19 +185,31 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
 
             {/* Main Content */}
             <div className="flex-1 max-w-4xl mx-auto px-4 py-8 space-y-6 w-full">
-                {/* Success Notice */}
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
-                    <div className="flex items-start gap-3">
-                        <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                            <h3 className="font-bold text-green-900 mb-1">Listing Profile Received!</h3>
-                            <p className="text-sm text-green-800">
-                                IndaStreet has received your job listing profile. Your posting will be activated within 12 hours 
-                                from confirmation of payment.
-                            </p>
+                {/* Admin will confirm soon – after proof submitted */}
+                {proofSubmitted && !deactivated && (
+                    <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-6">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <h3 className="font-bold text-amber-900 mb-1">Admin will confirm soon</h3>
+                                <p className="text-sm text-amber-800">
+                                    Your payment proof has been received. All job listings require admin approval. Your listing will go live after confirmation.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
+
+                {/* Position filled – after deactivate */}
+                {deactivated && (
+                    <div className="bg-slate-100 border-2 border-slate-300 rounded-xl p-6 text-center">
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-400 text-white mb-2">
+                            <CheckCircle className="w-6 h-6" />
+                        </div>
+                        <h3 className="font-bold text-slate-900 mb-1">Position Filled</h3>
+                        <p className="text-sm text-slate-600">This listing is closed and no longer accepts applications.</p>
+                    </div>
+                )}
 
                 {/* Job Summary */}
                 {jobDetails && (
@@ -225,96 +235,24 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
                     </div>
                 )}
 
-                {/* Plan Selection */}
-                <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
-                    <h3 className="font-bold text-gray-900 mb-4">Select Your Plan</h3>
-                    <div className="space-y-4">
-                        {/* Standard Plan */}
-                        <div
-                            className={`w-full p-5 rounded-xl border-2 transition-all ${
-                                selectedPlan === 'standard'
-                                    ? 'border-orange-500 bg-orange-50'
-                                    : 'border-gray-200'
-                            }`}
-                        >
-                            <div className="mb-4">
-                                <h4 className="font-bold text-lg text-gray-900">{plans.standard.name}</h4>
-                                <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                                    <Calendar className="w-4 h-4" />
-                                    {plans.standard.duration}
-                                </p>
-                            </div>
-                            <ul className="space-y-2 mb-6">
-                                {plans.standard.features.map((feature, idx) => (
-                                    <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                                        {feature}
-                                    </li>
-                                ))}
+                {/* Single plan: 170,000 IDR until filled or deactivated */}
+                {!proofSubmitted && !deactivated && (
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                        <h3 className="font-bold text-gray-900 mb-4">Job listing fee</h3>
+                        <div className="p-5 rounded-xl border-2 border-orange-500 bg-orange-50">
+                            <div className="text-3xl font-bold text-orange-600 mb-2 text-center">{formatCurrency(JOB_LISTING_PRICE_IDR)}</div>
+                            <p className="text-sm text-gray-700 text-center">Until placement is filled or you deactivate the listing. Admin must approve all submissions.</p>
+                            <ul className="mt-3 space-y-1 text-sm text-gray-700">
+                                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" /> One fee, no time limit</li>
+                                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" /> Upload payment proof below</li>
+                                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" /> Admin will confirm soon</li>
                             </ul>
-                            <div className="border-t pt-4 mt-4">
-                                <div className="text-3xl font-bold text-orange-600 mb-4 text-center">
-                                    {formatCurrency(plans.standard.price)}
-                                </div>
-                                <button
-                                    onClick={() => setSelectedPlan('standard')}
-                                    className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                                        selectedPlan === 'standard'
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    {selectedPlan === 'standard' ? '✓ Selected' : 'Select Package'}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Premium Plan */}
-                        <div
-                            className={`w-full p-5 rounded-xl border-2 transition-all ${
-                                selectedPlan === 'premium'
-                                    ? 'border-orange-500 bg-orange-50'
-                                    : 'border-gray-200'
-                            }`}
-                        >
-                            <div className="mb-4">
-                                <h4 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                                    {plans.premium.name}
-                                    <span className="px-2 py-1 bg-orange-500 text-white text-xs rounded-full">RECOMMENDED</span>
-                                </h4>
-                                <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                                    <Calendar className="w-4 h-4" />
-                                    {plans.premium.duration}
-                                </p>
-                            </div>
-                            <ul className="space-y-2 mb-6">
-                                {plans.premium.features.map((feature, idx) => (
-                                    <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="border-t pt-4 mt-4">
-                                <div className="text-3xl font-bold text-orange-600 mb-4 text-center">
-                                    {formatCurrency(plans.premium.price)}
-                                </div>
-                                <button
-                                    onClick={() => setSelectedPlan('premium')}
-                                    className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                                        selectedPlan === 'premium'
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    {selectedPlan === 'premium' ? '✓ Selected' : 'Select Package'}
-                                </button>
-                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Bank Details */}
+                {!deactivated && (
                 <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
                     <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <CreditCard className="w-5 h-5 text-orange-500" />
@@ -325,11 +263,9 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
                         <div className="text-center mb-4">
                             <div className="text-sm text-gray-600 mb-1">Amount to Transfer</div>
                             <div className="text-3xl font-bold text-orange-600">
-                                {formatCurrency(plans[selectedPlan].price)}
+                                {formatCurrency(JOB_LISTING_PRICE_IDR)}
                             </div>
-                            <div className="text-xs text-gray-500 mt-1">
-                                {plans[selectedPlan].name}
-                            </div>
+                            <div className="text-xs text-gray-500 mt-1">Job listing (until filled or deactivated)</div>
                         </div>
                     </div>
 
@@ -363,33 +299,60 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
                         </div>
                     </div>
                 </div>
+                )}
+
+                {/* Upload payment proof */}
+                {!proofSubmitted && !deactivated && (
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                        <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <Upload className="w-5 h-5 text-orange-500" />
+                            Upload payment proof
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-3">Transfer {formatCurrency(JOB_LISTING_PRICE_IDR)} to the bank account above, then upload a screenshot or photo of your payment confirmation. Admin will confirm soon.</p>
+                        {paymentProofPreview ? (
+                            <div className="relative inline-block">
+                                <img src={paymentProofPreview} alt="Proof" className="max-h-40 rounded-lg border-2 border-gray-200" />
+                                <button type="button" onClick={() => { setPaymentProof(null); setPaymentProofPreview(null); }} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full"><X className="w-4 h-4" /></button>
+                            </div>
+                        ) : (
+                            <label className="flex items-center justify-center gap-2 w-full py-4 px-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-400 hover:bg-orange-50/50">
+                                <Upload className="w-5 h-5 text-orange-500" />
+                                <span className="text-sm font-medium text-gray-700">Choose image (JPG, PNG, max 5MB)</span>
+                                <input type="file" accept="image/*" onChange={handleProofChange} className="hidden" />
+                            </label>
+                        )}
+                        <button
+                            type="button"
+                            disabled={!paymentProof || uploading}
+                            onClick={submitPaymentProof}
+                            className="mt-4 w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold rounded-xl"
+                        >
+                            {uploading ? 'Submitting...' : 'Submit payment proof'}
+                        </button>
+                    </div>
+                )}
 
                 {/* Payment Instructions */}
+                {!deactivated && (
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
                     <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
                         <AlertCircle className="w-5 h-5" />
-                        Payment Instructions
+                        Payment instructions
                     </h3>
                     <ol className="space-y-2 text-sm text-blue-900">
                         <li className="flex gap-3">
                             <span className="font-bold flex-shrink-0">1.</span>
-                            <span>Transfer the exact amount of <strong>{formatCurrency(plans[selectedPlan].price)}</strong> to the bank account above</span>
+                            <span>Transfer <strong>{formatCurrency(JOB_LISTING_PRICE_IDR)}</strong> to the bank account above</span>
                         </li>
                         <li className="flex gap-3">
                             <span className="font-bold flex-shrink-0">2.</span>
-                            <span>Take a screenshot of your payment confirmation</span>
+                            <span>Upload your payment proof above. Admin must approve all submissions.</span>
                         </li>
                         <li className="flex gap-3">
                             <span className="font-bold flex-shrink-0">3.</span>
-                            <span>Click the button below to send your payment proof via WhatsApp</span>
-                        </li>
-                        <li className="flex gap-3">
-                            <span className="font-bold flex-shrink-0">4.</span>
-                            <span>Your job posting will be activated within <strong>12 hours</strong> after payment confirmation</span>
+                            <span>Admin will confirm soon. Your listing will go live after approval.</span>
                         </li>
                     </ol>
-                    
-                    {/* Non-refundable notice */}
                     <div className="mt-4 pt-4 border-t border-blue-300">
                         <p className="text-sm text-blue-900 font-semibold flex items-center gap-2">
                             <AlertCircle className="w-4 h-4" />
@@ -397,30 +360,26 @@ const JobPostingPaymentPage: React.FC<JobPostingPaymentPageProps> = ({
                         </p>
                     </div>
                 </div>
+                )}
 
-                {/* WhatsApp Button */}
-                <button
-                    onClick={sendPaymentDetailsViaWhatsApp}
-                    className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
-                >
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                    </svg>
-                    Send Payment Proof via WhatsApp
-                </button>
-
-                {whatsappSent && (
-                    <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 pb-20 text-center">
-                        <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                        <p className="text-sm text-green-800 font-medium">
-                            WhatsApp opened! Please attach your payment screenshot and send the message.
-                        </p>
+                {/* Deactivate listing – position filled */}
+                {proofSubmitted && !deactivated && (
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                        <h3 className="font-bold text-gray-900 mb-2">Manage listing</h3>
+                        <p className="text-sm text-gray-600 mb-4">To close this job and stop applications, mark it as position filled.</p>
+                        <button
+                            type="button"
+                            onClick={deactivateListing}
+                            className="w-full py-3 border-2 border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50"
+                        >
+                            Deactivate listing (mark as Position Filled)
+                        </button>
                     </div>
                 )}
 
                 {/* Note */}
                 <div className="text-center text-sm text-gray-500 border-t pt-6">
-                    <p>Need help? Contact us via WhatsApp or email at indastreet.id@gmail.com</p>
+                    <p>Need help? Contact us via WhatsApp or indastreet.id@gmail.com</p>
                 </div>
             </div>
 

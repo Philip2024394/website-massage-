@@ -62,6 +62,28 @@ export const PLATFORM_COMMISSION_PERCENTAGE_INDONESIA = 30;
  */
 export const PLATFORM_COMMISSION_PERCENTAGE_INTERNATIONAL = 30;
 
+/**
+ * 💼 EMPLOYER JOB LISTING PRICE (IDR)
+ * Single fee until placement is filled or employer deactivates the listing.
+ * Admin must approve all submissions; employer uploads payment proof.
+ */
+export const JOB_LISTING_PRICE_IDR = 170000;
+
+/** Employer job posting status: pending payment → pending_approval (after proof) → active (admin approved) or filled (deactivated/filled) */
+export const JOB_LISTING_STATUS = {
+  PENDING_PAYMENT: 'pending_payment',
+  PENDING_APPROVAL: 'pending_approval',
+  ACTIVE: 'active',
+  FILLED: 'filled',
+} as const;
+
+/**
+ * 💼 EMPLOYER ACCESS TO CONTACT ALL JOB SEEKERS
+ * One-time fee for 1 month: full access to all therapist job offerings (profiles, WhatsApp, CVs).
+ */
+export const EMPLOYER_ACCESS_FEE_IDR = 250000;
+export const EMPLOYER_ACCESS_DURATION = '1 month';
+
 // =============================================================================
 // 🔒 VERIFICATION CONSTANTS - HARD LOCKED
 // =============================================================================

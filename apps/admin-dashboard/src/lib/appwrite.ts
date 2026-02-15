@@ -30,7 +30,8 @@ export const COLLECTIONS = {
     chatRooms: 'chat_rooms',
     messages: 'messages',
     employerJobPostings: 'employer_job_postings',
-    therapistJobListings: 'therapist_job_listings'
+    therapistJobListings: 'therapist_job_listings',
+    emergency_alerts: 'emergency_alerts'
 };
 
 // Legacy APPWRITE_CONFIG for backward compatibility
@@ -87,7 +88,8 @@ export const therapistService = {
             const cleanData: Record<string, any> = {};
             const allowedFields = ['name', 'description', 'location', 'phone', 'email', 'whatsappNumber', 
                 'status', 'isVerified', 'profileImage', 'images', 'specialties', 'services', 
-                'availability', 'experience', 'price60', 'price90', 'price120', 'ktpVerified'];
+                'availability', 'experience', 'price60', 'price90', 'price120', 'ktpVerified',
+                'contactSharingViolations'];
             
             for (const key of allowedFields) {
                 if (data[key] !== undefined) {
@@ -132,7 +134,7 @@ export const placesService = {
             const cleanData: Record<string, any> = {};
             const allowedFields = ['name', 'description', 'location', 'phone', 'email', 
                 'website', 'status', 'isVerified', 'profileImage', 'images', 'services', 
-                'amenities', 'serviceType', 'price60', 'price90', 'price120'];
+                'amenities', 'serviceType', 'price60', 'price90', 'price120', 'contactSharingViolations'];
             
             for (const key of allowedFields) {
                 if (data[key] !== undefined) {
@@ -143,6 +145,49 @@ export const placesService = {
             return await databases.updateDocument(DATABASE_ID, COLLECTIONS.places, id, cleanData);
         } catch (error) {
             console.error('❌ Error updating place:', error);
+            throw error;
+        }
+    }
+};
+
+// Emergency alerts (therapist/place safety – 3-tap emergency button)
+export const emergencyAlertsService = {
+    listPending: async () => {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTIONS.emergency_alerts,
+                [Query.equal('status', 'pending'), Query.orderDesc('triggeredAt'), Query.limit(50)]
+            );
+            return response.documents || [];
+        } catch (error) {
+            console.error('Error fetching emergency alerts:', error);
+            return [];
+        }
+    },
+    listAll: async () => {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTIONS.emergency_alerts,
+                [Query.orderDesc('triggeredAt'), Query.limit(100)]
+            );
+            return response.documents || [];
+        } catch (error) {
+            console.error('Error fetching emergency alerts:', error);
+            return [];
+        }
+    },
+    acknowledge: async (alertId: string) => {
+        try {
+            await databases.updateDocument(
+                DATABASE_ID,
+                COLLECTIONS.emergency_alerts,
+                alertId,
+                { status: 'acknowledged', acknowledgedAt: new Date().toISOString() }
+            );
+        } catch (error) {
+            console.error('Error acknowledging emergency alert:', error);
             throw error;
         }
     }

@@ -14,6 +14,7 @@ export type Page =
     | 'createAccount' // Create account page
     | 'onboarding-package' // Package onboarding
     | 'create-account'  // New unified account creation page
+    | 'create-account-employer' // Create account with Post Job (employer) pre-selected
     | 'home' 
     | 'joinIndastreet'
     | 'role-selection'
@@ -48,6 +49,7 @@ export type Page =
     | 'therapist-notifications'
     | 'therapist-calendar'
     | 'therapist-legal'
+    | 'therapist-job-applications'
     | 'facial-place-profile' // Facial place profile page
     | 'profile' // 🎯 NEW: Guest profile page for non-registered users
     | 'qr-code' // QR Code sharing page
@@ -93,7 +95,8 @@ export type Page =
     | 'about-us'
     | 'how-it-works' 
     | 'massage-bali' 
-    | 'blog' 
+    | 'blog'
+    | 'indastreet-news' 
     | 'blog/bali-spa-industry-trends-2025' 
     | 'blog/top-10-massage-techniques' 
     | 'blog/massage-career-indonesia' 
@@ -112,6 +115,10 @@ export type Page =
     | 'blog-deep-tissue-vs-swedish'
     | 'blog-online-presence-therapist'
     | 'blog-wellness-tourism-ubud'
+    | 'blog-wellness-southeast-asia'
+    | 'blog-massage-spa-standards-asia-europe'
+    | 'blog-skin-clinic-trends-international'
+    | 'blog-building-wellness-business-international'
     | 'blog-hiring-massage-therapists'
     | 'blog-traditional-balinese-massage'
     | 'blog-bali-spa-trends-2025'

@@ -27,7 +27,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  Home, User, Calendar, DollarSign, Bell, Settings, Search, Plus, Star, Clock, TrendingUp, Zap, Play as ChevronRight, ChevronDown, Star as Bookmark, Clock as History, Zap as Command, Users, CreditCard, BarChart, Shield, FileText, Gift, FileText as Clipboard, DollarSign as Wallet, MessageCircle} from 'lucide-react';
+  Home, User, Calendar, DollarSign, Bell, Settings, Search, Plus, Star, Clock, TrendingUp, Zap, Play as ChevronRight, ChevronDown, Star as Bookmark, History, Zap as Command, Users, CreditCard, BarChart, Shield, FileText, Gift, FileText as Clipboard, DollarSign as Wallet, MessageCircle, Briefcase, HelpCircle, Scale } from 'lucide-react';
 import { getTherapistSidebarPage } from '../../config/therapistSidebarConfig';
 
 export interface NavigationItem {
@@ -206,8 +206,8 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
       },
       {
         id: 'payment-status',
-        label: 'Payment Status',
-        icon: FileText,
+        label: 'Payment History',
+        icon: History,
         color: 'text-orange-500',
         category: 'financial',
         priority: 'medium',
@@ -215,7 +215,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
       },
       {
         id: 'commission-payment',
-        label: 'Commission',
+        label: 'Commission (30%)',
         icon: Wallet,
         color: 'text-orange-500',
         category: 'financial',
@@ -249,6 +249,15 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         priority: 'medium',
         badge: 3,
         description: 'Manage your notifications'
+      },
+      {
+        id: 'job-applications',
+        label: 'Job Applications',
+        icon: Briefcase,
+        color: 'text-orange-500',
+        category: 'tools',
+        priority: 'medium',
+        description: 'Your info and CV for job postings'
       }
     ]
   },
@@ -271,7 +280,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
       {
         id: 'legal',
         label: 'Legal & Terms',
-        icon: FileText,
+        icon: Scale,
         color: 'text-gray-500',
         category: 'support',
         priority: 'low',
@@ -280,7 +289,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
       {
         id: 'therapist-how-it-works',
         label: 'How it Works',
-        icon: FileText,
+        icon: HelpCircle,
         color: 'text-gray-500',
         category: 'support',
         priority: 'low',

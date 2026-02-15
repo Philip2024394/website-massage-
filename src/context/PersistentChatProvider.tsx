@@ -419,6 +419,10 @@ interface PersistentChatContextValue {
   resumeTimerIfNeeded: (bookingId: string) => void;
   /** Spec 6.2: true when user has a scheduled booking in progress (no Book now / no second Schedule until payment confirmed or expired) */
   hasActiveScheduledBooking: boolean;
+  /** True when user is not signed in (guest). Account required at confirmation. */
+  isGuestUser: boolean;
+  /** Re-fetch user from account.get() after sign-in so booking can use real customerId. */
+  refreshUser: () => Promise<void>;
 }
 
 const PersistentChatContext = createContext<PersistentChatContextValue | null>(null);
@@ -572,6 +576,34 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
       }
     };
     initUser();
+  }, []);
+
+  // Re-fetch user after sign-in (e.g. from BookingAuthModal) so booking uses real customerId
+  const refreshUser = useCallback(async () => {
+    try {
+      const user = await account.get();
+      setCurrentUserId(user.$id);
+      setCurrentUserName(user.name || 'Customer');
+      setIsGuestUser(false);
+      logger.info('PersistentChat: User refreshed after auth', { userId: user.$id });
+    } catch {
+      logger.debug('PersistentChat: refreshUser failed (no session)');
+    }
+  }, []);
+
+  // Listen for customer login (from BookingAuthModal) to refresh chat user
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ user: { $id: string; name?: string } }>) => {
+      const user = e.detail?.user;
+      if (user?.$id) {
+        setCurrentUserId(user.$id);
+        setCurrentUserName(user.name || 'Customer');
+        setIsGuestUser(false);
+        logger.info('PersistentChat: User updated from customer login event', { userId: user.$id });
+      }
+    };
+    window.addEventListener('indastreet_customer_logged_in', handler as EventListener);
+    return () => window.removeEventListener('indastreet_customer_logged_in', handler as EventListener);
   }, []);
 
   // Spec 6.1: Restore active scheduled booking id from localStorage (e.g. after refresh)
@@ -1703,6 +1735,11 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     
     // Spec 1.2: block booking if user was permanently blocked after reject
     const uid = currentUserId || 'guest';
+    const isGuest = !uid || uid === 'guest' || String(uid).startsWith('guest_');
+    if (isGuest) {
+      addSystemNotification('Please sign in or create an account to confirm your booking.');
+      return false;
+    }
     if (isBookingBlocked(uid, therapistDocId)) {
       const entry = getBlockEntry(uid, therapistDocId);
       const msg = entry?.providerType === 'place' ? 'This date and time has been filled.' : 'Therapist is not available on the date.';
@@ -2386,6 +2423,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     timerState,
     resumeTimerIfNeeded,
     hasActiveScheduledBooking: !!(chatState.activeScheduledBookingId ?? null),
+    isGuestUser,
+    refreshUser,
   }), [
     chatState,
     isLocked,
@@ -2425,6 +2464,8 @@ export function PersistentChatProvider({ children, setIsChatWindowVisible }: {
     recordDepositTimeout,
     timerState,
     resumeTimerIfNeeded,
+    isGuestUser,
+    refreshUser,
   ]);
 
   return (

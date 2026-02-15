@@ -77,6 +77,9 @@ import { therapistRoutes } from './router/routes/therapistRoutes';
 import { adminRoutes } from './router/routes/adminRoutes';
 import { placeRoutes } from './router/routes/placeRoutes';
 import { facialRoutes } from './router/routes/facialRoutes';
+import { getTermsAgreed, setTermsAgreed } from './lib/termsAgreementStorage';
+import DashboardTermsGate from './components/DashboardTermsGate';
+import UserTermsGate from './components/UserTermsGate';
 
 // Specialized pages not in route modules
 // LoadingGate - NOT lazy loaded for immediate availability (prevents loops)
@@ -86,6 +89,7 @@ const CreateAccountPage = React.lazy(() => import('./pages/auth/CreateAccountPag
 const ConfirmTherapistsPage = React.lazy(() => import('./pages/ConfirmTherapistsPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
 const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
+const IndastreetNewsPage = React.lazy(() => import('./pages/IndastreetNewsPage'));
 const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
 const GuestProfilePage = React.lazy(() => import('./pages/GuestProfilePage'));
 const QRCodePage = React.lazy(() => import('./pages/QRCodePage'));
@@ -137,6 +141,10 @@ const PricingGuideMassageTherapistsPage = React.lazy(() => import('./pages/blog/
 const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/DeepTissueVsSwedishMassagePage'));
 const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
+const WellnessSoutheastAsiaPage = React.lazy(() => import('./pages/blog/WellnessSoutheastAsiaPage'));
+const MassageSpaStandardsAsiaEuropePage = React.lazy(() => import('./pages/blog/MassageSpaStandardsAsiaEuropePage'));
+const SkinClinicTrendsInternationalPage = React.lazy(() => import('./pages/blog/SkinClinicTrendsInternationalPage'));
+const BuildingWellnessBusinessInternationalPage = React.lazy(() => import('./pages/blog/BuildingWellnessBusinessInternationalPage'));
 
 // Shared profile components
 const SharedTherapistProfileLazy = React.lazy(() => import('./features/shared-profiles/SharedTherapistProfile'));
@@ -514,6 +522,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             </LandingPageErrorBoundary>
         );
     }
+
+    // Wrap consumer pages with user terms gate (tracking agreement for services on indastreetmassage.com)
+    const consumerPagesForUserTerms: Page[] = ['home', 'about', 'contact', 'company', 'how-it-works', 'faq', 'massage-types', 'facial-types', 'providers', 'facialProviders', 'facial-providers', 'discounts', 'women-reviews', 'advanced-search', 'help-faq', 'top-therapists', 'special-offers', 'video-center', 'hotels-and-villas', 'hotel-villa-safe-pass', 'safePass', 'therapist-profile', 'place-profile', 'booking', 'terms', 'privacy'];
+    const wrapWithUserTermsIfNeeded = (currentPage: Page, content: React.ReactNode) => {
+        if (!consumerPagesForUserTerms.includes(currentPage)) return content;
+        return (
+            <UserTermsGate userId={props.loggedInCustomer?.$id} t={t}>
+                {content}
+            </UserTermsGate>
+        );
+    };
     
     return (
         <EnterpriseLoader
@@ -530,11 +549,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // Note: 'landing' case removed - already handled by early return at line 496
         
         case 'home':
-            // Allow everyone to access home page
-            // Note: Providers can still access their dashboards via direct navigation
-            return renderRoute(publicRoutes.home.component, {
-                page: page, // Pass the current page prop to HomePage
-                user: props.user, // Pass user prop for chat system
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.home.component, {
+                page: page,
+                user: props.user,
                 onNavigate: props.onNavigate,
                 therapists: props.therapists,
                 places: props.places,
@@ -543,7 +560,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 userLocation: props.userLocation,
                 loggedInCustomer: props.loggedInCustomer,
                 loggedInProvider: props.loggedInProvider,
-                // onQuickBookWithChat: props.handleQuickBookWithChat, // ❌ REMOVED: Complex event chain
                 onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
                 onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
                 onIncrementAnalytics: props.handleIncrementAnalytics,
@@ -555,59 +571,74 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onLoginClick: props.handleNavigateToTherapistLogin,
                 t: t,
                 language: props.language
-            });
+            }));
         
         case 'about':
-            return renderRoute(publicRoutes.about.component);
+        case 'about-us':
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.about.component, {
+                onNavigate: props.onNavigate,
+                language: props.language,
+                t: t,
+            }));
         
         case 'contact':
-            return renderRoute(publicRoutes.contact.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.contact.component));
         
         case 'company':
-            return renderRoute(publicRoutes.company.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.company.component));
         
         case 'how-it-works':
-            return renderRoute(publicRoutes.howItWorks.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.howItWorks.component));
         
         case 'faq':
-            return renderRoute(publicRoutes.faq.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.faq.component));
         
         case 'massage-types':
-            return renderRoute(publicRoutes.massageTypes.component);
+        case 'massageTypes':
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.massageTypes.component, {
+                onNavigate: props.onNavigate,
+                t: t,
+                language: props.language
+            }));
         
         case 'facial-types':
-            return renderRoute(publicRoutes.facialTypes.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.facialTypes.component));
         
         case 'providers':
-            return renderRoute(publicRoutes.providers.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.providers.component));
         
         case 'facialProviders':
         case 'facial-providers':
-            return renderRoute(publicRoutes.facialProviders.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.facialProviders.component));
         
         case 'discounts':
-            return renderRoute(publicRoutes.discounts.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.discounts.component));
         
         case 'women-reviews':
-            return renderRoute(publicRoutes.womenReviews.component, {
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.womenReviews.component, {
                 t: t,
                 language: props.language,
-                onNavigate: props.onNavigate
-            });
+                onNavigate: props.onNavigate,
+                onSelectTherapist: props.handleSetSelectedTherapist,
+                onSelectPlace: props.handleSetSelectedPlace,
+                therapists: props.therapists,
+                places: props.places,
+                facialPlaces: props.facialPlaces
+            }));
         
         case 'advanced-search':
-            return renderRoute(publicRoutes.advancedSearch.component, {
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.advancedSearch.component, {
                 t: t,
                 language: props.language,
                 onNavigate: props.onNavigate
-            });
+            }));
         
         case 'help-faq':
-            return renderRoute(publicRoutes.helpFaq.component, {
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.helpFaq.component, {
                 t: t,
                 language: props.language,
                 onNavigate: props.onNavigate
-            });
+            }));
 
         // � Appwrite Connection Diagnostic
         case 'appwrite-diagnostic':
@@ -626,30 +657,30 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         case 'top-therapists':
-            return renderRoute(publicRoutes.topTherapists.component, {
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.topTherapists.component, {
                 t: t,
                 language: props.language,
                 therapists: props.therapists,
                 onNavigate: props.onNavigate,
                 onSelectTherapist: props.handleSetSelectedTherapist
-            });
+            }));
         
         case 'special-offers':
-            return renderRoute(publicRoutes.specialOffers.component, {
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.specialOffers.component, {
                 t: t,
                 language: props.language,
                 onNavigate: props.onNavigate
-            });
+            }));
         
         case 'video-center':
-            return renderRoute(publicRoutes.videoCenter.component, {
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.videoCenter.component, {
                 t: t,
                 language: props.language,
                 onNavigate: props.onNavigate
-            });
+            }));
 
         case 'hotels-and-villas':
-            return renderRoute(publicRoutes.hotelsVillas.component, {
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.hotelsVillas.component, {
                 onNavigate: props.onNavigate,
                 onMassageJobsClick: () => props.onNavigate('massage-jobs'),
                 onVillaPortalClick: () => props.onNavigate('villa-portal'),
@@ -662,15 +693,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onPrivacyClick: () => props.onNavigate('privacy'),
                 therapists: props.therapists,
                 places: props.places
-            });
+            }));
         
         case 'hotel-villa-safe-pass':
         case 'safePass':
-            return renderRoute(publicRoutes.safePass.component, {
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.safePass.component, {
                 onNavigate: props.onNavigate,
                 onTherapistPortalClick: props.onTherapistPortalClick,
                 language: props.language
-            });
+            }));
 
         // ===== JOIN ROUTES =====
         case 'joinIndastreet':
@@ -787,18 +818,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onAuthSuccess: async (userType: string) => {
                     logger.info('Signup successful - navigating to dashboard for:', { userType });
                     
-                    // Restore user session to populate loggedInUser state
                     if (props.restoreUserSession) {
                         logger.debug('Restoring user session after signup...');
                         await props.restoreUserSession();
                         logger.debug('User session restored');
                     }
                     
-                    // Navigate within React app instead of external redirect
                     const dashboardPageMap: Record<string, string> = {
                         'therapist': 'therapist-status',
-                        'massage-place': 'massage-place-dashboard', 
-                        'facial-place': 'facial-place-dashboard'
+                        'massage-place': 'massage-place-dashboard',
+                        'facial-place': 'facial-place-dashboard',
+                        'employer': 'employer-job-posting'
                     };
                     
                     const dashboardPage = dashboardPageMap[userType];
@@ -808,6 +838,23 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         logger.error('Unknown user type:', userType);
                         props.onNavigate('home');
                     }
+                },
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id'
+            });
+        
+        case 'create-account-employer':
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'employer',
+                onAuthSuccess: async (userType: string) => {
+                    logger.info('Signup successful (employer) - navigating to employer dashboard:', { userType });
+                    
+                    if (props.restoreUserSession) {
+                        await props.restoreUserSession();
+                    }
+                    
+                    props.onNavigate('employer-job-posting' as Page);
                 },
                 onBack: () => props.onNavigate('home'),
                 language: props.language || 'id'
@@ -1333,7 +1380,26 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // ===== BLOG ROUTES =====
         case 'blog':
-            return renderRoute(blogRoutes.index.component);
+            return wrapWithUserTermsIfNeeded(page, renderRoute(blogRoutes.index.component, {
+                onNavigate: props.onNavigate,
+                onLanguageChange: props.onLanguageChange,
+                language: props.language,
+                t: t,
+                onMassageJobsClick: () => props.onNavigate('massage-jobs'),
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: () => props.handleAdminLogin?.(),
+                onTermsClick: () => props.onNavigate('terms'),
+                onPrivacyClick: () => props.onNavigate('privacy'),
+                therapists: props.therapists,
+                places: props.places,
+            }));
+
+        case 'indastreet-news':
+            return renderRoute(IndastreetNewsPage);
         
         case 'massage-bali':
             return renderRoute(blogRoutes.massageBali.component);
@@ -1383,6 +1449,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'blog-wellness-tourism-ubud':
             return renderRoute(WellnessTourismUbudPage);
+
+        case 'blog-wellness-southeast-asia':
+            return renderRoute(WellnessSoutheastAsiaPage);
+
+        case 'blog-massage-spa-standards-asia-europe':
+            return renderRoute(MassageSpaStandardsAsiaEuropePage);
+
+        case 'blog-skin-clinic-trends-international':
+            return renderRoute(SkinClinicTrendsInternationalPage);
+
+        case 'blog-building-wellness-business-international':
+            return renderRoute(BuildingWellnessBusinessInternationalPage);
 
         // ===== SPECIALIZED PAGES =====
         case 'confirm-therapists':
@@ -1493,6 +1571,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     }
                 },
                 onApplyForJob: (jobId: string) => {
+                    try { sessionStorage.setItem('indastreet_apply_for_job_id', jobId); } catch (_) {}
                     (props as any).setSelectedJobId?.(jobId);
                     props.onNavigate?.('apply-for-job');
                 },
@@ -1708,35 +1787,90 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language
             });
 
+        // ===== PLACE DASHBOARDS (with first-time terms gate) =====
+        case 'massage-place-dashboard': {
+            const massagePlaceUser = props.loggedInProvider || props.user;
+            const massagePlaceId = (massagePlaceUser as any)?.$id;
+            return renderRoute(DashboardTermsGate, {
+                userId: massagePlaceId,
+                t: dict?.serviceTerms,
+                ChildComponent: placeRoutes.dashboard.component,
+                childProps: {
+                    place: massagePlaceUser,
+                    onBack: () => props.onNavigate?.('home'),
+                    language: props.language
+                }
+            });
+        }
+        case 'facial-place-dashboard': {
+            const facialPlaceUser = props.loggedInProvider || props.user;
+            const facialPlaceId = (facialPlaceUser as any)?.$id;
+            return renderRoute(DashboardTermsGate, {
+                userId: facialPlaceId,
+                t: dict?.serviceTerms,
+                ChildComponent: facialRoutes.dashboard.component,
+                childProps: {
+                    place: facialPlaceUser,
+                    onBack: () => props.onNavigate?.('home'),
+                    language: props.language
+                }
+            });
+        }
+
         // ===== THERAPIST DASHBOARD ROUTES =====
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'therapist':
         case 'therapistDashboard':
-        case 'therapist-dashboard':
+        case 'therapist-dashboard': {
+            const therapistDashboardUser = props.loggedInProvider || props.user;
+            const therapistDashboardId = (therapistDashboardUser as any)?.$id;
+            if (therapistDashboardId && !getTermsAgreed(therapistDashboardId)) {
+                return renderRoute(legalRoutes.serviceTerms.component, {
+                    t: dict?.serviceTerms,
+                    acceptMode: true,
+                    onAccept: () => {
+                        setTermsAgreed(therapistDashboardId);
+                        props.onNavigate?.('dashboard');
+                    }
+                });
+            }
             logger.debug('[SWITCH CASE] therapist-dashboard MATCHED - REDIRECTING TO STATUS');
             logger.debug('[FIRST PAGE] Showing Online Status as first page');
             logger.debug('[DEBUG] therapist data:', props.loggedInProvider);
-            // Redirect to status page instead of dashboard (First page after login)
             return renderRoute(therapistRoutes.status.component, {
-                therapist: props.loggedInProvider || props.user,
+                therapist: therapistDashboardUser,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
+        }
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'status':
-        case 'therapist-status':
+        case 'therapist-status': {
+            const therapistUser = props.loggedInProvider || props.user;
+            const therapistId = (therapistUser as any)?.$id;
+            if (therapistId && !getTermsAgreed(therapistId)) {
+                return renderRoute(legalRoutes.serviceTerms.component, {
+                    t: dict?.serviceTerms,
+                    acceptMode: true,
+                    onAccept: () => {
+                        setTermsAgreed(therapistId);
+                        props.onNavigate?.('dashboard');
+                    }
+                });
+            }
             logger.debug('[ROUTE DEBUG] therapist-status case matched!');
             logger.debug('[FIRST PAGE] Therapist Online Status Page');
             logger.debug('[DEBUG] therapist data:', props.loggedInProvider);
             logger.debug('[ROUTE RESOLVE] therapist-status → TherapistOnlineStatus');
             return renderRoute(therapistRoutes.status.component, {
-                therapist: props.loggedInProvider || props.user,
+                therapist: therapistUser,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
+        }
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'bookings':
@@ -1787,6 +1921,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist-legal':
             logger.debug('[ROUTE RESOLVE] therapist-legal → TherapistLegal');
             return renderRoute(therapistRoutes.legal.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-status'),
+                onNavigate: props.onNavigate,
+                language: props.language || 'id'
+            });
+
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Job applications / CV for Massage Jobs)
+        case 'therapist-job-applications':
+            logger.debug('[ROUTE RESOLVE] therapist-job-applications → TherapistJobApplicationsPage');
+            return renderRoute(therapistRoutes.jobApplications.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
@@ -1854,6 +1998,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'commission-payment':
         case 'therapist-commission':
+        case 'therapist-commission-payment':
             logger.debug('[ROUTE RESOLVE] therapist-commission → CommissionPayment');
             return renderRoute(therapistRoutes.commission.component, {
                 therapist: props.user,

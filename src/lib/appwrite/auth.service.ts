@@ -229,6 +229,27 @@ export const authService = {
                 return null;
             }
         }
+    },
+
+    /**
+     * Start Google OAuth2 sign-in/sign-up. Redirects the user to Google; on success they are
+     * sent to successUrl with session already created. Call from a user click (popup may be blocked otherwise).
+     */
+    createGoogleSession(successUrl: string, failureUrl: string): void {
+        try {
+            // Appwrite SDK: createOAuth2Session(provider, success, failure) or object form
+            const account = appwriteAccount as any;
+            if (typeof account.createOAuth2Session === 'function') {
+                if (account.createOAuth2Session.length >= 3) {
+                    account.createOAuth2Session('google', successUrl, failureUrl);
+                } else {
+                    account.createOAuth2Session({ provider: 'google', success: successUrl, failure: failureUrl });
+                }
+            }
+        } catch (error: any) {
+            console.error('Google OAuth start failed:', error);
+            throw new Error(error?.message || 'Could not start Google sign-in');
+        }
     }
 };
 

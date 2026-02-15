@@ -1035,15 +1035,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     displayRating={displayRating}
                 />
 
-            {/* Location display - right aligned with pin icon */}
+            {/* Location display - right aligned with pin icon (capital letters on profile) */}
             <div className="px-4 mt-3 flex flex-col items-end">
-                <div className="flex items-center gap-1 text-xs text-black font-medium">
+                <div className="flex items-center gap-1 text-xs text-black font-medium uppercase">
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                     </svg>
                     {locationAreaDisplayName}
                 </div>
-                <div className="text-xs text-orange-500 mt-1 font-medium">
+                <div className="text-xs text-orange-500 mt-1 font-medium uppercase">
                     Serves {locationAreaDisplayName} area
                 </div>
             </div>

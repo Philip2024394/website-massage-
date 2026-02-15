@@ -1,6 +1,5 @@
-// 🎯 AUTO-FIXED: Mobile scroll architecture violations (2 fixes)
+// Special Offers – app-aligned layout, saved banners, no back button
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
 import FloatingPageFooter from '../components/FloatingPageFooter';
@@ -86,7 +85,8 @@ const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ t, language = 'en
             discountedPrice: 'Your Price',
             savings: 'You Save',
             comingSoon: 'Coming Soon',
-            howItWorks: 'How Our Discounts Work'
+            howItWorks: 'How Our Discounts Work',
+            promoUpdate: 'We update discounts and promos regularly – keep an eye out for the best deals for massage services from indastreetmassage.com'
         },
         id: {
             title: 'Penawaran Khusus',
@@ -151,7 +151,8 @@ const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ t, language = 'en
             discountedPrice: 'Harga Anda',
             savings: 'Anda Hemat',
             comingSoon: 'Segera Hadir',
-            howItWorks: 'Cara Kerja Diskon Kami'
+            howItWorks: 'Cara Kerja Diskon Kami',
+            promoUpdate: 'Kami memperbarui diskon dan promo secara berkala – pantau penawaran terbaik layanan pijat dari indastreetmassage.com'
         }
     };
 
@@ -241,15 +242,13 @@ const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ t, language = 'en
     };
 
     return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white w-full max-w-full ">
-            {/* Universal Header */}
-            <UniversalHeader 
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full">
+            <UniversalHeader
                 language={currentLanguage}
                 onLanguageChange={handleLanguageChange}
                 onMenuClick={() => setIsMenuOpen(true)}
             />
 
-            {/* App Drawer */}
             {isMenuOpen && (
                 <AppDrawer
                     isOpen={isMenuOpen}
@@ -259,120 +258,100 @@ const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ t, language = 'en
                 />
             )}
 
-            {/* Main Content */}
-            <div className="pt-[60px] px-3 sm:px-4 pb-8">
-                <div className="max-w-6xl mx-auto">
-                    {/* Back Arrow Button */}
-                    <button
-                        onClick={() => onNavigate?.('home')}
-                        className="mt-5 mb-4 ml-2 w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 will-change-transform"
-                        title="Back to Home"
-                    >
-                        <ArrowLeft className="w-6 h-6" />
-                    </button>
+            <main className="pt-[56px] pb-8 px-4 sm:px-6 max-w-4xl mx-auto">
+                {/* Page header – app-style wordmark + title */}
+                <header className="pt-6 pb-4">
+                    <h1 className="text-2xl font-bold text-gray-800 mb-1">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">street</span>
+                    </h1>
+                    <p className="text-lg font-semibold text-gray-700">{translations[currentLanguage].title}</p>
+                    <p className="text-sm text-gray-600 mt-0.5">{translations[currentLanguage].subtitle}</p>
+                </header>
 
-                    {/* Header Section - Minimalistic */}
-                    <div className="text-center mb-8 -mt-10">
-                        {/* Logo Image */}
-                        <div className="mb-4">
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258"
-                                alt="IndasStreet Massage Logo"
-                                className="w-60 h-60 mx-auto object-contain"
-                            />
-                        </div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">{translations[currentLanguage].title}</h1>
-                        <p className="text-gray-600">{translations[currentLanguage].subtitle}</p>
-                    </div>
-
-                    {/* Banners Grid - Clean Layout */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        {banners.map((banner, index) => (
-                            <div 
-                                key={banner.id} 
-                                className={`bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 ${
-                                    banner.isActive 
-                                        ? 'hover:shadow-md hover:border-orange-200' 
-                                        : 'opacity-75'
-                                }`}
-                            >
-                                {/* Banner Image */}
-                                <div className="relative h-40 sm:h-48 overflow-hidden">
-                                    <img 
-                                        src={banner.image} 
-                                        alt={banner.title}
-                                        className={`w-full h-full object-cover transition-transform duration-300 ${
-                                            banner.isActive ? 'hover:scale-105' : 'grayscale'
-                                        }`}
-                                    />
-                                    {banner.isActive ? (
-                                        <div className="absolute top-3 left-3 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                                            {banner.discount}% OFF
-                                        </div>
-                                    ) : (
-                                        <div className="absolute top-3 left-3 bg-gray-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                                            {translations[language].comingSoon}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Banner Content - Clean Spacing */}
-                                <div className="p-4 sm:p-5">
-                                    <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-2">{banner.title}</h3>
-                                    <p className="text-orange-600 font-medium text-sm mb-2">{banner.subtitle}</p>
-                                    <p className="text-gray-600 text-sm mb-4">{banner.description}</p>
-                                    
-                                    {banner.isActive && (
-                                        <>
-                                            {/* Discount Code - Prominent Display */}
-                                            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-center">
-                                                <div className="text-xs text-gray-600 mb-1">{translations[language].copyCode}</div>
-                                                <div className="text-xl font-bold text-orange-600 mb-2">{banner.code}</div>
-                                                <button
-                                                    onClick={() => handleCopyCode(banner.code)}
-                                                    className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
-                                                        copiedCode === banner.code 
-                                                            ? 'bg-green-500 text-white border-2 border-green-600' 
-                                                            : 'bg-orange-500 text-white hover:bg-orange-600 border-2 border-orange-600'
-                                                    }`}
-                                                >
-                                                    {copiedCode === banner.code ? translations[language].codeCopied : translations[language].copyCode}
-                                                </button>
-                                            </div>
-
-                                            {/* Terms */}
-                                            <div className="mb-3 p-2 bg-gray-50 rounded-lg">
-                                                <div className="text-xs text-gray-600">
-                                                    <strong>{translations[language].terms}:</strong> {banner.terms}
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {!banner.isActive && (
-                                        <div className="text-center py-4">
-                                            <div className="text-gray-400 text-sm">{translations[language].comingSoon}</div>
-                                        </div>
-                                    )}
-
-                                    {/* Valid Until - Subtle */}
-                                    <div className="mt-3 text-xs text-gray-500 text-center">
-                                        {banner.isActive ? `${translations[language].validUntil}: ${banner.validUntil}` : banner.validUntil}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                {/* Promo update line */}
+                <div className="mb-6 p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                        {translations[currentLanguage].promoUpdate}
+                    </p>
                 </div>
 
-                {/* Footer */}
-                <div className="mt-16">
-                    <FloatingPageFooter 
+                {/* Saved banners grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                    {banners.map((banner) => (
+                        <article
+                            key={banner.id}
+                            className={`bg-white rounded-xl border overflow-hidden transition-all duration-200 ${
+                                banner.isActive
+                                    ? 'border-gray-200 shadow-sm hover:shadow-md hover:border-orange-200'
+                                    : 'border-gray-100 opacity-90'
+                            }`}
+                        >
+                            <div className="relative h-36 sm:h-40 overflow-hidden bg-gray-100">
+                                <img
+                                    src={banner.image}
+                                    alt={banner.title}
+                                    className={`w-full h-full object-cover ${banner.isActive ? 'hover:scale-105 transition-transform duration-300' : 'grayscale'}`}
+                                />
+                                {banner.isActive ? (
+                                    <span className="absolute top-2.5 left-2.5 bg-orange-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow">
+                                        {banner.discount}% OFF
+                                    </span>
+                                ) : (
+                                    <span className="absolute top-2.5 left-2.5 bg-gray-500 text-white px-2 py-0.5 rounded-full text-xs font-medium">
+                                        {translations[currentLanguage].comingSoon}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="p-4">
+                                <h2 className="text-base font-bold text-gray-800 line-clamp-2 mb-1">{banner.title}</h2>
+                                <p className="text-orange-600 font-medium text-xs mb-2">{banner.subtitle}</p>
+                                <p className="text-gray-600 text-xs mb-3 line-clamp-2">{banner.description}</p>
+
+                                {banner.isActive && (
+                                    <>
+                                        <div className="mb-3 p-2.5 bg-orange-50/80 border border-orange-100 rounded-lg text-center">
+                                            <span className="text-xs text-gray-600 block mb-1">{translations[currentLanguage].copyCode}</span>
+                                            <span className="text-lg font-bold text-orange-600 block mb-2">{banner.code}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleCopyCode(banner.code)}
+                                                className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                    copiedCode === banner.code
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-orange-500 text-white hover:bg-orange-600'
+                                                }`}
+                                            >
+                                                {copiedCode === banner.code ? translations[currentLanguage].codeCopied : translations[currentLanguage].copyCode}
+                                            </button>
+                                        </div>
+                                        <div className="p-2 bg-gray-50 rounded-lg">
+                                            <p className="text-xs text-gray-600">
+                                                <strong>{translations[currentLanguage].terms}:</strong> {banner.terms}
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+
+                                {!banner.isActive && (
+                                    <p className="text-center text-gray-400 text-xs py-2">{translations[currentLanguage].comingSoon}</p>
+                                )}
+
+                                <p className="mt-2 text-xs text-gray-500 text-center">
+                                    {translations[currentLanguage].validUntil}: {banner.validUntil}
+                                </p>
+                            </div>
+                        </article>
+                    ))}
+                </div>
+
+                <div className="mt-12">
+                    <FloatingPageFooter
                         currentLanguage={currentLanguage}
                         onNavigate={onNavigate}
                     />
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

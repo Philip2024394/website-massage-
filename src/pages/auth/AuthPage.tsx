@@ -1,23 +1,51 @@
-// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
-import React, { useState } from 'react';
+// 🎯 Create account / Sign up – same header as home page (UniversalHeader)
+import React, { useState, useEffect } from 'react';
 import { User, Lock, Mail, Square } from 'lucide-react';
-import HomeIcon from '../../components/icons/HomeIcon';
 import { authService, userService, therapistService, placesService } from '../../lib/appwriteService';
 import { ID } from '../../lib/appwrite';
 import { useTranslations } from '../../lib/useTranslations';
+import SlideToConfirm from '../../components/auth/SlideToConfirm';
+import UniversalHeader from '../../components/shared/UniversalHeader';
+import { AppDrawer } from '../../components/AppDrawerClean';
+import { React19SafeWrapper } from '../../components/React19SafeWrapper';
 
 interface AuthPageProps {
     onAuthSuccess: (userType: string) => void;
     onBack: () => void;
     t?: any;
     mode?: 'signin' | 'signup' | 'unified';
+    defaultRole?: 'therapist' | 'massage-place' | 'facial-place' | 'employer';
+    language?: string;
+    onLanguageChange?: (lang: string) => void;
+    onNavigate?: (page: string) => void;
+    therapists?: any[];
+    places?: any[];
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT, mode: propMode }) => {
+const AuthPage: React.FC<AuthPageProps> = ({
+    onAuthSuccess,
+    onBack,
+    t: externalT,
+    mode: propMode,
+    defaultRole,
+    language: propLanguage,
+    onLanguageChange,
+    onNavigate,
+    therapists = [],
+    places = [],
+}) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [email, setEmail] = useState('');
-    const [accountType, setAccountType] = useState('');
+    const [accountType, setAccountType] = useState(() => {
+        if (defaultRole) return defaultRole;
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('createAccountRole') === 'employer') {
+            sessionStorage.removeItem('createAccountRole');
+            return 'employer';
+        }
+        return '';
+    });
     const [password, setPassword] = useState('');
-    const [acceptTerms, setAcceptTerms] = useState(false);
+    const [captchaVerified, setCaptchaVerified] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -37,7 +65,101 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
         { value: 'therapist', label: t?.massageTherapist || 'Massage Therapist' },
         { value: 'massage-place', label: t?.massageSpa || 'Massage Place' },
         { value: 'facial-place', label: t?.facialClinic || 'Facial Place' },
+        { value: 'employer', label: t?.postJob || 'Post Job' },
     ];
+
+    // Handle return from Google OAuth: create profile and redirect
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('oauth') === 'failure') {
+            window.history.replaceState({}, '', window.location.pathname);
+            setError(t?.googleSignInFailed || 'Google sign-in was cancelled or failed. Try again or use email.');
+            return;
+        }
+        if (params.get('oauth') !== 'success') return;
+        const isSignupFlow = mode === 'signup' || mode === 'unified';
+        if (!isSignupFlow) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const user = await authService.getCurrentUser();
+                if (cancelled || !user) return;
+                const storedType = sessionStorage.getItem('oauth_signup_account_type') as string | null;
+                const accountTypeToUse = storedType || 'therapist';
+                if (storedType) sessionStorage.removeItem('oauth_signup_account_type');
+                const email = (user as any).email || '';
+                const name = (user as any).name || email.split('@')[0] || 'User';
+                const profileData = { email, role: accountTypeToUse, name, userId: (user as any).$id };
+                if (accountTypeToUse === 'therapist') {
+                    await (therapistService as any).create({
+                        email: profileData.email,
+                        name: profileData.name,
+                        countryCode: '+62',
+                        whatsappNumber: '',
+                        specialization: 'General Massage',
+                        yearsOfExperience: 0,
+                        isLicensed: false,
+                        isLive: false,
+                        hourlyRate: 100,
+                        pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                        price60: '100', price90: '150', price120: '200',
+                        coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                        location: 'Bali, Indonesia',
+                        status: 'available',
+                        availability: 'Available',
+                        description: '',
+                        profilePicture: (user as any).picture || '',
+                        mainImage: '',
+                        massageTypes: '',
+                        languages: '',
+                    });
+                } else if (accountTypeToUse === 'massage-place') {
+                    const placeId = ID.unique();
+                    await (placesService as any).create({
+                        email: profileData.email,
+                        name: profileData.name,
+                        id: placeId,
+                        placeId,
+                        category: 'massage-place',
+                        password: '',
+                        pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                        status: 'Closed',
+                        isLive: false,
+                        openingTime: '09:00',
+                        closingTime: '21:00',
+                        coordinates: [106.8456, -6.2088],
+                        location: 'Bali, Indonesia',
+                        description: '',
+                        whatsappnumber: '',
+                        mainimage: '',
+                        profilePicture: '',
+                        galleryImages: '[]',
+                        massagetypes: '[]',
+                        languagesspoken: '[]',
+                        additionalservices: '[]',
+                    });
+                } else if (accountTypeToUse === 'facial-place') {
+                    const facialPlaceId = ID.unique();
+                    await (placesService as any).create({
+                        email: profileData.email,
+                        name: profileData.name,
+                        facialPlaceId,
+                        collectionName: 'facial_places',
+                        category: 'spa',
+                        description: '',
+                        address: 'Bali, Indonesia',
+                        lastUpdate: new Date().toISOString(),
+                    });
+                }
+                window.history.replaceState({}, '', window.location.pathname);
+                if (!cancelled) onAuthSuccess(accountTypeToUse);
+            } catch (err) {
+                console.error('OAuth callback profile creation failed:', err);
+                if (!cancelled) setError('Account created but profile setup failed. Please contact support.');
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [mode, onAuthSuccess]);
 
     const validateForm = () => {
         // Clear previous errors
@@ -60,35 +182,25 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
             return false;
         }
         
-        // For signup mode, require account type and terms
+        // For signup mode, require account type and slide-to-confirm (anti-bot). Terms accepted on first dashboard visit.
         if (mode === 'signup') {
             if (!accountType) {
                 setError(t?.pleaseSelectPortalType || 'Please select an account type');
                 return false;
             }
-            if (!acceptTerms) {
-                setError(t?.pleaseAcceptTerms || 'Please accept terms & conditions');
+            if (!captchaVerified) {
+                setError(t?.pleaseCompleteVerification || 'Please complete the security verification (slide to confirm)');
                 return false;
             }
         }
         
-        // For signin mode, only need email and password
-        if (mode === 'signin') {
-            // Account type not required for signin
-        }
-        
-        // For unified mode (auth page), require everything
         if (mode === 'unified') {
             if (!accountType) {
                 setError(t?.pleaseSelectPortalType || 'Please select an account type');
                 return false;
             }
-            if (!acceptTerms) {
-                setError('Please accept terms & conditions');
-                return false;
-            }
             if (!captchaVerified) {
-                setError('Please complete the security verification (slide to unlock)');
+                setError(t?.pleaseCompleteVerification || 'Please complete the security verification (slide to confirm)');
                 return false;
             }
         }
@@ -128,8 +240,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                 name: normalizedEmail.split('@')[0],
             };
             
-            // Create profile in appropriate collection
-            if (accountType === 'therapist') {
+            // Create profile in appropriate collection (employer: auth only, profile in employer dashboard)
+            if (accountType === 'employer') {
+                console.log('🔵 Employer account – auth created; employer will complete profile in dashboard');
+                // No separate employer_profiles create here; employer fills job listing in employer-job-posting page
+            } else if (accountType === 'therapist') {
                 console.log('🔵 Creating therapist profile');
                 await (therapistService as any).create({
                     email: profileData.email,
@@ -419,21 +534,41 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
         }
     };
 
+    const language = propLanguage || 'en';
+
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex flex-col bg-gray-50">
-            {/* Global Header */}
-            <header className="bg-white shadow-sm sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl md:text-3xl font-bold">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
-                    <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Back to Home">
-                        <HomeIcon className="w-6 h-6 text-gray-700" />
-                    </button>
-                </div>
-            </header>
-            
+            {/* Same header as home page */}
+            <UniversalHeader
+                language={language}
+                onLanguageChange={onLanguageChange as (lang: string) => void}
+                onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={onBack}
+                showHomeButton={true}
+            />
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                    onNavigate={onNavigate}
+                    onMassageJobsClick={onNavigate ? () => onNavigate('massage-jobs') : undefined}
+                    onVillaPortalClick={onNavigate ? () => onNavigate('villa-portal') : undefined}
+                    onTherapistPortalClick={onNavigate ? () => onNavigate('therapist-signup') : undefined}
+                    onMassagePlacePortalClick={onNavigate ? () => onNavigate('place-signup') : undefined}
+                    onAgentPortalClick={onNavigate ? () => onNavigate('auth') : undefined}
+                    onCustomerPortalClick={onNavigate ? () => onNavigate('auth') : undefined}
+                    onAdminPortalClick={onNavigate ? () => onNavigate('admin-login') : undefined}
+                    onTermsClick={onNavigate ? () => onNavigate('terms') : undefined}
+                    onPrivacyClick={onNavigate ? () => onNavigate('privacy') : undefined}
+                    therapists={therapists}
+                    places={places}
+                    language={language as 'en' | 'id' | 'gb'}
+                />
+            </React19SafeWrapper>
+
+            {/* Spacer so content starts below fixed header */}
+            <div className="pt-[60px]" aria-hidden />
+
             {/* Auth Form */}
             <div className="w-full max-w-md mx-auto flex items-center justify-center flex-1 py-8">
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 w-full">
@@ -451,6 +586,50 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                         </p>
                     </div>
                     
+                    {/* Sign up with Google – only in signup mode */}
+                    {mode === 'signup' && (
+                        <div className="mb-6">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (!accountType) {
+                                        setError(t?.pleaseSelectPortalType || 'Please select account type first.');
+                                        return;
+                                    }
+                                    if (!captchaVerified) {
+                                        setError(t?.pleaseCompleteVerification || 'Please complete the security verification (slide to confirm) first.');
+                                        return;
+                                    }
+                                    setError('');
+                                    try {
+                                        sessionStorage.setItem('oauth_signup_account_type', accountType);
+                                        const base = typeof window !== 'undefined' ? window.location.origin : '';
+                                        const path = (typeof window !== 'undefined' ? window.location.pathname : '') || '/signup';
+                                        const sep = path.includes('?') ? '&' : '?';
+                                        const successUrl = `${base}${path}${sep}oauth=success`;
+                                        const failureUrl = `${base}${path}${sep}oauth=failure`;
+                                        authService.createGoogleSession(successUrl, failureUrl);
+                                    } catch (err: any) {
+                                        setError(err?.message || 'Google sign-in could not be started. Try email sign up.');
+                                    }
+                                }}
+                                disabled={isLoading || !accountType || !captchaVerified}
+                                className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-gray-700"
+                            >
+                                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                {t?.signUpWithGoogle || 'Sign up with Google'}
+                            </button>
+                            <p className="text-center text-sm text-gray-500 mt-2">
+                                {t?.fastAndEasy || 'Fast & easy – no password needed'}
+                            </p>
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Email Field */}
                         <div>
@@ -559,31 +738,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                             )}
                         </div>
 
-                        {/* Terms Checkbox - Show for signup and unified modes */}
-                        {mode !== 'signin' && (
-                            <div className="flex items-start space-x-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setAcceptTerms(!acceptTerms)}
-                                    className="flex-shrink-0 mt-0.5"
-                                >
-                                    {acceptTerms ? (
-                                        <span>☑</span>
-                                    ) : (
-                                        <Square className="w-5 h-5 text-gray-400 border border-gray-300 rounded" />
-                                    )}
-                                </button>
-                                <label className="text-sm text-gray-700 leading-relaxed">
-                                    {t?.iAgreeToThe || 'I agree to the'}{' '}
-                                    <button type="button" className="text-orange-500 hover:underline font-medium">
-                                        {t?.termsAndConditions || 'Terms & Conditions'}
-                                    </button>
-                                    {' '}{t?.and || 'and'}{' '}
-                                    <button type="button" className="text-orange-500 hover:underline font-medium">
-                                        {t?.privacyPolicy || 'Privacy Policy'}
-                                    </button>
-                                </label>
-                            </div>
+                        {/* Slide to confirm – signup only (helps stop bots). Terms & Conditions are shown on first dashboard visit. */}
+                        {mode === 'signup' && (
+                            <SlideToConfirm
+                                onVerified={() => setCaptchaVerified(true)}
+                                label={t?.slideToConfirmSignup || 'Slide to confirm sign up'}
+                                verifiedLabel={t?.verified || 'Confirmed'}
+                                disabled={isLoading}
+                                className="pt-2"
+                            />
                         )}
 
                         {/* Error Message - Prominent display with icon */}
@@ -607,7 +770,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={isLoading || !email || !password || (mode === 'signup' && (!accountType || !acceptTerms)) || (mode === 'unified' && (!accountType || !acceptTerms))}
+                            disabled={isLoading || !email || !password || (mode === 'signup' && (!accountType || !captchaVerified)) || (mode === 'unified' && (!accountType || !captchaVerified))}
                             className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-4 px-6 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
                         >
                             {isLoading ? (

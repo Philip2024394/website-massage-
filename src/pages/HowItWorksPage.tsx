@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
+import PageContainer from '../components/layout/PageContainer';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 import { useCityContext } from '../context/CityContext';
@@ -2883,11 +2885,13 @@ function HotelPartnersHowItWorks({ t, glassCardClass }: { t?: any; glassCardClas
                     <p className="text-gray-600 mb-6 max-w-2xl">
                         {t?.howItWorks?.hotelDisplayIntro || 'IndaStreet provides free room display standards for all qualified hotels that meet IndaStreet standards of compliance. Show your guests that professional massage and skin care are available—right in your property.'}
                     </p>
-                    <div className="relative rounded-xl border-2 border-dashed border-orange-200 bg-orange-50/80 min-h-[280px] flex flex-col items-center justify-center p-8 text-center">
-                        <span className="absolute top-4 left-4 w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold shrink-0" aria-hidden>1</span>
-                        <svg className="w-16 h-16 text-orange-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        <p className="text-base text-gray-600 font-medium">Hotel Room Display Stand</p>
-                        <p className="text-xs text-gray-400 mt-1">[ Add image – IndaStreet room display stand for qualified hotels ]</p>
+                    <div className="relative rounded-xl overflow-hidden border border-orange-200 bg-orange-50/80 min-h-[280px] flex flex-col items-center justify-center p-4">
+                        <img
+                            src="https://ik.imagekit.io/7grri5v7d/indastreet%20hotel%20villa%20side%20menu.png"
+                            alt="IndaStreet hotel & villa room display – free stand for qualified properties"
+                            className="w-full max-w-md h-auto object-contain rounded-lg"
+                        />
+                        <p className="text-base text-gray-600 font-medium mt-3">Hotel Room Display Stand</p>
                     </div>
                 </div>
             </motion.div>
@@ -3078,11 +3082,13 @@ function VillaPartnersHowItWorks({ t, glassCardClass }: { t?: any; glassCardClas
                     <p className="text-gray-600 mb-6 max-w-2xl">
                         {t?.howItWorks?.villaDisplayIntro || 'IndaStreet provides free room display standards for all qualified villas that meet IndaStreet standards of compliance. Show your guests that professional massage and skin care are available—right at your villa.'}
                     </p>
-                    <div className="relative rounded-xl border-2 border-dashed border-orange-200 bg-orange-50/80 min-h-[280px] flex flex-col items-center justify-center p-8 text-center">
-                        <span className="absolute top-4 left-4 w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold shrink-0" aria-hidden>1</span>
-                        <svg className="w-16 h-16 text-orange-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        <p className="text-base text-gray-600 font-medium">Villa Room Display Stand</p>
-                        <p className="text-xs text-gray-400 mt-1">[ Add image – IndaStreet room display stand for qualified villas ]</p>
+                    <div className="relative rounded-xl overflow-hidden border border-orange-200 bg-orange-50/80 min-h-[280px] flex flex-col items-center justify-center p-4">
+                        <img
+                            src="https://ik.imagekit.io/7grri5v7d/indastreet%20hotel%20villa%20side%20menu.png"
+                            alt="IndaStreet hotel & villa room display – free stand for qualified properties"
+                            className="w-full max-w-md h-auto object-contain rounded-lg"
+                        />
+                        <p className="text-base text-gray-600 font-medium mt-3">Villa Room Display Stand</p>
                     </div>
                 </div>
             </motion.div>
@@ -3524,8 +3530,8 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
     const heroSubtitle = t?.howItWorks?.heroSubtitle ?? `Your Complete Guide to ${country || 'Indonesia'}'s Leading Wellness Marketplace`;
 
     return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
-            {/* Universal Header - same as home page */}
+        <div className="scrollable min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full">
+            {/* Universal Header – same design and layout as home page */}
             <UniversalHeader
                 language={language}
                 onLanguageChange={onLanguageChange}
@@ -3533,44 +3539,53 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                 onHomeClick={() => onNavigate?.('home')}
                 showHomeButton={true}
             />
-            
-            {/* Global App Drawer */}
-            <AppDrawer
-                isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
-                onMassageJobsClick={onMassageJobsClick}
 
-                onVillaPortalClick={onVillaPortalClick}
-                onTherapistPortalClick={onTherapistPortalClick}
-                onMassagePlacePortalClick={onMassagePlacePortalClick}
-                onAgentPortalClick={onAgentPortalClick}
-                onCustomerPortalClick={onCustomerPortalClick}
-                onAdminPortalClick={onAdminPortalClick}
-                onNavigate={onNavigate}
-                onTermsClick={onTermsClick}
-                onPrivacyClick={onPrivacyClick}
-                therapists={therapists}
-                places={places}
-                language={language}
-            />
+            {/* Global App Drawer – same chrome-safe pattern as home */}
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                    onMassageJobsClick={onMassageJobsClick}
+                    onVillaPortalClick={onVillaPortalClick}
+                    onTherapistPortalClick={onTherapistPortalClick}
+                    onMassagePlacePortalClick={onMassagePlacePortalClick}
+                    onAgentPortalClick={onAgentPortalClick}
+                    onCustomerPortalClick={onCustomerPortalClick}
+                    onAdminPortalClick={onAdminPortalClick}
+                    onNavigate={onNavigate}
+                    onTermsClick={onTermsClick}
+                    onPrivacyClick={onPrivacyClick}
+                    therapists={therapists}
+                    places={places}
+                    language={language}
+                />
+            </React19SafeWrapper>
 
-            {/* Hero Section - spacer for fixed header (header is out of flow) + gap between header and hero */}
-            <div className="px-4 pt-[4.5rem] sm:pt-24 pb-0 mb-10">
-                <div 
-                    className="bg-gradient-to-r from-blue-600 to-blue-500 text-white pt-28 pb-12 relative w-full max-w-full overflow-hidden rounded-2xl hover:scale-100 transition-none"
-                    style={{
-                        backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/PLASTERING%205%20TROWEL%20HOLDERz.png?updatedAt=1769572707322)',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        minHeight: 'calc(100vh - 5rem)',
-                    }}
-                >
-                    <div className="max-w-6xl mx-auto px-4 text-center relative z-10 flex flex-col justify-center min-h-[calc(100vh-5rem)] pt-16 pb-12">
-                        <h1 className="text-5xl font-bold mb-6">{t?.howItWorks?.heroTitle || 'How IndaStreet Works'}</h1>
-                        <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+            {/* Spacer so content starts below fixed header (60px) */}
+            <div className="pt-[60px]" aria-hidden />
+
+            {/* Title + subtitle strip – above hero image, correct padding */}
+            <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
+                <PageContainer className="px-4 sm:px-4 pt-5 pb-4">
+                    <div className="flex flex-col items-center text-center gap-1">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                            {t?.howItWorks?.heroTitle || 'How IndaStreet Works'}
+                        </h1>
+                        <p className="text-sm sm:text-base text-gray-600 max-w-2xl">
                             {heroSubtitle}
                         </p>
                     </div>
+                </PageContainer>
+            </div>
+
+            {/* Hero image – full size, rounded corners */}
+            <div className="px-4 pt-6 pb-0 mb-10">
+                <div className="relative w-full aspect-[21/9] min-h-[280px] overflow-hidden rounded-2xl shadow-lg">
+                    <img
+                        src="https://ik.imagekit.io/7grri5v7d/PLASTERING%205%20TROWEL%20HOLDERz.png?updatedAt=1769572707322"
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover object-center"
+                    />
                 </div>
             </div>
 

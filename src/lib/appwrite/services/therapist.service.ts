@@ -902,6 +902,7 @@ export const therapistService = {
             // Critical: These fields must be saved to enable correct city-based filtering
             if (data.geopoint) {
                 mappedData.geopoint = data.geopoint;
+                mappedData.lastLocationUpdateAt = data.lastLocationUpdateAt || new Date().toISOString();
                 console.log('✅ GPS geopoint field will be saved:', data.geopoint);
                 
                 // Auto-derive city from geopoint if not explicitly provided

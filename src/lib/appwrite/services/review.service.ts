@@ -146,6 +146,27 @@ export const reviewService = {
         }
     },
 
+    /** Latest approved reviews across all providers (for “Latest Reviews” page). Order: newest first. */
+    async getLatest(limit: number = 50): Promise<any[]> {
+        try {
+            const reviewsCollection = APPWRITE_CONFIG.collections.reviews;
+            if (!reviewsCollection) return [];
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                reviewsCollection,
+                [
+                    Query.equal('status', 'approved'),
+                    Query.orderDesc('reviewDate'),
+                    Query.limit(Math.min(limit, 100))
+                ]
+            );
+            return response.documents || [];
+        } catch (error) {
+            console.error('Error fetching latest reviews:', error);
+            return [];
+        }
+    },
+
     async getByProvider(providerId: string | number, providerType: 'therapist' | 'place'): Promise<any[]> {
         try {
             // Check if reviews collection is disabled

@@ -87,6 +87,8 @@ import { bookingFlowMonitor } from '../utils/bookingFlowDiagnostics';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { MASSAGE_TYPE_DETAILS, getMassageTypeImage } from '../constants';
 import { MassageTypeCard } from './shared/MassageTypeCard';
+import { saveBookingDraft, getBookingDraft, clearBookingDraft } from '../lib/bookingDraftStorage';
+import BookingAuthModal from './booking/BookingAuthModal';
 
 // Import new enhanced chat UI components
 import {
@@ -276,6 +278,8 @@ export function PersistentChatWindow() {
     unlockChat,
     recordDepositTimeout,
     timerState,
+    isGuestUser,
+    refreshUser,
   } = usePersistentChat();
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -462,6 +466,7 @@ export function PersistentChatWindow() {
   };
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showBookingAuthModal, setShowBookingAuthModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState(0);
   const [isProcessingDeposit, setIsProcessingDeposit] = useState(false);
   const [isMassageTypesModalOpen, setIsMassageTypesModalOpen] = useState(false);
@@ -1058,8 +1063,45 @@ export function PersistentChatWindow() {
       logger.debug('✓ Therapist:', { name: therapist?.name, id: therapist?.id });
       logger.debug('═══════════════════════════════════════════');
       
-      // Create booking directly - UI shows slider-style BookingWelcomeBanner (no text chat messages)
       const isScheduledBooking = !!(selectedDate && selectedTime);
+      const locationText = customerForm.location?.trim() || 'Location provided in chat';
+
+      // Account required at confirmation: if guest, save draft and show auth modal
+      if (isGuestUser) {
+        const payload = {
+          customerName: customerForm.name,
+          customerPhone: fullWhatsApp,
+          customerWhatsApp: fullWhatsApp,
+          duration: selectedDuration || 60,
+          serviceType: chatState.selectedService?.serviceName || 'Professional Treatment',
+          price: discountedPrice,
+          totalPrice: discountedPrice,
+          locationZone: customerForm.location || 'Bali',
+          location: locationText,
+          locationType: customerForm.locationType as 'home' | 'hotel' | 'villa',
+          address: locationText,
+          hotelVillaName: customerForm.hotelVillaName,
+          roomNumber: customerForm.roomNumber,
+          coordinates: customerForm.coordinates,
+          discountCode: hasDiscount ? discountCode : undefined,
+          discountPercentage: hasDiscount ? discountValidation?.percentage : undefined,
+          originalPrice: hasDiscount ? originalPrice : undefined,
+          ...(isScheduledBooking && { scheduledDate: selectedDate, scheduledTime: selectedTime }),
+        };
+        saveBookingDraft({
+          bookingType: isScheduledBooking ? 'SCHEDULED' : 'ORDER_NOW',
+          payload,
+          selectedDate: selectedDate || undefined,
+          selectedTime: selectedTime || undefined,
+          therapistId: therapist?.id || therapist?.$id,
+          therapistName: therapist?.name,
+        });
+        setIsSending(false);
+        setShowBookingAuthModal(true);
+        return;
+      }
+      
+      // Create booking directly - UI shows slider-style BookingWelcomeBanner (no text chat messages)
       try {
         logger.debug('✅ Creating booking...');
           
@@ -1400,6 +1442,38 @@ export function PersistentChatWindow() {
     }
   };
   
+  // Continue booking after user signs in or creates account (from BookingAuthModal)
+  const handleBookingAuthSuccess = async () => {
+    await refreshUser();
+    const draft = getBookingDraft();
+    if (!draft) {
+      setShowBookingAuthModal(false);
+      return;
+    }
+    clearBookingDraft();
+    setShowBookingAuthModal(false);
+    if (draft.bookingType === 'ORDER_NOW') {
+      const ok = await createBooking(draft.payload);
+      if (ok) setBookingStep('chat');
+    } else {
+      await handleScheduledBookingWithDeposit({
+        duration: draft.payload.duration,
+        totalPrice: draft.payload.totalPrice,
+        originalPrice: draft.payload.originalPrice,
+        serviceType: draft.payload.serviceType,
+        scheduledDate: draft.selectedDate,
+        scheduledTime: draft.selectedTime,
+        location: draft.payload.location,
+        locationZone: draft.payload.locationZone,
+        coordinates: draft.payload.coordinates,
+        customerName: draft.payload.customerName,
+        customerPhone: draft.payload.customerPhone,
+        customerWhatsApp: draft.payload.customerWhatsApp,
+      });
+      setBookingStep('chat');
+    }
+  };
+
   // Handle deposit payment submission
   const handleDepositPayment = async (paymentProofFile: File, paymentMethod: string) => {
     if (!chatState.currentBooking) return;
@@ -3474,6 +3548,19 @@ export function PersistentChatWindow() {
 
     </div>
       </div>
+
+      {/* Account required at confirmation: Sign In / Create Account modal */}
+      {showBookingAuthModal && (
+        <BookingAuthModal
+          isOpen={showBookingAuthModal}
+          onClose={() => {
+            setShowBookingAuthModal(false);
+            unlockChat();
+          }}
+          onAuthSuccess={handleBookingAuthSuccess}
+          language={currentLanguage}
+        />
+      )}
     </StatusThemeProvider>
   );
 }

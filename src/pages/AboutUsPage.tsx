@@ -57,7 +57,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-slate-50">
             {/* Universal Header - same as home page */}
             <UniversalHeader 
                 language={language}
@@ -65,6 +65,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                 onMenuClick={() => setIsMenuOpen(true)}
                 onHomeClick={() => onNavigate?.('home')}
                 showHomeButton={true}
+                title={language === 'id' ? 'Tentang Kami' : 'About Us'}
             />
             {/* Global App Drawer - same content as Home */}
             <React19SafeWrapper condition={isMenuOpen}>
@@ -91,247 +92,263 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
             
             {/* Hero Section */}
             <div 
-                className="bg-gradient-to-r from-orange-600 to-orange-500 text-white py-20 relative bg-cover bg-center bg-fixed"
+                className="bg-gradient-to-r from-orange-600 to-orange-500 text-white py-16 md:py-20 relative bg-cover bg-center"
                 style={{
                     backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20apps.png?updatedAt=1761568212865)',
                     backgroundAttachment: 'scroll',
                     transition: 'none'
                 }}
             >
-                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="absolute inset-0 bg-slate-900/30" />
                 <div className="max-w-6xl mx-auto px-4 relative z-10">
                     <div className="text-center">
-                        <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                            <span className="text-white">Inda</span><span className="text-orange-500">street Massage</span>
+                        <h1 className="text-4xl md:text-5xl font-bold mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] tracking-tight">
+                            <span className="text-white">Inda</span><span className="text-orange-200">street</span> <span className="text-white">Massage</span>
                         </h1>
-                        <p className="text-lg md:text-xl text-white/95 max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] font-light">
-                            International wellness platform connecting people with verified massage therapists, professional massage spas, and licensed skin clinics
+                        <p className="text-base md:text-lg text-white/95 max-w-2xl mx-auto drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] font-medium">
+                            International wellness platform connecting people with verified massage therapists, professional massage spas, and licensed skin clinics.
                         </p>
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="max-w-4xl mx-auto px-4 py-16">
+            <div className="max-w-4xl mx-auto px-4 py-12 md:py-16">
                 {/* Introduction */}
-                <div className="mb-16">
-                    <p className="text-lg text-gray-700 leading-relaxed">
-                        IndaStreet Massage is an international wellness platform connecting people with verified massage therapists, professional massage spas, and licensed skin clinics — safely, transparently, and on demand.
-                    </p>
-                    <p className="text-lg text-gray-700 leading-relaxed mt-4">
-                        With operations in Ireland and Indonesia, we combine international standards with strong local expertise to deliver a trusted booking experience for customers, providers, and partners.
-                    </p>
-                </div>
+                <section className="mb-12 md:mb-14">
+                    <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm p-6 md:p-8">
+                        <p className="text-slate-700 leading-relaxed text-base md:text-lg">
+                            IndaStreet Massage is an international wellness platform connecting people with verified massage therapists, professional massage spas, and licensed skin clinics — safely, transparently, and on demand.
+                        </p>
+                        <p className="text-slate-700 leading-relaxed text-base md:text-lg mt-4">
+                            With operations in Ireland and Indonesia, we combine international standards with strong local expertise to deliver a trusted booking experience for customers, providers, and partners.
+                        </p>
+                    </div>
+                </section>
 
                 {/* Our Mission */}
-                <div className="mb-16">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h2>
-                    <p className="text-gray-700 leading-relaxed">
-                        Our mission is to make professional wellness services easy to access, safe to book, and reliable to deliver, while empowering therapists, spas, and clinics with tools that support sustainable business growth.
-                    </p>
-                    <p className="text-gray-700 leading-relaxed mt-3">
-                        We are focused on building long-term trust across the wellness, hospitality, and healthcare-related sectors.
-                    </p>
-                </div>
+                <section className="mb-12 md:mb-14">
+                    <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm p-6 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">Our Mission</h2>
+                        <p className="text-slate-700 leading-relaxed">
+                            Our mission is to make professional wellness services easy to access, safe to book, and reliable to deliver, while empowering therapists, spas, and clinics with tools that support sustainable business growth.
+                        </p>
+                        <p className="text-slate-700 leading-relaxed mt-3">
+                            We are focused on building long-term trust across the wellness, hospitality, and healthcare-related sectors.
+                        </p>
+                    </div>
+                </section>
 
                 {/* Built on Trust */}
-                <div className="mb-16">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Built on Trust & Professional Standards</h2>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                        IndaStreet Massage is designed around safety, professionalism, and transparency.
-                    </p>
-                    <p className="text-gray-700 leading-relaxed mb-3">Our platform includes:</p>
-                    <ul className="space-y-2 text-gray-700 ml-6">
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Verified provider identity and documentation</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Secure booking and payment workflows</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Clear service listings and transparent pricing</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Admin-verified provider profiles</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Platform rules that protect users, providers, and partners</span>
-                        </li>
-                    </ul>
-                    <p className="text-gray-700 leading-relaxed mt-4">
-                        Every provider listed on IndaStreet Massage operates under defined professional standards.
-                    </p>
-                </div>
+                <section className="mb-12 md:mb-14">
+                    <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm p-6 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">Built on Trust & Professional Standards</h2>
+                        <p className="text-slate-700 leading-relaxed mb-4">
+                            IndaStreet Massage is designed around safety, professionalism, and transparency.
+                        </p>
+                        <p className="text-slate-700 leading-relaxed mb-3">Our platform includes:</p>
+                        <ul className="space-y-2 text-slate-700 list-none pl-0">
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Verified provider identity and documentation</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Secure booking and payment workflows</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Clear service listings and transparent pricing</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Admin-verified provider profiles</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Platform rules that protect users, providers, and partners</span>
+                            </li>
+                        </ul>
+                        <p className="text-slate-700 leading-relaxed mt-4">
+                            Every provider listed on IndaStreet Massage operates under defined professional standards.
+                        </p>
+                    </div>
+                </section>
 
                 {/* Collaboration With Partners */}
-                <div className="mb-16">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Collaboration With Hotels, Travel & Sports Partners</h2>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                        IndaStreet Massage actively collaborates with:
-                    </p>
-                    <ul className="space-y-2 text-gray-700 ml-6 mb-4">
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Hotels and villas</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Travel agencies and tour operators</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Sports complexes and fitness facilities</span>
-                        </li>
-                    </ul>
-                    <p className="text-gray-700 leading-relaxed mb-3">
-                        Through these partnerships, we facilitate access to verified massage specialists and skin clinics for guests, athletes, and travelers — ensuring consistent quality, safety, and professionalism in every location.
-                    </p>
-                    <p className="text-gray-700 leading-relaxed mb-3">Our partner integrations allow wellness services to be delivered:</p>
-                    <ul className="space-y-2 text-gray-700 ml-6">
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>On-site at hotels and villas</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>As part of travel and recovery packages</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Within sports and performance environments</span>
-                        </li>
-                    </ul>
-                </div>
+                <section className="mb-12 md:mb-14">
+                    <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm p-6 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">Collaboration With Hotels, Travel & Sports Partners</h2>
+                        <p className="text-slate-700 leading-relaxed mb-4">
+                            IndaStreet Massage actively collaborates with:
+                        </p>
+                        <ul className="space-y-2 text-slate-700 list-none pl-0 mb-4">
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Hotels and villas</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Travel agencies and tour operators</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Sports complexes and fitness facilities</span>
+                            </li>
+                        </ul>
+                        <p className="text-slate-700 leading-relaxed mb-3">
+                            Through these partnerships, we facilitate access to verified massage specialists and skin clinics for guests, athletes, and travelers — ensuring consistent quality, safety, and professionalism in every location.
+                        </p>
+                        <p className="text-slate-700 leading-relaxed mb-3">Our partner integrations allow wellness services to be delivered:</p>
+                        <ul className="space-y-2 text-slate-700 list-none pl-0">
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>On-site at hotels and villas</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>As part of travel and recovery packages</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Within sports and performance environments</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
 
                 {/* Supporting Professionals */}
-                <div className="mb-16">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Supporting Wellness Professionals</h2>
-                    <p className="text-gray-700 leading-relaxed mb-3">We support:</p>
-                    <ul className="space-y-2 text-gray-700 ml-6 mb-4">
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Independent massage therapists</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Professional massage spas</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Licensed skin clinics</span>
-                        </li>
-                    </ul>
-                    <p className="text-gray-700 leading-relaxed mb-3">By providing:</p>
-                    <ul className="space-y-2 text-gray-700 ml-6 mb-4">
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Professional digital profiles</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Scheduled and on-demand booking tools</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Transparent commission structure</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Secure in-app communication</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Calendar and availability management</span>
-                        </li>
-                    </ul>
-                    <p className="text-gray-700 leading-relaxed">
-                        Our goal is to let professionals focus on delivering exceptional care — while we handle the platform and technology.
-                    </p>
-                </div>
+                <section className="mb-12 md:mb-14">
+                    <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm p-6 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">Supporting Wellness Professionals</h2>
+                        <p className="text-slate-700 leading-relaxed mb-3">We support:</p>
+                        <ul className="space-y-2 text-slate-700 list-none pl-0 mb-4">
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Independent massage therapists</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Professional massage spas</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Licensed skin clinics</span>
+                            </li>
+                        </ul>
+                        <p className="text-slate-700 leading-relaxed mb-3">By providing:</p>
+                        <ul className="space-y-2 text-slate-700 list-none pl-0 mb-4">
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Professional digital profiles</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Scheduled and on-demand booking tools</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Transparent commission structure</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Secure in-app communication</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Calendar and availability management</span>
+                            </li>
+                        </ul>
+                        <p className="text-slate-700 leading-relaxed">
+                            Our goal is to let professionals focus on delivering exceptional care — while we handle the platform and technology.
+                        </p>
+                    </div>
+                </section>
 
                 {/* International Presence */}
-                <div className="mb-16">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">International Presence</h2>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                        With offices and operational support in Ireland and Indonesia, IndaStreet Massage is built for scalability, compliance, and long-term growth.
-                    </p>
-                    <p className="text-gray-700 leading-relaxed mb-3">This dual presence allows us to:</p>
-                    <ul className="space-y-2 text-gray-700 ml-6">
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Apply international platform standards</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Respect local regulations and cultural practices</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Support partners and providers on the ground</span>
-                        </li>
-                    </ul>
-                </div>
+                <section className="mb-12 md:mb-14">
+                    <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm p-6 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">International Presence</h2>
+                        <p className="text-slate-700 leading-relaxed mb-4">
+                            With offices and operational support in Ireland and Indonesia, IndaStreet Massage is built for scalability, compliance, and long-term growth.
+                        </p>
+                        <p className="text-slate-700 leading-relaxed mb-3">This dual presence allows us to:</p>
+                        <ul className="space-y-2 text-slate-700 list-none pl-0">
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Apply international platform standards</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Respect local regulations and cultural practices</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Support partners and providers on the ground</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
 
                 {/* Our Commitment */}
-                <div className="mb-16">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Commitment</h2>
-                    <p className="text-gray-700 leading-relaxed mb-3">We are committed to:</p>
-                    <ul className="space-y-2 text-gray-700 ml-6">
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>User and guest safety</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Provider and partner protection</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Secure handling of personal and business data</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Continuous platform improvement</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            <span>Clear and transparent communication</span>
-                        </li>
-                    </ul>
-                </div>
+                <section className="mb-12 md:mb-14">
+                    <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm p-6 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">Our Commitment</h2>
+                        <p className="text-slate-700 leading-relaxed mb-3">We are committed to:</p>
+                        <ul className="space-y-2 text-slate-700 list-none pl-0">
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>User and guest safety</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Provider and partner protection</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Secure handling of personal and business data</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Continuous platform improvement</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-primary-500 font-bold mt-0.5">•</span>
+                                <span>Clear and transparent communication</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
 
                 {/* The Future */}
-                <div className="mb-16 text-center py-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">The Future of Professional Wellness</h2>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                        IndaStreet Massage is evolving with the needs of modern wellness, hospitality, and performance industries.
-                    </p>
-                    <p className="text-lg font-semibold text-gray-900">
-                        Our focus remains clear:
-                    </p>
-                    <p className="text-xl font-bold text-orange-600 mt-3">
-                        Professional wellness. Verified providers. Proven With Trusted Standards.
-                    </p>
-                </div>
+                <section className="mb-12 md:mb-14">
+                    <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm p-6 md:p-8 text-center">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">The Future of Professional Wellness</h2>
+                        <p className="text-slate-700 leading-relaxed mb-4">
+                            IndaStreet Massage is evolving with the needs of modern wellness, hospitality, and performance industries.
+                        </p>
+                        <p className="text-base font-semibold text-slate-900">
+                            Our focus remains clear:
+                        </p>
+                        <p className="text-lg md:text-xl font-bold text-primary-600 mt-3">
+                            Professional wellness. Verified providers. Proven with trusted standards.
+                        </p>
+                    </div>
+                </section>
 
                 {/* Social Media Footer */}
-                <div className="border-t border-gray-200 pt-8 pb-12">
+                <div className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm pt-8 pb-10 px-6">
                     <div className="text-center">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Connect With IndaStreet</h3>
-                        <div className="flex justify-center items-center gap-6">
+                        <h3 className="text-lg font-semibold text-slate-900 mb-5">Connect With IndaStreet</h3>
+                        <div className="flex flex-wrap justify-center items-center gap-8">
                             <a
                                 href="https://www.instagram.com/indastreetmassage"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex flex-col items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors group"
+                                className="flex flex-col items-center gap-2 text-slate-600 hover:text-primary-500 transition-colors group"
                                 aria-label="Visit IndaStreet on Instagram"
                             >
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center group-hover:scale-105 transition-transform shadow-md">
                                     <Instagram className="w-6 h-6 text-white" />
                                 </div>
                                 <span className="text-sm font-medium">Instagram</span>
@@ -340,10 +357,10 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                                 href="https://www.tiktok.com/@indastreetmassage"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex flex-col items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors group"
+                                className="flex flex-col items-center gap-2 text-slate-600 hover:text-primary-500 transition-colors group"
                                 aria-label="Visit IndaStreet on TikTok"
                             >
-                                <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center group-hover:scale-105 transition-transform shadow-md">
                                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
                                     </svg>
@@ -354,10 +371,10 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                                 href="https://www.facebook.com/indastreetmassage"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex flex-col items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors group"
+                                className="flex flex-col items-center gap-2 text-slate-600 hover:text-primary-500 transition-colors group"
                                 aria-label="Visit IndaStreet on Facebook"
                             >
-                                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform shadow-md">
                                     <Facebook className="w-6 h-6 text-white" />
                                 </div>
                                 <span className="text-sm font-medium">Facebook</span>

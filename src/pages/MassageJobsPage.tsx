@@ -8,6 +8,7 @@ import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import { Home, SlidersHorizontal, Search, X } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
+import { EMPLOYER_ACCESS_FEE_IDR } from '../constants/businessLogic';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
@@ -247,7 +248,7 @@ interface MassageJobsPageProps {
 // Premium card style - matches homepage/HowItWorks
 const cardClass = 'rounded-[20px] shadow-lg border border-slate-200/80 bg-white hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden';
 const LISTING_FEE_THERAPIST = 150000;
-const LISTING_FEE_EMPLOYER = 250000;
+const LISTING_FEE_EMPLOYER = 170000;
 
 const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ 
     onBack, 
@@ -344,8 +345,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     const fetchJobPostings = async () => {
         setIsLoading(true);
         try {
+            // Fetch active and filled (filled = deactivated by employer, show with "Position Filled" badge)
             const queries = [
-                Query.equal('status', 'active'),
                 Query.orderDesc('$createdAt'),
                 Query.limit(100),
             ];
@@ -410,12 +411,13 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     };
 
     const filteredPostings = [mockJobPosting, ...jobPostings.filter(posting => {
+        const status = (posting as any).status;
+        if (status === 'pending_payment' || status === 'pending_approval') return false;
         const matchesSearch = !searchQuery.trim() ||
             posting.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             posting.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
             posting.jobDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (posting.location || '').toLowerCase().includes(searchQuery.toLowerCase());
-        
         const matchesType = filterJobType === 'all' || posting.employmentType === filterJobType || posting.businessType === filterJobType;
         const matchesLocation = filterJobLocation === 'all' || (posting.location || '').toLowerCase().includes(filterJobLocation.toLowerCase());
         const matchesVerified = !filterVerifiedEmployers || posting.isVerified === true;
@@ -424,7 +426,6 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
             (filterSalaryRange === 'low' && maxSal < 5_000_000) ||
             (filterSalaryRange === 'mid' && maxSal >= 5_000_000 && maxSal <= 15_000_000) ||
             (filterSalaryRange === 'high' && maxSal > 15_000_000);
-        
         return matchesSearch && matchesType && matchesLocation && matchesVerified && matchesSalary;
     })];
 
@@ -702,16 +703,21 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredPostings.map((posting) => {
                             const jobImageUrl = (posting as any).imageurl || (posting as any).imageUrl || 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188';
-                            
+                            const isPositionFilled = (posting as any).status === 'filled';
                             return (
-                            <div key={posting.$id} className={cardClass}>
-                                {/* Image + Top corner tag NEW/VERIFIED/URGENT */}
+                            <div key={posting.$id} className={`${cardClass} ${isPositionFilled ? 'opacity-90' : ''}`}>
+                                {/* Image + Top corner tag: Position Filled badge or NEW/VERIFIED/URGENT */}
                                 <div className="relative w-full h-40 overflow-hidden rounded-t-[20px] bg-slate-100">
                                     <img src={jobImageUrl} alt={posting.businessName} className="w-full h-full object-cover" />
-                                    <div className="absolute top-3 right-3 flex gap-2">
-                                        {posting.isUrgent && <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">URGENT</span>}
-                                        {posting.isVerified && <span className="px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">VERIFIED</span>}
-                                        {!posting.isVerified && !posting.isUrgent && (
+                                    <div className="absolute top-3 right-3 flex gap-2 flex-wrap justify-end">
+                                        {isPositionFilled && (
+                                            <span className="px-2.5 py-1 bg-slate-600 text-white text-xs font-bold rounded-lg" title="Position Filled">
+                                                Position Filled
+                                            </span>
+                                        )}
+                                        {!isPositionFilled && posting.isUrgent && <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">URGENT</span>}
+                                        {!isPositionFilled && posting.isVerified && <span className="px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">VERIFIED</span>}
+                                        {!isPositionFilled && !posting.isVerified && !posting.isUrgent && (
                                             <span className="px-2.5 py-1 bg-slate-700 text-white text-xs font-semibold rounded-lg">NEW</span>
                                         )}
                                     </div>
@@ -754,13 +760,19 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                         <p className="text-xs text-slate-500 mb-3">{t?.jobs?.livePendingVerification || 'Live – Pending Admin Verification'}</p>
                                     )}
 
-                                    {/* Apply Button */}
-                                    <button
-                                        onClick={() => onApplyForJob?.(posting.$id)}
-                                        className="w-full py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all duration-200"
-                                    >
-                                        {t?.jobs?.apply || 'Apply'}
-                                    </button>
+                                    {/* Apply Button or Position Filled */}
+                                    {isPositionFilled ? (
+                                        <div className="w-full py-2.5 px-4 bg-slate-300 text-slate-600 font-semibold rounded-xl text-center cursor-not-allowed">
+                                            {t?.jobs?.positionFilled ?? 'Position Filled'}
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => onApplyForJob?.(posting.$id)}
+                                            className="w-full py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all duration-200"
+                                        >
+                                            {t?.jobs?.apply || 'Apply'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             );
@@ -775,6 +787,32 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                             <p className="text-slate-700 text-sm sm:text-base font-medium">
                                 <span className="font-bold text-primary-600 text-lg">{filteredTherapistListings.length}</span> {filteredTherapistListings.length !== 1 ? (t?.jobs?.professionalsFound || 'professionals') : (t?.jobs?.professionalFound || 'professional')} {t?.jobs?.found || 'found'}
                             </p>
+                        </div>
+
+                        {/* Employer: Contact all professionals – 250k for 1 month */}
+                        <div className="mb-6 rounded-[20px] shadow-lg border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 p-6">
+                            <h3 className="text-lg font-bold text-slate-900 mb-2">{t?.jobs?.employerAccessTitle || 'Want to hire? Contact every professional on this page'}</h3>
+                            <p className="text-sm text-slate-700 mb-4 leading-relaxed">
+                                {t?.jobs?.employerAccessDescription || 'One-time fee for 1 month. You get full access to every job seeker listed here: detailed professional profiles, experience and skills, direct WhatsApp number for each therapist, and in most cases their CV or resume. Reach out to as many as you need to find the right fit.'}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-xs font-medium text-slate-500 uppercase">{t?.jobs?.employerAccessFeeLabel || 'One-time fee'}</span>
+                                    <span className="text-xl font-bold text-orange-600">
+                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(EMPLOYER_ACCESS_FEE_IDR)}
+                                    </span>
+                                    <span className="text-sm text-slate-600">/ {t?.jobs?.employerAccessDuration || '1 month'}</span>
+                                </div>
+                                <a
+                                    href="https://wa.me/6281392000050?text=Hi%2C%20I%20would%20like%20to%20get%20access%20to%20contact%20all%20professionals%20on%20the%20Massage%20Jobs%20page%20(250k%20for%201%20month)."
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all whitespace-nowrap inline-flex items-center gap-2"
+                                >
+                                    {t?.jobs?.employerAccessCta || 'Get access'}
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                </a>
+                            </div>
                         </div>
 
                         {/* Therapists Looking for Work - List availability CTA */}
@@ -945,7 +983,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                             <button
                                 onClick={() => {
                                     setShowAuthModal(false);
-                                    onNavigate?.(authModalContext === 'employer' ? 'employer-job-posting' : 'therapist-job-registration');
+                                    onNavigate?.(authModalContext === 'employer' ? 'create-account-employer' : 'createAccount');
                                 }}
                                 className="w-full py-3 px-4 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-colors"
                             >

@@ -76,6 +76,8 @@ import AdminChatMonitor from './AdminChatMonitor';
 import ShareAnalytics from '../components/ShareAnalytics';
 import AdminAchievementManager from '../components/AdminAchievementManager';
 import AdminJobListings from './AdminJobListings';
+import AdminLocationTracking from './AdminLocationTracking';
+import AdminEmergencyAlerts from './AdminEmergencyAlerts';
 
 // Simple component fallbacks
 const PageNumberBadge = ({ pageNumber }: any) => <span>Page {pageNumber}</span>;
@@ -158,6 +160,8 @@ export interface CardData {
     experience?: string;
     serviceType?: string;
     amenities?: string[];
+    /** Number of verified contact-sharing / terms violations; when > 0, card is shown in red. */
+    contactSharingViolations?: number;
 }
 
 interface LiveAdminDashboardProps {
@@ -185,14 +189,14 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'chat-monitor' | 'analytics' | 'email' | 'payments' | 'commission-deposits' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics' | 'revenue' | 'achievements' | 'job-listings'>('dashboard');
+    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'chat-monitor' | 'analytics' | 'email' | 'payments' | 'commission-deposits' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics' | 'revenue' | 'achievements' | 'job-listings' | 'location-tracking' | 'emergency-alerts'>('dashboard');
     
     // Card editing states
     const [therapists, setTherapists] = useState<CardData[]>([]);
     const [places, setPlaces] = useState<CardData[]>([]);
     const [editingCard, setEditingCard] = useState<CardData | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending' | 'violations'>('all');
 
     // Fetch live data from Appwrite
     const fetchLiveData = async () => {
@@ -630,7 +634,8 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 experience: editingCard.experience || '',
                 serviceType: editingCard.serviceType || '',
                 amenities: editingCard.amenities || [],
-                status: editingCard.status || 'active'
+                status: editingCard.status || 'active',
+                contactSharingViolations: Math.max(0, Math.floor(Number((editingCard as any).contactSharingViolations) || 0))
             };
             
             console.log('💾 [ADMIN DASHBOARD] Update payload:', JSON.stringify(updateData, null, 2));
@@ -793,16 +798,20 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
         return colors[status as keyof typeof colors] || colors.pending;
     };
 
-    // Filter cards based on search and status
+    // Filter cards based on search and status (including violations filter)
     const filterCards = (cards: CardData[]) => {
         return cards.filter(card => {
             const matchesSearch = card.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 card.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 card.location?.toLowerCase().includes(searchQuery.toLowerCase());
+            const hasViolations = (card.contactSharingViolations ?? 0) > 0;
             const matchesStatus = statusFilter === 'all' || card.status === statusFilter;
-            return matchesSearch && matchesStatus;
+            const matchesViolations = statusFilter !== 'violations' || hasViolations;
+            return matchesSearch && matchesStatus && matchesViolations;
         });
     };
+
+    const hasViolations = (card: CardData) => (card.contactSharingViolations ?? 0) > 0;
 
     if (activeView === 'chat') {
         return (
@@ -971,6 +980,23 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
             <div className="min-h-screen bg-gray-50 w-full">
                 <BookingManagement onBack={() => setActiveView('dashboard')} />
             </div>
+        );
+    }
+
+    if (activeView === 'location-tracking') {
+        return (
+            <AdminLocationTracking
+                therapists={therapists}
+                onBack={() => setActiveView('dashboard')}
+                onRefresh={fetchLiveData}
+                loading={loading}
+            />
+        );
+    }
+
+    if (activeView === 'emergency-alerts') {
+        return (
+            <AdminEmergencyAlerts onBack={() => setActiveView('dashboard')} />
         );
     }
 
@@ -1203,14 +1229,17 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                                 <option value="pending">Pending</option>
+                                <option value="violations">With violations</option>
                             </select>
                         </div>
                     </div>
 
                     {/* Cards Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        {cards.map((card) => (
-                            <div key={card.$id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        {cards.map((card) => {
+                            const isViolation = hasViolations(card);
+                            return (
+                            <div key={card.$id} className={`rounded-xl shadow-sm overflow-hidden ${isViolation ? 'bg-red-50 border-2 border-red-400' : 'bg-white border border-gray-100'}`}>
                                 {/* Card Image */}
                                 <div className="h-40 sm:h-48 bg-gradient-to-br from-gray-200 to-gray-300 relative">
                                     {card.profileImage ? (
@@ -1225,6 +1254,12 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                         </div>
                                     )}
                                     
+                                    {/* Violation badge — shown when contact-sharing violations */}
+                                    {isViolation && (
+                                        <div className="absolute top-4 left-4 px-2 py-1 rounded-full text-xs font-bold bg-red-600 text-white">
+                                            Violation{card.contactSharingViolations && card.contactSharingViolations > 1 ? ` (${card.contactSharingViolations})` : ''}
+                                        </div>
+                                    )}
                                     {/* Status Badge */}
                                     <div className={`absolute top-4 right-4 px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(card.status)}`}>
                                         {card.status}
@@ -1334,7 +1369,8 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {cards.length === 0 && !loading && (
@@ -1398,6 +1434,28 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                             <option value="inactive">Inactive</option>
                                             <option value="pending">Pending</option>
                                         </select>
+                                    </div>
+
+                                    {/* Violations override: admin can clear or set count */}
+                                    <div className="sm:col-span-2 flex flex-wrap items-end gap-3">
+                                        <div className="flex-1 min-w-[120px]">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Contact-sharing violations</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                value={(editingCard as any).contactSharingViolations ?? 0}
+                                                onChange={(e) => setEditingCard({ ...editingCard, contactSharingViolations: Math.max(0, Math.floor(Number(e.target.value) || 0)) } as any)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm sm:text-base"
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditingCard({ ...editingCard, contactSharingViolations: 0 } as any)}
+                                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm font-medium"
+                                        >
+                                            Clear violations
+                                        </button>
+                                        <p className="text-xs text-gray-500 w-full">Save card to apply. Admin can override or delete violation count at any time.</p>
                                     </div>
                                 </div>
 
@@ -1781,6 +1839,24 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             >
                                 <Calendar className="w-4 h-4" />
                                 <span>Bookings</span>
+                            </button>
+
+                            {/* Location Tracking (safety) button */}
+                            <button
+                                onClick={() => setActiveView('location-tracking')}
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm"
+                            >
+                                <MapPin className="w-4 h-4" />
+                                <span>Location Tracking</span>
+                            </button>
+
+                            {/* Emergency Alerts (therapist safety) button */}
+                            <button
+                                onClick={() => setActiveView('emergency-alerts')}
+                                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                            >
+                                <AlertCircle className="w-4 h-4" />
+                                <span>Emergency Alerts</span>
                             </button>
 
                             {/* Job Listings (Work Marketplace) button */}

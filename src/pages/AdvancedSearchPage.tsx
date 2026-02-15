@@ -1,9 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 import CityLocationDropdown from '../components/CityLocationDropdown';
 import AreaFilter from '../components/AreaFilter';
@@ -22,6 +20,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
     // Use local state for selected city, initialized from context
     const [selectedCity, setSelectedCity] = useState<string>(contextCity || 'all');
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
+    const [providerType, setProviderType] = useState<'therapist' | 'massage_place' | 'skin_care'>('therapist');
     const [filters, setFilters] = useState({
         massageType: '',
         gender: '',
@@ -40,46 +39,74 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
     };
 
     const handleSearch = () => {
-        // Implement search logic here
-        console.log('Searching with filters:', filters);
+        const params = {
+            providerType,
+            city: selectedCity,
+            area: selectedArea,
+            ...filters
+        };
+        try {
+            sessionStorage.setItem('advanced_search_params', JSON.stringify(params));
+        } catch (_) {}
         onNavigate?.('home');
     };
 
     return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
-            {/* Universal Header */}
-            <UniversalHeader 
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full">
+            <UniversalHeader
                 language={currentLanguage}
                 onLanguageChange={handleLanguageChange}
                 onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={() => onNavigate?.('home')}
+                showHomeButton={true}
             />
 
-            <div className="max-w-4xl mx-auto px-4 py-8 pt-20">
-                {/* Back Arrow */}
-                <button
-                    onClick={() => onNavigate?.('home')}
-                    className="mb-6 ml-2 w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 will-change-transform"
-                    title={currentLanguage === 'id' ? 'Kembali ke Beranda' : 'Back to Home'}
-                >
-                    <ArrowLeft className="w-6 h-6" />
-                </button>
-                
-                <div className="text-center mb-8">
-                    <img 
-                        src="https://ik.imagekit.io/7grri5v7d/location.png?updatedAt=1770372194065" 
-                        alt="Location Search" 
-                        className="w-full max-w-2xl h-auto object-contain mx-auto mb-6 rounded-lg"
-                    />
-                    <h2 className="text-2xl font-bold text-gray-900">
+            <main className="pt-[56px] pb-8 px-4 sm:px-6 max-w-4xl mx-auto">
+                {/* Page header – same as home/app theme */}
+                <header className="pt-6 pb-4">
+                    <h1 className="text-2xl font-bold text-gray-800 mb-1">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">street</span>
+                    </h1>
+                    <p className="text-lg font-semibold text-gray-700">
                         {currentLanguage === 'id' ? 'Pencarian Lanjutan' : 'Advanced Search'}
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-2">
-                        {currentLanguage === 'id' ? 'Temukan terapis yang sesuai dengan kebutuhan Anda' : 'Find therapists that match your specific needs'}
                     </p>
-                </div>
+                    <p className="text-sm text-gray-600 mt-0.5">
+                        {currentLanguage === 'id'
+                            ? 'Cari terapis, tempat pijat, dan klinik perawatan kulit'
+                            : 'Search therapists, massage places & skin care clinics'}
+                    </p>
+                </header>
 
-                <div className="bg-white rounded-2xl p-6 shadow-lg">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                     
+                    {/* Provider type: Therapist | Massage Place | Skin Care Clinic */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                            {currentLanguage === 'id' ? 'Jenis penyedia' : 'Provider type'}
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            {[
+                                { value: 'therapist' as const, labelEn: 'Therapists', labelId: 'Terapis' },
+                                { value: 'massage_place' as const, labelEn: 'Massage Places', labelId: 'Tempat Pijat' },
+                                { value: 'skin_care' as const, labelEn: 'Skin Care Clinics', labelId: 'Klinik Perawatan Kulit' }
+                            ].map(({ value, labelEn, labelId }) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    onClick={() => setProviderType(value)}
+                                    className={`px-4 py-2 rounded-xl border-2 text-sm font-medium transition-colors ${
+                                        providerType === value
+                                            ? 'border-orange-500 bg-orange-50 text-orange-700'
+                                            : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
+                                    }`}
+                                >
+                                    {currentLanguage === 'id' ? labelId : labelEn}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* City Location Filter - Primary Filter */}
                     <div className="mb-8">
                         <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -89,28 +116,24 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             <CityLocationDropdown
                                 selectedCity={selectedCity}
                                 onCityChange={(newCity) => {
-                                    console.log('🏙️ City changed in advanced search:', newCity);
                                     setSelectedCity(newCity);
-                                    // Sync with CityContext if not 'all'
-                                    if (newCity !== 'all') {
-                                        setCity(newCity);
-                                    }
-                                    setSelectedArea(null); // Reset area when city changes
+                                    if (newCity !== 'all') setCity(newCity);
+                                    setSelectedArea(null);
                                 }}
                                 placeholder={currentLanguage === 'id' ? '🇮🇩 Semua Indonesia' : '🇮🇩 All Indonesia'}
                                 includeAll={true}
                                 showLabel={false}
-                                className="w-full rounded-xl border-2 border-gray-300 focus:border-orange-500 transition-colors"
+                                className="w-full rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-colors"
                             />
                         </div>
                         <p className="text-xs text-gray-500 mt-2">
-                            {currentLanguage === 'id' ? '💡 Filter terapis dan tempat berdasarkan kota' : '💡 Filter therapists and places by city'}
+                            {currentLanguage === 'id' ? '💡 Filter terapis, tempat pijat, dan klinik berdasarkan kota' : '💡 Filter therapists, massage places & skin care clinics by city'}
                         </p>
                     </div>
 
                     {/* Area Filter - Sub-areas within selected city */}
                     {selectedCity && selectedCity !== 'all' && (
-                        <div className="mb-8 p-4 bg-orange-50 rounded-xl border-2 border-orange-200">
+                        <div className="mb-8 p-4 bg-gray-50 rounded-xl border border-gray-200">
                             <label className="block text-sm font-medium text-gray-700 mb-3">
                                 {currentLanguage === 'id' ? '📍 Area dalam ' + selectedCity : '📍 Areas in ' + selectedCity}
                             </label>
@@ -122,20 +145,20 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                         </div>
                     )}
 
-                    {/* Verified Members Header */}
-                    <div className="text-center mb-8">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                            <h3 className="text-xl font-bold text-gray-900">
-                                {currentLanguage === 'id' ? 'Pencarian Member Terverifikasi' : 'Verified Members Search'}
+                    {/* Verified Members */}
+                    <div className="text-center mb-6">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                            <h3 className="text-lg font-bold text-gray-800">
+                                {currentLanguage === 'id' ? 'Member terverifikasi' : 'Verified members'}
                             </h3>
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565" 
-                                alt="Verified Badge" 
-                                className="w-8 h-8 object-contain"
+                                alt="Verified" 
+                                className="w-6 h-6 object-contain"
                             />
                         </div>
                         <p className="text-sm text-gray-600">
-                            {currentLanguage === 'id' ? 'Cari hanya dari terapis yang telah diverifikasi' : 'Search only verified therapists'}
+                            {currentLanguage === 'id' ? 'Cari dari terapis, tempat pijat, dan klinik yang terverifikasi' : 'Search verified therapists, massage places & skin care clinics'}
                         </p>
                     </div>
 
@@ -148,7 +171,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             <select
                                 value={filters.massageType}
                                 onChange={(e) => setFilters({ ...filters, massageType: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
                             >
                                 <option value="">{currentLanguage === 'id' ? 'Semua Jenis Pijat' : 'All Massage Types'}</option>
                                 <option value="balinese">{currentLanguage === 'id' ? 'Pijat Bali' : 'Balinese Massage'}</option>
@@ -225,7 +248,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             <select
                                 value={filters.clientType}
                                 onChange={(e) => setFilters({ ...filters, clientType: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
                             >
                                 <option value="">{currentLanguage === 'id' ? 'Semua Klien' : 'All Clients'}</option>
                                 <option value="women">{currentLanguage === 'id' ? 'Khusus Wanita' : 'Women Only'}</option>
@@ -249,7 +272,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             <select
                                 value={filters.priceRange}
                                 onChange={(e) => setFilters({ ...filters, priceRange: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
                             >
                                 <option value="">{currentLanguage === 'id' ? 'Semua Rentang Harga' : 'All Price Ranges'}</option>
                                 <option value="0-150000">{currentLanguage === 'id' ? 'Rp 0 - 150,000 (Ekonomis)' : 'Rp 0 - 150,000 (Budget)'}</option>
@@ -272,7 +295,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             <select
                                 value={filters.availability}
                                 onChange={(e) => setFilters({ ...filters, availability: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
                             >
                                 <option value="">{currentLanguage === 'id' ? 'Kapan Saja' : 'Anytime'}</option>
                                 <option value="now">{currentLanguage === 'id' ? 'Sekarang' : 'Available Now'}</option>
@@ -290,7 +313,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             <select
                                 value={filters.experience}
                                 onChange={(e) => setFilters({ ...filters, experience: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
                             >
                                 <option value="">{currentLanguage === 'id' ? 'Semua Level' : 'All Levels'}</option>
                                 <option value="1">{currentLanguage === 'id' ? '1+ Tahun' : '1+ Years'}</option>
@@ -333,7 +356,9 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                                 onClick={handleSearch}
                                 className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
                             >
-                                {currentLanguage === 'id' ? '🔍 Cari Terapis' : '🔍 Search Therapists'}
+                                {currentLanguage === 'id'
+                                ? (providerType === 'therapist' ? '🔍 Cari Terapis' : providerType === 'massage_place' ? '🔍 Cari Tempat Pijat' : '🔍 Cari Klinik')
+                                : (providerType === 'therapist' ? '🔍 Search Therapists' : providerType === 'massage_place' ? '🔍 Search Massage Places' : '🔍 Search Skin Care Clinics')}
                             </button>
                             <button
                                 onClick={() => onNavigate?.('home')}
@@ -344,10 +369,9 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
 
-            {/* Footer */}
-            <FloatingPageFooter 
+            <FloatingPageFooter
                 currentLanguage={currentLanguage}
                 onNavigate={onNavigate}
             />

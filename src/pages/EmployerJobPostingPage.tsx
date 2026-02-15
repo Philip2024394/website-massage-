@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
 import React, { useState } from 'react';
-import { Building2, MapPin, DollarSign, Home, Briefcase, Phone, Mail, X, Menu } from 'lucide-react';
+import { Building2, MapPin, DollarSign, Home, Briefcase, Phone, Mail, X, Menu, Upload, FileImage } from 'lucide-react';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { AppDrawer } from '../components/AppDrawerClean';
@@ -114,6 +114,11 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
     const [showMassageTypesDropdown, setShowMassageTypesDropdown] = useState(false);
     const [showLanguagesDropdown, setShowLanguagesDropdown] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+    const [paymentProofError, setPaymentProofError] = useState<string | null>(null);
+
+    const PAYMENT_PROOF_ACCEPT = 'image/*,.pdf,.png,.jpg,.jpeg,.webp';
+    const PAYMENT_PROOF_MAX_MB = 5;
 
     const businessTypes = [
         { value: 'hotel', label: 'Hotel' },
@@ -259,8 +264,13 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
             alert('Please fill in all required fields.');
             return;
         }
+        if (!paymentProofFile) {
+            setPaymentProofError('Please upload payment proof (screenshot or PDF).');
+            return;
+        }
 
         setIsSubmitting(true);
+        setPaymentProofError(null);
         try {
             console.log('Submitting job with massage types:', formData.massageTypes);
             console.log('Submitting job with languages:', formData.requiredLanguages);
@@ -302,7 +312,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     
                     // ✅ Optional fields
                     ...(formData.location && { location: formData.location }),
-                    ...(formData.contactPhone && { contactPhone: formData.contactPhone }),
+                    ...(formData.contactPhone && { contactPhone: formData.contactPhone, contactWhatsApp: formData.contactPhone }),
                     ...(formData.salaryMin && { salaryMin: formData.salaryMin }),
                     ...(formData.salaryMax && { salaryMax: formData.salaryMax }),
                     ...(formData.accommodationDetails && { accommodationDetails: formData.accommodationDetails }),
@@ -1411,6 +1421,56 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         </button>
                                     ))}
                                 </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Admin confirmation notice */}
+                    <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
+                        <p className="text-sm font-semibold text-amber-900 mb-1">Listing approval</p>
+                        <p className="text-sm text-amber-800">
+                            Admin will confirm your listing within 24 hours. You will be notified once it is live.
+                        </p>
+                    </div>
+
+                    {/* Payment proof upload */}
+                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-3">
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <Upload className="w-5 h-5 text-orange-500" />
+                            Payment proof (screenshot or file)
+                        </h2>
+                        <p className="text-sm text-gray-600">
+                            Upload proof of payment. Accepted formats: image (PNG, JPG, JPEG, WebP) or PDF. Max size: {PAYMENT_PROOF_MAX_MB} MB.
+                        </p>
+                        <div className="flex flex-col gap-2">
+                            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-400 hover:bg-orange-50/50 cursor-pointer transition-colors">
+                                <FileImage className="w-5 h-5 text-gray-500" />
+                                <span className="text-sm font-medium text-gray-700">
+                                    {paymentProofFile ? paymentProofFile.name : 'Choose file...'}
+                                </span>
+                                <input
+                                    type="file"
+                                    accept={PAYMENT_PROOF_ACCEPT}
+                                    className="sr-only"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        setPaymentProofError(null);
+                                        if (!file) {
+                                            setPaymentProofFile(null);
+                                            return;
+                                        }
+                                        if (file.size > PAYMENT_PROOF_MAX_MB * 1024 * 1024) {
+                                            setPaymentProofError(`File must be under ${PAYMENT_PROOF_MAX_MB} MB`);
+                                            setPaymentProofFile(null);
+                                            e.target.value = '';
+                                            return;
+                                        }
+                                        setPaymentProofFile(file);
+                                    }}
+                                />
+                            </label>
+                            {paymentProofError && (
+                                <p className="text-sm text-red-600">{paymentProofError}</p>
                             )}
                         </div>
                     </div>

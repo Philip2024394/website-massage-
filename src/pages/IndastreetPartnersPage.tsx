@@ -524,221 +524,147 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                     </div>
                 </div>
 
-                {/* Partners Grid with MassagePlace-style Cards */}
-                <div className="space-y-16">
-                    {filteredPartners.map((partner) => (
-                        <div key={partner.id} className="relative mb-12">
-                            {/* Join Indastreet and Member Since - Same line level */}
-                            <div className="absolute -top-6 left-0 right-0 flex justify-between items-center mb-4">
-                                <button
-                                    onClick={() => onNavigate?.('join-indastreet-partners')}
-                                    className="text-xs text-orange-600 hover:text-orange-700 font-semibold underline transition-colors"
-                                >
-                                    Join Indastreet
-                                </button>
-                                
-                                <p className="text-xs text-gray-500 font-medium">
-                                    {t?.partners?.added || 'Member since'} {new Date(partner.addedDate).toLocaleDateString('en-US', { 
-                                        year: 'numeric', 
-                                        month: 'short'
-                                    })}
-                                </p>
-                            </div>
-                            
-                            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative mt-2">
-                            {/* Main Image Banner */}
-                            <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
-                                <img 
-                                    src={partner.imageUrl || getRandomDefaultImage()} 
-                                    alt={`${partner.name} cover`} 
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = getRandomDefaultImage();
-                                    }}
-                                />
-                                
-                                {/* Verified Badge */}
-                                {partner.verified && (
-                                    <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-md text-yellow-400 px-3 py-2 rounded-full text-xs font-bold flex items-center shadow-lg">
-                                        <CheckCircleIcon className="w-3 h-3 mr-1" />
-                                        {t?.partners?.verifiedPartner || 'Verified'}
-                                    </div>
-                                )}
-                                
-                                {/* Rating */}
-                                {partner.rating && (
-                                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-2 shadow-lg">
-                                        <StarIcon className="w-4 h-4 text-yellow-400"/>
-                                        <span className="font-bold text-white text-sm">{partner.rating.toFixed(1)}</span>
-                                    </div>
-                                )}
+                {/* Join Indastreet link above grid */}
+                <div className="flex justify-end mb-4">
+                    <button
+                        onClick={() => onNavigate?.('join-indastreet-partners')}
+                        className="text-sm text-orange-600 hover:text-orange-700 font-semibold underline transition-colors"
+                    >
+                        Join Indastreet
+                    </button>
+                </div>
 
-                                {/* Share Button - Orange rounded button like therapist cards */}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setPartnerToShare(partner);
-                                        setShowSharePopup(true);
-                                    }}
-                                    className="absolute bottom-3 right-3 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
-                                    title="Share this partner"
-                                    aria-label="Share this partner"
-                                >
-                                    <Share2 className="w-5 h-5 text-white" color="white" strokeWidth={2.5} />
-                                </button>
-                            </div>
-                            
-                            {/* Logo/Profile Picture - Fixed consistent position */}
-                            <div className="absolute bottom-[-40px] left-4 z-20">
-                                <div className="relative w-20 h-20">
-                                    <img 
-                                        className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                                        src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png"
-                                        alt={partner.name}
+                {/* Partners Grid – same UI standard as employer job posting cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredPartners.map((partner) => {
+                        const cardClass = 'rounded-[20px] shadow-lg border border-slate-200/80 bg-white hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden';
+                        return (
+                            <div key={partner.id} className={cardClass}>
+                                {/* Image – same as job cards: h-40, rounded-t-[20px] */}
+                                <div className="relative w-full h-40 overflow-hidden rounded-t-[20px] bg-slate-100">
+                                    <img
+                                        src={partner.imageUrl || getRandomDefaultImage()}
+                                        alt={`${partner.name} cover`}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = getRandomDefaultImage();
+                                        }}
                                     />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Partner Info Section - Repositioned for better layout */}
-                        <div className="px-4 pt-14 pb-2">
-                            {/* Partner Name and Location */}
-                            <div className="mb-2">
-                                <h3 className="text-lg font-bold text-gray-900 truncate">
-                                    {partner.name.length > 24 ? partner.name.substring(0, 24) + '...' : partner.name}
-                                </h3>
-                                {partner.location && (
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <MapPinIcon className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-                                        <span className="text-xs text-gray-600">{partner.location}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Description */}
-                            <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-3 mb-3">
-                                {partner.description && partner.description.length > 200 
-                                    ? partner.description.substring(0, 200) + '...' 
-                                    : partner.description}
-                            </p>
-            
-            {/* Content */}
-            <div className="flex flex-col gap-4">
-                                {/* Separator Line */}
-                                <div className="border-t border-gray-200 my-2"></div>
-
-                                {/* Hotel/Villa Amenities */}
-                                {partner.specialties && partner.specialties.length > 0 && (
-                                    <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                                                <BuildingIcon className="w-4 h-4 text-orange-600" />
-                                                {language === 'id' 
-                                                    ? (viewType === 'hotel' ? 'Fasilitas Hotel' : 'Fasilitas Villa')
-                                                    : (viewType === 'hotel' ? 'Hotel Amenities' : 'Villa Amenities')}
-                                            </h4>
-                                            <span className="text-xs font-medium text-gray-600">
-                                                {language === 'id' ? 'Jarak' : 'Distance'}: {partner.distance ? `${partner.distance.toFixed(1)} km` : 'N/A'}
+                                    <div className="absolute top-3 right-3 flex gap-2 flex-wrap justify-end">
+                                        {partner.verified && (
+                                            <span className="px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">
+                                                {t?.partners?.verifiedPartner || 'VERIFIED'}
                                             </span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {partner.specialties.slice(0, 5).map((amenity, index) => (
+                                        )}
+                                        {partner.rating != null && partner.rating > 0 && (
+                                            <span className="px-2.5 py-1 bg-black/70 backdrop-blur-sm text-white text-xs font-bold rounded-lg flex items-center gap-1">
+                                                <StarIcon className="w-3.5 h-3.5 text-yellow-400" />
+                                                {partner.rating.toFixed(1)}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setPartnerToShare(partner);
+                                            setShowSharePopup(true);
+                                        }}
+                                        className="absolute bottom-3 right-3 w-9 h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all z-10"
+                                        title="Share this partner"
+                                        aria-label="Share this partner"
+                                    >
+                                        <Share2 className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+                                    </button>
+                                </div>
+
+                                {/* Content – same structure as job cards: p-5, title, location, description, CTA */}
+                                <div className="p-5">
+                                    <h3 className="text-lg font-bold text-slate-900 mb-1 truncate">{partner.name}</h3>
+                                    {partner.location && (
+                                        <p className="text-sm text-slate-600 mb-2 flex items-center gap-1">
+                                            <MapPinIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                            <span className="truncate">{partner.location}</span>
+                                        </p>
+                                    )}
+                                    <p className="text-sm text-slate-600 mb-3 line-clamp-2 leading-relaxed">
+                                        {partner.description && partner.description.length > 200
+                                            ? partner.description.substring(0, 200) + '...'
+                                            : partner.description}
+                                    </p>
+                                    {partner.specialties && partner.specialties.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 mb-3">
+                                            {partner.specialties.slice(0, 4).map((amenity, index) => (
                                                 <span
                                                     key={index}
-                                                    className="px-2 py-1 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 text-orange-800 text-xs font-medium rounded-full"
+                                                    className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg"
                                                 >
                                                     {amenity}
                                                 </span>
                                             ))}
                                         </div>
-                                    </div>
-                                )}
-
-                                {/* Book Reservation Button */}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        const message = language === 'id'
-                                            ? `Halo, saya ingin menanyakan ketersediaan di ${partner.name}. Terima kasih`
-                                            : `Hi, I would like to enquire regarding availability at ${partner.name}. Thank you`;
-                                        const phoneNumber = partner.phone?.replace(/[^0-9]/g, '') || '';
-                                        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-                                    }}
-                                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold py-3 px-4 rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-300"
-                                >
-                                    <CalendarIcon className="w-5 h-5" />
-                                    <span>{language === 'id' ? 'Pesan Reservasi' : 'Book Reservation'}</span>
-                                </button>
-
-                                {/* Manage Settings Button - Only shown to owner */}
-                                {loggedInPartnerId === partner.id && loggedInPartnerType && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onNavigate?.(loggedInPartnerType === 'hotel' ? 'partner-settings-hotel' : 'partner-settings-villa');
-                                        }}
-                                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 mt-2"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <span>{language === 'id' ? 'Kelola Pengaturan' : 'Manage Settings'}</span>
-                                    </button>
-                                )}
-
-                                {/* Action Links - Share, Massage Directory, Review */}
-                                <div className="flex flex-wrap justify-between items-center gap-2 mt-2 px-1">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedPartner(partner);
-                                            setShowReferModal(true);
-                                        }}
-                                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                                    >
-                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                                        </svg>
-                                        <span>{language === 'id' ? 'Bagikan' : 'Share'}</span>
-                                    </button>
-                                    {onNavigate && (
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                onNavigate('massageTypes');
-                                            }}
-                                            className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                                        >
-                                            <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
-                                            </svg>
-                                            <span>{language === 'id' ? 'Direktori Pijat' : 'Massage Directory'}</span>
-                                        </button>
+                                    )}
+                                    {partner.addedDate && (
+                                        <p className="text-xs text-slate-500 mb-3">
+                                            {t?.partners?.added || 'Member since'} {new Date(partner.addedDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                        </p>
                                     )}
                                     <button
                                         onClick={(e) => {
-                                            e.preventDefault();
                                             e.stopPropagation();
-                                            setSelectedPartner(partner);
-                                            setShowReviewModal(true);
+                                            const message = language === 'id'
+                                                ? `Halo, saya ingin menanyakan ketersediaan di ${partner.name}. Terima kasih`
+                                                : `Hi, I would like to enquire regarding availability at ${partner.name}. Thank you`;
+                                            const phoneNumber = partner.phone?.replace(/[^0-9]/g, '') || '';
+                                            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
                                         }}
-                                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                                        className="w-full py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
                                     >
-                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
-                                        <span>{language === 'id' ? 'Ulasan' : 'Review'}</span>
+                                        <CalendarIcon className="w-5 h-5" />
+                                        {language === 'id' ? 'Pesan Reservasi' : 'Book Reservation'}
                                     </button>
+                                    {loggedInPartnerId === partner.id && loggedInPartnerType && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onNavigate?.(loggedInPartnerType === 'hotel' ? 'partner-settings-hotel' : 'partner-settings-villa');
+                                            }}
+                                            className="w-full mt-2 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            {language === 'id' ? 'Kelola Pengaturan' : 'Manage Settings'}
+                                        </button>
+                                    )}
+                                    <div className="flex flex-wrap justify-center gap-3 mt-3 pt-3 border-t border-slate-100">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setSelectedPartner(partner); setShowReferModal(true); }}
+                                            className="text-xs text-slate-500 hover:text-slate-700 font-medium"
+                                        >
+                                            {language === 'id' ? 'Bagikan' : 'Share'}
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setSelectedPartner(partner); setShowReviewModal(true); }}
+                                            className="text-xs text-slate-500 hover:text-slate-700 font-medium"
+                                        >
+                                            {language === 'id' ? 'Ulasan' : 'Review'}
+                                        </button>
+                                        {onNavigate && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); onNavigate('massageTypes'); }}
+                                                className="text-xs text-slate-500 hover:text-slate-700 font-medium"
+                                            >
+                                                {language === 'id' ? 'Direktori Pijat' : 'Massage Directory'}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 {/* Empty State */}

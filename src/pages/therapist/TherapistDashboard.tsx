@@ -514,7 +514,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 city: derivedCity,
                 locationId: derivedCity,
                 location: derivedCity,
-                isLive: true // GPS location enables marketplace visibility
+                isLive: true, // GPS location enables marketplace visibility
+                lastLocationUpdateAt: new Date().toISOString() // For admin safety / location monitoring
             });
             
             logger.debug('✅ GPS location saved immediately to database');

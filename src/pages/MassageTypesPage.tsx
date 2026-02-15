@@ -263,138 +263,117 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
             </React19SafeWrapper>
 
             <main className="p-4 pt-20 pb-20 max-w-full">
-                <div className="flex flex-col gap-4 max-w-full">
-                    {massageTypes.map((massage, index) => (
-                        <div 
-                            key={massage.name}
-                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 max-w-full"
-                        >
-                            <div className="relative">
-                                <img 
-                                    src={massage.image} 
-                                    alt={massage.name}
-                                    className="w-full h-40 object-cover"
-                                    loading="lazy"
-                                    onError={(e) => {
-                                        // If image fails to load, use a placeholder with the massage type name
-                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x200/f97316/FFFFFF?text=' + encodeURIComponent(massage.name);
-                                    }}
-                                />
-                                {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                                
-                                {/* Massage Type Name on Image */}
-                                <h3 className="absolute bottom-3 left-3 text-white font-bold text-lg drop-shadow-lg">
-                                    {massage.name}
-                                </h3>
-                                
-                                {/* Popularity Badge - Black Frosted Glass */}
-                                <button
-                                    onClick={() => handlePopularityClick(index)}
-                                    className="absolute top-2 left-2 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1 hover:bg-black/50 transition-colors cursor-pointer"
-                                    aria-label={`${massage.popularity} stars`}
-                                >
-                                    <StarIcon className="w-3 h-3 text-yellow-400" />
-                                    <span className="font-semibold text-white text-xs">{massage.popularity}</span>
-                                </button>
-                            </div>
-                            
-                            {/* Description and Links Below Image */}
-                            <div className="p-4">
-                                {/* Short Description */}
-                                <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                                    {massage.description}
-                                </p>
-
-                                {/* Quick Info Pills */}
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
-                                        {massage.duration}
-                                    </span>
-                                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                                        {massage.intensity} {t?.home?.pressure || 'Pressure'}
-                                    </span>
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {massageTypes.map((massage, index) => (
+                            <div
+                                key={massage.name}
+                                className="rounded-[20px] shadow-lg border border-slate-200/80 bg-white hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
+                            >
+                                {/* Image block – same pattern as job cards (visual anchor) */}
+                                <div className="relative h-44 bg-slate-100">
+                                    <img
+                                        src={massage.image}
+                                        alt={massage.name}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x200/f97316/FFFFFF?text=' + encodeURIComponent(massage.name);
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+                                    <h3 className="absolute bottom-3 left-4 right-4 text-white font-bold text-lg drop-shadow-md">
+                                        {massage.name}
+                                    </h3>
+                                    <button
+                                        onClick={() => handlePopularityClick(index)}
+                                        className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-white/20 flex items-center gap-1 hover:bg-black/60 transition-colors cursor-pointer"
+                                        aria-label={`${massage.popularity} stars`}
+                                    >
+                                        <StarIcon className="w-3.5 h-3.5 text-amber-300" />
+                                        <span className="font-semibold text-white text-xs">{massage.popularity}</span>
+                                    </button>
                                 </div>
 
-                                {/* Read More Button */}
-                                {massage.fullDescription && (
-                                    <button 
-                                        onClick={() => toggleExpanded(index)}
-                                        className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors mb-3 flex items-center gap-1"
-                                    >
-                                        {massage.expanded ? `− ${t?.home?.readLess || 'Read Less'}` : `+ ${t?.home?.readMore || 'Read More'}`}
-                                    </button>
-                                )}
+                                {/* Content block – aligned with job cards (p-5, typography, badges, CTA) */}
+                                <div className="p-5">
+                                    <p className="text-sm text-slate-600 leading-relaxed mb-3 line-clamp-2">
+                                        {massage.description}
+                                    </p>
 
-                                {/* Expanded Content for SEO */}
-                                {massage.expanded && (
-                                    <div className="mt-3 pt-3 border-t border-gray-200 space-y-4">
-                                        {/* Full Description */}
-                                        <div>
-                                            <h4 className="text-sm font-bold text-gray-900 mb-2">{t?.home?.aboutMassage || 'About'} {massage.name}</h4>
-                                            <p className="text-xs text-gray-600 leading-relaxed">
-                                                {massage.fullDescription}
-                                            </p>
-                                        </div>
-
-                                        {/* Benefits */}
-                                        {massage.benefits && massage.benefits.length > 0 && (
-                                            <div>
-                                                <h4 className="text-sm font-bold text-gray-900 mb-2">{t?.home?.keyBenefits || 'Key Benefits'}</h4>
-                                                <ul className="space-y-1">
-                                                    {massage.benefits.map((benefit, idx) => (
-                                                        <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
-                                                            <span className="text-orange-500 mt-0.5">✓</span>
-                                                            <span>{benefit}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        {/* Best For */}
-                                        {massage.bestFor && massage.bestFor.length > 0 && (
-                                            <div>
-                                                <h4 className="text-sm font-bold text-gray-900 mb-2">{t?.home?.bestFor || 'Best For'}</h4>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {massage.bestFor.map((item, idx) => (
-                                                        <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                                                            {item}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Action Buttons - Reorganized */}
-                                <div className="flex gap-3 text-xs mt-3 pt-3 border-t border-gray-100">
-                                    {/* Find Therapists - Left */}
-                                    <button 
-                                        onClick={() => onFindTherapists?.(massage.name)}
-                                        className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
-                                    >
-                                        {t?.home?.findTherapists || 'Find Therapists'} →
-                                    </button>
-                                    
-                                    {/* Spacer */}
-                                    <div className="flex-1"></div>
-                                    
-                                    {/* Find Massage Places - Right with circular icon */}
-                                    <button 
-                                        onClick={() => onFindPlaces?.(massage.name)}
-                                        className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
-                                    >
-                                        <span className="flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full">
-                                            <BuildingIcon className="w-4 h-4" />
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-[11px] font-semibold rounded">
+                                            {massage.duration}
                                         </span>
-                                        {t?.home?.findMassagePlaces || 'Find Massage Places'} →
-                                    </button>
+                                        <span className="px-2.5 py-0.5 bg-primary-50 text-primary-700 text-[11px] font-semibold rounded">
+                                            {massage.intensity} {t?.home?.pressure || 'Pressure'}
+                                        </span>
+                                    </div>
+
+                                    {massage.fullDescription && (
+                                        <button
+                                            onClick={() => toggleExpanded(index)}
+                                            className="text-primary-600 font-semibold text-sm hover:text-primary-700 transition-colors mb-3 flex items-center gap-1"
+                                        >
+                                            {massage.expanded ? `− ${t?.home?.readLess || 'Read Less'}` : `+ ${t?.home?.readMore || 'Read More'}`}
+                                        </button>
+                                    )}
+
+                                    {massage.expanded && (
+                                        <div className="mt-3 pt-3 border-t border-slate-200 space-y-3">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-slate-900 mb-1.5">{t?.home?.aboutMassage || 'About'} {massage.name}</h4>
+                                                <p className="text-xs text-slate-600 leading-relaxed">
+                                                    {massage.fullDescription}
+                                                </p>
+                                            </div>
+                                            {massage.benefits?.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-sm font-bold text-slate-900 mb-1.5">{t?.home?.keyBenefits || 'Key Benefits'}</h4>
+                                                    <ul className="space-y-1">
+                                                        {massage.benefits.map((benefit, idx) => (
+                                                            <li key={idx} className="text-xs text-slate-600 flex items-start gap-2">
+                                                                <span className="text-primary-500 mt-0.5">✓</span>
+                                                                <span>{benefit}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            {massage.bestFor?.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-sm font-bold text-slate-900 mb-1.5">{t?.home?.bestFor || 'Best For'}</h4>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {massage.bestFor.map((item, idx) => (
+                                                            <span key={idx} className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded">
+                                                                {item}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
+                                        <button
+                                            onClick={() => onFindTherapists?.(massage.name)}
+                                            className="w-full py-2.5 px-4 font-semibold text-sm rounded-xl transition-all duration-200 bg-primary-500 hover:bg-primary-600 text-white"
+                                        >
+                                            {t?.home?.findTherapists || 'Find Therapists'}
+                                        </button>
+                                        <button
+                                            onClick={() => onFindPlaces?.(massage.name)}
+                                            className="w-full py-2 px-4 border border-slate-200/80 text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <BuildingIcon className="w-4 h-4 text-slate-500" />
+                                            {t?.home?.findMassagePlaces || 'Find Massage Places'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {/* Directory footer: Brand + Terms & Privacy */}

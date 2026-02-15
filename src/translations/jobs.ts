@@ -94,6 +94,13 @@ export const jobsTranslations = {
       shareJob: 'Check out this',
       positionAt: 'position at',
       linkCopied: 'Link copied! You can now paste it in',
+
+      // Employer: Contact all professionals (1-month access)
+      employerAccessTitle: 'Want to hire? Contact every professional on this page',
+      employerAccessDescription: 'One-time fee for 1 month. You get full access to every job seeker listed here: detailed professional profiles, experience and skills, direct WhatsApp number for each therapist, and in most cases their CV or resume. Reach out to as many as you need to find the right fit.',
+      employerAccessFeeLabel: 'One-time fee',
+      employerAccessDuration: '1 month',
+      employerAccessCta: 'Get access',
     }
   },
   id: {
@@ -190,6 +197,13 @@ export const jobsTranslations = {
       shareJob: 'Lihat posisi',
       positionAt: 'ini di',
       linkCopied: 'Tautan disalin! Anda sekarang dapat menempelkannya di',
+
+      // Employer: Contact all professionals (1-month access)
+      employerAccessTitle: 'Ingin merekrut? Hubungi setiap profesional di halaman ini',
+      employerAccessDescription: 'Biaya satu kali untuk 1 bulan. Anda mendapat akses penuh ke setiap pencari kerja di sini: profil profesional lengkap, pengalaman dan keahlian, nomor WhatsApp langsung setiap terapis, dan dalam banyak kasus CV/resume mereka. Hubungi sebanyak yang Anda butuhkan untuk menemukan kandidat yang tepat.',
+      employerAccessFeeLabel: 'Biaya satu kali',
+      employerAccessDuration: '1 bulan',
+      employerAccessCta: 'Dapatkan akses',
     }
   }
 };

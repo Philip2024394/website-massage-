@@ -177,7 +177,7 @@ const HomePage: React.FC<HomePageProps> = ({
     language
 }) => {
     // Get city from CityContext
-    const { city: contextCity, countryCode, country, hasConfirmedCity, confirmedLocation } = useCityContext();
+    const { city: contextCity, countryCode, country, hasConfirmedCity, confirmedLocation, setCity: setContextCity } = useCityContext();
     const [initializingCityGuard, setInitializingCityGuard] = useState(true);
     
     // 🚨 CRITICAL ROUTE GUARD - HomePage must ONLY render on home page
@@ -539,6 +539,21 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         setActiveTab('home');
     }, []); // Run once when component mounts
+
+    // Apply advanced search params when arriving from Advanced Search (tab + city); clear after so next visit is normal
+    useEffect(() => {
+        try {
+            const raw = sessionStorage.getItem('advanced_search_params');
+            if (!raw) return;
+            const params = JSON.parse(raw) as { providerType?: string; city?: string; area?: string | null; [k: string]: unknown };
+            const ptype = params.providerType;
+            if (ptype === 'massage_place') setActiveTab('places');
+            else if (ptype === 'skin_care') setActiveTab('facials');
+            // else therapist or missing → keep default 'home' tab
+            if (params.city && params.city !== 'all' && setContextCity) setContextCity(params.city);
+            sessionStorage.removeItem('advanced_search_params');
+        } catch (_) { /* ignore */ }
+    }, [setContextCity]);
 
     // 🚀 PERFORMANCE: Bulk prefetch therapist menu and share link data
     // This eliminates N+1 queries by fetching all data in 2 queries instead of 2*N queries
@@ -1565,8 +1580,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
                             <p className="text-gray-600">
                                 {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.therapistsSubtitleAll || 'Find the best therapists across Indonesia')
-                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', contextCity) || `Find the best therapists in ${contextCity}`)
+                                    ? (t?.home?.therapistsSubtitleAll || 'We use location monitoring for both Users and therapists. Providing safety for all users while eliminating any concerns - you can book with confidence.')
+                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', contextCity) || 'We use location monitoring for both Users and therapists. Providing safety for all users while eliminating any concerns - you can book with confidence.')
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">

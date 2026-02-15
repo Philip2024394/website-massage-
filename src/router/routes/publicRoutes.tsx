@@ -101,7 +101,7 @@ export const publicRoutes = {
   },
   helpFaq: {
     path: '/help-faq',
-    component: HelpFaqPage,
+    component: FAQPage,
     name: 'helpFaq'
   },
   topTherapists: {

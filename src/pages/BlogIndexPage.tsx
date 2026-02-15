@@ -3,6 +3,26 @@ import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
 
+/** Map blog slug (from post.slug) to router page id for navigation */
+const BLOG_SLUG_TO_PAGE: Record<string, string> = {
+  'bali-spa-industry-trends-2025': 'blog-bali-spa-trends-2025',
+  'top-10-massage-techniques': 'blog-top-10-massage-techniques',
+  'massage-career-indonesia': 'blog-massage-career-indonesia',
+  'benefits-regular-massage-therapy': 'blog-benefits-regular-massage',
+  'hiring-massage-therapists-guide': 'blog-hiring-massage-therapists',
+  'traditional-balinese-massage': 'blog-traditional-balinese-massage',
+  'spa-tourism-indonesia': 'blog-spa-tourism-indonesia',
+  'aromatherapy-massage-oils': 'blog-aromatherapy-massage-oils',
+  'pricing-guide-massage-therapists': 'blog-pricing-guide-massage',
+  'deep-tissue-vs-swedish-massage': 'blog-deep-tissue-vs-swedish',
+  'online-presence-massage-therapist': 'blog-online-presence-therapist',
+  'wellness-tourism-ubud': 'blog-wellness-tourism-ubud',
+  'wellness-southeast-asia': 'blog-wellness-southeast-asia',
+  'massage-spa-standards-asia-europe': 'blog-massage-spa-standards-asia-europe',
+  'skin-clinic-trends-international': 'blog-skin-clinic-trends-international',
+  'building-wellness-business-international': 'blog-building-wellness-business-international',
+};
+
 interface BlogPost {
     id: string;
     title: string;
@@ -58,11 +78,12 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const categories = [
-        { id: 'all', name: t?.blog?.categoryAll || 'All Articles', count: 24 },
-        { id: 'industry', name: t?.blog?.categoryIndustry || 'Industry Trends', count: 8 },
-        { id: 'techniques', name: t?.blog?.categoryTechniques || 'Massage Techniques', count: 6 },
-        { id: 'career', name: t?.blog?.categoryCareer || 'Career Advice', count: 5 },
-        { id: 'wellness', name: t?.blog?.categoryWellness || 'Wellness Tips', count: 5 },
+        { id: 'all', name: t?.blog?.categoryAll || 'All Articles', count: 16 },
+        { id: 'international', name: t?.blog?.categoryInternational || 'International', count: 4 },
+        { id: 'industry', name: t?.blog?.categoryIndustry || 'Industry Trends', count: 4 },
+        { id: 'techniques', name: t?.blog?.categoryTechniques || 'Massage Techniques', count: 4 },
+        { id: 'career', name: t?.blog?.categoryCareer || 'Career Advice', count: 3 },
+        { id: 'wellness', name: t?.blog?.categoryWellness || 'Wellness Tips', count: 1 },
     ];
 
     const blogPosts: BlogPost[] = [
@@ -210,6 +231,55 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
             featured: false,
             slug: 'wellness-tourism-ubud'
         },
+        // International posts – multi-country information for therapists, massage places & skin clinics (SEO)
+        {
+            id: '13',
+            title: 'Wellness & Spa Trends Across Southeast Asia: Indonesia, Thailand, Malaysia, Singapore, Vietnam',
+            excerpt: 'Compare wellness tourism, massage demand, and spa standards across Southeast Asian markets. Practical insights for therapists and spa owners expanding or operating in multiple countries.',
+            category: 'international',
+            readTime: '10 min read',
+            date: 'Nov 5, 2025',
+            author: 'IndaStreet Research',
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20therapist%20indonisea.png?updatedAt=1761563061042',
+            featured: true,
+            slug: 'wellness-southeast-asia'
+        },
+        {
+            id: '14',
+            title: 'Massage & Spa Standards: What Therapists and Places Need to Know in Asia and Europe',
+            excerpt: 'Regulations, certifications, and best practices for massage and spa services in the UK, Germany, Australia, Philippines, and Southeast Asia. Stay compliant and build trust across markets.',
+            category: 'international',
+            readTime: '9 min read',
+            date: 'Oct 28, 2025',
+            author: 'IndaStreet Research',
+            image: 'https://ik.imagekit.io/7grri5v7d/bali%20messages.png?updatedAt=1761560397225',
+            featured: true,
+            slug: 'massage-spa-standards-asia-europe'
+        },
+        {
+            id: '15',
+            title: 'Skin Clinic & Facial Trends: Insights from Asia, UK, Australia and Germany',
+            excerpt: 'How facial and skin clinic demand differs by region. Trends in treatments, pricing, and digital booking for skin clinics and facial providers in multiple countries.',
+            category: 'international',
+            readTime: '8 min read',
+            date: 'Oct 22, 2025',
+            author: 'IndaStreet Research',
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20jogja%20indonisea%20spa.png?updatedAt=1761561397701',
+            featured: false,
+            slug: 'skin-clinic-trends-international'
+        },
+        {
+            id: '16',
+            title: 'Building a Massage or Spa Business: Regulations and Opportunities in Multiple Markets',
+            excerpt: 'A practical guide to starting or scaling a massage or spa business across different countries. Licensing, hiring, and marketing for therapists, massage places, and skin clinics.',
+            category: 'international',
+            readTime: '11 min read',
+            date: 'Oct 15, 2025',
+            author: 'IndaStreet Research',
+            image: 'https://ik.imagekit.io/7grri5v7d/massage%20buisness%20indonisea.png?updatedAt=1761560581906',
+            featured: false,
+            slug: 'building-wellness-business-international'
+        },
     ];
 
     const filteredPosts = selectedCategory === 'all' 
@@ -218,23 +288,21 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
 
     const featuredPosts = blogPosts.filter(post => post.featured);
 
+    const getBlogPageId = (slug: string) => BLOG_SLUG_TO_PAGE[slug] || `blog/${slug}`;
+
     return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-purple-50 via-white to-blue-50">
-            {/* Universal Header - same as home page */}
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             <UniversalHeader
                 language={language}
                 onLanguageChange={onLanguageChange}
                 onMenuClick={() => setIsMenuOpen(true)}
                 onHomeClick={() => onNavigate?.('home')}
-                showHomeButton={true}
+                showHomeButton
             />
-            
-            {/* Global App Drawer */}
             <AppDrawer
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}
@@ -248,29 +316,44 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 places={places}
             />
 
-            {/* Hero Section - pt for fixed header */}
-            <div 
-                className="relative h-96 bg-cover bg-center pt-16"
-                style={{ backgroundImage: "url('https://ik.imagekit.io/7grri5v7d/massage%20therapist%20indonisea.png?updatedAt=1761563061042')" }}
-            >
-            </div>
+            {/* Hero – rounded corners, padding below header */}
+            <section className="px-4 pt-6 sm:px-6 sm:pt-8">
+                <div className="relative w-full aspect-[21/9] min-h-[200px] sm:min-h-[260px] bg-gray-100 rounded-2xl sm:rounded-3xl overflow-hidden">
+                    <img
+                        src="https://ik.imagekit.io/7grri5v7d/23434.png"
+                        alt="Blog – Wellness, massage and skin clinic insights"
+                        className="absolute inset-0 w-full h-full object-cover rounded-2xl sm:rounded-3xl"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold drop-shadow-sm">
+                            {t?.blog?.title || 'Blog'}
+                        </h1>
+                        <p className="mt-1 text-sm sm:text-base text-white/90 max-w-xl">
+                            {t?.blog?.subtitle ?? (language === 'id'
+                                ? 'Artikel untuk terapis, tempat pijat, dan klinik kulit — teknik, tren, dan karier'
+                                : 'Insights for therapists, massage places and skin clinics — techniques, trends and career')}
+                        </p>
+                    </div>
+                </div>
+            </section>
 
-            <div className="max-w-6xl mx-auto px-4 py-16">
-                {/* Category Filter */}
-                <div className="mb-12">
-                    <div className="flex flex-wrap gap-3 justify-center">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+                {/* Category filter – pill style aligned with home */}
+                <div className="mb-10 sm:mb-12">
+                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
                         {categories.map((cat) => (
                             <button
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
-                                className={`flex items-center gap-2 py-2 px-4 rounded-lg transition-all duration-200 text-sm font-semibold whitespace-nowrap ${
+                                className={`flex items-center gap-2 py-2.5 px-4 rounded-xl transition-all duration-200 text-sm font-semibold whitespace-nowrap ${
                                     selectedCategory === cat.id
-                                        ? 'bg-orange-500 text-white shadow-lg'
+                                        ? 'bg-orange-500 text-white shadow-md'
                                         : 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200'
                                 }`}
                             >
                                 <span>{cat.name}</span>
-                                <span className={`${selectedCategory === cat.id ? 'bg-white text-orange-500' : 'bg-orange-100 text-orange-600'} text-xs font-bold rounded-full h-5 w-auto min-w-[20px] px-1.5 flex items-center justify-center`}>
+                                <span className={`${selectedCategory === cat.id ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-600'} text-xs font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center`}>
                                     {cat.count}
                                 </span>
                             </button>
@@ -278,30 +361,32 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                     </div>
                 </div>
 
-                {/* Featured Posts */}
+                {/* Featured – cards with images, same feel as home cards */}
                 {selectedCategory === 'all' && (
-                    <div className="mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-8">{t?.blog?.featuredArticles || 'Featured Articles'}</h2>
-                        <div className="grid md:grid-cols-3 gap-8">
+                    <section className="mb-14 sm:mb-16">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
+                            {t?.blog?.featuredArticles || 'Featured Articles'}
+                        </h2>
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                             {featuredPosts.map((post) => (
-                                <div key={post.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                                    <div className="bg-gradient-to-br from-purple-500 to-blue-500 h-48 flex items-center justify-center text-8xl overflow-hidden">
+                                <article key={post.id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
+                                    <div className="aspect-[16/10] bg-gray-100 overflow-hidden">
                                         {post.image.startsWith('http') ? (
                                             <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
                                         ) : (
-                                            post.image
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400">{post.image}</div>
                                         )}
                                     </div>
-                                    <div className="p-6">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase">
+                                    <div className="p-5 sm:p-6">
+                                        <div className="flex flex-wrap gap-2 mb-3">
+                                            <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold uppercase">
                                                 {categories.find(c => c.id === post.category)?.name}
                                             </span>
-                                            <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">
+                                            <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold">
                                                 {t?.blog?.featured || 'Featured'}
                                             </span>
                                         </div>
-                                        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">
                                             {post.title}
                                         </h3>
                                         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
@@ -311,41 +396,40 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                                             <span>{post.date}</span>
                                             <span>{post.readTime}</span>
                                         </div>
-                                        <button 
-                                            onClick={() => onNavigate?.(`blog/${post.slug}`)}
-                                            className="w-full py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors"
+                                        <button
+                                            type="button"
+                                            onClick={() => onNavigate?.(getBlogPageId(post.slug))}
+                                            className="w-full py-2.5 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors"
                                         >
                                             {t?.blog?.readArticle || 'Read Article'}
                                         </button>
                                     </div>
-                                </div>
+                                </article>
                             ))}
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                {/* All Posts Grid */}
-                <div>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                {/* All articles grid */}
+                <section>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
                         {selectedCategory === 'all' ? (t?.blog?.allArticles || 'All Articles') : categories.find(c => c.id === selectedCategory)?.name}
                     </h2>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                         {filteredPosts.map((post) => (
-                            <div key={post.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                                <div className="bg-gradient-to-br from-blue-400 to-purple-400 h-32 flex items-center justify-center text-6xl overflow-hidden">
+                            <article key={post.id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
+                                <div className="aspect-[16/10] sm:aspect-video bg-gray-100 overflow-hidden">
                                     {post.image.startsWith('http') ? (
                                         <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
                                     ) : (
-                                        post.image
+                                        <div className="w-full h-full flex items-center justify-center text-gray-400">{post.image}</div>
                                     )}
                                 </div>
-                                <div className="p-5">
-                                    <div className="mb-2">
-                                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                                            {categories.find(c => c.id === selectedCategory)?.name}
-                                        </span>
-                                    </div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                                <div className="p-4 sm:p-5">
+                                    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold uppercase">
+                                        {categories.find(c => c.id === post.category)?.name}
+                                    </span>
+                                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mt-2 mb-2 line-clamp-2">
                                         {post.title}
                                     </h3>
                                     <p className="text-gray-600 text-sm mb-3 line-clamp-2">
@@ -355,71 +439,80 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                                         <span>{post.date}</span>
                                         <span>{post.readTime}</span>
                                     </div>
-                                    <button 
-                                        onClick={() => onNavigate?.(`blog/${post.slug}`)}
-                                        className="w-full py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                                    <button
+                                        type="button"
+                                        onClick={() => onNavigate?.(getBlogPageId(post.slug))}
+                                        className="w-full py-2 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors text-sm"
                                     >
                                         {t?.blog?.readMore || 'Read More'}
                                     </button>
                                 </div>
-                            </div>
+                            </article>
                         ))}
                     </div>
-                </div>
+                </section>
 
-                {/* Newsletter Signup */}
-                <div className="mt-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl overflow-hidden">
-                    <div className="grid md:grid-cols-2 gap-0">
-                        {/* Left side - Image */}
-                        <div className="h-64 md:h-auto">
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/udun%20massage%20indoniseas.png?updatedAt=1761562429353" 
-                                alt="Wellness Industry Insights" 
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        {/* Right side - Content */}
-                        <div className="p-8 md:p-12 text-white flex flex-col justify-center">
-                            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">{t?.blog?.stayUpdated || 'Stay Updated with Wellness Industry Insights'}</h2>
-                            <p className="text-base md:text-xl text-orange-100 mb-6 md:mb-8">
-                                {t?.blog?.newsletterDesc || 'Get weekly articles, industry trends, and professional tips delivered to your inbox'}
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <input
-                                    type="email"
-                                    placeholder={t?.blog?.enterEmail || 'Enter your email'}
-                                    className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+                {/* Newsletter – same block style as home CTA */}
+                <section className="mt-14 sm:mt-16">
+                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                        <div className="grid md:grid-cols-2 gap-0">
+                            <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[220px] bg-gray-100">
+                                <img
+                                    src="https://ik.imagekit.io/7grri5v7d/udun%20massage%20indoniseas.png?updatedAt=1761562429353"
+                                    alt="Wellness Industry Insights"
+                                    className="absolute inset-0 w-full h-full object-cover"
                                 />
-                                <button className="px-8 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors whitespace-nowrap">
-                                    {t?.blog?.subscribe || 'Subscribe'}
-                                </button>
+                            </div>
+                            <div className="p-6 sm:p-8 md:p-10 flex flex-col justify-center bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+                                <h2 className="text-xl sm:text-2xl font-bold mb-2">
+                                    {t?.blog?.stayUpdated || 'Stay Updated'}
+                                </h2>
+                                <p className="text-orange-100 text-sm sm:text-base mb-5">
+                                    {t?.blog?.newsletterDesc ?? (language === 'id'
+                                        ? 'Artikel mingguan untuk terapis, tempat pijat, dan klinik kulit — tren dan tips karier'
+                                        : 'Weekly articles for therapists, massage places and skin clinics — trends and career tips')}
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <input
+                                        type="email"
+                                        placeholder={t?.blog?.enterEmail || 'Enter your email'}
+                                        className="flex-1 px-4 py-3 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+                                    />
+                                    <button type="button" className="px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-colors whitespace-nowrap">
+                                        {t?.blog?.subscribe || 'Subscribe'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                {/* Popular Topics */}
-                <div className="mt-16">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{t?.blog?.popularTopics || 'Popular Topics'}</h2>
-                    <div className="grid md:grid-cols-4 gap-4 pb-20">
+                {/* Popular topics */}
+                <section className="mt-14 sm:mt-16 pb-16 sm:pb-20">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">
+                        {t?.blog?.popularTopics || 'Popular Topics'}
+                    </h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                         {([
-                          { key: 'balineseMassage', fallback: 'Balinese Massage' },
-                          { key: 'hotelSpaManagement', fallback: 'Hotel Spa Management' },
-                          { key: 'therapistCertification', fallback: 'Therapist Certification' },
-                          { key: 'wellnessTourism', fallback: 'Wellness Tourism' },
-                          { key: 'deepTissueTechniques', fallback: 'Deep Tissue Techniques' },
-                          { key: 'careerGrowth', fallback: 'Career Growth' },
-                          { key: 'clientRetention', fallback: 'Client Retention' },
-                          { key: 'aromatherapy', fallback: 'Aromatherapy' },
+                            { key: 'balineseMassage', fallback: 'Balinese Massage' },
+                            { key: 'hotelSpaManagement', fallback: 'Hotel Spa Management' },
+                            { key: 'skinClinicTrends', fallback: 'Skin Clinic Trends' },
+                            { key: 'therapistCertification', fallback: 'Therapist Certification' },
+                            { key: 'wellnessTourism', fallback: 'Wellness Tourism' },
+                            { key: 'deepTissueTechniques', fallback: 'Deep Tissue Techniques' },
+                            { key: 'careerGrowth', fallback: 'Career Growth' },
+                            { key: 'facialTreatments', fallback: 'Facial Treatments' },
                         ] as const).map((topic, i) => (
-                            <div key={i} className="bg-white rounded-lg p-4 shadow hover:shadow-lg transition-shadow text-center cursor-pointer">
-                                <span className="text-gray-700 font-semibold">{t?.blog?.topics?.[topic.key] || topic.fallback}</span>
+                            <div key={i} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-center border border-gray-100">
+                                <span className="text-gray-700 font-semibold text-sm sm:text-base">{t?.blog?.topics?.[topic.key] || topic.fallback}</span>
                             </div>
                         ))}
                     </div>
-                    </div>
-                </div>
+                </section>
             </div>
+        </div>
     );
-};export default BlogIndexPage;
+};
+
+export default BlogIndexPage;
 

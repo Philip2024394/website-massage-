@@ -12,6 +12,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'home': '/home',
         'facialProviders': '/facials',
         'massageTypes': '/massage-types',
+        'massage-types': '/massage-types', // drawer link uses kebab-case; must map so URL updates and stays open
         'facialTypes': '/facial-types',
         'faq': '/faq',
         // Drawer public pages (must not fall back to "/")
@@ -24,10 +25,29 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'contact': '/contact',
         'hotels-and-villas': '/hotels-and-villas',
         'blog': '/blog',
+        // Blog article pages (so "Read article" keeps URL and does not fall back to landing)
+        'blog-bali-spa-trends-2025': '/blog/bali-spa-trends-2025',
+        'blog-top-10-massage-techniques': '/blog/top-10-massage-techniques',
+        'blog-massage-career-indonesia': '/blog/massage-career-indonesia',
+        'blog-benefits-regular-massage': '/blog/benefits-regular-massage',
+        'blog-hiring-massage-therapists': '/blog/hiring-massage-therapists',
+        'blog-traditional-balinese-massage': '/blog/traditional-balinese-massage',
+        'blog-spa-tourism-indonesia': '/blog/spa-tourism-indonesia',
+        'blog-aromatherapy-massage-oils': '/blog/aromatherapy-massage-oils',
+        'blog-pricing-guide-massage': '/blog/pricing-guide-massage',
+        'blog-deep-tissue-vs-swedish': '/blog/deep-tissue-vs-swedish',
+        'blog-online-presence-therapist': '/blog/online-presence-therapist',
+        'blog-wellness-tourism-ubud': '/blog/wellness-tourism-ubud',
+        'blog-wellness-southeast-asia': '/blog/wellness-southeast-asia',
+        'blog-massage-spa-standards-asia-europe': '/blog/massage-spa-standards-asia-europe',
+        'blog-skin-clinic-trends-international': '/blog/skin-clinic-trends-international',
+        'blog-building-wellness-business-international': '/blog/building-wellness-business-international',
         'massage-bali': '/massage-bali',
         'balinese-massage': '/balinese-massage',
         'deep-tissue-massage': '/deep-tissue-massage',
         'massage-jobs': '/massage-jobs',
+        'apply-for-job': '/massage-jobs/apply',
+        'job-posting-payment': '/massage-jobs/payment',
         'employer-job-posting': '/employer-job-posting',
         'therapist-job-registration': '/therapist-job-registration',
         'verified-pro-badge': '/verified-badge',
@@ -63,6 +83,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapist-notifications': '/dashboard/therapist/notifications',
         'therapist-calendar': '/dashboard/therapist/calendar',
         'therapist-legal': '/dashboard/therapist/legal',
+        'therapist-job-applications': '/dashboard/therapist/job-applications',
         
         // Short aliases for therapist dashboard pages (used by side drawer – must not fall back to '/' (landing))
         'status': '/dashboard/therapist/status',
@@ -108,6 +129,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'signIn': '/signin',  // drawer "Sign In" uses camelCase; must map so URL stays /signin not /
         'login': '/login',
         'createAccount': '/create-account',
+        'create-account-employer': '/create-account-employer',
         'onboarding-package': '/onboarding/package',
         'simpleSignup': '/signup',
         'booking': '/booking',
@@ -294,6 +316,10 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                     setPage('therapist-legal');
                     return;
                 }
+                if (path === '/dashboard/therapist/job-applications') {
+                    setPage('therapist-job-applications');
+                    return;
+                }
                 if (path === '/dashboard/therapist/analytics') {
                     setPage('therapist-analytics');
                     return;
@@ -342,6 +368,10 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 }
                 if (path === '/create-account') {
                     setPage('createAccount');
+                    return;
+                }
+                if (path === '/create-account-employer') {
+                    setPage('create-account-employer');
                     return;
                 }
                 if (path === '/login') {
@@ -426,6 +456,16 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 setPage('massage-jobs');
                 return () => window.removeEventListener('popstate', handlePopState);
             }
+            if (hashPath === 'massage-jobs/apply' || hashPathWithSlash === '/massage-jobs/apply') {
+                console.log('✅ Hash route matched: apply-for-job');
+                setPage('apply-for-job');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            if (hashPath === 'massage-jobs/payment' || hashPathWithSlash === '/massage-jobs/payment') {
+                console.log('✅ Hash route matched: job-posting-payment');
+                setPage('job-posting-payment');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
             
             // View Profile from Job Listings – #/therapist-profile/:id must not fall through to root → landing
             if (hashPathWithSlash.startsWith('/therapist-profile/') || hashPath.startsWith('therapist-profile/')) {
@@ -448,6 +488,12 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             if (hashPathWithSlash === '/therapist' || hashPathWithSlash === '/therapist-dashboard') {
                 console.log('✅ Hash route matched: therapist-dashboard');
                 setPage('therapist-dashboard');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            // Massage Directory from side drawer – keep massage types page when hash is #/massage-types
+            if (hashPath === 'massage-types' || hashPathWithSlash === '/massage-types') {
+                console.log('✅ Hash route matched: massage-types');
+                setPage('massage-types');
                 return () => window.removeEventListener('popstate', handlePopState);
             }
         }
@@ -548,9 +594,13 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             // Do NOT force landing when hash is #/therapist-profile/... (View Profile from job listings)
             const hashForRoot = (window.location.hash || '').replace('#', '');
             const isProfileOrShareHash = hashForRoot.startsWith('/therapist-profile/') || hashForRoot.startsWith('/share/therapist/') || hashForRoot.startsWith('therapist-profile/');
+            const isMassageTypesHash = hashForRoot === '/massage-types' || hashForRoot.replace(/^\/+/, '') === 'massage-types';
             if (isProfileOrShareHash) {
                 console.log('🔗 Root path but hash is therapist profile – keeping shared-therapist-profile');
                 setPage('shared-therapist-profile');
+            } else if (isMassageTypesHash) {
+                console.log('🔗 Root path but hash is massage-types – keeping massage-types');
+                setPage('massage-types');
             } else if (page !== 'landing' && page !== 'home') {
                 console.log(`🎯 Root URL detected → landing (current page: ${page})`);
                 setPage('landing');
