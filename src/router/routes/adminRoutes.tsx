@@ -9,8 +9,8 @@
 
 import { lazy } from 'react';
 
-// NEWEST Admin Dashboard with full Appwrite integration and commission flow
-const AdminDashboard = lazy(() => import('../../../apps/admin-dashboard/src/pages/AdminDashboard'));
+// In-app Admin Dashboard: mobile-first, Appwrite via adminServices.ts
+const AdminDashboard = lazy(() => import('../../pages/admin/AdminDashboardPage'));
 const AdminLiveListings = lazy(() => import('../../pages/AdminLiveListings'));
 const AdminSafePassManagement = lazy(() => import('../../pages/admin/AdminSafePassManagement'));
 const AdminSafePassManagementAll = lazy(() => import('../../pages/admin/AdminSafePassManagementAll'));

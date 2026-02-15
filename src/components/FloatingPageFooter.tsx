@@ -1,24 +1,42 @@
 import React from 'react';
 
+export interface FooterPageLink {
+    id: string;
+    labelEn: string;
+    labelId: string;
+}
+
 interface FloatingPageFooterProps {
     currentLanguage?: 'en' | 'id';
     onNavigate?: (page: string) => void;
     className?: string;
+    /** Optional: different page links per page. If not set, default links are used. */
+    pageLinks?: FooterPageLink[];
 }
 
-const essentialLinks = [
-    { id: 'how-it-works' as const, labelEn: 'How It Works', labelId: 'Cara Kerja' },
-    { id: 'about' as const, labelEn: 'About', labelId: 'Tentang' },
-    { id: 'terms' as const, labelEn: 'Terms', labelId: 'Syarat & Ketentuan' },
-    { id: 'privacy-policy' as const, labelEn: 'Privacy', labelId: 'Privasi' },
-    { id: 'help-faq' as const, labelEn: 'Help', labelId: 'Bantuan' },
+const defaultPageLinks: FooterPageLink[] = [
+    { id: 'how-it-works', labelEn: 'How It Works', labelId: 'Cara Kerja' },
+    { id: 'about', labelEn: 'About', labelId: 'Tentang' },
+    { id: 'terms', labelEn: 'Terms', labelId: 'Syarat & Ketentuan' },
+    { id: 'privacy-policy', labelEn: 'Privacy', labelId: 'Privasi' },
+    { id: 'help-faq', labelEn: 'Help', labelId: 'Bantuan' },
 ];
+
+/** Small leaf SVG for footer link hover animation */
+const LeafIcon = ({ className = '' }: { className?: string }) => (
+    <svg className={className} width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+        <path d="M12 2C8 6 5 10 5 14c0 4 3 7 7 7 4 0 7-3 7-7 0-4-3-8-7-12z" fill="currentColor" opacity="0.9" />
+    </svg>
+);
 
 const FloatingPageFooter: React.FC<FloatingPageFooterProps> = ({ 
     currentLanguage = 'en',
     onNavigate,
-    className = '' 
+    className = '',
+    pageLinks
 }) => {
+    const links = pageLinks && pageLinks.length > 0 ? pageLinks : defaultPageLinks;
+
     const handleLinkClick = (pageId: string) => {
         if (onNavigate) {
             onNavigate(pageId);
@@ -46,20 +64,26 @@ const FloatingPageFooter: React.FC<FloatingPageFooterProps> = ({
     ];
 
     return (
-        <div className={`w-full ${className}`}>
+        <div className={`w-full footer-with-links ${className}`}>
             {/* Integrated Footer Items - No Container */}
             <div className="max-w-6xl mx-auto px-4 py-8">
-                {/* Essential Links - minimal row with separators */}
+                {/* Page Links - with stem/leaf hover animation */}
                 <div className="flex flex-wrap justify-center items-center gap-x-1 gap-y-2 mb-8">
-                    {essentialLinks.map((link, i) => (
+                    {links.map((link, i) => (
                         <span key={link.id} className="flex items-center">
                             {i > 0 && <span className="text-gray-300 text-xs mx-2" aria-hidden>·</span>}
                             <button
                                 type="button"
                                 onClick={() => handleLinkClick(link.id)}
-                                className="text-xs text-gray-500 hover:text-orange-600 transition-colors"
+                                className="group footer-link-with-leaf relative text-xs text-gray-500 hover:text-orange-600 transition-colors duration-300 py-1 px-0.5"
                             >
-                                {currentLanguage === 'id' ? link.labelId : link.labelEn}
+                                <span className="relative inline-flex items-center gap-1">
+                                    {currentLanguage === 'id' ? link.labelId : link.labelEn}
+                                    <span className="footer-leaf inline-flex opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ease-out pointer-events-none">
+                                        <LeafIcon className="text-emerald-600/90 w-3 h-3" />
+                                    </span>
+                                </span>
+                                <span className="footer-link-stem absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-orange-400 to-emerald-500 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
                             </button>
                         </span>
                     ))}
@@ -112,8 +136,15 @@ const FloatingPageFooter: React.FC<FloatingPageFooterProps> = ({
                     </p>
                 </div>
             </div>
+            <style>{`
+                .footer-link-with-leaf .footer-link-stem { transform: scaleX(0); transform-origin: left center; }
+                .footer-link-with-leaf:hover .footer-link-stem { transform: scaleX(1); }
+                .footer-link-with-leaf .footer-leaf { transform: scale(0.75); }
+                .footer-link-with-leaf:hover .footer-leaf { transform: scale(1); opacity: 1; }
+            `}</style>
         </div>
     );
 };
 
 export default FloatingPageFooter;
+export { defaultPageLinks, type FooterPageLink };

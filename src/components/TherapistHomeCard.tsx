@@ -28,6 +28,7 @@ import TherapistJoinPopup from './TherapistJoinPopup';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import { Share2 } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
@@ -653,7 +654,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             {/* Verified Badge - Auto-show for Safe Pass holders */}
                             {((therapist as any).verifiedBadge || therapist.isVerified || (therapist as any).hotelVillaSafePassStatus === 'active') && (
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                    src={VERIFIED_BADGE_IMAGE_URL}
                                     alt="Verified"
                                     className="w-5 h-5 flex-shrink-0"
                                     title="Verified Therapist"
@@ -691,7 +692,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                     
                                     return shouldShowBadge && (
                                         <img 
-                                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                            src={VERIFIED_BADGE_IMAGE_URL}
                                             alt="Verified"
                                             className="w-5 h-5 flex-shrink-0"
                                             title="Verified Therapist - Complete Profile"

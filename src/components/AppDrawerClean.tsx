@@ -88,6 +88,10 @@ const drawerTranslations = {
     joinMassageSpa: 'Join Massage Spa',
     joinSkinClinic: 'Join Skin Clinic',
     admin: 'Admin',
+    terms: 'Terms',
+    privacy: 'Privacy',
+    help: 'Help',
+    followUs: 'Follow Us',
   },
   id: {
     partners: 'Mitra',
@@ -113,6 +117,10 @@ const drawerTranslations = {
     joinMassageSpa: 'Gabung Spa Pijat',
     joinSkinClinic: 'Gabung Klinik Kulit',
     admin: 'Admin',
+    terms: 'Syarat',
+    privacy: 'Privasi',
+    help: 'Bantuan',
+    followUs: 'Ikuti Kami',
   },
 };
 
@@ -166,6 +174,19 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
       } catch {}
     }
     return key;
+  };
+
+  /** Admin dashboard is gated by code – only "admin1" allows access from drawer */
+  const ADMIN_ACCESS_CODE = 'admin1';
+
+  const handleAdminPortalClick = () => {
+    const entered = prompt('Enter admin access code:');
+    const code = (entered || '').trim();
+    if (code === ADMIN_ACCESS_CODE) {
+      handleItemClick(onAdminPortalClick, 'admin');
+    } else if (entered !== null) {
+      alert('Invalid code. Access denied.');
+    }
   };
 
   const handleItemClick = (callback?: () => void, fallbackPage?: string) => {
@@ -431,10 +452,26 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   );
                 })()}
 
-              {/* Admin Access - Footer Text Link */}
-              <div className="border-t border-gray-200 pt-4 mt-4">
-                <button 
-                  onClick={() => handleItemClick(onAdminPortalClick, 'admin')} 
+              {/* End of drawer: Social, Admin */}
+              <div className="border-t border-gray-200 pt-4 mt-4 space-y-4">
+                {/* Follow us – social icons */}
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-xs font-medium text-gray-500">{dt.followUs}</span>
+                  <div className="flex items-center justify-center gap-4">
+                    <a href="https://www.tiktok.com/@indastreet.team?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-orange-50 transition-colors" aria-label="TikTok">
+                      <img src="https://ik.imagekit.io/7grri5v7d/tik%20tok.png" alt="" className="w-8 h-8 object-contain" />
+                    </a>
+                    <a href="https://www.facebook.com/share/g/1C2QCPTp62/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-orange-50 transition-colors" aria-label="Facebook">
+                      <img src="https://ik.imagekit.io/7grri5v7d/facebook.png" alt="" className="w-8 h-8 object-contain" />
+                    </a>
+                    <a href="https://www.instagram.com/indastreet.id/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-orange-50 transition-colors" aria-label="Instagram">
+                      <img src="https://ik.imagekit.io/7grri5v7d/instagrame.png" alt="" className="w-8 h-8 object-contain" />
+                    </a>
+                  </div>
+                </div>
+                {/* Admin Access – footer: code required (admin1) */}
+                <button
+                  onClick={handleAdminPortalClick}
                   className="w-full text-center py-2 text-sm text-gray-500 hover:text-purple-600 transition-colors"
                 >
                   {dt.admin} Portal

@@ -12,6 +12,7 @@
 
 import React from 'react';
 import { isDiscountActive } from '../../constants/cardConstants';
+import { VERIFIED_BADGE_IMAGE_URL } from '../../constants/appConstants';
 import { Share2 } from 'lucide-react';
 
 interface PlaceHeaderProps {
@@ -57,7 +58,7 @@ const PlaceHeader: React.FC<PlaceHeaderProps> = ({
             {(place as any).isVerified && displayRating && (
                 <div className="absolute top-12 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg">
                     <img 
-                        src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                        src={VERIFIED_BADGE_IMAGE_URL}
                         alt="Verified"
                         className="w-4 h-4 flex-shrink-0"
                         title="Verified Massage Place"

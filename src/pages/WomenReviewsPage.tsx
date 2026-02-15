@@ -6,6 +6,7 @@ import { AppDrawer } from '../components/AppDrawerClean';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 import { reviewService } from '../lib/appwriteService';
 import { therapistService, placesService } from '../lib/appwriteService';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 
 interface WomenReviewsPageProps {
   t: any;
@@ -436,7 +437,7 @@ const WomenReviewsPage: React.FC<WomenReviewsPageProps> = ({
             <div className="flex flex-col items-center">
               <div className="w-16 h-16 flex items-center justify-center mb-3">
                 <img
-                  src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                  src={VERIFIED_BADGE_IMAGE_URL}
                   alt="Verified"
                   className="w-16 h-16 object-contain"
                 />

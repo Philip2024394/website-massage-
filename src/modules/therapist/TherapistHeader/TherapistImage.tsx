@@ -5,6 +5,7 @@
 
 import React from 'react';
 import type { Therapist } from '../../../types';
+import { VERIFIED_BADGE_IMAGE_URL } from '../../../constants/appConstants';
 
 interface TherapistImageProps {
   therapist: Therapist;
@@ -56,7 +57,7 @@ export const TherapistImage: React.FC<TherapistImageProps> = ({
               {/* Verified Badge */}
               {((therapist as any).verifiedBadge || therapist.isVerified) && (
                 <img 
-                  src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                  src={VERIFIED_BADGE_IMAGE_URL}
                   alt="Verified"
                   className="w-5 h-5 flex-shrink-0"
                   title="Verified Therapist"

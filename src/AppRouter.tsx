@@ -613,14 +613,51 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             }));
         
         case 'facial-types':
-            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.facialTypes.component));
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.facialTypes.component, {
+                onNavigate: props.onNavigate,
+                t: t,
+                language: props.language,
+                therapists: props.therapists,
+                places: props.places,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+            }));
         
         case 'providers':
             return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.providers.component));
         
         case 'facialProviders':
         case 'facial-providers':
-            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.facialProviders.component));
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.facialProviders.component, {
+                facialPlaces: props.facialPlaces ?? [],
+                userLocation: props.userLocation,
+                selectedCity: props.selectedCity,
+                onSetUserLocation: props.handleSetUserLocation,
+                onSelectPlace: props.handleSetSelectedPlace,
+                onIncrementAnalytics: (id: number | string, type: 'therapist' | 'place', metric: string) => props.handleIncrementAnalytics?.(id, type, metric),
+                onShowRegisterPrompt: props.handleShowRegisterPrompt,
+                onBack: () => props.onNavigate?.('home'),
+                t: t,
+                language: props.language,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                therapists: props.therapists,
+                places: props.places,
+            }));
         
         case 'discounts':
             return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.discounts.component));

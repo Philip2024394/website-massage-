@@ -44,16 +44,25 @@ export { SAMPLE_ACHIEVEMENTS };
 // ADMIN THERAPIST SERVICE
 // =====================================================================
 
+const MAX_THERAPISTS_PAGE = 100; // Appwrite max per request
+
 export const adminTherapistService = {
     getAll: async () => {
         try {
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTIONS.THERAPISTS,
-                [Query.limit(100)]
-            );
-            console.log('✅ [ADMIN] Fetched', response.documents.length, 'therapists');
-            return response.documents;
+            const all: any[] = [];
+            let offset = 0;
+            let hasMore = true;
+            while (hasMore) {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.THERAPISTS,
+                    [Query.limit(MAX_THERAPISTS_PAGE), Query.offset(all.length)]
+                );
+                all.push(...response.documents);
+                hasMore = response.documents.length === MAX_THERAPISTS_PAGE;
+            }
+            console.log('✅ [ADMIN] Fetched', all.length, 'therapists');
+            return all;
         } catch (error) {
             console.error('❌ [ADMIN] Error fetching therapists:', error);
             return [];

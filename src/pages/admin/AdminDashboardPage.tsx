@@ -3,38 +3,29 @@
  * =====================================================================
  * UNIFIED ADMIN DASHBOARD - Full Implementation
  * =====================================================================
- * 
- * Complete admin dashboard with all features from original apps/admin-dashboard.
- * Uses unified appwriteClient.ts and adminServices.ts.
- * Protected by AdminGuard for role-based access control.
- * 
- * Features:
- * - Full therapist/place card management with edit/delete
- * - Complete stats dashboard with live data
- * - All sub-pages: therapists, bookings, chat, revenue, commissions, KTP, achievements
- * - Rich UI with side panel navigation
- * - Real-time updates every 30 seconds
- * 
- * Routes:
- * - /admin or #/admin - Main admin dashboard
- * - /admin/therapists - Therapist management
- * - /admin/bookings - Booking management
- * - /admin/chat - Chat monitoring
- * - /admin/revenue - Revenue dashboard
- * - /admin/commissions - Commission deposits
- * - /admin/ktp - KTP verification
- * - /admin/achievements - Achievement management
- * - /admin/system-health - System monitoring
- * - /admin/settings - System settings
- * 
+ *
+ * DATA FLOW (100% connected):
+ * - Stats & list data: adminServices.ts (adminTherapistService, adminPlacesService,
+ *   adminBookingService) → appwriteClient.ts (databases, DATABASE_ID, COLLECTIONS).
+ * - Commission verification: this page uses appwriteClient directly (same as adminServices)
+ *   for commission_records and therapists collection updates.
+ * - Support tickets: AdminSupportDashboard uses appwrite.config (contactInquiries).
+ * - Auth: AdminGuard uses appwriteClient account for admin session.
+ * - Main app: receives onNavigateHome from AppRouter → setPage('home').
+ *
+ * All admin Appwrite access uses the same client (appwriteClient) and database so
+ * data flow is consistent with the rest of the app.
+ *
  * @version 2.0.0
- * @merged From apps/admin-dashboard - FULL VERSION
  */
 
 import React, { useState, useEffect } from 'react';
 import { AdminGuardDev, adminLogout } from '../../lib/adminGuard';
 import { adminTherapistService, adminPlacesService, adminBookingService } from '../../lib/adminServices';
+import { databases, DATABASE_ID, COLLECTIONS, Query } from '../../lib/appwriteClient';
 import AdminSupportDashboard from '../../components/admin/AdminSupportDashboard';
+import TherapistManager from '../../components/admin/TherapistManager';
+import DashboardPWABanner from '../../components/pwa/DashboardPWABanner';
 
 // =====================================================================
 // ICON COMPONENTS (Emoji fallbacks for lucide-react compatibility)
@@ -205,11 +196,25 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
         { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
     ];
 
-    // Render dashboard overview
+    // Render dashboard overview – mobile-first, app theme
     const renderDashboard = () => (
-        <div className="space-y-6">
-            {/* Stats Grid */}
-            <div className="grid gap-6 w-full" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'}}>
+        <div className="space-y-5">
+            {/* Download app – MP3 notifications, sound, vibrate (app theme) */}
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl border border-orange-400/50 shadow-sm p-4 text-white">
+                <h3 className="text-sm font-bold mb-2">📱 Download app to your phone</h3>
+                <p className="text-xs opacity-95 mb-3">
+                    Get MP3 notifications, sound alerts and vibration so you never miss updates.
+                </p>
+                <ul className="text-xs opacity-95 space-y-1 mb-3">
+                    <li>• MP3 notification sounds</li>
+                    <li>• Sound alerts for new activity</li>
+                    <li>• Vibration on alerts</li>
+                </ul>
+                <p className="text-xs opacity-80">Install for the best admin experience on mobile.</p>
+            </div>
+
+            {/* Stats Grid – 2 cols on mobile */}
+            <div className="grid grid-cols-2 gap-3 w-full">
                 <StatCard
                     title="Total Therapists"
                     value={stats.totalTherapists}
@@ -260,10 +265,10 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 />
             </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-                <div className="grid gap-6 w-full" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'}}>
+            {/* Quick Actions – 2 cols mobile */}
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+                <h3 className="text-base font-semibold text-slate-800 mb-3">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-3">
                     <QuickActionButton
                         label="View Therapists"
                         onClick={() => setActiveView('therapists')}
@@ -295,7 +300,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
             case 'dashboard':
                 return renderDashboard();
             case 'therapists':
-                return <TherapistManagement />;
+                return <TherapistManager />;
             case 'bookings':
                 return <BookingManagement />;
             case 'chat':
@@ -320,39 +325,42 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
     };
 
     return (
-        <div className="min-h-screen bg-gray-100" style={{
-            width: '100vw',
-            maxWidth: 'none'
+        <div className="min-h-screen bg-slate-50 max-w-md mx-auto shadow-lg admin-dashboard-mobile" style={{
+            width: '100%',
+            minHeight: '100vh',
+            paddingBottom: 'env(safe-area-inset-bottom, 0)',
         }}>
-            {/* Header */}
-            <header className="bg-white shadow-sm border-b sticky top-0 z-10" style={{width: '100%'}}>
-                <div className="px-8 py-4 flex justify-between items-center w-full" style={{minWidth: '100%'}}>
-                    <div className="flex items-center space-x-4">
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            🎛️ Admin Dashboard
+            {/* Mobile header – app theme */}
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-20 safe-area-padding">
+                <div className="px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <h1 className="text-lg font-bold text-slate-800 truncate">
+                            Admin
                         </h1>
-                        <span className="text-sm text-gray-500">
-                            Last updated: {lastUpdated.toLocaleTimeString()}
+                        <span className="text-xs text-slate-500 hidden sm:inline">
+                            {lastUpdated.toLocaleTimeString()}
                         </span>
                     </div>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                         <button
                             onClick={fetchLiveData}
-                            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+                            className="p-2.5 text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors touch-manipulation"
                             title="Refresh data"
+                            aria-label="Refresh"
                         >
                             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                         </button>
                         <button
                             onClick={handleNavigateHome}
-                            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
-                            title="Go to main site"
+                            className="p-2.5 text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors touch-manipulation"
+                            title="Home"
+                            aria-label="Home"
                         >
                             <Home className="w-5 h-5" />
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-800 text-sm font-medium touch-manipulation"
                         >
                             <LogOut className="w-4 h-4" />
                             <span>Logout</span>
@@ -361,41 +369,47 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 </div>
             </header>
 
-            <div className="flex min-h-screen">
-                {/* Sidebar */}
-                <aside className="w-64 bg-white shadow-sm">
-                    <nav className="p-4 space-y-2 sticky top-16">
-                        {navItems.map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => setActiveView(item.id as AdminView)}
-                                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                                    activeView === item.id
-                                        ? 'bg-orange-100 text-orange-700'
-                                        : 'text-gray-600 hover:bg-gray-100'
-                                }`}
-                            >
-                                {item.icon}
-                                <span>{item.label}</span>
-                            </button>
-                        ))}
-                    </nav>
-                </aside>
+            {/* Mobile: horizontal nav tabs (scrollable) */}
+            <nav className="bg-white border-b border-slate-200 sticky top-[52px] z-10 overflow-x-auto no-scrollbar" aria-label="Admin sections">
+                <div className="flex gap-1 px-3 py-2 min-w-max">
+                    {navItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveView(item.id as AdminView)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors touch-manipulation ${
+                                activeView === item.id
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-slate-600 bg-slate-100 hover:bg-orange-50 hover:text-orange-600'
+                            }`}
+                        >
+                            {item.icon}
+                            <span>{item.label}</span>
+                        </button>
+                    ))}
+                </div>
+            </nav>
 
-                {/* Main Content */}
-                <main className="flex-1 p-8 bg-gray-100 w-full min-h-screen" style={{ paddingBottom: '2rem' }}>
-                    {loading && activeView === 'dashboard' ? (
-                        <div className="flex items-center justify-center h-64">
-                            <div className="text-center">
-                                <RefreshCw className="w-12 h-12 text-orange-500 animate-spin mx-auto" />
-                                <p className="mt-4 text-gray-600">Loading dashboard data...</p>
-                            </div>
-                        </div>
-                    ) : (
-                        renderContent()
-                    )}
-                </main>
+            {/* Main content – single column, mobile-first */}
+            <main className="p-4 pb-24 bg-slate-50 min-h-[60vh]">
+                {loading && activeView === 'dashboard' ? (
+                    <div className="flex flex-col items-center justify-center py-16">
+                        <RefreshCw className="w-12 h-12 text-orange-500 animate-spin" />
+                        <p className="mt-4 text-sm text-slate-600">Loading dashboard...</p>
+                    </div>
+                ) : (
+                    renderContent()
+                )}
+            </main>
+            {/* PWA install banner – same app theme when in admin */}
+            <div className="admin-pwa-banner-wrapper">
+                <DashboardPWABanner />
             </div>
+            <style>{`
+                .admin-dashboard-mobile .no-scrollbar { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+                .admin-dashboard-mobile .no-scrollbar::-webkit-scrollbar { display: none; }
+                .admin-pwa-banner-wrapper [class*="from-blue"] { background: linear-gradient(to right, rgb(249 115 22), rgb(234 88 12)) !important; }
+                .admin-pwa-banner-wrapper .bg-white.text-blue-600 { color: rgb(249 115 22) !important; }
+            `}</style>
         </div>
     );
 };
@@ -409,14 +423,16 @@ const StatCard: React.FC<{
     value: number | string;
     icon: React.ReactNode;
     color: string;
-}> = ({ title, value, icon, color }) => (
-    <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex items-center justify-between">
-            <div>
-                <p className="text-sm text-gray-500">{title}</p>
-                <p className="text-2xl font-bold text-gray-800">{value}</p>
+}> = ({ title, value, icon }) => (
+    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+        <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+                <p className="text-xs text-slate-500 truncate">{title}</p>
+                <p className="text-xl font-bold text-slate-800 truncate mt-0.5">{value}</p>
             </div>
-            {icon}
+            <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 text-orange-600">
+                {icon}
+            </span>
         </div>
     </div>
 );
@@ -425,42 +441,35 @@ const QuickActionButton: React.FC<{
     label: string;
     onClick: () => void;
     color: string;
-}> = ({ label, onClick, color }) => (
+}> = ({ label, onClick }) => (
     <button
+        type="button"
         onClick={onClick}
-        className={`p-4 rounded-lg bg-${color}-50 text-${color}-700 hover:bg-${color}-100 transition-colors text-center`}
+        className="w-full py-3.5 px-4 rounded-xl bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200/80 text-sm font-medium transition-colors touch-manipulation text-center"
     >
         {label}
     </button>
 );
 
-// Placeholder sub-pages (to be expanded)
-const TherapistManagement = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">👥 Therapist Management</h2>
-        <p className="text-gray-600">Manage therapists, verify KTP, update status...</p>
-        {/* TODO: Integrate full therapist management from admin-dashboard */}
-    </div>
-);
-
+// Placeholder sub-pages – mobile-friendly, app theme
 const BookingManagement = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">📅 Booking Management</h2>
-        <p className="text-gray-600">View and manage all bookings...</p>
+    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+        <h2 className="text-lg font-bold text-slate-800 mb-2">📅 Booking Management</h2>
+        <p className="text-sm text-slate-600">View and manage all bookings.</p>
     </div>
 );
 
 const ChatCenter = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">💬 Chat Center</h2>
-        <p className="text-gray-600">Monitor and manage chat conversations...</p>
+    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+        <h2 className="text-lg font-bold text-slate-800 mb-2">💬 Chat Center</h2>
+        <p className="text-sm text-slate-600">Monitor and manage chat conversations.</p>
     </div>
 );
 
 const RevenueDashboard = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">💰 Revenue Dashboard</h2>
-        <p className="text-gray-600">Track revenue, commissions, and payments...</p>
+    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+        <h2 className="text-lg font-bold text-slate-800 mb-2">💰 Revenue Dashboard</h2>
+        <p className="text-sm text-slate-600">Track revenue, commissions, and payments.</p>
     </div>
 );
 
@@ -476,19 +485,22 @@ const CommissionManagement = () => {
     const loadPayments = async () => {
         setLoading(true);
         try {
-            const { databases, APPWRITE_CONFIG, Query } = await import('../../lib/appwrite');
-            const collectionId = APPWRITE_CONFIG.collections.commissionRecords || 'commission_records';
-            
-            const queries = filter === 'all' 
+            const collectionId = COLLECTIONS.COMMISSION_RECORDS;
+            if (!collectionId) {
+                console.warn('[ADMIN] Commission records collection not configured');
+                setPayments([]);
+                return;
+            }
+            const queries = filter === 'all'
                 ? [Query.orderDesc('$createdAt'), Query.limit(100)]
                 : [Query.equal('status', filter), Query.orderDesc('$createdAt'), Query.limit(100)];
-            
+
             const response = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
+                DATABASE_ID,
                 collectionId,
                 queries
             );
-            
+
             setPayments(response.documents);
         } catch (error) {
             console.error('Failed to load commission payments:', error);
@@ -499,12 +511,16 @@ const CommissionManagement = () => {
 
     const handleVerify = async (paymentId: string, approved: boolean, reason?: string) => {
         try {
-            const { databases, APPWRITE_CONFIG } = await import('../../lib/appwrite');
-            const collectionId = APPWRITE_CONFIG.collections.commissionRecords || 'commission_records';
-            
+            const commissionCollectionId = COLLECTIONS.COMMISSION_RECORDS;
+            const therapistsCollectionId = COLLECTIONS.THERAPISTS;
+            if (!commissionCollectionId) {
+                console.error('[ADMIN] Commission records collection not configured');
+                return;
+            }
+
             await databases.updateDocument(
-                APPWRITE_CONFIG.databaseId,
-                collectionId,
+                DATABASE_ID,
+                commissionCollectionId,
                 paymentId,
                 {
                     status: approved ? 'verified' : 'rejected',
@@ -514,14 +530,13 @@ const CommissionManagement = () => {
                     updatedAt: new Date().toISOString()
                 }
             );
-            
-            // If approved, reactivate therapist account
-            if (approved) {
+
+            if (approved && therapistsCollectionId) {
                 const payment = payments.find(p => p.$id === paymentId);
                 if (payment?.therapistId) {
                     await databases.updateDocument(
-                        APPWRITE_CONFIG.databaseId,
-                        APPWRITE_CONFIG.collections.therapists || 'therapists',
+                        DATABASE_ID,
+                        therapistsCollectionId,
                         payment.therapistId,
                         {
                             status: 'available',
@@ -533,7 +548,7 @@ const CommissionManagement = () => {
                     );
                 }
             }
-            
+
             loadPayments();
         } catch (error) {
             console.error('Failed to verify payment:', error);
@@ -550,36 +565,35 @@ const CommissionManagement = () => {
         });
     };
 
+    const filterTabs = [
+        { key: 'awaiting_verification' as const, label: '🔍 Awaiting', activeClass: 'bg-orange-500 text-white', inactiveClass: 'bg-orange-50 text-orange-700 border border-orange-200' },
+        { key: 'pending' as const, label: '⏳ Pending', activeClass: 'bg-amber-500 text-white', inactiveClass: 'bg-amber-50 text-amber-700 border border-amber-200' },
+        { key: 'verified' as const, label: '✅ Verified', activeClass: 'bg-emerald-600 text-white', inactiveClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+        { key: 'rejected' as const, label: '❌ Rejected', activeClass: 'bg-red-500 text-white', inactiveClass: 'bg-red-50 text-red-700 border border-red-200' },
+        { key: 'all' as const, label: '📋 All', activeClass: 'bg-slate-600 text-white', inactiveClass: 'bg-slate-100 text-slate-700 border border-slate-200' },
+    ];
+
     return (
         <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow p-4">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold">📈 Commission Payment Verification</h2>
-                    <button 
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                    <h2 className="text-base font-bold text-slate-800">📈 Commission Verification</h2>
+                    <button
+                        type="button"
                         onClick={loadPayments}
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                        className="px-3 py-2 bg-orange-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 touch-manipulation"
                     >
                         🔄 Refresh
                     </button>
                 </div>
-                
-                {/* Filter Tabs */}
-                <div className="flex gap-2 mb-4 flex-wrap">
-                    {[
-                        { key: 'awaiting_verification', label: '🔍 Awaiting Review', color: 'blue' },
-                        { key: 'pending', label: '⏳ Pending', color: 'amber' },
-                        { key: 'verified', label: '✅ Verified', color: 'green' },
-                        { key: 'rejected', label: '❌ Rejected', color: 'red' },
-                        { key: 'all', label: '📋 All', color: 'gray' }
-                    ].map(tab => (
+                {/* Filter Tabs – horizontal scroll mobile */}
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    {filterTabs.map(tab => (
                         <button
                             key={tab.key}
-                            onClick={() => setFilter(tab.key as any)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                filter === tab.key
-                                    ? `bg-${tab.color}-500 text-white`
-                                    : `bg-${tab.color}-50 text-${tab.color}-700 hover:bg-${tab.color}-100`
-                            }`}
+                            type="button"
+                            onClick={() => setFilter(tab.key)}
+                            className={`flex-shrink-0 px-3 py-2 rounded-xl text-sm font-medium transition-colors touch-manipulation ${filter === tab.key ? tab.activeClass : tab.inactiveClass}`}
                         >
                             {tab.label}
                         </button>
@@ -588,14 +602,14 @@ const CommissionManagement = () => {
             </div>
 
             {loading ? (
-                <div className="bg-white rounded-lg shadow p-8 text-center">
+                <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-8 text-center">
                     <div className="animate-spin text-4xl mb-2">🔄</div>
-                    <p className="text-gray-600">Loading payments...</p>
+                    <p className="text-slate-600 text-sm">Loading payments...</p>
                 </div>
             ) : payments.length === 0 ? (
-                <div className="bg-white rounded-lg shadow p-8 text-center">
+                <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-8 text-center">
                     <div className="text-4xl mb-2">📭</div>
-                    <p className="text-gray-600">No payments found for this filter</p>
+                    <p className="text-slate-600 text-sm">No payments found for this filter</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -605,7 +619,7 @@ const CommissionManagement = () => {
                         const totalDue = (payment.commissionAmount || 0) + (isOverdue ? LATE_PAYMENT_FEE : 0);
                         
                         return (
-                        <div key={payment.$id} className="bg-white rounded-lg shadow overflow-hidden">
+                        <div key={payment.$id} className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
                             {/* Header */}
                             <div className={`px-4 py-3 ${
                                 payment.status === 'awaiting_verification' ? 'bg-blue-500' :
@@ -698,17 +712,19 @@ const CommissionManagement = () => {
                                 {payment.status === 'awaiting_verification' && (
                                     <div className="border-t pt-4 flex gap-3">
                                         <button
+                                            type="button"
                                             onClick={() => handleVerify(payment.$id, true)}
-                                            className="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold transition-colors"
+                                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-colors touch-manipulation"
                                         >
-                                            ✅ Approve Payment
+                                            ✅ Approve
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => {
                                                 const reason = prompt('Rejection reason:');
                                                 if (reason) handleVerify(payment.$id, false, reason);
                                             }}
-                                            className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition-colors"
+                                            className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold text-sm transition-colors touch-manipulation"
                                         >
                                             ❌ Reject
                                         </button>
@@ -742,30 +758,30 @@ const CommissionManagement = () => {
 };
 
 const KtpVerification = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">📋 KTP Verification</h2>
-        <p className="text-gray-600">Review and verify KTP documents...</p>
+    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+        <h2 className="text-lg font-bold text-slate-800 mb-2">📋 KTP Verification</h2>
+        <p className="text-sm text-slate-600">Review and verify KTP documents.</p>
     </div>
 );
 
 const AchievementManager = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">🏆 Achievement Manager</h2>
-        <p className="text-gray-600">Manage therapist achievements and badges...</p>
+    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+        <h2 className="text-lg font-bold text-slate-800 mb-2">🏆 Achievement Manager</h2>
+        <p className="text-sm text-slate-600">Manage therapist achievements and badges.</p>
     </div>
 );
 
 const SystemHealth = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">🛡️ System Health</h2>
-        <p className="text-gray-600">Monitor system health and performance...</p>
+    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+        <h2 className="text-lg font-bold text-slate-800 mb-2">🛡️ System Health</h2>
+        <p className="text-sm text-slate-600">Monitor system health and performance.</p>
     </div>
 );
 
 const SettingsPanel = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">⚙️ Settings</h2>
-        <p className="text-gray-600">Configure system settings...</p>
+    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+        <h2 className="text-lg font-bold text-slate-800 mb-2">⚙️ Settings</h2>
+        <p className="text-sm text-slate-600">Configure system settings.</p>
     </div>
 );
 
@@ -781,16 +797,17 @@ const SettingsPanel = () => (
 const AdminDashboardWithGuard: React.FC<AdminDashboardPageProps> = (props) => (
     <AdminGuardDev
         fallback={
-            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-100">
-                <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
-                    <div className="text-6xl mb-4">🔒</div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            <div className="flex items-center justify-center min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-slate-50 px-4">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-md w-full text-center">
+                    <div className="text-5xl mb-3">🔒</div>
+                    <h2 className="text-xl font-bold text-slate-800 mb-2">
                         Admin Access Required
                     </h2>
-                    <p className="text-gray-600 mb-6">
-                        You must be logged in with an authorized admin account to access this dashboard.
+                    <p className="text-sm text-slate-600 mb-5">
+                        Log in with an authorized admin account to access this dashboard.
                     </p>
                     <button
+                        type="button"
                         onClick={() => {
                             if (props.onNavigateHome) {
                                 props.onNavigateHome();
@@ -798,7 +815,7 @@ const AdminDashboardWithGuard: React.FC<AdminDashboardPageProps> = (props) => (
                                 window.location.hash = '#/';
                             }
                         }}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors"
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors touch-manipulation"
                     >
                         Go to Home
                     </button>

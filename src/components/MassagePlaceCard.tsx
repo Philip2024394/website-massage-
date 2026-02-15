@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
-import type { Place, Analytics } from '../src/types';
+import type { Place, Analytics } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import { bookingService, reviewService } from '../lib/appwriteService';
@@ -13,6 +13,7 @@ import MassagePlaceJoinPopup from './MassagePlaceJoinPopup';
 import { getAuthAppUrl, getUniqueMenuItemsByName, getUniqueMassageTypes } from '../utils/therapistCardHelpers';
 import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing, generatePlaceShareableURL } from '../constants/cardConstants.tsx';
 import { useChatProvider } from '../hooks/useChatProvider';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 
 // Extracted components
 import PlaceHeader from '../modules/massage-place/PlaceHeader';
@@ -590,7 +591,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                             
                                             return shouldShowBadge && (
                                                 <img 
-                                                    src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                                    src={VERIFIED_BADGE_IMAGE_URL}
                                                     alt="Verified"
                                                     className="w-4 h-4 flex-shrink-0"
                                                     title="Verified Massage Place - Complete Profile"

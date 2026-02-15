@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Place, Analytics } from '../src/types';
+import type { Place, Analytics } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import { bookingService, reviewService } from '../lib/appwriteService';
@@ -8,6 +8,7 @@ import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
 import { getAuthAppUrl } from '../utils/therapistCardHelpers';
 import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing } from '../constants/cardConstants.tsx';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import { Share2 } from 'lucide-react';
 
 interface FacialPlaceCardProps {
@@ -387,13 +388,14 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                                         e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
                                     }}
                                 />
-                                {/* Verified Pro Rosette - Show if manually verified, admin verified, or has KTP uploaded */}
+                                {/* Verified Badge - Same ImageKit asset as therapists & other places */}
                                 {((place as any).isVerified || (place as any).verifiedBadge || (place as any).ktpPhotoUrl || (place as any).ktpVerified) && (
-                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500">
-                                        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 1.5l2.19 4.44 4.9.71-3.54 3.45.83 4.86L10 12.9l-4.38 2.33.83-4.86L2.91 6.65l4.9-.71L10 1.5zm-1.2 9.09l-1.6-1.6a.75.75 0 10-1.06 1.06l2.13 2.13a.75.75 0 001.06 0l4.13-4.13a.75.75 0 10-1.06-1.06l-3.6 3.6z" clipRule="evenodd"/>
-                                        </svg>
-                                    </div>
+                                    <img
+                                        src={VERIFIED_BADGE_IMAGE_URL}
+                                        alt="Verified"
+                                        className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md object-contain bg-white/90"
+                                        title="Verified Place"
+                                    />
                                 )}
                                 
                                 {/* Star Rating Badge */}
@@ -422,7 +424,7 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                                     
                                     return shouldShowBadge && (
                                         <img 
-                                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                            src={VERIFIED_BADGE_IMAGE_URL}
                                             alt="Verified"
                                             className="w-5 h-5 flex-shrink-0"
                                             title="Verified Place - Complete Profile"

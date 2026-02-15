@@ -6,6 +6,7 @@ import FloatingPageFooter from '../components/FloatingPageFooter';
 import CityLocationDropdown from '../components/CityLocationDropdown';
 import AreaFilter from '../components/AreaFilter';
 import { useCityContext } from '../context/CityContext';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 
 interface AdvancedSearchPageProps {
     t: any;
@@ -152,7 +153,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                                 {currentLanguage === 'id' ? 'Member terverifikasi' : 'Verified members'}
                             </h3>
                             <img 
-                                src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565" 
+                                src={VERIFIED_BADGE_IMAGE_URL} 
                                 alt="Verified" 
                                 className="w-6 h-6 object-contain"
                             />

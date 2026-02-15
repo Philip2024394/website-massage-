@@ -9,6 +9,7 @@ import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { Share2 } from 'lucide-react';
 import { logger } from '../utils/logger';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 
 interface FacialPlaceHomeCardProps {
     place: Place;
@@ -262,7 +263,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                                 
                                 return shouldShowBadge && (
                                     <img 
-                                        src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                        src={VERIFIED_BADGE_IMAGE_URL}
                                         alt="Verified"
                                         className="w-5 h-5 flex-shrink-0"
                                         title="Verified Place - Complete Profile"

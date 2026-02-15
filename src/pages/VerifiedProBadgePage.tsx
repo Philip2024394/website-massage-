@@ -1,6 +1,7 @@
 // Massage Therapist Standards – Verified Pro Badge (same header as home page)
 import React, { useState } from 'react';
 import { CheckCircle2, ShieldCheck } from 'lucide-react';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import PageContainer from '../components/layout/PageContainer';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
@@ -19,7 +20,6 @@ interface VerifiedProBadgePageProps {
 }
 
 const HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/verfied%20massage%20spa%20indonisea.png';
-const BADGE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473';
 
 const VERIFICATION_STANDARDS = [
   { title: 'Products & Materials', text: 'Use only certified oils, body scrubs, and creams approved for skin application. All products should meet established safety standards.' },
@@ -116,7 +116,7 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({
           <div className="h-1 w-full bg-orange-500" aria-hidden />
           <div className="p-5 sm:p-6">
             <div className="flex items-start gap-4">
-              <img src={BADGE_IMAGE} alt="Verified Badge" className="w-20 h-20 sm:w-24 sm:h-24 object-contain flex-shrink-0" />
+              <img src={VERIFIED_BADGE_IMAGE_URL} alt="Verified Badge" className="w-20 h-20 sm:w-24 sm:h-24 object-contain flex-shrink-0" />
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">Verified therapists & places set the standard</h2>
                 <p className="text-slate-700 text-sm sm:text-base leading-relaxed">

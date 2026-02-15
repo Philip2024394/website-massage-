@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { X, Shield, Check, Home, Building, Hotel, Dumbbell } from 'lucide-react';
+import { VERIFIED_BADGE_IMAGE_URL } from '../../constants/appConstants';
 
 interface SafePassModalProps {
     isOpen: boolean;
@@ -237,7 +238,7 @@ const SafePassModal: React.FC<SafePassModalProps> = ({
                     <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
                         <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                             <img 
-                                src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565" 
+                                src={VERIFIED_BADGE_IMAGE_URL} 
                                 alt="Verified"
                                 className="w-6 h-6 object-contain"
                             />

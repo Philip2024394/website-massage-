@@ -42,6 +42,7 @@ import FlyingButterfly from '../components/FlyingButterfly';
 import { databases, ID, Query } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import UniversalHeader from '../components/shared/UniversalHeader';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 
 // Add CSS animation for letter-by-letter animation from right
 const animationStyles = `
@@ -768,7 +769,7 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
                         <div className="text-center mb-8">
                             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 overflow-hidden">
                                 <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565" 
+                                    src={VERIFIED_BADGE_IMAGE_URL} 
                                     alt="Professional Verification" 
                                     className="w-full h-full object-contain"
                                 />

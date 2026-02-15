@@ -15,6 +15,7 @@ import type { Therapist } from '../../types';
 import { AvailabilityStatus } from '../../types';
 import { getDisplayStatus } from '../../utils/therapistCardHelpers';
 import { statusStyles } from '../../constants/therapistCardConstants';
+import { VERIFIED_BADGE_IMAGE_URL } from '../../constants/appConstants';
 import BusyCountdownTimer from '../../components/BusyCountdownTimer';
 import { devLog } from '../../utils/devMode';
 
@@ -84,8 +85,7 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                                 const hasSafePass = (therapist as any).hotelVillaSafePassStatus === 'active';
                                 const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded) || hasSafePass;
                                 
-                                // Use custom verified badge if provided, otherwise use default
-                                const badgeUrl = customVerifiedBadge || "https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565";
+                                const badgeUrl = customVerifiedBadge || VERIFIED_BADGE_IMAGE_URL;
                                 
                                 return shouldShowBadge && (
                                     <img 

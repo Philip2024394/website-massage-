@@ -33,6 +33,7 @@ import { getTherapistMainImage } from '../../utils/therapistImageUtils';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from '../../lib/appwrite';
 import { shareLinkService } from '../../lib/services/shareLinkService';
 import PWAInstallBanner from '../../components/PWAInstallBanner';
+import { VERIFIED_BADGE_IMAGE_URL } from '../../constants/appConstants';
 import { getNonRepeatingMainImage } from '../../lib/appwrite/image.service';
 import { shareTrackingService } from '../../services/shareTrackingService';
 
@@ -876,9 +877,6 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     console.log('🎯 Mode: shared');
     console.log('✅'.repeat(40) + '\n');
     
-    // Use the verified badge image for shared profiles
-    const verifiedBadgeUrl = "https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565";
-    
     return (
         <>
             <TherapistProfileBase
@@ -891,7 +889,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 onIncrementAnalytics={handleIncrementAnalytics}
                 onNavigate={onNavigate}
                 language={language}
-                customVerifiedBadge={verifiedBadgeUrl}
+                customVerifiedBadge={VERIFIED_BADGE_IMAGE_URL}
             />
             {/* PWA Install Banner - Critical for mobile app promotion */}
             <PWAInstallBanner />

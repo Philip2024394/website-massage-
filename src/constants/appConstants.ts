@@ -1,4 +1,8 @@
 // App constants and configuration
+
+/** Single source of truth for verified therapist/place badge image (ImageKit). */
+export const VERIFIED_BADGE_IMAGE_URL = 'https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565';
+
 export const APP_CONSTANTS = {
   DEFAULT_CONTACT_NUMBER: '6281392000050',
   DEFAULT_PAGE: 'landing' as const,
