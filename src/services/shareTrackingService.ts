@@ -138,6 +138,26 @@ class ShareTrackingService {
     }
 
     /**
+     * Get total number of times a profile was shared (for display on shared profile page).
+     */
+    async getProfileShareCount(memberId: string): Promise<number> {
+        try {
+            const res = await databases.listDocuments(
+                DATABASE_ID,
+                SHARE_TRACKING_COLLECTION,
+                [
+                    Query.equal('memberId', memberId),
+                    Query.equal('eventType', 'profile_shared'),
+                    Query.limit(1)
+                ]
+            );
+            return (res as { total?: number }).total ?? 0;
+        } catch (_) {
+            return 0;
+        }
+    }
+
+    /**
      * Track when a shared profile is viewed
      */
     async trackSharedProfileView(params: {

@@ -30,7 +30,7 @@ export interface PartnerData {
     websiteUrl?: string;
     websiteTitle?: string;
     description?: string;
-    category: 'therapist' | 'massage-place' | 'hotel' | 'villa';
+    category: 'therapist' | 'massage-place' | 'hotel' | 'villa' | 'gym';
     location?: string;
     address?: string;
     phone?: string;

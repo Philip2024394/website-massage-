@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
-import { Search, MessageCircle, Phone, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, Plus, X } from 'lucide-react';
+import { Search, MessageCircle, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, Plus, X } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
@@ -576,10 +576,10 @@ const FAQPage: React.FC<FAQPageProps> = ({
             {/* Hero Section - Minimalistic */}
             <section className="relative py-16 md:py-24 px-4">
                 <div className="max-w-4xl mx-auto">
-                    {/* Back Arrow */}
+                    {/* Back – neutral style to match app */}
                     <button
                         onClick={() => onNavigate?.('home')}
-                        className="mb-8 ml-2 w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 will-change-transform"
+                        className="mb-8 ml-2 w-12 h-12 rounded-full bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 flex items-center justify-center shadow-sm transition-all duration-200"
                         title="Back to Home"
                     >
                         <ArrowLeft className="w-6 h-6" />
@@ -595,9 +595,6 @@ const FAQPage: React.FC<FAQPageProps> = ({
                             />
                         </div>
                         
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-2xl mb-6">
-                            <HelpCircle className="w-8 h-8 text-orange-600" />
-                        </div>
                         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
                             How can we help you?
                         </h1>
@@ -638,7 +635,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                 className={`
                                     relative p-6 rounded-2xl transition-all duration-300 group
                                     ${isActive 
-                                        ? `bg-gradient-to-br ${category.color} text-white shadow-lg scale-105` 
+                                        ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg scale-105' 
                                         : 'text-gray-700 hover:bg-gray-50/50'
                                     }
                                 `}
@@ -648,20 +645,20 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                         p-3 rounded-xl mb-3 transition-colors
                                         ${isActive 
                                             ? 'bg-white/20' 
-                                            : 'bg-gray-100 group-hover:bg-gray-200'
+                                            : 'bg-orange-50 group-hover:bg-orange-100'
                                         }
                                     `}>
                                         <IconComponent className={`
                                             w-6 h-6 
-                                            ${isActive ? 'text-white' : 'text-gray-600'}
+                                            ${isActive ? 'text-white' : 'text-orange-500'}
                                         `} />
                                     </div>
                                     <h3 className="font-semibold text-sm mb-1">{category.name}</h3>
                                     <span className={`
-                                        text-xs px-2 py-1 rounded-full
+                                        text-xs px-2 py-1 rounded-full font-medium
                                         ${isActive 
                                             ? 'bg-white/20 text-white' 
-                                            : 'bg-gray-200 text-gray-600'
+                                            : 'bg-orange-100 text-orange-700'
                                         }
                                     `}>
                                         {getCategoryCount(category.id)} questions
@@ -703,7 +700,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                                 <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-orange-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
                                                     {index + 1}
                                                 </div>
-                                                <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 text-xs font-semibold rounded-full">
+                                                <span className="px-3 py-1 bg-black/80 text-orange-400 text-xs font-semibold rounded-full backdrop-blur-sm">
                                                     {categories.find(cat => cat.id === faq.category)?.name || 'General'}
                                                 </span>
                                             </div>
@@ -757,8 +754,8 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                                         className={`
                                                             flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 border-2
                                                             ${currentFeedback === 'like' 
-                                                                ? 'bg-green-500 text-white border-green-500 shadow-lg scale-105' 
-                                                                : 'bg-white text-gray-600 border border-gray-300 hover:bg-green-50 hover:text-green-600 hover:border-green-300'
+                                                                ? 'bg-orange-500 text-white border-orange-500 shadow-lg' 
+                                                                : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100'
                                                             }
                                                         `}
                                                     >
@@ -770,8 +767,8 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                                         className={`
                                                             flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 border-2
                                                             ${currentFeedback === 'dislike' 
-                                                                ? 'bg-red-500 text-white border-red-500 shadow-lg scale-105' 
-                                                                : 'bg-white text-gray-600 border border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                                                                ? 'bg-orange-500 text-white border-orange-500 shadow-lg' 
+                                                                : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100'
                                                             }
                                                         `}
                                                     >
@@ -822,20 +819,14 @@ const FAQPage: React.FC<FAQPageProps> = ({
                             Our friendly support team is here to help you with any questions or concerns
                         </p>
                         
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button 
-                                onClick={() => window.open('https://wa.me/62XXX', '_blank')}
-                                className="inline-flex items-center gap-3 px-6 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-colors shadow-lg"
-                            >
-                                <Phone className="w-5 h-5" />
-                                WhatsApp Support
-                            </button>
-                            <button 
+                        <div className="flex justify-center">
+                            <button
+                                type="button"
                                 onClick={() => onNavigate?.('contact')}
-                                className="inline-flex items-center gap-3 px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-colors shadow-lg border-2 border-orange-200"
+                                className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors shadow-lg"
                             >
                                 <Mail className="w-5 h-5" />
-                                Email Us
+                                Contact Us
                             </button>
                         </div>
                     </div>

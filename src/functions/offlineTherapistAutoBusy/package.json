@@ -1,0 +1,16 @@
+{
+  "name": "offline-therapist-auto-busy",
+  "version": "1.0.0",
+  "description": "Auto-set offline therapists (24h+) to busy for 12h at random times; revert to offline after",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "dependencies": {
+    "node-appwrite": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

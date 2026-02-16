@@ -14,6 +14,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'massageTypes': '/massage-types',
         'massage-types': '/massage-types', // drawer link uses kebab-case; must map so URL updates and stays open
         'facialTypes': '/facial-types',
+        'facial-types': '/facial-types', // drawer link uses kebab-case; must map so URL updates and page loads
         'faq': '/faq',
         // Drawer public pages (must not fall back to "/")
         'indastreet-partners': '/indastreet-partners',
@@ -23,8 +24,10 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'about-us': '/about',
         'company': '/company',
         'contact': '/contact',
+        'partner-contact': '/partner-contact',
         'hotels-and-villas': '/hotels-and-villas',
         'blog': '/blog',
+        'indastreet-news': '/indastreet-news',
         // Blog article pages (so "Read article" keeps URL and does not fall back to landing)
         'blog-bali-spa-trends-2025': '/blog/bali-spa-trends-2025',
         'blog-top-10-massage-techniques': '/blog/top-10-massage-techniques',

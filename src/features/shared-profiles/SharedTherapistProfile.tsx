@@ -190,7 +190,20 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     const [loading, setLoading] = useState(!selectedTherapist);
     const [error, setError] = useState<string | null>(null);
     const [attemptedTherapistId, setAttemptedTherapistId] = useState<string | null>(null);
-    
+    const [shareCount, setShareCount] = useState<number | undefined>(undefined);
+
+    // Fetch share count when therapist is loaded (for digit counter over main image)
+    useEffect(() => {
+        if (!therapist?.$id) return;
+        let cancelled = false;
+        shareTrackingService.getProfileShareCount(therapist.$id).then((count) => {
+            if (!cancelled) setShareCount(count);
+        }).catch(() => {
+            if (!cancelled) setShareCount(0);
+        });
+        return () => { cancelled = true; };
+    }, [therapist?.$id]);
+
     // Monitor unmount
     React.useEffect(() => {
         return () => {
@@ -897,6 +910,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 onNavigate={onNavigate}
                 language={language}
                 customVerifiedBadge={VERIFIED_BADGE_IMAGE_URL}
+                shareCount={shareCount}
             />
             {/* PWA Install Banner - Critical for mobile app promotion */}
             <PWAInstallBanner />

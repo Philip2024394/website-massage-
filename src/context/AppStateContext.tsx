@@ -116,6 +116,9 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         } else if (hash.startsWith('/profile/place/')) {
             logger.debug('🔗 Initial URL detected: place profile ->', hash);
             return 'massage-place-profile';
+        } else if (hash.startsWith('/profile/facial/')) {
+            logger.debug('🔗 Initial URL detected: facial place profile ->', hash);
+            return 'facial-place-profile';
         } else if (hash.startsWith('/share/place/')) {
             logger.debug('🔗 Initial URL detected: share place ->', hash);
             return 'share-place';

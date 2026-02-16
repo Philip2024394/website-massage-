@@ -1,5 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 // Top 5 Therapists: good reviews, bookings, detailed menu, account health. Rotates weekly per location.
+// Only therapists recently active on the dashboard appear in Top 5. Missed bookings lower score/ranking.
 import React, { useState, useMemo } from 'react';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
@@ -10,6 +11,11 @@ import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 import { logger } from '../utils/logger';
 import { getWeekSeed, seededShuffle } from '../utils/weekSeedUtils';
+
+/** Therapists not active on dashboard within this many days are excluded from Top 5. */
+const DASHBOARD_ACTIVITY_DAYS = 7;
+/** Points subtracted from Top 5 score per missed booking (no response / no-show). */
+const MISSED_BOOKINGS_PENALTY_TOP5 = 80;
 
 interface TopTherapistsPageProps {
     t: any;
@@ -40,15 +46,26 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
         setLoadedImages(prev => new Set(prev).add(therapistId));
     };
     
+    /** True if therapist has been active on dashboard (lastSeen or doc update) within DASHBOARD_ACTIVITY_DAYS. */
+    const isRecentlyActiveOnDashboard = (t: any): boolean => {
+        const lastActivity = t.lastSeen || t.$updatedAt || t.updatedAt;
+        if (!lastActivity) return false;
+        const then = new Date(lastActivity);
+        if (isNaN(then.getTime())) return false;
+        const daysAgo = (Date.now() - then.getTime()) / (1000 * 60 * 60 * 24);
+        return daysAgo <= DASHBOARD_ACTIVITY_DAYS;
+    };
+
     // Score therapist for "top 5" eligibility: good reviews, bookings, detailed menu, account health.
-    // We take top N by score, then apply weekly seeded shuffle so the displayed 5 change each week per location.
+    // Missed bookings reduce score. We take top N by score, then weekly seeded shuffle.
     const scoreTherapist = (t: any): number => {
         const reviews = (t.rating || 0) * (Math.max(0, t.reviewCount || 0) + 1);
         const bookings = t.totalBookings || t.reviewCount || 0;
         const hasDetailedMenu = !!(t.pricing && (t.pricing['60'] || t.pricing['90'] || t.pricing['120'] || (t.services && t.services.length > 0)));
         const accountHealth = (t.isVerified || (t as any).verifiedBadge) ? 100 : 0;
-        const activity = (t.$updatedAt || t.updatedAt) ? 10 : 0; // proxy for "time online" / recent activity
-        return reviews * 2 + bookings * 5 + (hasDetailedMenu ? 50 : 0) + accountHealth + activity;
+        const activity = (t.$updatedAt || t.updatedAt) ? 10 : 0;
+        const missedPenalty = (t.missedBookingsCount ?? t.missedBookings ?? 0) * MISSED_BOOKINGS_PENALTY_TOP5;
+        return Math.max(0, reviews * 2 + bookings * 5 + (hasDetailedMenu ? 50 : 0) + accountHealth + activity - missedPenalty);
     };
 
     const isTherapistAvailableOnline = (t: any): boolean => {
@@ -62,7 +79,7 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
     const getTopTherapistsByLocation = (): any[] => {
         logger.debug('🏆 [TOP5] Filtering therapists', { totalCount: therapists.length, userCity });
 
-        let filtered = therapists.filter(isTherapistAvailableOnline);
+        let filtered = therapists.filter(t => isTherapistAvailableOnline(t) && isRecentlyActiveOnDashboard(t));
         if (userCity) {
             filtered = filtered.filter(t => t.city && String(t.city).toLowerCase() === userCity.toLowerCase());
         }

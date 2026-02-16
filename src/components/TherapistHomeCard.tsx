@@ -487,14 +487,12 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     // Get status - map any status value to valid AvailabilityStatus
     const getStatusStyles = () => {
-        const statusStr = String((therapist as any).availability || therapist.status || 'Offline');
+        const statusStr = String((therapist as any).availability || therapist.status || 'Busy');
         
         if (statusStr === 'Available') {
             return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500', label: 'Available', isAvailable: true };
-        } else if (statusStr === 'Busy') {
-            return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Busy', isAvailable: false };
         }
-        return { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Offline', isAvailable: false };
+        return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Busy', isAvailable: false };
     };
 
     const statusStyle = getStatusStyles();

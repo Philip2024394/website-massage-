@@ -5,12 +5,12 @@ import { databases } from '../client';
 import { APPWRITE_CONFIG } from '../../appwrite.config';
 import { MOCK_FACIAL_PLACE } from '../../../constants/mockFacialPlace';
 
-/** Normalize to therapist-style availability: Available | Busy | Offline */
+/** Normalize to therapist-style availability: Available | Busy (no Offline; default Busy) */
 function normalizeAvailability(v: string | undefined): string {
-    const s = String(v ?? 'offline').trim().toLowerCase();
+    const s = String(v ?? 'busy').trim().toLowerCase();
     if (s === 'available') return 'Available';
-    if (s === 'busy') return 'Busy';
-    return 'Offline';
+    if (s === 'busy' || s === 'offline') return 'Busy';
+    return 'Busy';
 }
 
 function mapDocToPlace(fp: any): any {
@@ -65,9 +65,9 @@ function mapDocToPlace(fp: any): any {
         websiteUrl: fp.websiteurl,
         rating: fp.starrate != null ? parseFloat(String(fp.starrate)) : (fp.rating ?? 0),
         reviewCount: fp.reviewCount ?? fp.reviewcount ?? 0,
-        // Online status – same as therapist: Available, Busy, Offline
-        status: normalizeAvailability(fp.status ?? fp.availability ?? 'Offline'),
-        availability: normalizeAvailability(fp.availability ?? fp.status ?? 'Offline'),
+        // Online status – same as therapist: Available or Busy (no Offline)
+        status: normalizeAvailability(fp.status ?? fp.availability ?? 'Busy'),
+        availability: normalizeAvailability(fp.availability ?? fp.status ?? 'Busy'),
         isLive: fp.isLive !== false,
         city: fp.city,
         coordinates: fp.coordinates,

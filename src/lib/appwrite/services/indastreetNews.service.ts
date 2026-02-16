@@ -10,6 +10,7 @@
  * - date (string, 50, required)
  * - category (enum, required): techniques | producers | places-opening | places-closing | good-news | negative | headlines
  * - imageSrc (string, 1000, optional)
+ * - body (string, 50000, optional) – full article text for expand/collapse reading; use reworded/original prose when sourcing from external news
  * - published (boolean, optional, default true)
  * - order (integer, optional)
  */
@@ -29,6 +30,8 @@ export interface IndastreetNewsDocument {
   date: string;
   category: NewsCategory;
   imageSrc?: string;
+  /** Full article text; when ingesting from Google/news, reword for fresh grammar and originality. */
+  body?: string;
   published?: boolean;
   order?: number;
   $createdAt?: string;
@@ -42,6 +45,8 @@ export interface IndastreetNewsItem {
   date: string;
   category: NewsCategory;
   imageSrc?: string;
+  /** Full article for expand/collapse reading. */
+  body?: string;
 }
 
 function mapDocToItem(doc: IndastreetNewsDocument): IndastreetNewsItem {
@@ -52,6 +57,7 @@ function mapDocToItem(doc: IndastreetNewsDocument): IndastreetNewsItem {
     date: doc.date || '',
     category: doc.category || 'headlines',
     imageSrc: doc.imageSrc || undefined,
+    body: doc.body || undefined,
   };
 }
 

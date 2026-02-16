@@ -12,6 +12,7 @@ import {
     Users as UsersIcon,
     Building as BuildingIcon,
     Home as HomeIcon,
+    Dumbbell as DumbbellIcon,
     Heart as HeartIcon,
     Calendar as CalendarIcon,
     Share2
@@ -49,7 +50,7 @@ interface IndastreetPartnersPageProps {
     places?: any[];
     t: any;
     loggedInPartnerId?: string; // NEW: To show "Manage Settings" button for owner
-    loggedInPartnerType?: 'hotel' | 'villa'; // NEW: Partner type
+    loggedInPartnerType?: 'hotel' | 'villa' | 'gym'; // Partner type
 }
 
 const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ 
@@ -77,7 +78,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     const [searchTerm, setSearchTerm] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [userCity, setUserCity] = useState<string>('Your Area');
-    const [viewType, setViewType] = useState<'hotel' | 'villa'>('hotel');
+    const [viewType, setViewType] = useState<'hotel' | 'villa' | 'gym'>('hotel');
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showReferModal, setShowReferModal] = useState(false);
     const [selectedPartner, setSelectedPartner] = useState<PartnerWebsite | null>(null);
@@ -360,7 +361,8 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             'therapist': 'bg-orange-100 text-orange-800 border-orange-200',
             'massage-place': 'bg-amber-100 text-amber-800 border-amber-200',
             'hotel': 'bg-orange-100 text-orange-800 border-orange-200',
-            'villa': 'bg-amber-100 text-amber-800 border-amber-200'
+            'villa': 'bg-amber-100 text-amber-800 border-amber-200',
+            'gym': 'bg-orange-100 text-orange-800 border-orange-200'
         };
         return categoryColors[category as keyof typeof categoryColors] || 'bg-orange-100 text-orange-800 border-orange-200';
     };
@@ -371,6 +373,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             case 'massage-place': return <BuildingIcon className="w-5 h-5" />;
             case 'hotel': return <BuildingIcon className="w-5 h-5" />;
             case 'villa': return <HomeIcon className="w-5 h-5" />;
+            case 'gym': return <DumbbellIcon className="w-5 h-5" />;
             default: return <GlobeAltIcon className="w-5 h-5" />;
         }
     };
@@ -391,9 +394,9 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
 
     if (loading) {
         return (
-            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white flex items-center justify-center">
+            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto" />
                     <p className="mt-4 text-gray-600">Loading Indastreet Partners...</p>
                 </div>
             </div>
@@ -401,25 +404,18 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     }
 
     return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
-            {/* Universal Header with Home Button */}
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
             <UniversalHeader
+                language={language}
+                onLanguageChange={(lang) => {}}
                 onMenuClick={() => setIsMenuOpen(true)}
                 onHomeClick={() => onNavigate && onNavigate('home')}
-                showHomeButton={true}
-                showLanguageSelector={false}
+                showHomeButton
             />
-            
-            {/* Flying Butterfly Animation */}
             <FlyingButterfly />
-            
-            {/* Global App Drawer */}
             <AppDrawer
                 isOpen={isMenuOpen}
-                onClose={() => {
-                    console.log('🍔 Partners Page - AppDrawer onClose called');
-                    setIsMenuOpen(false);
-                }}
+                onClose={() => setIsMenuOpen(false)}
                 t={t}
                 language={language as 'en' | 'id' | 'gb'}
                 onMassageJobsClick={onMassageJobsClick}
@@ -437,111 +433,132 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 therapists={therapists}
                 places={places}
             />
-            
-            {/* Hero Section with Background Image */}
-            <div 
-                className="relative text-white pt-20 sm:pt-24 pb-8 sm:pb-10 lg:pb-14 overflow-hidden bg-cover bg-center"
-                style={{
-                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20villa.png)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                }}
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <h1 className="text-2xl font-extrabold sm:text-4xl lg:text-5xl xl:text-6xl drop-shadow-lg">
-                        <div
-                            onClick={() => {
-                                // Triple-click to open admin panel (for testing)
-                                const now = Date.now();
-                                const clicks = (window as any).adminClicks || [];
-                                clicks.push(now);
-                                (window as any).adminClicks = clicks.filter((t: number) => now - t < 1000);
-                                if ((window as any).adminClicks.length >= 3) {
-                                    setShowAdminPanel(true);
-                                    (window as any).adminClicks = [];
-                                }
-                            }}
-                        >
-                            <span className="text-white">INDA</span><span className="text-orange-500">STREET PARTNERS</span>
-                        </div>
-                    </h1>
-                    <p className="mt-3 sm:mt-4 text-sm sm:text-lg lg:text-xl text-white max-w-3xl mx-auto drop-shadow-md px-4">
+
+            {/* Spacer below fixed header – matches app layout */}
+            <div className="pt-[60px] sm:pt-16" aria-hidden />
+
+            {/* Hero – same style as blog index: rounded container, gradient overlay */}
+            <section className="px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10">
+                <div
+                    className="relative w-full aspect-[21/9] min-h-[200px] sm:min-h-[260px] bg-gray-100 rounded-2xl sm:rounded-3xl overflow-hidden"
+                    onClick={() => {
+                        const now = Date.now();
+                        const clicks = (window as any).adminClicks || [];
+                        clicks.push(now);
+                        (window as any).adminClicks = clicks.filter((t: number) => now - t < 1000);
+                        if ((window as any).adminClicks.length >= 3) {
+                            setShowAdminPanel(true);
+                            (window as any).adminClicks = [];
+                        }
+                    }}
+                >
+                    <img
+                        src="https://ik.imagekit.io/7grri5v7d/hotel%20villa.png"
+                        alt="IndaStreet Partners"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold drop-shadow-sm">
+                            <span className="text-white">Inda</span><span className="text-orange-400">Street</span> Partners
+                        </h1>
+                        <p className="mt-1 text-sm sm:text-base text-white/90 max-w-2xl">
+                            {language === 'id'
+                                ? 'Hotel, villa, dan gym terverifikasi. Pesan dan nikmati layanan berkualitas.'
+                                : 'Verified hotels, villas and gyms. Book and enjoy quality service.'}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Subtle CTA bar – app orange */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                <div className="bg-orange-500 text-white rounded-2xl py-4 sm:py-5 px-4 sm:px-6 text-center">
+                    <p className="text-sm sm:text-base font-medium">
                         {language === 'id'
-                            ? 'Temukan hotel dan villa yang menawarkan layanan pijat 24 jam. Anda dapat yakin akan layanan pijat berkualitas tertinggi saat menginap di hotel dan villa yang terdaftar di Indastreet. Masing-masing telah dipilih dengan cermat untuk memfasilitasi brand Indastreet.'
-                            : 'Discover hotels and villas offering 24-hour massage services. You can be assured of the highest quality massage service when staying at the hotels and villas listed on Indastreet. Each has been carefully selected to facilitate the Indastreet brand.'}
+                            ? 'Pesan hotel, villa, atau gym yang terdaftar di bawah ini.'
+                            : 'Book any hotel, villa or gym listed below.'}
+                    </p>
+                    <p className="mt-2 text-xs sm:text-sm text-white/90 max-w-2xl mx-auto">
+                        {language === 'id'
+                            ? 'Mitra Indastreet menyediakan layanan berkualitas tinggi dari anggota Safe Pass terpercaya—Anda dapat mengandalkan pijat profesional dan perawatan kulit yang aman.'
+                            : 'IndaStreet Partners deliver top-quality care through our trusted Safe Pass members—you can count on professional massage and skin care every time.'}
                     </p>
                 </div>
             </div>
 
-            {/* Booking Banner */}
-            <div className="bg-gradient-to-r from-orange-600 to-amber-600 py-4 sm:py-6">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <p className="text-white text-base sm:text-lg lg:text-xl font-medium">
-                        {language === 'id'
-                            ? 'Pesan Hotel Dan Villa Yang Terdaftar Di Bawah Dan Nikmati Layanan Terapis Pijat Kamar 24 Jam'
-                            : 'Book Any Hotel And Villa Listed Below And Enjoy 24 Hour Room Massage Therapist Service'}
-                    </p>
-                </div>
-            </div>
-
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 pb-20 sm:pb-24">
-                {/* Viewing Location Banner */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-20 sm:pb-24">
+                {/* Viewing location – white card, app style */}
                 <div className="mb-6 sm:mb-8">
-                    <div className="bg-white rounded-lg shadow-md p-4 text-center">
-                        <p className="text-lg sm:text-xl font-semibold text-gray-800">
-                            {language === 'id' ? 'Melihat Sekarang' : 'Viewing Now'}: <span className="text-orange-600">{userCity}</span>
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 sm:p-5 text-center">
+                        <p className="text-lg sm:text-xl font-semibold text-gray-900">
+                            {language === 'id' ? 'Melihat' : 'Viewing'}: <span className="text-orange-600">{userCity}</span>
                         </p>
                         <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                            {language === 'id' ? 'Menampilkan hotel dan villa dalam radius 30km' : 'Showing hotels and villas within 30km'}
+                            {language === 'id' ? 'Hotel, villa & gym dalam radius 30km' : 'Hotels, villas & gyms within 30km'}
                         </p>
                     </div>
                 </div>
 
-                {/* Hotel/Villa Toggle Button */}
-                <div className="flex justify-center mb-6 sm:mb-8" style={{ marginBottom: '20px' }}>
-                    <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
-                        <button
-                            onClick={() => setViewType('hotel')}
-                            className={`px-6 sm:px-8 py-2 sm:py-3 rounded-md text-sm sm:text-base font-medium transition-all duration-200 ${
-                                viewType === 'hotel'
-                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
-                                    : 'text-gray-700 hover:text-orange-600'
-                            }`}
-                        >
-                            {language === 'id' ? 'Hotel Pijat' : 'Massage Hotel'}
-                        </button>
-                        <button
-                            onClick={() => setViewType('villa')}
-                            className={`px-6 sm:px-8 py-2 sm:py-3 rounded-md text-sm sm:text-base font-medium transition-all duration-200 ${
-                                viewType === 'villa'
-                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
-                                    : 'text-gray-700 hover:text-orange-600'
-                            }`}
-                        >
-                            {language === 'id' ? 'Villa Pijat' : 'Massage Villa'}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Join Indastreet link above grid */}
-                <div className="flex justify-end mb-4">
+                {/* Hotel / Villa / Gym toggle – app theme pills */}
+                <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-6 sm:mb-8">
                     <button
-                        onClick={() => onNavigate?.('join-indastreet-partners')}
-                        className="text-sm text-orange-600 hover:text-orange-700 font-semibold underline transition-colors"
+                        onClick={() => setViewType('hotel')}
+                        className={`flex items-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                            viewType === 'hotel'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200'
+                        }`}
                     >
-                        Join Indastreet
+                        {language === 'id' ? 'Hotel' : 'Hotel'}
+                    </button>
+                    <button
+                        onClick={() => setViewType('villa')}
+                        className={`flex items-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                            viewType === 'villa'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200'
+                        }`}
+                    >
+                        {language === 'id' ? 'Villa' : 'Villa'}
+                    </button>
+                    <button
+                        onClick={() => setViewType('gym')}
+                        className={`flex items-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                            viewType === 'gym'
+                                ? 'bg-orange-500 text-white shadow-md'
+                                : 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200'
+                        }`}
+                    >
+                        {language === 'id' ? 'Gym' : 'Gym'}
                     </button>
                 </div>
 
-                {/* Partners Grid – same UI standard as employer job posting cards */}
+                {/* How booking works – under Hotel / Villa / Gym */}
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 sm:p-5 mb-6 sm:mb-8">
+                    <p className="text-sm sm:text-base text-gray-700 leading-relaxed text-center max-w-2xl mx-auto">
+                        {language === 'id'
+                            ? 'Pesan dengan mitra kami sangat mudah. Pilih Hotel, Villa, atau Gym di bawah, lalu hubungi mereka langsung untuk mengatur layanan pijat atau perawatan kulit. Anda bisa memesan menginap atau kunjungan harian—tim mereka dengan senang hati membantu kebutuhan Anda.'
+                            : 'Booking with our partners is simple. Choose a Hotel, Villa or Gym below, then contact them directly to arrange a massage or skin care service. You can book an overnight stay or a daily visit—their team will be happy to help with your requirements.'}
+                    </p>
+                </div>
+
+                <div className="flex justify-end mb-4">
+                    <button
+                        onClick={() => onNavigate?.('joinIndastreet')}
+                        className="text-sm text-orange-600 hover:text-orange-700 font-semibold transition-colors rounded focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    >
+                        {language === 'id' ? 'Gabung Indastreet' : 'Join Indastreet'}
+                    </button>
+                </div>
+
+                {/* Partners grid – app theme cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredPartners.map((partner) => {
-                        const cardClass = 'rounded-[20px] shadow-lg border border-slate-200/80 bg-white hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden';
+                        const cardClass = 'bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow duration-200';
                         return (
                             <div key={partner.id} className={cardClass}>
-                                {/* Image – same as job cards: h-40, rounded-t-[20px] */}
-                                <div className="relative w-full h-40 overflow-hidden rounded-t-[20px] bg-slate-100">
+                                <div className="relative w-full h-40 overflow-hidden rounded-t-2xl bg-gray-100">
                                     <img
                                         src={partner.imageUrl || getRandomDefaultImage()}
                                         alt={`${partner.name} cover`}
@@ -553,13 +570,13 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                     />
                                     <div className="absolute top-3 right-3 flex gap-2 flex-wrap justify-end">
                                         {partner.verified && (
-                                            <span className="px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">
+                                            <span className="px-2.5 py-1 bg-black/80 backdrop-blur-sm text-orange-400 text-xs font-bold rounded-lg">
                                                 {t?.partners?.verifiedPartner || 'VERIFIED'}
                                             </span>
                                         )}
                                         {partner.rating != null && partner.rating > 0 && (
-                                            <span className="px-2.5 py-1 bg-black/70 backdrop-blur-sm text-white text-xs font-bold rounded-lg flex items-center gap-1">
-                                                <StarIcon className="w-3.5 h-3.5 text-yellow-400" />
+                                            <span className="px-2.5 py-1 bg-black/80 backdrop-blur-sm text-orange-400 text-xs font-bold rounded-lg flex items-center gap-1">
+                                                <StarIcon className="w-3.5 h-3.5 text-orange-400" />
                                                 {partner.rating.toFixed(1)}
                                             </span>
                                         )}
@@ -570,24 +587,23 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                             setPartnerToShare(partner);
                                             setShowSharePopup(true);
                                         }}
-                                        className="absolute bottom-3 right-3 w-9 h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all z-10"
+                                        className="absolute bottom-3 right-3 w-9 h-9 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all z-10"
                                         title="Share this partner"
                                         aria-label="Share this partner"
                                     >
-                                        <Share2 className="w-4 h-4 text-slate-700" strokeWidth={2.5} />
+                                        <Share2 className="w-4 h-4 text-white" strokeWidth={2.5} />
                                     </button>
                                 </div>
 
-                                {/* Content – same structure as job cards: p-5, title, location, description, CTA */}
                                 <div className="p-5">
-                                    <h3 className="text-lg font-bold text-slate-900 mb-1 truncate">{partner.name}</h3>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-1 truncate">{partner.name}</h3>
                                     {partner.location && (
-                                        <p className="text-sm text-slate-600 mb-2 flex items-center gap-1">
-                                            <MapPinIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                        <p className="text-sm text-gray-600 mb-2 flex items-center gap-1">
+                                            <MapPinIcon className="w-4 h-4 text-red-500 flex-shrink-0" />
                                             <span className="truncate">{partner.location}</span>
                                         </p>
                                     )}
-                                    <p className="text-sm text-slate-600 mb-3 line-clamp-2 leading-relaxed">
+                                    <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
                                         {partner.description && partner.description.length > 200
                                             ? partner.description.substring(0, 200) + '...'
                                             : partner.description}
@@ -597,7 +613,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                             {partner.specialties.slice(0, 4).map((amenity, index) => (
                                                 <span
                                                     key={index}
-                                                    className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg"
+                                                    className="px-2 py-0.5 bg-black/80 backdrop-blur-sm text-orange-400 text-xs font-medium rounded-lg"
                                                 >
                                                     {amenity}
                                                 </span>
@@ -605,7 +621,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                         </div>
                                     )}
                                     {partner.addedDate && (
-                                        <p className="text-xs text-slate-500 mb-3">
+                                        <p className="text-xs text-gray-500 mb-3">
                                             {t?.partners?.added || 'Member since'} {new Date(partner.addedDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                                         </p>
                                     )}
@@ -618,7 +634,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                             const phoneNumber = partner.phone?.replace(/[^0-9]/g, '') || '';
                                             window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
                                         }}
-                                        className="w-full py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                                        className="w-full py-2.5 px-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
                                     >
                                         <CalendarIcon className="w-5 h-5" />
                                         {language === 'id' ? 'Pesan Reservasi' : 'Book Reservation'}
@@ -627,9 +643,9 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                onNavigate?.(loggedInPartnerType === 'hotel' ? 'partner-settings-hotel' : 'partner-settings-villa');
+                                                onNavigate?.(loggedInPartnerType === 'hotel' ? 'partner-settings-hotel' : loggedInPartnerType === 'villa' ? 'partner-settings-villa' : 'partner-settings');
                                             }}
-                                            className="w-full mt-2 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                                            className="w-full mt-2 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
                                         >
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -638,16 +654,16 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                             {language === 'id' ? 'Kelola Pengaturan' : 'Manage Settings'}
                                         </button>
                                     )}
-                                    <div className="flex flex-wrap justify-center gap-3 mt-3 pt-3 border-t border-slate-100">
+                                    <div className="flex flex-wrap justify-center gap-3 mt-3 pt-3 border-t border-gray-100">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setSelectedPartner(partner); setShowReferModal(true); }}
-                                            className="text-xs text-slate-500 hover:text-slate-700 font-medium"
+                                            className="text-xs text-gray-500 hover:text-gray-700 font-medium"
                                         >
                                             {language === 'id' ? 'Bagikan' : 'Share'}
                                         </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setSelectedPartner(partner); setShowReviewModal(true); }}
-                                            className="text-xs text-slate-500 hover:text-slate-700 font-medium"
+                                            className="text-xs text-gray-500 hover:text-gray-700 font-medium"
                                         >
                                             {language === 'id' ? 'Ulasan' : 'Review'}
                                         </button>
@@ -655,9 +671,9 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={(e) => { e.stopPropagation(); onNavigate('massageTypes'); }}
-                                                className="text-xs text-slate-500 hover:text-slate-700 font-medium"
+                                                className="text-xs text-gray-500 hover:text-gray-700 font-medium"
                                             >
-                                                {language === 'id' ? 'Direktori Pijat' : 'Massage Directory'}
+                                                {language === 'id' ? 'Direktori' : 'Directory'}
                                             </button>
                                         )}
                                     </div>
@@ -680,45 +696,44 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                     </div>
                 )}
 
-                {/* Join Partner Program CTA */}
-                <div 
-                    className="mt-8 sm:mt-12 bg-gradient-to-r from-orange-600 to-amber-600 rounded-lg sm:rounded-xl p-6 sm:p-8 text-center text-white mx-2 sm:mx-0 relative overflow-hidden"
-                    style={{
-                        backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/start%20your%20journey.png?updatedAt=1763196282314)',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'bottom center',
-                        backgroundRepeat: 'no-repeat'
-                    }}
-                >
-                    {/* Dark overlay to make text visible over background image */}
-                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg sm:rounded-xl"></div>
-                    
-                    <div className="relative z-20">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 drop-shadow-2xl text-white">
-                            {language === 'id' ? 'Ingin menjadi Mitra Indastreet?' : 'Want to become an Indastreet Partner?'}
-                        </h2>
-                        <p className="text-white mb-4 sm:mb-6 max-w-2xl mx-auto text-sm sm:text-base px-2 drop-shadow-xl font-medium">
-                            {language === 'id'
-                                ? 'Bergabunglah dengan jaringan profesional kesehatan dan akomodasi mewah yang terverifikasi. Tampilkan bisnis Anda di platform kami dan tingkatkan visibilitas online Anda.'
-                                : 'Join our network of verified wellness professionals and luxury accommodations. Get featured on our platform and boost your online visibility.'}
-                        </p>
-                        <button 
-                            onClick={() => onNavigate && onNavigate('partnership-application')}
-                            className="bg-white text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-bold hover:bg-gray-100 hover:shadow-xl transition-all duration-200 text-sm sm:text-base shadow-lg transform hover:scale-105"
-                        >
-                            {language === 'id' ? 'Daftar Kemitraan' : 'Apply for Partnership'}
-                        </button>
+                {/* Join Partner CTA – app theme card */}
+                <div className="mt-10 sm:mt-12 bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div
+                        className="relative p-6 sm:p-8 text-center"
+                        style={{
+                            backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20blogssss.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                        }}
+                    >
+                        <div className="absolute inset-0 bg-black/40" />
+                        <div className="relative z-10">
+                            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
+                                {language === 'id' ? 'Ingin menjadi Mitra Indastreet?' : 'Want to become an Indastreet Partner?'}
+                            </h2>
+                            <p className="text-white/95 mb-4 sm:mb-6 max-w-2xl mx-auto text-sm sm:text-base">
+                                {language === 'id'
+                                    ? 'Bergabung dengan jaringan hotel, villa, dan gym terverifikasi. Tampilkan bisnis Anda dan tingkatkan visibilitas.'
+                                    : 'Join our network of verified hotels, villas and gyms. Get featured and boost your visibility.'}
+                            </p>
+                            <button
+                                onClick={() => onNavigate && onNavigate('partner-contact')}
+                                className="bg-orange-500 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold hover:bg-orange-600 transition-all text-sm sm:text-base shadow-md"
+                            >
+                                {language === 'id' ? 'Daftar Kemitraan' : 'Apply for Partnership'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* SEO Footer */}
-            <div className="bg-white border-t border-gray-100 mt-8 sm:mt-12 py-6 sm:py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            {/* Footer – app theme */}
+            <div className="bg-white border-t border-gray-100 mt-8 py-6 sm:py-8">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
                     <p className="text-gray-600 text-xs sm:text-sm">
                         {language === 'id'
-                            ? 'Semua website mitra dimiliki dan dioperasikan secara independen. Indastreet menghubungkan Anda dengan profesional kesehatan dan perhotelan terpercaya.'
-                            : 'All partner websites are independently owned and operated. Indastreet connects you with trusted wellness and hospitality professionals.'}
+                            ? 'Semua mitra dimiliki dan dioperasikan secara independen. Indastreet menghubungkan Anda dengan hotel, villa, dan gym terpercaya.'
+                            : 'All partners are independently owned and operated. Indastreet connects you with trusted hotels, villas and gyms.'}
                     </p>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
-import { Search, MessageCircle, Phone, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, X, Briefcase, Building2 } from 'lucide-react';
+import { Search, MessageCircle, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, X, Briefcase, Building2 } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
@@ -590,15 +590,12 @@ const FAQPage: React.FC<FAQPageProps> = ({
                 <div className="max-w-4xl mx-auto">
                     <button
                         onClick={() => onNavigate?.('home')}
-                        className="mb-6 ml-2 w-12 h-12 rounded-full bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
+                        className="mb-6 ml-2 w-12 h-12 rounded-full bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 flex items-center justify-center shadow-sm transition-all duration-200"
                         title="Back to Home"
                     >
                         <ArrowLeft className="w-6 h-6" />
                     </button>
                     <div className="text-center">
-                        <div className="inline-flex items-center justify-center w-14 h-14 bg-slate-100 rounded-2xl mb-4">
-                            <HelpCircle className="w-7 h-7 text-primary-600" />
-                        </div>
                         <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
                             How can we help you?
                         </h1>
@@ -612,7 +609,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                 placeholder="Search for answers..."
                                 value={searchQuery}
                                 onChange={handleSearchChange}
-                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200/80 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                             />
                         </div>
                     </div>
@@ -621,7 +618,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
 
             <div className="max-w-7xl mx-auto px-4 pb-16">
                 {/* Category tabs – same style as jobs page: slate bg, white active, primary accent */}
-                <div className="flex flex-wrap gap-2 mb-8 p-2 rounded-[20px] bg-slate-100 border border-slate-200/80">
+                <div className="flex flex-wrap gap-2 mb-8 p-2 rounded-[20px] bg-gray-50 border border-gray-200">
                     {categories.map((category) => {
                         const IconComponent = category.icon;
                         const isActive = activeCategory === category.id;
@@ -638,13 +635,13 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                 className={`
                                     flex items-center gap-2 py-2.5 px-4 rounded-[18px] text-sm font-semibold transition-all
                                     ${isActive
-                                        ? 'bg-white text-primary-600 shadow-md border border-slate-200/80'
+                                        ? 'bg-white text-orange-600 shadow-md border border-gray-200'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'}
                                 `}
                             >
-                                <IconComponent className="w-4 h-4 flex-shrink-0" />
+                                <IconComponent className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-orange-600' : 'text-orange-500'}`} />
                                 <span className="truncate max-w-[120px] sm:max-w-none">{category.name}</span>
-                                <span className="text-xs opacity-80">({count})</span>
+                                <span className="text-xs font-semibold text-orange-600">({count})</span>
                             </button>
                         );
                     })}
@@ -653,7 +650,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                 {/* FAQ List – cards same style as job cards: rounded-[20px], border-slate-200/80 */}
                 <div className="max-w-4xl mx-auto">
                     {searchQuery && (
-                        <div className="mb-6 p-4 rounded-xl border border-slate-200/80 bg-slate-50/50">
+                        <div className="mb-6 p-4 rounded-xl border border-gray-200 bg-gray-50">
                             <p className="text-slate-700">
                                 <span className="font-semibold">{filteredFAQs.length}</span> results for
                                 <span className="font-semibold"> "{searchQuery}"</span>
@@ -668,7 +665,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                             return (
                                 <div
                                     key={index}
-                                    className="rounded-[20px] border border-slate-200/80 bg-white shadow-sm overflow-hidden hover:shadow-md transition-all duration-300"
+                                    className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden hover:shadow-md transition-all duration-300"
                                 >
                                     <button
                                         type="button"
@@ -676,14 +673,14 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                         className="w-full cursor-pointer p-5 flex items-start justify-between gap-4 text-left hover:bg-slate-50/50 transition-colors group"
                                     >
                                         <div className="flex-1 min-w-0">
-                                            <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg mb-2">
+                                            <span className="inline-block px-2.5 py-1 bg-black/80 text-orange-400 text-xs font-semibold rounded-lg mb-2 backdrop-blur-sm">
                                                 {categories.find(cat => cat.id === faq.category)?.name || 'General'}
                                             </span>
-                                            <h3 className="text-base font-bold text-slate-900 group-hover:text-primary-600 transition-colors leading-tight">
+                                            <h3 className="text-base font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-tight">
                                                 {faq.question}
                                             </h3>
                                         </div>
-                                        <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isExpanded ? 'bg-primary-500 text-white rotate-180' : 'bg-slate-100 text-slate-500 group-hover:bg-primary-50 group-hover:text-primary-600'}`}>
+                                        <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isExpanded ? 'bg-orange-500 text-white rotate-180' : 'bg-slate-100 text-slate-500 group-hover:bg-orange-50 group-hover:text-orange-600'}`}>
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                         </span>
                                     </button>
@@ -696,7 +693,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                                 {faq.tags && faq.tags.length > 0 && (
                                                     <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
                                                         {faq.tags.map((tag, tagIndex) => (
-                                                            <span key={tagIndex} className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg">
+                                                            <span key={tagIndex} className="px-2.5 py-1 bg-black/80 text-orange-400 text-xs font-medium rounded-lg backdrop-blur-sm">
                                                                 #{tag}
                                                             </span>
                                                         ))}
@@ -709,14 +706,14 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                                     <button
                                                         type="button"
                                                         onClick={(e) => { e.stopPropagation(); handleFeedback(index, 'like'); }}
-                                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${currentFeedback === 'like' ? 'bg-primary-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-primary-50 hover:text-primary-600'}`}
+                                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${currentFeedback === 'like' ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100'}`}
                                                     >
                                                         <ThumbsUp className="w-4 h-4" /> Yes
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={(e) => { e.stopPropagation(); handleFeedback(index, 'dislike'); }}
-                                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${currentFeedback === 'dislike' ? 'bg-slate-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${currentFeedback === 'dislike' ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100'}`}
                                                     >
                                                         <X className="w-4 h-4" /> No
                                                     </button>
@@ -730,7 +727,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                     </div>
 
                     {filteredFAQs.length === 0 && (
-                        <div className="text-center py-16 rounded-[20px] border border-slate-200/80 bg-white">
+                        <div className="text-center py-16 rounded-2xl border border-gray-200 bg-white">
                             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Search className="w-8 h-8 text-slate-400" />
                             </div>
@@ -739,7 +736,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                             <button
                                 type="button"
                                 onClick={() => { setSearchQuery(''); setActiveCategory('general'); }}
-                                className="px-6 py-2.5 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-colors"
+                                className="px-6 py-2.5 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors"
                             >
                                 Clear search
                             </button>
@@ -749,8 +746,8 @@ const FAQPage: React.FC<FAQPageProps> = ({
 
                 {/* Contact Support – same theme as home/jobs */}
                 <div className="max-w-4xl mx-auto mt-16">
-                    <div className="rounded-[20px] border border-slate-200/80 bg-slate-50/50 p-8 md:p-12 text-center">
-                        <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-500 rounded-2xl mb-4">
+                    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 md:p-12 text-center">
+                        <div className="inline-flex items-center justify-center w-14 h-14 bg-orange-500 rounded-2xl mb-4">
                             <MessageCircle className="w-7 h-7 text-white" />
                         </div>
                         <h2 className="text-2xl font-bold text-slate-900 mb-2">
@@ -759,18 +756,11 @@ const FAQPage: React.FC<FAQPageProps> = ({
                         <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
                             Our support team typically responds within 24 hours. Reach out for booking issues, verification, or general questions.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                            <button
-                                type="button"
-                                onClick={() => window.open('https://wa.me/6281392000050', '_blank')}
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#25D366] text-white font-semibold rounded-xl hover:opacity-90 transition-all"
-                            >
-                                <Phone className="w-5 h-5" /> WhatsApp
-                            </button>
+                        <div className="flex justify-center">
                             <button
                                 type="button"
                                 onClick={() => onNavigate?.('contact')}
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-primary-600 font-semibold rounded-xl border border-slate-200/80 hover:bg-primary-50 transition-all"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-all"
                             >
                                 <Mail className="w-5 h-5" /> Contact Us
                             </button>

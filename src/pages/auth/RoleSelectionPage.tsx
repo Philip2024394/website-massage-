@@ -67,14 +67,16 @@ const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({
 
   return (
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
-      {/* Universal Header - Same as HomePage */}
+      {/* Universal Header – same design and layout as home page, with home icon */}
       <UniversalHeader
         language={language}
         onLanguageChange={onLanguageChange as (lang: string) => void}
         onMenuClick={() => setIsMenuOpen(true)}
+        onHomeClick={() => onNavigate?.('home')}
+        showHomeButton
       />
-      
-      {/* App Drawer - Same as HomePage */}
+
+      {/* App Drawer – same as home page */}
       {isMenuOpen && (
         <AppDrawer
           isOpen={isMenuOpen}
@@ -97,6 +99,9 @@ const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({
           onLoginClick={onLoginClick}
         />
       )}
+
+      {/* Spacer so content starts below fixed header – matches home page layout */}
+      <div className="pt-[60px] sm:pt-16" aria-hidden />
 
       {/* Main Content */}
       <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-gray-50 via-orange-50/30 to-yellow-50/20">

@@ -138,6 +138,7 @@ function docToPlaceLike(doc: any): PlaceLike {
     return {
         $id: doc.$id,
         id: doc.$id || doc.placeId || doc.id,
+        type: 'facial',
         name: doc.name || 'Facial Clinic',
         description: doc.description || '',
         mainImage: doc.mainimage || doc.mainImage || '',

@@ -738,6 +738,13 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
             {/* Only show content for selected & non-minimized chat */}
             {isSelected && !isMinimized && (
               <div className="flex flex-col h-[calc(100%-80px)] relative">
+                {/* Therapist terms reminder: Available = ready to accept; missed bookings affect ranking */}
+                {userRole === 'therapist' && (
+                  <div className="px-3 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-900">
+                    <p className="font-medium">⚠️ Reminder</p>
+                    <p>Being marked <strong>Available</strong> means you are ready to accept bookings. Not meeting our terms may affect your search ranking and can result in account deactivation.</p>
+                  </div>
+                )}
                 
                 {/* BOOKING FORM for booking-in-progress status */}
                 {chatRoom.status === 'booking-in-progress' && (

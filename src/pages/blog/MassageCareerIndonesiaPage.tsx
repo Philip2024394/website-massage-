@@ -45,37 +45,40 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
 
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
-            {/* Universal Header */}
-            <UniversalHeader 
+            <UniversalHeader
                 onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={() => onNavigate?.('home')}
+                showHomeButton
                 showLanguageSelector={false}
             />
-            
+
+            <div className="pt-[60px] sm:pt-16" aria-hidden />
+
             {isMenuOpen && (
                 <div className="fixed inset-0 z-50">
-                    <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsMenuOpen(false)}></div>
-                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        <div className="p-6 flex justify-between items-center">
-                            <h2 className="font-bold text-2xl">
-                                <span className="text-orange-500">IndaStreet</span>
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setIsMenuOpen(false)} aria-hidden />
+                    <div className={`absolute right-0 top-0 bottom-0 w-[70%] sm:w-80 bg-white shadow-2xl flex flex-col border-l border-gray-200 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-6 flex justify-between items-center border-b border-gray-100">
+                            <h2 className="text-2xl font-bold text-gray-900">
+                                <span className="text-gray-900">Inda</span><span className="text-orange-500">Street</span>
                             </h2>
-                            <button onClick={() => setIsMenuOpen(false)}>
+                            <button onClick={() => setIsMenuOpen(false)} className="p-2 rounded-lg hover:bg-gray-100">
                                 <CloseIcon />
                             </button>
                         </div>
-                        <nav className="flex-grow  p-4">
+                        <nav className="flex-grow p-4">
                             <div className="space-y-2">
-                                <button onClick={() => { onNavigate?.('home'); setIsMenuOpen(false); }} className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md border-l-4 border-orange-500 group">
+                                <button onClick={() => { onNavigate?.('home'); setIsMenuOpen(false); }} className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-gray-50 hover:bg-orange-50 border-l-4 border-orange-500 group">
                                     <span className="text-2xl">🏠</span>
                                     <div>
                                         <h3 className="font-semibold text-gray-800 group-hover:text-orange-600">Back to Home</h3>
                                         <p className="text-xs text-gray-500">Return to main page</p>
                                     </div>
                                 </button>
-                                <button onClick={() => { onNavigate?.('blog'); setIsMenuOpen(false); }} className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md border-l-4 border-purple-500 group">
+                                <button onClick={() => { onNavigate?.('blog'); setIsMenuOpen(false); }} className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-gray-50 hover:bg-orange-50 border-l-4 border-orange-500 group">
                                     <span className="text-2xl">📚</span>
                                     <div>
-                                        <h3 className="font-semibold text-gray-800 group-hover:text-purple-600">All Blog Posts</h3>
+                                        <h3 className="font-semibold text-gray-800 group-hover:text-orange-600">All Blog Posts</h3>
                                         <p className="text-xs text-gray-500">View all articles</p>
                                     </div>
                                 </button>
@@ -85,47 +88,52 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                 </div>
             )}
 
-            <article className="max-w-4xl mx-auto px-4 py-12">
-                <nav className="mb-8 text-sm text-gray-600">
-                    <button onClick={() => onNavigate?.('home')} className="hover:text-orange-600">Home</button> / 
-                    <button onClick={() => onNavigate?.('blog')} className="hover:text-orange-600 ml-1">Blog</button> / 
-                    <span className="ml-1">Build a Successful Massage Career</span>
-                </nav>
-
-                <header className="mb-8">
-                    <div className="mb-4">
-                        <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-bold uppercase">Career Advice</span>
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                        How to Build a Successful Massage Career in Indonesia
-                    </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
-                        <span>By Wayan Putra</span>
-                        <span>•</span>
-                        <span>Oct 10, 2025</span>
-                        <span>•</span>
-                        <span>10 min read</span>
-                    </div>
-                </header>
-
-                <div className="mb-12 rounded-2xl overflow-hidden">
-                    <img 
-                        src="https://ik.imagekit.io/7grri5v7d/massage%20buisness%20indonisea.png?updatedAt=1761560581906" 
-                        alt="Building successful massage therapy career in Indonesia" 
-                        className="w-full h-96 object-cover"
+            <article>
+                {/* Full-height hero image – app theme: full viewport */}
+                <div className="w-full min-h-[100vh] -mt-[60px] sm:-mt-16 relative">
+                    <img
+                        src="https://ik.imagekit.io/7grri5v7d/indastreet%20blogs.png"
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover object-center"
                     />
                 </div>
 
-                <div className="prose prose-base max-w-none">
-                    <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                {/* Content card – app theme: white card, rounded, shadow */}
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-16 sm:-mt-24 relative z-10 pb-12">
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div className="px-4 sm:px-8 py-8 sm:py-10">
+                            <nav className="mb-6 text-sm text-gray-600" aria-label="Breadcrumb">
+                                <button onClick={() => onNavigate?.('home')} className="hover:text-orange-600 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-orange-200">Home</button>
+                                <span className="mx-1">/</span>
+                                <button onClick={() => onNavigate?.('blog')} className="hover:text-orange-600 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-orange-200">Blog</button>
+                                <span className="mx-1">/</span>
+                                <span className="text-gray-900 font-medium">Build a Successful Massage Career</span>
+                            </nav>
+
+                            <header className="mb-8">
+                                <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide mb-4">Career Advice</span>
+                                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 leading-tight">
+                                    How to Build a Successful Massage Career in Indonesia
+                                </h1>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-gray-500 text-sm">
+                                    <span>By Wayan Putra</span>
+                                    <span>•</span>
+                                    <span>Oct 10, 2025</span>
+                                    <span>•</span>
+                                    <span>10 min read</span>
+                                </div>
+                            </header>
+
+                            <div className="prose prose-base max-w-none">
+                                <p className="text-base sm:text-lg text-gray-700 mb-6 leading-relaxed">
                         Indonesia's massage therapy industry offers tremendous opportunities for skilled professionals. With growing wellness tourism, increasing local demand, and the rise of digital platforms like IndaStreet, therapists can build thriving careers. Here's your complete roadmap to success.
                     </p>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">1. Get Proper Certification and Training</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">1. Get Proper Certification and Training</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Professional certification is your foundation. Indonesian clients and international tourists increasingly demand qualified therapists with recognized credentials.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Essential Certifications:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">Essential Certifications:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li><strong>Traditional Balinese Massage:</strong> Foundation training available in Ubud, Denpasar, and Sanur (4-6 weeks, IDR 3-8 million)</li>
                         <li><strong>Swedish Massage Certification:</strong> International standard technique (2-3 months)</li>
@@ -137,11 +145,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         Investment in education pays off quickly. Certified therapists in Bali earn 40-70% more than uncertified practitioners.
                     </p>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">2. Build Your Professional Profile</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">2. Build Your Professional Profile</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Your online presence is your digital storefront. Platforms like IndaStreet allow therapists to showcase skills, certifications, specialties, and client reviews.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Profile Essentials:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">Profile Essentials:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li><strong>Professional photos:</strong> Clean, well-lit images in professional attire</li>
                         <li><strong>Detailed bio:</strong> Training background, specialties, years of experience</li>
@@ -151,11 +159,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         <li><strong>Languages spoken:</strong> English, Bahasa Indonesia, Mandarin, Japanese, etc.</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">3. Master Client Acquisition</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">3. Master Client Acquisition</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Consistent client flow is essential for financial stability. Successful Indonesian therapists use multiple channels:
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Client Sources:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">Client Sources:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li><strong>IndaStreet Platform:</strong> Connect with clients and hotels seeking professional therapists</li>
                         <li><strong>Hotel Partnerships:</strong> Secure contracts with resorts and boutique hotels</li>
@@ -165,11 +173,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         <li><strong>Wellness Centers:</strong> Part-time positions at spas and yoga studios</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">4. Set Competitive Pricing</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">4. Set Competitive Pricing</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Pricing strategy impacts your income and client base. Indonesian massage therapy rates vary significantly by location, specialty, and clientele.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">2025 Indonesia Pricing Guidelines:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">2025 Indonesia Pricing Guidelines:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li><strong>Bali Tourist Areas (Seminyak, Ubud, Canggu):</strong> IDR 300,000-750,000/hour</li>
                         <li><strong>Jakarta CBD:</strong> IDR 400,000-900,000/hour</li>
@@ -181,11 +189,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         Start competitively, then increase rates as you build reputation and client base. Review pricing quarterly based on demand and experience level.
                     </p>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">5. Deliver Exceptional Client Experience</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">5. Deliver Exceptional Client Experience</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Client retention is more profitable than constant acquisition. Outstanding service turns first-time clients into regulars.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Excellence Checklist:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">Excellence Checklist:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li><strong>Punctuality:</strong> Arrive 5-10 minutes early for appointments</li>
                         <li><strong>Hygiene:</strong> Impeccable cleanliness, fresh linens, sanitized equipment</li>
@@ -195,11 +203,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         <li><strong>Amenities:</strong> Quality oils, relaxing music, comfortable temperature</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">6. Collect and Leverage Reviews</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">6. Collect and Leverage Reviews</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Online reviews are your most powerful marketing tool. Indonesian and international clients heavily rely on testimonials when booking.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Review Strategy:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">Review Strategy:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li>Request reviews immediately after positive sessions</li>
                         <li>Make it easy: provide direct links to Google, IndaStreet, TripAdvisor</li>
@@ -208,11 +216,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         <li>Aim for 20+ reviews within first 3 months</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">7. Expand Your Income Streams</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">7. Expand Your Income Streams</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Successful therapists diversify beyond one-on-one sessions. Multiple revenue streams create financial stability and growth.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Income Diversification:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">Income Diversification:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li><strong>Workshops & Training:</strong> Teach massage techniques (IDR 500,000-2,000,000/class)</li>
                         <li><strong>Product Sales:</strong> Essential oils, massage tools, wellness products (20-30% margin)</li>
@@ -222,11 +230,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         <li><strong>Mobile Spa Services:</strong> Group bookings for events and parties</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">8. Manage Finances Professionally</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">8. Manage Finances Professionally</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Financial management separates successful entrepreneurs from struggling practitioners. Track income, expenses, and plan for growth.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Financial Best Practices:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">Financial Best Practices:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li>Register as freelancer or small business (UMKM) for tax benefits</li>
                         <li>Set aside 20-25% of income for taxes</li>
@@ -236,11 +244,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         <li>Open business bank account separate from personal finances</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">9. Network and Build Relationships</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">9. Network and Build Relationships</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Indonesia's massage industry thrives on relationships. Networking opens doors to partnerships, referrals, and opportunities.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Networking Strategies:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">Networking Strategies:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li>Join Indonesian massage therapy associations and groups</li>
                         <li>Attend wellness industry events and trade shows</li>
@@ -250,11 +258,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         <li>Build relationships with medical practitioners for referrals</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">10. Plan for Long-Term Growth</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">10. Plan for Long-Term Growth</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Sustainable careers require vision beyond today's bookings. Set goals, measure progress, and evolve with industry trends.
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">5-Year Career Milestones:</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mt-6 mb-3">5-Year Career Milestones:</h3>
                     <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
                         <li><strong>Year 1:</strong> Build client base, establish online presence, earn consistent IDR 10-15 million/month</li>
                         <li><strong>Year 2:</strong> Secure hotel partnerships, add specialty services, reach IDR 20-25 million/month</li>
@@ -263,24 +271,29 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
                         <li><strong>Year 5:</strong> Establish brand authority, multiple locations or franchising opportunities</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6">Conclusion</h2>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4">Conclusion</h2>
+                    <p className="text-gray-700 mb-5 leading-relaxed">
                         Building a successful massage therapy career in Indonesia requires dedication, continuous learning, professional ethics, and smart business practices. The industry rewards excellence with financial stability, flexibility, and the satisfaction of improving others' wellbeing.
                     </p>
-                    <p className="text-gray-700 mb-6 leading-relaxed">
+                    <p className="text-gray-700 mb-8 leading-relaxed">
                         Start with solid training, build your reputation through exceptional service, leverage digital platforms like IndaStreet, and consistently deliver value. Success isn't overnight, but with persistence and strategic planning, you can build a thriving massage therapy practice in Indonesia's booming wellness market.
                     </p>
-                </div>
+                            </div>
 
-                <div className="mt-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-white text-center">
-                    <h3 className="text-2xl font-bold mb-4">Start Your Massage Career Today</h3>
-                    <p className="text-xl mb-6">Join IndaStreet to connect with clients and grow your practice</p>
-                    <button 
-                        onClick={() => onNavigate?.('registrationChoice')}
-                        className="bg-white text-orange-600 px-8 py-3 rounded-lg font-bold hover:bg-orange-50 transition-colors"
-                    >
-                        Create Your Profile
-                    </button>
+                            {/* CTA – app theme: orange gradient card */}
+                            <div className="mt-10 rounded-2xl overflow-hidden bg-gradient-to-r from-orange-500 to-amber-500 p-6 sm:p-8 text-white text-center border border-orange-200/50 shadow-md">
+                                <h3 className="text-lg sm:text-xl font-bold mb-2">Start Your Massage Career Today</h3>
+                                <p className="text-white/90 text-sm sm:text-base mb-5 max-w-xl mx-auto">Join IndaStreet to connect with clients and grow your practice.</p>
+                                <button
+                                    type="button"
+                                    onClick={() => onNavigate?.('registrationChoice')}
+                                    className="px-5 py-2.5 bg-white text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-colors shadow-md"
+                                >
+                                    Create Your Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </article>
         </div>

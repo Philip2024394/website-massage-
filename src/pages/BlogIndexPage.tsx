@@ -252,7 +252,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
             readTime: '9 min read',
             date: 'Oct 28, 2025',
             author: 'IndaStreet Research',
-            image: 'https://ik.imagekit.io/7grri5v7d/bali%20messages.png?updatedAt=1761560397225',
+            image: 'https://ik.imagekit.io/7grri5v7d/indastreet%20blogss.png',
             featured: true,
             slug: 'massage-spa-standards-asia-europe'
         },
@@ -316,8 +316,11 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 places={places}
             />
 
-            {/* Hero – rounded corners, padding below header */}
-            <section className="px-4 pt-6 sm:px-6 sm:pt-8">
+            {/* Spacer so content starts below fixed header */}
+            <div className="pt-[60px] sm:pt-16" aria-hidden />
+
+            {/* Hero – padding under header and under image */}
+            <section className="px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10">
                 <div className="relative w-full aspect-[21/9] min-h-[200px] sm:min-h-[260px] bg-gray-100 rounded-2xl sm:rounded-3xl overflow-hidden">
                     <img
                         src="https://ik.imagekit.io/7grri5v7d/indastreet%20blog.png"

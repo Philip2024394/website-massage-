@@ -148,14 +148,15 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                 places={places}
             />
 
-            {/* Hero Section */}
-            <div 
-                className="relative text-white py-24 overflow-hidden bg-cover bg-center w-full max-w-full"
-                style={{
-                    backgroundImage: heroImage ? `url(${heroImage})` : 'linear-gradient(to right, rgb(234, 88, 12), rgb(22, 163, 74))',
-                    backgroundColor: heroImage ? 'transparent' : undefined
-                }}
-            >
+            {/* Hero Section – padding under header, left/right, rounded corners */}
+            <div className="px-4 pt-4 w-full max-w-full box-border">
+                <div 
+                    className="relative text-white py-24 overflow-hidden bg-cover bg-center w-full rounded-2xl"
+                    style={{
+                        backgroundImage: heroImage ? `url(${heroImage})` : 'linear-gradient(to right, rgb(234, 88, 12), rgb(22, 163, 74))',
+                        backgroundColor: heroImage ? 'transparent' : undefined
+                    }}
+                >
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-10 right-10 text-9xl">🌺</div>
                     <div className="absolute bottom-10 left-10 text-8xl">🌿</div>
@@ -177,6 +178,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                     >
                         Find Balinese Massage Therapist
                     </button>
+                </div>
                 </div>
             </div>
 
@@ -366,7 +368,7 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                         {/* Massage Table Image - Full Height */}
                         <div className="absolute inset-0">
                             <img 
-                                src="https://ik.imagekit.io/7grri5v7d/massage%20table.png?updatedAt=1761607910862" 
+                                src="https://ik.imagekit.io/7grri5v7d/massage%20spaaa.png?updatedAt=1771193001547" 
                                 alt="Massage Table" 
                                 className="w-full h-full object-cover"
                             />
@@ -466,6 +468,10 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                 {/* Pricing */}
                 <div className="mb-16">
                     <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Typical Pricing in Bali</h2>
+                    <p className="text-center text-gray-600 mb-6 max-w-2xl mx-auto">
+                        Prices reflect the therapist’s experience, the comfort of the setting, expertise, and level of service. 
+                        Lower prices do not mean less to offer—they may indicate providers who are newer and still building their practice.
+                    </p>
                     <div className="bg-white rounded-2xl p-8 shadow-xl">
                         <div className="overflow-x-auto">
                             <table className="w-full">
@@ -500,8 +506,8 @@ const BalineseMassagePage: React.FC<BalineseMassagePageProps> = ({
                             </table>
                         </div>
                         <p className="text-sm text-gray-500 mt-6">
-                            * Prices vary by location, therapist experience, and whether service is at spa or in-villa. 
-                            IndaStreet connects you directly with independent therapists offering the best value.
+                            * Ranges are indicative and vary by location, setting (spa, in-villa, hotel), and provider. 
+                            IndaStreet connects you directly with therapists and spas so you can choose what fits you best.
                         </p>
                     </div>
                 </div>

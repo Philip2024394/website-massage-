@@ -21,7 +21,7 @@ import { lazy } from 'react';
 // Direct import to prevent dynamic loading errors
 import TherapistProfilePage from '../../pages/TherapistProfilePage';
 const MassagePlaceProfilePage = lazy(() => import('../../pages/MassagePlaceProfilePage'));
-const FacialPlaceProfilePage = lazy(() => import('../../pages/FacialPlaceProfilePageNew'));
+const FacialPlaceProfilePage = lazy(() => import('../../pages/FacialPlaceToClinicProfileAdapter'));
 const PlaceDetailPage = lazy(() => import('../../pages/PlaceDetailPage'));
 
 // New shared profile components (bulletproof, guaranteed to work)

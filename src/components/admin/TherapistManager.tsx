@@ -289,51 +289,69 @@ export const TherapistManager: React.FC = () => {
           )}
         </div>
         
-        {/* Edit Modal */}
+        {/* Edit Modal – full edit (name, description, location, profile image); admin can edit even when 72h locked */}
         {editMode && selectedTherapist && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-lg w-full p-6">
-              <h3 className="text-lg font-semibold mb-4">Edit Therapist</h3>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-lg w-full p-6 my-8">
+              <h3 className="text-lg font-semibold mb-4">Edit Therapist (full admin control)</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input 
                     type="text"
                     value={selectedTherapist.name || ''}
-                    onChange={(e) => setSelectedTherapist({
-                      ...selectedTherapist,
-                      name: e.target.value
-                    })}
+                    onChange={(e) => setSelectedTherapist({ ...selectedTherapist, name: e.target.value })}
                     className="w-full border rounded-lg px-3 py-2"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea 
+                    value={selectedTherapist.description || ''}
+                    onChange={(e) => setSelectedTherapist({ ...selectedTherapist, description: e.target.value })}
+                    rows={4}
+                    className="w-full border rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input 
+                    type="text"
+                    value={selectedTherapist.location || ''}
+                    onChange={(e) => setSelectedTherapist({ ...selectedTherapist, location: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    placeholder="e.g. Yogyakarta, Bali"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Profile image URL</label>
+                  <input 
+                    type="text"
+                    value={selectedTherapist.profilePicture || selectedTherapist.profileImage || ''}
+                    onChange={(e) => setSelectedTherapist({
+                      ...selectedTherapist,
+                      profilePicture: e.target.value,
+                      profileImage: e.target.value
+                    })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input 
                     type="email"
                     value={selectedTherapist.email || ''}
-                    onChange={(e) => setSelectedTherapist({
-                      ...selectedTherapist,
-                      email: e.target.value
-                    })}
+                    onChange={(e) => setSelectedTherapist({ ...selectedTherapist, email: e.target.value })}
                     className="w-full border rounded-lg px-3 py-2"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                   <input 
                     type="tel"
-                    value={selectedTherapist.phone || ''}
-                    onChange={(e) => setSelectedTherapist({
-                      ...selectedTherapist,
-                      phone: e.target.value
-                    })}
+                    value={selectedTherapist.phone || selectedTherapist.whatsappNumber || ''}
+                    onChange={(e) => setSelectedTherapist({ ...selectedTherapist, phone: e.target.value, whatsappNumber: e.target.value })}
                     className="w-full border rounded-lg px-3 py-2"
                   />
                 </div>
@@ -341,10 +359,7 @@ export const TherapistManager: React.FC = () => {
               
               <div className="flex justify-end space-x-3 mt-6">
                 <button
-                  onClick={() => {
-                    setEditMode(false);
-                    setSelectedTherapist(null);
-                  }}
+                  onClick={() => { setEditMode(false); setSelectedTherapist(null); }}
                   className="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50"
                 >
                   Cancel

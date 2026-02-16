@@ -41,29 +41,32 @@ export function usePersistentChatIntegration() {
     }
   }, []);
 
-  const getTherapistStatus = useCallback((therapist: Therapist): 'available' | 'busy' | 'offline' | 'unknown' => {
+  const getTherapistStatus = useCallback((therapist: Therapist): 'available' | 'busy' | 'unknown' => {
     const raw = (therapist.status || (therapist as any).availability || '').toString().trim().toLowerCase();
     if (raw === 'available' || raw === 'online') return 'available';
-    if (raw === 'busy') return 'busy';
-    if (raw === 'offline') return 'offline';
+    if (raw === 'busy' || raw === 'offline') return 'busy'; // No offline in app; treat as busy
     return 'unknown';
   }, []);
 
-  const assertTherapistCanOpenChat = useCallback((therapist: Therapist, mode: 'book' | 'schedule' | 'price' | 'service'): boolean => {
+  /** When fromSharedProfile (e.g. source === 'share'), skip busy check so shared profile booking always works. */
+  const assertTherapistCanOpenChat = useCallback((
+    therapist: Therapist,
+    mode: 'book' | 'schedule' | 'price' | 'service',
+    fromSharedProfile?: boolean
+  ): boolean => {
     if (hasActiveScheduledBooking && (mode === 'book' || mode === 'schedule')) {
       safeAlert('You have a scheduled booking in progress. Please complete or cancel it (and wait for payment to be confirmed or the booking to expire) before booking again.');
       console.log(`❌ [PersistentChatIntegration] ${mode} blocked - user has active scheduled booking`);
       return false;
     }
+    if (fromSharedProfile) {
+      console.log(`✅ [PersistentChatIntegration] ${mode} allowed from shared profile (skip status check)`);
+      return true;
+    }
     const status = getTherapistStatus(therapist);
     if (status === 'busy') {
       safeAlert('⚠️ Therapist is not active in service. Please check back later.');
       console.log(`❌ [PersistentChatIntegration] ${mode} blocked - therapist is BUSY`);
-      return false;
-    }
-    if (status === 'offline') {
-      safeAlert('⚠️ Therapist has no service at this time. Please choose a therapist with available status.');
-      console.log(`❌ [PersistentChatIntegration] ${mode} blocked - therapist is OFFLINE`);
       return false;
     }
     return true;
@@ -228,8 +231,8 @@ export function usePersistentChatIntegration() {
    * Open chat for "Book Now" button
    */
   const openBookingChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
-    console.log('🔒 [PersistentChatIntegration] Opening booking chat for:', therapist.name);
-    if (!assertTherapistCanOpenChat(therapist, 'book')) return;
+    console.log('🔒 [PersistentChatIntegration] Opening booking chat for:', therapist.name, 'source:', source);
+    if (!assertTherapistCanOpenChat(therapist, 'book', source === 'share')) return;
     try {
       const chatTherapist = convertToChatTherapist(therapist);
       openChat(chatTherapist, 'book', source);
@@ -243,8 +246,8 @@ export function usePersistentChatIntegration() {
    * Open chat for "Schedule" button
    */
   const openScheduleChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
-    console.log('🔒 [PersistentChatIntegration] Opening schedule chat for:', therapist.name);
-    if (!assertTherapistCanOpenChat(therapist, 'schedule')) return;
+    console.log('🔒 [PersistentChatIntegration] Opening schedule chat for:', therapist.name, 'source:', source);
+    if (!assertTherapistCanOpenChat(therapist, 'schedule', source === 'share')) return;
     const hasBank = !!((therapist as any).bankName && (therapist as any).accountNumber && (therapist as any).accountName) || !!(therapist as any).bankCardDetails;
     const hasKtp = !!(therapist as any).ktpPhotoUrl;
     if (!hasBank || !hasKtp) {
@@ -264,8 +267,8 @@ export function usePersistentChatIntegration() {
    * Open chat for "View Prices" / Price slider
    */
   const openPriceChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
-    console.log('🔒 [PersistentChatIntegration] Opening price chat for:', therapist.name);
-    if (!assertTherapistCanOpenChat(therapist, 'price')) return;
+    console.log('🔒 [PersistentChatIntegration] Opening price chat for:', therapist.name, 'source:', source);
+    if (!assertTherapistCanOpenChat(therapist, 'price', source === 'share')) return;
     try {
       const chatTherapist = convertToChatTherapist(therapist);
       openChat(chatTherapist, 'price', source);
@@ -288,7 +291,8 @@ export function usePersistentChatIntegration() {
       service,
       options
     });
-    if (!assertTherapistCanOpenChat(therapist, 'service')) return;
+    const source = options?.source ?? null;
+    if (!assertTherapistCanOpenChat(therapist, 'service', source === 'share')) return;
     const bookingType = options?.bookingType || 'immediate';
     try {
       const chatTherapist = convertToChatTherapist(therapist);

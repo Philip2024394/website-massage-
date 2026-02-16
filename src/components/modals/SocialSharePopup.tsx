@@ -8,6 +8,8 @@ interface SocialSharePopupProps {
     description: string;
     url?: string;
     type: 'therapist' | 'place' | 'facial';
+    /** Optional header text (e.g. "Share this article"); when not set, shows "Share My Profile". */
+    headerTitle?: string;
 }
 
 export default function SocialSharePopup({
@@ -16,7 +18,8 @@ export default function SocialSharePopup({
     title,
     description,
     url = window.location.href,
-    type
+    type,
+    headerTitle
 }: SocialSharePopupProps) {
     const [showCopySuccess, setShowCopySuccess] = useState(false);
 
@@ -172,7 +175,7 @@ export default function SocialSharePopup({
                             className="w-16 h-16 object-contain"
                         />
                         <div className="flex-1 pr-2">
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight break-words">Share My Profile</h3>
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight break-words">{headerTitle ?? 'Share My Profile'}</h3>
                             <p className="text-sm text-gray-500 break-words">Choose your platform</p>
                         </div>
                     </div>

@@ -120,6 +120,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const [uploadingPayment, setUploadingPayment] = useState(false);
   const [paymentPending, setPaymentPending] = useState(false); // Track if payment is pending
+  const [showMenuSuggestionModal, setShowMenuSuggestionModal] = useState(false); // After save: suggest updating menu for conversion
 
   // Form state
   const [name, setName] = useState(therapist?.name || '');
@@ -157,6 +158,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   
   // Get country from context (selected on landing page)
   const { country, countryCode } = useCityContext();
+  
+  // 72h lock: after 72 hours from going live, name/description/photo are locked; location stays editable. Admin can edit locked fields.
+  const [profileWentLiveAtFromLoad, setProfileWentLiveAtFromLoad] = useState<string | null>(null);
+  const PROFILE_LOCK_HOURS = 72;
+  const isProfileLocked = React.useMemo(() => {
+    const wentLiveAt = (therapist as any)?.profileWentLiveAt || profileWentLiveAtFromLoad;
+    if (!wentLiveAt) return false;
+    const lockMs = PROFILE_LOCK_HOURS * 60 * 60 * 1000;
+    return (Date.now() - new Date(wentLiveAt).getTime()) > lockMs;
+  }, [therapist?.profileWentLiveAt, profileWentLiveAtFromLoad]);
   
   // Location state
   const [locationSet, setLocationSet] = useState(false);
@@ -357,6 +368,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         
         const latestData = await therapistService.getById(therapistId);
         logger.debug('Latest therapist data loaded', { name: latestData.name });
+        
+        if ((latestData as any).profileWentLiveAt) setProfileWentLiveAtFromLoad((latestData as any).profileWentLiveAt);
         
         // Update form fields with latest data
         if (latestData.name) setName(latestData.name);
@@ -713,9 +726,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         return;
       }
 
+      // When profile is locked (72h after going live), use existing values only for name, description, photo. Location stays editable.
+      const useLockedValues = isProfileLocked;
+      const existingGeopoint = coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : (therapist?.geopoint || (therapist?.coordinates && (typeof therapist.coordinates === 'string' ? JSON.parse(therapist.coordinates) : therapist.coordinates)));
+      const existingLocationId = therapist?.locationId || therapist?.city || therapist?.location || derivedLocationId;
+      
       const updateData: any = {
-        name: name.trim(),
-        description: description.trim(),
+        name: useLockedValues ? (therapist?.name || name.trim()) : name.trim(),
+        description: useLockedValues ? (therapist?.description || description.trim()) : description.trim(),
         Globe: JSON.stringify(selectedGlobe),
         price60: price60.trim(),
         price90: price90.trim(),
@@ -727,12 +745,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         serviceAreas: JSON.stringify(selectedServiceAreas),
         country: country || 'Indonesia', // Save country from context
         
-        // 🌍 GPS-ONLY FIELDS (SINGLE SOURCE OF TRUTH) - ALL FROM GPS COORDINATES
-        geopoint: geopoint,                    // Primary: lat/lng coordinates
-        city: derivedLocationId,               // GPS-derived city
-        locationId: derivedLocationId,         // GPS-derived locationId
-        location: derivedLocationId,           // GPS-derived location
-        coordinates: JSON.stringify(geopoint), // Legacy: serialized coordinates
+        // 🌍 LOCATION: always editable (never locked) – therapist can update GPS/location anytime
+        geopoint: geopoint,
+        city: derivedLocationId,
+        locationId: derivedLocationId,
+        location: derivedLocationId,
+        coordinates: JSON.stringify(geopoint),
         
         // 🚨 ENFORCEMENT: Cannot go live without GPS
         isLive: geopoint && geopoint.lat && geopoint.lng ? true : false,
@@ -741,8 +759,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         isOnline: true,
       };
       
-      // Only include profilePicture if it's a valid URL
-      if (profilePictureUrl && !profilePictureUrl.startsWith('data:')) {
+      // Only include profilePicture if it's a valid URL (when locked keep existing)
+      if (useLockedValues) {
+        updateData.profilePicture = therapist?.profilePicture || '';
+      } else if (profilePictureUrl && !profilePictureUrl.startsWith('data:')) {
         updateData.profilePicture = profilePictureUrl;
       }
 
@@ -833,6 +853,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         showToast('✅ Profile saved and LIVE! Visit the main homepage to see your card.', 'success');
         logger.debug('✅ isLive set to true - visible on HomePage at https://www.indastreetmassage.com');
       }
+      
+      // Suggest updating menu price list for higher customer conversion
+      setShowMenuSuggestionModal(true);
       
       // Don't auto-navigate away from profile page after saving
       // Let user stay on profile to continue editing if needed
@@ -1202,17 +1225,35 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             <p className="text-sm text-gray-600 mt-0.5">A polished, professional profile helps you stand out and attract more bookings.</p>
           </div>
 
+          {/* Auto-lock safety banner: clear message that lock protects against malware and unauthorised changes */}
+          {isProfileLocked && (
+            <div className="mx-6 mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center" aria-hidden>
+                  <span className="text-lg">🛡️</span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Profile locked (72 hours after going live)</p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Name, description, and profile photo are locked. Location remains editable. To update locked fields, contact admin.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Form Content */}
           <div className="p-6 space-y-5">
             {/* Name */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                First Name *
+                First Name * {isProfileLocked && <span className="text-amber-600 text-xs">(locked)</span>}
               </label>
               <input
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none"
+                readOnly={isProfileLocked}
+                className={`w-full border rounded-lg px-3 py-2.5 focus:outline-none ${isProfileLocked ? 'border-gray-200 bg-gray-50 text-gray-600 cursor-not-allowed' : 'border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-200'}`}
                 placeholder="Enter your first name"
               />
             </div>
@@ -1242,11 +1283,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             {/* Foto Profil */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Foto Profil
+                Foto Profil {isProfileLocked && <span className="text-amber-600 text-xs">(locked – contact admin)</span>}
               </label>
               
+              {isProfileLocked && (
+                <p className="text-xs text-amber-700 mb-2">Profile photo cannot be changed here. Contact admin to update.</p>
+              )}
+              
               {/* PERINGATAN KRITIS */}
-              <div className="mb-4 bg-red-50 border-2 border-red-500 rounded-lg p-3">
+              {!isProfileLocked && <div className="mb-4 bg-red-50 border-2 border-red-500 rounded-lg p-3">
                 <div className="flex items-start gap-2">
                   <span className="text-2xl">⚠️</span>
                   <div className="flex-1">
@@ -1258,7 +1303,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     </p>
                   </div>
                 </div>
-              </div>
+              </div>}
               
               <div className="flex items-center gap-4">
                 <div className="relative">
@@ -1278,18 +1323,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   )}
                 </div>
                 <div className="flex-1">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="profile-upload"
-                  />
-                  <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 cursor-pointer">
-                    <Upload className="w-4 h-4" />
-                    {uploadingImage ? 'Mengunggah...' : 'Upload Foto'}
-                  </label>
-                  <p className="text-xs text-gray-500 mt-1.5">Maks 5MB • Harus foto asli Anda</p>
+                  {!isProfileLocked && (
+                    <>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="profile-upload"
+                      />
+                      <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 cursor-pointer">
+                        <Upload className="w-4 h-4" />
+                        {uploadingImage ? 'Mengunggah...' : 'Upload Foto'}
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1.5">Maks 5MB • Harus foto asli Anda</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -1297,7 +1346,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             {/* GPS-Only Location Display */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                📍 Your Location * {country && `(${country})`}
+                📍 Your Location * {country && `(${country})`} {isProfileLocked && <span className="text-green-600 text-xs">(still editable)</span>}
               </label>
               
               {/* Read-only location display */}
@@ -1474,14 +1523,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                 <FileText className="w-5 h-5 text-orange-500" />
-                About Your Services
+                About Your Services {isProfileLocked && <span className="text-amber-600 text-xs">(locked – contact admin)</span>}
               </label>
-              <div className="border border-gray-200 rounded-xl p-4">
+              <div className={`border rounded-xl p-4 ${isProfileLocked ? 'border-gray-200 bg-gray-50' : 'border-gray-200'}`}>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
+                  readOnly={isProfileLocked}
                   rows={10}
-                  className="w-full focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all resize-none border-0 p-0"
+                  className={`w-full focus:outline-none transition-all resize-none border-0 p-0 ${isProfileLocked ? 'bg-transparent text-gray-600 cursor-not-allowed' : 'focus:border-orange-500 focus:ring-2 focus:ring-orange-100'}`}
                   placeholder="Describe your massage services, experience, and specialties..."
                 />
               </div>
@@ -1567,24 +1617,45 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </p>
             </div>
 
-            {/* Massage Types */}
+            {/* Massage Types – tidy format by category, easy to select up to 5 */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Massage Types (max 5) - {selectedMassageTypes.length}/5 selected
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {MASSAGE_TYPES_CATEGORIZED.flatMap(category => category.types).map(type => (
-                  <button
-                    key={type}
-                    onClick={() => handleToggleMassageType(type)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      selectedMassageTypes.includes(type)
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {type.replace(/\s+Massage$/i, '')}
-                  </button>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-medium text-gray-700">
+                  Massage types
+                </label>
+                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  {selectedMassageTypes.length}/5 selected
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">Choose up to 5 services you offer. Tap to select or deselect.</p>
+              <div className="space-y-4">
+                {MASSAGE_TYPES_CATEGORIZED.map(({ category, types }) => (
+                  <div key={category}>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{category}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {types.map(type => {
+                        const selected = selectedMassageTypes.includes(type);
+                        const atLimit = selectedMassageTypes.length >= 5 && !selected;
+                        return (
+                          <button
+                            key={type}
+                            type="button"
+                            onClick={() => handleToggleMassageType(type)}
+                            disabled={atLimit}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                              selected
+                                ? 'bg-orange-500 text-white border-orange-500'
+                                : atLimit
+                                  ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed'
+                                  : 'bg-white text-gray-700 border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+                            }`}
+                          >
+                            {type.replace(/\s+Massage$/i, '')}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -1747,6 +1818,39 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           </div>
           </div>
       </main>
+
+      {/* Post-save suggestion: update menu price list for higher conversion */}
+      {showMenuSuggestionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowMenuSuggestionModal(false)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 border border-gray-100" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-base">Tip for more bookings</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Update your menu item price list so customers see clear options. Complete pricing leads to higher conversion.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowMenuSuggestionModal(false); onNavigateToMenu?.(); }}
+                className="flex-1 py-2.5 rounded-xl bg-orange-500 text-white font-semibold text-sm hover:bg-orange-600 transition-colors"
+              >
+                Update menu
+              </button>
+              <button
+                onClick={() => setShowMenuSuggestionModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors"
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Payment Modal for Plus Members */}
       {showPaymentModal && (

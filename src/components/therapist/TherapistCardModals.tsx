@@ -260,7 +260,7 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                                                                 const selectedPrice = service[`price${selectedDuration}`];
                                                                 setTimeout(() => onClosePriceList(), 200);
                                                                 
-                                                                const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
+                                                                const normalizedStatus = (displayStatus.toLowerCase() === 'offline' ? 'busy' : displayStatus.toLowerCase()) as 'available' | 'busy';
                                                                 window.dispatchEvent(new CustomEvent('openChat', {
                                                                     detail: {
                                                                         therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),

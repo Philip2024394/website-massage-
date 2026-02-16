@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import type { Page } from '../types/pageTypes';
 import { logout as sessionLogout } from '../lib/sessionManager';
 import { performSafeLogout } from '../utils/authGuards';
+import { therapistService } from '../lib/appwrite/services/therapist.service';
 
 interface UseAuthHandlersProps {
     setPage: (page: Page) => void;
@@ -19,6 +20,8 @@ interface UseAuthHandlersProps {
     setLoggedInAgent: React.Dispatch<React.SetStateAction<any>>;
     setLoggedInProvider: React.Dispatch<React.SetStateAction<any>>;
     setImpersonatedAgent?: React.Dispatch<React.SetStateAction<any>>;
+    /** Current logged-in provider (therapist/place). Used to set therapist status to busy on logout (no offline). */
+    getLoggedInProvider?: () => { type?: string; id?: string | number; $id?: string } | null;
 }
 
 export const useAuthHandlers = ({
@@ -31,11 +34,29 @@ export const useAuthHandlers = ({
     setLoggedInCustomer,
     setLoggedInAgent,
     setLoggedInProvider,
-    setImpersonatedAgent
+    setImpersonatedAgent,
+    getLoggedInProvider
 }: UseAuthHandlersProps) => {
 
     const handleProviderLogout = useCallback(async () => {
         console.log('👤 Starting provider (therapist/place) logout...');
+        const provider = getLoggedInProvider?.() ?? null;
+        if (provider?.type === 'therapist') {
+            const therapistId = (provider.$id ?? provider.id)?.toString();
+            if (therapistId) {
+                try {
+                    await therapistService.update(therapistId, {
+                        status: 'busy',
+                        availability: 'Busy',
+                        isLive: true,
+                        isOnline: false
+                    });
+                    console.log('✅ Therapist status set to busy on logout (no offline)');
+                } catch (e) {
+                    console.warn('⚠️ Failed to set therapist status to busy on logout:', e);
+                }
+            }
+        }
         await performSafeLogout(sessionLogout, {
             setIsHotelLoggedIn,
             setIsVillaLoggedIn,
@@ -46,7 +67,7 @@ export const useAuthHandlers = ({
             setLoggedInCustomer,
             setImpersonatedAgent
         }, setPage);
-    }, [setLoggedInProvider, setIsHotelLoggedIn, setIsVillaLoggedIn, setIsAdminLoggedIn, setLoggedInUser, setPage]);
+    }, [getLoggedInProvider, setLoggedInProvider, setIsHotelLoggedIn, setIsVillaLoggedIn, setIsAdminLoggedIn, setLoggedInUser, setPage]);
 
     const handleHotelLogout = useCallback(async () => {
         console.log('🏨 Starting hotel logout...');

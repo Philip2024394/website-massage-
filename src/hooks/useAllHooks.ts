@@ -133,7 +133,8 @@ export const useAllHooks = () => {
         setLoggedInAgent: state.setLoggedInAgent,
         setLoggedInCustomer: state.setLoggedInCustomer,
         setIsHotelLoggedIn: state.setIsHotelLoggedIn,
-        setIsVillaLoggedIn: state.setIsVillaLoggedIn
+        setIsVillaLoggedIn: state.setIsVillaLoggedIn,
+        getLoggedInProvider: () => state.loggedInProvider
     });
     
     // Session restoration on app startup

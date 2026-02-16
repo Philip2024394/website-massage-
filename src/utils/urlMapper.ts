@@ -12,6 +12,7 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'home': '/home',
     'about': '/about',
     'contact': '/contact',
+    'partner-contact': '/partner-contact',
     'company': '/company',
     'how-it-works': '/how-it-works',
     'faq': '/faq',
@@ -94,6 +95,7 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     
     // Blog routes
     'blog': '/blog',
+    'indastreet-news': '/indastreet-news',
     'massage-bali': '/blog/massage-bali',
     'balinese-massage': '/blog/balinese-massage',
     'deep-tissue-massage': '/blog/deep-tissue-massage',

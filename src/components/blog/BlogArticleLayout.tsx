@@ -105,7 +105,7 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
       <UniversalHeader
         language={language}
         onLanguageChange={onLanguageChange}
@@ -131,13 +131,17 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
         places={places}
       />
 
-      <article className="max-w-4xl mx-auto px-4 pt-6 pb-16">
+      {/* Spacer so content starts below fixed header – matches BlogIndexPage */}
+      <div className="pt-[60px] sm:pt-16" aria-hidden />
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-16">
+        {/* Breadcrumb – app theme: gray-50 page, subtle links */}
         <nav className="mb-6 text-sm text-gray-600" aria-label="Breadcrumb">
-          <button type="button" onClick={() => onNavigate?.('home')} className="hover:text-orange-600 transition-colors">
+          <button type="button" onClick={() => onNavigate?.('home')} className="hover:text-orange-600 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-orange-200">
             {language === 'id' ? 'Beranda' : 'Home'}
           </button>
           <span className="mx-1">/</span>
-          <button type="button" onClick={() => onNavigate?.('blog')} className="hover:text-orange-600 transition-colors">
+          <button type="button" onClick={() => onNavigate?.('blog')} className="hover:text-orange-600 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-orange-200">
             Blog
           </button>
           {breadcrumbLabel && (
@@ -148,41 +152,46 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
           )}
         </nav>
 
-        <header className="mb-8">
-          {category && (
-            <span className="inline-block bg-orange-100 text-orange-700 px-4 py-1.5 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">
-              {category}
-            </span>
-          )}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-            {title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-gray-600 text-sm">
-            {author && <span>{author}</span>}
-            {date && <span>{date}</span>}
-            {readTime && <span>{readTime}</span>}
-          </div>
-        </header>
+        {/* Article card – white container matching blog index cards */}
+        <article className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+          <div className="p-6 sm:p-8 md:p-10">
+            <header className="mb-8">
+              {category && (
+                <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 rounded-xl text-xs font-semibold uppercase tracking-wide mb-4">
+                  {category}
+                </span>
+              )}
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                {title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-gray-500 text-sm">
+                {author && <span>{author}</span>}
+                {date && <span>{date}</span>}
+                {readTime && <span>{readTime}</span>}
+              </div>
+            </header>
 
-        {/* Hero / featured image container – replace heroImageSrc to use your image */}
-        <div className="mb-12 rounded-2xl overflow-hidden shadow-xl bg-gray-100">
-          {heroImageSrc ? (
-            <img
-              src={heroImageSrc}
-              alt={heroImageAlt || title}
-              className="w-full h-auto max-h-[420px] object-cover"
-            />
-          ) : (
-            <div className="aspect-[21/9] min-h-[240px] flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-dashed border-orange-200">
-              <span className="text-sm text-orange-600 font-medium">Hero image – update heroImageSrc to add image</span>
+            {/* Hero image – rounded-2xl/3xl to match blog index */}
+            <div className="mb-10 rounded-2xl sm:rounded-3xl overflow-hidden bg-gray-100 shadow-inner">
+              {heroImageSrc ? (
+                <img
+                  src={heroImageSrc}
+                  alt={heroImageAlt || title}
+                  className="w-full h-auto max-h-[420px] object-cover"
+                />
+              ) : (
+                <div className="aspect-[21/9] min-h-[240px] flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-dashed border-orange-200">
+                  <span className="text-sm text-orange-600 font-medium">Hero image – update heroImageSrc to add image</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="prose prose-lg max-w-none text-gray-700">
-          {children}
-        </div>
-      </article>
+            <div className="prose prose-lg max-w-none text-gray-700 prose-headings:text-gray-900 prose-a:text-orange-600 prose-a:no-underline hover:prose-a:underline">
+              {children}
+            </div>
+          </div>
+        </article>
+      </div>
     </div>
   );
 };

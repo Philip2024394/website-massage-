@@ -18,7 +18,6 @@ import { TrendingUp } from 'lucide-react';
 import TherapistCard from './TherapistCard';
 import RotatingReviews from './RotatingReviews';
 import SocialMediaLinks from './SocialMediaLinks';
-import ShareActions from '../features/shared-profiles/ShareActions';
 import IndastreetAchievements from './IndastreetAchievements';
 import TherapistServiceShowcase from './shared/TherapistServiceShowcase';
 import type { Therapist, UserLocation } from '../types';
@@ -156,6 +155,8 @@ interface TherapistProfileBaseProps {
     showSEOFooter?: boolean;
     selectedCity?: string; // For location display override
     customVerifiedBadge?: string; // Custom verified badge image URL (for shared profile pages)
+    /** Total times this profile was shared (shared profile page only; shown over main image) */
+    shareCount?: number;
     
     // Callbacks (optional - may not exist in shared mode)
     onRate?: () => void;
@@ -187,6 +188,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     therapist,
     mode,
     customVerifiedBadge,
+    shareCount,
     userLocation,
     showHeader = false,
     showSEOFooter = false,
@@ -273,8 +275,10 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     activeDiscount={realDiscount}
                     t={t}
                     hideJoinButton={mode === 'shared'}
+                    isSharedProfile={mode === 'shared'}
                     selectedCity={selectedCity}
                     customVerifiedBadge={customVerifiedBadge}
+                    shareCount={mode === 'shared' ? shareCount : undefined}
                 />
 
                 {/* Professional Massage Services - Unified across all modes */}
@@ -315,13 +319,6 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                 <div className="mt-8">
                     <SocialMediaLinks />
                 </div>
-
-                {/* Share Actions: Copy link + share buttons - Only in shared mode */}
-                {mode === 'shared' && (
-                    <div className="mt-6">
-                        <ShareActions therapist={therapist} />
-                    </div>
-                )}
 
                 {/* Therapist Profile Google Search Rankings - Only in authenticated mode */}
                 {mode === 'authenticated' && (

@@ -447,6 +447,35 @@ export const PlacesManager: React.FC = () => {
                     className="w-full border rounded-lg px-3 py-2"
                   />
                 </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea 
+                    value={selectedPlace.description || ''}
+                    onChange={(e) => setSelectedPlace({
+                      ...selectedPlace,
+                      description: e.target.value
+                    })}
+                    rows={3}
+                    className="w-full border rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Profile image URL
+                  </label>
+                  <input 
+                    type="text"
+                    value={selectedPlace.profileImage || selectedPlace.mainImage || ''}
+                    onChange={(e) => setSelectedPlace({
+                      ...selectedPlace,
+                      profileImage: e.target.value
+                    })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    placeholder="https://..."
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     60min Price

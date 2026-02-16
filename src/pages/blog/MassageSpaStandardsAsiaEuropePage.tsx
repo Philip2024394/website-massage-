@@ -29,7 +29,7 @@ const MassageSpaStandardsAsiaEuropePage: React.FC<Props> = (props) => {
       title: 'Massage & Spa Standards: What Therapists and Places Need to Know in Asia and Europe',
       description: 'Regulations, certifications and best practices for massage and spa services in the UK, Germany, Australia, Philippines and Southeast Asia.',
       url: 'https://www.indastreetmassage.com/blog-massage-spa-standards-asia-europe',
-      image: 'https://ik.imagekit.io/7grri5v7d/bali%20messages.png?updatedAt=1761560397225',
+      image: 'https://ik.imagekit.io/7grri5v7d/indastreet%20blogss.png',
       datePublished: '2025-10-28T08:00:00Z',
       dateModified: '2025-10-28T12:00:00Z',
       author: 'IndaStreet Research',
@@ -50,7 +50,7 @@ const MassageSpaStandardsAsiaEuropePage: React.FC<Props> = (props) => {
       author="IndaStreet Research"
       date="Oct 28, 2025"
       readTime="9 min read"
-      heroImageSrc="https://ik.imagekit.io/7grri5v7d/bali%20messages.png?updatedAt=1761560397225"
+      heroImageSrc="https://ik.imagekit.io/7grri5v7d/indastreet%20blogss.png"
       heroImageAlt="Massage and spa standards across Asia and Europe"
       breadcrumbLabel="Massage & Spa Standards Asia and Europe"
       onNavigate={onNavigate}
@@ -88,16 +88,18 @@ const MassageSpaStandardsAsiaEuropePage: React.FC<Props> = (props) => {
         Common success factors everywhere include: clear pricing, hygiene protocols, professional training and good communication with clients. Platforms that help therapists and massage places showcase credentials and manage bookings can support visibility and trust in any of these regions.
       </p>
 
-      <div className="mt-12">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">Related Articles</h3>
+      <div className="mt-12 pt-8 border-t border-gray-100">
+        <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Related Articles</h3>
         <div className="grid md:grid-cols-2 gap-6">
-          <button type="button" onClick={() => onNavigate?.('blog-wellness-southeast-asia')} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow text-left border border-gray-100">
+          <button type="button" onClick={() => onNavigate?.('blog-wellness-southeast-asia')} className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow text-left border border-gray-100 hover:border-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-200">
             <h4 className="text-lg font-bold text-gray-900 mb-2">Wellness & Spa Trends Southeast Asia</h4>
-            <p className="text-gray-600 text-sm">Compare demand and trends across the region.</p>
+            <p className="text-gray-600 text-sm mb-4">Compare demand and trends across the region.</p>
+            <span className="inline-flex items-center text-orange-600 font-semibold text-sm hover:text-orange-700">Read article →</span>
           </button>
-          <button type="button" onClick={() => onNavigate?.('blog-building-wellness-business-international')} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow text-left border border-gray-100">
+          <button type="button" onClick={() => onNavigate?.('blog-building-wellness-business-international')} className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow text-left border border-gray-100 hover:border-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-200">
             <h4 className="text-lg font-bold text-gray-900 mb-2">Building a Massage or Spa Business in Multiple Markets</h4>
-            <p className="text-gray-600 text-sm">Licensing, hiring and marketing across countries.</p>
+            <p className="text-gray-600 text-sm mb-4">Licensing, hiring and marketing across countries.</p>
+            <span className="inline-flex items-center text-orange-600 font-semibold text-sm hover:text-orange-700">Read article →</span>
           </button>
         </div>
       </div>

@@ -129,17 +129,15 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
         return price.toLocaleString('id-ID');
     };
 
-    // Get status - same online status system as therapist: Available, Busy, Offline
+    // Get status - same as therapist: Available or Busy (no offline; default Busy)
     const getStatusStyles = () => {
-        const statusStr = String((place as any).availability || place.status || 'Offline').trim();
+        const statusStr = String((place as any).availability || place.status || 'Busy').trim();
         const lower = statusStr.toLowerCase();
         
         if (statusStr === 'Available' || lower === 'available') {
             return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500', label: 'Available', isAvailable: true };
-        } else if (statusStr === 'Busy' || lower === 'busy') {
-            return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Busy', isAvailable: false };
         }
-        return { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Offline', isAvailable: false };
+        return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Busy', isAvailable: false };
     };
 
     const statusStyle = getStatusStyles();

@@ -83,10 +83,10 @@ export const adminTherapistService = {
             const cleanData: Record<string, any> = {};
             const allowedFields = [
                 'name', 'description', 'location', 'phone', 'email', 'whatsappNumber',
-                'status', 'isVerified', 'profileImage', 'images', 'specialties', 'services',
+                'status', 'isVerified', 'profileImage', 'profilePicture', 'images', 'specialties', 'services',
                 'availability', 'experience', 'price60', 'price90', 'price120', 'ktpVerified',
                 'bankName', 'accountName', 'accountNumber', 'ktpPhotoUrl', 'hotelVillaSafePassStatus',
-                'hasSafePassVerification'
+                'hasSafePassVerification', 'profileWentLiveAt'
             ];
             
             for (const key of allowedFields) {

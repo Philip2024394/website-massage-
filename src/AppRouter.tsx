@@ -79,6 +79,7 @@ import { placeRoutes } from './router/routes/placeRoutes';
 import { facialRoutes } from './router/routes/facialRoutes';
 import { getTermsAgreed, setTermsAgreed } from './lib/termsAgreementStorage';
 import { facialPlaceService } from './lib/appwriteService';
+import { MOCK_FACIAL_PLACE, MOCK_FACIAL_PLACE_ID } from './constants/mockFacialPlace';
 import DashboardTermsGate from './components/DashboardTermsGate';
 import UserTermsGate from './components/UserTermsGate';
 
@@ -106,6 +107,7 @@ const ApplyForJobPage = React.lazy(() => import('./pages/ApplyForJobPage'));
 const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
 const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
 const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipApplicationPage'));
+const PartnerContactPage = React.lazy(() => import('./pages/PartnerContactPage'));
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
@@ -244,6 +246,7 @@ interface AppRouterProps {
     setLoggedInProvider: (provider: LoggedInProvider | null) => void;
     setLoggedInCustomer: (customer: any) => void;
     setSelectedJobId: (id: string | null) => void;
+    setSelectedMassageType?: (type: string) => void;
     restoreUserSession: () => Promise<void>;
     
     // Missing properties for header/navigation
@@ -582,7 +585,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onCityChange: props.setSelectedCity || props.onCityChange,
                 onLoginClick: props.handleNavigateToTherapistLogin,
                 t: t,
-                language: props.language
+                language: props.language,
+                selectedMassageType: props.selectedMassageType ?? undefined,
             }));
         
         case 'about':
@@ -610,7 +614,29 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.massageTypes.component, {
                 onNavigate: props.onNavigate,
                 t: t,
-                language: props.language
+                language: props.language,
+                therapists: props.therapists,
+                places: props.places,
+                onFindTherapists: (massageType: string) => {
+                    try { sessionStorage.setItem('massage_type_filter_view', 'therapists'); } catch (_) {}
+                    props.setSelectedMassageType?.(massageType);
+                    props.onNavigate?.('home');
+                },
+                onFindPlaces: (massageType: string) => {
+                    try { sessionStorage.setItem('massage_type_filter_view', 'places'); } catch (_) {}
+                    props.setSelectedMassageType?.(massageType);
+                    props.onNavigate?.('home');
+                },
+                onMassageJobsClick: props.onMassageJobsClick,
+                onHotelPortalClick: props.onHotelPortalClick,
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
             }));
         
         case 'facial-types':
@@ -1357,13 +1383,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             const hashForFacial = typeof window !== 'undefined' ? (window.location.hash || '').replace(/^#\/?/, '') : '';
             const pathOrHash = pathForFacial || hashForFacial;
             const facialPathMatch = pathOrHash ? pathOrHash.match(/profile\/facial\/([^/]+)/) : null;
-            const facialPlaceIdFromUrl = facialPathMatch ? facialPathMatch[1].split('-')[0] : null;
+            const fullSegment = facialPathMatch ? facialPathMatch[1] : null;
+            const slugFromName = (name: string) => (name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const findPlaceByUrlSegment = (segment: string) => {
+                if (!segment || !props.facialPlaces?.length) return null;
+                const fromList = props.facialPlaces.find((p: any) => {
+                    const id = (p.$id || p.id || '').toString();
+                    const slug = slugFromName(p.name);
+                    return (id + '-' + slug) === segment || segment === id;
+                });
+                return fromList || null;
+            };
+            const mockSlug = slugFromName((MOCK_FACIAL_PLACE as any).name);
+            const isMockUrl = fullSegment === (MOCK_FACIAL_PLACE_ID + '-' + mockSlug) || fullSegment === MOCK_FACIAL_PLACE_ID || (fullSegment != null && fullSegment.startsWith(MOCK_FACIAL_PLACE_ID + '-'));
             const resolvedPlace = props.selectedPlace
-                || (facialPlaceIdFromUrl && props.facialPlaces?.find((p: any) => (p.$id || p.id || '').toString() === facialPlaceIdFromUrl))
+                || findPlaceByUrlSegment(fullSegment || '')
+                || (isMockUrl ? (MOCK_FACIAL_PLACE as Place) : null)
                 || null;
+            const placeId = (resolvedPlace?.$id || resolvedPlace?.id || fullSegment?.split('-')[0] || '') as string;
             return renderRoute(profileRoutes.facialPlace.component, {
                 place: resolvedPlace,
-                placeId: facialPlaceIdFromUrl || (resolvedPlace ? (resolvedPlace.$id || resolvedPlace.id) : undefined),
+                placeId: placeId || (resolvedPlace ? (resolvedPlace.$id || resolvedPlace.id) : undefined),
                 facialPlaces: props.facialPlaces ?? [],
                 onBack: () => props.setPage('home'),
                 onBook: () => {
@@ -1476,7 +1516,24 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             }));
 
         case 'indastreet-news':
-            return renderRoute(IndastreetNewsPage);
+            return renderRoute(IndastreetNewsPage, {
+                onNavigate: props.onNavigate,
+                onLanguageChange: props.onLanguageChange,
+                language: props.language,
+                t: t,
+                loggedInCustomer: props.loggedInCustomer,
+                onMassageJobsClick: () => props.onNavigate?.('massage-jobs'),
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: () => props.handleAdminLogin?.(),
+                onTermsClick: () => props.onNavigate?.('terms'),
+                onPrivacyClick: () => props.onNavigate?.('privacy'),
+                therapists: props.therapists,
+                places: props.places,
+            });
         
         case 'massage-bali':
             return renderRoute(blogRoutes.massageBali.component);
@@ -1665,6 +1722,24 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'partnership-application':
             return renderRoute(PartnershipApplicationPage);
+
+        case 'partner-contact':
+            return renderRoute(PartnerContactPage, {
+                onBack: () => props.onNavigate?.('indastreet-partners'),
+                onNavigate: props.onNavigate,
+                onMassageJobsClick: () => props.onNavigate?.('massage-jobs'),
+                onHotelPortalClick: () => props.onNavigate?.('hotelVillaMenu'),
+                onVillaPortalClick: () => props.onNavigate?.('villa-portal'),
+                onTherapistPortalClick: () => props.onNavigate?.('therapist-login-for-jobs'),
+                onMassagePlacePortalClick: () => props.onNavigate?.('place-login-for-jobs'),
+                onAgentPortalClick: () => props.onNavigate?.('agent'),
+                onCustomerPortalClick: () => props.onNavigate?.('home'),
+                onAdminPortalClick: () => props.onNavigate?.('admin-login'),
+                onTermsClick: () => props.onNavigate?.('terms'),
+                onPrivacyClick: () => props.onNavigate?.('privacy'),
+                therapists: props.therapists,
+                places: props.places,
+            });
         
         case 'therapist-job-registration': {
             const isServicePersonnel = props.user && (

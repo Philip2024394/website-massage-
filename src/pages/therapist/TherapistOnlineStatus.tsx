@@ -41,7 +41,7 @@ interface TherapistOnlineStatusProps {
   language?: 'en' | 'id';
 }
 
-type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
+type OnlineStatus = 'available' | 'busy' | 'active'; // No offline: logout/app close sets Busy
 
 const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, onLogout, language: propLanguage = 'id' }) => {
   // Help modal state
@@ -125,23 +125,21 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     );
   }
   
-  // Initialize status from therapist prop with better persistence
+  // Initialize status from therapist prop with better persistence. Only Available or Busy on this page; offline is set on logout only.
   const [status, setStatus] = useState<OnlineStatus>(() => {
     // First check localStorage for any saved status changes
     const savedStatus = localStorage.getItem(`therapist-status-${therapist?.$id}`);
-    if (savedStatus && ['available', 'busy', 'offline'].includes(savedStatus)) {
+    if (savedStatus && (savedStatus === 'available' || savedStatus === 'busy')) {
       return savedStatus as OnlineStatus;
     }
     
-    // Fallback to therapist prop status
-    const therapistStatus = therapist?.status || therapist?.availability || 'offline';
+    // No offline: stored offline or empty → show as busy (logout sets busy)
+    const therapistStatus = therapist?.status || therapist?.availability || 'busy';
     const statusStr = String(therapistStatus).toLowerCase();
     if (statusStr === 'available' || statusStr === 'active') {
       return 'available';
-    } else if (statusStr === 'busy') {
-      return 'busy';
     }
-    return 'offline';
+    return 'busy';
   });
   const [autoOfflineTime, setAutoOfflineTime] = useState<string>('22:00');
   const [saving, setSaving] = useState(false);
@@ -412,18 +410,15 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           isOnline: freshData?.isOnline
         });
         
-        // Update UI with fresh status
-        const freshStatus = freshData?.status || freshData?.availability || 'Offline';
+        // Only Available or Busy (no offline); stored offline/empty → show busy
+        const freshStatus = freshData?.status || freshData?.availability || 'Busy';
         const freshUIStatus = String(freshStatus).toLowerCase();
         if (freshUIStatus === 'available' || freshUIStatus === 'active') {
           devLog('✅ Setting status from Appwrite: available');
           setStatus('available');
-        } else if (freshUIStatus === 'busy') {
+        } else {
           devLog('✅ Setting status from Appwrite: busy');
           setStatus('busy');
-        } else {
-          devLog('✅ Setting status from Appwrite: offline');
-          setStatus('offline');
         }
       } catch (error) {
         console.error('❌ Failed to load fresh status:', error);
@@ -636,26 +631,20 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       // Update local state immediately for instant UI feedback
       setStatus(newStatus);
       
-      // Update status in Appwrite (using proper AvailabilityStatus enum values)
-      const properStatusValue = newStatus === 'available' ? AvailabilityStatus.Available :
-                               newStatus === 'busy' ? AvailabilityStatus.Busy :
-                               newStatus === 'active' ? AvailabilityStatus.Available : // Treat 'active' as Available
-                               AvailabilityStatus.Offline;
+      // Only Available or Busy (no Offline in app; logout sets Busy)
+      const properStatusValue = newStatus === 'available' || newStatus === 'active'
+        ? AvailabilityStatus.Available
+        : AvailabilityStatus.Busy;
       
-      // ❌ DISABLED: Timer logic removed (THERAPIST_AUTO_OFFLINE_TIMER_DISABLED.md)
-      // Therapists now control status manually - no automatic timer tracking
       const now = new Date().toISOString();
       
-      // No busy time tracking - therapists stay busy indefinitely until manual change
-      // No countdown timer - therapists stay available indefinitely until manual change
-      
-      devLog(`✅ Status changed to ${newStatus.toUpperCase()} - manual control only, no timers`)
+      devLog(`✅ Status changed to ${newStatus.toUpperCase()} - Available or Busy only`)
       
       const updateData = {
         status: properStatusValue,
-        availability: properStatusValue, // Use same proper enum value
-        isLive: newStatus !== 'offline', // Show Available and Busy on home page, hide only Offline
-        isOnline: newStatus !== 'offline',
+        availability: properStatusValue,
+        isLive: true, // Available and Busy both visible on home page (no offline)
+        isOnline: newStatus === 'available' || newStatus === 'active',
         // ❌ Timer fields removed - manual status control only
         // Clear conflicting timestamp fields based on new status
         busyUntil: newStatus === 'available' ? null : undefined,
@@ -717,23 +706,17 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     } catch (error) {
       console.error('❌ Failed to update status:', error);
       
-      // Revert to database status on error
+      // Revert to database status on error (only available/busy shown on this page)
       try {
         const freshData = await therapistService.getById(therapist.$id);
-        const revertStatus = String(freshData?.status || 'Offline').toLowerCase();
-        if (revertStatus === 'available' || revertStatus === 'busy' || revertStatus === 'offline') {
-          setStatus(revertStatus as OnlineStatus);
-          devLog('🔄 Status reverted to database value:', revertStatus);
-        }
+        const revertStatus = String(freshData?.status || 'Busy').toLowerCase();
+        const uiStatus = (revertStatus === 'available' || revertStatus === 'busy') ? revertStatus : 'busy';
+        setStatus(uiStatus as OnlineStatus);
+        devLog('🔄 Status reverted to database value:', uiStatus);
       } catch (revertError) {
         console.error('❌ Failed to revert status:', revertError);
+        setStatus(status === 'available' ? 'busy' : 'available');
       }
-      
-      // Revert UI status on error
-      const revertStatus = status === 'available' ? 'offline' : 
-                          status === 'busy' ? 'available' : 
-                          status === 'offline' ? 'available' : 'offline';
-      setStatus(revertStatus);
       showErrorToast(language === 'id' ? '❌ Gagal memperbarui status. Silakan coba lagi.' : '❌ Failed to update status. Please try again.');
       console.error('❌ Error details:', {
         message: error?.message,
@@ -1232,7 +1215,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         }
       />
       <div className="bg-white max-w-sm mx-auto px-4 pt-0 pb-3 space-y-4">
-        {/* Current Status - 3 buttons only */}
+        {/* Current Status - 2 options only: Available or Busy. Offline is set automatically on logout. */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center gap-2 mb-6">
             <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.currentStatus}</h2>
@@ -1243,7 +1226,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {/* Available - solid green when selected */}
             <button
               onClick={() => handleStatusChange('available')}
@@ -1283,24 +1266,6 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                   <h3 className={`text-sm font-bold ${status === 'busy' ? 'text-yellow-900' : 'text-gray-800'}`}>
                     {dict.therapistDashboard.busy}
                   </h3>
-                </div>
-              </div>
-            </button>
-
-            {/* Offline - solid red when selected */}
-            <button
-              onClick={() => handleStatusChange('offline')}
-              disabled={saving || status === 'offline'}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                status === 'offline'
-                  ? 'bg-red-600 border-red-600 shadow-lg text-white'
-                  : 'bg-white border-gray-300 hover:border-red-400 hover:shadow-md'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <XCircle className={`w-8 h-8 ${status === 'offline' ? 'text-white' : 'text-red-600'}`} />
-                <div className="text-center">
-                  <h3 className={`text-sm font-bold ${status === 'offline' ? 'text-white' : 'text-gray-800'}`}>{dict.therapistDashboard.offline}</h3>
                 </div>
               </div>
             </button>

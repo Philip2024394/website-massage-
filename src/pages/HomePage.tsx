@@ -61,6 +61,7 @@ import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
 import { matchTherapistsForUser, type MatchOutcome, type UserLocationContext } from '../utils/therapistMatching';
+import { parseMassageTypes } from '../utils/appwriteHelpers';
 import { logger } from '../utils/logger';
 
 // 🚀 PERFORMANCE: Bulk data fetching to eliminate N+1 queries
@@ -119,6 +120,8 @@ interface HomePageProps {
     isLoading: boolean;
     t: any;
     language?: 'en' | 'id';
+    /** When set (e.g. from Massage Types page Find Therapists/Places), home filters and optionally switches tab */
+    selectedMassageType?: string;
 }
 
 
@@ -185,7 +188,8 @@ const HomePage: React.FC<HomePageProps> = ({
     onLanguageChange, 
     onLoginClick,
     t,
-    language
+    language,
+    selectedMassageType: selectedMassageTypeProp
 }) => {
     // Get city from CityContext
     const { city: contextCity, countryCode, country, hasConfirmedCity, confirmedLocation, setCity: setContextCity } = useCityContext();
@@ -341,11 +345,11 @@ const HomePage: React.FC<HomePageProps> = ({
     
     const hasPlaceholderMatches = Boolean(therapistMatchOutcome?.placeholders.length);
     const distanceMatchCount = therapistMatchOutcome?.distanceMatches.length ?? 0;
-    const displayCityName =
-        userLocationForMatching?.cityName ||
-        contextCity ||
-        selectedCity ||
-        'your area';
+    // Prefer current selection (popup or drawer) so header location updates when user changes city from either
+    const locationSelection = selectedCity || contextCity || null;
+    const displayCityName = locationSelection
+        ? getLocationDisplayName(locationSelection, translationsObject?.home?.allAreas ?? 'All areas')
+        : (userLocationForMatching?.cityName || 'your area');
     
     // Female therapist filter state
     const [showFemaleOnly, setShowFemaleOnly] = useState(false);
@@ -373,6 +377,9 @@ const HomePage: React.FC<HomePageProps> = ({
         menus: Map<string, any>;
         shareLinks: Map<string, any>;
     } | null>(null);
+
+    // When arriving from Massage Types page, prop is set so filter applies on first paint
+    const effectiveMassageType = selectedMassageTypeProp ?? selectedMassageType;
     
     const {
         previewTherapistId,
@@ -564,6 +571,18 @@ const HomePage: React.FC<HomePageProps> = ({
             sessionStorage.removeItem('advanced_search_params');
         } catch (_) { /* ignore */ }
     }, [setContextCity]);
+
+    // When arriving from Massage Types page (Find Therapists / Find Massage Places): apply filter and switch tab
+    useEffect(() => {
+        if (!selectedMassageTypeProp) return;
+        setSelectedMassageType(selectedMassageTypeProp);
+        try {
+            const view = sessionStorage.getItem('massage_type_filter_view');
+            if (view === 'places') setActiveTab('places');
+            else setActiveTab('home');
+            sessionStorage.removeItem('massage_type_filter_view');
+        } catch (_) { /* ignore */ }
+    }, [selectedMassageTypeProp]);
 
     // 🚀 PERFORMANCE: Bulk prefetch therapist menu and share link data
     // This eliminates N+1 queries by fetching all data in 2 queries instead of 2*N queries
@@ -1458,7 +1477,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     {displayCityName}
                                 </span>
                             </div>
-                            <p className="text-base font-semibold text-gray-600">{country}'s Massage Therapist Hub</p>
+                            <p className="text-base font-semibold text-gray-600">{country}'s {(activeTab === 'facials' || activeTab === 'facial-places') ? 'Facial' : 'Massage'} Therapist Hub</p>
                             <p className="text-xs text-gray-500 mt-1">
                                 {distanceMatchCount > 0
                                     ? `Prioritizing ${distanceMatchCount} therapist${distanceMatchCount === 1 ? '' : 's'} closest to you.`
@@ -1769,11 +1788,11 @@ const HomePage: React.FC<HomePageProps> = ({
             }
 
             // 🔍 ADVANCED FILTERS: Apply all advanced filter selections
-            if (selectedTherapistGender || selectedServiceFor || selectedMassageType || selectedSpecialFeature || (priceRange[0] !== 100000 || priceRange[1] !== 450000)) {
+            if (selectedTherapistGender || selectedServiceFor || effectiveMassageType || selectedSpecialFeature || (priceRange[0] !== 100000 || priceRange[1] !== 450000)) {
                 logger.debug('Applying advanced filters', {
                     therapistGender: selectedTherapistGender,
                     serviceFor: selectedServiceFor,
-                    massageType: selectedMassageType,
+                    massageType: effectiveMassageType,
                     specialFeature: selectedSpecialFeature,
                     priceRange: priceRange
                 });
@@ -1804,10 +1823,10 @@ const HomePage: React.FC<HomePageProps> = ({
                     }
 
                     // 3. Massage Type Filter
-                    if (selectedMassageType) {
+                    if (effectiveMassageType) {
                         const services = String(t.services || t.massageTypes || '').toLowerCase();
                         const specialties = String(t.specialties || '').toLowerCase();
-                        const massageType = selectedMassageType.toLowerCase();
+                        const massageType = effectiveMassageType.toLowerCase();
                         
                         // Check if the massage type exists in services or specialties
                         if (!services.includes(massageType) && !specialties.includes(massageType)) {
@@ -1934,73 +1953,54 @@ const HomePage: React.FC<HomePageProps> = ({
                                     score += 300;
                                 }
 
-                                // 4. Online Activity Priority (0-200 points)
+                                // 4. Dashboard activity / last seen (0-200 points) – active profiles rank higher
                                 const now = new Date();
-                                if (therapist.lastSeen) {
-                                    const lastSeen = new Date(therapist.lastSeen);
-                                    const hoursAgo = (now.getTime() - lastSeen.getTime()) / (1000 * 60 * 60);
-                                    
-                                    if (hoursAgo <= 1) score += 200;       // Online within 1 hour
-                                    else if (hoursAgo <= 6) score += 150;  // Online within 6 hours
-                                    else if (hoursAgo <= 24) score += 100; // Online within 24 hours
-                                    else if (hoursAgo <= 72) score += 50;  // Online within 3 days
+                                const lastActivity = therapist.lastSeen || therapist.$updatedAt || therapist.updatedAt;
+                                if (lastActivity) {
+                                    const then = new Date(lastActivity);
+                                    if (!isNaN(then.getTime())) {
+                                        const hoursAgo = (now.getTime() - then.getTime()) / (1000 * 60 * 60);
+                                        if (hoursAgo <= 1) score += 200;       // Active within 1 hour
+                                        else if (hoursAgo <= 6) score += 150;  // Active within 6 hours
+                                        else if (hoursAgo <= 24) score += 100;  // Active within 24 hours
+                                        else if (hoursAgo <= 72) score += 50;  // Active within 3 days
+                                        else if (hoursAgo <= 168) score += 25; // Active within 7 days
+                                    }
                                 }
 
-                                // 5. Rating Quality Bonus (0-100 points)
+                                // 5. Missed bookings penalty – lowers search ranking
+                                const missedCount = therapist.missedBookingsCount ?? therapist.missedBookings ?? 0;
+                                score -= Math.min(500, missedCount * 100);
+
+                                // 6. Rating Quality Bonus (0-100 points)
                                 const rating = parseFloat(therapist.averageRating || '0');
                                 if (rating >= 4.5) score += 100;
                                 else if (rating >= 4.0) score += 75;
                                 else if (rating >= 3.5) score += 50;
 
-                                // 6. Order Count Boost (0-50 points)
+                                // 7. Order Count Boost (0-50 points)
                                 const orders = parseInt(therapist.orderCount || '0');
                                 if (orders >= 50) score += 50;
                                 else if (orders >= 20) score += 30;
                                 else if (orders >= 10) score += 20;
 
-                                // 7. Featured samples (Budi) - NO SPECIAL BOOST
+                                // 8. Featured samples (Budi) - NO SPECIAL BOOST
                                 // Featured samples are randomized with other available therapists
                                 // No longer pinned to top to avoid "stuck" appearance
 
                                 return score;
                             };
 
-                            // 🎭 VISUAL ENHANCEMENT: Transform 20% of offline therapists to display as "Busy"
-                            // This gives the app a busier appearance while maintaining proper sorting order
+                            // All offline therapists display as "Busy" (stored status remains offline; set on logout).
                             const transformOfflineToBusy = (list: any[]) => {
-                                // Separate offline therapists from others
-                                const offlineTherapists = list.filter(t => {
-                                    const status = String(t.status || '').toLowerCase();
-                                    return status === 'offline' || status === '';
-                                });
-                                
-                                // Calculate 20% of offline therapists to transform
-                                const countToTransform = Math.ceil(offlineTherapists.length * 0.2);
-                                
-                                // Use deterministic selection based on therapist ID for consistency
-                                // Sort offline therapists by their ID hash to get consistent "random" selection
-                                const sortedByHash = offlineTherapists.slice().sort((a, b) => {
-                                    const hashA = String(a.$id || a.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                                    const hashB = String(b.$id || b.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                                    return hashA - hashB;
-                                });
-                                
-                                // Select the first 20% to display as busy
-                                const idsToTransform = new Set(
-                                    sortedByHash.slice(0, countToTransform).map(t => t.$id || t.id)
-                                );
-                                
-                                logger.debug(`Visual enhancement: Transforming ${countToTransform}/${offlineTherapists.length} offline therapists to display as Busy`);
-                                
-                                // Transform the selected offline therapists to display as busy
                                 return list.map(therapist => {
-                                    const therapistId = therapist.$id || therapist.id;
-                                    if (idsToTransform.has(therapistId)) {
+                                    const status = String(therapist.status || '').toLowerCase();
+                                    if (status === 'offline' || status === '') {
                                         return {
                                             ...therapist,
-                                            displayStatus: 'Busy', // Visual status for display
-                                            _originalStatus: therapist.status, // Preserve original for debugging
-                                            status: 'Busy' // Override status for sorting purposes
+                                            displayStatus: 'Busy',
+                                            _originalStatus: therapist.status,
+                                            status: 'Busy'
                                         };
                                     }
                                     return therapist;
@@ -2244,8 +2244,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                 logger.debug('Massage Places Tab', { total, live });
                             } catch {}
                             
-                            // Use city-filtered places instead of raw places
-                            const livePlaces = cityFilteredPlaces.slice();
+                            // Use city-filtered places; when effectiveMassageType is set (from Massage Types page), only show places that offer it
+                            let livePlaces = cityFilteredPlaces.slice();
+                            if (effectiveMassageType) {
+                                livePlaces = livePlaces.filter((p: any) => {
+                                    const types = parseMassageTypes((p as any).massageTypes ?? (p as any).massagetypes);
+                                    return types.some((t: string) => t === effectiveMassageType || t.trim() === effectiveMassageType);
+                                });
+                            }
 
                             // Sort places by status: Available/Open → Busy → Offline/Closed
                             const getPlaceStatusScore = (p: any) => {

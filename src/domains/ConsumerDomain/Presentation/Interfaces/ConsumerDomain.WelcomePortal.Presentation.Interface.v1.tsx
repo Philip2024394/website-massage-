@@ -1396,7 +1396,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     })()}
                                 </span>
                             </div>
-                            <p className="text-base font-semibold text-gray-600">{country}'s Massage Therapist Hub</p>
+                            <p className="text-base font-semibold text-gray-600">{country}'s {(activeTab === 'facials' || activeTab === 'facial-places') ? 'Facial' : 'Massage'} Therapist Hub</p>
                         </div>
                     )}
 
@@ -1872,73 +1872,54 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     score += 300;
                                 }
 
-                                // 4. Online Activity Priority (0-200 points)
+                                // 4. Dashboard activity / last seen (0-200 points) – active profiles rank higher
                                 const now = new Date();
-                                if (therapist.lastSeen) {
-                                    const lastSeen = new Date(therapist.lastSeen);
-                                    const hoursAgo = (now.getTime() - lastSeen.getTime()) / (1000 * 60 * 60);
-                                    
-                                    if (hoursAgo <= 1) score += 200;       // Online within 1 hour
-                                    else if (hoursAgo <= 6) score += 150;  // Online within 6 hours
-                                    else if (hoursAgo <= 24) score += 100; // Online within 24 hours
-                                    else if (hoursAgo <= 72) score += 50;  // Online within 3 days
+                                const lastActivity = therapist.lastSeen || therapist.$updatedAt || therapist.updatedAt;
+                                if (lastActivity) {
+                                    const then = new Date(lastActivity);
+                                    if (!isNaN(then.getTime())) {
+                                        const hoursAgo = (now.getTime() - then.getTime()) / (1000 * 60 * 60);
+                                        if (hoursAgo <= 1) score += 200;       // Active within 1 hour
+                                        else if (hoursAgo <= 6) score += 150;  // Active within 6 hours
+                                        else if (hoursAgo <= 24) score += 100; // Active within 24 hours
+                                        else if (hoursAgo <= 72) score += 50;  // Active within 3 days
+                                        else if (hoursAgo <= 168) score += 25; // Active within 7 days
+                                    }
                                 }
 
-                                // 5. Rating Quality Bonus (0-100 points)
+                                // 5. Missed bookings penalty – lowers search ranking
+                                const missedCount = therapist.missedBookingsCount ?? therapist.missedBookings ?? 0;
+                                score -= Math.min(500, missedCount * 100);
+
+                                // 6. Rating Quality Bonus (0-100 points)
                                 const rating = parseFloat(therapist.averageRating || '0');
                                 if (rating >= 4.5) score += 100;
                                 else if (rating >= 4.0) score += 75;
                                 else if (rating >= 3.5) score += 50;
 
-                                // 6. Order Count Boost (0-50 points)
+                                // 7. Order Count Boost (0-50 points)
                                 const orders = parseInt(therapist.orderCount || '0');
                                 if (orders >= 50) score += 50;
                                 else if (orders >= 20) score += 30;
                                 else if (orders >= 10) score += 20;
 
-                                // 7. Featured samples (Budi) - NO SPECIAL BOOST
+                                // 8. Featured samples (Budi) - NO SPECIAL BOOST
                                 // Featured samples are randomized with other available therapists
                                 // No longer pinned to top to avoid "stuck" appearance
 
                                 return score;
                             };
 
-                            // 🎭 VISUAL ENHANCEMENT: Transform 20% of offline therapists to display as "Busy"
-                            // This gives the app a busier appearance while maintaining proper sorting order
+                            // All offline therapists display as "Busy" (stored status remains offline; set on logout).
                             const transformOfflineToBusy = (list: any[]) => {
-                                // Separate offline therapists from others
-                                const offlineTherapists = list.filter(t => {
-                                    const status = String(t.status || '').toLowerCase();
-                                    return status === 'offline' || status === '';
-                                });
-                                
-                                // Calculate 20% of offline therapists to transform
-                                const countToTransform = Math.ceil(offlineTherapists.length * 0.2);
-                                
-                                // Use deterministic selection based on therapist ID for consistency
-                                // Sort offline therapists by their ID hash to get consistent "random" selection
-                                const sortedByHash = offlineTherapists.slice().sort((a, b) => {
-                                    const hashA = String(a.$id || a.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                                    const hashB = String(b.$id || b.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                                    return hashA - hashB;
-                                });
-                                
-                                // Select the first 20% to display as busy
-                                const idsToTransform = new Set(
-                                    sortedByHash.slice(0, countToTransform).map(t => t.$id || t.id)
-                                );
-                                
-                                console.log(`🎭 [VISUAL ENHANCEMENT] Transforming ${countToTransform}/${offlineTherapists.length} offline therapists to display as Busy`);
-                                
-                                // Transform the selected offline therapists to display as busy
                                 return list.map(therapist => {
-                                    const therapistId = therapist.$id || therapist.id;
-                                    if (idsToTransform.has(therapistId)) {
+                                    const status = String(therapist.status || '').toLowerCase();
+                                    if (status === 'offline' || status === '') {
                                         return {
                                             ...therapist,
-                                            displayStatus: 'Busy', // Visual status for display
-                                            _originalStatus: therapist.status, // Preserve original for debugging
-                                            status: 'Busy' // Override status for sorting purposes
+                                            displayStatus: 'Busy',
+                                            _originalStatus: therapist.status,
+                                            status: 'Busy'
                                         };
                                     }
                                     return therapist;

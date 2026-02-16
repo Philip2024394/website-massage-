@@ -35,7 +35,7 @@ interface TherapistOnlineStatusProps {
   language?: 'en' | 'id';
 }
 
-type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
+type OnlineStatus = 'available' | 'busy' | 'active'; // No offline: logout/app close sets Busy
 
 const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, onLogout, language: propLanguage = 'id' }) => {
   try {
@@ -138,15 +138,13 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
   }
   
   const [status, setStatus] = useState<OnlineStatus>(() => {
-    // Initialize status from therapist prop on mount
-    const savedStatus = therapist?.status || therapist?.availability || 'Offline';
+    // No offline: stored offline/empty → busy
+    const savedStatus = therapist?.status || therapist?.availability || 'busy';
     const statusStr = String(savedStatus).toLowerCase();
     if (statusStr === 'available' || statusStr === 'active') {
       return 'available';
-    } else if (statusStr === 'busy') {
-      return 'busy';
     }
-    return 'offline';
+    return 'busy';
   });
   const [autoOfflineTime, setAutoOfflineTime] = useState<string>('22:00');
   const [saving, setSaving] = useState(false);
@@ -305,18 +303,15 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
           isOnline: freshData?.isOnline
         });
         
-        // Update UI with fresh status
-        const freshStatus = freshData?.status || freshData?.availability || 'Offline';
+        // Only Available or Busy (no offline); stored offline/empty → busy
+        const freshStatus = freshData?.status || freshData?.availability || 'Busy';
         const freshUIStatus = String(freshStatus).toLowerCase();
         if (freshUIStatus === 'available' || freshUIStatus === 'active') {
           devLog('✅ Setting status from Appwrite: available');
           setStatus('available');
-        } else if (freshUIStatus === 'busy') {
+        } else {
           devLog('✅ Setting status from Appwrite: busy');
           setStatus('busy');
-        } else {
-          devLog('✅ Setting status from Appwrite: offline');
-          setStatus('offline');
         }
       } catch (error) {
         console.error('❌ Failed to load fresh status:', error);
@@ -331,7 +326,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
   // Auto-offline timer - check every minute if it's time to go offline
   useEffect(() => {
     const checkAutoOffline = () => {
-      if (!autoOfflineTime || status === 'offline') return;
+      if (!autoOfflineTime || status === 'busy') return;
       
       const now = new Date();
       const [hours, minutes] = autoOfflineTime.split(':').map(Number);
@@ -346,7 +341,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         // Only auto-offline once per day at the specified time
         if (lastCheck !== today) {
           devLog('⏰ Auto-offline time reached:', autoOfflineTime);
-          handleStatusChange('offline');
+          handleStatusChange('busy');
           localStorage.setItem('lastAutoOfflineCheck', today);
         }
       }
@@ -492,8 +487,8 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       
       // If 3 hours exceeded, auto-reset to offline
       if (hoursElapsed >= 3) {
-        devLog('⏰ Pro account busy time limit (3h) exceeded - auto-resetting to offline');
-        await handleStatusChange('offline');
+        devLog('⏰ Pro account busy time limit (3h) exceeded - auto-resetting to busy');
+        await handleStatusChange('busy');
         // All accounts have unlimited busy time (premium feature)
         setBusyStartTime(null);
         setBusyTimeRemaining(null);
@@ -534,8 +529,8 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       // Update status in Appwrite (using proper AvailabilityStatus enum values)
       const properStatusValue = newStatus === 'available' ? AvailabilityStatus.Available :
                                newStatus === 'busy' ? AvailabilityStatus.Busy :
-                               newStatus === 'active' ? AvailabilityStatus.Available : // Treat 'active' as Available
-                               AvailabilityStatus.Offline;
+                               newStatus === 'active' ? AvailabilityStatus.Available :
+                               AvailabilityStatus.Busy; // No offline; fallback to Busy
       
       // Track busy start time for non-premium accounts
       const now = new Date().toISOString();
@@ -544,8 +539,8 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       const updateData = {
         status: properStatusValue,
         availability: properStatusValue, // Use same proper enum value
-        isLive: newStatus !== 'offline', // Show Available and Busy on home page, hide only Offline
-        isOnline: newStatus !== 'offline',
+        isLive: true, // Available and Busy both visible (no offline)
+        isOnline: newStatus === 'available' || newStatus === 'active',
         // Track busy start time for 3-hour limit on Pro accounts
         busyStartTime: busyStartTimeValue,
         // Clear conflicting timestamp fields based on new status
@@ -590,11 +585,10 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       }));
       
       // Show toast notification
-      const statusMessages = {
+      const statusMessages: Record<OnlineStatus, string> = {
         available: language === 'id' ? '✅ Anda sekarang TERSEDIA untuk booking' : '✅ You are now AVAILABLE for bookings',
         active: language === 'id' ? '✅ Anda sekarang AKTIF dan siap untuk booking' : '✅ You are now ACTIVE and ready for bookings',
-        busy: language === 'id' ? '🟡 Status diset ke SIBUK - pelanggan masih bisa melihat profil Anda' : '🟡 Status set to BUSY - customers can still view your profile',
-        offline: language === 'id' ? '⚫ Anda sekarang OFFLINE - profil tersembunyi dari pencarian' : '⚫ You are now OFFLINE - profile hidden from search'
+        busy: language === 'id' ? '🟡 Status diset ke SIBUK - pelanggan masih bisa melihat profil Anda' : '🟡 Status set to BUSY - customers can still view your profile'
       };
       
       devLog('✅ Status saved successfully:', statusMessages[newStatus]);
@@ -610,11 +604,11 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
       // Try to get fresh status from database
       try {
         const freshData = await therapistService.getById(therapist.$id);
-        const dbStatus = String(freshData?.status || 'Offline').toLowerCase();
-        if (dbStatus === 'available' || dbStatus === 'busy' || dbStatus === 'offline') {
-          setStatus(dbStatus as OnlineStatus);
-          devLog('🔄 Status synced with database:', dbStatus);
-        }
+        const dbStatus = String(freshData?.status || 'Busy').toLowerCase();
+        const uiStatus = (dbStatus === 'available' || dbStatus === 'active') ? 'available' : 'busy';
+        setStatus(uiStatus);
+        devLog('🔄 Status synced with database:', uiStatus);
+      }
       } catch (revertError) {
         console.error('❌ Failed to sync with database status:', revertError);
       }
@@ -1142,47 +1136,6 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
                 </div>
               </div>
             </button>
-
-            {/* Offline */}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (saving || isLoadingStatus) return;
-                handleStatusChange('offline');
-              }}
-              onTouchStart={(e) => {
-                e.currentTarget.style.transform = 'scale(0.98)';
-              }}
-              onTouchEnd={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-              disabled={saving || status === 'offline' || isLoadingStatus}
-              className={`min-h-[80px] p-4 rounded-xl border-2 transition-all transform active:scale-98 ${
-                status === 'offline'
-                  ? 'bg-red-500 border-red-500 shadow-lg ring-2 ring-red-300'
-                  : 'bg-white border-gray-300 hover:border-red-400 hover:shadow-md hover:bg-red-50'
-              } disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation`}
-              style={{
-                WebkitTapHighlightColor: 'rgba(239, 68, 68, 0.3)',
-                userSelect: 'none',
-                touchAction: 'manipulation'
-              }}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <XCircle className={`w-8 h-8 transition-colors ${
-                  status === 'offline' ? 'text-white' : 'text-red-600'
-                }`} />
-                <div className="text-center">
-                  <h3 className={`text-sm font-bold transition-colors ${
-                    status === 'offline' ? 'text-white' : 'text-gray-800'
-                  }`}>{dict.therapistDashboard.offline}</h3>
-                  {status === 'offline' && (
-                    <div className="mt-1 w-2 h-2 bg-white rounded-full"></div>
-                  )}
-                </div>
-              </div>
-            </button>
           </div>
         </div>
 
@@ -1260,10 +1213,10 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
           </div>
           
           {/* Timer Status Indicator */}
-          {status !== 'offline' && autoOfflineTime && (
+          {status !== 'busy' && autoOfflineTime && (
             <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
               <p className="text-sm text-gray-900">
-                ⏰ <strong>Timer Active:</strong> Will automatically go offline at {autoOfflineTime} ({new Date().toLocaleDateString()})
+                ⏰ <strong>Timer Active:</strong> Will automatically set status to Busy at {autoOfflineTime} ({new Date().toLocaleDateString()})
               </p>
               <p className="text-xs text-gray-600 mt-1">
                 Current time: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
@@ -1272,7 +1225,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
           )}
           
           <p className="text-xs text-gray-500 mt-3">
-            Example: Set to 22:00 to automatically go offline at 10 PM every night
+            Example: Set to 22:00 to automatically set status to Busy at 10 PM every night
           </p>
         </div>
 

@@ -544,14 +544,13 @@ export const therapistService = {
                 })));
             }
             
-            // Normalize status for each therapist found
+            // Normalize status: no Offline in app; offline/empty → Busy
             const normalizeStatus = (status: string) => {
-                if (!status) return 'Offline';
+                if (!status) return 'Busy';
                 const lowercaseStatus = status.toLowerCase();
                 if (lowercaseStatus === 'available') return 'Available';
-                if (lowercaseStatus === 'busy') return 'Busy';
-                if (lowercaseStatus === 'offline') return 'Offline';
-                return status; // Return as-is if unknown
+                if (lowercaseStatus === 'busy' || lowercaseStatus === 'offline') return 'Busy';
+                return status;
             };
             
             const normalizedTherapists = response.documents.map((therapist: any) => {
@@ -613,13 +612,12 @@ export const therapistService = {
             );
             console.log('📋 Found therapists with userId:', response.documents.length);
             
-            // Normalize status for each therapist found
+            // Normalize status: no Offline; offline/empty → Busy
             const normalizeStatus = (status: string) => {
-                if (!status) return 'Offline';
+                if (!status) return 'Busy';
                 const lowercaseStatus = status.toLowerCase();
                 if (lowercaseStatus === 'available') return 'Available';
-                if (lowercaseStatus === 'busy') return 'Busy';
-                if (lowercaseStatus === 'offline') return 'Offline';
+                if (lowercaseStatus === 'busy' || lowercaseStatus === 'offline') return 'Busy';
                 return status;
             };
             
@@ -747,7 +745,15 @@ export const therapistService = {
                 discountDuration: currentDocument.discountDuration || 0,
                 discountEndTime: currentDocument.discountEndTime || null,
                 isDiscountActive: currentDocument.isDiscountActive || false,
+                // 72h lock: when profile went live (set once when isLive first becomes true)
+                profileWentLiveAt: (currentDocument as any).profileWentLiveAt || null,
             };
+            
+            // When going live: set profileWentLiveAt once (72 hours after this, name/description/image/location lock for therapist; admin can still edit)
+            if (data.isLive === true && !(currentDocument as any).profileWentLiveAt) {
+                mappedData.profileWentLiveAt = new Date().toISOString();
+            }
+            if ((data as any).profileWentLiveAt !== undefined) mappedData.profileWentLiveAt = (data as any).profileWentLiveAt;
             
             // Now update with the provided data
             if (data.status) {
@@ -765,8 +771,11 @@ export const therapistService = {
                     mappedData.busy = bookedUntilTs;
                     mappedData.available = '';
                 } else if (data.status.toLowerCase() === 'offline') {
+                    // No offline: treat as busy (logout/app close set busy)
+                    mappedData.status = 'busy';
+                    mappedData.availability = 'Busy';
                     mappedData.available = '';
-                    mappedData.busy = '';
+                    mappedData.busy = new Date().toISOString();
                 }
             }
             
@@ -781,7 +790,8 @@ export const therapistService = {
                     } else if (availabilityValue.toLowerCase() === 'busy') {
                         mappedData.availability = 'Busy';
                     } else if (availabilityValue.toLowerCase() === 'offline') {
-                        mappedData.availability = 'Offline';
+                        mappedData.availability = 'Busy';
+                        mappedData.status = 'busy';
                     } else {
                         mappedData.availability = availabilityValue; // Use as-is if already correct
                     }
@@ -813,6 +823,23 @@ export const therapistService = {
             }
             if (data.coordinates) mappedData.coordinates = data.coordinates;
             if (data.isLive !== undefined) mappedData.isLive = data.isLive;
+            
+            // 72h lock: after 72 hours from profileWentLiveAt, therapist cannot change name, description, profile picture, location (admin can)
+            const wentLiveAt = (mappedData as any).profileWentLiveAt || (currentDocument as any).profileWentLiveAt;
+            if (wentLiveAt) {
+                const lockMs = 72 * 60 * 60 * 1000;
+                const isLocked = (Date.now() - new Date(wentLiveAt).getTime()) > lockMs;
+                if (isLocked) {
+                    mappedData.name = currentDocument.name;
+                    mappedData.description = currentDocument.description || '';
+                    mappedData.profilePicture = currentDocument.profilePicture || '';
+                    mappedData.location = currentDocument.location || '';
+                    mappedData.geopoint = currentDocument.geopoint || currentDocument.coordinates;
+                    mappedData.city = currentDocument.city || currentDocument.location;
+                    mappedData.locationId = currentDocument.locationId || currentDocument.location;
+                    mappedData.coordinates = currentDocument.coordinates;
+                }
+            }
             if (data.hourlyRate) mappedData.hourlyRate = data.hourlyRate;
             if (data.specialization) mappedData.specialization = data.specialization;
             if (data.yearsOfExperience) mappedData.yearsOfExperience = data.yearsOfExperience;
@@ -968,7 +995,7 @@ export const therapistService = {
             
             // Derive isOnline from status if provided and not explicitly set
             if (mappedData.status && mappedData.isOnline === undefined) {
-                mappedData.isOnline = mappedData.status !== 'offline';
+                mappedData.isOnline = mappedData.status === 'available';
             }
             // Ensure available/busy coherence even if status not passed but fields were
             if (!data.status) {

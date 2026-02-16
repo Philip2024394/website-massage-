@@ -33,7 +33,7 @@
  * DO NOT MODIFY unless you understand React reconciliation.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { logger } from '../utils/logger';
@@ -97,7 +97,11 @@ interface TherapistCardProps {
     t: any;
     loggedInProviderId?: number | string; // To prevent self-notification
     hideJoinButton?: boolean; // Hide "Therapist Join Free" button (for shared profile pages)
+    /** True when on shared profile page – ensures Book/Schedule pass source='share' for reliable booking */
+    isSharedProfile?: boolean;
     customVerifiedBadge?: string; // Custom verified badge image URL (for shared profile pages)
+    /** Times this profile was shared (shared profile page only; shown over main image) */
+    shareCount?: number;
     avatarOffsetPx?: number; // Fine-tune avatar overlap in pixels
     selectedCity?: string; // Selected city for location display override
 }
@@ -226,7 +230,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     activeDiscount,
     t: _t,
     hideJoinButton = false,
+    isSharedProfile = false,
     customVerifiedBadge,
+    shareCount,
     loggedInProviderId,
     avatarOffsetPx = 0,
     selectedCity
@@ -315,7 +321,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // 🔒 PERSISTENT CHAT - Facebook Messenger style chat window
     const { openBookingChat, openScheduleChat, openPriceChat, openBookingWithService, hasActiveScheduledBooking } = usePersistentChatIntegration();
-    
+
+    /** When on shared profile, ensure all chat opens use source='share' so booking is never blocked by status */
+    const openBookingWithServiceWithSource = useCallback(
+        (t: Therapist, service: { serviceName: string; duration: number; price: number }, options?: { bookingType?: 'immediate' | 'scheduled'; source?: 'share' | 'profile' | 'search' | null }) => {
+            openBookingWithService(t, service, { ...options, source: isSharedProfile ? 'share' : (options?.source ?? null) });
+        },
+        [openBookingWithService, isSharedProfile]
+    );
+
     // Debug modal state changes
     useEffect(() => {
         logger.debug('🔄 MODAL STATE CHANGED:', showPriceListModal);
@@ -572,8 +586,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         devLog(`🔍 ${therapist.name} status: ${(therapist as any).availability || therapist.status}, busy until: ${therapist.busyUntil}`);
     }
     
-    // Map any status value to valid AvailabilityStatus - check availability field first
-    let validStatus = AvailabilityStatus.Offline;
+    // Map any status value to valid AvailabilityStatus. No Offline in app: logout/app close sets Busy.
+    let validStatus = AvailabilityStatus.Busy;
     const statusStr = String((therapist as any).availability || therapist.status || '');
     
     // Special handling for showcase profiles - they should always be busy outside of Yogyakarta
@@ -585,9 +599,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     } else if (statusStr === 'Busy' || statusStr === AvailabilityStatus.Busy || statusStr === 'busy') {
         validStatus = AvailabilityStatus.Busy;
     } else if (statusStr === 'Offline' || statusStr === AvailabilityStatus.Offline) {
-        validStatus = AvailabilityStatus.Offline;
+        validStatus = AvailabilityStatus.Busy; // Display offline as Busy (no offline in app)
     }
-    // Default to Offline for any other value (like 'active', null, undefined)
+    // Default to Busy for any other value (like 'active', null, undefined)
     
     // Ensure therapist has a valid status
     const therapistWithStatus = {
@@ -599,8 +613,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     let displayStatus = getDisplayStatus(therapistWithStatus);
 
     // Fallback: derive status from new schema timestamp fields `available` / `busy`
-    // If the explicit status is Offline (or missing) but we have one of the new fields populated,
-    // use those to infer a better display state for cards.
+    // If the explicit status would be Offline (or missing) but we have one of the new fields populated,
+    // use those to infer a better display state for cards. (Offline is not used; displayed as Busy.)
     if (displayStatus === AvailabilityStatus.Offline) {
         const availableField = (therapist as any).available as string | undefined;
         const busyField = (therapist as any).busy as string | undefined;
@@ -869,12 +883,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             
             // 🔒 OPEN PERSISTENT CHAT - Facebook Messenger style
             // This chat window will NEVER disappear once opened
-            openPriceChat(therapist);
-        } else if (status === 'busy') {
-            setShowBusyModal(true);
+            openPriceChat(therapist, isSharedProfile ? 'share' : null);
         } else {
-            // Offline - maybe show a different modal or message
-            alert('Therapist is currently offline. Please try again later.');
+            // Busy or offline (offline displayed as busy; no offline in app)
+            setShowBusyModal(true);
         }
     };
 
@@ -1033,6 +1045,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     customVerifiedBadge={customVerifiedBadge}
                     bookingsCount={bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount}
                     displayRating={displayRating}
+                    shareCount={shareCount}
                 />
 
             {/* Location display - right aligned with pin icon (capital letters on profile) */}
@@ -1133,7 +1146,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         onQuickBookWithChat();
                     } else {
                         logger.debug('💬 [BOOK NOW] Opening persistent chat window...');
-                        openBookingChat(therapist);
+                        openBookingChat(therapist, isSharedProfile ? 'share' : null);
                     }
                     onIncrementAnalytics('bookings');
                     setBookingsCount(prev => prev + 1);
@@ -1143,7 +1156,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     const hasKtp = !!(therapist as any).ktpPhotoUrl;
                     if (hasBank && hasKtp) {
                         try {
-                            const bookingId = await enterpriseBookingFlowService.createBookingRequest({
+                            await enterpriseBookingFlowService.createBookingRequest({
                                 userId: 'current_user',
                                 userDetails: { name: 'Current User', phone: '+1234567890', location: 'User Location' },
                                 serviceType: 'scheduled',
@@ -1155,10 +1168,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 preferredTherapists: [therapist.$id],
                                 urgency: 'normal'
                             });
-                            openScheduleChat(therapist);
-                        } catch (error) {
-                            openScheduleChat(therapist);
+                        } catch (_) {
+                            // Continue to open chat even if createBookingRequest fails (e.g. no backend)
                         }
+                        openScheduleChat(therapist, isSharedProfile ? 'share' : null);
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
                     } else {
@@ -1271,7 +1284,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 handleSelectService={handleSelectService}
                 setSelectedServiceIndex={setSelectedServiceIndex}
                 setSelectedDuration={setSelectedDuration}
-                openBookingWithService={openBookingWithService}
+                openBookingWithService={openBookingWithServiceWithSource}
                 chatLang={chatLang}
                 showBookingButtons={true}
                 handleBookNowClick={handleBookNowClick}

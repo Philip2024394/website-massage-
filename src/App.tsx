@@ -1511,6 +1511,7 @@ const App = () => {
 
                     setPage={state.setPage}
                     onNavigate={state.setPage}
+                    setSelectedMassageType={state.setSelectedMassageType}
                     setLoggedInProvider={state.setLoggedInProvider}
                     setLoggedInCustomer={state.setLoggedInCustomer}
 

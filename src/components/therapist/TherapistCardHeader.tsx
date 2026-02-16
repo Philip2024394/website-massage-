@@ -13,6 +13,8 @@ interface TherapistCardHeaderProps {
     customVerifiedBadge?: string;
     bookingsCount?: number;
     displayRating?: string;
+    /** Times this shared profile was shared (shown as small counter over image) */
+    shareCount?: number;
 }
 
 const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
@@ -21,7 +23,8 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
     onShareClick,
     customVerifiedBadge,
     bookingsCount = 0,
-    displayRating
+    displayRating,
+    shareCount
 }) => {
     // Keep image URL stable to avoid reload/flicker on re-renders
 
@@ -111,18 +114,27 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                 </div>
             )}
             
-            {/* Share Button - Bottom right corner, same design as facial main image badges */}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onShareClick();
-                }}
-                className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-all z-30"
-                title="Share this therapist"
-                aria-label="Share this therapist"
-            >
-                <Share2 className="w-4 h-4 text-white" strokeWidth={2.5} aria-hidden />
-            </button>
+            {/* Share count - bottom right over image (shared profile): how many times this profile was shared */}
+            {/* Bottom right over image: share count (shared profile) + share button */}
+            <div className="absolute bottom-3 right-3 z-30 flex items-center gap-2">
+                {shareCount !== undefined && shareCount >= 0 && (
+                    <div className="bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1" title="Times this profile was shared">
+                        <Share2 className="w-3.5 h-3.5" strokeWidth={2.5} aria-hidden />
+                        <span>{shareCount}</span>
+                    </div>
+                )}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onShareClick();
+                    }}
+                    className="bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-all"
+                    title="Share this therapist"
+                    aria-label="Share this therapist"
+                >
+                    <Share2 className="w-4 h-4 text-white" strokeWidth={2.5} aria-hidden />
+                </button>
+            </div>
         </div>
     );
 };
