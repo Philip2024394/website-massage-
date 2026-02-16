@@ -1,14 +1,19 @@
-// 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
-import React, { useState, useEffect } from 'react';
-import { 
-    Clock, MapPin, Phone, Mail, Star,
-    Award, Users, Sparkles, CheckCircle, X, Heart, Calendar,
-    Image as ImageIcon
+/**
+ * Facial / Skin Clinic Profile Page – Award-winning design
+ * Same features as therapist profile: slider, Book Now, Scheduled Booking, 60/90/120 pricing.
+ * Layout tailored for skin clinics: hero, thumbnail gallery for place images, gallery blocks, facial types, other services.
+ * Main focus: facial treatment massage. Theme: app orange/slate.
+ */
+import React, { useState, useMemo } from 'react';
+import {
+    Clock, MapPin, Phone, Star, CheckCircle, X, Calendar, MessageCircle,
+    ChevronLeft, ChevronRight, Sparkles
 } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import HomeIcon from '../components/icons/HomeIcon';
 import UniversalHeader from '../components/shared/UniversalHeader';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
+import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface Place {
     id?: string | number;
@@ -17,55 +22,68 @@ interface Place {
     description?: string;
     mainImage?: string;
     profilePicture?: string;
-    location: string;
+    images?: string[];
+    location?: string;
+    address?: string;
     whatsappNumber?: string;
     email?: string;
-    price60?: string;
-    price90?: string;
-    price120?: string;
+    price60?: number | string;
+    price90?: number | string;
+    price120?: number | string;
+    pricing?: string | Record<string, number>;
     operatingHours?: string;
     rating?: number;
     reviewCount?: number;
-    facialTypes?: any;
+    facialTypes?: string | string[];
+    facialServices?: string | string[];
     status?: string;
     isVerified?: boolean;
-    languages?: string[];
-    galleryImages?: Array<{ imageUrl: string; caption: string }>;
+    languages?: string[] | string;
+    galleryImages?: Array<{ imageUrl: string; caption?: string; header?: string; description?: string }>;
     discountPercentage?: number;
-    isDiscountActive?: boolean;
     discountEndTime?: string;
     amenities?: string[];
     certifications?: string[];
-    teamMembers?: any[];
+    bankName?: string;
+    accountName?: string;
+    accountNumber?: string;
+    ktpPhotoUrl?: string;
+    [key: string]: any;
 }
 
 interface FacialPlaceProfilePageNewProps {
     place: Place;
     onBack: () => void;
     onBook?: () => void;
+    onQuickBookWithChat?: () => void;
     userLocation?: { lat: number; lng: number } | null;
     loggedInCustomer?: any;
     language?: 'en' | 'id';
     onLanguageChange?: (lang: string) => void;
+    onNavigate?: (page: string) => void;
     onMassageJobsClick?: () => void;
-    onTherapistJobsClick?: () => void;
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onFacialPlacePortalClick?: () => void;
     onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void;
     onAdminPortalClick?: () => void;
-    onNavigate?: (page: string) => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
     therapists?: any[];
     places?: any[];
 }
 
+const DEFAULT_GALLERY = [
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Our Space', description: 'A welcoming environment for premium facial and skin treatments.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Treatment Room', description: 'Clean, professional setup for your comfort and safety.' },
+];
+
 const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
     place,
     onBack,
     onBook,
+    onQuickBookWithChat,
     onNavigate,
     onMassageJobsClick,
     onVillaPortalClick,
@@ -77,247 +95,503 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
     onTermsClick,
     onPrivacyClick,
     therapists = [],
-    places = []
+    places = [],
+    language = 'en',
+    onLanguageChange
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<any>(null);
-    const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120>(90);
+    const [heroIndex, setHeroIndex] = useState(0);
+    const [selectedImage, setSelectedImage] = useState<{ imageUrl: string; caption?: string; header?: string; description?: string } | null>(null);
+    const [showPriceModal, setShowPriceModal] = useState(false);
 
-    // Parse pricing
-    const pricing = {
-        min60: parseInt(place.price60 || '0'),
-        min90: parseInt(place.price90 || '0'),
-        min120: parseInt(place.price120 || '0')
+    const rawPricing = place.pricing ?? { 60: place.price60, 90: place.price90, 120: place.price120 };
+    const pricing = useMemo(() => {
+        const p = parsePricing(typeof rawPricing === 'string' ? rawPricing : null);
+        if (typeof rawPricing === 'object' && rawPricing !== null) {
+            return {
+                '60': Number((rawPricing as any)['60'] ?? (rawPricing as any).price60 ?? place.price60) || p['60'],
+                '90': Number((rawPricing as any)['90'] ?? (rawPricing as any).price90 ?? place.price90) || p['90'],
+                '120': Number((rawPricing as any)['120'] ?? (rawPricing as any).price120 ?? place.price120) || p['120'],
+            };
+        }
+        return { '60': p['60'], '90': p['90'], '120': p['120'] };
+    }, [rawPricing, place.price60, place.price90, place.price120]);
+
+    const hasPricing = pricing['60'] > 0 || pricing['90'] > 0 || pricing['120'] > 0;
+    const heroImages = useMemo(() => {
+        const list: string[] = [];
+        if (place.mainImage) list.push(place.mainImage);
+        if (place.profilePicture && place.profilePicture !== place.mainImage) list.push(place.profilePicture);
+        if (Array.isArray(place.images)) place.images.forEach((url: string) => url && list.push(url));
+        if (list.length === 0) list.push('https://ik.imagekit.io/7grri5v7d/facial%202.png');
+        return list;
+    }, [place.mainImage, place.profilePicture, place.images]);
+
+    const galleryBlocks = useMemo(() => {
+        const raw = place.galleryImages;
+        if (Array.isArray(raw) && raw.length > 0) {
+            return raw.map((item: any) => ({
+                imageUrl: item.imageUrl || item.url,
+                header: item.header || item.caption || item.title || 'Gallery',
+                description: item.description || item.caption || '',
+            }));
+        }
+        return DEFAULT_GALLERY.map((d, i) => ({
+            ...d,
+            header: d.header + (i > 0 ? ` ${i + 1}` : ''),
+        }));
+    }, [place.galleryImages]);
+
+    const facialTypesList = useMemo(() => {
+        const parsed = parseMassageTypes(place.facialTypes);
+        return Array.isArray(parsed) ? parsed : [];
+    }, [place.facialTypes]);
+
+    const otherServices = useMemo(() => {
+        const amen = place.amenities;
+        if (Array.isArray(amen) && amen.length > 0) return amen;
+        return ['Consultation', 'Skin Analysis', 'Aftercare'];
+    }, [place.amenities]);
+
+    const hasBankAndKtp = !!(place.bankName && place.accountName && place.accountNumber && place.ktpPhotoUrl);
+    const rating = Number(place.rating) || 4.8;
+    const reviewCount = Number(place.reviewCount) || 0;
+    const verified = !!(place.isVerified || place.verifiedBadge || (place.bankName && place.ktpPhotoUrl));
+
+    const formatPrice = (n: number) => {
+        if (n >= 1000) return `${(n / 1000).toFixed(0)}K`;
+        return String(n);
     };
 
-    // Default treatments based on facial types
-    const treatments = [
-        {
-            id: '1',
-            name: 'Facial Treatment',
-            description: place.description || 'Professional facial treatment for healthy, glowing skin',
-            image: place.mainImage || place.profilePicture || 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=800',
-            prices: pricing
+    const handleBookNow = () => {
+        if (onQuickBookWithChat) {
+            onQuickBookWithChat();
+        } else if (onBook) {
+            onBook();
+        } else if (place.whatsappNumber) {
+            const msg = `Hi! I'd like to book a treatment at ${place.name}. When are you available?`;
+            window.open(`https://wa.me/${place.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
         }
-    ];
+    };
 
-    // Gallery images
-    const gallery = place.galleryImages || [];
+    const handleSchedule = () => {
+        if (hasBankAndKtp && onQuickBookWithChat) {
+            onQuickBookWithChat();
+        } else if (place.whatsappNumber) {
+            const msg = `Hi! I'd like to schedule a treatment at ${place.name}. What times do you have?`;
+            window.open(`https://wa.me/${place.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+    };
 
     return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
-            {/* Universal Header */}
-            <UniversalHeader 
-                language={(place as any).language || 'id'}
-                onLanguageChange={(lang) => console.log('Language changed:', lang)}
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-slate-50">
+            <UniversalHeader
+                language={language}
+                onLanguageChange={onLanguageChange}
                 onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={onBack}
+                showHomeButton
             />
 
-            {/* App Drawer */}
-            <AppDrawer
-                isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
-                onMassageJobsClick={onMassageJobsClick}
-                onVillaPortalClick={onVillaPortalClick}
-                onTherapistPortalClick={onTherapistPortalClick}
-                onFacialPortalClick={onFacialPlacePortalClick}
-                onAgentPortalClick={onAgentPortalClick}
-                onCustomerPortalClick={onCustomerPortalClick}
-                onAdminPortalClick={onAdminPortalClick}
-                onTermsClick={onTermsClick}
-                onPrivacyClick={onPrivacyClick}
-                therapists={therapists}
-                places={places}
-            />
-
-            {/* Compact Hero Image */}
-            <div className="relative h-48 overflow-hidden bg-gray-200">
-                <img 
-                    src={place.mainImage || place.profilePicture || 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800'} 
-                    alt={place.name}
-                    className="w-full h-full object-cover"
+            <React19SafeWrapper condition={isMenuOpen}>
+                <AppDrawer
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                    onNavigate={onNavigate}
+                    onMassageJobsClick={onMassageJobsClick}
+                    onHotelPortalClick={onVillaPortalClick}
+                    onVillaPortalClick={onVillaPortalClick}
+                    onTherapistPortalClick={onTherapistPortalClick}
+                    onMassagePlacePortalClick={onNavigate ? () => onNavigate('place-signup') : undefined}
+                    onFacialPortalClick={onFacialPlacePortalClick}
+                    onAgentPortalClick={onAgentPortalClick}
+                    onCustomerPortalClick={onCustomerPortalClick}
+                    onAdminPortalClick={onAdminPortalClick}
+                    onTermsClick={onTermsClick}
+                    onPrivacyClick={onPrivacyClick}
+                    therapists={therapists}
+                    places={places}
+                    language={language}
                 />
-            </div>
+            </React19SafeWrapper>
 
-            {/* Main Content */}
-            <div className="max-w-5xl mx-auto px-4 py-4">
-                {/* Clinic Name & Rating */}
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">{place.name}</h2>
-                    <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-orange-400 text-orange-400" />
-                            <span className="font-semibold">{(place.rating || 4.8).toFixed(1)}</span>
-                            <span className="text-gray-500">({place.reviewCount || 0})</span>
+            <div className="pt-[60px] max-w-4xl mx-auto pb-28">
+                {/* Hero slider */}
+                <div className="relative h-56 sm:h-64 overflow-hidden rounded-b-2xl bg-slate-200">
+                    {heroImages.map((src, i) => (
+                        <div
+                            key={i}
+                            className="absolute inset-0 transition-opacity duration-300"
+                            style={{ opacity: heroIndex === i ? 1 : 0 }}
+                        >
+                            <img src={src} alt={`${place.name} ${i + 1}`} className="w-full h-full object-cover" />
                         </div>
-                        {place.isVerified && (
-                            <div className="flex items-center gap-1 text-green-600">
-                                <CheckCircle className="w-4 h-4" />
-                                <span className="font-medium">Verified</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Pricing */}
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-                    <h3 className="font-semibold text-gray-900 mb-3 text-sm">Pricing</h3>
-                    <div className="grid grid-cols-3 gap-2">
-                        {pricing.min60 > 0 && (
-                            <div className="text-center p-3 bg-gray-50 rounded-lg">
-                                <div className="text-xs text-gray-600 mb-1">60 Min</div>
-                                <div className="text-lg font-bold text-orange-600">
-                                    {(pricing.min60 / 1000).toFixed(0)}K
-                                </div>
-                            </div>
-                        )}
-                        {pricing.min90 > 0 && (
-                            <div className="text-center p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                                <div className="text-xs text-gray-600 mb-1">90 Min</div>
-                                <div className="text-lg font-bold text-orange-600">
-                                    {(pricing.min90 / 1000).toFixed(0)}K
-                                </div>
-                            </div>
-                        )}
-                        {pricing.min120 > 0 && (
-                            <div className="text-center p-3 bg-gray-50 rounded-lg">
-                                <div className="text-xs text-gray-600 mb-1">120 Min</div>
-                                <div className="text-lg font-bold text-orange-600">
-                                    {(pricing.min120 / 1000).toFixed(0)}K
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Description */}
-                {place.description && (
-                    <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-                        <h3 className="font-semibold text-gray-900 mb-2 text-sm">About</h3>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                            {place.description}
-                        </p>
-                    </div>
-                )}
-
-                {/* Location & Hours */}
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-                    <h3 className="font-semibold text-gray-900 mb-3 text-sm">Details</h3>
-                    <div className="space-y-2">
-                        <div className="flex items-start gap-2 text-sm">
-                            <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-600">{place.location}</span>
-                        </div>
-                        {place.operatingHours && (
-                            <div className="flex items-start gap-2 text-sm">
-                                <Clock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                                <span className="text-gray-600">{place.operatingHours}</span>
-                            </div>
-                        )}
-                        {place.whatsappNumber && (
-                            <div className="flex items-start gap-2 text-sm">
-                                <Phone className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                                <span className="text-gray-600">{place.whatsappNumber}</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Gallery */}
-                {gallery.length > 0 && (
-                    <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-                        <h3 className="font-semibold text-gray-900 mb-3 text-sm">Gallery</h3>
-                        <div className="grid grid-cols-3 gap-2">
-                            {gallery.map((image, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setSelectedImage(image)}
-                                    className="relative aspect-square rounded-lg overflow-hidden"
-                                >
-                                    <img
-                                        src={image.imageUrl}
-                                        alt={image.caption}
-                                        className="w-full h-full object-cover"
+                    ))}
+                    {heroImages.length > 1 && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => setHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow flex items-center justify-center"
+                            >
+                                <ChevronLeft className="w-5 h-5 text-slate-800" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setHeroIndex((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1))}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow flex items-center justify-center"
+                            >
+                                <ChevronRight className="w-5 h-5 text-slate-800" />
+                            </button>
+                            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                                {heroImages.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => setHeroIndex(i)}
+                                        className={`w-2 h-2 rounded-full transition-colors ${heroIndex === i ? 'bg-orange-500' : 'bg-white/70'}`}
                                     />
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {/* Name, rating, verified + focus note (facial treatment massage / skin clinic) */}
+                <div className="px-4 -mt-8 relative z-10">
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200/80 p-4">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {verified && (
+                                        <img src={VERIFIED_BADGE_IMAGE_URL} alt="Verified" className="w-6 h-6 flex-shrink-0" />
+                                    )}
+                                    <h1 className="text-xl font-bold text-slate-900 uppercase truncate">{place.name}</h1>
+                                </div>
+                                <p className="text-xs text-orange-600 font-medium mt-1.5">
+                                    {language === 'id' ? 'Fokus: Facial treatment massage & perawatan kulit' : 'Our focus: Facial treatment massage & skin care'}
+                                </p>
+                                <div className="flex items-center gap-3 mt-2 text-sm">
+                                    <div className="flex items-center gap-1">
+                                        <Star className="w-4 h-4 fill-orange-400 text-orange-400" />
+                                        <span className="font-semibold text-slate-800">{rating.toFixed(1)}</span>
+                                        <span className="text-slate-500">({reviewCount})</span>
+                                    </div>
+                                    {place.status && (
+                                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700">
+                                            {String(place.status)}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Thumbnail strip – place images for skin clinic (click to open lightbox) */}
+                {(heroImages.length > 1 || galleryBlocks.length > 0) && (
+                    <section className="mt-4 px-4">
+                        <h2 className="text-sm font-semibold text-slate-700 mb-2">
+                            {language === 'id' ? 'Foto tempat kami' : 'Our place'}
+                        </h2>
+                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                            {heroImages.map((src, i) => (
+                                <button
+                                    key={`hero-${i}`}
+                                    type="button"
+                                    onClick={() => setSelectedImage({ imageUrl: src, header: place.name, description: '' })}
+                                    className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-orange-400 focus:border-orange-400"
+                                >
+                                    <img src={src} alt="" className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+                            {galleryBlocks.map((block, index) => (
+                                <button
+                                    key={`gallery-${index}`}
+                                    type="button"
+                                    onClick={() => setSelectedImage(block)}
+                                    className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-orange-400 focus:border-orange-400"
+                                >
+                                    <img src={block.imageUrl} alt={block.header} className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                {/* Amenities */}
-                {place.amenities && place.amenities.length > 0 && (
-                    <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-                        <h3 className="font-semibold text-gray-900 mb-3 text-sm">Amenities</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                            {place.amenities.map((amenity, index) => (
-                                <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                                    <span>{amenity}</span>
-                                </div>
-                            ))}
+                {/* Gallery blocks – image + header + text (skin clinic style) */}
+                <section className="mt-6 px-4 space-y-6">
+                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-orange-500" />
+                        {language === 'id' ? 'Galeri Klinik' : 'Clinic Gallery'}
+                    </h2>
+                    {galleryBlocks.map((block, index) => (
+                        <div
+                            key={index}
+                            className="bg-white rounded-2xl shadow-md border border-slate-200/80 overflow-hidden"
+                        >
+                            <button
+                                type="button"
+                                onClick={() => setSelectedImage(block)}
+                                className="block w-full aspect-[4/3] overflow-hidden"
+                            >
+                                <img
+                                    src={block.imageUrl}
+                                    alt={block.header}
+                                    className="w-full h-full object-cover"
+                                />
+                            </button>
+                            <div className="p-4">
+                                <h3 className="font-bold text-slate-900 text-base mb-2">{block.header}</h3>
+                                {block.description ? (
+                                    <p className="text-slate-600 text-sm leading-relaxed">{block.description}</p>
+                                ) : null}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    ))}
+                </section>
 
-                {/* Certifications */}
-                {place.certifications && place.certifications.length > 0 && (
-                    <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-                        <h3 className="font-semibold text-gray-900 mb-3 text-sm">Certifications</h3>
+                {/* Facial treatment types (main menu – facial treatment massage focus) */}
+                <section className="mt-8 px-4">
+                    <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4">
+                        <h2 className="text-lg font-bold text-slate-900 mb-1">
+                            {language === 'id' ? 'Jenis Perawatan Facial' : 'Facial Treatment Types'}
+                        </h2>
+                        <p className="text-xs text-slate-500 mb-3">
+                            {language === 'id' ? 'Facial treatment massage & perawatan kulit' : 'Facial treatment massage & skin care'}
+                        </p>
+                        {facialTypesList.length > 0 ? (
+                            <ul className="space-y-2">
+                                {facialTypesList.map((name, i) => (
+                                    <li key={i} className="flex items-center gap-2 text-slate-700">
+                                        <CheckCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                                        <span className="text-sm font-medium">{name}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-slate-600 text-sm">
+                                {language === 'id' ? 'Berbagai layanan facial dan perawatan kulit.' : 'Various facial and skin care services.'}
+                            </p>
+                        )}
+                    </div>
+                </section>
+
+                {/* Other services */}
+                <section className="mt-6 px-4">
+                    <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4">
+                        <h2 className="text-lg font-bold text-slate-900 mb-3">
+                            {language === 'id' ? 'Layanan Lainnya' : 'Other Services'}
+                        </h2>
                         <div className="flex flex-wrap gap-2">
-                            {place.certifications.map((cert, index) => (
+                            {otherServices.map((s, i) => (
                                 <span
-                                    key={index}
-                                    className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs font-medium"
+                                    key={i}
+                                    className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-full text-sm font-medium"
                                 >
-                                    {cert}
+                                    {s}
                                 </span>
                             ))}
                         </div>
                     </div>
-                )}
-            </div>
+                </section>
 
-            {/* Fixed Bottom Actions */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4">
-                <div className="max-w-5xl mx-auto flex gap-2">
-                    <a
-                        href={`https://wa.me/${place.whatsappNumber?.replace(/[^0-9]/g, '')}?text=Hi! I'd like to inquire about ${place.name}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 py-3 bg-green-500 text-white rounded-lg font-semibold text-center hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
-                    >
-                        <Phone className="w-5 h-5" />
-                        WhatsApp
-                    </a>
+                {/* Pricing 60/90/120 – treatment packages */}
+                {hasPricing && (
+                    <section className="mt-6 px-4">
+                        <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4">
+                            <h2 className="text-lg font-bold text-slate-900 mb-3">
+                                {language === 'id' ? 'Harga perawatan' : 'Treatment pricing'}
+                            </h2>
+                            <div className="grid grid-cols-3 gap-2">
+                                {pricing['60'] > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPriceModal(true)}
+                                        className="p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
+                                    >
+                                        <p className="text-xs text-slate-600 font-semibold">60 min</p>
+                                        <p className="text-base font-bold text-slate-900 mt-1">IDR {formatPrice(pricing['60'])}</p>
+                                    </button>
+                                )}
+                                {pricing['90'] > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPriceModal(true)}
+                                        className="p-3 rounded-xl border-2 border-orange-300 bg-orange-50 text-center"
+                                    >
+                                        <p className="text-xs text-slate-600 font-semibold">90 min</p>
+                                        <p className="text-base font-bold text-orange-700 mt-1">IDR {formatPrice(pricing['90'])}</p>
+                                    </button>
+                                )}
+                                {pricing['120'] > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPriceModal(true)}
+                                        className="p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
+                                    >
+                                        <p className="text-xs text-slate-600 font-semibold">120 min</p>
+                                        <p className="text-base font-bold text-slate-900 mt-1">IDR {formatPrice(pricing['120'])}</p>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* Description */}
+                {place.description && (
+                    <section className="mt-6 px-4">
+                        <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4">
+                            <h2 className="text-lg font-bold text-slate-900 mb-2">
+                                {language === 'id' ? 'Tentang' : 'About'}
+                            </h2>
+                            <p className="text-slate-600 text-sm leading-relaxed">{place.description}</p>
+                        </div>
+                    </section>
+                )}
+
+                {/* Location & contact */}
+                <section className="mt-6 px-4">
+                    <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4 space-y-3">
+                        {(place.location || place.address) && (
+                            <div className="flex items-start gap-2 text-sm">
+                                <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                                <span className="text-slate-600">{place.location || place.address}</span>
+                            </div>
+                        )}
+                        {place.operatingHours && (
+                            <div className="flex items-start gap-2 text-sm">
+                                <Clock className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                                <span className="text-slate-600">{place.operatingHours}</span>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Book Now | Schedule | Prices – same as therapist */}
+                <div className="mt-6 px-4 flex gap-2">
                     <button
-                        onClick={onBook}
-                        className="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold text-center hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+                        type="button"
+                        onClick={handleBookNow}
+                        className="flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full bg-orange-500 text-white hover:bg-orange-600 active:scale-95 shadow-md min-h-[48px]"
                     >
-                        <Calendar className="w-5 h-5" />
-                        Book Now
+                        <MessageCircle className="w-4 h-4" />
+                        <span className="text-sm">Book</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSchedule}
+                        disabled={!hasBankAndKtp}
+                        title={!hasBankAndKtp ? (language === 'id' ? 'Jadwal butuh verifikasi klinik' : 'Schedule requires clinic verification') : undefined}
+                        className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full min-h-[48px] shadow-md ${
+                            hasBankAndKtp
+                                ? 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
+                                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        }`}
+                    >
+                        <Calendar className="w-4 h-4" />
+                        <span className="text-sm">Schedule</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setShowPriceModal(true)}
+                        className="flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full bg-orange-500 text-white hover:bg-orange-600 active:scale-95 shadow-md min-h-[48px]"
+                    >
+                        <span className="text-sm">Prices</span>
                     </button>
                 </div>
             </div>
 
-            {/* Image Lightbox */}
-            {selectedImage && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+            {/* Fixed bottom bar: WhatsApp + Book Now */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg p-4 safe-area-padding">
+                <div className="max-w-4xl mx-auto flex gap-2">
+                    {place.whatsappNumber && (
+                        <a
+                            href={`https://wa.me/${place.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi! I'd like to inquire about ${place.name}`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-3 bg-green-500 text-white rounded-xl font-semibold text-center hover:bg-green-600 flex items-center justify-center gap-2"
+                        >
+                            <Phone className="w-5 h-5" />
+                            WhatsApp
+                        </a>
+                    )}
                     <button
+                        type="button"
+                        onClick={handleBookNow}
+                        className="flex-1 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 flex items-center justify-center gap-2"
+                    >
+                        <Calendar className="w-5 h-5" />
+                        {language === 'id' ? 'Pesan Sekarang' : 'Book Now'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Lightbox */}
+            {selectedImage && (
+                <div
+                    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <button
+                        type="button"
                         onClick={() => setSelectedImage(null)}
-                        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full"
                     >
                         <X className="w-6 h-6 text-white" />
                     </button>
-                    <div className="max-w-4xl w-full">
+                    <div className="max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
                         <img
                             src={selectedImage.imageUrl}
-                            alt={selectedImage.caption}
+                            alt={selectedImage.header || selectedImage.caption || 'Gallery'}
                             className="w-full h-auto rounded-xl"
                         />
-                        <p className="text-white text-center mt-4 text-lg">
-                            {selectedImage.caption}
-                        </p>
+                        {(selectedImage.header || selectedImage.description) && (
+                            <div className="mt-4 text-white text-center">
+                                {selectedImage.header && <p className="font-bold text-lg">{selectedImage.header}</p>}
+                                {selectedImage.description && <p className="text-sm mt-1 opacity-90">{selectedImage.description}</p>}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Price modal */}
+            {showPriceModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setShowPriceModal(false)}>
+                    <div
+                        className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 shadow-xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">{place.name} – Pricing</h3>
+                        <div className="space-y-3">
+                            {pricing['60'] > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-600">60 min</span>
+                                    <span className="font-bold text-slate-900">IDR {formatPrice(pricing['60'])}</span>
+                                </div>
+                            )}
+                            {pricing['90'] > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-600">90 min</span>
+                                    <span className="font-bold text-slate-900">IDR {formatPrice(pricing['90'])}</span>
+                                </div>
+                            )}
+                            {pricing['120'] > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-600">120 min</span>
+                                    <span className="font-bold text-slate-900">IDR {formatPrice(pricing['120'])}</span>
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowPriceModal(false)}
+                            className="mt-4 w-full py-2.5 bg-slate-200 text-slate-800 rounded-xl font-semibold"
+                        >
+                            Close
+                        </button>
                     </div>
                 </div>
             )}

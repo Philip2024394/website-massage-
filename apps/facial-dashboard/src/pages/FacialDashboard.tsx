@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../src/types';
 import { BookingStatus, HotelVillaServiceStatus } from '../../../../src/types';
-import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download } from 'lucide-react';
+import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, Clock } from 'lucide-react';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -18,7 +18,7 @@ import ImageUpload from '../../../../src/components/ImageUpload';
 import MainImageCropper from '../../../../src/components/MainImageCropper';
 import HotelVillaOptIn from '../../../../src/components/HotelVillaOptIn';
 
-import { placeService, imageUploadService } from '../../../../src/lib/appwriteService';
+import { placeService, facialPlaceService, imageUploadService } from '../../../../src/lib/appwriteService';
 import { sanitizePlacePayload } from '../../../../src/schemas/placeSchema';
 import UserSolidIcon from '../../../../src/components/icons/UserSolidIcon';
 import DocumentTextIcon from '../../../../src/components/icons/DocumentTextIcon';
@@ -67,10 +67,10 @@ interface FacialPlaceDashboardPageProps {
 }
 
 const AnalyticsCard: React.FC<{ title: string; value: number; description: string }> = ({ title, value, description }) => (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all">
-        <h4 className="text-sm font-medium text-gray-500">{title}</h4>
+    <div className="bg-white border-2 border-slate-200 rounded-xl p-6 hover:border-orange-300 transition-all shadow-sm">
+        <h4 className="text-sm font-medium text-slate-500">{title}</h4>
         <p className="text-4xl font-bold text-orange-600 mt-2">{value.toLocaleString()}</p>
-        <p className="text-xs text-gray-500 mt-2">{description}</p>
+        <p className="text-xs text-slate-500 mt-2">{description}</p>
     </div>
 );
 
@@ -83,13 +83,13 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
         [BookingStatus.Confirmed]: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200 shadow-sm',
         [BookingStatus.OnTheWay]: 'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 border-blue-200 shadow-sm animate-bounce',
         [BookingStatus.Cancelled]: 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-200 shadow-sm',
-        [BookingStatus.Completed]: 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200 shadow-sm',
+        [BookingStatus.Completed]: 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 border-slate-200 shadow-sm',
         [BookingStatus.TimedOut]: 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-200 shadow-sm',
         [BookingStatus.Reassigned]: 'bg-gradient-to-r from-purple-100 to-violet-100 text-purple-800 border-purple-200 shadow-sm',
     };
 
     return (
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-all">
+        <div className="bg-white border-2 border-slate-200 rounded-xl p-6 hover:border-orange-300 transition-all shadow-sm">
             <div className="flex justify-between items-start mb-3">
                 <div>
                     <p className="font-bold text-gray-900 text-lg">{booking.userName}</p>
@@ -189,6 +189,8 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     const [isAppInstalled, setIsAppInstalled] = useState(false);
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
+    // Online status - same as therapist: Available, Busy, Offline
+    const [status, setStatus] = useState<'Available' | 'Busy' | 'Offline'>('Available');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     const [showNotificationsView, setShowNotificationsView] = useState(false);
     
@@ -236,7 +238,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                     initializeWithPlaceData(placeProp);
                 } else if (_placeId) {
                     console.log('🔄 Loading place data from database for placeId:', _placeId);
-                    const loadedPlace = await placeService.getByProviderId(String(_placeId));
+                    const loadedPlace = await facialPlaceService.getByProviderId(String(_placeId));
                     if (loadedPlace) {
                         console.log('✅ Loaded place data from database:', loadedPlace);
                         setPlace(loadedPlace);
@@ -308,6 +310,9 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     const initializeWithPlaceData = (placeData: Place) => {
         setName(placeData.name || '');
         setDescription(placeData.description || '');
+        // Online status – same as therapist: Available, Busy, Offline
+        const savedStatus = (placeData as any).availability || (placeData as any).status || 'Available';
+        setStatus(['Available', 'Busy', 'Offline'].includes(savedStatus) ? savedStatus : 'Available');
         
         // Load mainimage from Appwrite (lowercase attribute)
         const mainImageValue = (placeData as any).mainimage || placeData.mainImage || '';
@@ -462,6 +467,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         setLocation('');
         setOpeningTime('09:00');
         setClosingTime('21:00');
+        setStatus('Available');
         setWebsiteUrl('');
         setWebsiteTitle('');
         setWebsiteDescription('');
@@ -662,12 +668,14 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         
         // Send ALL fields to ensure 100% data persistence
         const rawData: any = {
-            // System fields
+            // System fields - online status same as therapist (Available, Busy, Offline); isLive false when Offline
             placeId: placeId,
-            status: 'Open',
+            status: status,
+            availability: status,
             category: 'wellness',
             password: place?.password,
-            islive: true, // Profile goes live immediately
+            isLive: status !== 'Offline',
+            islive: status !== 'Offline',
             
             // Basic info
             name,
@@ -790,7 +798,8 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             // Activate profile FIRST
             await placeService.update(String(place.$id || place.id), {
                 isLive: true,
-                status: 'Open',
+                status: status,
+                availability: status,
             });
 
             alert('🎉 Your profile is now LIVE! Please submit payment to keep it active.');
@@ -2085,7 +2094,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                                     try {
                                         const endTime = new Date(Date.now() + discountDuration * 60 * 60 * 1000).toISOString();
                                         
-                                        await placeService.update(String(placeId), {
+                                        await facialPlaceService.update(String(placeId), {
                                             discountpercentage: discountPercentage,
                                             discountduration: discountDuration,
                                             isdiscountactive: true,
@@ -2132,7 +2141,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                                             type="button"
                                             onClick={async () => {
                                                 try {
-                                                    await placeService.update(String(placeId), {
+                                                    await facialPlaceService.update(String(placeId), {
                                                         isdiscountactive: false,
                                                         discountendtime: ''
                                                     });
@@ -2164,15 +2173,18 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Brand Header with Home Icon - Mobile Optimized */}
-            <header className="bg-white shadow-md sticky top-0 z-40">
+        <div className="min-h-screen bg-slate-50 pb-20">
+            {/* Brand Header – matches therapist dashboard (orange/slate theme) */}
+            <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
                 <PageContainer className="py-3 sm:py-4">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
+                    <div>
+                        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+                            <span className="text-slate-900">Inda</span>
+                            <span className="text-orange-500">Street</span>
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Facial Clinic Dashboard</p>
+                    </div>
                     <div className="flex items-center gap-2 sm:gap-3">
                         <NotificationBell 
                             count={unreadNotificationsCount} 
@@ -2186,7 +2198,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                                     onNavigate && onNavigate('home');
                                 }
                             }}
-                            className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-700 active:text-orange-500 active:bg-orange-50 rounded-full transition-colors touch-manipulation"
+                            className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-slate-700 active:text-orange-500 active:bg-orange-50 rounded-full transition-colors touch-manipulation"
                             title={showNotificationsView ? "Back to Dashboard" : "Go to Home"}
                             aria-label={showNotificationsView ? "Back to Dashboard" : "Go to Home"}
                         >
@@ -2204,10 +2216,10 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                 {showNotificationsView ? (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-bold text-gray-900">Bookings & Notifications</h2>
+                            <h2 className="text-2xl font-bold text-slate-900">Bookings & Notifications</h2>
                             <button
                                 onClick={() => onNavigate && onNavigate('home')}
-                                className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
+                                className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-slate-700 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
                                 title="Go to Home"
                                 aria-label="Go to Home"
                             >
@@ -2217,8 +2229,8 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                         
                         {/* Upcoming Bookings Section */}
                         {upcomingBookings.length > 0 && (
-                            <div className="bg-white rounded-lg shadow-md p-4">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                                <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
                                     <span className="text-2xl">📅</span>
                                     Upcoming Bookings
                                 </h3>
@@ -2246,8 +2258,8 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                         )}
                         
                         {/* Notifications Section */}
-                        <div className="bg-white rounded-lg shadow-md p-4">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                            <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
                                 <span className="text-2xl">🔔</span>
                                 Notifications
                             </h3>

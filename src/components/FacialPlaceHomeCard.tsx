@@ -129,16 +129,17 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
         return price.toLocaleString('id-ID');
     };
 
-    // Get status - map any status value to valid status
+    // Get status - same online status system as therapist: Available, Busy, Offline
     const getStatusStyles = () => {
-        const statusStr = String((place as any).availability || place.status || 'Open');
+        const statusStr = String((place as any).availability || place.status || 'Offline').trim();
+        const lower = statusStr.toLowerCase();
         
-        if (statusStr === 'Open' || statusStr === 'Available') {
-            return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500', label: 'Open' };
-        } else if (statusStr === 'Busy') {
-            return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Busy' };
+        if (statusStr === 'Available' || lower === 'available') {
+            return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500', label: 'Available', isAvailable: true };
+        } else if (statusStr === 'Busy' || lower === 'busy') {
+            return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Busy', isAvailable: false };
         }
-        return { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Closed' };
+        return { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Offline', isAvailable: false };
     };
 
     const statusStyle = getStatusStyles();
@@ -192,99 +193,131 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                         onIncrementAnalytics('views');
                     }
                 }}
-                className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                className="bg-white rounded-2xl overflow-visible border border-slate-200 hover:border-orange-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
             >
-            {/* Image Container */}
-            <div className="relative h-48 sm:h-56 overflow-hidden">
-                {/* Main Image */}
+            {/* Image Container – same height/ratio as therapist card */}
+            <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                 <img
                     src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/facial%202.png'}
                     alt={place.name || "Facial Clinic"}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl group-hover:scale-105"
+                    style={{ aspectRatio: '400/224', minHeight: '224px' }}
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/facial%202.png';
                     }}
                 />
 
-                {/* Discount badge (top left) */}
-                {isDiscountActive(place as any) && (
-                    <div className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
-                        {(place as any).discountPercentage}% OFF
-                    </div>
-                )}
+                {/* Star Rating Badge – same position as therapist: top left */}
+                <div className="absolute top-3 left-3 shadow-lg flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5">
+                    <StarIcon className="w-4 h-4 text-orange-500" />
+                    <span className="text-sm font-bold text-white">{displayRating}</span>
+                </div>
 
-                {/* Share button (top right) - white icon for visibility */}
+                {/* Orders Badge – same position as therapist: top right */}
+                <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg">
+                    {displayBookingsCount}+ {displayBookingsCount === 1 ? 'treatment' : 'treatments'}
+                </div>
+
+                {/* Share button – bottom right corner of main image */}
                 <button
-                    onClick={handleShareClick}
-                    className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-all"
+                    onClick={(e) => { e.stopPropagation(); handleShareClick(e); }}
+                    className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-all z-10"
                     title="Share this clinic"
                     aria-label="Share this clinic"
                 >
-                    <Share2 className="w-4 h-4 text-white" color="white" strokeWidth={2.5} aria-hidden />
+                    <Share2 className="w-4 h-4 text-white" strokeWidth={2.5} aria-hidden />
                 </button>
 
-                {/* Price container with rating badges (positioned at top edge, 50% inside/outside) */}
-                <div className="absolute -top-4 left-4 right-4 flex justify-between items-start">
-                    {/* Rating Badge */}
-                    <div className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
-                        <StarIcon className="w-4 h-4 text-white" />
-                        <span className="text-sm font-bold">{displayRating}</span>
+                {/* Discount badge – bottom center like therapist */}
+                {isDiscountActive(place as any) && (
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 backdrop-blur-sm animate-pulse">
+                        <span className="text-xs font-bold text-white">{(place as any).discountPercentage}% OFF</span>
                     </div>
-                </div>
+                )}
 
-                {/* Star rating badge on image (bottom right) */}
-                <div className="absolute bottom-3 right-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-                    <StarIcon className="w-3 h-3 text-white" />
-                    <span>{displayRating}</span>
-                </div>
-
-                {/* Orders badge (bottom left) */}
-                <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    {displayBookingsCount} treatments
+                {/* Facial & Skin Clinic badge – bottom left so it doesn’t cover star/orders */}
+                <div className="absolute bottom-3 left-3 bg-orange-500/90 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md">
+                    Facial • Skin clinic
                 </div>
             </div>
 
-            {/* Card Content */}
-            <div className="p-4">
-                {/* Name and Location Row */}
-                <div className="flex justify-between items-start mb-2">
-                    {/* Name and Status Column */}
-                    <div className="flex-1 min-w-0 pr-3">
-                        <div className="flex items-center gap-2">
-                            {/* Verified Badge - Show if place has both bank details and KTP */}
-                            {(() => {
-                                const hasVerifiedBadge = (place as any).verifiedBadge || (place as any).isVerified;
-                                const hasBankDetails = place.bankName && place.accountName && place.accountNumber;
-                                const hasKtpUploaded = place.ktpPhotoUrl;
-                                const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
-                                
-                                return shouldShowBadge && (
-                                    <img 
-                                        src={VERIFIED_BADGE_IMAGE_URL}
-                                        alt="Verified"
-                                        className="w-5 h-5 flex-shrink-0"
-                                        title="Verified Place - Complete Profile"
-                                    />
-                                );
-                            })()}
-                            
-                            <h3 className="font-bold text-gray-900 text-base truncate leading-tight">
-                                {place.name || "Facial Clinic"}
-                            </h3>
-                        </div>
-                        
-                        {/* Status Badge - Under name like profile card */}
-                        <div className="mt-1">
-                            <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`}>
-                                <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse mr-1.5`}></span>
-                                <span className="text-xs">{statusStyle.label}</span>
-                            </div>
+            {/* Location display – same style as therapist card (right aligned, pin icon) */}
+            <div className="px-4 mt-3 flex flex-col items-end">
+                <div className="flex items-center gap-1 text-xs text-black font-medium">
+                    <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="truncate max-w-[200px] sm:max-w-none">
+                        {place.address || place.location || (place as any).city || 'Clinic location'}
+                    </span>
+                </div>
+                <div className="text-xs text-orange-500 mt-1 font-medium">
+                    {(place as any).city ? `Serves ${(place as any).city} area` : (place.address || place.location) ? `Serves ${(place.address || place.location || '').split(',')[0].trim() || 'this'} area` : 'View profile for location'}
+                </div>
+            </div>
+
+            {/* Profile Section – overlapping main image by ~30%, same as therapist */}
+            <div className="px-4 -mt-[115px] pb-4 relative z-30 overflow-visible pointer-events-none">
+                <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 relative z-30">
+                        <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden relative">
+                            <img
+                                className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full"
+                                src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/facial%202.png'}
+                                alt={place.name || 'Clinic'}
+                                loading="lazy"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/facial%202.png';
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Name and Status – below profile, same offset as therapist (ml-[75px]) */}
+            <div className="px-4 mt-[2px] mb-3 relative z-40">
+                <div className="mb-2 ml-[75px]">
+                    <div className="flex items-center gap-2">
+                        {(() => {
+                            const hasVerifiedBadge = (place as any).verifiedBadge || (place as any).isVerified;
+                            const hasBankDetails = place.bankName && place.accountName && place.accountNumber;
+                            const hasKtpUploaded = place.ktpPhotoUrl;
+                            const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                            return shouldShowBadge && (
+                                <img
+                                    src={VERIFIED_BADGE_IMAGE_URL}
+                                    alt="Verified"
+                                    className="w-5 h-5 flex-shrink-0"
+                                    title="Verified Place - Complete Profile"
+                                />
+                            );
+                        })()}
+                        <h3 className="text-lg font-bold text-gray-900 truncate">{place.name || "Facial Clinic"}</h3>
+                    </div>
+                </div>
+                {/* Status badge – same style/position as therapist */}
+                <div className="overflow-visible flex justify-start ml-[75px]">
+                    <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`} style={{ paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)' }}>
+                        <span className="relative inline-flex mr-1.5" style={{ width: '32px', height: '32px', minWidth: '32px', minHeight: '32px' }}>
+                            <span className={`absolute rounded-full ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'} z-10`} style={{ width: '8px', height: '8px', left: '12px', top: '12px' }} />
+                            {statusStyle.isAvailable && (
+                                <React.Fragment>
+                                    <span className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{ width: '20px', height: '20px', left: '6px', top: '6px' }} />
+                                    <span className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{ width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s' }} />
+                                </React.Fragment>
+                            )}
+                        </span>
+                        <span className="text-xs">{statusStyle.label}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Focus note: facial treatment massage & skin clinic */}
+            <div className="mx-4 mb-1">
+                <p className="text-xs text-orange-600 font-medium">
+                    Facial treatment massage & skin care
+                </p>
             </div>
 
             {/* Client Preference - Services with Languages on same line (After profile section like profile card) */}
@@ -415,70 +448,67 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 </div>
             )}
 
-            {/* Price Containers for 60/90/120 min treatments */}
+            {/* Price Containers for 60/90/120 min treatments – skin clinic theme orange/slate */}
             <div className="mx-4 mb-4">
-                <h4 className="text-sm font-semibold text-gray-800 mb-3">Treatment Packages</h4>
+                <h4 className="text-sm font-semibold text-slate-800 mb-3">Treatment packages</h4>
                 <div className="grid grid-cols-3 gap-2">
                     {/* 60 min package */}
-                    <div className="bg-gradient-to-br from-pink-50 to-purple-50 border border-pink-200 rounded-lg p-3 text-center">
-                        <div className="text-xs font-medium text-pink-700 mb-1">60 min</div>
-                        <div className="text-sm font-bold text-gray-900">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                        <div className="text-xs font-medium text-orange-700 mb-1">60 min</div>
+                        <div className="text-sm font-bold text-slate-900">
                             {pricing["60"] > 0 ? `${formatPrice(pricing["60"])}` : 'Call'}
                         </div>
-                        <div className="text-[10px] text-gray-600 mt-1">Basic</div>
+                        <div className="text-[10px] text-slate-600 mt-1">Basic</div>
                     </div>
                     
                     {/* 90 min package */}
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3 text-center">
-                        <div className="text-xs font-medium text-purple-700 mb-1">90 min</div>
-                        <div className="text-sm font-bold text-gray-900">
+                    <div className="bg-orange-50 border border-orange-300 rounded-lg p-3 text-center">
+                        <div className="text-xs font-medium text-orange-700 mb-1">90 min</div>
+                        <div className="text-sm font-bold text-slate-900">
                             {pricing["90"] > 0 ? `${formatPrice(pricing["90"])}` : 'Call'}
                         </div>
-                        <div className="text-[10px] text-gray-600 mt-1">Premium</div>
+                        <div className="text-[10px] text-slate-600 mt-1">Premium</div>
                     </div>
                     
                     {/* 120 min package */}
-                    <div className="bg-gradient-to-br from-pink-50 to-purple-50 border border-pink-200 rounded-lg p-3 text-center">
-                        <div className="text-xs font-medium text-pink-700 mb-1">120 min</div>
-                        <div className="text-sm font-bold text-gray-900">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                        <div className="text-xs font-medium text-orange-700 mb-1">120 min</div>
+                        <div className="text-sm font-bold text-slate-900">
                             {pricing["120"] > 0 ? `${formatPrice(pricing["120"])}` : 'Call'}
                         </div>
-                        <div className="text-[10px] text-gray-600 mt-1">Luxury</div>
+                        <div className="text-[10px] text-slate-600 mt-1">Luxury</div>
                     </div>
                 </div>
             </div>
 
-            {/* Footer with Distance and Book Button */}
-            <div className="mx-4 pb-4 flex justify-between items-center">
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+            {/* View profile button – below price containers */}
+            <div className="mx-4 mb-3">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (typeof onClick === 'function') {
+                            onClick(place);
+                        }
+                    }}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:shadow-lg flex items-center justify-center gap-2"
+                >
+                    View profile
+                </button>
+            </div>
+
+            {/* Footer: distance only */}
+            <div className="mx-4 pb-4 flex items-center">
+                <div className="flex items-center gap-2 text-xs text-slate-500">
                     {userLocation && (
                         <DistanceDisplay {...{} as any} userLocation={userLocation}
                             targetLocation={{
                                 lat: parseFloat(String((place as any).lat || (place as any).latitude || 0)),
                                 lng: parseFloat(String((place as any).lng || (place as any).longitude || 0))
                             }}
-                            className="text-gray-600"
+                            className="text-slate-600"
                         />
                     )}
                 </div>
-                
-                <button 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // Handle facial place chat/booking
-                        if (typeof onClick === 'function') {
-                            onClick(place);
-                        } else {
-                            logger.error('onClick is not a function in FacialPlaceHomeCard');
-                        }
-                    }}
-                    className="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center gap-2"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Book Treatment
-                </button>
             </div>
         </div>
 

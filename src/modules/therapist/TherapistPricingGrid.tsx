@@ -131,6 +131,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             IDR {formatPrice(Number(pricing["60"]))}
                         </p>
                     )}
+                    <p className="text-[10px] text-slate-600 mt-1">Basic</p>
                 </div>
 
                 {/* 90 min pricing */}
@@ -160,6 +161,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             IDR {formatPrice(Number(pricing["90"]))}
                         </p>
                     )}
+                    <p className="text-[10px] text-slate-600 mt-1">Premium</p>
                 </div>
                 
                 {/* 120 min pricing */}
@@ -189,6 +191,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             IDR {formatPrice(Number(pricing["120"]))}
                         </p>
                     )}
+                    <p className="text-[10px] text-slate-600 mt-1">Luxury</p>
                 </div>
             </div>
         </>

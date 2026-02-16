@@ -207,7 +207,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
       } catch (error) {
         console.error('❌ Callback error:', error);
       }
-      onClose();
+      try { onClose?.(); } catch (e) { console.warn('AppDrawer onClose error', e); }
     } else if (fallbackPage && onNavigate) {
       const pageToUse = getSafeDrawerPage(fallbackPage);
       if (pageToUse === 'home' && fallbackPage !== 'home') {
@@ -219,7 +219,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
       } catch (error) {
         console.error('❌ Navigation error:', error);
       }
-      onClose();
+      try { onClose?.(); } catch (e) { console.warn('AppDrawer onClose error', e); }
     } else {
       console.warn('⚠️ No navigation method available:', { callback, fallbackPage, onNavigate: !!onNavigate });
     }
@@ -232,7 +232,11 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
           className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
           onClick={(e) => {
             e.stopPropagation();
-            onClose();
+            try {
+              onClose?.();
+            } catch (err) {
+              console.warn('AppDrawer overlay onClose error', err);
+            }
           }}
           aria-hidden="true" 
         />
@@ -266,7 +270,13 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               <span className="text-orange-500">Street</span>
             </h2>
             <button 
-              onClick={onClose} 
+              onClick={() => {
+                try {
+                  onClose?.();
+                } catch (err) {
+                  console.warn('AppDrawer close button error', err);
+                }
+              }} 
               className="
                 rounded-full transition-all duration-200 touch-manipulation
                 /* Mobile: 56px touch targets */

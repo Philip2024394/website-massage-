@@ -1576,7 +1576,9 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 })));
             }
             
-            let therapistsWithDistance = cityFilteredTherapists
+            // OOM: Cap and defensive check – avoid crash on undefined/large lists
+            const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.slice(0, 100) : [];
+            let therapistsWithDistance = safeInput
                 .map((t: any) => {
                     let distance: number | null = null;
                     let locationArea: string = t.city || t.location || 'Unknown';
@@ -1588,16 +1590,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                         if (therapistCoords) {
                             distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
                             
-                            // 🔍 DEBUG: Log distance calculation for debugging
-                            if (t.name === 'Budi' || t.name === 'Surtiningsih' || t.name === 'Wiwid') {
-                                console.log(`🧮 [DISTANCE CALC] ${t.name}:`, {
-                                    userLocation: currentUserLocation,
-                                    therapistCoords: therapistCoords,
-                                    rawCoordinates: t.coordinates,
-                                    calculatedDistance: distance
-                                });
-                            }
-                            
+                            // OOM: distance debug removed – avoids retaining large objects in render path
                             // Try to determine location area from coordinates
                             const matchedCity = matchProviderToCity(therapistCoords, 25);
                             if (matchedCity) {
@@ -1620,59 +1613,20 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     const isOwnerTherapist = isOwner(t);
                     const isFeatured = isFeaturedSample(t, 'therapist');
                     
-                    // 🔍 LOG COMPARISON: Detailed logging for filtering decisions
-                    if (isBudi || therapistsWithDistance.indexOf(t) < 3) { // Log Budi + first 3 others
-                        console.log(`🔍 [FILTER CHECK] ${t.name} (${isBudi ? 'BUDI' : 'OTHER'}):`, {
-                            name: t.name,
-                            $id: t.$id,
-                            treatedAsLive: treatedAsLive,
-                            isOwnerTherapist: isOwnerTherapist,
-                            isFeatured: isFeatured,
-                            _distance: t._distance,
-                            hasCoordinates: !!(t.coordinates || t.geopoint),
-                            coordinates: t.coordinates,
-                            geopoint: t.geopoint,
-                            isLive: t.isLive,
-                            status: t.status,
-                            availability: t.availability
-                        });
-                    }
-                    
+                    // OOM: per-therapist filter debug removed – avoids retaining large objects in render path
                     // ✅ FIXED: Don't exclude therapists just because they lack isLive/status fields
                     // Allow all therapists with GPS coordinates - let GPS filtering be the primary filter
                     // Only exclude if explicitly marked as not live (isLive: false)
                     
                     // Always show featured sample therapists (Budi) in all cities
-                    if (isFeatured) {
-                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            console.log(`✅ [FILTER PASS] ${t.name}: isFeatured=true, INCLUDED`);
-                        }
-                        return true;
-                    }
+                    if (isFeatured) return true;
                     
                     // ✅ NO DISTANCE FILTERING: Therapists serve their assigned city/location area
-                    // Show therapists based purely on their city assignment, not GPS proximity
-                    // Distance is only calculated for sorting (nearest first), not for filtering
-                    if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                        console.log(`✅ [FILTER PASS] ${t.name}: Location-based filtering (no radius restriction)`);
-                    }
-                    
-                    // 🔄 FALLBACK: Include therapists without valid coordinates (GPS-agnostic)
-                    // Never exclude therapists just because they lack coordinates
-                    if (t._distance === null) {
-                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            console.log(`✅ [FILTER PASS] ${t.name}: No coordinates, GPS-agnostic inclusion, INCLUDED`);
-                        }
-                        // Continue to other filters (live status, etc.) - don't return here
-                    }
+                    // OOM: filter debug removed – avoids retaining objects in render path
                     
                     // 🔐 ADMIN AREA VIEW: Special admin feature to view all therapists in specific area
                     if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
-                        const areaMatch = t._locationArea === adminViewArea;
-                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            console.log(`${areaMatch ? '✅ [FILTER PASS]' : '❌ [FILTER FAIL]'} ${t.name}: Admin area view, area match=${areaMatch}`);
-                        }
-                        return areaMatch;
+                        return t._locationArea === adminViewArea;
                     }
                     
                     // ✅ FIXED: GPS coordinates are source of truth for inclusion

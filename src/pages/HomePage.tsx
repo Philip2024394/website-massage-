@@ -41,7 +41,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService, bookingService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawerClean';
-import { Users, Building, Sparkles } from 'lucide-react';
+import { Users, Building, Sparkles, X } from 'lucide-react';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
@@ -55,6 +55,7 @@ import UniversalHeader from '../components/shared/UniversalHeader';
 import { FloatingChatWindow } from '../chat';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
+import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
 import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
@@ -129,6 +130,16 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
     </svg>
 );
 
+// Helper: display name for location (locationId -> city name)
+const getLocationDisplayName = (locationId: string | null | undefined, allAreasLabel: string): string => {
+    if (!locationId || locationId === 'all') return allAreasLabel;
+    for (const cat of INDONESIAN_CITIES_CATEGORIZED) {
+        const city = cat.cities.find(c => c.locationId === locationId);
+        if (city) return city.name;
+    }
+    return locationId;
+};
+
 // Helper function to calculate display rating
 const getDisplayRating = (rating: number, reviewCount: number): number => {
     // Return the rating if there are reviews, otherwise return 0
@@ -197,10 +208,7 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, []);
     
-    logger.debug('[STAGE 4 - HomePage] Component rendering');
-    logger.debug('[STAGE 4] Therapists prop received:', { count: therapists?.length || 0 });
-    logger.debug('[STAGE 4] First 3 therapist names:', { names: therapists?.slice(0, 3).map(t => t.name) || [] });
-    
+    // OOM: No logger in render path – avoid retaining large objects
     // Custom hooks for logic extraction
     const translationsObject = useHomePageTranslations(t);
     const hasAdminPrivileges = !!(_loggedInAgent || loggedInProvider);
@@ -232,6 +240,8 @@ const HomePage: React.FC<HomePageProps> = ({
         shuffledHomeImages,
         shuffleArray
     } = useHomePageState();
+
+    const [showLocationSelectPopup, setShowLocationSelectPopup] = useState(false);
     
     // Sync selectedCity with CityContext city
     useEffect(() => {
@@ -906,13 +916,7 @@ const HomePage: React.FC<HomePageProps> = ({
         
         // ✅ NEW LOGIC: Show therapists by default, only hide if explicitly disabled
         // If isLive is explicitly false AND status is offline/empty, then hide
-        if (normalizedLiveFlag === false && (normalizedStatus === 'offline' || normalizedStatus === '')) {
-            logger.debug(`Hiding therapist ${therapist.name}: isLive=false AND status=${normalizedStatus}`);
-            return false;
-        }
-        
-        // Show in all other cases
-        logger.debug(`Showing therapist ${therapist.name}: isLive=${normalizedLiveFlag}, status=${normalizedStatus}`);
+        if (normalizedLiveFlag === false && (normalizedStatus === 'offline' || normalizedStatus === '')) return false;
         return true;
     };
 
@@ -1023,15 +1027,7 @@ const HomePage: React.FC<HomePageProps> = ({
         const filterByLocation = async () => {
             const locationToUse = autoDetectedLocation || userLocation;
             
-            // Location filtering enabled with city-based matching
-            logger.debug('Location filtering enabled - using city-based filtering');
-            logger.debug('Data counts', {
-                totalTherapists: therapists?.length || 0,
-                totalPlaces: places?.length || 0,
-                liveTherapists: therapists?.filter((t: any) => t.isLive)?.length || 0,
-                livePlaces: places?.filter((p: any) => p.isLive)?.length || 0
-            });
-            
+            // Location filtering enabled with city-based matching (OOM: no logger here – avoids retaining lists)
             // For now, set default coordinates to Yogyakarta if no location available
             const defaultYogyaCoords = { lat: -7.7956, lng: 110.3695 };
             
@@ -1412,8 +1408,12 @@ const HomePage: React.FC<HomePageProps> = ({
                     isHome={true}
                     isOpen={isMenuOpen}
                     onClose={() => {
-                        logger.debug('AppDrawer onClose called');
-                        setIsMenuOpen(false);
+                        try {
+                            logger.debug('AppDrawer onClose called');
+                            setIsMenuOpen(false);
+                        } catch (e) {
+                            logger.error('AppDrawer onClose error', e);
+                        }
                     }}
                     t={translationsObject}
                     language={language}
@@ -1494,25 +1494,49 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                     )}
 
-                    {/* Toggle Buttons - Standard Height */}
-                    <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto">
-                        <button 
-                            onClick={() => setActiveTab('home')} 
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
-                        >
-                            <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.homeServiceTab || 'Home Service'}</span>
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('places')} 
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${
-                                activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                        >
-                            <Building className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
-                        </button>
-                    </div>
+                    {/* Tab bar: 2 tabs only – Massage mode: "Home Massage" | "Massage Places" ; Facial mode: "Home Facial" | "Facial Places" */}
+                    {(() => {
+                        const isFacialMode = activeTab === 'facials' || activeTab === 'facial-places';
+                        return (
+                            <div className="flex bg-gray-200 rounded-full p-1 max-w-2xl mx-auto overflow-x-auto">
+                                {!isFacialMode ? (
+                                    <>
+                                        <button
+                                            onClick={() => setActiveTab('home')}
+                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                        >
+                                            <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Massage</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('places')}
+                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                        >
+                                            <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Massage Places</span>
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={() => setActiveTab('facials')}
+                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'facials' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                        >
+                                            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Facial</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('facial-places')}
+                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'facial-places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                        >
+                                            <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Facial Places</span>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        );
+                    })()}
 
                     {/*  ADMIN/PREVIEW MODE BANNER */}
                     {(previewTherapistId || (adminViewArea && bypassRadiusForAdmin)) && hasAdminPrivileges && (
@@ -1526,45 +1550,45 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                     )}
 
-                    {/* City Display + Facial Button */}
+                    {/* Row: Massage (left) | Location dropdown (center) | Facial (right) */}
                     <div className="max-w-2xl mx-auto mt-4">
-                        {/* Selected City + Facial Button - Single Row */}
-                        <div className="flex flex-row gap-4 items-center justify-center">
-                            {/* Selected City Display */}
-                            {contextCity && contextCity !== 'all' && (
-                                <div className="flex items-center gap-2 bg-orange-50 rounded-lg px-4 py-2.5 border border-orange-200 flex-1 max-w-xs min-h-[44px]">
-                                    <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span className="font-semibold text-base text-gray-800">
-                                        {contextCity}
-                                    </span>
-                                    <button
-                                        onClick={() => onNavigate?.('advanced-search')}
-                                        className="ml-auto text-xs text-orange-600 hover:text-orange-800 underline font-medium"
-                                        title={t?.home?.changeCity || 'Change City'}
-                                    >
-                                        {t?.home?.change || 'Change'}
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Facial Button */}
-                            <button
-                                onClick={() => {
-                                    logger.debug('Facial button clicked - switching to facials tab');
-                                    setActiveTab('facials');
-                                }}
-                                className="px-4 py-2.5 rounded-lg transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm bg-orange-500 text-white hover:bg-orange-600 flex-shrink-0"
-                                title="Facials Indonesia"
-                                aria-label="Browse Facial Spas"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>{t?.home?.facial || 'Facial'}</span>
-                            </button>
+                        <div className="flex flex-row gap-2 sm:gap-3 items-center h-[42px]">
+                            {(() => {
+                                const isFacialMode = activeTab === 'facials' || activeTab === 'facial-places';
+                                return (
+                                    <>
+                                        <button
+                                            onClick={() => setActiveTab('home')}
+                                            title={t?.home?.massage ?? 'Home massage & massage places'}
+                                            aria-label="Massage"
+                                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${!isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                                        >
+                                            <HomeIcon className="w-4 h-4 flex-shrink-0" />
+                                            <span className="whitespace-nowrap">{t?.home?.massage ?? 'Massage'}</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowLocationSelectPopup(true)}
+                                            title={getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')}
+                                            aria-label={t?.home?.changeCity || 'Select location'}
+                                            className="flex-shrink-0 w-[46px] h-[46px] rounded-full bg-black flex items-center justify-center hover:bg-gray-800 transition-colors shadow"
+                                        >
+                                            <svg className="w-5 h-5 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                                <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('facials')}
+                                            title={t?.home?.facialHomeService ?? 'Facial & Skin Clinic'}
+                                            aria-label="Facial"
+                                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                                        >
+                                            <Sparkles className="w-4 h-4 flex-shrink-0" />
+                                            <span className="whitespace-nowrap truncate min-w-0">{t?.home?.facialHomeService || t?.home?.facial || 'Facial'}</span>
+                                        </button>
+                                    </>
+                                );
+                            })()}
                         </div>
                     </div>
                 </PageContainer>
@@ -1581,7 +1605,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <p className="text-gray-600">
                                 {(contextCity === 'all' || !contextCity)
                                     ? (t?.home?.therapistsSubtitleAll || 'We use location monitoring for both Users and therapists. Providing safety for all users while eliminating any concerns - you can book with confidence.')
-                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', contextCity) || 'We use location monitoring for both Users and therapists. Providing safety for all users while eliminating any concerns - you can book with confidence.')
+                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'We use location monitoring for both Users and therapists. Providing safety for all users while eliminating any concerns - you can book with confidence.')
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
@@ -1614,7 +1638,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                         return c;
                                     }
                                 } catch (e) {
-                                    logger.warn('Invalid coordinates for therapist', { therapistId: t.$id, coordinates: t.coordinates });
+                                    // OOM: no coordinates in log – avoids retaining large objects
+                                    logger.warn('Invalid coordinates for therapist', { therapistId: t.$id });
                                 }
                                 return null;
                             };
@@ -1631,48 +1656,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                 return R * c;
                             };
 
-                            logger.debug('Therapist filtering analysis', {
-                                totalTherapists: therapists?.length || 0,
-                                therapistsArray: therapists?.slice(0, 5).map((t: any) => ({
-                                    name: t.name,
-                                    isLive: t.isLive,
-                                    status: t.status,
-                                    id: t.$id || t.id
-                                })) || [],
-                                selectedCity: selectedCity,
-                                autoDetectedLocation: !!autoDetectedLocation,
-                                userLocation: !!userLocation
-                            });
-
-                            // TEMPORARY DEBUG: Show first therapist regardless of live status
-                            if (therapists && therapists.length > 0) {
-                                logger.debug('First therapist raw data', { therapist: therapists[0] });
-                            }
-
-                            // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
-                            // 🌍 STEP 1: Calculate distances for all therapists with valid geopoints
-                            
-                            // 🔍 DEBUG: Log therapist data to understand filtering issues
-                            logger.debug('Total therapists received', { count: therapists?.length || 0 });
-                            if (therapists && therapists.length > 0) {
-                                logger.debug('First 3 therapists data', {
-                                    therapists: therapists.slice(0, 3).map((t: any) => ({
-                                        name: t.name,
-                                        id: t.$id || t.id,
-                                        hasCoordinates: !!t.coordinates,
-                                        hasGeopoint: !!t.geopoint,
-                                        coordinates: t.coordinates,
-                                        geopoint: t.geopoint,
-                                        location: t.location,
-                                        city: t.city,
-                                        isLive: t.isLive,
-                                        status: t.status,
-                                        availability: t.availability
-                                    }))
-                                });
-                            }
-                            
-                            let therapistsWithDistance = cityFilteredTherapists
+                            // OOM: Cap and defensive check – avoid crash on undefined/large lists
+                            const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.slice(0, 100) : [];
+                            let therapistsWithDistance = safeInput
                 .map((t: any) => {
                     let distance: number | null = null;
                     let locationArea: string = t.city || t.location || 'Unknown';
@@ -1684,16 +1670,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         if (therapistCoords) {
                             distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
                             
-                            // 🔍 DEBUG: Log distance calculation for debugging
-                            if (t.name === 'Budi' || t.name === 'Surtiningsih' || t.name === 'Wiwid') {
-                                logger.debug(`Distance calculation for ${t.name}`, {
-                                    userLocation: currentUserLocation,
-                                    therapistCoords: therapistCoords,
-                                    rawCoordinates: t.coordinates,
-                                    calculatedDistance: distance
-                                });
-                            }
-                            
+                            // OOM: distance debug removed from render path
                             // Try to determine location area from coordinates
                             const matchedCity = matchProviderToCity(therapistCoords, 25);
                             if (matchedCity) {
@@ -1716,67 +1693,20 @@ const HomePage: React.FC<HomePageProps> = ({
                     const isOwnerTherapist = isOwner(t);
                     const isFeatured = isFeaturedSample(t, 'therapist');
                     
-                    // 🔍 LOG COMPARISON: Detailed logging for filtering decisions
-                    if (isBudi || therapistsWithDistance.indexOf(t) < 3) { // Log Budi + first 3 others
-                        logger.debug(`Filter check for ${t.name} (${isBudi ? 'BUDI' : 'OTHER'})`, {
-                            name: t.name,
-                            $id: t.$id,
-                            treatedAsLive: treatedAsLive,
-                            isOwnerTherapist: isOwnerTherapist,
-                            isFeatured: isFeatured,
-                            _distance: t._distance,
-                            hasCoordinates: !!(t.coordinates || t.geopoint),
-                            coordinates: t.coordinates,
-                            geopoint: t.geopoint,
-                            isLive: t.isLive,
-                            status: t.status,
-                            availability: t.availability
-                        });
-                    }
-                    
+                    // OOM: per-therapist debug removed from filter (was Filter check with full object)
                     // ✅ FIXED: Don't exclude therapists just because they lack isLive/status fields
                     // Allow all therapists with GPS coordinates - let GPS filtering be the primary filter
                     // Only exclude if explicitly marked as not live (isLive: false)
                     
                     // Always show featured sample therapists (Budi) in all cities
-                    if (isFeatured) {
-                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            logger.debug(`Filter pass for ${t.name}: isFeatured=true, INCLUDED`);
-                        }
-                        return true;
-                    }
-                    
-                    // ✅ NO DISTANCE FILTERING: Therapists serve their assigned city/location area
-                    // Show therapists based purely on their city assignment, not GPS proximity
-                    // Distance is only calculated for sorting (nearest first), not for filtering
-                    if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                        logger.debug(`Filter pass for ${t.name}: Location-based filtering (no radius restriction)`);
-                    }
-                    
-                    // 🔄 FALLBACK: Include therapists without valid coordinates (GPS-agnostic)
-                    // Never exclude therapists just because they lack coordinates
-                    if (t._distance === null) {
-                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            logger.debug(`Filter pass for ${t.name}: No coordinates, GPS-agnostic inclusion, INCLUDED`);
-                        }
-                        // Continue to other filters (live status, etc.) - don't return here
-                    }
+                    if (isFeatured) return true;
                     
                     // 🔐 ADMIN AREA VIEW: Special admin feature to view all therapists in specific area
                     if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
-                        const areaMatch = t._locationArea === adminViewArea;
-                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                            logger.debug(`${areaMatch ? 'Filter pass' : 'Filter fail'} for ${t.name}: Admin area view, area match=${areaMatch}`);
-                        }
-                        return areaMatch;
+                        return t._locationArea === adminViewArea;
                     }
                     
-                    // ✅ FIXED: GPS coordinates are source of truth for inclusion
-                    // Location strings are for DISPLAY ONLY, not filtering
-                    // This ensures all therapists with valid coordinates in range are shown
-                    if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
-                        logger.debug(`Filter pass for ${t.name}: Final default inclusion, INCLUDED`);
-                    }
+                    // ✅ Default: include (location-based filtering, no radius; distance used for sort only)
                     return true;
                 });
 
@@ -1784,14 +1714,7 @@ const HomePage: React.FC<HomePageProps> = ({
             const budiInBaseList = baseList.find(t => t.name?.toLowerCase().includes('budi'));
             const nonBudiInBaseList = baseList.filter(t => !t.name?.toLowerCase().includes('budi'));
             
-            logger.debug('Filtering summary', {
-                input: therapistsWithDistance.length,
-                output: baseList.length,
-                budiInList: !!budiInBaseList,
-                budiName: budiInBaseList?.name || 'NOT FOUND',
-                nonBudiCount: nonBudiInBaseList.length,
-                first3NonBudi: nonBudiInBaseList.slice(0, 3).map(t => ({ name: t.name, id: t.$id }))
-            });
+                            // OOM: Filtering summary debug removed (was building object with slices)
             
             if (baseList.length === 1 && budiInBaseList) {
                 logger.warn('[CRITICAL ISSUE] Only Budi is in the final list - this is the bug');
@@ -2140,25 +2063,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                     };
                                 });
 
-                            logger.debug('Final therapist list with priority scores', {
-                                originalCount: therapists?.length || 0,
-                                afterFiltering: baseList.length,
-                                finalCount: preparedTherapists.length,
-                                priorityBreakdown: baseList.slice(0, 5).map(t => ({
-                                    name: t.name,
-                                    status: t.status,
-                                    score: t.priorityScore,
-                                    distance: t._distance,
-                                    locationArea: t._locationArea,
-                                    isPremium: t.isPremium || false,
-                                    isVerified: t.isVerified || false,
-                                    rating: t.averageRating || 'N/A',
-                                    orders: t.orderCount || 0
-                                }))
-                            });
-
-                            // OOM FIX: Cap initial cards to avoid memory crash on large lists (e.g. 200+ therapists)
-                            const MAX_INITIAL_THERAPIST_CARDS = 50;
+                            // OOM FIX: Cap initial cards to avoid memory crash on large lists
+                            const MAX_INITIAL_THERAPIST_CARDS = 12;
                             const therapistsToRender = preparedTherapists.slice(0, MAX_INITIAL_THERAPIST_CARDS);
 
                             // 🏷️ GROUP BY LOCATION AREA for display (sorted by distance within each group)
@@ -2171,26 +2077,17 @@ const HomePage: React.FC<HomePageProps> = ({
                                 therapistsByLocation[area].push(therapist);
                             });
 
-                            // Render grouped therapists with section headers
+                            // Render grouped therapists with section headers (no large-object logging in render path to avoid OOM)
                             const locationAreas = Object.keys(therapistsByLocation).sort();
-                            
-                            logger.debug('[STAGE 6 - Render] About to render therapist cards', {
-                                count: therapistsToRender.length,
-                                capped: preparedTherapists.length > MAX_INITIAL_THERAPIST_CARDS,
-                                locationAreas,
-                                therapistsByLocation: Object.keys(therapistsByLocation).map(k => `${k}: ${therapistsByLocation[k].length}`)
-                            });
                             
                             return (
                                 <>
                                 {locationAreas.map((area) => {
                                     const therapistsInArea = therapistsByLocation[area];
-                                    logger.debug('[STAGE 6] Rendering area', { area, therapistCount: therapistsInArea.length });
                                     return (
                                         <div key={`area-${area}`} className="mb-8">
                                             {/* Therapist Cards in This Area */}
                                             {therapistsInArea.map((therapist: any, index: number) => {
-                                                logger.debug('[STAGE 6] Rendering TherapistHomeCard', { therapistName: therapist.name });
                                                 const isFakePlaceholder = therapist._isPlaceholder && String(therapist.$id || therapist.id || '').startsWith('placeholder-');
                                                 if (therapist._isPlaceholder && isFakePlaceholder) {
                                                     return (
@@ -2300,6 +2197,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 )}
                             </div>
                         )}
+
                         </div>
                     </div>
                 )}
@@ -2455,31 +2353,41 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
                 )}
 
-                {/* Facials Tab - Show facial places */}
-                {activeTab === 'facials' && (
+                {/* Home Facial / Facial Places - Show facial / skin clinic places */}
+                {(activeTab === 'facials' || activeTab === 'facial-places') && (
                     <div className="max-w-full ">
-                        <div className="mb-3 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialClinics || 'Facial Clinics'}</h3>
+                        <div className="mb-3 text-center mt-[26px]">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
                             <p className="text-gray-600">
-                                {selectedCity === 'all' 
-                                    ? (t?.home?.facialClinicsSubtitle || 'Find the best facial clinics across Indonesia')
-                                    : (t?.home?.facialClinicsSubtitleCity?.replace('{city}', selectedCity) || `Premium facial treatments in ${selectedCity}`)
+                                {(contextCity === 'all' || !contextCity)
+                                    ? (t?.home?.facialTherapistsSubtitleAll || 'We use location monitoring for both Users and facial. Providing safety for all users while eliminating any concerns - you can book with confidence.')
+                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'We use location monitoring for both Users and facial. Providing safety for all users while eliminating any concerns - you can book with confidence.')
                                 }
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
                             </p>
                         </div>
                         
-                        {/* Show facial places from Appwrite */}
+                        {/* Show facial places from Appwrite – same online status as therapist: Available, Busy, Offline; filter by isLive like therapists */}
                         {(() => {
-                            // Filter facial places by live status and city
+                            const normalizedFacialStatus = (place: any) => String(place.availability || place.status || 'offline').trim().toLowerCase();
+                            const facialStatusImpliesLive = (s: string) => s === 'available' || s === 'busy';
+                            // Only hide if explicitly isLive false AND status offline/empty (same as therapist)
+                            const isFacialPlaceVisible = (place: any) => {
+                                if (isFeaturedSample(place, 'place')) return true;
+                                const isLive = place.isLive !== false;
+                                const status = normalizedFacialStatus(place);
+                                if (isLive === false && (status === 'offline' || status === '')) return false;
+                                return true;
+                            };
                             const liveFacialPlaces = (facialPlaces?.filter((place: any) => {
-                                // Always show featured sample places (Sample Massage Spa) in ALL cities
+                                if (!isFacialPlaceVisible(place)) return false;
+                                // Always show featured sample places in ALL cities
                                 if (isFeaturedSample(place, 'place')) {
                                     logger.debug(`Including featured place "${place.name}" in Facial Places tab for city "${selectedCity}"`);
                                     return true;
                                 }
-                                
-                                // All facial places from the collection are assumed live
-                                // Apply city filtering if not 'all'
                                 if (selectedCity === 'all') return true;
                                 
                                 // Try to match place location to selected city
@@ -2495,70 +2403,25 @@ const HomePage: React.FC<HomePageProps> = ({
                                 return false;
                             }) || []).slice();
 
-                            // Sort facial places by status: Available/Open → Busy → Offline/Closed
+                            // Sort facial places by status: same as therapist – Available → Busy → Offline
                             const getFacialPlaceStatusScore = (p: any) => {
-                                const status = String(p.status || '').toLowerCase();
-                                
-                                // Check if place is open now
-                                let isOpen = false;
-                                try {
-                                    if (p.openingTime && p.closingTime) {
-                                        const now = new Date();
-                                        const [oh, om] = String(p.openingTime).split(':').map(Number);
-                                        const [ch, cm] = String(p.closingTime).split(':').map(Number);
-                                        const current = now.getHours() * 60 + now.getMinutes();
-                                        const openM = (oh || 0) * 60 + (om || 0);
-                                        const closeM = (ch || 0) * 60 + (cm || 0);
-                                        if (closeM >= openM) {
-                                            isOpen = current >= openM && current <= closeM;
-                                        } else {
-                                            isOpen = current >= openM || current <= closeM;
-                                        }
-                                    }
-                                } catch {}
-                                
-                                // Priority scoring: Available/Open first, Busy second, Offline/Closed last
-                                if (status === 'available' || status === 'online' || isOpen) {
-                                    return 10000; // Available/Open first
+                                const status = String(p.availability || p.status || 'offline').toLowerCase();
+                                if (status === 'available' || status === 'online') {
+                                    return 10000; // Available first
                                 } else if (status === 'busy') {
                                     return 5000;  // Busy second
-                                } else {
-                                    return 0;     // Offline/Closed last
                                 }
+                                return 0; // Offline last
                             };
                             liveFacialPlaces.sort((a, b) => getFacialPlaceStatusScore(b) - getFacialPlaceStatusScore(a));
 
-                            logger.debug('Facial Places on HomePage', {
-                                total: facialPlaces?.length || 0,
-                                liveFacialPlaces: liveFacialPlaces.length,
-                                selectedCity,
-                                facialPlaceNames: liveFacialPlaces.map((p: any) => p.name)
-                            });
-                            
-                            if (liveFacialPlaces.length === 0) {
-                                return (
-                                    <div className="text-center py-12">
-                                        <div className="mb-4">
-                                            <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                            </svg>
-                                        </div>
-                                        <p className="text-gray-500 mb-2 text-lg font-semibold">
-                                            {t?.home?.noFacialClinicsAvailable || 'No facial clinics available'}
-                                        </p>
-                                        <p className="text-sm text-gray-400">
-                                            {t?.home?.checkBackFacials || 'Check back soon for featured facial spas!'}
-                                        </p>
-                                        <p className="text-xs text-gray-300 mt-4">
-                                            Total facial places in DB: {facialPlaces?.length || 0} | Filtered: {liveFacialPlaces.length}
-                                        </p>
-                                    </div>
-                                );
-                            }
-                            
+                            // OOM: Facial Places debug removed (was building facialPlaceNames array in render)
+                            // When no places after filter, show mock facial home service card so user always sees at least one
+                            const listToShow = liveFacialPlaces.length > 0 ? liveFacialPlaces : [MOCK_FACIAL_PLACE];
+
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
-                                    {liveFacialPlaces
+                                    {listToShow
                                         .slice(0, 9) // Show maximum 9 facial places
                                         .map((place: any) => {
                                             const placeId = place.id || place.$id;
@@ -2869,6 +2732,52 @@ const HomePage: React.FC<HomePageProps> = ({
                     </button>
                     </div>
                 </>
+            )}
+
+            {/* Location select popup - round hero button opens this; select city then closes and updates location */}
+            {showLocationSelectPopup && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50" onClick={() => setShowLocationSelectPopup(false)} role="dialog" aria-modal="true" aria-label={t?.home?.changeCity || 'Select location'}>
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">{t?.home?.changeCity || 'Select location'}</h3>
+                            <button type="button" onClick={() => setShowLocationSelectPopup(false)} className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors" aria-label="Close">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="overflow-y-auto flex-1 p-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setContextCity('all');
+                                    setSelectedCity('all');
+                                    setShowLocationSelectPopup(false);
+                                }}
+                                className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${(contextCity === 'all' || !contextCity) ? 'bg-orange-100 text-orange-800' : 'text-gray-800 hover:bg-gray-100'}`}
+                            >
+                                {t?.home?.allAreas ?? 'All areas'}
+                            </button>
+                            {INDONESIAN_CITIES_CATEGORIZED.map((cat) => (
+                                <div key={cat.category} className="mt-3">
+                                    <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">{cat.category}</div>
+                                    {cat.cities.map((city) => (
+                                        <button
+                                            key={city.locationId}
+                                            type="button"
+                                            onClick={() => {
+                                                setContextCity(city.locationId);
+                                                setSelectedCity(city.locationId);
+                                                setShowLocationSelectPopup(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${contextCity === city.locationId ? 'bg-orange-100 text-orange-800' : 'text-gray-800 hover:bg-gray-100'}`}
+                                        >
+                                            {city.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Floating Chat Window - Bottom Right - Always mounted, internally manages visibility */}

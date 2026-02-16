@@ -599,7 +599,15 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </div>
                 )}
 
-                {/* Share Button removed - only View Profile button should show on home cards */}
+                {/* Share Button - bottom right corner, same style as facial main image badges */}
+                <button
+                    onClick={(e) => { e.stopPropagation(); handleShareClick(e); }}
+                    className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-all z-10"
+                    title="Share this therapist"
+                    aria-label="Share this therapist"
+                >
+                    <Share2 className="w-4 h-4 text-white" strokeWidth={2.5} aria-hidden />
+                </button>
             </div>
 
             {/* Location display - right aligned with pin icon */}
@@ -771,23 +779,26 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         {serviceName}
                     </h3>
                     <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
-                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">60 min</p>
-                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                            <p className="text-orange-700 text-xs mb-1 font-medium">60 min</p>
+                            <p className="font-bold text-slate-900 text-sm">
                                 IDR {formatPrice(pricing["60"])}
                             </p>
+                            <p className="text-[10px] text-slate-600 mt-1">Basic</p>
                         </div>
-                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
-                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">90 min</p>
-                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                        <div className="bg-orange-50 border border-orange-300 rounded-lg p-3 text-center">
+                            <p className="text-orange-700 text-xs mb-1 font-medium">90 min</p>
+                            <p className="font-bold text-slate-900 text-sm">
                                 IDR {formatPrice(pricing["90"])}
                             </p>
+                            <p className="text-[10px] text-slate-600 mt-1">Premium</p>
                         </div>
-                        <div className="p-2 rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
-                            <p className="text-gray-600 text-xs mb-0.5 font-semibold">120 min</p>
-                            <p className="font-bold text-gray-800 text-xs leading-tight">
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                            <p className="text-orange-700 text-xs mb-1 font-medium">120 min</p>
+                            <p className="font-bold text-slate-900 text-sm">
                                 IDR {formatPrice(pricing["120"])}
                             </p>
+                            <p className="text-[10px] text-slate-600 mt-1">Luxury</p>
                         </div>
                     </div>
                 </div>

@@ -78,6 +78,7 @@ import { adminRoutes } from './router/routes/adminRoutes';
 import { placeRoutes } from './router/routes/placeRoutes';
 import { facialRoutes } from './router/routes/facialRoutes';
 import { getTermsAgreed, setTermsAgreed } from './lib/termsAgreementStorage';
+import { facialPlaceService } from './lib/appwriteService';
 import DashboardTermsGate from './components/DashboardTermsGate';
 import UserTermsGate from './components/UserTermsGate';
 
@@ -1877,13 +1878,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         }
         case 'facial-place-dashboard': {
             const facialPlaceUser = props.loggedInProvider || props.user;
-            const facialPlaceId = (facialPlaceUser as any)?.$id;
+            const facialPlaceId = (facialPlaceUser as any)?.$id ?? '';
             return renderRoute(DashboardTermsGate, {
                 userId: facialPlaceId,
                 t: dict?.serviceTerms,
                 ChildComponent: facialRoutes.dashboard.component,
                 childProps: {
                     place: facialPlaceUser,
+                    placeId: facialPlaceId,
+                    onSave: (data: any) => {
+                        if (facialPlaceId) {
+                            facialPlaceService.update(facialPlaceId, data).catch((e) => logger.error('[Facial dashboard] Save failed', e));
+                        }
+                    },
                     onBack: () => props.onNavigate?.('home'),
                     language: props.language
                 }

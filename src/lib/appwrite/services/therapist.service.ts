@@ -107,7 +107,7 @@ export const therapistService = {
             }
             
             // Build query filters
-            const queries = [Query.limit(500)]; // Fetch up to 500 therapists
+            const queries = [Query.limit(100)]; // OOM: Cap at 100 to avoid memory crash
             if (city) {
                 // Add city filter - matches location field which contains city name
                 queries.push(Query.search('location', city));
