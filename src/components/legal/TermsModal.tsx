@@ -62,7 +62,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({
         ? APPWRITE_CONFIG.collections.therapists 
         : userType === 'massage_place'
         ? APPWRITE_CONFIG.collections.places
-        : APPWRITE_CONFIG.collections.facialPlaces;
+        : (APPWRITE_CONFIG.collections as any).facial_places;
 
       // Update member document with acceptance data
       await databases.updateDocument(

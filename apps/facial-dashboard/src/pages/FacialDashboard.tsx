@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../src/types';
-import { BookingStatus, HotelVillaServiceStatus } from '../../../../src/types';
-import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, Clock } from 'lucide-react';
+import { BookingStatus } from '../../../../src/types';
+import { Calendar, TrendingUp, Bell, MessageSquare, X, Home, Star, Upload, CheckCircle, Download } from 'lucide-react';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -16,9 +16,8 @@ import Button from '../../../../src/components/Button';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../../../../src/components/ImageUpload';
 import MainImageCropper from '../../../../src/components/MainImageCropper';
-import HotelVillaOptIn from '../../../../src/components/HotelVillaOptIn';
 
-import { placeService, facialPlaceService, imageUploadService } from '../../../../src/lib/appwriteService';
+import { facialPlaceService, imageUploadService } from '../../../../src/lib/appwriteService';
 import { sanitizePlacePayload } from '../../../../src/schemas/placeSchema';
 import UserSolidIcon from '../../../../src/components/icons/UserSolidIcon';
 import DocumentTextIcon from '../../../../src/components/icons/DocumentTextIcon';
@@ -29,33 +28,19 @@ import ClockIcon from '../../../../src/components/icons/ClockIcon';
 import NotificationBell from '../../../../src/components/NotificationBell';
 import CustomCheckbox from '../../../../src/components/CustomCheckbox';
 import ValidationPopup from '../../../../src/components/ValidationPopup';
-import { FACIAL_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../../../../src/constants/rootConstants';
+import { FACIAL_TYPES_OPTIONS, ADDITIONAL_SERVICES } from '../../../../src/constants/rootConstants';
 import { notificationService } from '../../../../src/lib/appwriteService';
 import CityLocationDropdown from '../../../../src/components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../src/constants/indonesianCities';
 import { soundNotificationService } from '../../../../src/utils/soundNotificationService';
 import PushNotificationSettings from '../../../../src/components/PushNotificationSettings';
-import { 
-    ColoredProfileIcon, 
-    ColoredCalendarIcon, 
-    ColoredAnalyticsIcon, 
-    ColoredHotelIcon, 
-    ColoredBellIcon, 
-    ColoredTagIcon, 
-    ColoredCrownIcon, 
-    ColoredDocumentIcon, 
-    ColoredHistoryIcon, 
-    ColoredCoinsIcon 
-} from '../../../../src/components/ColoredIcons';
-// Removed chat import - chat system removed
-// import MemberChatWindow from '../../../../src/components/MemberChatWindow';
 
 
 interface FacialPlaceDashboardPageProps {
     // Accept sanitized place payload rather than strict Place subset to avoid schema mismatch errors
     onSave: (data: any) => void;
-    onLogout: () => void;
-    onNavigateToNotifications: () => void;
+    onLogout?: () => void;
+    onNavigateToNotifications?: () => void;
     onNavigate?: (page: any) => void;
     onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
     placeId: number | string;
@@ -109,7 +94,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
 }
 
 
-const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigate, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, userLocation, t }) => {
+const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onSave, onLogout: _onLogout, onNavigateToNotifications: _onNavigateToNotifications, onNavigate, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, userLocation, t }) => {
     const [place, setPlace] = useState<Place | null>(placeProp || null);
     const [isLoading, setIsLoading] = useState(true);
     
@@ -127,25 +112,25 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         console.log('🔄 Main image state changed:', mainImage?.substring(0, 100) + (mainImage?.length > 100 ? '...' : ''));
     }, [mainImage]);
     
+    // Up to 5 gallery thumbnails with header (caption) + description – synced with profile page & Appwrite
     const [galleryImages, setGalleryImages] = useState<Array<{ imageUrl: string; caption: string; description: string }>>([
         { imageUrl: '', caption: '', description: '' },
         { imageUrl: '', caption: '', description: '' },
         { imageUrl: '', caption: '', description: '' },
         { imageUrl: '', caption: '', description: '' },
         { imageUrl: '', caption: '', description: '' },
-        { imageUrl: '', caption: '', description: '' }
     ]);
     const [contactNumber, setContactNumber] = useState('');
     const [ownerWhatsApp, setOwnerWhatsApp] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
-    const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
-    const [useSamePricing, setUseSamePricing] = useState(true);
+    const [, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
+    const [useSamePricing, _setUseSamePricing] = useState(true);
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
     const [discountDuration, setDiscountDuration] = useState<number>(24); // hours
     const [isDiscountActive, setIsDiscountActive] = useState<boolean>(false);
     const [discountEndTime, setDiscountEndTime] = useState<string>('');
     const [location, setLocation] = useState('');
-    const [isLocationManuallyEdited, setIsLocationManuallyEdited] = useState(false);
+    const [, setIsLocationManuallyEdited] = useState(false);
     const [facialTypes, setfacialTypes] = useState<string[]>([]);
     const [therapistGender, setTherapistGender] = useState<string>('Unisex'); // 'Male', 'Female', or 'Unisex'
     const [yearsEstablished, setYearsEstablished] = useState<number>(1);
@@ -170,17 +155,6 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         return 'all';
     });
 
-    // Debug function to check location system status
-    const debugLocationSystem = () => {
-        console.log('🔍 Location System Debug Info:');
-        console.log('- mapsApiLoaded:', mapsApiLoaded);
-        console.log('- Google Maps available:', !!(window as any).google?.maps);
-        console.log('- Current location:', location);
-        console.log('- Coordinates:', coordinates);
-        console.log('- Is manually edited:', isLocationManuallyEdited);
-        console.log('- Navigator geolocation:', !!navigator.geolocation);
-        console.log('- API Key configured:', !!getStoredGoogleMapsApiKey());
-    };
     const [openingTime, setOpeningTime] = useState('09:00');
     const [closingTime, setClosingTime] = useState('21:00');
     
@@ -191,7 +165,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     const [activeTab, setActiveTab] = useState('profile');
     // Online status - same as therapist: Available, Busy, Offline
     const [status, setStatus] = useState<'Available' | 'Busy' | 'Offline'>('Available');
-    const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+    const _sideDrawerState = useState(false);
     const [showNotificationsView, setShowNotificationsView] = useState(false);
     
     // Website information for Indastreet Partners Directory
@@ -213,15 +187,14 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     const [showValidationPopup, setShowValidationPopup] = useState(false);
     const [validationMissingFields, setValidationMissingFields] = useState<string[]>([]);
     
-    // Toast notification state
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const [, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     
     // Payment modal states for Plus plan
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [paymentProof, setPaymentProof] = useState<File | null>(null);
     const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
     const [uploadingPayment, setUploadingPayment] = useState(false);
-    const [paymentPending, setPaymentPending] = useState(false);
+    const [, setPaymentPending] = useState(false);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
 
@@ -337,20 +310,20 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             }
             
             const loadedGallery = parsedGallery.map((item: any) => ({
-                imageUrl: item.imageUrl || '',
-                caption: item.caption || '',
+                imageUrl: item.imageUrl || item.url || '',
+                caption: item.caption || item.header || '',
                 description: item.description || ''
             }));
-            
-            // Ensure we always have 6 slots
-            while (loadedGallery.length < 6) {
+            while (loadedGallery.length < 5) {
                 loadedGallery.push({ imageUrl: '', caption: '', description: '' });
             }
-            setGalleryImages(loadedGallery.slice(0, 6));
+            setGalleryImages(loadedGallery.slice(0, 5));
         }
         
-        setContactNumber(placeData.contactNumber || '');
-        setOwnerWhatsApp(placeData.ownerWhatsApp || '');
+        // Contact: support both Place and Appwrite shapes (whatsappNumber, contactNumber, ownerWhatsApp)
+        const contact = (placeData as any).contactNumber ?? (placeData as any).whatsappNumber ?? (placeData as any).ownerWhatsApp ?? '';
+        setContactNumber(contact);
+        setOwnerWhatsApp((placeData as any).ownerWhatsApp ?? contact);
         
         // Parse JSON strings from Appwrite
         try {
@@ -363,9 +336,13 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             
             setCoordinates(typeof placeData.coordinates === 'string' ? JSON.parse(placeData.coordinates) : placeData.coordinates || { lat: 0, lng: 0 });
             
-            // Parse massage types - handle both JSON string and array
-            const facialTypesRaw = (placeData as any).massageTypes || placeData.massageTypes;
-            setfacialTypes(typeof facialTypesRaw === 'string' ? JSON.parse(facialTypesRaw) : facialTypesRaw || []);
+            // Facial types: Appwrite stores as massagetypes (string); service returns facialTypes (array)
+            const facialTypesRaw = (placeData as any).facialTypes ?? (placeData as any).massageTypes ?? (placeData as any).massagetypes;
+            setfacialTypes(
+                Array.isArray(facialTypesRaw) ? facialTypesRaw
+                    : typeof facialTypesRaw === 'string' ? (() => { try { return JSON.parse(facialTypesRaw); } catch { return []; } })()
+                    : []
+            );
             
             // Load therapist gender preference - use type assertion since therapistGender exists in DB but not in type
             const genderPref = (placeData as any).therapistGender || 'Unisex';
@@ -451,7 +428,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         setDescription('');
         setMainImage('');
         setProfilePicture('');
-        setGalleryImages(Array(6).fill({ imageUrl: '', caption: '', description: '' }));
+        setGalleryImages(Array(5).fill({ imageUrl: '', caption: '', description: '' }));
         setContactNumber('');
         setOwnerWhatsApp('');
         setPricing({ '60': 0, '90': 0, '120': 0 });
@@ -646,9 +623,17 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             return;
         }
         
-        // Filter out empty gallery images
+        // Up to 5 gallery items: profile page shows header (caption) + description; Appwrite data feed uses caption + description, profile uses header || caption
         const safeGalleryImages = galleryImages || [];
-        const filteredGallery = safeGalleryImages.filter(img => img && img.imageUrl && img.imageUrl.trim() !== '');
+        const filteredGallery = safeGalleryImages
+            .slice(0, 5)
+            .filter(img => img && img.imageUrl && img.imageUrl.trim() !== '')
+            .map(img => ({
+                imageUrl: img.imageUrl,
+                caption: img.caption || '',
+                header: img.caption || '',
+                description: img.description || '',
+            }));
         
         console.log('💾 ========== SAVE PROFILE DEBUG ==========');
         console.log('📸 Main Image:', mainImage);
@@ -703,8 +688,8 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             openingtime: openingTime,
             closingtime: closingTime,
             
-            // Services
-            facialTypes: JSON.stringify(facialTypes),
+            // Services (massagetypes stores facial types for facial places – schema uses same field)
+            massagetypes: JSON.stringify(facialTypes.slice(0, 5)),
             therapistGender: therapistGender,
             languages: JSON.stringify(languages),
             additionalServices: JSON.stringify(additionalServices),
@@ -734,7 +719,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         console.log('📦 Raw Data Keys:', Object.keys(rawData));
         console.log('📦 Sanitized Data Keys:', Object.keys(saveData));
         console.log('📦 Sanitized mainimage:', (saveData as any).mainimage);
-        console.log('📦 Sanitized facialTypes:', (saveData as any).massageTypes);
+        console.log('📦 Sanitized facial types (massagetypes):', (saveData as any).massagetypes);
         console.log('📦 Sanitized languages:', (saveData as any).languages);
         console.log('📦 Sanitized additionalServices:', (saveData as any).additionalServices);
 
@@ -790,33 +775,6 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         }
     };
     
-    // Handle Plus plan activation (profile goes live, then show payment modal)
-    const handlePlusActivation = async () => {
-        if (!place) return;
-        
-        try {
-            // Activate profile FIRST
-            await placeService.update(String(place.$id || place.id), {
-                isLive: true,
-                status: status,
-                availability: status,
-            });
-
-            alert('🎉 Your profile is now LIVE! Please submit payment to keep it active.');
-            
-            // Mark payment as pending
-            setPaymentPending(true);
-            
-            // Show payment modal after short delay
-            setTimeout(() => {
-                setShowPaymentModal(true);
-            }, 1000);
-        } catch (error: any) {
-            console.error('❌ Failed to activate profile:', error);
-            alert('❌ Failed to activate profile. Please try again.');
-        }
-    };
-
     // Handle payment proof upload
     const handlePaymentProofChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -860,7 +818,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             const paymentProofUrl = await imageUploadService.uploadProfileImage(paymentProofPreview!);
             console.log('✅ Payment proof uploaded:', paymentProofUrl);
 
-            // Profile is already LIVE from handlePlusActivation
+            // Profile is already LIVE
             // Confirm payment submission
             alert('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.');
             
@@ -911,29 +869,6 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         }
     };
     
-    const handleHotelVillaPriceChange = (duration: keyof Pricing, value: string) => {
-        let numValue = parsePriceFromInput(value);
-        
-        // Validate: Hotel/villa price cannot be more than 20% higher than regular price
-        const regularPrice = pricing[duration];
-        const maxAllowedPrice = regularPrice * 1.2; // 20% increase max
-        
-        if (numValue > maxAllowedPrice && regularPrice > 0) {
-            // Cap at 20% increase
-            numValue = Math.floor(maxAllowedPrice);
-        }
-        
-        setHotelVillaPricing(prev => ({ ...prev, [duration]: numValue }));
-    };
-    
-    const handleUseSamePricingChange = (checked: boolean) => {
-        setUseSamePricing(checked);
-        if (checked) {
-            // Copy regular pricing to hotel/villa pricing
-            setHotelVillaPricing({ ...pricing });
-        }
-    };
-    
     const handleGalleryImageChange = (index: number, imageUrl: string) => {
         const newGallery = [...galleryImages];
         newGallery[index] = { ...newGallery[index], imageUrl };
@@ -952,7 +887,13 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         setGalleryImages(newGallery);
     };
 
-    // Removed handleMassageTypeChange - replaced with city selection
+    const handleFacialTypeChange = (type: string) => {
+        setfacialTypes(prev => {
+            if (prev.includes(type)) return prev.filter(t => t !== type);
+            if (prev.length >= 5) return prev;
+            return [...prev, type];
+        });
+    };
 
     const handleLanguageChange = (langCode: string) => {
         setLanguages(prev => {
@@ -972,7 +913,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         });
     };
 
-    const [isGettingLocation, setIsGettingLocation] = useState(false);
+    const [, setIsGettingLocation] = useState(false);
     
     const handleSetLocation = () => {
         if (!navigator.geolocation) {
@@ -1558,7 +1499,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                                 Gallery Images (with Captions & Descriptions)
                             </h3>
                             <p className="text-sm text-gray-600 mb-4">
-                                Upload up to 6 images for your gallery. Add a caption (header name) and description (small bio) for each image to describe what it shows.
+                                Upload up to 5 images for your profile. Add a caption (header) and description for each; they appear on your public clinic profile.
                             </p>
                             <div className="grid grid-cols-2 gap-6">
                                 {(galleryImages || []).map((galleryItem, index) => (
@@ -1799,7 +1740,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                             </div>
                         </div>
 
-                        {/* City/Tourist Location - Replaced Massage Types */}
+                        {/* City/Tourist Location */}
                         <div>
                             <CityLocationDropdown
                                 selectedCity={selectedCity}
@@ -1813,6 +1754,26 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                             <p className="text-xs text-gray-500 mt-1">
                                 Select the city or tourist area where your Facial Place is located. This helps customers find you easily.
                             </p>
+                        </div>
+
+                        {/* Facial Types – select up to 5 */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Facial types you offer (select up to 5) – {facialTypes.length}/5 selected
+                            </label>
+                            <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg max-h-[280px] overflow-y-auto">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                                    {(FACIAL_TYPES_OPTIONS || []).map((facialType: string) => (
+                                        <CustomCheckbox
+                                            key={facialType}
+                                            label={facialType}
+                                            checked={facialTypes.includes(facialType)}
+                                            onChange={() => handleFacialTypeChange(facialType)}
+                                            disabled={!facialTypes.includes(facialType) && facialTypes.length >= 5}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Languages Selection */}

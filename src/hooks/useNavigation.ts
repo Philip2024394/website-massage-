@@ -267,25 +267,27 @@ export const useNavigation = ({
         console.log('🏨 handleSetSelectedPlace called with:', place);
         setSelectedPlace(place);
         if (place) {
-            // Determine which profile page to navigate to based on place type
             const placeType = (place as any).type;
             const hasFacialTypes = (place as any).facialTypes !== undefined;
             const hasFacialServices = (place as any).facialServices !== undefined;
-            
-            console.log('🔍 Place type detection:', {
-                placeType,
-                hasFacialTypes,
-                hasFacialServices,
-                placeName: place.name
-            });
-            
-            // Navigate to facial profile if type is facial OR has facial-specific attributes
-            if (placeType === 'facial' || placeType === 'beauty' || hasFacialTypes || hasFacialServices) {
-                console.log('✅ Navigating to facial-place-profile');
+            const isFacial = placeType === 'facial' || placeType === 'beauty' || hasFacialTypes || hasFacialServices;
+
+            if (isFacial) {
                 setPage('facial-place-profile');
+                const id = (place as any).$id ?? (place as any).id ?? '';
+                const slug = (place.name || 'clinic').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                const hash = `#/profile/facial/${id}-${slug}`;
+                if (typeof window !== 'undefined' && (window.location.hash || '') !== hash) {
+                    window.history.pushState({ page: 'facial-place-profile' }, '', hash);
+                }
             } else {
-                console.log('✅ Navigating to massage-place-profile');
                 setPage('massage-place-profile');
+                const id = (place as any).$id ?? (place as any).id ?? '';
+                const slug = (place.name || 'place').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                const hash = `#/profile/place/${id}-${slug}`;
+                if (typeof window !== 'undefined' && (window.location.hash || '') !== hash) {
+                    window.history.pushState({ page: 'massage-place-profile' }, '', hash);
+                }
             }
         }
     }, [setSelectedPlace, setPage]);

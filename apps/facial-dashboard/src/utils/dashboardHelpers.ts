@@ -93,8 +93,8 @@ export const parseGalleryFromStorage = (galleryData: any): Array<{
     }
 
     const loadedGallery = parsedGallery.map((item: any) => ({
-      imageUrl: item.imageUrl || '',
-      caption: item.caption || '',
+      imageUrl: item.imageUrl || item.url || '',
+      caption: item.caption || item.header || '',
       description: item.description || '',
     }));
 

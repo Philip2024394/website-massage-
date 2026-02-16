@@ -6,9 +6,8 @@
 Write-Host "🚨 VS Code Emergency Cleanup - Starting..." -ForegroundColor Yellow
 Write-Host ""
 
-$projectRoot = "C:\Users\Victus\website-massage-"
-
-# Navigate to project
+# Use script's directory as project root (works from C: or D:)
+$projectRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location | Select-Object -ExpandProperty Path }
 Set-Location $projectRoot
 
 Write-Host "📁 Project: $projectRoot" -ForegroundColor Cyan

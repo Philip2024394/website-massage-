@@ -631,7 +631,7 @@ const HomePage: React.FC<HomePageProps> = ({
             }
 
             logger.debug('Loading Google Maps API for location autocomplete');
-            loadGoogleMapsScript(() => {
+            loadGoogleMapsScript(apiKey, () => {
                 logger.debug('Google Maps API loaded for HomePage');
                 setMapsApiLoaded(true);
             });
@@ -1552,7 +1552,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
                     {/* Row: Massage (left) | Location dropdown (center) | Facial (right) */}
                     <div className="max-w-2xl mx-auto mt-4">
-                        <div className="flex flex-row gap-2 sm:gap-3 items-center h-[42px]">
+                        <div className="flex flex-row gap-2 sm:gap-3 items-center min-h-[54px]">
                             {(() => {
                                 const isFacialMode = activeTab === 'facials' || activeTab === 'facial-places';
                                 return (
@@ -1571,7 +1571,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                             onClick={() => setShowLocationSelectPopup(true)}
                                             title={getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')}
                                             aria-label={t?.home?.changeCity || 'Select location'}
-                                            className="flex-shrink-0 w-[46px] h-[46px] rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-500 hover:bg-orange-100 transition-colors shadow-sm"
+                                            className="flex-shrink-0 w-[54px] h-[54px] rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-500 hover:bg-orange-100 transition-colors shadow-sm"
                                         >
                                             <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                                                 <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
@@ -1604,8 +1604,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
                             <p className="text-gray-600">
                                 {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.therapistsSubtitleAll || 'We use location monitoring for both Users and therapists. Providing safety for all users while eliminating any concerns - you can book with confidence.')
-                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'We use location monitoring for both Users and therapists. Providing safety for all users while eliminating any concerns - you can book with confidence.')
+                                    ? (t?.home?.therapistsSubtitleAll || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
+                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
@@ -2360,8 +2360,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
                             <p className="text-gray-600">
                                 {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.facialTherapistsSubtitleAll || 'We use location monitoring for both Users and facial. Providing safety for all users while eliminating any concerns - you can book with confidence.')
-                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'We use location monitoring for both Users and facial. Providing safety for all users while eliminating any concerns - you can book with confidence.')
+                                    ? (t?.home?.facialTherapistsSubtitleAll || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
+                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">

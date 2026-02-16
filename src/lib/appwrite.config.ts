@@ -195,9 +195,12 @@ export const initializeGoogleMaps = () => {
             return;
         }
         
-        loadGoogleMapsScript(() => {
+        const apiKey = getGoogleMapsApiKey();
+        loadGoogleMapsScript(apiKey, () => {
             console.log('✅ Google Maps loaded for city location system');
             resolve();
+        }, () => {
+            reject(new Error('Google Maps failed to load'));
         });
         
         // Timeout after 10 seconds

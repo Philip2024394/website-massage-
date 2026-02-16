@@ -218,8 +218,9 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 console.log(`◀️ Browser Back: → ${event.state.page}`);
                 setPage(event.state.page);
             } else {
-                // Handle direct URL navigation
-                const path = window.location.pathname;
+                // Handle direct URL navigation (pathname or hash for SPA)
+                const pathFromHash = (window.location.hash || '').replace('#', '').replace(/^\/+/, '') || '';
+                const path = (window.location.pathname && window.location.pathname !== '/') ? window.location.pathname : (pathFromHash ? `/${pathFromHash}` : window.location.pathname);
                 
                 // Handle new share URLs (with SEO keywords or simple format)
                 // Match: /share/pijat-yogyakarta-wiwid/123 OR /share/therapist/123
@@ -252,6 +253,11 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 if (path.startsWith('/profile/place/')) {
                     console.log('🎯 URL ROUTING: Customer place profile URL detected → massage-place-profile');
                     setPage('massage-place-profile');
+                    return;
+                }
+                if (path.startsWith('/profile/facial/')) {
+                    console.log('🎯 URL ROUTING: Customer facial profile URL detected → facial-place-profile');
+                    setPage('facial-place-profile');
                     return;
                 }
                 

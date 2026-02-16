@@ -274,6 +274,8 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
                 newPage = 'therapist-profile';
             } else if (hash.startsWith('/profile/place/')) {
                 newPage = 'massage-place-profile';
+            } else if (hash.startsWith('/profile/facial/')) {
+                newPage = 'facial-place-profile';
             } else if (hash.startsWith('/share/place/')) {
                 newPage = 'share-place';
             } else if (hash.startsWith('/share/facial/')) {

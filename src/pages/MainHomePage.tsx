@@ -400,7 +400,7 @@ const HomePage: React.FC<HomePageProps> = ({
             }
 
             logger.debug('Loading Google Maps API for location autocomplete');
-            loadGoogleMapsScript(() => {
+            loadGoogleMapsScript(apiKey, () => {
                 logger.debug('Google Maps API loaded for HomePage');
                 setMapsApiLoaded(true);
             });
@@ -2148,8 +2148,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
                             <p className="text-gray-600">
                                 {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.facialTherapistsSubtitleAll || 'We use location monitoring for both Users and facial. Providing safety for all users while eliminating any concerns - you can book with confidence.')
-                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', contextCity) || 'We use location monitoring for both Users and facial. Providing safety for all users while eliminating any concerns - you can book with confidence.')
+                                    ? (t?.home?.facialTherapistsSubtitleAll || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
+                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', contextCity) || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">

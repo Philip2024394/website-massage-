@@ -3,18 +3,22 @@ import { useState } from 'react';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, ChatRoom } from '../types';
 import type { Page, Language, LoggedInProvider, LoggedInUser } from '../types/pageTypes';
 
-// localStorage disabled - using Appwrite storage only
+// OOM/Storage: localStorage disabled – avoids quota and large-object retention. Re-enable only with safe caps.
+const MAX_STORAGE_VALUE_BYTES = 50 * 1024; // 50KB cap per key if re-enabled
 const getFromLocalStorage = (_key: string, defaultValue: any = null) => {
   return defaultValue; // No-op: localStorage disabled
 };
-
 const setToLocalStorage = (_key: string, _value: any) => {
-  // No-op: localStorage disabled
+  // No-op. If re-enabled: never store full place/therapist; store only id and look up from state. Cap size to MAX_STORAGE_VALUE_BYTES.
 };
 
 const saveToLocalStorage = (_key: string, _value: any) => {
   // No-op: localStorage disabled
 };
+const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV === true;
+function devLog(...args: unknown[]) {
+  if (isDev && args.length > 0) try { console.log(...args); } catch { /* no-op */ }
+}
 
 export const useAppState = () => {
   // Check URL parameters for page navigation (useful for testing)
@@ -30,7 +34,7 @@ export const useAppState = () => {
       // This prevents unexpected redirects when user explicitly navigates to home
       const hash = window.location.hash || '';
       if (pathname === '/' && (hash.includes('/profile/therapist/') || hash.includes('/profile/place/'))) {
-        console.log('🏠 [INIT] Root path with stale profile hash detected - clearing:', hash);
+        devLog('🏠 [INIT] Root path with stale profile hash - clearing');
         window.history.replaceState(null, '', '/');
         // Clear any session storage that might cause redirects
         sessionStorage.removeItem('direct_therapist_id');
@@ -40,7 +44,7 @@ export const useAppState = () => {
       
       // Handle mobile terms and conditions page FIRST (before any session logic)
       if (pathname === '/mobile-terms-and-conditions') {
-        console.log('📄 Mobile terms page detected:', pathname);
+        devLog('📄 Mobile terms:', pathname);
         return 'mobile-terms-and-conditions';
       }
       
@@ -50,7 +54,7 @@ export const useAppState = () => {
         
         // Handle /shared/therapist pattern
         if (segments[0] === 'shared' && segments[1] === 'therapist') {
-          console.log('🔗 SHARED THERAPIST URL DETECTED:', pathname);
+          devLog('🔗 SHARED THERAPIST URL:', pathname);
           return 'shared-therapist-profile';
         }
         
@@ -58,20 +62,20 @@ export const useAppState = () => {
         if (segments[0] === 'share') {
           if (segments.length >= 3) {
             // SEO format: /share/{slug}/{id} - default to therapist
-            console.log('🔗 SEO SHARE URL DETECTED:', pathname);
+            devLog('🔗 SEO SHARE URL:', pathname);
             return 'share-therapist';
           } else if (segments[1] === 'therapist') {
-            console.log('🔗 EXPLICIT THERAPIST SHARE URL');
+            devLog('🔗 EXPLICIT THERAPIST SHARE URL');
             return 'share-therapist';
           } else if (segments[1] === 'place') {
-            console.log('🔗 EXPLICIT PLACE SHARE URL');
+            devLog('🔗 EXPLICIT PLACE SHARE URL');
             return 'share-place';
           } else if (segments[1] === 'facial') {
-            console.log('🔗 EXPLICIT FACIAL SHARE URL');
+            devLog('🔗 EXPLICIT FACIAL SHARE URL');
             return 'share-facial';
           } else {
             // Short URL format: /share/12345
-            console.log('🔗 SHORT SHARE URL DETECTED:', pathname);
+            devLog('🔗 SHORT SHARE URL:', pathname);
             return 'share-therapist'; // Default to therapist for short links
           }
         }
@@ -79,13 +83,13 @@ export const useAppState = () => {
       
       // ✅ NEW: Customer-facing therapist profile URL: /profile/therapist/:id-slug
       if (pathname.startsWith('/profile/therapist/')) {
-        console.log('🎯 CUSTOMER THERAPIST PROFILE URL DETECTED:', pathname);
+        devLog('🎯 CUSTOMER THERAPIST PROFILE:', pathname);
         return 'therapist-profile';
       }
       
       // ✅ NEW: Customer-facing place profile URL: /profile/place/:id-slug
       if (pathname.startsWith('/profile/place/')) {
-        console.log('🎯 CUSTOMER PLACE PROFILE URL DETECTED:', pathname);
+        devLog('🎯 CUSTOMER PLACE PROFILE:', pathname);
         return 'massage-place-profile';
       }
       
@@ -105,7 +109,7 @@ export const useAppState = () => {
       const villaMenuMatch = pathname.match(/\/villa\/([^/]+)\/menu/);
       
       if (hotelMenuMatch || villaMenuMatch) {
-        console.log('🏨 Hotel/Villa menu URL detected:', pathname);
+        devLog('🏨 Hotel/Villa menu:', pathname);
         return 'hotelVillaMenu';
       }
       
@@ -113,10 +117,9 @@ export const useAppState = () => {
       // Reuse hash variable declared earlier
       if (hash.startsWith('#/')) {
         const hashPath = hash.substring(1); // Remove # to get /admin
-        console.log('🔗 [INIT] Hash URL detected:', hashPath);
-        
+        devLog('🔗 [INIT] Hash:', hashPath);
         if (hashPath === '/admin' || hashPath.startsWith('/admin/')) {
-          console.log('🔗 [INIT] Admin route detected in hash:', hashPath);
+          devLog('🔗 [INIT] Admin hash:', hashPath);
           if (hashPath === '/admin') {
             return 'admin';
           } else if (hashPath === '/admin/therapists') {
@@ -136,7 +139,7 @@ export const useAppState = () => {
         
         // Therapist routes - ALL 13 DASHBOARD PAGES
         if (hashPath.startsWith('/dashboard/therapist') || hashPath.startsWith('/therapist')) {
-          console.log('🔗 [INIT] Therapist route detected in hash:', hashPath);
+          devLog('🔗 [INIT] Therapist hash:', hashPath);
           if (hashPath === '/therapist' || hashPath === '/therapist-dashboard' || hashPath === '/dashboard/therapist') {
             return 'therapist-dashboard';
           } else if (hashPath === '/dashboard/therapist/status' || hashPath === '/therapist/status') {
@@ -172,7 +175,7 @@ export const useAppState = () => {
         
         // Home route
         if (hashPath === '/home') {
-          console.log('🔗 [INIT] Home route detected in hash');
+          devLog('🔗 [INIT] Home hash');
           return 'home';
         }
       }
@@ -202,21 +205,21 @@ export const useAppState = () => {
       
       // 🏠 FIX: If user directly navigates to /home, respect that and show home page
       if (isHomePath) {
-        console.log('🏠 Direct /home URL navigation → home page');
+        devLog('🏠 Direct /home');
         return 'home';
       }
       
       if (isPageReload && !pageParam && isRootPath) {
-        console.log('🔄 Fresh ROOT page load detected - clearing session to show landing page');
+        devLog('🔄 Fresh ROOT - clearing session');
         sessionStorage.removeItem('has_entered_app');
         sessionStorage.removeItem('current_page');
         sessionStorage.removeItem('reviewParams'); // Clear any stored review params
       } else if (sessionPage && typeof sessionPage === 'string' && isRootPath && sessionPage !== 'reviews') {
         // CRITICAL FIX: Don't restore 'reviews' page on root path - always default to landing/home flow
-        console.log('↩️ Restoring session page:', sessionPage);
+        devLog('↩️ Restoring session:', sessionPage);
         return sessionPage as Page;
       } else if (sessionPage === 'reviews' && isRootPath) {
-        console.log('🚫 Blocking reviews page restoration on root path - using default flow');
+        devLog('🚫 Blocking reviews on root');
         sessionStorage.removeItem('current_page');
         sessionStorage.removeItem('reviewParams');
       }
@@ -224,29 +227,29 @@ export const useAppState = () => {
       // If user has already entered the app in this session, go to home
       const hasEntered = sessionStorage.getItem('has_entered_app');
       if (hasEntered === 'true' && isRootPath) {
-        console.log('🚪 Session indicates app already entered → home');
+        devLog('🚪 Session entered → home');
         return 'home';
       }
       
       // Allow specific pages via URL parameter
       if (pageParam === 'company-profile') {
-        console.log('🎯 URL parameter detected: Opening Company Profile page');
+        devLog('🎯 URL param: company-profile');
         return 'company-profile' as Page;
       }
       if (pageParam === 'rewardBannersTest' || pageParam === 'reward-banners-test') {
-        console.log('🎯 URL parameter detected: Opening reward banners test page');
+        devLog('🎯 URL param: rewardBannersTest');
         return 'rewardBannersTest';
       }
       if (pageParam === 'hotelVillaMenu') {
-        console.log('🎯 URL parameter detected: Opening Hotel/Villa Menu');
+        devLog('🎯 URL param: hotelVillaMenu');
         return 'hotelVillaMenu';
       }
 
       // Default: start at loading (orange first paint) → coordinator switches to landing after 300ms
-      console.log('🚪 Fresh arrival: starting at loading page (fast first paint)');
+      devLog('🚪 Fresh arrival → loading');
       return 'loading';
     } catch {
-      console.log('⚠️ URL parameter parsing failed, defaulting to landing page');
+      devLog('⚠️ URL parse failed → landing');
       return 'landing';
     }
   };
@@ -260,40 +263,20 @@ export const useAppState = () => {
 
   // Use a ref to prevent re-initialization on component re-renders
   const [page, _setPage] = useState<Page>(() => {
-    // Always compute initial page from URL context; do not restore last page
     const initialPage = getInitialPage();
-    console.log('🚀 MOUNTING: Fresh initialization:', initialPage);
+    devLog('🚀 MOUNTING:', initialPage);
     return initialPage;
   });
-  
+
   const setPage = (newPage: Page) => {
-    console.log('📍 Page change request:', newPage, '(from:', page, ')');
-    
-    // Prevent overriding mobile terms page once it's loaded (except for intentional navigation)
-    if (page === 'mobile-terms-and-conditions' && 
-        newPage !== 'mobile-terms-and-conditions' && 
-        !['landing', 'home', 'share-therapist'].includes(newPage)) {
-      console.log('🔒 Blocking unwanted page change from mobile-terms - staying on terms page');
+    devLog('📍 setPage:', newPage, 'from:', page);
+    if (page === 'mobile-terms-and-conditions' && newPage !== 'mobile-terms-and-conditions' && !['landing', 'home', 'share-therapist'].includes(newPage)) {
       return;
     }
-    
-    // Prevent unnecessary state updates
-    if (page === newPage) {
-      console.log('📍 Page already set to:', newPage, '- skipping update');
-      return;
-    }
-    
+    if (page === newPage) return;
     _setPage(newPage);
-    console.log('📍 Page state updated to:', newPage);
-    
-    // Store current page for session persistence
-    if (newPage !== 'landing') {
-      sessionStorage.setItem('current_page', newPage);
-      console.log('📍 Session page stored:', newPage);
-    } else {
-      sessionStorage.removeItem('current_page');
-      console.log('📍 Session page cleared (back to landing)');
-    }
+    if (newPage !== 'landing') sessionStorage.setItem('current_page', newPage);
+    else sessionStorage.removeItem('current_page');
   };
   
   // Location and preferences - with localStorage persistence
@@ -308,98 +291,44 @@ export const useAppState = () => {
     try {
       let stored = window.localStorage.getItem('app_language');
       let storageType = 'localStorage';
-      
-      // Fallback to sessionStorage if localStorage is empty/blocked
       if (!stored || stored === 'null' || stored === 'undefined') {
         stored = window.sessionStorage.getItem('app_language');
         storageType = 'sessionStorage';
       }
-      
-      console.log(`🌐 useAppState: Raw ${storageType} value:`, stored);
-      
       if (!stored || stored === 'null' || stored === 'undefined') {
-        // First visit or invalid value - set Indonesian as default
-        console.log('🌐 useAppState: No valid language stored - setting Indonesian as default');
         try {
           window.localStorage.setItem('app_language', 'id');
-          console.log('🌐 useAppState: ✅ Indonesian saved to localStorage');
-        } catch (e) {
+        } catch {
           window.sessionStorage.setItem('app_language', 'id');
-          console.log('🌐 useAppState: ✅ Indonesian saved to sessionStorage (localStorage blocked)');
         }
         return 'id';
       }
-      
-      // Normalize: gb -> en, otherwise keep as-is if valid
       let storedLang: Language = stored === 'gb' ? 'en' : (stored as Language);
-      
-      // If stored value is not valid, default to Indonesian
       if (storedLang !== 'en' && storedLang !== 'id' && storedLang !== 'gb') {
-        console.log('🌐 useAppState: Invalid language value, defaulting to Indonesian');
         storedLang = 'id';
         try {
           window.localStorage.setItem('app_language', 'id');
-        } catch (e) {
+        } catch {
           window.sessionStorage.setItem('app_language', 'id');
         }
       }
-      
-      console.log(`🌐 useAppState: Initial language from ${storageType}:`, storedLang);
       return storedLang;
-    } catch (error) {
-      console.error('🌐 useAppState: Storage error:', error);
-      console.log('🌐 useAppState: Defaulting to Indonesian due to error');
+    } catch {
       return 'id';
     }
   });
   const setLanguage = (lang: Language) => {
-    const timestamp = new Date().toISOString();
-    console.log(`🌐 useAppState [${timestamp}]: setLanguage called with:`, lang);
-    console.log(`🌐 useAppState [${timestamp}]: Current language before change:`, language);
-    console.log(`🌐 useAppState [${timestamp}]: Stack trace:`, new Error().stack);
-    
-    // Normalize gb -> en before saving
     const normalizedLang = lang === 'gb' ? 'en' : lang;
-    console.log(`🌐 useAppState [${timestamp}]: Normalized language:`, normalizedLang);
-    
     _setLanguage(normalizedLang);
-    
-    // Multi-layer persistence: try localStorage, sessionStorage, and in-memory fallback
-    let saved = false;
-    
-    // Try localStorage
     try {
       window.localStorage.setItem('app_language', normalizedLang);
-      const verified = window.localStorage.getItem('app_language');
-      console.log(`🌐 useAppState [${timestamp}]: localStorage save attempt - verified:`, verified);
-      
-      if (verified === normalizedLang) {
-        saved = true;
-        console.log(`🌐 useAppState [${timestamp}]: ✅ Language saved to localStorage successfully`);
-      }
-    } catch (error) {
-      console.error(`🌐 useAppState [${timestamp}]: localStorage failed:`, error);
-    }
-    
-    // Fallback to sessionStorage if localStorage failed
-    if (!saved) {
+    } catch {
       try {
         window.sessionStorage.setItem('app_language', normalizedLang);
-        const verified = window.sessionStorage.getItem('app_language');
-        if (verified === normalizedLang) {
-          saved = true;
-          console.log(`🌐 useAppState [${timestamp}]: ✅ Language saved to sessionStorage (localStorage unavailable)`);
-        }
-      } catch (error) {
-        console.error(`🌐 useAppState [${timestamp}]: sessionStorage also failed:`, error);
+      } catch {
+        // In-memory only
       }
     }
-    
-    if (!saved) {
-      console.error(`🌐 useAppState [${timestamp}]: ⚠️ CRITICAL: All storage methods failed! Language will reset on refresh.`);
-    }
-    
-    console.log(`🌐 useAppState [${timestamp}]: Language state updated to:`, normalizedLang);
   };
 
   const [userLocation, _setUserLocation] = useState<UserLocation | null>(() => getFromLocalStorage('app_user_location'));
@@ -513,7 +442,7 @@ export const useAppState = () => {
       const search = new URLSearchParams(window.location.search);
       const fromQuery = search.get('venueId');
       if (fromQuery) {
-        console.log('🏷️ Venue ID extracted from query:', fromQuery);
+        devLog('🏷️ Venue ID from query:', fromQuery);
         return fromQuery;
       }
       const pathname = window.location.pathname;
@@ -521,18 +450,18 @@ export const useAppState = () => {
       const villaMenuMatch = pathname.match(/\/villa\/([^/]+)\/menu/);
       
       if (hotelMenuMatch) {
-        console.log('🏨 Hotel ID extracted from URL:', hotelMenuMatch[1]);
+        devLog('🏨 Hotel ID:', hotelMenuMatch[1]);
         return hotelMenuMatch[1];
       }
       
       if (villaMenuMatch) {
-        console.log('🏡 Villa ID extracted from URL:', villaMenuMatch[1]);
+        devLog('🏡 Villa ID:', villaMenuMatch[1]);
         return villaMenuMatch[1];
       }
       
       return '';
     } catch {
-      console.log('⚠️ Venue ID extraction failed');
+      devLog('⚠️ Venue ID extraction failed');
       return '';
     }
   };

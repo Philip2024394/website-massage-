@@ -1,10 +1,11 @@
 /**
- * Facial / Skin Clinic Profile Page – Award-winning design
- * Same features as therapist profile: slider, Book Now, Scheduled Booking, 60/90/120 pricing.
- * Layout tailored for skin clinics: hero, thumbnail gallery for place images, gallery blocks, facial types, other services.
- * Main focus: facial treatment massage. Theme: app orange/slate.
+ * Facial / Skin Clinic Profile Page – Matches therapist profile design
+ * Connected to Appwrite facial_places collection and facial places dashboard.
+ * Up to 5 gallery thumbnails with header + description per item (saved in galleryImages).
  */
-import React, { useState, useMemo } from 'react';
+const MAX_GALLERY_ITEMS = 5;
+
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Clock, MapPin, Phone, Star, CheckCircle, X, Calendar, MessageCircle,
     ChevronLeft, ChevronRight, Sparkles
@@ -52,7 +53,9 @@ interface Place {
 }
 
 interface FacialPlaceProfilePageNewProps {
-    place: Place;
+    place: Place | null;
+    placeId?: string; // When place is null, fetch by ID from Appwrite (e.g. direct URL / shared link)
+    facialPlaces?: Place[]; // Fallback: resolve from list when placeId in URL
     onBack: () => void;
     onBook?: () => void;
     onQuickBookWithChat?: () => void;
@@ -80,7 +83,9 @@ const DEFAULT_GALLERY = [
 ];
 
 const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
-    place,
+    place: placeProp,
+    placeId,
+    facialPlaces = [],
     onBack,
     onBook,
     onQuickBookWithChat,
@@ -99,12 +104,51 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
     language = 'en',
     onLanguageChange
 }) => {
+    const [place, setPlace] = useState<Place | null>(placeProp);
+    const [loading, setLoading] = useState(!placeProp && !!(placeId || (typeof window !== 'undefined' && window.location.pathname.match(/\/profile\/facial\/([^/]+)/))));
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [heroIndex, setHeroIndex] = useState(0);
     const [selectedImage, setSelectedImage] = useState<{ imageUrl: string; caption?: string; header?: string; description?: string } | null>(null);
     const [showPriceModal, setShowPriceModal] = useState(false);
 
-    const rawPricing = place.pricing ?? { 60: place.price60, 90: place.price90, 120: place.price120 };
+    // Sync when prop place is provided
+    useEffect(() => {
+        if (placeProp) {
+            setPlace(placeProp);
+            setLoading(false);
+        }
+    }, [placeProp]);
+
+    // When no place but we have placeId or URL id, fetch from facialPlaces or Appwrite
+    useEffect(() => {
+        if (place || !loading) return;
+        const idFromUrl = typeof window !== 'undefined' && window.location.pathname.match(/\/profile\/facial\/([^/-]+)/);
+        const id = placeId || (idFromUrl && idFromUrl[1]);
+        if (!id) {
+            setLoading(false);
+            return;
+        }
+        const fromList = facialPlaces.find((p: any) => (p.$id || p.id || '').toString() === id);
+        if (fromList) {
+            setPlace(fromList);
+            setLoading(false);
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            try {
+                const { facialPlaceService } = await import('../lib/services/facialPlaceService');
+                const fetched = await facialPlaceService.getById(id);
+                if (!cancelled && fetched) setPlace(fetched);
+            } catch (_) {
+                if (!cancelled) setPlace(null);
+            }
+            if (!cancelled) setLoading(false);
+        })();
+        return () => { cancelled = true; };
+    }, [placeId, facialPlaces, place, loading]);
+
+    const rawPricing = place?.pricing ?? (place ? { 60: place.price60, 90: place.price90, 120: place.price120 } : {});
     const pricing = useMemo(() => {
         const p = parsePricing(typeof rawPricing === 'string' ? rawPricing : null);
         if (typeof rawPricing === 'object' && rawPricing !== null) {
@@ -115,48 +159,52 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
             };
         }
         return { '60': p['60'], '90': p['90'], '120': p['120'] };
-    }, [rawPricing, place.price60, place.price90, place.price120]);
+    }, [rawPricing, place?.price60, place?.price90, place?.price120]);
 
     const hasPricing = pricing['60'] > 0 || pricing['90'] > 0 || pricing['120'] > 0;
     const heroImages = useMemo(() => {
+        if (!place) return ['https://ik.imagekit.io/7grri5v7d/facial%202.png'];
         const list: string[] = [];
         if (place.mainImage) list.push(place.mainImage);
         if (place.profilePicture && place.profilePicture !== place.mainImage) list.push(place.profilePicture);
         if (Array.isArray(place.images)) place.images.forEach((url: string) => url && list.push(url));
         if (list.length === 0) list.push('https://ik.imagekit.io/7grri5v7d/facial%202.png');
         return list;
-    }, [place.mainImage, place.profilePicture, place.images]);
+    }, [place?.mainImage, place?.profilePicture, place?.images, place]);
 
     const galleryBlocks = useMemo(() => {
+        if (!place) return [];
         const raw = place.galleryImages;
         if (Array.isArray(raw) && raw.length > 0) {
-            return raw.map((item: any) => ({
+            return raw.slice(0, MAX_GALLERY_ITEMS).map((item: any) => ({
                 imageUrl: item.imageUrl || item.url,
                 header: item.header || item.caption || item.title || 'Gallery',
                 description: item.description || item.caption || '',
             }));
         }
-        return DEFAULT_GALLERY.map((d, i) => ({
+        return DEFAULT_GALLERY.slice(0, MAX_GALLERY_ITEMS).map((d, i) => ({
             ...d,
             header: d.header + (i > 0 ? ` ${i + 1}` : ''),
         }));
-    }, [place.galleryImages]);
+    }, [place?.galleryImages, place]);
 
     const facialTypesList = useMemo(() => {
+        if (!place) return [];
         const parsed = parseMassageTypes(place.facialTypes);
         return Array.isArray(parsed) ? parsed : [];
-    }, [place.facialTypes]);
+    }, [place?.facialTypes, place]);
 
     const otherServices = useMemo(() => {
+        if (!place) return ['Consultation', 'Skin Analysis', 'Aftercare'];
         const amen = place.amenities;
         if (Array.isArray(amen) && amen.length > 0) return amen;
         return ['Consultation', 'Skin Analysis', 'Aftercare'];
-    }, [place.amenities]);
+    }, [place?.amenities, place]);
 
-    const hasBankAndKtp = !!(place.bankName && place.accountName && place.accountNumber && place.ktpPhotoUrl);
-    const rating = Number(place.rating) || 4.8;
-    const reviewCount = Number(place.reviewCount) || 0;
-    const verified = !!(place.isVerified || place.verifiedBadge || (place.bankName && place.ktpPhotoUrl));
+    const hasBankAndKtp = !!(place?.bankName && place?.accountName && place?.accountNumber && place?.ktpPhotoUrl);
+    const rating = Number(place?.rating) || 4.8;
+    const reviewCount = Number(place?.reviewCount) || 0;
+    const verified = !!(place?.isVerified || place?.verifiedBadge || (place?.bankName && place?.ktpPhotoUrl));
 
     const formatPrice = (n: number) => {
         if (n >= 1000) return `${(n / 1000).toFixed(0)}K`;
@@ -164,6 +212,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
     };
 
     const handleBookNow = () => {
+        if (!place) return;
         if (onQuickBookWithChat) {
             onQuickBookWithChat();
         } else if (onBook) {
@@ -175,6 +224,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
     };
 
     const handleSchedule = () => {
+        if (!place) return;
         if (hasBankAndKtp && onQuickBookWithChat) {
             onQuickBookWithChat();
         } else if (place.whatsappNumber) {
@@ -182,6 +232,28 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
             window.open(`https://wa.me/${place.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
         }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-block w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
+                    <p className="text-gray-600">Loading clinic profile...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!place) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl shadow-lg p-6 max-w-sm text-center">
+                    <p className="text-gray-700 mb-4">Clinic not found.</p>
+                    <button type="button" onClick={onBack} className="px-4 py-2 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600">Go back</button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-slate-50">

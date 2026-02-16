@@ -871,6 +871,24 @@ const App = () => {
                         targetPage: 'massage-place-profile'
                     }));
                 }
+            } else if (path.startsWith('/profile/facial/')) {
+                // Handle direct facial place profile URL (ID can be Appwrite string ID)
+                const match = path.match(/\/profile\/facial\/([^/-]+)/);
+                if (match && state.facialPlaces?.length) {
+                    const placeId = match[1];
+                    const found = state.facialPlaces.find((p: any) => 
+                        (p.$id || p.id || '').toString() === placeId
+                    );
+                    if (found) {
+                        state.setSelectedPlace(found);
+                        state.setPage('facial-place-profile');
+                    }
+                } else if (match) {
+                    sessionStorage.setItem('pending_deeplink', JSON.stringify({
+                        provider: `facial-${match[1]}`,
+                        targetPage: 'facial-place-profile'
+                    }));
+                }
             } else if (path === '/signup' || path.startsWith('/signup')) {
                 // Handle signup - set page state to trigger redirect or render SimpleSignupFlow
                 const urlParams = new URLSearchParams(window.location.search);
@@ -890,7 +908,7 @@ const App = () => {
             logger.warn('Path detection failed', { error: e });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [state.therapists, state.places]);
+    }, [state.therapists, state.places, state.facialPlaces]);
 
     // 🔥 CRITICAL: Listen for hash changes for SPA navigation
     useEffect(() => {
@@ -928,6 +946,12 @@ const App = () => {
                         state.setPage('shared-therapist-profile');
                         sessionStorage.setItem('direct_therapist_id', therapistId);
                     }
+                } else if (path.startsWith('/profile/facial/')) {
+                    logger.debug('[HASH CHANGE] Setting page to facial-place-profile');
+                    state.setPage('facial-place-profile');
+                } else if (path.startsWith('/profile/place/')) {
+                    logger.debug('[HASH CHANGE] Setting page to massage-place-profile');
+                    state.setPage('massage-place-profile');
                 }
             }
         };
@@ -1013,11 +1037,21 @@ const App = () => {
                     }
                     sessionStorage.removeItem('pending_deeplink');
                 }
+            } else if (ptype === 'facial' && state.facialPlaces && state.facialPlaces.length) {
+                const found = state.facialPlaces.find((pl: any) => ((pl.id ?? pl.$id ?? '').toString() === idStr));
+                if (found) {
+                    state.setSelectedPlace(found);
+                    if (state.page !== 'facial-place-profile') {
+                        logger.debug('[PAGE STATE CHANGE TRIGGERED] Setting page to facial-place-profile');
+                        state.setPage('facial-place-profile');
+                    }
+                    sessionStorage.removeItem('pending_deeplink');
+                }
             }
         } catch (e) {
             logger.warn('Deeplink navigation failed', { error: e });
         }
-    }, [state.therapists, state.places, state.page]);
+    }, [state.therapists, state.places, state.facialPlaces, state.page]);
 
     // Play welcome music only for customers (never for members) and only once
     useEffect(() => {

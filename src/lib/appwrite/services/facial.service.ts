@@ -31,7 +31,13 @@ function mapDocToPlace(fp: any): any {
         const raw = fp.galleryImages ?? fp.galleryimages;
         if (!raw) return [];
         try {
-            return typeof raw === 'string' ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
+            const arr = typeof raw === 'string' ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
+            return arr.map((item: any) => ({
+                imageUrl: item.imageUrl || item.url || '',
+                caption: item.caption ?? item.header ?? '',
+                header: item.header ?? item.caption ?? item.title ?? '',
+                description: item.description ?? item.caption ?? '',
+            }));
         } catch {
             return [];
         }
@@ -169,6 +175,10 @@ export const facialPlaceService = {
         }
         if (Array.isArray(payload.facialTypes)) {
             payload.facialTypes = JSON.stringify(payload.facialTypes);
+        }
+        // Dashboard sends massagetypes (facial types) – ensure string for Appwrite
+        if (payload.massagetypes != null && typeof payload.massagetypes !== 'string') {
+            payload.massagetypes = Array.isArray(payload.massagetypes) ? JSON.stringify(payload.massagetypes) : JSON.stringify([]);
         }
         const doc = await databases.updateDocument(
             APPWRITE_CONFIG.databaseId,

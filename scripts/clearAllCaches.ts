@@ -14,6 +14,7 @@ import { execSync } from 'child_process';
 const CACHE_DIRECTORIES = [
     'node_modules/.vite',
     'node_modules/.cache',
+    '.vite',
     'dist',
     '.next',
     '.turbo',

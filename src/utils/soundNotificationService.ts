@@ -66,39 +66,45 @@ export const soundNotificationService = {
             return;
         }
 
-        try {
-            // Sound file URLs (stored in public/sounds/)
-            const soundUrls: Record<NotificationSoundType, string> = {
-                booking: '/sounds/booking-notification.mp3',
-                message: '/sounds/message-notification.mp3',
-                alert: '/sounds/alert-notification.mp3',
-                success: '/sounds/success-notification.mp3'
-            };
+        const soundUrls: Record<NotificationSoundType, string> = {
+            booking: '/sounds/booking-notification.mp3',
+            message: '/sounds/message-notification.mp3',
+            alert: '/sounds/alert-notification.mp3',
+            success: '/sounds/success-notification.mp3'
+        };
+        const url = soundUrls[type];
 
-            const audio = new Audio(soundUrls[type]);
+        try {
+            // Prefer fetch with no-store to avoid ERR_CACHE_OPERATION_NOT_SUPPORTED in some SW/cache contexts
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) throw new Error(`Sound ${res.status}`);
+            const blob = await res.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const audio = new Audio(objectUrl);
             audio.volume = this.getVolume();
-            
-            // Play sound
             await audio.play();
+            URL.revokeObjectURL(objectUrl);
             devLog(`🔊 Played ${type} notification sound`);
-        } catch (error) {
-            console.error('❌ Error playing notification sound:', error);
-            
-            // Fallback: system beep if sound file not available
-            if ('AudioContext' in window) {
-                const context = new AudioContext();
-                const oscillator = context.createOscillator();
-                const gainNode = context.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(context.destination);
-                
-                gainNode.gain.value = this.getVolume() * 0.3; // Lower volume for beep
-                oscillator.frequency.value = 800; // 800 Hz beep
-                oscillator.type = 'sine';
-                
-                oscillator.start();
-                setTimeout(() => oscillator.stop(), 200); // 200ms beep
+        } catch (_e1) {
+            try {
+                const audio = new Audio(url);
+                audio.volume = this.getVolume();
+                await audio.play();
+                devLog(`🔊 Played ${type} notification sound`);
+            } catch (_e2) {
+                // Fallback: system beep if sound file not available (e.g. cache/network error)
+                if ('AudioContext' in window) {
+                    const context = new AudioContext();
+                    const oscillator = context.createOscillator();
+                    const gainNode = context.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(context.destination);
+                    gainNode.gain.value = this.getVolume() * 0.3;
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    oscillator.start();
+                    setTimeout(() => oscillator.stop(), 200);
+                }
             }
         }
     },

@@ -95,7 +95,13 @@ function docToPlaceLike(doc: any): PlaceLike {
     const galleryRaw = doc.galleryImages || doc.galleryimages;
     if (galleryRaw) {
         try {
-            gallery = typeof galleryRaw === 'string' ? JSON.parse(galleryRaw) : galleryRaw;
+            const arr = typeof galleryRaw === 'string' ? JSON.parse(galleryRaw) : galleryRaw;
+            gallery = (Array.isArray(arr) ? arr : []).map((item: any) => ({
+                imageUrl: item.imageUrl || item.url || '',
+                caption: item.caption ?? item.header ?? '',
+                header: item.header ?? item.caption ?? item.title ?? '',
+                description: item.description ?? item.caption ?? '',
+            }));
         } catch {
             gallery = [];
         }

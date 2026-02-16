@@ -42,22 +42,29 @@ export interface PlacePayload {
   discountEndTime?: string | null;
 }
 
-// Whitelist of attributes allowed to reach Appwrite - Mixed case to match Appwrite schema
+// Whitelist of attributes allowed to reach Appwrite - Mixed case to match Appwrite schema (facial_places + places)
 export const PLACE_ALLOWED = [
-  // Core system fields (placeId, isLive, openingTime, closingTime are camelCase in Appwrite)
-  'id','placeId','name','category','email','password','pricing','location','status','isLive','openingTime','closingTime','coordinates','description',
-  // Geo/Filters
+  // Core system fields
+  'id','placeId','name','category','email','password','pricing','location','status','availability','isLive','islive','coordinates','description',
+  // Opening hours (camelCase and snake_case for facial_places)
+  'openingTime','closingTime','openingtime','closingtime',
+  // Geo
   'city',
-  // Contact (1 - LOWERCASE)
-  'whatsappnumber',
-  // Images (3 - MIXED CASE - mainimage lowercase, others camelCase)
+  // Contact
+  'whatsappnumber','ownerWhatsApp',
+  // Images
   'mainimage','profilePicture','galleryImages',
-  // Services (3 - LOWERCASE to match Appwrite schema)
-  'massagetypes','languagesspoken','additionalservices',
-  // Website information (3 - LOWERCASE to match Appwrite)
-  'websiteurl','websitetitle','websitedescription',
-  // Discounts (4 - camelCase)
-  'discountPercentage','discountDuration','isDiscountActive','discountEndTime'
+  // Services (facial dashboard sends massagetypes, languages, additionalServices)
+  'massagetypes','languagesspoken','languages','additionalservices','additionalServices',
+  // Website
+  'websiteurl','websitetitle','websitedescription','websiteUrl','websiteTitle','websiteDescription',
+  // Discounts (camelCase and snake_case for facial_places)
+  'discountPercentage','discountDuration','isDiscountActive','discountEndTime',
+  'discountpercentage','discountduration','isdiscountactive','discountendtime',
+  // Social (facial dashboard)
+  'instagramurl','facebookpageurl','instagramposts','facebookposts',
+  // Optional
+  'therapistGender','yearsEstablished',
 ];
 
 // Sanitizer – strips unknown keys and optionally logs removed ones.

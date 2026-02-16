@@ -1350,18 +1350,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onNavigate: props.onNavigate
             });
         
-        case 'facial-place-profile':
+        case 'facial-place-profile': {
             logger.debug('[FacialPlaceProfile] Rendering facial place profile page');
             logger.debug('  - selectedPlace:', { place: props.selectedPlace });
-            
+            const pathForFacial = typeof window !== 'undefined' ? (window.location.pathname || '').replace(/^\/+/, '') : '';
+            const hashForFacial = typeof window !== 'undefined' ? (window.location.hash || '').replace(/^#\/?/, '') : '';
+            const pathOrHash = pathForFacial || hashForFacial;
+            const facialPathMatch = pathOrHash ? pathOrHash.match(/profile\/facial\/([^/]+)/) : null;
+            const facialPlaceIdFromUrl = facialPathMatch ? facialPathMatch[1].split('-')[0] : null;
+            const resolvedPlace = props.selectedPlace
+                || (facialPlaceIdFromUrl && props.facialPlaces?.find((p: any) => (p.$id || p.id || '').toString() === facialPlaceIdFromUrl))
+                || null;
             return renderRoute(profileRoutes.facialPlace.component, {
-                place: props.selectedPlace,
+                place: resolvedPlace,
+                placeId: facialPlaceIdFromUrl || (resolvedPlace ? (resolvedPlace.$id || resolvedPlace.id) : undefined),
+                facialPlaces: props.facialPlaces ?? [],
                 onBack: () => props.setPage('home'),
                 onBook: () => {
-                    // Open WhatsApp booking for facial treatments
-                    if (props.selectedPlace?.whatsappNumber) {
-                        const message = `Hi! I'd like to book a facial treatment at ${props.selectedPlace.name}. When are you available?`;
-                        window.open(`https://wa.me/${props.selectedPlace.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+                    const p = resolvedPlace || props.selectedPlace;
+                    if (p?.whatsappNumber) {
+                        const message = `Hi! I'd like to book a facial treatment at ${p.name}. When are you available?`;
+                        window.open(`https://wa.me/${p.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
                     }
                 },
                 onNavigate: props.onNavigate,
@@ -1381,6 +1390,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language,
                 onLanguageChange: props.onLanguageChange
             });
+        }
         
         case 'place-detail':
             return renderRoute(profileRoutes.placeDetail.component);

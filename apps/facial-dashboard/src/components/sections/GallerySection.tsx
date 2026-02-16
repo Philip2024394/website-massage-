@@ -36,7 +36,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({
           📸 Gallery Images
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Upload up to 6 images showcasing your spa facilities, treatments, and ambiance
+          Upload up to 5 images with a title and description. These appear on your public profile.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
