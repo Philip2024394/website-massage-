@@ -589,8 +589,31 @@ translations.en.serviceTerms = {
     content: 'If you have any questions, concerns, complaints, or inquiries regarding these Terms of Service, our services across any platform (indastreet.id, indastreetmassage.com, or other sites), your account, billing matters, technical support, or any other issues, please contact our customer service team at: Email: indastreet.id@gmail.com | WhatsApp: +62 XXX-XXXX-XXXX | Address: Jakarta, Indonesia. We strive to respond to all legitimate inquiries within 48-72 business hours. For urgent safety concerns or to report violations of these Terms, please use our priority reporting system available through the app.'
   },
   customerServiceButton: 'Contact Customer Service',
+  serviceProviderTerms: {
+    modalTitle: 'Service Provider Terms',
+    modalSubtitle: 'For therapists and massage places — IndaStreet',
+    agreeButton: 'Agree to terms and conditions',
+    title: 'Service Provider Terms (Therapists & Places)',
+    intro: 'By signing in or using IndaStreet as a therapist or place, you agree to the following terms.',
+    commissionTitle: 'Commission',
+    commissionContent: 'You must pay 30% commission to IndaStreet on all revenue from: Book Now, Order Now, and all scheduled bookings. This applies to every such booking made through the platform.',
+    noContactTitle: 'No Sharing Contact Information',
+    noContactContent: 'You must never share your personal phone number, WhatsApp, or any other contact information with clients outside of the IndaStreet platform. All booking-related communication and transactions must remain on the platform.',
+    noAccountSharingTitle: 'No Account Sharing',
+    noAccountSharingContent: 'You must never share your account with anyone. Each therapist or place must use only their own registered account. Sharing or lending your account is a serious violation and may result in immediate suspension or termination.',
+    sexualOfferingTitle: 'No Sexual Offerings — Zero Tolerance',
+    sexualOfferingContent: 'Any offering, solicitation, or provision of services of a sexual nature through or in connection with the platform will be reported to the correct authorities. Your account will be frozen with immediate effect for the duration of the investigation. The platform is for professional, legitimate massage and wellness services only.',
+    platformPurposeTitle: 'Platform Purpose and Users',
+    platformPurposeContent: 'The platform is for traffic purpose only. All users of the platform are IndaStreet Massage (indastreetmassage.com) users. You agree to use the platform solely to receive and fulfil bookings through IndaStreet and not to divert traffic or users to other channels.',
+    gpsTitle: 'GPS Location Agreement',
+    gpsContent: 'All service providers on IndaStreet agree to the use of GPS location where applicable, to offer safe service for users and for service providers. Location data may be used for safety, verification, and platform administration in accordance with our Privacy Policy.',
+    otherTitle: 'Other Obligations',
+    otherContent: 'You agree to provide only professional, lawful massage and wellness services; to comply with all applicable laws and regulations; and to maintain accurate profile information. IndaStreet reserves the right to suspend or terminate accounts that breach these terms.'
+  },
 };
 translations.en.userTerms = {
+  modalBadge: 'For clients',
+  modalTitle: 'IndaStreet Massage — Terms for users',
   title: 'Terms & Conditions for Users',
   effectiveDate: 'Effective for use of indastreetmassage.com and IndaStreet services.',
   intro: 'By using IndaStreet (indastreetmassage.com and related platforms) to browse, book, or receive massage or wellness services, you agree to these Terms & Conditions for users. Please read them carefully.',
@@ -1097,8 +1120,31 @@ translations.id.serviceTerms = {
     content: 'Jika Anda memiliki pertanyaan, kekhawatiran, keluhan, atau pertanyaan mengenai Syarat dan Ketentuan ini, layanan kami, akun Anda, masalah penagihan, dukungan teknis, atau masalah lain yang terkait dengan platform IndoStreet, silakan hubungi tim layanan pelanggan kami melalui saluran layanan pelanggan resmi yang disediakan dalam aplikasi. Kami berusaha untuk menanggapi semua pertanyaan yang sah dalam waktu 48-72 jam kerja. Untuk masalah keselamatan mendesak atau untuk melaporkan pelanggaran Ketentuan ini, silakan gunakan sistem pelaporan prioritas kami yang tersedia melalui aplikasi.'
   },
   customerServiceButton: 'Hubungi Layanan Pelanggan',
+  serviceProviderTerms: {
+    modalTitle: 'Syarat Penyedia Layanan',
+    modalSubtitle: 'Untuk terapis dan tempat pijat — IndaStreet',
+    agreeButton: 'Setuju syarat dan ketentuan',
+    title: 'Syarat Penyedia Layanan (Terapis & Tempat)',
+    intro: 'Dengan masuk atau menggunakan IndaStreet sebagai terapis atau tempat, Anda setuju dengan ketentuan berikut.',
+    commissionTitle: 'Komisi',
+    commissionContent: 'Anda wajib membayar komisi 30% kepada IndaStreet atas semua pendapatan dari: Book Now, Order Now, dan semua pemesanan terjadwal. Ini berlaku untuk setiap pemesanan yang dilakukan melalui platform.',
+    noContactTitle: 'Larangan Berbagi Informasi Kontak',
+    noContactContent: 'Anda tidak boleh membagikan nomor ponsel, WhatsApp, atau informasi kontak lainnya kepada klien di luar platform IndaStreet. Semua komunikasi dan transaksi terkait pemesanan harus tetap di platform.',
+    noAccountSharingTitle: 'Larangan Berbagi Akun',
+    noAccountSharingContent: 'Anda tidak boleh membagikan akun Anda kepada siapa pun. Setiap terapis atau tempat hanya boleh menggunakan akun terdaftar mereka sendiri. Berbagi atau meminjamkan akun merupakan pelanggaran serius dan dapat mengakibatkan penangguhan atau penghentian segera.',
+    sexualOfferingTitle: 'Larangan Tawaran Seksual — Toleransi Nol',
+    sexualOfferingContent: 'Setiap tawaran, ajakan, atau pemberian layanan bersifat seksual melalui atau terkait platform akan dilaporkan kepada pihak berwenang. Akun Anda akan dibekukan dengan efek segera selama penyelidikan. Platform hanya untuk layanan pijat dan wellness profesional yang sah.',
+    platformPurposeTitle: 'Tujuan Platform dan Pengguna',
+    platformPurposeContent: 'Platform hanya untuk tujuan lalu lintas. Semua pengguna platform adalah pengguna IndaStreet Massage (indastreetmassage.com). Anda setuju menggunakan platform hanya untuk menerima dan memenuhi pemesanan melalui IndaStreet dan tidak mengalihkan lalu lintas atau pengguna ke saluran lain.',
+    gpsTitle: 'Persetujuan Lokasi GPS',
+    gpsContent: 'Semua penyedia layanan di IndaStreet setuju penggunaan lokasi GPS jika berlaku, untuk memberikan layanan yang aman bagi pengguna dan penyedia layanan. Data lokasi dapat digunakan untuk keselamatan, verifikasi, dan administrasi platform sesuai Kebijakan Privasi kami.',
+    otherTitle: 'Kewajiban Lain',
+    otherContent: 'Anda setuju hanya memberikan layanan pijat dan wellness profesional yang sah; mematuhi semua hukum dan peraturan yang berlaku; dan menjaga informasi profil yang akurat. IndaStreet berhak menangguhkan atau menghentikan akun yang melanggar ketentuan ini.'
+  },
 };
 translations.id.userTerms = {
+  modalBadge: 'Untuk klien',
+  modalTitle: 'IndaStreet Massage — Syarat untuk pengguna',
   title: 'Syarat & Ketentuan untuk Pengguna',
   effectiveDate: 'Berlaku untuk penggunaan indastreetmassage.com dan layanan IndaStreet.',
   intro: 'Dengan menggunakan IndaStreet (indastreetmassage.com dan platform terkait) untuk menjelajah, memesan, atau menerima layanan pijat atau wellness, Anda setuju dengan Syarat & Ketentuan untuk pengguna ini. Harap baca dengan saksama.',

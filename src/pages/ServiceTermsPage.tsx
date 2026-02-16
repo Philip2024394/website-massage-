@@ -13,14 +13,18 @@ interface ServiceTermsPageProps {
 const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactNumber: _contactNumber, acceptMode, onAccept }) => {
     const safeT = t || {};
 
-    /* Same style as user Terms popup: black backdrop, orange border, dark content (therapist/place sign-in) */
+    /* Service provider terms modal: same UI design as user terms (orange accent, black backdrop) */
     if (acceptMode && onAccept) {
+        const modalTitle = safeT.serviceProviderTerms?.modalTitle ?? 'Service Provider Terms';
+        const modalSubtitle = safeT.serviceProviderTerms?.modalSubtitle ?? 'For therapists and massage places — IndaStreet';
         return (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black p-4">
                 <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-lg border-2 border-orange-500 bg-gray-900 shadow-2xl overflow-hidden">
                     <div className="flex-shrink-0 px-6 py-4 border-b border-orange-500/50 bg-gray-900">
-                        <h1 className="text-xl font-bold text-white">IndaStreet Massage</h1>
-                        <p className="text-xs text-gray-400 mt-0.5">{safeT.effectiveDate}</p>
+                        <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-orange-500/20 text-orange-400 border border-orange-500/50 mb-2">Therapists & Places</span>
+                        <h1 className="text-xl font-bold text-white">{modalTitle}</h1>
+                        <p className="text-xs text-gray-400 mt-0.5">{modalSubtitle}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{safeT.effectiveDate}</p>
                     </div>
                     <div
                         className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 min-h-0 service-terms-modal-scroll"
@@ -36,7 +40,7 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                             onClick={onAccept}
                             className="w-full py-3.5 rounded-lg font-semibold text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors shadow-md border border-orange-400/50"
                         >
-                            Agree to terms and conditions
+                            {safeT.serviceProviderTerms?.agreeButton ?? 'Agree to terms and conditions'}
                         </button>
                     </div>
                 </div>
@@ -198,61 +202,37 @@ const ServiceTermsPageContent: React.FC<{ safeT: Record<string, any> }> = ({ saf
                 </div>
                 
                 <div className="space-y-2 bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                    <h3 className="font-bold text-gray-800 text-lg">🏆 {safeT.verifiedProBadge?.title || "Verified Pro Badge Program"}</h3>
-                    <p className="text-sm leading-relaxed font-semibold text-green-900">{safeT.verifiedProBadge?.subtitle || "Earn Recognition for Excellence and Commitment"}</p>
-                    
+                    <h3 className="font-bold text-gray-800 text-lg">{safeT.serviceProviderTerms?.title || "Service Provider Terms (Therapists & Places)"}</h3>
+                    <p className="text-sm leading-relaxed text-gray-700">{safeT.serviceProviderTerms?.intro || "By signing in or using IndaStreet as a therapist or place, you agree to the following terms."}</p>
                     <div className="mt-4 space-y-3">
                         <div>
-                            <h4 className="font-semibold text-gray-800 text-sm mb-2">✅ {safeT.verifiedProBadge?.howToEarn?.title || "How to Earn the Badge:"}</h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-                                <li>{safeT.verifiedProBadge?.howToEarn?.requirement1 || "Complete 3 months of active membership (can be 3 consecutive months or accumulative 1-month memberships)"}</li>
-                                <li>{safeT.verifiedProBadge?.howToEarn?.requirement2 || "Maintain a rating of 4.0 stars or higher"}</li>
-                                <li>{safeT.verifiedProBadge?.howToEarn?.requirement3 || "Keep your membership continuously active"}</li>
-                            </ul>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">💰 {safeT.serviceProviderTerms?.commissionTitle || "Commission"}</h4>
+                            <p className="text-sm leading-relaxed">{safeT.serviceProviderTerms?.commissionContent || "You must pay 30% commission to IndaStreet on all revenue from: Book Now, Order Now, and all scheduled bookings. This applies to every such booking made through the platform."}</p>
                         </div>
-                        
-                        <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
-                            <h4 className="font-semibold text-gray-800 text-sm mb-2">⏰ {safeT.verifiedProBadge?.continuity?.title || "Membership Continuity Requirement:"}</h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-                                <li className="text-red-700 font-medium">{safeT.verifiedProBadge?.continuity?.renewal || "You will receive a renewal reminder 7 days before your membership expires"}</li>
-                                <li className="text-red-700 font-medium">{safeT.verifiedProBadge?.continuity?.warning || "If membership is not renewed within 7 days before expiry, your badge display will expire"}</li>
-                                <li>{safeT.verifiedProBadge?.continuity?.gracePeriod || "Grace Period: You have 5 days after membership expiry to renew and keep your badge active"}</li>
-                                <li className="text-red-700 font-medium">{safeT.verifiedProBadge?.continuity?.reset || "If membership lapses beyond the 5-day grace period, your badge will be RESET and you will need to complete 3 months of membership again"}</li>
-                                <li className="text-green-700 font-medium">{safeT.verifiedProBadge?.continuity?.maintain || "To maintain your badge: Renew your membership before it expires or within the 5-day grace period"}</li>
-                            </ul>
-                        </div>
-                        
                         <div>
-                            <h4 className="font-semibold text-gray-800 text-sm mb-2">⚠️ {safeT.verifiedProBadge?.howToLose?.title || "Badge Removal:"}</h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-                                <li>{safeT.verifiedProBadge?.howToLose?.condition1 || "Your badge will be automatically removed if your rating falls below 4.0 stars"}</li>
-                                <li>{safeT.verifiedProBadge?.howToLose?.condition2 || "Membership lapse beyond 5-day grace period resets badge progress"}</li>
-                                <li>{safeT.verifiedProBadge?.howToLose?.condition3 || "The badge is visible to all clients on your profile card"}</li>
-                            </ul>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">📵 {safeT.serviceProviderTerms?.noContactTitle || "No Sharing Contact Information"}</h4>
+                            <p className="text-sm leading-relaxed">{safeT.serviceProviderTerms?.noContactContent || "You must never share your personal phone number, WhatsApp, or any other contact information with clients outside of the IndaStreet platform. All booking-related communication and transactions must remain on the platform."}</p>
                         </div>
-                        
                         <div>
-                            <h4 className="font-semibold text-gray-800 text-sm mb-2">🔄 {safeT.verifiedProBadge?.howToRegain?.title || "Regaining Your Badge:"}</h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-                                <li>{safeT.verifiedProBadge?.howToRegain?.rating || "Rating Recovery: Once your rating returns to 4.0 stars or above, your badge will automatically reappear"}</li>
-                                <li>{safeT.verifiedProBadge?.howToRegain?.membership || "Membership Lapse: If your membership lapsed beyond grace period, you must complete 3 new months of active membership"}</li>
-                                <li>{safeT.verifiedProBadge?.howToRegain?.note || "Your progress is only preserved if you renew within the grace period"}</li>
-                            </ul>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">🔐 {safeT.serviceProviderTerms?.noAccountSharingTitle || "No Account Sharing"}</h4>
+                            <p className="text-sm leading-relaxed">{safeT.serviceProviderTerms?.noAccountSharingContent || "You must never share your account with anyone. Each therapist or place must use only their own registered account. Sharing or lending your account is a serious violation and may result in immediate suspension or termination."}</p>
                         </div>
-                        
-                        <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                            <h4 className="font-semibold text-gray-800 text-sm mb-2">📧 {safeT.verifiedProBadge?.notifications?.title || "Renewal Notifications:"}</h4>
-                            <p className="text-xs text-gray-700">{safeT.verifiedProBadge?.notifications?.content || "You will receive notifications at the following times to help you maintain your badge:"}</p>
-                            <ul className="list-disc list-inside space-y-1 text-xs ml-4 mt-2">
-                                <li>{safeT.verifiedProBadge?.notifications?.day7 || "7 days before expiry: First reminder to renew membership"}</li>
-                                <li>{safeT.verifiedProBadge?.notifications?.day3 || "3 days before expiry: Second reminder"}</li>
-                                <li>{safeT.verifiedProBadge?.notifications?.day1 || "1 day before expiry: Final reminder"}</li>
-                                <li>{safeT.verifiedProBadge?.notifications?.expiry || "On expiry day: Grace period notification (5 days to renew)"}</li>
-                                <li>{safeT.verifiedProBadge?.notifications?.grace || "Daily reminders during 5-day grace period"}</li>
-                            </ul>
+                        <div className="bg-red-50/80 p-3 rounded border border-red-200">
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">⚠️ {safeT.serviceProviderTerms?.sexualOfferingTitle || "No Sexual Offerings — Zero Tolerance"}</h4>
+                            <p className="text-sm leading-relaxed">{safeT.serviceProviderTerms?.sexualOfferingContent || "Any offering, solicitation, or provision of services of a sexual nature through or in connection with the platform will be reported to the correct authorities. Your account will be frozen with immediate effect for the duration of the investigation. The platform is for professional, legitimate massage and wellness services only."}</p>
                         </div>
-                        
-                        <p className="text-xs text-gray-600 italic mt-3">{safeT.verifiedProBadge?.note || "The Verified Pro badge demonstrates your commitment to quality service and helps you stand out to potential clients. Maintain continuous membership to keep your badge active."}</p>
+                        <div>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">🌐 {safeT.serviceProviderTerms?.platformPurposeTitle || "Platform Purpose and Users"}</h4>
+                            <p className="text-sm leading-relaxed">{safeT.serviceProviderTerms?.platformPurposeContent || "The platform is for traffic purpose only. All users of the platform are IndaStreet Massage (indastreetmassage.com) users. You agree to use the platform solely to receive and fulfil bookings through IndaStreet and not to divert traffic or users to other channels."}</p>
+                        </div>
+                        <div className="bg-amber-50/80 p-3 rounded border border-amber-200">
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">📍 {safeT.serviceProviderTerms?.gpsTitle || "GPS Location Agreement"}</h4>
+                            <p className="text-sm leading-relaxed">{safeT.serviceProviderTerms?.gpsContent || "All service providers on IndaStreet agree to the use of GPS location where applicable, to offer safe service for users and for service providers. Location data may be used for safety, verification, and platform administration in accordance with our Privacy Policy."}</p>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">📋 {safeT.serviceProviderTerms?.otherTitle || "Other Obligations"}</h4>
+                            <p className="text-sm leading-relaxed">{safeT.serviceProviderTerms?.otherContent || "You agree to provide only professional, lawful massage and wellness services; to comply with all applicable laws and regulations; and to maintain accurate profile information. IndaStreet reserves the right to suspend or terminate accounts that breach these terms."}</p>
+                        </div>
                     </div>
                 </div>
                 

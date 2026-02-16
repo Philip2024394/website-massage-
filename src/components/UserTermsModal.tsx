@@ -27,6 +27,8 @@ export const UserTermsModal: React.FC<UserTermsModalProps> = ({ t, onAccept }) =
   const safeArr = (arr: any) => (Array.isArray(arr) ? arr : []);
 
   const safeU = {
+    modalBadge: u.modalBadge || 'For clients',
+    modalTitle: u.modalTitle || 'IndaStreet Massage — Terms for users',
     title: u.title || 'Terms & Conditions for Users',
     effectiveDate: u.effectiveDate || 'Effective for use of indastreetmassage.com and IndaStreet services.',
     intro: u.intro || 'By using IndaStreet to browse, book, or receive services, you agree to these Terms & Conditions.',
@@ -41,10 +43,11 @@ export const UserTermsModal: React.FC<UserTermsModalProps> = ({ t, onAccept }) =
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black p-4">
         {/* Container: orange border, dark background */}
         <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-lg border-2 border-orange-500 bg-gray-900 shadow-2xl overflow-hidden">
-          {/* Header - fixed at top of container */}
+          {/* Header - fixed at top of container (user/client terms only) */}
           <div className="flex-shrink-0 px-6 py-4 border-b border-orange-500/50 bg-gray-900">
+            <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-orange-500/20 text-orange-400 border border-orange-500/50 mb-2">{safeU.modalBadge}</span>
             <h1 className="text-xl font-bold text-white">
-              IndaStreet Massage
+              {safeU.modalTitle}
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">
               {safeU.effectiveDate}

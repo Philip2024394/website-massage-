@@ -220,7 +220,7 @@ const IndastreetNewsPage: React.FC<IndastreetNewsPageProps> = ({
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
           <div className="overflow-hidden rounded-2xl mb-6">
             <img
-              src="https://ik.imagekit.io/7grri5v7d/indastreet%20news%20room.png"
+              src="https://ik.imagekit.io/7grri5v7d/indastreet%20news.png"
               alt="Indastreet News"
               className="w-full h-auto object-cover"
             />

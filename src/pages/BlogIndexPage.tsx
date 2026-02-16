@@ -320,7 +320,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
             <section className="px-4 pt-6 sm:px-6 sm:pt-8">
                 <div className="relative w-full aspect-[21/9] min-h-[200px] sm:min-h-[260px] bg-gray-100 rounded-2xl sm:rounded-3xl overflow-hidden">
                     <img
-                        src="https://ik.imagekit.io/7grri5v7d/23434.png"
+                        src="https://ik.imagekit.io/7grri5v7d/indastreet%20blog.png"
                         alt="Blog – Wellness, massage and skin clinic insights"
                         className="absolute inset-0 w-full h-full object-cover rounded-2xl sm:rounded-3xl"
                     />
