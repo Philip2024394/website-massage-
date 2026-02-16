@@ -133,6 +133,24 @@ export const facialPlaceService = {
         }
     },
 
+    /** Look up facial place by email (for sign-in routing to facial dashboard). */
+    async getByEmail(email: string): Promise<any | null> {
+        if (!email || !email.trim()) return null;
+        const collectionId = APPWRITE_CONFIG.collections.facial_places;
+        if (!collectionId || collectionId === '') return null;
+        try {
+            const resp = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                [Query.equal('email', email.trim().toLowerCase()), Query.limit(1)]
+            );
+            if (resp.documents?.length > 0) return mapDocToPlace(resp.documents[0]);
+        } catch (e: any) {
+            if (e?.code !== 404) console.warn('Facial place getByEmail:', e?.message ?? e);
+        }
+        return null;
+    },
+
     async getByProviderId(providerId: string): Promise<any | null> {
         if (!providerId) return null;
         const collectionId = APPWRITE_CONFIG.collections.facial_places;

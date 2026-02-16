@@ -6,6 +6,8 @@
 import React from 'react';
 import type { Therapist } from '../../../types';
 import { VERIFIED_BADGE_IMAGE_URL } from '../../../constants/appConstants';
+import { getTherapistDisplayName } from '../../../utils/therapistCardHelpers';
+import { getTherapistDisplayName } from '../../../utils/therapistCardHelpers';
 
 interface TherapistImageProps {
   therapist: Therapist;
@@ -31,7 +33,7 @@ export const TherapistImage: React.FC<TherapistImageProps> = ({
               <img 
                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full" 
                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
-                alt={`${therapist.name} profile`}
+                alt={`${getTherapistDisplayName(therapist.name)} profile`}
                 style={{ aspectRatio: '1/1' }}
                 loading="lazy"
                 onError={(e) => {
@@ -64,7 +66,7 @@ export const TherapistImage: React.FC<TherapistImageProps> = ({
                 />
               )}
               <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                {therapist.name}
+                {getTherapistDisplayName(therapist.name)}
               </h3>
             </div>
           </div>

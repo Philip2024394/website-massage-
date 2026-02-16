@@ -6,6 +6,7 @@ import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { Star, Calendar, Eye, CheckCircle2 } from 'lucide-react';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 import { logger } from '../utils/logger';
 import { getWeekSeed, seededShuffle } from '../utils/weekSeedUtils';
@@ -254,7 +255,7 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                         )}
                                         <img
                                             src={imageUrl}
-                                            alt={therapist.name}
+                                            alt={getTherapistDisplayName(therapist.name)}
                                             className={`w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg transition-opacity duration-300 ${
                                                 isImageLoaded ? 'opacity-100' : 'opacity-0'
                                             }`}
@@ -271,7 +272,7 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                     {/* Therapist Info */}
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-gray-900 text-lg mb-2 truncate">
-                                            {therapist.name}
+                                            {getTherapistDisplayName(therapist.name)}
                                         </h3>
                                         
                                         {/* Stats Row */}

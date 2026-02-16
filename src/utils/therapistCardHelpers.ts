@@ -4,6 +4,19 @@ import { devLog } from './devMode';
 import { getSampleMenuItems } from './samplePriceUtils';
 
 /**
+ * Therapist display name: only the first word (until first space).
+ * Used on profiles and cards so "Philip francis o farrell" displays as "Philip".
+ * Therapists can still enter full name in dashboard; only first name is shown publicly.
+ */
+export function getTherapistDisplayName(name: string | undefined | null): string {
+  if (name == null || typeof name !== 'string') return '';
+  const trimmed = name.trim();
+  if (!trimmed) return '';
+  const firstWord = trimmed.split(/\s+/)[0];
+  return firstWord || trimmed;
+}
+
+/**
  * Get auth app URL for development and production
  */
 export const getAuthAppUrl = (): string => {

@@ -1,10 +1,9 @@
 // 🎯 Create account / Sign up – same header as home page (UniversalHeader)
 import React, { useState, useEffect } from 'react';
-import { User, Lock, Mail, Square } from 'lucide-react';
-import { authService, userService, therapistService, placesService } from '../../lib/appwriteService';
+import { User, Lock, Mail, UserCircle, Building2, Sparkles, Briefcase } from 'lucide-react';
+import { authService, userService, therapistService, placesService, facialPlaceService } from '../../lib/appwriteService';
 import { ID } from '../../lib/appwrite';
 import { useTranslations } from '../../lib/useTranslations';
-import SlideToConfirm from '../../components/auth/SlideToConfirm';
 import UniversalHeader from '../../components/shared/UniversalHeader';
 import { AppDrawer } from '../../components/AppDrawerClean';
 import { React19SafeWrapper } from '../../components/React19SafeWrapper';
@@ -45,7 +44,6 @@ const AuthPage: React.FC<AuthPageProps> = ({
         return '';
     });
     const [password, setPassword] = useState('');
-    const [captchaVerified, setCaptchaVerified] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -62,10 +60,10 @@ const AuthPage: React.FC<AuthPageProps> = ({
     );
 
     const accountTypes = [
-        { value: 'therapist', label: t?.massageTherapist || 'Massage Therapist' },
-        { value: 'massage-place', label: t?.massageSpa || 'Massage Place' },
-        { value: 'facial-place', label: t?.facialClinic || 'Facial Place' },
-        { value: 'employer', label: t?.postJob || 'Post Job' },
+        { value: 'therapist', label: t?.massageTherapist || 'Massage Therapist', Icon: UserCircle },
+        { value: 'massage-place', label: t?.massageSpa || 'Massage Place', Icon: Building2 },
+        { value: 'facial-place', label: t?.facialClinic || 'Facial Place', Icon: Sparkles },
+        { value: 'employer', label: t?.postJob || 'Post Job', Icon: Briefcase },
     ];
 
     // Handle return from Google OAuth: create profile and redirect
@@ -115,7 +113,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                     });
                 } else if (accountTypeToUse === 'massage-place') {
                     const placeId = ID.unique();
-                    await (placesService as any).create({
+                    await placesService.create({
                         email: profileData.email,
                         name: profileData.name,
                         id: placeId,
@@ -140,7 +138,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                     });
                 } else if (accountTypeToUse === 'facial-place') {
                     const facialPlaceId = ID.unique();
-                    await (placesService as any).create({
+                    await placesService.create({
                         email: profileData.email,
                         name: profileData.name,
                         facialPlaceId,
@@ -182,14 +180,10 @@ const AuthPage: React.FC<AuthPageProps> = ({
             return false;
         }
         
-        // For signup mode, require account type and slide-to-confirm (anti-bot). Terms accepted on first dashboard visit.
+        // For signup/unified mode, require account type. Terms accepted on first dashboard visit.
         if (mode === 'signup') {
             if (!accountType) {
                 setError(t?.pleaseSelectPortalType || 'Please select an account type');
-                return false;
-            }
-            if (!captchaVerified) {
-                setError(t?.pleaseCompleteVerification || 'Please complete the security verification (slide to confirm)');
                 return false;
             }
         }
@@ -197,10 +191,6 @@ const AuthPage: React.FC<AuthPageProps> = ({
         if (mode === 'unified') {
             if (!accountType) {
                 setError(t?.pleaseSelectPortalType || 'Please select an account type');
-                return false;
-            }
-            if (!captchaVerified) {
-                setError(t?.pleaseCompleteVerification || 'Please complete the security verification (slide to confirm)');
                 return false;
             }
         }
@@ -274,7 +264,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
             } else if (accountType === 'massage-place') {
                 const placeId = ID.unique();
                 console.log('🔵 Creating massage place profile with ID:', placeId);
-                await (placesService as any).create({
+                await placesService.create({
                     email: profileData.email,
                     name: (profileData as any).name,
                     id: placeId,
@@ -301,7 +291,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
             } else if (accountType === 'facial-place') {
                 const facialPlaceId = ID.unique();
                 console.log('🔵 Creating facial place profile with ID:', facialPlaceId);
-                await (placesService as any).create({
+                await placesService.create({
                     email: profileData.email,
                     name: (profileData as any).name,
                     facialPlaceId: facialPlaceId,
@@ -380,19 +370,22 @@ const AuthPage: React.FC<AuthPageProps> = ({
                             userType = 'therapist';
                         } else {
                             console.log('⚠️ No therapist found, checking places...');
-                            // Try massage place
-                            try {
-                                const placeData = await placesService.getByEmail(normalizedEmail);
-                                if (placeData) {
-                                    console.log('✅ Found place profile:', (placeData as any).name);
-                                    userType = 'massage-place';
+                            const placeData = await placesService.getByEmail(normalizedEmail);
+                            const placeList = Array.isArray(placeData) ? placeData : placeData ? [placeData] : [];
+                            if (placeList.length > 0) {
+                                console.log('✅ Found massage place profile:', (placeList[0] as any).name);
+                                userType = 'massage-place';
+                            } else {
+                                console.log('⚠️ No massage place found, checking facial places...');
+                                const facialData = await facialPlaceService.getByEmail(normalizedEmail);
+                                if (facialData) {
+                                    console.log('✅ Found facial place profile:', (facialData as any).name);
+                                    userType = 'facial-place';
                                 }
-                            } catch (e) {
-                                console.log('⚠️ Not a massage place either');
                             }
                         }
                     } catch (error) {
-                        console.warn('⚠️ Error checking therapist/place:', error);
+                        console.warn('⚠️ Error checking therapist/place/facial:', error);
                     }
                     
                     console.log('✅ Final user type:', userType);
@@ -596,10 +589,6 @@ const AuthPage: React.FC<AuthPageProps> = ({
                                         setError(t?.pleaseSelectPortalType || 'Please select account type first.');
                                         return;
                                     }
-                                    if (!captchaVerified) {
-                                        setError(t?.pleaseCompleteVerification || 'Please complete the security verification (slide to confirm) first.');
-                                        return;
-                                    }
                                     setError('');
                                     try {
                                         sessionStorage.setItem('oauth_signup_account_type', accountType);
@@ -613,7 +602,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                                         setError(err?.message || 'Google sign-in could not be started. Try email sign up.');
                                     }
                                 }}
-                                disabled={isLoading || !accountType || !captchaVerified}
+                                disabled={isLoading || !accountType}
                                 className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-gray-700"
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -677,27 +666,35 @@ const AuthPage: React.FC<AuthPageProps> = ({
                                         onClick={() => setShowDropdown(!showDropdown)}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all flex justify-between items-center"
                                     >
-                                        <span className={accountType ? 'text-gray-900' : 'text-gray-500'}>
-                                            {accountType ? accountTypes.find(t => t.value === accountType)?.label : (t?.selectPortalType || 'Select account type')}
+                                        <span className={`flex items-center gap-2 ${accountType ? 'text-gray-900' : 'text-gray-500'}`}>
+                                            {accountType ? (() => {
+                                                const selected = accountTypes.find(x => x.value === accountType);
+                                                const Icon = selected?.Icon;
+                                                return Icon ? <><Icon className="w-5 h-5 text-orange-500 flex-shrink-0" /><span>{selected?.label}</span></> : selected?.label;
+                                            })() : (t?.selectPortalType || 'Select account type')}
                                         </span>
                                         <span>▼</span>
                                     </button>
                                     
                                     {showDropdown && (
                                         <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-50 mt-1">
-                                            {accountTypes.map((type) => (
-                                                <button
-                                                    key={type.value}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setAccountType(type.value);
-                                                        setShowDropdown(false);
-                                                    }}
-                                                    className="w-full px-4 py-3 text-left hover:bg-orange-50 focus:outline-none focus:bg-orange-50 transition-colors"
-                                                >
-                                                    {type.label}
-                                                </button>
-                                            ))}
+                                            {accountTypes.map((type) => {
+                                                const Icon = type.Icon;
+                                                return (
+                                                    <button
+                                                        key={type.value}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setAccountType(type.value);
+                                                            setShowDropdown(false);
+                                                        }}
+                                                        className="w-full px-4 py-3 text-left hover:bg-orange-50 focus:outline-none focus:bg-orange-50 transition-colors flex items-center gap-2"
+                                                    >
+                                                        {Icon && <Icon className="w-5 h-5 text-orange-500 flex-shrink-0" />}
+                                                        <span>{type.label}</span>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
@@ -738,17 +735,6 @@ const AuthPage: React.FC<AuthPageProps> = ({
                             )}
                         </div>
 
-                        {/* Slide to confirm – signup only (helps stop bots). Terms & Conditions are shown on first dashboard visit. */}
-                        {mode === 'signup' && (
-                            <SlideToConfirm
-                                onVerified={() => setCaptchaVerified(true)}
-                                label={t?.slideToConfirmSignup || 'Slide to confirm sign up'}
-                                verifiedLabel={t?.verified || 'Confirmed'}
-                                disabled={isLoading}
-                                className="pt-2"
-                            />
-                        )}
-
                         {/* Error Message - Prominent display with icon */}
                         {error && (
                             <div className="bg-red-50 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded-lg shadow-sm">
@@ -770,7 +756,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={isLoading || !email || !password || (mode === 'signup' && (!accountType || !captchaVerified)) || (mode === 'unified' && (!accountType || !captchaVerified))}
+                            disabled={isLoading || !email || !password || (mode === 'signup' && !accountType) || (mode === 'unified' && !accountType)}
                             className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-4 px-6 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
                         >
                             {isLoading ? (

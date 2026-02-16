@@ -1,3 +1,5 @@
+// 🛡️ CRITICAL: Load first so 536870904 and other Appwrite errors don't crash the app
+import './lib/globalErrorHandler';
 
 import ReactDOM from 'react-dom/client';
 // Force cache bust: 2024-11-03-21:25:00

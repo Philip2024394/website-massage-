@@ -85,6 +85,7 @@ import ScheduledBookingDepositModal from './ScheduledBookingDepositModal';
 import { BookingChatLockIn } from '../lib/validation/bookingChatLockIn';
 import { bookingFlowMonitor } from '../utils/bookingFlowDiagnostics';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import { MASSAGE_TYPE_DETAILS, getMassageTypeImage } from '../constants';
 import { MassageTypeCard } from './shared/MassageTypeCard';
 import { saveBookingDraft, getBookingDraft, clearBookingDraft } from '../lib/bookingDraftStorage';
@@ -1416,7 +1417,7 @@ export function PersistentChatWindow() {
         customerId: chatState.currentUserId || 'guest',
         customerName: chatState.customerName || 'Guest Customer',
         therapistId: therapistDocId,
-        therapistName: therapist.name,
+        therapistName: getTherapistDisplayName(therapist.name),
         providerType,
         serviceType: bookingData.serviceType,
         duration: bookingData.duration,
@@ -1595,7 +1596,7 @@ export function PersistentChatWindow() {
             <>
               <img 
                 src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '')} 
-                alt={therapist.name}
+                alt={getTherapistDisplayName(therapist.name)}
                 className="w-10 h-10 rounded-full object-cover border-2 border-white"
               />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
@@ -1607,7 +1608,7 @@ export function PersistentChatWindow() {
           )}
         </div>
         <div className="text-left">
-          <div className="font-semibold text-sm">{hasActiveChat ? therapist.name : 'Continue Booking'}</div>
+          <div className="font-semibold text-sm">{hasActiveChat ? getTherapistDisplayName(therapist.name) : 'Continue Booking'}</div>
           <div className="text-xs text-orange-100">{hasActiveChat ? 'Tap to continue chat' : 'Tap to continue'}</div>
         </div>
       </button>
@@ -1816,14 +1817,14 @@ export function PersistentChatWindow() {
         
         <img 
           src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '')}
-          alt={therapist.name}
+          alt={getTherapistDisplayName(therapist.name)}
           className="w-10 h-10 rounded-full object-cover border-2 border-white/20 flex-shrink-0 bg-gray-200"
           onError={(e) => {
             (e.target as HTMLImageElement).src = getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '');
           }}
         />
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base truncate" id="chat-therapist-name" data-gb="Nama Terapis|Therapist Name">{therapist.name}</h3>
+          <h3 className="font-semibold text-base truncate" id="chat-therapist-name" data-gb="Nama Terapis|Therapist Name">{getTherapistDisplayName(therapist.name)}</h3>
           {/* Availability Indicator - Green flashing dot + "Available" text (case-insensitive) */}
           {(therapist.status || '').toUpperCase() === 'AVAILABLE' && (
             <div className="flex items-center gap-1.5 text-xs">
@@ -2322,7 +2323,7 @@ export function PersistentChatWindow() {
                 <div className="relative">
                   <img 
                     src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '')} 
-                    alt={therapist.name}
+                    alt={getTherapistDisplayName(therapist.name)}
                     className="w-14 h-14 rounded-full object-cover border-2 border-orange-400 shadow-md"
                   />
                   <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -2330,7 +2331,7 @@ export function PersistentChatWindow() {
                   </span>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-bold text-gray-900">{therapist.name}</h4>
+                  <h4 className="font-bold text-gray-900">{getTherapistDisplayName(therapist.name)}</h4>
                   <div className="flex items-center gap-1 text-sm text-gray-600">
                     <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                     <span>4.9</span>
@@ -2582,7 +2583,7 @@ export function PersistentChatWindow() {
                               'Babies Only': 'Babies/Children only',
                               'All Ages And Genders': 'All ages and genders'
                             };
-                            setClientMismatchError(`Unfortunately ${therapist.name} only provides massage service for ${prefLabels[clientPref] || clientPref}`);
+                            setClientMismatchError(`Unfortunately ${getTherapistDisplayName(therapist.name)} only provides massage service for ${prefLabels[clientPref] || clientPref}`);
                           } else {
                             setClientMismatchError(null);
                           }
@@ -2982,7 +2983,7 @@ export function PersistentChatWindow() {
                 </div>
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    🎉 Welcome {therapist.name} Massage Service
+                    🎉 Welcome {getTherapistDisplayName(therapist.name)} Massage Service
                   </h3>
                   <p className="text-gray-500 text-sm leading-relaxed">
                     Your booking has been submitted. Chat with your therapist once they accept.
@@ -3255,7 +3256,7 @@ export function PersistentChatWindow() {
                   <TherapistAcceptanceUI
                     therapist={{
                       id: therapist.id,
-                      name: therapist.name,
+                      name: getTherapistDisplayName(therapist.name),
                       image: therapist.image,
                       rating: 4.9,
                       whatsApp: therapist.whatsApp || therapist.phone
@@ -3277,7 +3278,7 @@ export function PersistentChatWindow() {
                   <OnTheWayStatusUI
                     therapist={{
                       id: therapist.id,
-                      name: therapist.name,
+                      name: getTherapistDisplayName(therapist.name),
                       image: therapist.image,
                       whatsApp: therapist.whatsApp,
                       phone: therapist.phone
@@ -3302,7 +3303,7 @@ export function PersistentChatWindow() {
                   <ArrivalConfirmationUI
                     therapist={{
                       id: therapist.id,
-                      name: therapist.name,
+                      name: getTherapistDisplayName(therapist.name),
                       image: therapist.image,
                       phone: therapist.phone
                     }}
@@ -3370,7 +3371,7 @@ export function PersistentChatWindow() {
       {bookingStep === 'chat' && chatState.currentBooking?.status === 'therapist_accepted' && (
         <div className="p-3 bg-blue-50 border-t border-blue-200">
           <p className="text-xs text-blue-700 mb-2 text-center">
-            ✅ {therapist.name} accepted your booking. Confirm now!
+            ✅ {getTherapistDisplayName(therapist.name)} accepted your booking. Confirm now!
           </p>
           <div className="flex gap-2">
             <button
@@ -3457,7 +3458,7 @@ export function PersistentChatWindow() {
                   e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }, 300);
               }}
-              placeholder={`💬 Message ${therapist.name}... (Press Enter to send)`}
+              placeholder={`💬 Message ${getTherapistDisplayName(therapist.name)}... (Press Enter to send)`}
               className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none text-base transition-all duration-200 placeholder-gray-400 hover:bg-gray-100"
               style={{ fontSize: '16px' }}
               disabled={isSending}

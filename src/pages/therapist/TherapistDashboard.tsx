@@ -1149,7 +1149,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         language={language}
         onLogout={onLogout}
         icon={<User className="w-6 h-6 text-orange-600" />}
-        headerActions={<HelpTooltip {...profileEditHelp.overview} position="bottom" size="sm" />}
       >
       <div
         className="bg-white w-full max-w-full"

@@ -16,7 +16,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { StarIcon } from '../../components/therapist/TherapistIcons';
 import { useCompatibleMenuData } from '../../hooks/useEnhancedMenuData';
-import { getUniqueMenuItemsByName } from '../../utils/therapistCardHelpers';
+import { getUniqueMenuItemsByName, getTherapistDisplayName } from '../../utils/therapistCardHelpers';
 
 interface TherapistPriceListModalProps {
     showPriceListModal: boolean;
@@ -175,7 +175,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                         <img
                             key={(therapist as any).profilePicture || (therapist as any).mainImage}
                             src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
-                            alt={therapist.name}
+                            alt={getTherapistDisplayName(therapist.name)}
                             className="w-11 h-11 rounded-full border-2 border-white object-cover"
                             loading="lazy"
                             decoding="async"
@@ -190,7 +190,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                             }}
                         />
                         <div>
-                            <h2 className="text-lg font-bold text-white leading-tight">{therapist.name}</h2>
+                            <h2 className="text-lg font-bold text-white leading-tight">{getTherapistDisplayName(therapist.name)}</h2>
                             <div className="flex items-center gap-2 text-xs">
                                 <StarIcon className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
                                 <span className="font-bold text-black bg-white/90 rounded px-1.5 py-0.5 shadow-sm">{displayRating}</span>

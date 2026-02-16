@@ -2,6 +2,26 @@
 
 import type { Pricing, Analytics } from '../types';
 
+/** Known Appwrite/SDK error code that can cause crash if not handled (e.g. connection/serialization) */
+export const APPWRITE_CRASH_ERROR_CODE = 536870904;
+
+/**
+ * Safely get a user-facing error message from an unknown error.
+ * Never throws - use in catch blocks to avoid double-throw crashes.
+ */
+export function getSafeErrorMessage(err: unknown, fallback = 'Something went wrong. Please try again.'): string {
+  try {
+    if (err == null) return fallback;
+    if (typeof (err as Error).message === 'string' && (err as Error).message.trim()) return (err as Error).message.trim();
+    if (typeof err === 'string' && err.trim()) return err.trim();
+    const code = (err as { code?: number | string })?.code;
+    if (code === APPWRITE_CRASH_ERROR_CODE || code === '536870904') return 'Connection or service error. Please try again.';
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 // Pricing helpers
 export const parsePricing = (pricingInput: string | Record<string, number> | null | undefined): Pricing => {
   try {

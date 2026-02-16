@@ -54,6 +54,8 @@ class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
                 return this.props.fallback;
             }
 
+            const errorMessage = this.state.error?.message || 'Unknown error';
+
             return (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
@@ -64,20 +66,24 @@ class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
                             <h2 className="text-lg font-semibold text-gray-800">Chat Service Error</h2>
                         </div>
                         
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-gray-600 mb-2">
                             The chat service encountered an unexpected error. This might be due to:
                         </p>
                         
-                        <ul className="text-sm text-gray-500 mb-4 list-disc list-inside space-y-1">
+                        <ul className="text-sm text-gray-500 mb-3 list-disc list-inside space-y-1">
                             <li>Network connectivity issues</li>
                             <li>Server maintenance</li>
                             <li>Browser compatibility issues</li>
                         </ul>
+
+                        {/* Show actual error so user/support can act on it */}
+                        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mb-4 break-words">
+                            {errorMessage}
+                        </p>
                         
                         <div className="flex flex-col gap-3">
                             <button
                                 onClick={() => {
-                                    // Reset error state and try again
                                     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
                                 }}
                                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -91,7 +97,6 @@ class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
                                         const { softRecover } = await import('../utils/softNavigation');
                                         softRecover();
                                     } catch {
-                                        // Fallback to hard reload only if soft recovery fails
                                         window.location.reload();
                                     }
                                 }}
@@ -101,15 +106,13 @@ class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
                             </button>
                         </div>
                         
-                        {/* Show error details in development */}
-                        {process.env.NODE_ENV === 'development' && this.state.error && (
+                        {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
                             <details className="mt-4">
                                 <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600">
                                     Technical Details (Dev Mode)
                                 </summary>
                                 <pre className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded overflow-auto max-h-32">
-                                    {this.state.error.message}
-                                    {this.state.errorInfo && '\n\n' + this.state.errorInfo}
+                                    {this.state.errorInfo}
                                 </pre>
                             </details>
                         )}

@@ -1,6 +1,8 @@
 import { databases, storage } from '../appwrite';
 import { APPWRITE_CONFIG } from '../appwrite.config';
 import { ID, Query } from 'appwrite';
+import { handleAppwriteError } from '../globalErrorHandler';
+import { APPWRITE_CRASH_ERROR_CODE } from '../../utils/appwriteHelpers';
 
 /** Place-shaped object used by home card, profile page, and dashboard (same as main app Place type). */
 export interface PlaceLike {
@@ -340,8 +342,15 @@ class FacialPlaceService {
                 id
             );
             return docToPlaceLike(document);
-        } catch (error) {
-            console.error('Error fetching facial place by ID:', error);
+        } catch (error: unknown) {
+            const errAny = error as { code?: number | string };
+            const isCrashCode = errAny?.code === APPWRITE_CRASH_ERROR_CODE || errAny?.code === '536870904';
+            if (isCrashCode) {
+                console.warn('🛡️ [facialPlaceService.getById] Caught crash code 536870904');
+                handleAppwriteError(error, 'facialPlaceService.getById');
+            } else {
+                console.error('Error fetching facial place by ID:', error);
+            }
             return null;
         }
     }

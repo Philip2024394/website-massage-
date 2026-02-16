@@ -114,6 +114,10 @@ class ErrorBoundary extends Component<Props, State> {
             if (this.props.fallback) {
                 return this.props.fallback;
             }
+            const errAny = this.state.error as { code?: number | string; message?: string } | null;
+            const is536870904 = errAny && (errAny.code === 536870904 || errAny.code === '536870904' || (typeof errAny.message === 'string' && errAny.message.includes('536870904')));
+            const title = is536870904 ? 'Connection issue' : 'Feature Temporarily Unavailable';
+            const message = is536870904 ? 'Connection or service error. Please try again or return to the homepage.' : "We're currently updating this feature to serve you better. Please try again in a moment or return to the homepage.";
 
             // Professional user-friendly error display - NEVER show raw errors
             return (
@@ -128,13 +132,12 @@ class ErrorBoundary extends Component<Props, State> {
 
                         {/* Title */}
                         <h1 className="text-2xl font-bold text-gray-900 text-center mb-3">
-                            Feature Temporarily Unavailable
+                            {title}
                         </h1>
 
                         {/* User-friendly message */}
                         <p className="text-gray-600 text-center mb-8 leading-relaxed">
-                            We're currently updating this feature to serve you better. 
-                            Please try again in a moment or return to the homepage.
+                            {message}
                         </p>
 
                         {/* Action Buttons */}

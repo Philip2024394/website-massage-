@@ -27,6 +27,7 @@ import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
 import { matchesLocation } from '../utils/locationNormalization';
+import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import UniversalPWAInstall from '../components/UniversalPWAInstall';
@@ -2579,14 +2580,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                             <div className="flex items-center gap-3 mb-3">
                                                 <img
                                                     src={therapistImage}
-                                                    alt={therapist.name}
+                                                    alt={getTherapistDisplayName(therapist.name)}
                                                     className="w-12 h-12 rounded-full object-cover border-2 border-orange-200"
                                                     onError={(e) => {
                                                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&h=256&q=80';
                                                     }}
                                                 />
                                                 <div className="flex-1">
-                                                    <h4 className="font-semibold text-gray-900">{therapist.name}</h4>
+                                                    <h4 className="font-semibold text-gray-900">{getTherapistDisplayName(therapist.name)}</h4>
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                                         <span className="text-sm text-gray-600">Online now</span>

@@ -4,6 +4,28 @@
  */
 
 import { Client, Databases, Account, Storage, Functions } from 'appwrite';
+import { handleAppwriteError } from '../globalErrorHandler';
+
+const CRASH_CODE = 536870904;
+function isCrashCode(e: unknown): boolean {
+  if (e == null || typeof e !== 'object') return false;
+  const c = (e as { code?: number | string }).code;
+  return c === CRASH_CODE || c === '536870904';
+}
+
+/** Wrap a Databases method so 536870904 is caught and rethrown as a safe Error (prevents app crash). */
+function wrapDatabasesMethod<T extends (...args: any[]) => Promise<any>>(fn: T, name: string): T {
+  return (function (...args: any[]) {
+    return fn.apply(this, args).catch((err: unknown) => {
+      if (isCrashCode(err)) {
+        console.warn(`🛡️ [databases.${name}] Caught 536870904 - converting to safe error`);
+        handleAppwriteError(err, `databases.${name}`);
+        return Promise.reject(new Error('Connection or service error. Please try again.'));
+      }
+      return Promise.reject(err);
+    });
+  } as T);
+}
 
 /**
  * Get required environment variable or throw
@@ -151,11 +173,29 @@ export function getClient(): Client {
 }
 
 // Initialize services lazily - export getter functions
-export function getDatabases(): Databases {
+function getDatabasesRaw(): Databases {
   if (!_databases) {
     _databases = new Databases(getClient());
   }
   return _databases;
+}
+
+let _databasesWrapped: Databases | null = null;
+
+/** Returns a Databases-like object that catches error 536870904 and rethrows a safe Error. */
+export function getDatabases(): Databases {
+  if (_databasesWrapped) return _databasesWrapped;
+  const raw = getDatabasesRaw() as any;
+  _databasesWrapped = new Proxy(raw, {
+    get(target, prop: string) {
+      const val = target[prop];
+      if (typeof val === 'function') {
+        return wrapDatabasesMethod(val.bind(target), prop);
+      }
+      return val;
+    }
+  }) as Databases;
+  return _databasesWrapped;
 }
 
 export function getAccount(): Account {

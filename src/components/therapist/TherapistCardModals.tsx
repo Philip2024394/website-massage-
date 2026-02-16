@@ -4,7 +4,7 @@ import { X, Clock, FileText } from 'lucide-react';
 import type { Therapist } from '../types';
 import { getRandomTherapistImage } from '../../utils/therapistImageUtils';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../../utils/ratingUtils';
-import { isDiscountActive, getUniqueMenuItemsByName } from '../../utils/therapistCardHelpers';
+import { isDiscountActive, getUniqueMenuItemsByName, getTherapistDisplayName } from '../../utils/therapistCardHelpers';
 import { StarIcon } from './TherapistIcons';
 import AnonymousReviewModal from '../AnonymousReviewModal';
 // REMOVED: BookingConfirmationPopup - using original booking system
@@ -80,7 +80,7 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
             {/* Anonymous Review Modal */}
             {showReviewModal && (
                 <AnonymousReviewModal
-                    providerName={therapist.name}
+                    providerName={getTherapistDisplayName(therapist.name)}
                     providerId={therapist.$id || therapist.id}
                     providerType="therapist"
                     providerImage={therapist.profilePicture || (therapist as any).mainImage || getRandomTherapistImage(therapist.id.toString())}
@@ -150,12 +150,12 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                             <div className="flex items-center gap-2.5 flex-1">
                                 <img
                                     src={(therapist as any).profilePicture || therapist.mainImage || '/default-avatar.jpg'}
-                                    alt={therapist.name}
+                                    alt={getTherapistDisplayName(therapist.name)}
                                     className="w-10 h-10 rounded-full border-2 border-white object-cover"
                                     onError={(e) => { (e.target as HTMLImageElement).src = '/default-avatar.jpg'; }}
                                 />
                                 <div>
-                                    <h4 className="font-bold text-sm text-white">{therapist.name}</h4>
+                                    <h4 className="font-bold text-sm text-white">{getTherapistDisplayName(therapist.name)}</h4>
                                     <div className="flex items-center gap-1 text-xs">
                                         <StarIcon className="w-3 h-3 text-yellow-300 fill-yellow-300" />
                                         <span className="font-bold text-black bg-white/90 rounded px-1.5 py-0.5 shadow-sm">{getDisplayRating(therapist.rating, therapist.reviewCount)}</span>
@@ -264,7 +264,7 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                                                                 window.dispatchEvent(new CustomEvent('openChat', {
                                                                     detail: {
                                                                         therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
-                                                                        therapistName: therapist.name,
+                                                                        therapistName: getTherapistDisplayName(therapist.name),
                                                                         therapistType: 'therapist',
                                                                         therapistStatus: normalizedStatus,
                                                                         pricing: getPricing(),
@@ -313,8 +313,8 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
             <SocialSharePopup
                 isOpen={showSharePopup}
                 onClose={onCloseShare}
-                title={therapist.name}
-                description={`Check out ${therapist.name} on IndaStreet! Amazing massage therapist offering professional services.`}
+                title={getTherapistDisplayName(therapist.name)}
+                description={`Check out ${getTherapistDisplayName(therapist.name)} on IndaStreet! Amazing massage therapist offering professional services.`}
                 url={generateShareableURL(therapist)}
                 type="therapist"
             />

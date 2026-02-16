@@ -14,6 +14,7 @@ import React, { useState, useCallback } from 'react';
 import { Share2, Copy, MessageCircle, Facebook, Linkedin, Send, Mail, Check, ExternalLink } from 'lucide-react';
 import { generateTherapistShareURL, generateShareText, copyShareURLToClipboard } from '../features/shared-profiles/utils/shareUrlBuilder';
 import type { Therapist } from '../types';
+import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 
 interface ShareTherapistProfileProps {
     therapist: Therapist;
@@ -41,7 +42,7 @@ export const ShareTherapistProfile: React.FC<ShareTherapistProfileProps> = ({
     }, [therapist]);
 
     const shareText = generateShareText(
-        therapist.name,
+        getTherapistDisplayName(therapist.name),
         'therapist',
         therapist.location || therapist.city
     );
@@ -77,7 +78,7 @@ export const ShareTherapistProfile: React.FC<ShareTherapistProfileProps> = ({
         twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
         linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
         telegram: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-        email: `mailto:?subject=${encodeURIComponent(`${therapist.name} - Terapis Pijat Terbaik`)}&body=${encodeURIComponent(`${shareText}\\n\\n${shareUrl}`)}`
+        email: `mailto:?subject=${encodeURIComponent(`${getTherapistDisplayName(therapist.name)} - Terapis Pijat Terbaik`)}&body=${encodeURIComponent(`${shareText}\\n\\n${shareUrl}`)}`
     };
 
     const buttonClasses = {
@@ -94,7 +95,7 @@ export const ShareTherapistProfile: React.FC<ShareTherapistProfileProps> = ({
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={baseButtonClass}
-                aria-label={`Share ${therapist.name}'s profile`}
+                aria-label={`Share ${getTherapistDisplayName(therapist.name)}'s profile`}
                 aria-expanded={isOpen}
                 aria-haspopup="menu"
             >
@@ -116,7 +117,7 @@ export const ShareTherapistProfile: React.FC<ShareTherapistProfileProps> = ({
                         <div className="p-4 border-b">
                             <h3 className="font-semibold text-gray-800 text-sm">Share Profile</h3>
                             <p className="text-xs text-gray-600 mt-1">
-                                Share {therapist.name}'s profile with others
+                                Share {getTherapistDisplayName(therapist.name)}'s profile with others
                             </p>
                         </div>
 
@@ -239,7 +240,7 @@ export const ShareTherapistProfile: React.FC<ShareTherapistProfileProps> = ({
                                 onClick={() => {
                                     if (navigator.share) {
                                         navigator.share({
-                                            title: `${therapist.name} - Terapis Pijat`,
+                                            title: `${getTherapistDisplayName(therapist.name)} - Terapis Pijat`,
                                             text: shareText,
                                             url: shareUrl
                                         });

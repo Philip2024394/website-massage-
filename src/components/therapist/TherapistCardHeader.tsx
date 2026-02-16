@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Therapist } from '../../types';
-import { isDiscountActive } from '../../utils/therapistCardHelpers';
+import { isDiscountActive, getTherapistDisplayName } from '../../utils/therapistCardHelpers';
 import { Share2 } from 'lucide-react';
 import { getRandomTherapistImage } from '../../utils/therapistImageUtils';
 import { devLog } from '../../utils/devMode';
@@ -32,7 +32,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                 <img 
                     key={displayImage}
                     src={displayImage} 
-                    alt={`${therapist.name} cover`} 
+                    alt={`${getTherapistDisplayName(therapist.name)} cover`} 
                     className="w-full h-full object-cover rounded-t-xl"
                     style={{ aspectRatio: '16/9', minHeight: '192px' }}
                     loading="eager"

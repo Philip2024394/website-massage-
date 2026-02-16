@@ -20,7 +20,7 @@ import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { getTherapistMainImage } from '../utils/therapistImageUtils';
 import { bookingService } from '../lib/bookingService';
 import { therapistMenusService } from '../lib/appwriteService';
-import { isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay } from '../utils/therapistCardHelpers';
+import { isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay, getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
@@ -566,7 +566,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                 <img
                     src={getTherapistMainImage(therapist as any)}
-                    alt={therapist.name}
+                    alt={getTherapistDisplayName(therapist.name)}
                     className="w-full h-full object-cover transition-transform duration-500 rounded-t-2xl"
                     style={{ aspectRatio: '400/224', minHeight: '224px' }}
                     loading="lazy"
@@ -636,7 +636,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             <img 
                                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full" 
                                 src={(therapist as any).profilePicture || '/default-avatar.jpg'}
-                                alt={`${therapist.name} profile`}
+                                alt={`${getTherapistDisplayName(therapist.name)} profile`}
                                 style={{ aspectRatio: '1/1' }}
                                 loading="lazy"
                                 onError={(e) => {
@@ -709,7 +709,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                 })()}
                                 
                                 <h3 className="text-lg font-bold text-gray-900">
-                                    {therapist.name}
+                                    {getTherapistDisplayName(therapist.name)}
                                 </h3>
                             </div>
                         </div>
@@ -826,7 +826,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 <SocialSharePopup
                     isOpen={showSharePopup}
                     onClose={() => setShowSharePopup(false)}
-                    title={therapist.name}
+                    title={getTherapistDisplayName(therapist.name)}
                     description={`Professional massage therapist in Bali`}
                     url={shortShareUrl || generateShareableURL(therapist)}
                     type="therapist"

@@ -2,6 +2,19 @@
  * Global error handler for Appwrite API errors including rate limiting
  */
 
+/** Known SDK/connection error code that can crash the app if unhandled (Appwrite/connection) */
+const CRASH_ERROR_CODE_536870904 = 536870904;
+const CRASH_ERROR_CODE_STR = '536870904';
+
+/** Normalize code to number for comparison (SDK may return string in some envs) */
+function isCrashCode(code: unknown): boolean {
+    if (code === CRASH_ERROR_CODE_536870904) return true;
+    if (code === CRASH_ERROR_CODE_STR) return true;
+    if (typeof code === 'string' && code.trim() === CRASH_ERROR_CODE_STR) return true;
+    const n = typeof code === 'number' ? code : parseInt(String(code), 10);
+    return n === CRASH_ERROR_CODE_536870904;
+}
+
 interface ErrorNotification {
     id: string;
     message: string;
@@ -16,6 +29,9 @@ const ERROR_NOTIFICATION_COOLDOWN = 30000; // 30 seconds
 
 // Global flag to prevent multiple anonymous session creation attempts
 let isCreatingAnonymousSession = false;
+
+/** Prevent duplicate registration of global handlers */
+let globalErrorHandlingInitialized = false;
 
 /**
  * Clean up old error notifications
@@ -48,7 +64,10 @@ function showThrottledNotification(error: any, context: string) {
     let userMessage = '';
     let type: 'error' | 'warning' | 'info' = 'error';
     
-    if (error?.code === 429) {
+    if (isCrashCode(error?.code)) {
+        userMessage = 'Connection or service error. Please try again.';
+        type = 'warning';
+    } else if (error?.code === 429) {
         userMessage = 'Server is busy. Please wait a moment and try again.';
         type = 'warning';
     } else if (error?.code === 401) {
@@ -98,6 +117,13 @@ export function handleAppwriteError(error: any, context: string = 'Unknown opera
         type: error?.type,
         context
     });
+
+    // Known crash code 536870904 - handle so app does not crash
+    if (isCrashCode(error?.code)) {
+        console.warn(`🛡️ Caught crash code 536870904 in ${context} - showing fallback message`);
+        showThrottledNotification(error, context);
+        return true;
+    }
     
     // Rate limiting specific handling
     if (error?.code === 429) {
@@ -174,22 +200,64 @@ export async function safeAsyncOperation<T>(
 }
 
 /**
+ * Check if an error is the known crash code 536870904 (by code or message).
+ * Handles both object errors and plain message (e.g. window.onerror when event.error is null).
+ */
+function isCrashCode536870904(error: unknown, message?: string): boolean {
+    if (typeof message === 'string' && message.includes('536870904')) return true;
+    if (error != null && typeof error === 'object') {
+        const code = (error as { code?: number | string }).code;
+        if (isCrashCode(code)) return true;
+        const msg = (error as { message?: string }).message;
+        if (typeof msg === 'string' && msg.includes('536870904')) return true;
+    }
+    return false;
+}
+
+/**
  * Initialize global error handling
  */
 export function initializeGlobalErrorHandling() {
-    // Handle unhandled promise rejections only
-    if (typeof window !== 'undefined') {
-        window.addEventListener('unhandledrejection', (event) => {
-            if (event.reason && typeof event.reason === 'object') {
-                const handled = handleAppwriteError(event.reason, 'Unhandled Promise Rejection');
-                if (handled) {
-                    event.preventDefault(); // Prevent default browser error handling
-                }
+    if (typeof window === 'undefined') return;
+    if (globalErrorHandlingInitialized) return;
+    globalErrorHandlingInitialized = true;
+
+    // 1) Synchronous errors (e.g. thrown in callbacks) - prevent crash
+    window.addEventListener('error', (event) => {
+        const err = event.error;
+        const msg = event.message || (err && typeof err === 'object' && (err as Error).message) || '';
+        if (isCrashCode536870904(err, msg)) {
+            console.warn('🛡️ Caught sync error with crash code 536870904 - suppressing');
+            if (err != null) handleAppwriteError(err, 'window.onerror');
+            else showThrottledNotification({ code: CRASH_ERROR_CODE_536870904, message: msg }, 'window.onerror');
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+        }
+        return false;
+    }, true);
+
+    // 2) Unhandled promise rejections - prevent crash (capture phase so we run first)
+    window.addEventListener('unhandledrejection', (event) => {
+        const reason = event.reason;
+        const msg = reason && typeof reason === 'object' ? (reason as Error).message : String(reason ?? '');
+        if (reason != null && isCrashCode536870904(reason, msg)) {
+            console.warn('🛡️ Unhandled rejection with crash code 536870904 - preventing crash');
+            handleAppwriteError(reason, 'Unhandled Promise Rejection');
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
+        if (reason && typeof reason === 'object') {
+            const handled = handleAppwriteError(reason, 'Unhandled Promise Rejection');
+            if (handled) {
+                event.preventDefault();
+                event.stopPropagation();
             }
-        });
-        
-        console.log('🛡️ Global error handling initialized (no fetch override)');
-    }
+        }
+    }, true);
+
+    console.log('🛡️ Global error handling initialized (536870904 protected)');
 }
 
 // Auto-initialize when module is loaded

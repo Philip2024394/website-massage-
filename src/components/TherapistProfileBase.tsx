@@ -23,6 +23,7 @@ import IndastreetAchievements from './IndastreetAchievements';
 import TherapistServiceShowcase from './shared/TherapistServiceShowcase';
 import type { Therapist, UserLocation } from '../types';
 import { getTherapistMainImage } from '../utils/therapistImageUtils';
+import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import { HERO_WELCOME_TEXT } from '../config/heroImages';
 
 // SEO Hashtag Generator for different business types
@@ -218,7 +219,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
         : (therapist.location?.name || therapist.location?.city || 'a');
     const city = locationStr.split(' ')[0];
     const cityUpper = city ? city.toUpperCase() : city;
-    const heroImageAlt = `Professional massage therapy in ${cityUpper} - ${therapist.name.toUpperCase()} - Terapis pijat panggilan ${cityUpper}`;
+    const heroImageAlt = `Professional massage therapy in ${cityUpper} - ${getTherapistDisplayName(therapist.name).toUpperCase()} - Terapis pijat panggilan ${cityUpper}`;
     
     // Replace {city} placeholder with location in capital letters
     const heroTitle = welcomeText.title.replace('{city}', cityUpper);
@@ -247,7 +248,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                                 {heroSubtitle}
                             </p>
                             <p className="text-lg font-semibold text-gray-800 uppercase">
-                                {therapist.name}
+                                {getTherapistDisplayName(therapist.name)}
                             </p>
                         </div>
                     </div>
@@ -282,7 +283,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                 {/* Indastreet Achievements - Professional Standards Display */}
                 <IndastreetAchievements 
                     therapistId={(therapist as any).id || (therapist as any).$id}
-                    therapistName={therapist.name}
+                    therapistName={getTherapistDisplayName(therapist.name)}
                     isVerified={(() => {
                         // Real verification logic: Bank details AND KTP required
                         const hasBankDetails = therapist.bankName && therapist.accountName && therapist.accountNumber;

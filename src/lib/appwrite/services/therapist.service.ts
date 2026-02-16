@@ -7,6 +7,8 @@ import { databases, storage, APPWRITE_CONFIG, account, rateLimitedDb } from '../
 import { ID, Query } from 'appwrite';
 import { duplicateAccountDetectionService } from '../../../services/duplicateAccountDetection.service';
 import { getRandomTherapistImage } from '../../../utils/therapistImageUtils';
+import { handleAppwriteError } from '../../../lib/globalErrorHandler';
+import { APPWRITE_CRASH_ERROR_CODE } from '../../../utils/appwriteHelpers';
 
 // Import services with proper fallbacks
 let sendAdminNotification: any;
@@ -445,12 +447,17 @@ export const therapistService = {
             
             return response;
         } catch (error: unknown) {
+            const errAny = error as { code?: number; message?: string };
+            if (errAny?.code === APPWRITE_CRASH_ERROR_CODE) {
+                console.warn('🛡️ [therapist.getById] Caught crash code 536870904 - using fallback');
+                handleAppwriteError(error, 'therapist.getById');
+            }
             console.error('\n' + '❌'.repeat(50));
             console.error('❌ [APPWRITE ERROR] Direct fetch failed');
             console.error('❌'.repeat(50));
             console.error('🔴 Error type:', (error as any).constructor?.name);
             console.error('🔴 Error message:', (error as Error).message);
-            console.error('🔴 Error code:', (error as any).code);
+            console.error('🔴 Error code:', errAny?.code);
             console.error('🔴 Error type (appwrite):', (error as any).type);
             const err = error as Error; console.error('🔴 Full error object:', err);
             console.error('❌'.repeat(50) + '\n');

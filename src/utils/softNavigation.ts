@@ -189,7 +189,12 @@ export function onSoftRecover(callback: () => void): () => void {
  * Check if app is in a recoverable error state
  * Returns true if soft recovery is possible
  */
-export function isRecoverable(error: Error): boolean {
+const CRASH_CODE_536870904 = 536870904;
+
+export function isRecoverable(error: Error | unknown): boolean {
+  const msg = error instanceof Error ? error.message : (error && typeof (error as any).message === 'string' ? (error as any).message : String(error ?? ''));
+  const code = error && typeof error === 'object' ? (error as { code?: number | string }).code : undefined;
+  if (code === CRASH_CODE_536870904 || code === '536870904' || (typeof msg === 'string' && msg.includes('536870904'))) return true;
   const recoverablePatterns = [
     /network/i,
     /timeout/i,
@@ -198,8 +203,7 @@ export function isRecoverable(error: Error): boolean {
     /hydration/i,
     /CORS/i
   ];
-
-  return recoverablePatterns.some(pattern => pattern.test(error.message));
+  return recoverablePatterns.some(pattern => pattern.test(msg));
 }
 
 /**

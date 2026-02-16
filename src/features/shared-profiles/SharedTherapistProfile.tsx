@@ -36,6 +36,8 @@ import PWAInstallBanner from '../../components/PWAInstallBanner';
 import { VERIFIED_BADGE_IMAGE_URL } from '../../constants/appConstants';
 import { getNonRepeatingMainImage } from '../../lib/appwrite/image.service';
 import { shareTrackingService } from '../../services/shareTrackingService';
+import { getTherapistDisplayName } from '../../utils/therapistCardHelpers';
+import { getSafeErrorMessage, APPWRITE_CRASH_ERROR_CODE } from '../../utils/appwriteHelpers';
 
 interface SharedTherapistProfileProps {
     // NO LONGER REQUIRED - we fetch directly
@@ -428,20 +430,24 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                     console.warn('⚠️ [ANALYTICS] Tracking failed (non-critical):', analyticsError);
                 }
 
-            } catch (err: any) {
-                console.error('\n' + '❌'.repeat(40));
-                console.error('❌ [ERROR] Failed to fetch therapist');
-                console.error('❌'.repeat(40));
-                console.error('🔴 Error type:', err.constructor.name);
-                console.error('🔴 Error message:', err.message);
-                console.error('🔴 Error code:', err.code);
-                console.error('🔴 Full error:', err);
-                console.error('🔴 Stack trace:', err.stack);
-                console.error('❌'.repeat(40) + '\n');
-                
-                console.log('⏳ [STATE UPDATE] Setting error state');
+            } catch (err: unknown) {
+                try {
+                    const errAny = err as { message?: string; code?: number; stack?: string; constructor?: { name?: string } };
+                    console.error('\n' + '❌'.repeat(40));
+                    console.error('❌ [ERROR] Failed to fetch therapist');
+                    console.error('❌'.repeat(40));
+                    if (errAny?.constructor?.name) console.error('🔴 Error type:', errAny.constructor.name);
+                    if (errAny?.message) console.error('🔴 Error message:', errAny.message);
+                    if (errAny?.code !== undefined) console.error('🔴 Error code:', errAny.code);
+                    if (errAny?.code === APPWRITE_CRASH_ERROR_CODE) console.error('🔴 Known crash code 536870904 - using safe fallback');
+                    console.error('🔴 Full error:', err);
+                    if (typeof errAny?.stack === 'string') console.error('🔴 Stack trace:', errAny.stack);
+                    console.error('❌'.repeat(40) + '\n');
+                } catch (_) {
+                    console.error('❌ [ERROR] Failed to fetch therapist (error details unavailable)');
+                }
                 setAttemptedTherapistId(therapistId);
-                setError(err.message || 'Failed to load therapist profile');
+                setError(getSafeErrorMessage(err, 'Failed to load therapist profile. Please try again.'));
             } finally {
                 console.log('\n' + '🏁'.repeat(40));
                 console.log('🏁 [FETCH COMPLETE] Setting loading = false');
@@ -459,8 +465,9 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         if (!therapist) return;
 
         const city = (therapist.location || 'Bali').split(' ')[0];
-        const title = `${therapist.name} - Professional Massage Therapist - House - Hotel - Villa`;
-        const description = `✨ Book ${therapist.name} for professional massage therapy in ${city}. ⭐ Verified therapist • 💬 Instant chat • 🔒 Secure booking`;
+        const displayName = getTherapistDisplayName(therapist.name);
+        const title = `${displayName} - Professional Massage Therapist - House - Hotel - Villa`;
+        const description = `✨ Book ${displayName} for professional massage therapy in ${city}. ⭐ Verified therapist • 💬 Instant chat • 🔒 Secure booking`;
         const shareUrl = generateTherapistShareURL(therapist);
         
         // Use same image as home page and profile page for social sharing
@@ -478,8 +485,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         const metaTags = [
             // Basic SEO
             { name: 'description', content: description },
-            { name: 'keywords', content: `pijat panggilan ${city}, terapis pijat ${city}, massage ${city}, spa panggilan, home service massage, ${therapist.name}` },
-            { name: 'author', content: therapist.name },
+            { name: 'keywords', content: `pijat panggilan ${city}, terapis pijat ${city}, massage ${city}, spa panggilan, home service massage, ${displayName}` },
+            { name: 'author', content: displayName },
             { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1' },
             
             // 🖼️ GOOGLE IMAGES SEO - CRITICAL for image discovery
@@ -487,8 +494,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             { name: 'thumbnail', content: previewImage },
             { itemprop: 'image', content: previewImage },
             { itemprop: 'thumbnailUrl', content: previewImage },
-            { itemprop: 'name', content: `${therapist.name} - Massage Therapist ${city}` },
-            { itemprop: 'description', content: `Professional massage therapy by ${therapist.name} in ${city}. Book certified therapist for traditional Indonesian massage, reflexology, and spa services.` },
+            { itemprop: 'name', content: `${displayName} - Massage Therapist ${city}` },
+            { itemprop: 'description', content: `Professional massage therapy by ${displayName} in ${city}. Book certified therapist for traditional Indonesian massage, reflexology, and spa services.` },
             
             // 📘 FACEBOOK OPEN GRAPH - COMPLETE STANDARD
             { property: 'og:title', content: title },
@@ -499,14 +506,14 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             { property: 'og:image:secure_url', content: previewImage },
             { property: 'og:image:width', content: '1200' },
             { property: 'og:image:height', content: '630' },
-            { property: 'og:image:alt', content: `${therapist.name} - Professional Massage Therapist in ${city}, Indonesia | Traditional Indonesian Massage, Spa Services, Home Service` },
+            { property: 'og:image:alt', content: `${displayName} - Professional Massage Therapist in ${city}, Indonesia | Traditional Indonesian Massage, Spa Services, Home Service` },
             { property: 'og:image:type', content: 'image/png' },
             { property: 'og:site_name', content: 'IndaStreet Massage' },
             { property: 'og:locale', content: 'id_ID' },
             { property: 'og:locale:alternate', content: 'en_US' },
             // Facebook Profile specific
-            { property: 'profile:first_name', content: therapist.name.split(' ')[0] },
-            { property: 'profile:last_name', content: therapist.name.split(' ').slice(1).join(' ') || '' },
+            { property: 'profile:first_name', content: displayName },
+            { property: 'profile:last_name', content: '' },
             { property: 'profile:username', content: therapist.name.toLowerCase().replace(/[^a-z0-9]/g, '') },
             // Business/Service Info for Facebook
             { property: 'business:contact_data:street_address', content: city },
@@ -518,7 +525,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             { name: 'twitter:title', content: title },
             { name: 'twitter:description', content: description },
             { name: 'twitter:image', content: previewImage },
-            { name: 'twitter:image:alt', content: `${therapist.name} - Professional Massage Therapist ${city} | Book Traditional Indonesian Massage, Reflexology, Spa Services` },
+            { name: 'twitter:image:alt', content: `${displayName} - Professional Massage Therapist ${city} | Book Traditional Indonesian Massage, Reflexology, Spa Services` },
             { name: 'twitter:site', content: '@indastreetmassage' },
             { name: 'twitter:creator', content: '@indastreetmassage' },
             
@@ -560,7 +567,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         const structuredData = {
             "@context": "https://schema.org",
             "@type": "Person",
-            "name": therapist.name,
+            "name": displayName,
             "jobTitle": "Massage Therapist",
             "description": description,
             "url": shareUrl,
@@ -608,9 +615,9 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         const googleStructuredData = {
             "@context": "https://schema.org",
             "@type": "Person",
-            "name": therapist.name,
+            "name": displayName,
             "jobTitle": "Professional Massage Therapist",
-            "description": `${therapist.name} provides professional massage therapy services in ${city}. Specialized in traditional Indonesian massage, Swedish massage, and therapeutic treatments.`,
+            "description": `${displayName} provides professional massage therapy services in ${city}. Specialized in traditional Indonesian massage, Swedish massage, and therapeutic treatments.`,
             "url": shareUrl,
             "image": previewImage,
             "address": {
@@ -855,7 +862,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 eventType: metric as any,
                 therapistId: therapist.$id,
                 metadata: {
-                    therapistName: therapist.name,
+                    therapistName: getTherapistDisplayName(therapist.name),
                     location: therapist.location,
                     source: 'shared_profile'
                 }

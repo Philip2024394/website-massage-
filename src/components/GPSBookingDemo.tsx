@@ -23,6 +23,7 @@ import { bookingGPSIntegration, BookingGPSUtils } from '../services/bookingFlowG
 import TherapistLocationVerification from '../components/TherapistLocationVerification';
 import type { GPSEnhancedBookingData } from '../services/bookingFlowGPSIntegration';
 import { logger } from '../utils/logger';
+import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 
 // Mock therapist data (replace with your actual therapist data)
 const MOCK_THERAPISTS = [
@@ -273,7 +274,7 @@ const GPSBookingDemo: React.FC = () => {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="font-semibold text-gray-800">{therapist.name}</h4>
+                        <h4 className="font-semibold text-gray-800">{getTherapistDisplayName(therapist.name)}</h4>
                         <p className="text-sm text-gray-600">{therapist.location}</p>
                       </div>
                       <div className="text-right">

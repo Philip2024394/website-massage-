@@ -84,6 +84,40 @@ export const placesService = {
         return this.getAllPlaces(city);
     },
 
+    /**
+     * Create a new place document (massage place or facial place).
+     * - If data.collectionName === 'facial_places', creates in facial_places collection.
+     * - Otherwise creates in places collection (massage place).
+     */
+    async create(data: any): Promise<any> {
+        try {
+            const isFacial = data.collectionName === 'facial_places';
+            const collectionId = isFacial
+                ? (APPWRITE_CONFIG.collections.facial_places || 'facial_places')
+                : (APPWRITE_CONFIG.collections.places || 'places');
+
+            const docId = isFacial
+                ? (data.facialPlaceId || ID.unique())
+                : (data.id || data.placeId || ID.unique());
+            const documentId = String(docId || ID.unique());
+
+            const payload = { ...data };
+            delete payload.collectionName;
+
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                documentId,
+                payload
+            );
+            console.log('✅ Place document created:', response.$id, isFacial ? '(facial)' : '(massage place)');
+            return response;
+        } catch (error) {
+            console.error('Error creating place:', error);
+            throw error;
+        }
+    },
+
     async getByProviderId(providerId: string): Promise<any | null> {
         // Robust lookup: attempt direct document id, then attribute fields (id, placeId)
         if (!providerId) {

@@ -33,18 +33,21 @@ export class ProductionErrorBoundary extends Component<Props, State> {
         };
     }
 
-    static getDerivedStateFromError(error: Error): Partial<State> {
+    static getDerivedStateFromError(error: Error | unknown): Partial<State> {
         // Update state so the next render will show the fallback UI
         return { 
             hasError: true, 
-            error,
+            error: error instanceof Error ? error : new Error(String((error as any)?.message ?? error)),
             isRecoverable: isRecoverable(error)
         };
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         // Log error to console for debugging
-        console.error('🔴 PRODUCTION ERROR BOUNDARY CAUGHT:', error, errorInfo);
+        const errAny = error as { code?: number | string; message?: string };
+        const is536870904 = errAny?.code === 536870904 || errAny?.code === '536870904' || (typeof errAny?.message === 'string' && errAny.message.includes('536870904'));
+        if (is536870904) console.warn('🛡️ Error boundary caught crash code 536870904 - showing recovery UI');
+        else console.error('🔴 PRODUCTION ERROR BOUNDARY CAUGHT:', error, errorInfo);
         
         this.setState({
             error,
@@ -71,6 +74,9 @@ export class ProductionErrorBoundary extends Component<Props, State> {
     render() {
         if (this.state.hasError) {
             const isDev = import.meta.env.DEV;
+            const errAny = this.state.error as { code?: number | string; message?: string } | null;
+            const is536870904 = errAny && (errAny.code === 536870904 || errAny.code === '536870904' || (typeof errAny.message === 'string' && errAny.message.includes('536870904')));
+            const connectionErrorMsg = 'Connection or service error. Please try again.';
             
             return (
                 <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
@@ -86,15 +92,17 @@ export class ProductionErrorBoundary extends Component<Props, State> {
 
                         {/* Error Message */}
                         <h1 className="text-3xl font-bold text-gray-900 text-center mb-4">
-                            {isDev ? 'Development Error' : 'Something went wrong'}
+                            {isDev ? 'Development Error' : is536870904 ? 'Connection issue' : 'Something went wrong'}
                         </h1>
                         
                         <p className="text-gray-600 text-center mb-6">
                             {isDev 
                                 ? 'The application encountered an error. Check the console for details.'
-                                : this.state.isRecoverable
-                                    ? 'We detected a temporary issue. Click below to try recovering without losing your data.'
-                                    : 'We apologize for the inconvenience. Please refresh the page.'}
+                                : is536870904
+                                    ? connectionErrorMsg
+                                    : this.state.isRecoverable
+                                        ? 'We detected a temporary issue. Click below to try recovering without losing your data.'
+                                        : 'We apologize for the inconvenience. Please refresh the page.'}
                         </p>
 
                         {/* Error Details (Dev Only) */}

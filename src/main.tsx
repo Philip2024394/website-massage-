@@ -1,6 +1,9 @@
 // CRITICAL: React 19 AsyncMode fix must be imported FIRST
 import './utils/reactCompatibility';
 
+// 🛡️ Appwrite crash code 536870904 - must run before any App/API code
+import './lib/globalErrorHandler';
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';

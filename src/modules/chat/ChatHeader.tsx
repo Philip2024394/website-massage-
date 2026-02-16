@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { Clock, WifiOff, CreditCard, X } from 'lucide-react';
+import { getTherapistDisplayName } from '../../utils/therapistCardHelpers';
 
 interface ChatHeaderProps {
   therapist: {
@@ -40,7 +41,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       <div className="relative flex-shrink-0">
         <img 
           src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || therapist.image || (therapist as any).profileImage || '/placeholder-avatar.jpg'} 
-          alt={therapist.name}
+          alt={getTherapistDisplayName(therapist.name)}
           className="w-12 h-12 rounded-full object-cover border-2 border-white/50 flex-shrink-0"
           style={{minWidth: '48px', minHeight: '48px'}}
         />
@@ -48,7 +49,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       </div>
       
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-base truncate">{therapist.name}</h3>
+        <h3 className="font-semibold text-base truncate">{getTherapistDisplayName(therapist.name)}</h3>
         <div className="flex items-center gap-1 text-xs text-orange-100">
           {isConnected ? (
             <>

@@ -45,7 +45,7 @@ import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { getOrCreateShareLink } from '../utils/shareLinkGenerator';
-import { getAuthAppUrl, getDisplayStatus, isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay } from '../utils/therapistCardHelpers';
+import { getAuthAppUrl, getDisplayStatus, isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay, getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
@@ -1281,7 +1281,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             <SafePassModal
                 isOpen={showSafePassModal}
                 onClose={() => setShowSafePassModal(false)}
-                therapistName={therapist.name}
+                therapistName={getTherapistDisplayName(therapist.name)}
                 therapistImage={(therapist as any).profilePicture || therapist.mainImage || (therapist as any).profileImage}
                 safePassIssueDate="2025-01-15"
                 chatLang={chatLang}
