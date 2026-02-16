@@ -61,9 +61,9 @@ export function filterTherapistsByCity(
   }
   
   const filtered = therapists.filter(therapist => {
-    // 🔒 GPS-AUTHORITATIVE: Prefer city (GPS-derived) → location_id → location (legacy fallback)
+    // 🔒 GPS-AUTHORITATIVE: Prefer city (GPS-derived) → locationId (camelCase) → location_id (API) → location (legacy fallback)
     // NOTE: therapist.location is LEGACY ONLY and should not be trusted for filtering
-    const therapistCity = therapist.city || therapist.location_id || therapist.location;
+    const therapistCity = therapist.city || (therapist as any).locationId || (therapist as any).location_id || therapist.location;
     const matches = cityMatches(therapistCity, activeCity);
     
     if (!matches) {

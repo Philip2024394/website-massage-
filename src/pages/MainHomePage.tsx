@@ -25,6 +25,7 @@ import UniversalHeader from '../components/shared/UniversalHeader';
 import { FloatingChatWindow } from '../chat';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
+import { deriveLocationIdFromGeopoint } from '../utils/geoDistance';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
 import { matchesLocation } from '../utils/locationNormalization';
 import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
@@ -677,15 +678,22 @@ const HomePage: React.FC<HomePageProps> = ({
             .trim()
             .toLowerCase();
         
-        // 🔥 CRITICAL FIX: Much more permissive filtering - show therapists by default
-        // Only hide if explicitly set to false AND offline status
-        const statusImpliesLive = normalizedStatus === 'available' || 
-                                  normalizedStatus === 'busy' || 
-                                  normalizedStatus === 'offline' ||  
-                                  normalizedStatus === 'online';
+        // Show therapists who have location data so they display in location lists
+        let hasCoords = false;
+        if (therapist.coordinates) {
+            if (typeof therapist.coordinates === 'object' && therapist.coordinates.lat != null) hasCoords = true;
+            else if (typeof therapist.coordinates === 'string') {
+                try {
+                    const c = JSON.parse(therapist.coordinates);
+                    if (c && typeof c.lat === 'number' && typeof c.lng === 'number') hasCoords = true;
+                } catch (_) {}
+            }
+        }
+        const hasLocationData = !!(therapist.city || therapist.locationId || therapist.location || hasCoords);
         
-        // ✅ NEW LOGIC: Show therapists by default, only hide if explicitly disabled
-        // If isLive is explicitly false AND status is offline/empty, then hide
+        if (hasLocationData) return true;
+        
+        // If no location data, only hide when explicitly not live and status offline/empty
         if (normalizedLiveFlag === false && (normalizedStatus === 'offline' || normalizedStatus === '')) return false;
         return true;
     };
@@ -782,12 +790,17 @@ const HomePage: React.FC<HomePageProps> = ({
             // PRESERVE existing location/city data - don't override with Yogyakarta
             const therapistsWithCoords = therapists.map((t: any) => {
                 const parsedCoords = parseCoordinates(t.coordinates);
+                const coords = parsedCoords || defaultYogyaCoords;
+                const derivedCity = (coords && coords.lat && coords.lng) ? deriveLocationIdFromGeopoint(coords) : null;
+                const city = t.city || (derivedCity && derivedCity !== 'other' ? derivedCity : null) || null;
+                const locationId = t.locationId || city || null;
+                const location = t.location || t.city || t.locationId || (derivedCity || 'Yogyakarta');
                 return {
                     ...t,
-                    coordinates: parsedCoords || defaultYogyaCoords,
-                    // CRITICAL: Preserve location/city data - only default to Yogyakarta if completely missing
-                    // This ensures showcase profiles keep their assigned city
-                    location: t.location || t.city || t.locationId || 'Yogyakarta'
+                    coordinates: coords,
+                    city: city || t.city,
+                    locationId: locationId || t.locationId,
+                    location
                 };
             });
             

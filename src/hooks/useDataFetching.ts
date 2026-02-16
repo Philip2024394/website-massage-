@@ -26,64 +26,20 @@ export const useDataFetching = () => {
             
             // Fetch therapists first (this should work)
             console.log('� [STAGE 2 - HOOK] Fetching therapists data...');
-            const therapistsData = await robustCollectionQuery(
-                () => therapistService.getTherapists(),
-                'therapists',
-                [] as Therapist[]
-            );
-            console.log('✅ [STAGE 2 - HOOK] Therapists after robustQuery:', therapistsData?.length || 0);
-            console.log('🔍 [STAGE 2] Sample therapist:', therapistsData?.[0]?.name || 'None');
-            console.log('🔍 THERAPIST QUERY RESULT DEBUG:');
-            console.log('  📊 Total therapists:', therapistsData?.length || 0);
-            console.log('  🆔 Document IDs:', therapistsData?.map(t => t.$id) || []);
-            console.log('  📄 Full result:', therapistsData);
-            
-            // Try to fetch places, but handle gracefully if collection is empty
-            console.log('🔄 Attempting to fetch places data...');
-            const placesData = await robustCollectionQuery(
-                () => placesService.getPlaces(),
-                'places',
-                [] as Place[]
-            );
-            console.log('✅ Places data received:', placesData?.length || 0);
-            
-            // Try to fetch facial places
-            console.log('🔄 Attempting to fetch facial places data...');
-            console.log('📋 facialPlaceService exists:', !!facialPlaceService);
-            console.log('📋 facialPlaceService.getAll exists:', !!facialPlaceService?.getAll);
-            
-            const facialPlacesData = await robustCollectionQuery(
-                () => {
-                    console.log('🎯 Inside robustCollectionQuery callback for facial places');
-                    return facialPlaceService.getAll();
-                },
-                'facial_places',
-                [] as Place[]
-            );
-            console.log('✅ Facial places data received:', facialPlacesData?.length || 0);
-            if (facialPlacesData && facialPlacesData.length > 0) {
-                console.log('📸 First facial place:', facialPlacesData[0]);
+            const [therapistsData, placesData, facialPlacesData, hotelsData] = await Promise.all([
+                robustCollectionQuery(() => therapistService.getTherapists(), 'therapists', [] as Therapist[]),
+                robustCollectionQuery(() => placesService.getPlaces(), 'places', [] as Place[]),
+                robustCollectionQuery(() => facialPlaceService.getAll(), 'facial_places', [] as Place[]),
+                robustCollectionQuery(() => hotelService.getHotels(), 'hotels', [] as any[])
+            ]);
+            if (import.meta.env.DEV) {
+                console.log('✅ [fetchPublicData] Parallel fetch:', { therapists: therapistsData?.length ?? 0, places: placesData?.length ?? 0, facialPlaces: facialPlacesData?.length ?? 0, hotels: hotelsData?.length ?? 0 });
             }
             
-            // Try to fetch hotels for location dropdown filtering
-            console.log('🔄 Attempting to fetch hotels data...');
-            const hotelsData = await robustCollectionQuery(
-                () => hotelService.getHotels(),
-                'hotels',
-                [] as any[]
-            );
-            console.log('✅ Hotels data received:', hotelsData?.length || 0);
-            
             // Initialize review data for new accounts
-            console.log('🔍 [STAGE 2] Initializing reviews for therapists...');
-            const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => {
-                const initialized = reviewService.initializeProvider(therapist) as Therapist;
-                if (initialized.rating !== therapist.rating || initialized.reviewCount !== (therapist as any).reviewcount) {
-                    console.log(`📊 Initialized ${therapist.name}: ${initialized.rating}★ (${initialized.reviewCount} reviews)`);
-                }
-                return initialized;
-            });
-            console.log('✅ [STAGE 2] Therapists after review init:', therapistsWithReviews.length);
+            const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) =>
+                reviewService.initializeProvider(therapist) as Therapist
+            );
             
             // CRITICAL CITY FILTERING: If activeCity is specified, filter all data by city
             let finalTherapists = therapistsWithReviews;

@@ -97,38 +97,22 @@ export const therapistService = {
     },
     async getAll(city?: string, area?: string): Promise<any[]> {
         try {
-            console.log('🏙️ [STAGE 1 - APPWRITE] Fetching therapists from collection:', APPWRITE_CONFIG.collections.therapists);
-            console.log('🏙️ [STAGE 1] Using endpoint:', APPWRITE_CONFIG.endpoint);
-            console.log('🏙️ [STAGE 1] Using project ID:', APPWRITE_CONFIG.projectId);
-            console.log('🏙️ [STAGE 1] Using database ID:', APPWRITE_CONFIG.databaseId);
-            if (city) {
-                console.log('🏙️ [STAGE 1] Filtering by city:', city);
+            if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+                console.log('🏙️ [APPWRITE] Fetching therapists:', APPWRITE_CONFIG.collections.therapists);
             }
-            if (area) {
-                console.log('🗺️ [STAGE 1] Filtering by service area:', area);
-            }
-            
             // Build query filters
             const queries = [Query.limit(100)]; // OOM: Cap at 100 to avoid memory crash
             if (city) {
-                // Add city filter - matches location field which contains city name
                 queries.push(Query.search('location', city));
-                console.log('🏙️ [STAGE 1] Added city query filter');
             }
-            
             const response = await rateLimitedDb.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 queries
             );
-            console.log('✅ [STAGE 1 - APPWRITE] Raw fetch result:', response.documents.length, 'documents');
-            console.log('🔍 [STAGE 1] Response total:', response.total);
-            console.log('🔍 [STAGE 1] First 3 therapist names:', response.documents.slice(0, 3).map(t => t.name));
-            
             // Client-side filtering by service area if specified
             let filteredDocuments = response.documents;
             if (area) {
-                console.log('🗺️ [STAGE 1 - CLIENT FILTER] Applying service area filter:', area);
                 filteredDocuments = response.documents.filter((therapist: any) => {
                     // Parse serviceAreas from JSON string
                     let serviceAreas: string[] = [];
@@ -150,62 +134,9 @@ export const therapistService = {
                         return false;
                     }
                     
-                    const hasArea = serviceAreas.includes(area);
-                    if (hasArea) {
-                        console.log('✅ Therapist', therapist.name, 'serves area:', area);
-                    }
-                    return hasArea;
-                });
-                console.log('🗺️ [STAGE 1 - CLIENT FILTER] Filtered to', filteredDocuments.length, 'therapists serving area:', area);
-            }
-            
-            // 🔍 RAW DATA COMPARISON: Log raw Appwrite response for debugging
-            console.log('🔍 [RAW APPWRITE DATA] First 5 therapists raw data:');
-            filteredDocuments.slice(0, 5).forEach((therapist: any, index: number) => {
-                console.log(`🔍 Therapist #${index + 1}:`, {
-                    $id: (therapist as any).$id,
-                    name: therapist.name,
-                    isLive: therapist.isLive,
-                    status: therapist.status,
-                    availability: therapist.availability,
-                    coordinates: therapist.coordinates,
-                    geopoint: therapist.geopoint,
-                    location: therapist.location,
-                    locationId: therapist.locationId,
-                    city: therapist.city,
-                    serviceAreas: therapist.serviceAreas,
-                    role: therapist.role,
-                    published: therapist.published,
-                    visibility: therapist.visibility,
-                    active: therapist.active,
-                    enabled: therapist.enabled
-                });
-            });
-            
-            // 🎯 BUDI COMPARISON: Find Budi and compare with others
-            const budiTherapist = filteredDocuments.find(t => t.name?.toLowerCase().includes('budi'));
-            const nonBudiTherapist = filteredDocuments.find(t => !t.name?.toLowerCase().includes('budi'));
-            
-            if (budiTherapist && nonBudiTherapist) {
-                console.log('🎯 [BUDI vs NON-BUDI COMPARISON]');
-                console.log('Budi data:', {
-                    $id: (budiTherapist as any).$id,
-                    name: budiTherapist.name,
-                    isLive: budiTherapist.isLive,
-                    status: budiTherapist.status,
-                    coordinates: budiTherapist.coordinates,
-                    location: budiTherapist.location
-                });
-                console.log('Non-Budi data:', {
-                    $id: (nonBudiTherapist as any).$id,
-                    name: nonBudiTherapist.name,
-                    isLive: nonBudiTherapist.isLive,
-                    status: nonBudiTherapist.status,
-                    coordinates: nonBudiTherapist.coordinates,
-                    location: nonBudiTherapist.location
+                    return serviceAreas.includes(area);
                 });
             }
-            
             // Add random main images and normalize status to therapists
             const therapistsWithImages = response.documents.map((therapist: any, index: number) => {
                 // ⚠️ DISABLED: Persistence logic causes mass 400 errors and rate limiting
@@ -224,12 +155,6 @@ export const therapistService = {
                     if (lowercaseStatus === 'offline') return 'Busy'; // Show offline as busy
                     return status; // Return as-is if unknown
                 };
-                
-                console.log(`🎭 [Therapist Images] ${therapist.name || 'Unknown'} (ID: ${therapist.id || (therapist as any).$id}):`);
-                console.log(`   - Original mainImage: ${therapist.mainImage || 'None'}`);
-                console.log(`   - Assigned mainImage: ${assignedMainImage}`);
-                console.log(`   - Profile picture: ${therapist.profilePicture || 'None'}`);
-                console.log(`   - Status normalized: ${therapist.status} -> ${normalizeStatus(therapist.status)}`);
                 
                 // Extract busy timer data from description if present
                 let extractedBusyTimer = null;
@@ -261,8 +186,6 @@ export const therapistService = {
             
             // 🛡️ SAFEPASS INTEGRATION - Load SafePass data and join with therapists
             try {
-                console.log('🛡️ [SAFEPASS] Loading SafePass data for', therapistsWithImages.length, 'therapists');
-                
                 // Load all active SafePass records for therapists
                 const safePassResponse = await rateLimitedDb.listDocuments(
                     APPWRITE_CONFIG.databaseId,
@@ -272,9 +195,6 @@ export const therapistService = {
                         Query.limit(500)
                     ]
                 );
-                
-                console.log('🛡️ [SAFEPASS] Found', safePassResponse.documents.length, 'SafePass records');
-                
                 // Create a map of entityId -> SafePass record for quick lookup
                 const safePassMap = new Map();
                 safePassResponse.documents.forEach((sp: any) => {
@@ -289,11 +209,6 @@ export const therapistService = {
                     if (safePassRecord) {
                         const isActive = safePassRecord.hotelVillaSafePassStatus === 'active';
                         const hasSafePassVerification = safePassRecord.hasSafePassVerification === true;
-                        
-                        if (isActive || hasSafePassVerification) {
-                            console.log(`🛡️ [SAFEPASS] ✅ ${therapist.name} has active SafePass`);
-                        }
-                        
                         return {
                             ...therapist,
                             hotelVillaSafePassStatus: safePassRecord.hotelVillaSafePassStatus,

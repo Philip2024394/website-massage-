@@ -55,8 +55,11 @@ import UniversalHeader from '../components/shared/UniversalHeader';
 import { FloatingChatWindow } from '../chat';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
+import { deriveLocationIdFromGeopoint } from '../utils/geoDistance';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
 import { matchesLocation } from '../utils/locationNormalization';
+import { filterTherapistsByCity } from '../utils/cityFilterUtils';
+import { convertLocationStringToId } from '../utils/locationNormalizationV2';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
@@ -263,11 +266,16 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         if (typeof window === 'undefined') return;
         try {
-            const storedCityId = window.localStorage.getItem('user_city_id');
+            let storedCityId = window.localStorage.getItem('user_city_id');
             const storedCityName = window.localStorage.getItem('user_city_name');
 
-            if (!storedCityId) {
-                console.warn('City not set — redirecting to landing.');
+            if (!storedCityId && storedCityName) {
+                storedCityId = convertLocationStringToId(storedCityName);
+                window.localStorage.setItem('user_city_id', storedCityId);
+            }
+
+            if (!storedCityId && !storedCityName) {
+                logger.debug('City not set — redirecting to landing.');
                 onNavigate?.('landing');
                 return;
             }
@@ -475,29 +483,38 @@ const HomePage: React.FC<HomePageProps> = ({
         onSetUserLocation
     });
 
+    // Populate cityFilteredTherapists so home page always shows therapists when we have city + data
     useEffect(() => {
-        if (!initializingCityGuard && !hasConfirmedCity) {
-            setCityFilteredTherapists([]);
-        }
-    }, [initializingCityGuard, hasConfirmedCity, setCityFilteredTherapists]);
+        const effectiveCity = selectedCity || contextCity ||
+            (typeof window !== 'undefined' ? window.localStorage.getItem('user_city_name') : null);
+        const hasCity = !!effectiveCity && effectiveCity !== 'all';
 
-    useEffect(() => {
-        if (!hasConfirmedCity) {
+        if (!initializingCityGuard && !hasConfirmedCity && !hasCity && effectiveCity !== 'all') {
             setCityFilteredTherapists([]);
             return;
         }
 
-        if (!therapistMatchOutcome) {
+        if (!Array.isArray(therapists) || therapists.length === 0) {
             return;
         }
 
-        logger.debug('🏙️ Therapist match outcome ready', {
-            totals: therapistMatchOutcome.stats,
-            firstNames: therapistMatchOutcome.matches.slice(0, 3).map((t) => (t as any).name)
-        });
+        if (hasConfirmedCity && therapistMatchOutcome?.matches?.length) {
+            logger.debug('🏙️ Therapist match outcome ready', {
+                totals: therapistMatchOutcome.stats,
+                firstNames: therapistMatchOutcome.matches.slice(0, 3).map((t) => (t as any).name)
+            });
+            setCityFilteredTherapists(therapistMatchOutcome.matches);
+            return;
+        }
 
-        setCityFilteredTherapists(therapistMatchOutcome.matches);
-    }, [hasConfirmedCity, therapistMatchOutcome, setCityFilteredTherapists]);
+        if (hasCity) {
+            const byCity = filterTherapistsByCity(therapists, effectiveCity);
+            logger.debug('🏙️ City filter (no match outcome)', { city: effectiveCity, count: byCity.length, total: therapists.length });
+            setCityFilteredTherapists(byCity);
+        } else if (effectiveCity === 'all') {
+            setCityFilteredTherapists(therapists);
+        }
+    }, [initializingCityGuard, hasConfirmedCity, therapistMatchOutcome, therapists, selectedCity, contextCity, setCityFilteredTherapists]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -926,15 +943,20 @@ const HomePage: React.FC<HomePageProps> = ({
             .trim()
             .toLowerCase();
         
-        // 🔥 CRITICAL FIX: Much more permissive filtering - show therapists by default
-        // Only hide if explicitly set to false AND offline status
-        const statusImpliesLive = normalizedStatus === 'available' || 
-                                  normalizedStatus === 'busy' || 
-                                  normalizedStatus === 'offline' ||  
-                                  normalizedStatus === 'online';
+        // Show therapists who have location data so they display in location lists
+        let hasCoords = false;
+        if (therapist.coordinates) {
+            if (typeof therapist.coordinates === 'object' && therapist.coordinates.lat != null) hasCoords = true;
+            else if (typeof therapist.coordinates === 'string') {
+                try {
+                    const c = JSON.parse(therapist.coordinates);
+                    if (c && typeof c.lat === 'number' && typeof c.lng === 'number') hasCoords = true;
+                } catch (_) {}
+            }
+        }
+        const hasLocationData = !!(therapist.city || therapist.locationId || therapist.location || hasCoords);
+        if (hasLocationData) return true;
         
-        // ✅ NEW LOGIC: Show therapists by default, only hide if explicitly disabled
-        // If isLive is explicitly false AND status is offline/empty, then hide
         if (normalizedLiveFlag === false && (normalizedStatus === 'offline' || normalizedStatus === '')) return false;
         return true;
     };
@@ -1054,12 +1076,17 @@ const HomePage: React.FC<HomePageProps> = ({
             // PRESERVE existing location/city data - don't override with Yogyakarta
             const therapistsWithCoords = therapists.map((t: any) => {
                 const parsedCoords = parseCoordinates(t.coordinates);
+                const coords = parsedCoords || defaultYogyaCoords;
+                const derivedCity = (coords && coords.lat && coords.lng) ? deriveLocationIdFromGeopoint(coords) : null;
+                const city = t.city || (derivedCity && derivedCity !== 'other' ? derivedCity : null) || null;
+                const locationId = t.locationId || city || null;
+                const location = t.location || t.city || t.locationId || (derivedCity || 'Yogyakarta');
                 return {
                     ...t,
-                    coordinates: parsedCoords || defaultYogyaCoords,
-                    // CRITICAL: Preserve location/city data - only default to Yogyakarta if completely missing
-                    // This ensures showcase profiles keep their assigned city
-                    location: t.location || t.city || t.locationId || 'Yogyakarta'
+                    coordinates: coords,
+                    city: city || t.city,
+                    locationId: locationId || t.locationId,
+                    location
                 };
             });
             
@@ -1152,19 +1179,24 @@ const HomePage: React.FC<HomePageProps> = ({
     }, [therapists, places, hotels, autoDetectedLocation, userLocation, selectedCity]);
 
     useEffect(() => {
-        if (!hasConfirmedCity) {
+        const effectiveCity = selectedCity || contextCity ||
+            (typeof window !== 'undefined' ? window.localStorage.getItem('user_city_name') : null);
+        const hasCity = !!effectiveCity && effectiveCity !== 'all';
+
+        if (!hasConfirmedCity && !hasCity && effectiveCity !== 'all') {
             setCityFilteredPlaces([]);
             setCityFilteredHotels([]);
             return;
         }
 
+        const cityForFilter = selectedCity || effectiveCity || '';
         const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
         const filteredPlacesByCity = livePlaces.filter((p: any) => {
             if (isFeaturedSample(p, 'place')) {
                 return true;
             }
 
-            if (selectedCity === 'all') return true;
+            if (cityForFilter === 'all') return true;
 
             const placeCity = p.city || p.locationId || p.location;
 
@@ -1174,7 +1206,7 @@ const HomePage: React.FC<HomePageProps> = ({
             }
 
             const normalizedPlaceCity = placeCity.toLowerCase().trim();
-            const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+            const normalizedSelectedCity = cityForFilter.toLowerCase().trim();
 
             const matches = normalizedPlaceCity === normalizedSelectedCity;
 
@@ -1194,7 +1226,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 return true;
             }
 
-            if (selectedCity === 'all') return true;
+            if (cityForFilter === 'all') return true;
 
             const hotelCity = h.city || h.locationId || h.location;
 
@@ -1204,7 +1236,7 @@ const HomePage: React.FC<HomePageProps> = ({
             }
 
             const normalizedHotelCity = hotelCity.toLowerCase().trim();
-            const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+            const normalizedSelectedCity = cityForFilter.toLowerCase().trim();
 
             const matches = normalizedHotelCity === normalizedSelectedCity;
 
@@ -1232,6 +1264,7 @@ const HomePage: React.FC<HomePageProps> = ({
         nearbyPlaces,
         nearbyHotels,
         selectedCity,
+        contextCity,
         therapistMatchOutcome,
         userLocationForMatching
     ]);
