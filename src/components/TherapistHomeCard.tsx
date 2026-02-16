@@ -779,22 +779,22 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         {serviceName}
                     </h3>
                     <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                            <p className="text-orange-700 text-xs mb-1 font-medium">60 min</p>
+                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center">
+                            <p className="text-gray-600 text-xs mb-1 font-medium">60 min</p>
                             <p className="font-bold text-slate-900 text-sm">
                                 IDR {formatPrice(pricing["60"])}
                             </p>
                             <p className="text-[10px] text-slate-600 mt-1">Basic</p>
                         </div>
-                        <div className="bg-orange-50 border border-orange-300 rounded-lg p-3 text-center">
-                            <p className="text-orange-700 text-xs mb-1 font-medium">90 min</p>
+                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center">
+                            <p className="text-gray-600 text-xs mb-1 font-medium">90 min</p>
                             <p className="font-bold text-slate-900 text-sm">
                                 IDR {formatPrice(pricing["90"])}
                             </p>
                             <p className="text-[10px] text-slate-600 mt-1">Premium</p>
                         </div>
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                            <p className="text-orange-700 text-xs mb-1 font-medium">120 min</p>
+                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center">
+                            <p className="text-gray-600 text-xs mb-1 font-medium">120 min</p>
                             <p className="font-bold text-slate-900 text-sm">
                                 IDR {formatPrice(pricing["120"])}
                             </p>

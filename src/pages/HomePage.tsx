@@ -1571,9 +1571,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                             onClick={() => setShowLocationSelectPopup(true)}
                                             title={getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')}
                                             aria-label={t?.home?.changeCity || 'Select location'}
-                                            className="flex-shrink-0 w-[46px] h-[46px] rounded-full bg-black flex items-center justify-center hover:bg-gray-800 transition-colors shadow"
+                                            className="flex-shrink-0 w-[46px] h-[46px] rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-500 hover:bg-orange-100 transition-colors shadow-sm"
                                         >
-                                            <svg className="w-5 h-5 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                            <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                                                 <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                                             </svg>
                                         </button>
@@ -2736,15 +2736,26 @@ const HomePage: React.FC<HomePageProps> = ({
 
             {/* Location select popup - round hero button opens this; select city then closes and updates location */}
             {showLocationSelectPopup && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50" onClick={() => setShowLocationSelectPopup(false)} role="dialog" aria-modal="true" aria-label={t?.home?.changeCity || 'Select location'}>
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">{t?.home?.changeCity || 'Select location'}</h3>
-                            <button type="button" onClick={() => setShowLocationSelectPopup(false)} className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors" aria-label="Close">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowLocationSelectPopup(false)} role="dialog" aria-modal="true" aria-label={t?.home?.changeCity || 'Select location'}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col overflow-hidden border border-orange-100 ring-1 ring-orange-200/50" onClick={e => e.stopPropagation()}>
+                        {/* Header with orange accent bar */}
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-orange-50/50 to-white">
+                            <div className="flex items-center gap-3">
+                                <div className="w-1 h-8 rounded-full bg-orange-500 flex-shrink-0" aria-hidden />
+                                <h3 className="text-lg font-semibold text-gray-900">{t?.home?.changeCity || 'Select location'}</h3>
+                            </div>
+                            <button type="button" onClick={() => setShowLocationSelectPopup(false)} className="p-2 rounded-full text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-colors" aria-label="Close">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <div className="overflow-y-auto flex-1 p-2">
+                        <div className="overflow-y-auto flex-1 p-3 sm:p-4">
+                            {/* You are viewing - current location */}
+                            <div className="mb-4 p-4 rounded-xl bg-orange-50 border border-orange-200 ring-1 ring-orange-100">
+                                <p className="text-xs font-semibold text-orange-600/90 uppercase tracking-wider mb-1">{t?.home?.youAreViewing ?? 'You are viewing'}</p>
+                                <p className="text-base font-semibold text-gray-900">{getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')}</p>
+                            </div>
+                            {/* Change location - options list */}
+                            <p className="text-xs font-semibold text-orange-600/90 uppercase tracking-wider mb-3 px-1">{t?.home?.changeLocation ?? 'Change location'}</p>
                             <button
                                 type="button"
                                 onClick={() => {
@@ -2752,13 +2763,13 @@ const HomePage: React.FC<HomePageProps> = ({
                                     setSelectedCity('all');
                                     setShowLocationSelectPopup(false);
                                 }}
-                                className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${(contextCity === 'all' || !contextCity) ? 'bg-orange-100 text-orange-800' : 'text-gray-800 hover:bg-gray-100'}`}
+                                className={`w-full text-left px-4 py-3.5 rounded-xl font-medium transition-all ${(contextCity === 'all' || !contextCity) ? 'bg-orange-50 text-orange-800 ring-1 ring-orange-200 shadow-sm' : 'text-gray-700 hover:bg-orange-50/50 hover:ring-1 hover:ring-orange-100'}`}
                             >
                                 {t?.home?.allAreas ?? 'All areas'}
                             </button>
                             {INDONESIAN_CITIES_CATEGORIZED.map((cat) => (
-                                <div key={cat.category} className="mt-3">
-                                    <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">{cat.category}</div>
+                                <div key={cat.category} className="mt-4">
+                                    <div className="px-3 py-1.5 text-xs font-semibold text-orange-600/90 uppercase tracking-wider border-l-2 border-orange-400 mb-1">{cat.category}</div>
                                     {cat.cities.map((city) => (
                                         <button
                                             key={city.locationId}
@@ -2768,7 +2779,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                                 setSelectedCity(city.locationId);
                                                 setShowLocationSelectPopup(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${contextCity === city.locationId ? 'bg-orange-100 text-orange-800' : 'text-gray-800 hover:bg-gray-100'}`}
+                                            className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${contextCity === city.locationId ? 'bg-orange-50 text-orange-800 ring-1 ring-orange-200 shadow-sm' : 'text-gray-700 hover:bg-orange-50/50 hover:ring-1 hover:ring-orange-100'}`}
                                         >
                                             {city.name}
                                         </button>

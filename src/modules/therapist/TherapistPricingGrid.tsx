@@ -111,9 +111,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 0
-                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        ? 'bg-gray-100 border-gray-400 border-[3px] shadow-lg scale-[1.02]'
                         : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
+                        ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
                     <p className="text-gray-600 text-xs mb-1 font-semibold">60 min</p>
@@ -122,7 +122,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             <p className="text-[11px] text-gray-500 line-through mb-0.5">
                                 IDR {formatPrice(Number(pricing["60"]))}
                             </p>
-                            <p className="font-bold text-orange-600 text-sm leading-tight animate-pulse">
+                            <p className="font-bold text-gray-800 text-sm leading-tight animate-pulse">
                                 IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                         </>
@@ -141,9 +141,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 1
-                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        ? 'bg-gray-100 border-gray-400 border-[3px] shadow-lg scale-[1.02]'
                         : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
+                        ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
                     <p className="text-gray-600 text-xs mb-1 font-semibold">90 min</p>
@@ -152,7 +152,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             <p className="text-[11px] text-gray-500 line-through mb-0.5">
                                 IDR {formatPrice(Number(pricing["90"]))}
                             </p>
-                            <p className="font-bold text-orange-600 text-sm leading-tight animate-pulse">
+                            <p className="font-bold text-gray-800 text-sm leading-tight animate-pulse">
                                 IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                         </>
@@ -171,9 +171,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 2
-                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        ? 'bg-gray-100 border-gray-400 border-[3px] shadow-lg scale-[1.02]'
                         : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
+                        ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
                     <p className="text-gray-600 text-xs mb-1 font-semibold">120 min</p>
@@ -182,7 +182,7 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             <p className="text-[11px] text-gray-500 line-through mb-0.5">
                                 IDR {formatPrice(Number(pricing["120"]))}
                             </p>
-                            <p className="font-bold text-orange-600 text-sm leading-tight animate-pulse">
+                            <p className="font-bold text-gray-800 text-sm leading-tight animate-pulse">
                                 IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                         </>
