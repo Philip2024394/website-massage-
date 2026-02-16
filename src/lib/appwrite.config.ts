@@ -1,3 +1,5 @@
+import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
+
 // Google Maps API Configuration
 // Handle both Vite (import.meta.env) and Node.js (process.env) environments
 const getEnvVar = (key: string, defaultValue: string = ''): string => {
@@ -144,11 +146,22 @@ export const APPWRITE_CONFIG = {
     }
 };
 
-// Google Maps utility functions
+// Google Maps utility functions. Do not load script when key is missing to avoid NoApiKeys/InvalidKey console errors.
 export const loadGoogleMapsScript = (callback?: () => void) => {
+    const apiKey = (getStoredGoogleMapsApiKey() || GOOGLE_MAPS_API_KEY || '').trim();
+    if (!apiKey) {
+        if (typeof console !== 'undefined' && console.warn) {
+            console.warn('Google Maps API key not set (VITE_GOOGLE_MAPS_API_KEY or localStorage googleMapsApiKey). Skipping script load.');
+        }
+        callback?.();
+        return;
+    }
+
     // If already loaded, call callback immediately
     if ((window as any).google?.maps) {
-        console.log('✅ Google Maps already loaded, skipping script injection');
+        if (typeof console !== 'undefined' && console.log) {
+            console.log('✅ Google Maps already loaded, skipping script injection');
+        }
         callback?.();
         return;
     }
@@ -156,25 +169,33 @@ export const loadGoogleMapsScript = (callback?: () => void) => {
     // Check if script already exists in DOM
     const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
     if (existingScript) {
-        console.log('⏳ Google Maps script already in DOM, waiting for load...');
+        if (typeof console !== 'undefined' && console.log) {
+            console.log('⏳ Google Maps script already in DOM, waiting for load...');
+        }
         if (callback) {
             existingScript.addEventListener('load', callback);
         }
         return;
     }
 
-    console.log('Loading Google Maps API script...');
+    if (typeof console !== 'undefined' && console.log) {
+        console.log('Loading Google Maps API script...');
+    }
     const script = document.createElement('script');
     script.id = 'google-maps-script';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&region=ID&language=id&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places,geometry&region=ID&language=id&loading=async`;
     script.async = true;
     script.defer = true;
     script.onload = () => {
-        console.log('Google Maps script loaded successfully.');
+        if (typeof console !== 'undefined' && console.log) {
+            console.log('Google Maps script loaded successfully.');
+        }
         if (callback) callback();
     };
     script.onerror = () => {
-        console.error('❌ Failed to load Google Maps script');
+        if (typeof console !== 'undefined' && console.error) {
+            console.error('❌ Failed to load Google Maps script');
+        }
     };
     document.head.appendChild(script);
 };
@@ -184,31 +205,27 @@ export const isGoogleMapsLoaded = () => {
 };
 
 export const getGoogleMapsApiKey = () => {
-    return GOOGLE_MAPS_API_KEY;
+    return getStoredGoogleMapsApiKey() || GOOGLE_MAPS_API_KEY || '';
 };
 
-// Initialize Google Maps for city location functionality
+// Initialize Google Maps for city location functionality. Resolves without loading if no API key is set.
 export const initializeGoogleMaps = () => {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve) => {
         if (isGoogleMapsLoaded()) {
             resolve();
             return;
         }
-        
         const apiKey = getGoogleMapsApiKey();
-        loadGoogleMapsScript(apiKey, () => {
-            console.log('✅ Google Maps loaded for city location system');
+        if (!apiKey.trim()) {
             resolve();
-        }, () => {
-            reject(new Error('Google Maps failed to load'));
-        });
-        
-        // Timeout after 10 seconds
-        setTimeout(() => {
-            if (!isGoogleMapsLoaded()) {
-                reject(new Error('Google Maps failed to load'));
+            return;
+        }
+        loadGoogleMapsScript(() => {
+            if (typeof console !== 'undefined' && console.log) {
+                console.log('✅ Google Maps loaded for city location system');
             }
-        }, 10000);
+            resolve();
+        });
     });
 };
 
