@@ -3,43 +3,58 @@
  * 
  * CRITICAL RULE: If activeCity ≠ therapist.city → therapist MUST NEVER appear
  * 
- * This enforces strict city-based filtering throughout the application
- * to ensure users only see providers from their selected city.
+ * Matches against: locationId (e.g. "yogyakarta"), city name, and aliases
+ * (e.g. "Jogja", "Yogya") so dropdown selection shows all therapists for that area.
  */
 
 import { Therapist, Place } from '../types';
+import { findCityByLocationIdOrName } from '../data/indonesianCities';
 
 /**
  * Normalize city name for comparison
- * Handles variations like "Jakarta" vs "jakarta" vs "JAKARTA"
  */
 export function normalizeCityName(city: string | undefined | null): string {
   if (!city) return '';
-  return city.toLowerCase().trim();
+  return String(city).toLowerCase().trim();
 }
 
 /**
- * Check if a city name matches the active city
- * Returns true only if there's an EXACT match
+ * Get all normalized values that count as a match for the active city
+ * (locationId, official name, and aliases e.g. Yogyakarta → yogyakarta, jogja, yogya)
+ */
+function getMatchableCityValues(activeCity: string | undefined | null): Set<string> {
+  if (!activeCity || activeCity === 'all') return new Set();
+  const normalized = normalizeCityName(activeCity);
+  const city = findCityByLocationIdOrName(activeCity);
+  const set = new Set<string>([normalized]);
+  if (city) {
+    set.add(normalizeCityName(city.locationId));
+    set.add(normalizeCityName(city.name));
+    (city.aliases || []).forEach(alias => set.add(normalizeCityName(alias)));
+  }
+  return set;
+}
+
+/**
+ * Check if a therapist/place city matches the active city (or its name/aliases)
+ * Also matches when therapist city is "City, Country" by checking the city part.
  */
 export function cityMatches(
   therapistCity: string | undefined | null,
   activeCity: string | undefined | null
 ): boolean {
-  // If no active city filter, don't show anything (force selection)
   if (!activeCity) return false;
-  
-  // If therapist has no city, exclude them
   if (!therapistCity) return false;
-  
-  // Special case: "all" shows everything (admin mode only)
   if (activeCity === 'all') return true;
-  
-  // Exact match required
-  const normalizedTherapistCity = normalizeCityName(therapistCity);
-  const normalizedActiveCity = normalizeCityName(activeCity);
-  
-  return normalizedTherapistCity === normalizedActiveCity;
+  const normalizedTherapist = normalizeCityName(therapistCity);
+  const matchable = getMatchableCityValues(activeCity);
+  if (matchable.has(normalizedTherapist)) return true;
+  // Match "City, Country" format: use part before comma
+  if (normalizedTherapist.includes(',')) {
+    const cityPart = normalizedTherapist.split(',')[0].trim();
+    if (matchable.has(cityPart)) return true;
+  }
+  return false;
 }
 
 /**
@@ -47,38 +62,24 @@ export function cityMatches(
  * STRICT: Only returns therapists that match the active city exactly
  */
 export function filterTherapistsByCity(
-  therapists: Therapist[],
+  therapists: Therapist[] | undefined | null,
   activeCity: string | undefined | null
 ): Therapist[] {
-  if (!activeCity) {
-    console.warn('⚠️ No active city provided - returning empty array');
+  if (!Array.isArray(therapists)) {
     return [];
   }
-  
+  if (!activeCity) {
+    return [];
+  }
   if (activeCity === 'all') {
-    console.log('📍 City filter: "all" - showing all therapists');
     return therapists;
   }
-  
   const filtered = therapists.filter(therapist => {
     // 🔒 GPS-AUTHORITATIVE: Prefer city (GPS-derived) → locationId (camelCase) → location_id (API) → location (legacy fallback)
     // NOTE: therapist.location is LEGACY ONLY and should not be trusted for filtering
     const therapistCity = therapist.city || (therapist as any).locationId || (therapist as any).location_id || therapist.location;
-    const matches = cityMatches(therapistCity, activeCity);
-    
-    if (!matches) {
-      console.log(
-        `❌ City mismatch: Excluding "${therapist.name}" (city: "${therapistCity}") from "${activeCity}"`
-      );
-    }
-    
-    return matches;
+    return cityMatches(therapistCity, activeCity);
   });
-  
-  console.log(
-    `✅ City filter (${activeCity}): ${filtered.length}/${therapists.length} therapists match`
-  );
-  
   return filtered;
 }
 
@@ -87,38 +88,18 @@ export function filterTherapistsByCity(
  * STRICT: Only returns places that match the active city exactly
  */
 export function filterPlacesByCity(
-  places: Place[],
+  places: Place[] | undefined | null,
   activeCity: string | undefined | null
 ): Place[] {
-  if (!activeCity) {
-    console.warn('⚠️ No active city provided - returning empty array');
-    return [];
-  }
-  
-  if (activeCity === 'all') {
-    console.log('📍 City filter: "all" - showing all places');
-    return places;
-  }
-  
+  if (!Array.isArray(places)) return [];
+  if (!activeCity) return [];
+  if (activeCity === 'all') return places;
   const filtered = places.filter(place => {
     // 🔒 GPS-AUTHORITATIVE: Prefer city (GPS-derived) → location (legacy fallback)
     // NOTE: place.location is LEGACY ONLY and should not be trusted for filtering
     const placeCity = place.city || place.location;
-    const matches = cityMatches(placeCity, activeCity);
-    
-    if (!matches) {
-      console.log(
-        `❌ City mismatch: Excluding "${place.name}" (city: "${placeCity}") from "${activeCity}"`
-      );
-    }
-    
-    return matches;
+    return cityMatches(placeCity, activeCity);
   });
-  
-  console.log(
-    `✅ City filter (${activeCity}): ${filtered.length}/${places.length} places match`
-  );
-  
   return filtered;
 }
 

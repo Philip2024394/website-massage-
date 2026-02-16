@@ -12,7 +12,12 @@ export function useHomePageState() {
     const [comingSoonSection, setComingSoonSection] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-    const [selectedCity, setSelectedCity] = useState<string>('all'); // 'all' shows all therapists nationwide
+    const [selectedCity, setSelectedCity] = useState<string>(() => {
+        if (typeof window === 'undefined') return 'all';
+        const id = window.localStorage.getItem('user_city_id');
+        const name = window.localStorage.getItem('user_city_name');
+        return (id || name || 'all').trim();
+    });
     const [customLinks, setCustomLinks] = useState<any[]>([]);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [selectedTherapist, setSelectedTherapist] = useState<any | null>(null);

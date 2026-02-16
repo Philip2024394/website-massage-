@@ -105,24 +105,17 @@ export function useHomePageLocation({
     
     // City-based filtering logic
     useEffect(() => {
+        const safeTherapists = Array.isArray(therapists) ? therapists : [];
         const effectiveSelectedCity = propSelectedCity || selectedCity;
         
         if (!effectiveSelectedCity || effectiveSelectedCity === 'all') {
-            setCityFilteredTherapists(therapists);
+            setCityFilteredTherapists(safeTherapists);
             return;
         }
         
-        // CRITICAL RULE: If activeCity ≠ therapist.city → therapist MUST NEVER appear
-        // Use strict city filtering utility
-        console.log('🔒 STRICT FILTER: Applying city filter for "' + effectiveSelectedCity + '"');
-        const filtered = filterTherapistsByCity(therapists, effectiveSelectedCity);
-        
-        console.log('🌍 City filter (' + effectiveSelectedCity + '): ' + filtered.length + '/' + therapists.length + ' therapists match');
-        
-        // Set city-filtered therapists
+        const filtered = filterTherapistsByCity(safeTherapists, effectiveSelectedCity);
         setCityFilteredTherapists(filtered);
         
-        // Determine effective location for radius filtering
         const effectiveLocation = devLocationOverride || autoDetectedLocation || (userLocation ? {lat: userLocation.lat, lng: userLocation.lng} : null);
         
         if (!effectiveLocation) {
@@ -132,9 +125,8 @@ export function useHomePageLocation({
             return;
         }
         
-        // Admin/preview mode bypass
         if (previewTherapistId && hasAdminPrivileges) {
-            const previewTherapist = therapists.find(t => t.$id === previewTherapistId || t.id === previewTherapistId);
+            const previewTherapist = safeTherapists.find(t => t.$id === previewTherapistId || t.id === previewTherapistId);
             if (previewTherapist) {
                 setNearbyTherapists([previewTherapist]);
                 console.log('🔍 Preview mode: Showing single therapist:', previewTherapist.name);
@@ -143,7 +135,7 @@ export function useHomePageLocation({
         }
         
         if (adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
-            const adminFiltered = therapists.filter(t => {
+            const adminFiltered = safeTherapists.filter(t => {
                 const city = t.city || t.location;
                 return city && matchesLocation(city.toLowerCase(), adminViewArea.toLowerCase());
             });
@@ -153,27 +145,29 @@ export function useHomePageLocation({
         }
         
         if (devShowAllTherapists) {
-            setNearbyTherapists(therapists);
-            setNearbyPlaces(places);
+            setNearbyTherapists(safeTherapists);
+            setNearbyPlaces(Array.isArray(places) ? places : []);
             setNearbyHotels(hotels);
             console.log('🛠️ Dev mode: Showing all providers (radius bypass)');
             return;
         }
         
         // Normal nearby logic (10km radius) - Filter locally for speed and consistency
-        const nearbyTherapistResults = therapists.filter(t => {
+        const nearbyTherapistResults = safeTherapists.filter(t => {
             const coords = parseCoordinates(t.coordinates);
             if (!coords) return false;
             return calculateDistance(effectiveLocation, coords) <= 10;
         });
 
-        const nearbyPlaceResults = places.filter(p => {
+        const safePlaces = Array.isArray(places) ? places : [];
+        const nearbyPlaceResults = safePlaces.filter(p => {
             const coords = parseCoordinates(p.coordinates);
             if (!coords) return false;
             return calculateDistance(effectiveLocation, coords) <= 10;
         });
 
-        const nearbyHotelResults = hotels.filter(hotel => {
+        const safeHotels = Array.isArray(hotels) ? hotels : [];
+        const nearbyHotelResults = safeHotels.filter(hotel => {
             const coords = parseCoordinates(hotel.coordinates);
             if (!coords) return false;
             return calculateDistance(effectiveLocation, coords) <= 10;

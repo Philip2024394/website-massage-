@@ -920,6 +920,17 @@ export function findCityByName(searchName: string): CityLocation | null {
 }
 
 /**
+ * Find city by locationId, name, or alias (used for dropdown selection → filter matching)
+ */
+export function findCityByLocationIdOrName(value: string): CityLocation | null {
+  if (!value || typeof value !== 'string') return null;
+  const normalized = value.toLowerCase().trim();
+  const byId = ALL_INDONESIAN_CITIES.find(city => city.locationId === normalized);
+  if (byId) return byId;
+  return findCityByName(value);
+}
+
+/**
  * Calculate distance between two coordinates (Haversine formula)
  */
 export function calculateDistance(

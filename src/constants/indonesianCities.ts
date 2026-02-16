@@ -16,6 +16,7 @@ export {
   TOURIST_DESTINATIONS,
   MAIN_CITIES,
   findCityByName,
+  findCityByLocationIdOrName,
   calculateDistance,
   findNearestCities,
   matchProviderToCity,

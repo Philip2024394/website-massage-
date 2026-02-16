@@ -45,9 +45,21 @@ interface CityContextValue {
 
 const CityContext = createContext<CityContextValue | undefined>(undefined);
 
+const getStoredCityFromLegacyKeys = (): string | null => {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+  try {
+    const id = window.localStorage.getItem('user_city_id');
+    const name = window.localStorage.getItem('user_city_name');
+    const value = (id || name || '').trim();
+    return value === '' || value === 'all' ? null : value;
+  } catch {
+    return null;
+  }
+};
+
 export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const savedLocation = loadUserLocation();
-  const [city, setCityState] = useState<string | null>(savedLocation?.cityName ?? null);
+  const [city, setCityState] = useState<string | null>(() => savedLocation?.cityName ?? getStoredCityFromLegacyKeys());
   const [countryCode, setCountryCodeState] = useState<string>('ID');
   const [autoDetected, setAutoDetected] = useState(false);
   const [detectionMethod, setDetectionMethod] = useState<'saved' | 'ip' | 'manual' | 'default' | 'nearest'>('default');
@@ -95,20 +107,15 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Set city
   const handleSetCity = (newCity: string) => {
-    console.log('📍 CityContext: Setting city to:', newCity);
-    console.log('📍 CityContext: Previous city was:', city);
-    
-    // ✅ CRITICAL FIX: Clear stale localStorage cache first
-    // This prevents "Nearby in bandung" showing when "yogyakarta" is selected
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         window.localStorage.removeItem('user_location_preference');
-        console.log('🗑️ CityContext: Cleared stale localStorage cache');
+        window.localStorage.setItem('user_city_id', newCity);
+        window.localStorage.setItem('user_city_name', newCity);
       } catch {
         // ignore storage failures (private mode, etc.)
       }
     }
-    
     setCityState(newCity);
     setDetectionMethod('manual');
   };

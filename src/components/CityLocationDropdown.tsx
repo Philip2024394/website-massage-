@@ -166,45 +166,48 @@ const CityLocationDropdown = ({
     }
   }, [isOpen]);
 
+  const persistCityToStorage = (cityId: string, cityName?: string) => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem('user_city_id', cityId);
+        window.localStorage.setItem('user_city_name', cityName || cityId);
+      } catch {
+        // ignore
+      }
+    }
+  };
+
   const handleCitySelect = (city: CityLocation | string | PopularCustomLocation) => {
     if (typeof city === 'string') {
-      // Handle 'all' option - clear coordinates
+      persistCityToStorage(city, city);
       onCityChange(city);
       if (onCoordinatesChange) {
-        onCoordinatesChange(null); // Clear coordinates for "All Indonesia"
+        onCoordinatesChange(null);
       }
-    } 
-    // Handle popular custom location selection
+    }
     else if ('customCity' in city) {
       logger.debug(`📍 Popular custom location selected: ${city.customCity} (${city.count} therapists)`);
+      persistCityToStorage(city.locationId, city.customCity);
       onCityChange(city.locationId);
-      
-      // Auto-populate with custom location center coordinates
       if (onCoordinatesChange && city.centerCoordinates) {
-        logger.debug(`📍 Auto-populating center coordinates for ${city.customCity}:`, city.centerCoordinates);
         onCoordinatesChange({
           lat: city.centerCoordinates.lat,
           lng: city.centerCoordinates.lng
         });
       }
     }
-    // Handle predefined city selection
     else {
-      // 🔒 STRICT: locationId must come from data, no runtime fallback
       if (!city.locationId) {
         logger.error('❌ City missing locationId:', city.name);
         if (import.meta.env.DEV) {
           alert(`⚠️ DEV ERROR: City "${city.name}" is missing locationId in indonesianCities.ts`);
         }
-        return; // Don't proceed without locationId
+        return;
       }
-      
+      persistCityToStorage(city.locationId, city.name);
       logger.debug(`🎯 City selected: ${city.name} → locationId: ${city.locationId}`);
       onCityChange(city.locationId);
-      
-      // 📍 NEW: Auto-populate coordinates from city data (convenience feature)
       if (onCoordinatesChange && city.coordinates) {
-        logger.debug(`📍 Auto-populating coordinates for ${city.name}:`, city.coordinates);
         onCoordinatesChange({
           lat: city.coordinates.lat,
           lng: city.coordinates.lng

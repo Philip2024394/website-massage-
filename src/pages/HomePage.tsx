@@ -55,7 +55,7 @@ import UniversalHeader from '../components/shared/UniversalHeader';
 import { FloatingChatWindow } from '../chat';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
-import { deriveLocationIdFromGeopoint } from '../utils/geoDistance';
+import { deriveLocationIdFromGeopoint, calculateDistance, extractGeopoint } from '../utils/geoDistance';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
 import { matchesLocation } from '../utils/locationNormalization';
 import { filterTherapistsByCity } from '../utils/cityFilterUtils';
@@ -280,9 +280,10 @@ const HomePage: React.FC<HomePageProps> = ({
                 return;
             }
 
-            if (!hasConfirmedCity && storedCityName && !selectedCity) {
-                logger.debug('Restoring selected city from storage on HomePage:', storedCityName);
-                setSelectedCity(storedCityName);
+            const storedCity = storedCityId || storedCityName;
+            if (storedCity && (selectedCity === 'all' || !selectedCity)) {
+                logger.debug('Restoring selected city from storage on HomePage:', storedCity);
+                setSelectedCity(storedCityId && storedCityId !== 'all' ? storedCityId : (storedCityName || storedCityId));
             }
         } catch (error) {
             logger.error('Failed to read city selection from storage', error);
@@ -334,15 +335,15 @@ const HomePage: React.FC<HomePageProps> = ({
             const storedCityId = window.localStorage.getItem('user_city_id');
             const storedCityName = window.localStorage.getItem('user_city_name');
 
-            if (!storedCityId) {
+            if (!storedCityId && !storedCityName) {
                 logger.warn('City not set — redirecting to landing.');
                 onNavigate?.('landing');
                 return;
             }
-
-            if (!hasConfirmedCity && storedCityName && !selectedCity) {
-                logger.debug('Restoring selected city from storage on HomePage:', storedCityName);
-                setSelectedCity(storedCityName);
+            const storedCity = storedCityId || storedCityName;
+            if (storedCity && storedCity !== 'all' && (selectedCity === 'all' || !selectedCity)) {
+                logger.debug('Restoring selected city from storage on HomePage:', storedCity);
+                setSelectedCity(storedCityId && storedCityId !== 'all' ? storedCityId : (storedCityName || storedCityId));
             }
         } catch (error) {
             logger.error('Failed to read city selection from storage', error);
@@ -483,7 +484,8 @@ const HomePage: React.FC<HomePageProps> = ({
         onSetUserLocation
     });
 
-    // Populate cityFilteredTherapists so home page always shows therapists when we have city + data
+    // Populate cityFilteredTherapists: only therapists whose profile city matches the selected city
+    // (from main landing page city OR location dropdown) are shown on home.
     useEffect(() => {
         const effectiveCity = selectedCity || contextCity ||
             (typeof window !== 'undefined' ? window.localStorage.getItem('user_city_name') : null);
@@ -498,40 +500,53 @@ const HomePage: React.FC<HomePageProps> = ({
             return;
         }
 
-        if (hasConfirmedCity && therapistMatchOutcome?.matches?.length) {
-            logger.debug('🏙️ Therapist match outcome ready', {
-                totals: therapistMatchOutcome.stats,
-                firstNames: therapistMatchOutcome.matches.slice(0, 3).map((t) => (t as any).name)
-            });
-            setCityFilteredTherapists(therapistMatchOutcome.matches);
-            return;
-        }
-
+        // When user has selected a city: show therapists in that city, nearest first; include all within 25km when user has coords.
         if (hasCity) {
             const byCity = filterTherapistsByCity(therapists, effectiveCity);
-            logger.debug('🏙️ City filter (no match outcome)', { city: effectiveCity, count: byCity.length, total: therapists.length });
-            setCityFilteredTherapists(byCity);
+            const userLat = confirmedLocation?.latitude;
+            const userLng = confirmedLocation?.longitude;
+            const hasUserCoords = typeof userLat === 'number' && typeof userLng === 'number';
+
+            if (hasUserCoords) {
+                const userCoords = { lat: userLat, lng: userLng };
+                const RADIUS_KM = 25;
+                const withDistance = byCity.map((t) => {
+                    const gp = extractGeopoint(t);
+                    const distanceKm = gp ? calculateDistance(userCoords, gp) / 1000 : null;
+                    return { therapist: t, distanceKm };
+                });
+                const withinRadius = withDistance.filter((w) => w.distanceKm === null || w.distanceKm <= RADIUS_KM);
+                const sorted = [...withinRadius].sort((a, b) => {
+                    if (a.distanceKm == null && b.distanceKm == null) return 0;
+                    if (a.distanceKm == null) return 1;
+                    if (b.distanceKm == null) return -1;
+                    return a.distanceKm - b.distanceKm;
+                });
+                const result = sorted.map((x) => ({ ...x.therapist, _distanceKm: x.distanceKm }));
+                logger.debug('🏙️ City + 25km radius, nearest first', { city: effectiveCity, count: result.length, total: byCity.length });
+                setCityFilteredTherapists(result);
+            } else {
+                logger.debug('🏙️ City filter (no user coords)', { city: effectiveCity, count: byCity.length, total: therapists.length });
+                setCityFilteredTherapists(byCity);
+            }
         } else if (effectiveCity === 'all') {
             setCityFilteredTherapists(therapists);
         }
-    }, [initializingCityGuard, hasConfirmedCity, therapistMatchOutcome, therapists, selectedCity, contextCity, setCityFilteredTherapists]);
+    }, [initializingCityGuard, hasConfirmedCity, therapists, selectedCity, contextCity, confirmedLocation, setCityFilteredTherapists]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
-
         try {
             const storedCityId = window.localStorage.getItem('user_city_id');
             const storedCityName = window.localStorage.getItem('user_city_name');
-
-            if (!storedCityId) {
+            if (!storedCityId && !storedCityName) {
                 logger.warn('City not set — redirecting to landing.');
                 onNavigate?.('landing');
                 return;
             }
-
-            if (!hasConfirmedCity && storedCityName && !selectedCity) {
-                logger.debug('Restoring selected city from storage on HomePage:', storedCityName);
-                setSelectedCity(storedCityName);
+            const storedCity = storedCityId || storedCityName;
+            if (storedCity && storedCity !== 'all' && (selectedCity === 'all' || !selectedCity)) {
+                setSelectedCity(storedCityId && storedCityId !== 'all' ? storedCityId : (storedCityName || storedCityId));
             }
         } catch (error) {
             logger.error('Failed to read city selection from storage', error);
@@ -1072,9 +1087,11 @@ const HomePage: React.FC<HomePageProps> = ({
             // For now, set default coordinates to Yogyakarta if no location available
             const defaultYogyaCoords = { lat: -7.7956, lng: 110.3695 };
             
+            const safeTherapistsList = Array.isArray(therapists) ? therapists : [];
+            const safePlacesList = Array.isArray(places) ? places : [];
+            const safeHotelsList = Array.isArray(hotels) ? hotels : [];
             // Add default coordinates to therapists and places if missing
-            // PRESERVE existing location/city data - don't override with Yogyakarta
-            const therapistsWithCoords = therapists.map((t: any) => {
+            const therapistsWithCoords = safeTherapistsList.map((t: any) => {
                 const parsedCoords = parseCoordinates(t.coordinates);
                 const coords = parsedCoords || defaultYogyaCoords;
                 const derivedCity = (coords && coords.lat && coords.lng) ? deriveLocationIdFromGeopoint(coords) : null;
@@ -1090,7 +1107,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 };
             });
             
-            const placesWithCoords = places.map((p: any) => {
+            const placesWithCoords = safePlacesList.map((p: any) => {
                 const parsedCoords = parseCoordinates(p.coordinates);
                 return {
                     ...p,
@@ -1099,7 +1116,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 };
             });
             
-            const hotelsWithCoords = hotels.map((h: any) => {
+            const hotelsWithCoords = safeHotelsList.map((h: any) => {
                 const parsedCoords = parseCoordinates(h.coordinates);
                 return {
                     ...h,
@@ -1135,8 +1152,8 @@ const HomePage: React.FC<HomePageProps> = ({
                         });
                         
                         // Always include featured samples (Budi) regardless of location
-                        const featuredTherapists = therapists.filter((t: any) => isFeaturedSample(t, 'therapist'));
-                        const featuredPlaces = places.filter((p: any) => isFeaturedSample(p, 'place'));
+                        const featuredTherapists = safeTherapistsList.filter((t: any) => isFeaturedSample(t, 'therapist'));
+                        const featuredPlaces = safePlacesList.filter((p: any) => isFeaturedSample(p, 'place'));
                         
                         // Merge nearby results with featured samples (remove duplicates)
                         const mergedTherapists = [
@@ -1325,19 +1342,20 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Removed unused processedTherapists and processedPlaces
 
+    const safeTherapists = Array.isArray(therapists) ? therapists : [];
     // Count of online therapists (status === 'online')
-    const onlineTherapistsCount = therapists.filter(t => t.status === 'online').length;
+    const onlineTherapistsCount = safeTherapists.filter(t => t.status === 'online').length;
 
     // Rating modal handlers removed for design mock
 
     // SEO: Add Schema.org structured data for LocalBusiness and AggregateRating
     useEffect(() => {
-        // Calculate average rating from therapists
-        const therapistsWithRatings = therapists.filter(t => t.rating && t.rating > 0);
+        const list = Array.isArray(therapists) ? therapists : [];
+        const therapistsWithRatings = list.filter(t => t.rating && t.rating > 0);
         const avgRating = therapistsWithRatings.length > 0 
             ? therapistsWithRatings.reduce((sum, t) => sum + t.rating, 0) / therapistsWithRatings.length 
             : 4.8;
-        const reviewCount = therapists.reduce((sum, t) => sum + (t.reviewCount || 0), 0) || 500;
+        const reviewCount = list.reduce((sum, t) => sum + (t.reviewCount || 0), 0) || 500;
 
         const schema = {
             "@context": "https://schema.org",
@@ -1927,7 +1945,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             if (loggedInProvider && loggedInProvider.type === 'therapist') {
                                 const alreadyIncluded = baseList.some((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
                                 if (!alreadyIncluded) {
-                                    const ownerDoc = therapists.find((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
+                                    const ownerDoc = safeTherapists.find((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
                                     if (ownerDoc) {
                                         let includeOwner = selectedCity === 'all';
                                         if (!includeOwner && ownerDoc.coordinates && currentUserLocation) {
@@ -1951,7 +1969,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 
                                 // Only add showcase profiles if city has NO real therapists
                                 if (realTherapistsInCity.length === 0) {
-                                    const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
+                                    const showcaseProfiles = getYogyakartaShowcaseProfiles(safeTherapists, selectedCity);
                                     if (showcaseProfiles.length > 0) {
                                         // Add showcase profiles (they appear as busy, can't be booked)
                                         baseList = [...baseList, ...showcaseProfiles];
@@ -2220,7 +2238,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 </>
                             );
                         })()}
-                        {therapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
+                        {safeTherapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
                                 <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable || 'No therapists available in your area at the moment.'}</p>
                                 {autoDetectedLocation && (
@@ -2798,6 +2816,10 @@ const HomePage: React.FC<HomePageProps> = ({
                             <button
                                 type="button"
                                 onClick={() => {
+                                    if (typeof window !== 'undefined' && window.localStorage) {
+                                        window.localStorage.setItem('user_city_id', 'all');
+                                        window.localStorage.setItem('user_city_name', 'all');
+                                    }
                                     setContextCity('all');
                                     setSelectedCity('all');
                                     setShowLocationSelectPopup(false);
@@ -2814,6 +2836,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                             key={city.locationId}
                                             type="button"
                                             onClick={() => {
+                                                if (typeof window !== 'undefined' && window.localStorage) {
+                                                    window.localStorage.setItem('user_city_id', city.locationId);
+                                                    window.localStorage.setItem('user_city_name', city.name || city.locationId);
+                                                }
                                                 setContextCity(city.locationId);
                                                 setSelectedCity(city.locationId);
                                                 setShowLocationSelectPopup(false);
