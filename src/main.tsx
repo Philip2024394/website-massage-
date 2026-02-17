@@ -281,5 +281,13 @@ if (isAdminMode) {
       markBootSuccess();
       logger.log('✅ Boot sequence complete');
     }, 1000);
+
+    // Dev: expose therapist location audit (run in console: window.runTherapistLocationAudit())
+    if (import.meta.env?.DEV) {
+      import('./utils/therapistLocationAudit').then((m) => {
+        (window as any).runTherapistLocationAudit = m.runTherapistLocationAudit;
+        (window as any).getLiveTherapistCount = m.getLiveTherapistCount;
+      }).catch(() => {});
+    }
   }
 }

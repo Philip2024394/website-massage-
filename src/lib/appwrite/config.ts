@@ -66,7 +66,7 @@ function getConfig() {
       databaseId: requireEnv('VITE_APPWRITE_DATABASE_ID', '68f76ee1000e64ca8d05'),
       bucketId: requireEnv('VITE_APPWRITE_BUCKET_ID', '68f76bdd002387590584'),
       collections: {
-        // Core collections - REQUIRED
+        // Core collections - REQUIRED (Appwrite collection ID for therapists)
         therapists: requireEnv('VITE_THERAPISTS_COLLECTION_ID', 'therapists_collection_id'),
         places: requireEnv('VITE_PLACES_COLLECTION_ID', 'places_collection_id'),
         facial_places: requireEnv('VITE_FACIAL_PLACES_COLLECTION_ID', 'facial_places_collection'),

@@ -610,6 +610,28 @@ translations.en.serviceTerms = {
     otherTitle: 'Other Obligations',
     otherContent: 'You agree to provide only professional, lawful massage and wellness services; to comply with all applicable laws and regulations; and to maintain accurate profile information. IndaStreet reserves the right to suspend or terminate accounts that breach these terms.'
   },
+  dashboardTerms: {
+    modalTitle: 'Terms & Conditions — Dashboard',
+    modalSubtitle: 'Please read and accept before using your therapist or facial provider dashboard.',
+    agreeButton: 'I Agree',
+    effectiveDate: 'Effective for all therapists and facial/skincare providers. Last updated: February 2025.',
+    accountSetup: {
+      title: 'Account Setup and Edits',
+      content: 'Accounts are free to create. Unlimited profile edits are allowed for the first 72 hours after account creation. After 72 hours, profile image, description, name, WhatsApp number, massage/facial types, and language are locked. Admin may allow one free profile edit after 72 hours; additional edits require approval and fees per section.'
+    },
+    profileVerification: {
+      title: 'Profile Verification',
+      content: 'Profile image, KTP image, and bank details must match the therapist’s account. Mismatched information may result in account suspension or booking restrictions.'
+    },
+    accountDeletion: {
+      title: 'Account Deletion',
+      content: 'Accounts may only be deleted after IDR 1,000,000 has been received by admin, or an upfront payment of IDR 350,000. Deletion requests without proper payment will not be processed.'
+    },
+    userConduct: {
+      title: 'User Conduct',
+      content: 'Members are prohibited from posting false information, spam, or malicious content. Violations may result in temporary or permanent account suspension.'
+    }
+  },
 };
 translations.en.userTerms = {
   modalBadge: 'For clients',
@@ -1140,6 +1162,28 @@ translations.id.serviceTerms = {
     gpsContent: 'Semua penyedia layanan di IndaStreet setuju penggunaan lokasi GPS jika berlaku, untuk memberikan layanan yang aman bagi pengguna dan penyedia layanan. Data lokasi dapat digunakan untuk keselamatan, verifikasi, dan administrasi platform sesuai Kebijakan Privasi kami.',
     otherTitle: 'Kewajiban Lain',
     otherContent: 'Anda setuju hanya memberikan layanan pijat dan wellness profesional yang sah; mematuhi semua hukum dan peraturan yang berlaku; dan menjaga informasi profil yang akurat. IndaStreet berhak menangguhkan atau menghentikan akun yang melanggar ketentuan ini.'
+  },
+  dashboardTerms: {
+    modalTitle: 'Syarat & Ketentuan — Dashboard',
+    modalSubtitle: 'Harap baca dan setuju sebelum menggunakan dashboard terapis atau penyedia facial.',
+    agreeButton: 'Saya Setuju',
+    effectiveDate: 'Berlaku untuk semua terapis dan penyedia facial/perawatan kulit. Terakhir diperbarui: Februari 2025.',
+    accountSetup: {
+      title: 'Penyiapan dan Pengeditan Akun',
+      content: 'Akun gratis untuk dibuat. Pengeditan profil tak terbatas diizinkan dalam 72 jam pertama setelah pembuatan akun. Setelah 72 jam, foto profil, deskripsi, nama, nomor WhatsApp, jenis pijat/facial, dan bahasa dikunci. Admin dapat mengizinkan satu pengeditan profil gratis setelah 72 jam; pengeditan tambahan memerlukan persetujuan dan biaya per bagian.'
+    },
+    profileVerification: {
+      title: 'Verifikasi Profil',
+      content: 'Foto profil, foto KTP, dan detail rekening bank harus sesuai dengan akun terapis. Informasi yang tidak sesuai dapat mengakibatkan penangguhan akun atau pembatasan pemesanan.'
+    },
+    accountDeletion: {
+      title: 'Penghapusan Akun',
+      content: 'Akun hanya dapat dihapus setelah IDR 1.000.000 diterima oleh admin, atau pembayaran di muka IDR 350.000. Permintaan penghapusan tanpa pembayaran yang benar tidak akan diproses.'
+    },
+    userConduct: {
+      title: 'Perilaku Pengguna',
+      content: 'Anggota dilarang memposting informasi palsu, spam, atau konten berbahaya. Pelanggaran dapat mengakibatkan penangguhan akun sementara atau permanen.'
+    }
   },
 };
 translations.id.userTerms = {

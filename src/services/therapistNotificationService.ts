@@ -1,14 +1,18 @@
 import { logger } from './enterpriseLogger';
 /**
  * 🔔 THERAPIST NOTIFICATION SERVICE
- * 
+ *
  * Features:
- * ✅ Real-time booking notifications with full details
+ * ✅ Real-time booking notifications with price and full booking details
+ * ✅ 5-minute acceptance window; notifications expire if not accepted
  * ✅ MP3 audio alerts with vibration
- * ✅ Accept/Reject buttons
+ * ✅ Accept/Reject → Appwrite (booking status Confirmed / declined)
  * ✅ Auto-open chat window
- * ✅ User location tracking from landing page
- * ✅ Push notifications
+ *
+ * Re-send rule: If no therapist accepts within 5 minutes, the system should
+ * re-send the booking to all other Available therapists in the same location
+ * (implement via Appwrite Cloud Function or cron using therapistService.getAvailableTherapistsByLocation).
+ * No therapist must see the same booking twice once assigned_therapist is set.
  */
 
 import { notificationSoundService } from '../lib/notificationSoundService';
@@ -177,16 +181,18 @@ class TherapistNotificationService {
     // Notify all handlers
     this.notificationHandlers.forEach(handler => handler(booking));
 
-    // Set timeout for auto-expiry
+    // 5-minute acceptance window: expire if not accepted
+    const ACCEPTANCE_WINDOW_MS = 5 * 60 * 1000;
     setTimeout(() => {
       this.expireNotification(booking.bookingId);
-    }, 5 * 60 * 1000); // 5 minutes
+    }, ACCEPTANCE_WINDOW_MS);
   }
 
   private showBrowserNotification(booking: BookingNotification) {
     if ('Notification' in window && Notification.permission === 'granted') {
+      const priceStr = booking.price != null ? ` • ${Math.round(booking.price / 1000)}k` : '';
       const notification = new Notification(`New Booking Request`, {
-        body: `${booking.customerName} wants a ${booking.duration}min ${booking.serviceType} massage at ${booking.location.address}`,
+        body: `${booking.customerName} • ${booking.duration}min ${booking.serviceType}${priceStr} • ${booking.location.address} • Accept within 5 min`,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         tag: `booking-${booking.bookingId}`,
@@ -271,25 +277,14 @@ class TherapistNotificationService {
 
   private async sendBookingResponse(bookingId: string, status: 'accepted' | 'rejected', reason?: string) {
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/booking/respond', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          bookingId,
-          status,
-          reason,
-          respondedAt: new Date().toISOString()
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const { bookingService } = await import('../lib/appwriteService');
+      if (status === 'accepted') {
+        await bookingService.updateStatus(bookingId, 'Confirmed');
+        logger.info('📤 Booking accepted in Appwrite:', bookingId);
+      } else {
+        await bookingService.decline(bookingId, reason);
+        logger.info('📤 Booking declined in Appwrite:', bookingId);
       }
-
-      logger.info(`📤 Booking ${status} sent to server:`, bookingId);
     } catch (error) {
       logger.error('Failed to send booking response:', error);
       throw error;

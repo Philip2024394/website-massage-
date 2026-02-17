@@ -68,6 +68,10 @@ import { matchTherapistsForUser, type MatchOutcome, type UserLocationContext } f
 import { parseMassageTypes } from '../utils/appwriteHelpers';
 import { logger } from '../utils/logger';
 
+// Per-location cap: each city can store/display up to 100 therapists and 100 places
+const MAX_THERAPISTS_PER_LOCATION = 100;
+const MAX_PLACES_PER_LOCATION = 100;
+
 // 🚀 PERFORMANCE: Bulk data fetching to eliminate N+1 queries
 import { prefetchTherapistCardData } from '../lib/services/bulkDataService';
 
@@ -561,13 +565,13 @@ const HomePage: React.FC<HomePageProps> = ({
                 });
                 const result = sorted.map((x) => ({ ...x.therapist, _distanceKm: x.distanceKm }));
                 logger.debug('🏙️ City + nearest first', { city: effectiveCity, count: result.length, total: therapists.length });
-                setCityFilteredTherapists(result);
+                setCityFilteredTherapists(result.slice(0, MAX_THERAPISTS_PER_LOCATION));
             } else {
                 logger.debug('🏙️ City filter', { city: effectiveCity, count: byCity.length, total: therapists.length });
-                setCityFilteredTherapists(byCity);
+                setCityFilteredTherapists(byCity.slice(0, MAX_THERAPISTS_PER_LOCATION));
             }
         } else if (effectiveCity === 'all') {
-            setCityFilteredTherapists(therapists);
+            setCityFilteredTherapists(therapists.slice(0, MAX_THERAPISTS_PER_LOCATION));
         }
     }, [initializingCityGuard, hasConfirmedCity, therapists, selectedCity, contextCity, confirmedLocation, setCityFilteredTherapists]);
 
@@ -1272,7 +1276,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
             return matches;
         });
-        setCityFilteredPlaces(filteredPlacesByCity);
+        setCityFilteredPlaces(filteredPlacesByCity.slice(0, MAX_PLACES_PER_LOCATION));
 
         const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
         const filteredHotels = liveHotels.filter((h: any) => {

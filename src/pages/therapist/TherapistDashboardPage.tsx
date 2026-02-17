@@ -635,8 +635,9 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         
         // 🚨 ENFORCEMENT: Cannot go live without GPS
         isLive: geopoint && geopoint.lat && geopoint.lng ? true : false,
-        status: therapist.status || 'available',
-        availability: therapist.availability || 'Available',
+        // Home services: set Available immediately on save so therapist displays right away
+        status: 'available',
+        availability: 'Available',
         isOnline: true,
       };
       
@@ -1111,14 +1112,11 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              {/* Available */}
+            {/* Home services: Available only (no Offline). Tap to open status page. */}
+            <div className="flex justify-center">
               <button
-                onClick={() => {
-                  // Status change logic would go here
-                  console.log('Status: Available');
-                }}
-                className={`p-4 rounded-xl border-2 transition-all ${
+                onClick={() => onNavigateToStatus?.()}
+                className={`w-full max-w-xs p-4 rounded-xl border-2 transition-all ${
                   therapist?.status === 'Available' || therapist?.availability === 'Available'
                     ? 'bg-green-500 border-green-500 shadow-lg'
                     : 'bg-white border-gray-300 hover:border-green-500 hover:shadow-md'
@@ -1126,47 +1124,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
               >
                 <div className="flex flex-col items-center gap-2">
                   <CheckCircle className={`w-8 h-8 ${therapist?.status === 'Available' || therapist?.availability === 'Available' ? 'text-white' : 'text-green-600'}`} />
-                  <div className="text-center">
-                    <h3 className={`text-sm font-bold ${therapist?.status === 'Available' || therapist?.availability === 'Available' ? 'text-white' : 'text-gray-800'}`}>Tersedia</h3>
-                  </div>
-                </div>
-              </button>
-
-              {/* Busy */}
-              <button
-                onClick={() => {
-                  console.log('Status: Busy');
-                }}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'Busy' || therapist?.availability === 'Busy'
-                    ? 'bg-amber-500 border-amber-500 shadow-lg'
-                    : 'bg-white border-gray-300 hover:border-amber-400 hover:shadow-md'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <Clock className={`w-8 h-8 ${therapist?.status === 'Busy' || therapist?.availability === 'Busy' ? 'text-white' : 'text-yellow-600'}`} />
-                  <div className="text-center">
-                    <h3 className={`text-sm font-bold ${therapist?.status === 'Busy' || therapist?.availability === 'Busy' ? 'text-white' : 'text-gray-800'}`}>Sibuk</h3>
-                  </div>
-                </div>
-              </button>
-
-              {/* Offline */}
-              <button
-                onClick={() => {
-                  console.log('Status: Offline');
-                }}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'Offline' || therapist?.availability === 'Offline'
-                    ? 'bg-red-500 border-red-500 shadow-lg'
-                    : 'bg-white border-gray-300 hover:border-red-400 hover:shadow-md'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <X className={`w-8 h-8 ${therapist?.status === 'Offline' || therapist?.availability === 'Offline' ? 'text-white' : 'text-red-600'}`} />
-                  <div className="text-center">
-                    <h3 className={`text-sm font-bold ${therapist?.status === 'Offline' || therapist?.availability === 'Offline' ? 'text-white' : 'text-gray-800'}`}>Offline</h3>
-                  </div>
+                  <h3 className={`text-sm font-bold ${therapist?.status === 'Available' || therapist?.availability === 'Available' ? 'text-white' : 'text-gray-800'}`}>Tersedia</h3>
                 </div>
               </button>
             </div>

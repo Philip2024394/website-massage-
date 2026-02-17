@@ -969,7 +969,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             <h3 className="font-semibold text-green-800">Profile is Live!</h3>
                         </div>
                         <p className="text-sm text-green-700">
-                            � Your profile is now LIVE and automatically set to "Available"! Customers can immediately book your services. You can change to "Busy" or "Offline" anytime in the Status tab.
+                            �Your profile is now LIVE and automatically set to "Available"! Customers can immediately book your services. For home services you stay Available (no Offline).
                         </p>
                     </div>
                 )}
@@ -986,7 +986,7 @@ export const TherapistProfileForm: React.FC<TherapistProfileFormProps> = ({
                             <h3 className="font-semibold text-blue-800">Profile is Live!</h3>
                         </div>
                         <p className="text-sm text-blue-700">
-                            🟢 Your profile is LIVE and automatically set to "Available"! Customers can book your services now. Use the Status tab to change to "Busy" or "Offline" when needed.
+                            🟢 Your profile is LIVE and automatically set to "Available"! Customers can book your services now. For home services you stay Available.
                         </p>
                     </div>
                 )}

@@ -308,8 +308,9 @@ export const bookingService = {
     },
 
     async updateStatus(
-        bookingId: string, 
-        status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled'
+        bookingId: string,
+        status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled',
+        assignedTherapistId?: string
     ): Promise<any> {
         try {
             const nowIso = new Date().toISOString();
@@ -317,6 +318,7 @@ export const bookingService = {
             if (status === 'Confirmed') {
                 update.confirmedAt = nowIso;
                 update.providerResponseStatus = 'Confirmed';
+                if (assignedTherapistId) update.assigned_therapist = assignedTherapistId;
             } else if (status === 'Completed') {
                 update.completedAt = nowIso;
             } else if (status === 'Cancelled') {

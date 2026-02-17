@@ -89,18 +89,40 @@ export function isWithinRadius(
 /** Max distance (km) to assign therapist to nearest app city; beyond this returns 'other'. */
 const DEFAULT_MAX_DISTANCE_KM = 75;
 
+/** Fallback city bounds when app city list is unavailable (e.g. some build/env). */
+const FALLBACK_CITY_BOUNDS: Record<string, { lat: [number, number]; lng: [number, number] }> = {
+  yogyakarta: { lat: [-7.9, -7.7], lng: [110.2, 110.5] },
+  bandung: { lat: [-7.0, -6.8], lng: [107.5, 107.8] },
+  jakarta: { lat: [-6.4, -6.0], lng: [106.7, 107.0] },
+  denpasar: { lat: [-8.8, -8.5], lng: [115.1, 115.3] },
+  ubud: { lat: [-8.6, -8.4], lng: [115.2, 115.3] },
+  canggu: { lat: [-8.7, -8.6], lng: [115.1, 115.2] },
+  surabaya: { lat: [-7.4, -7.2], lng: [112.6, 112.8] },
+  semarang: { lat: [-7.1, -6.9], lng: [110.3, 110.5] }
+};
+
 /**
  * Auto-derive locationId from geopoint using the app's city list.
  * Ensures therapists are assigned to the same GPS locations used in the app
- * (dropdown/filter), so they appear under the correct city when users select a location.
- * Uses nearest city within maxDistance km; returns 'other' if none in range.
+ * (dropdown/filter). Uses nearest city within maxDistance km; returns 'other' if none in range.
+ * Falls back to hardcoded bounds if the city list lookup throws.
  */
 export function deriveLocationIdFromGeopoint(
   geopoint: { lat: number; lng: number },
   maxDistanceKm: number = DEFAULT_MAX_DISTANCE_KM
 ): string {
-  const city = findCityByCoordinates(geopoint.lat, geopoint.lng, maxDistanceKm);
-  return city ? city.locationId : 'other';
+  try {
+    const city = findCityByCoordinates(geopoint.lat, geopoint.lng, maxDistanceKm);
+    return city ? city.locationId : 'other';
+  } catch {
+    const { lat, lng } = geopoint;
+    for (const [locationId, bounds] of Object.entries(FALLBACK_CITY_BOUNDS)) {
+      if (lat >= bounds.lat[0] && lat <= bounds.lat[1] && lng >= bounds.lng[0] && lng <= bounds.lng[1]) {
+        return locationId;
+      }
+    }
+    return 'other';
+  }
 }
 
 /**

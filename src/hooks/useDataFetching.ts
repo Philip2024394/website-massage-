@@ -129,7 +129,7 @@ export const useDataFetching = () => {
         try {
             setIsLoading(true);
             const [therapistsData, placesData] = await Promise.all([
-                therapistService.getTherapists(),
+                therapistService.getAll(), // All therapists (admin); getTherapists() is live-only for consumer
                 placesService.getPlaces()
             ]);
 

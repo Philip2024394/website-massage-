@@ -437,7 +437,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const [autoDetectState, setAutoDetectState] = useState<'idle' | 'checking' | 'success' | 'denied' | 'error'>('idle');
     const [autoDetectMessage, setAutoDetectMessage] = useState<string | null>(null);
     const [gpsErrorMessage, setGpsErrorMessage] = useState<string | null>(null);
-    
+    const cityListSectionRef = useRef<HTMLDivElement | null>(null);
+
     // Use either prop name for backward compatibility
     const enterAppCallback = handleEnterApp || onEnterApp;
     const selectLanguage = handleLanguageSelect || onLanguageSelect;
@@ -655,6 +656,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         }
     }, []);
 
+    // When GPS fails, scroll city list into view so the user sees the "list below"
+    useEffect(() => {
+        if (gpsErrorMessage && cityListSectionRef.current) {
+            cityListSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, [gpsErrorMessage]);
+
     // Location selector handlers - NEW UX: Only city selection, country auto-detected
     const handleCitySelectNew = async (city: CityOption) => {
         if (isDetectingLocation) return;
@@ -848,7 +856,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             
         } catch (error) {
             console.error('❌ GPS detection failed:', error);
-            setGpsErrorMessage('Unable to detect your location. Please select your city from the list below.');
+            setGpsErrorMessage('We couldn’t detect your location. Please choose your city from the list below to continue.');
         } finally {
             if (isMountedRef.current) {
                 setIsDetectingLocation(false);
@@ -998,8 +1006,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                             </div>
                         )}
 
-                        {/* Divider */}
-                        <div className="flex items-center gap-3 mb-3">
+                        {/* Divider + city list - scroll into view when GPS fails */}
+                        <div ref={cityListSectionRef} className="flex items-center gap-3 mb-3">
                             <div className="flex-1 h-px bg-gray-700"></div>
                             <span className="text-xs text-gray-400 font-medium">OR SELECT A CITY</span>
                             <div className="flex-1 h-px bg-gray-700"></div>

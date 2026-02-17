@@ -28,6 +28,7 @@ import { matchProviderToCity } from '../constants/indonesianCities';
 import { deriveLocationIdFromGeopoint } from '../utils/geoDistance';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
 import { matchesLocation } from '../utils/locationNormalization';
+import { applyDisplayStatusToTherapists } from '../utils/therapistDisplayStatus';
 import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
@@ -47,6 +48,10 @@ import { getCustomerLocation } from '../lib/nearbyProvidersService';
 
 // Production logger
 import { logger } from '../utils/logger';
+
+// Per-location cap: each city can store/display up to 100 therapists and 100 places
+const MAX_THERAPISTS_PER_LOCATION = 100;
+const MAX_PLACES_PER_LOCATION = 100;
 
 interface HomePageProps {
     page?: string; // Current page from routing system
@@ -963,8 +968,8 @@ const HomePage: React.FC<HomePageProps> = ({
             }
         }
         
-        // Update city-filtered therapists state
-        setCityFilteredTherapists(finalTherapistList);
+        // Update city-filtered therapists state (cap per location)
+        setCityFilteredTherapists(finalTherapistList.slice(0, MAX_THERAPISTS_PER_LOCATION));
         
         // Filter places by selected city (same logic as therapists)
         const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
@@ -1001,8 +1006,8 @@ const HomePage: React.FC<HomePageProps> = ({
             return matches;
         });
         
-        // Save filtered places to state
-        setCityFilteredPlaces(filteredPlacesByCity);
+        // Save filtered places to state (cap per location)
+        setCityFilteredPlaces(filteredPlacesByCity.slice(0, MAX_PLACES_PER_LOCATION));
         
         // Filter hotels by selected city (STRICT MATCHING - same as therapists/places)
         const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
@@ -1792,23 +1797,29 @@ const HomePage: React.FC<HomePageProps> = ({
                                 return score;
                             };
 
-                            // All offline therapists display as "Busy" (stored status remains offline; set on logout).
+                            // Per-location display status: top performers always Available; normal therapists rotating ~30% Busy.
+                            baseList = applyDisplayStatusToTherapists(baseList);
+                            baseList = baseList.map((t: any) => ({
+                                ...t,
+                                status: t.display_status ?? t.status,
+                                availability: t.display_status ?? t.availability
+                            }));
+
+                            // Legacy: offline/empty stored status still show as Busy (already covered by display_status when real_status false).
                             const transformOfflineToBusy = (list: any[]) => {
                                 return list.map(therapist => {
                                     const status = String(therapist.status || '').toLowerCase();
                                     if (status === 'offline' || status === '') {
                                         return {
                                             ...therapist,
-                                            displayStatus: 'Busy',
+                                            displayStatus: therapist.display_status || 'Busy',
                                             _originalStatus: therapist.status,
-                                            status: 'Busy'
+                                            status: therapist.display_status || 'Busy'
                                         };
                                     }
                                     return therapist;
                                 });
                             };
-
-                            // Apply offline-to-busy transformation before sorting
                             baseList = transformOfflineToBusy(baseList);
 
                             // Apply intelligent sorting: PRIMARY SORT BY STATUS, then distance, then PRICE

@@ -485,10 +485,14 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         return price.toLocaleString('id-ID');
     };
 
-    // Get status - map any status value to valid AvailabilityStatus
+    // Get status - display_status (per-location rotation) takes precedence; then availability/status
     const getStatusStyles = () => {
-        const statusStr = String((therapist as any).availability || therapist.status || 'Busy');
-        
+        const statusStr = String(
+            (therapist as any).display_status
+            || (therapist as any).availability
+            || therapist.status
+            || 'Busy'
+        );
         if (statusStr === 'Available') {
             return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500', label: 'Available', isAvailable: true };
         }

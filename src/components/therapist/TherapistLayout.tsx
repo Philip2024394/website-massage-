@@ -690,7 +690,12 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
               })}
             </ul>
 
-            {/* Logout - footer */}
+            {/* Home service: no logout; only admin can deactivate */}
+            {!onLogout && (
+              <div className="border-t border-gray-200 pt-4 mt-4 px-3 py-2 text-xs text-gray-500">
+                {language === 'id' ? 'Akun Anda aktif. Untuk menonaktifkan, hubungi admin.' : 'Your account is active. To deactivate, contact admin.'}
+              </div>
+            )}
             {onLogout && (
               <ul className="list-none m-0 p-0 border-t border-gray-200 pt-4 mt-4 space-y-1.5">
                 <li>

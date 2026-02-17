@@ -322,45 +322,7 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
               }`}>Tersedia</p>
             </button>
 
-            <button
-              onClick={() => console.log('Status change: busy')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'busy'
-                  ? 'bg-amber-50 border-amber-500'
-                  : 'border-gray-200 hover:border-amber-300'
-              }`}
-            >
-              <Clock className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.status === 'busy'
-                  ? 'text-amber-700'
-                  : 'text-gray-600'
-              }`}>Sibuk</p>
-            </button>
-
-            <button
-              onClick={() => console.log('Status change: offline')}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.availability === 'offline'
-                  ? 'bg-red-50 border-red-500'
-                  : 'border-gray-200 hover:border-red-300'
-              }`}
-            >
-              <XCircle className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-600'
-                  : 'text-gray-400'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                therapist?.availability === 'offline'
-                  ? 'text-red-700'
-                  : 'text-gray-600'
-              }`}>Offline</p>
-            </button>
+            {/* Home services: Available only (Busy/Offline removed) */}
           </div>
         </div>
       </div>

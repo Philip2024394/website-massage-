@@ -1858,7 +1858,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             if ((props.loggedInProvider as any)?.type === 'therapist' || (props.user as any)?.therapistId) {
                 return renderRoute(therapistRoutes.dashboard.component, {
                     therapist: props.loggedInProvider || props.user,
-                    onLogout: props.handleLogout,
+                    onLogout: undefined, // Home service: account is active; only admin can deactivate
                     onNavigate: props.onNavigate,
                     onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
                     onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
@@ -1891,7 +1891,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             if (dashboardUser && isTherapist) {
                 return renderRoute(therapistRoutes.dashboard.component, {
                         therapist: props.loggedInProvider || props.user,
-                        onLogout: props.handleLogout,
+                        onLogout: undefined, // Home service: account is active; only admin can deactivate
                         onNavigate: props.onNavigate,
                         onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
                         onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
@@ -1952,6 +1952,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             const massagePlaceId = (massagePlaceUser as any)?.$id;
             return renderRoute(DashboardTermsGate, {
                 userId: massagePlaceId,
+                providerType: 'place',
                 t: dict?.serviceTerms,
                 ChildComponent: placeRoutes.dashboard.component,
                 childProps: {
@@ -1966,6 +1967,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             const facialPlaceId = (facialPlaceUser as any)?.$id ?? '';
             return renderRoute(DashboardTermsGate, {
                 userId: facialPlaceId,
+                providerType: 'facial',
                 t: dict?.serviceTerms,
                 ChildComponent: facialRoutes.dashboard.component,
                 childProps: {
@@ -1973,7 +1975,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     placeId: facialPlaceId,
                     onSave: (data: any) => {
                         if (facialPlaceId) {
-                            facialPlaceService.update(facialPlaceId, data).catch((e) => logger.error('[Facial dashboard] Save failed', e));
+                            // Home services: set Available and live immediately so place displays right away
+                            const payload = { ...data, status: 'available', availability: 'Available', isLive: true };
+                            facialPlaceService.update(facialPlaceId, payload).catch((e) => logger.error('[Facial dashboard] Save failed', e));
                         }
                     },
                     onBack: () => props.onNavigate?.('home'),
@@ -1989,51 +1993,36 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist-dashboard': {
             const therapistDashboardUser = props.loggedInProvider || props.user;
             const therapistDashboardId = (therapistDashboardUser as any)?.$id;
-            if (therapistDashboardId && !getTermsAgreed(therapistDashboardId)) {
-                return renderRoute(legalRoutes.serviceTerms.component, {
-                    t: dict?.serviceTerms,
-                    acceptMode: true,
-                    onAccept: () => {
-                        setTermsAgreed(therapistDashboardId);
-                        props.onNavigate?.('dashboard');
-                    }
-                });
-            }
-            logger.debug('[SWITCH CASE] therapist-dashboard MATCHED - REDIRECTING TO STATUS');
-            logger.debug('[FIRST PAGE] Showing Online Status as first page');
-            logger.debug('[DEBUG] therapist data:', props.loggedInProvider);
-            return renderRoute(therapistRoutes.status.component, {
-                therapist: therapistDashboardUser,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
+            return renderRoute(DashboardTermsGate, {
+                userId: therapistDashboardId ?? undefined,
+                providerType: 'therapist',
+                t: dict?.serviceTerms,
+                ChildComponent: therapistRoutes.status.component,
+                childProps: {
+                    therapist: therapistDashboardUser,
+                    onBack: () => props.onNavigate?.('therapist-status'),
+                    onNavigate: props.onNavigate,
+                    language: props.language || 'id'
+                }
             });
         }
         
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (terms gate applied at therapist-dashboard; status shares same gate when opened directly)
         case 'status':
         case 'therapist-status': {
             const therapistUser = props.loggedInProvider || props.user;
             const therapistId = (therapistUser as any)?.$id;
-            if (therapistId && !getTermsAgreed(therapistId)) {
-                return renderRoute(legalRoutes.serviceTerms.component, {
-                    t: dict?.serviceTerms,
-                    acceptMode: true,
-                    onAccept: () => {
-                        setTermsAgreed(therapistId);
-                        props.onNavigate?.('dashboard');
-                    }
-                });
-            }
-            logger.debug('[ROUTE DEBUG] therapist-status case matched!');
-            logger.debug('[FIRST PAGE] Therapist Online Status Page');
-            logger.debug('[DEBUG] therapist data:', props.loggedInProvider);
-            logger.debug('[ROUTE RESOLVE] therapist-status → TherapistOnlineStatus');
-            return renderRoute(therapistRoutes.status.component, {
-                therapist: therapistUser,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
+            return renderRoute(DashboardTermsGate, {
+                userId: therapistId ?? undefined,
+                providerType: 'therapist',
+                t: dict?.serviceTerms,
+                ChildComponent: therapistRoutes.status.component,
+                childProps: {
+                    therapist: therapistUser,
+                    onBack: () => props.onNavigate?.('therapist-status'),
+                    onNavigate: props.onNavigate,
+                    language: props.language || 'id'
+                }
             });
         }
         

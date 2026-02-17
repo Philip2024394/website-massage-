@@ -778,8 +778,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         
         // 🚨 ENFORCEMENT: Cannot go live without GPS
         isLive: geopoint && geopoint.lat && geopoint.lng ? true : false,
-        status: therapist.status || 'available',
-        availability: therapist.availability || 'Available',
+        // Home services: set Available immediately on save so therapist displays right away
+        status: 'available',
+        availability: 'Available',
         isOnline: true,
       };
       

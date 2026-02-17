@@ -34,10 +34,9 @@ export interface PageHelpContent {
 export const dashboardHelp: PageHelpContent = {
   onlineStatus: {
     title: 'Status Online',
-    content: 'Saat status Anda Online, Anda dapat menerima booking.\n\nStatus Online akan otomatis berubah menjadi Offline setelah 12 jam.',
+    content: 'Saat status Anda Tersedia (Available), Anda dapat menerima booking. Layanan home: hanya status Tersedia (tanpa Offline).',
     bullets: [
-      'Mengatur ulang status Online untuk memperpanjang waktu',
-      'Mengubah status ke Busy jika sedang tidak tersedia',
+      'Tetap Tersedia untuk menerima booking',
       'Melewatkan atau menolak booking dapat menurunkan peringkat Anda'
     ],
     benefits: []
@@ -328,14 +327,9 @@ export const onlineStatusHelp: PageHelpContent = {
     ]
   },
   autoOfflineTimer: {
-    title: 'Timer Auto Offline',
-    content: 'Jadwalkan waktu tertentu setiap hari untuk otomatis mengubah status Anda ke Offline. Sempurna untuk menjaga keseimbangan kerja-hidup tanpa update manual.',
-    benefits: [
-      'Tidak pernah lupa untuk offline',
-      'Atur sekali, berjalan otomatis setiap hari',
-      'Jaga konsistensi jam kerja',
-      'Fitur Premium - upgrade untuk membuka'
-    ]
+    title: 'Status',
+    content: 'Layanan home: hanya status Tersedia (Available). Fitur auto-offline tidak digunakan.',
+    benefits: []
   }
 };
 
@@ -859,7 +853,7 @@ export const profileEditHelp: PageHelpContent = {
   },
   statusControl: {
     title: 'Kontrol Status',
-    content: 'Ubah status Anda antara Tersedia, Sibuk, atau Offline untuk mengontrol visibilitas dan booking Anda.',
+    content: 'Layanan home: status Tersedia (Available) saja. Anda dapat menerima booking saat Tersedia.',
     benefits: [
       'Kontrol waktu kerja Anda',
       'Cegah double booking',

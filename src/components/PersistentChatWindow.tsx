@@ -2141,6 +2141,7 @@ export function PersistentChatWindow() {
                     <div><strong id="price-booking-label" data-gb="Harga|Price">Harga:</strong> {Math.round(notification.price / 1000)}k</div>
                     <div className="col-span-2"><strong id="location-label" data-gb="Lokasi|Location">Lokasi:</strong> {notification.location.address}</div>
                   </div>
+                  <p className="text-xs text-amber-700 font-medium mb-2" data-gb="Terima dalam 5 menit|Accept within 5 minutes">⏱ Terima dalam 5 menit</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleAcceptBooking(notification.bookingId)}

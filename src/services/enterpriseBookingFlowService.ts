@@ -405,28 +405,22 @@ class EnterpriseBookingFlowService {
   }
 
   /**
-   * Get available therapists based on location and preferences
+   * Get available therapists: real_status true and display_status Available (per location).
+   * Uses therapistService.getAvailableTherapistsByLocation so only bookable therapists are returned.
    */
   private async getAvailableTherapists(request: BookingRequest): Promise<string[]> {
     try {
       logger.info('🔍 Searching for available therapists...');
       
-      // Extract city from location address
       const city = this.extractCityFromAddress(request.location.address);
+      const serviceType = request.services?.[0]?.type === 'facial' ? 'facial' : 'massage';
       
-      // Query therapists from database
-      const allTherapists = await therapistService.getAll(city);
+      const availableTherapists = await therapistService.getAvailableTherapistsByLocation(
+        city || '',
+        serviceType as 'massage' | 'facial'
+      );
       
-      logger.info(`📋 Found ${allTherapists.length} total therapists in ${city || 'all locations'}`);
-      
-      // Filter for available therapists only
-      const availableTherapists = allTherapists.filter(therapist => {
-        const status = (therapist.status || therapist.availability || '').toLowerCase();
-        const isAvailable = status === 'available' || therapist.isLive === true;
-        return isAvailable;
-      });
-      
-      logger.info(`✅ ${availableTherapists.length} therapists are currently available`);
+      logger.info(`✅ ${availableTherapists.length} therapists are currently available (real_status + display_status Available) in ${city || 'all'}`);
       
       // If preferred therapists specified, prioritize them
       let sortedTherapists = [...availableTherapists];

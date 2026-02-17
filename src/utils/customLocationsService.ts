@@ -16,7 +16,7 @@ export interface PopularCustomLocation {
 export async function getPopularCustomLocations(minTherapists: number = 5): Promise<PopularCustomLocation[]> {
   try {
     // Fetch all therapists with custom locations
-    const allTherapists = await therapistService.getTherapists({ limit: 1000 });
+    const allTherapists = await therapistService.getAll();
     
     // Filter for custom locations only
     const customLocationTherapists = allTherapists.filter(
@@ -107,7 +107,7 @@ export function normalizeCustomCityName(cityName: string): string {
  */
 export async function getCustomLocationCenter(customCity: string): Promise<{ lat: number; lng: number } | null> {
   try {
-    const allTherapists = await therapistService.getTherapists({ limit: 1000 });
+    const allTherapists = await therapistService.getAll();
     
     const matchingTherapists = allTherapists.filter(
       (t: Therapist) => 

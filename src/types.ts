@@ -310,6 +310,12 @@ export interface Therapist {
     // Busy timer functionality
     busyUntil?: string; // ISO timestamp when therapist becomes available again
     busyDuration?: number; // Duration in minutes for the busy period
+
+    // Per-location display status (massage/facial home service, Indonesia)
+    real_status?: boolean; // true = online and can receive bookings (from Appwrite)
+    display_status?: 'Available' | 'Busy'; // What users see; top performers always Available
+    performance_level?: 'top' | 'normal'; // top = never shown Busy by rotation
+    service_type?: 'massage' | 'facial';
     
     // Bank details for direct P2P payment (platform doesn't process payments)
     bankName?: string; // Bank name (e.g., Bank Central Asia, Bank Mandiri)
