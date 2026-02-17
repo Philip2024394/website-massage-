@@ -159,15 +159,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // Get country from context (selected on landing page)
   const { country, countryCode } = useCityContext();
   
-  // 72h lock: after 72 hours from going live, name/description/photo are locked; location stays editable. Admin can edit locked fields.
-  const [profileWentLiveAtFromLoad, setProfileWentLiveAtFromLoad] = useState<string | null>(null);
-  const PROFILE_LOCK_HOURS = 72;
-  const isProfileLocked = React.useMemo(() => {
-    const wentLiveAt = (therapist as any)?.profileWentLiveAt || profileWentLiveAtFromLoad;
-    if (!wentLiveAt) return false;
-    const lockMs = PROFILE_LOCK_HOURS * 60 * 60 * 1000;
-    return (Date.now() - new Date(wentLiveAt).getTime()) > lockMs;
-  }, [therapist?.profileWentLiveAt, profileWentLiveAtFromLoad]);
+  // Profile lock removed: therapists can always edit name, profile image, phone, and description.
+  const isProfileLocked = false;
   
   // Location state
   const [locationSet, setLocationSet] = useState(false);
@@ -369,8 +362,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         
         const latestData = await therapistService.getById(therapistId);
         logger.debug('Latest therapist data loaded', { name: latestData.name });
-        
-        if ((latestData as any).profileWentLiveAt) setProfileWentLiveAtFromLoad((latestData as any).profileWentLiveAt);
         
         // Update form fields with latest data
         if (latestData.name) setName(latestData.name);
@@ -761,14 +752,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         return;
       }
 
-      // When profile is locked (72h after going live), use existing values only for name, description, photo. Location stays editable.
-      const useLockedValues = isProfileLocked;
       const existingGeopoint = coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : (therapist?.geopoint || (therapist?.coordinates && (typeof therapist.coordinates === 'string' ? JSON.parse(therapist.coordinates) : therapist.coordinates)));
       const existingLocationId = therapist?.locationId || therapist?.city || therapist?.location || derivedLocationId;
       
       const updateData: any = {
-        name: useLockedValues ? (therapist?.name || name.trim()) : name.trim(),
-        description: useLockedValues ? (therapist?.description || description.trim()) : description.trim(),
+        name: name.trim(),
+        description: description.trim(),
         Globe: JSON.stringify(selectedGlobe),
         price60: price60.trim(),
         price90: price90.trim(),
@@ -794,10 +783,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         isOnline: true,
       };
       
-      // Only include profilePicture if it's a valid URL (when locked keep existing)
-      if (useLockedValues) {
-        updateData.profilePicture = therapist?.profilePicture || '';
-      } else if (profilePictureUrl && !profilePictureUrl.startsWith('data:')) {
+      if (profilePictureUrl && !profilePictureUrl.startsWith('data:')) {
         updateData.profilePicture = profilePictureUrl;
       }
 
@@ -1260,35 +1246,17 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             <p className="text-sm text-gray-600 mt-0.5">A polished, professional profile helps you stand out and attract more bookings.</p>
           </div>
 
-          {/* Auto-lock safety banner: clear message that lock protects against malware and unauthorised changes */}
-          {isProfileLocked && (
-            <div className="mx-6 mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center" aria-hidden>
-                  <span className="text-lg">🛡️</span>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">Profile locked (72 hours after going live)</p>
-                  <p className="text-xs text-slate-600 mt-1">
-                    Name, description, and profile photo are locked. Location remains editable. To update locked fields, contact admin.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Form Content */}
           <div className="p-6 space-y-5">
             {/* Name */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                First Name * {isProfileLocked && <span className="text-amber-600 text-xs">(locked)</span>}
+                First Name *
               </label>
               <input
                 value={name}
                 onChange={e => setName(e.target.value)}
-                readOnly={isProfileLocked}
-                className={`w-full border rounded-lg px-3 py-2.5 focus:outline-none ${isProfileLocked ? 'border-gray-200 bg-gray-50 text-gray-600 cursor-not-allowed' : 'border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-200'}`}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-200"
                 placeholder="Enter your first name"
               />
             </div>
@@ -1318,15 +1286,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             {/* Foto Profil */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Foto Profil {isProfileLocked && <span className="text-amber-600 text-xs">(locked – contact admin)</span>}
+                Foto Profil
               </label>
-              
-              {isProfileLocked && (
-                <p className="text-xs text-amber-700 mb-2">Profile photo cannot be changed here. Contact admin to update.</p>
-              )}
-              
-              {/* PERINGATAN KRITIS */}
-              {!isProfileLocked && <div className="mb-4 bg-red-50 border-2 border-red-500 rounded-lg p-3">
+              <div className="mb-4 bg-red-50 border-2 border-red-500 rounded-lg p-3">
                 <div className="flex items-start gap-2">
                   <span className="text-2xl">⚠️</span>
                   <div className="flex-1">
@@ -1338,11 +1300,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     </p>
                   </div>
                 </div>
-              </div>}
-              
+              </div>
               <div className="flex items-center gap-4">
                 <div className="relative">
-
                   {(profileImageDataUrl || therapist?.profilePicture) ? (
                     <img
                       src={profileImageDataUrl || therapist?.profilePicture}
@@ -1358,22 +1318,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   )}
                 </div>
                 <div className="flex-1">
-                  {!isProfileLocked && (
-                    <>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="profile-upload"
-                      />
-                      <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 cursor-pointer">
-                        <Upload className="w-4 h-4" />
-                        {uploadingImage ? 'Mengunggah...' : 'Upload Foto'}
-                      </label>
-                      <p className="text-xs text-gray-500 mt-1.5">Maks 5MB • Harus foto asli Anda</p>
-                    </>
-                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="profile-upload"
+                  />
+                  <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 cursor-pointer">
+                    <Upload className="w-4 h-4" />
+                    {uploadingImage ? 'Mengunggah...' : 'Upload Foto'}
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1.5">Maks 5MB • Harus foto asli Anda</p>
                 </div>
               </div>
             </div>
@@ -1381,7 +1337,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             {/* GPS-Only Location Display */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                📍 Your Location * {country && `(${country})`} {isProfileLocked && <span className="text-green-600 text-xs">(still editable)</span>}
+                📍 Your Location * {country && `(${country})`}
               </label>
               
               {/* Read-only location display */}
@@ -1572,15 +1528,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                 <FileText className="w-5 h-5 text-orange-500" />
-                About Your Services {isProfileLocked && <span className="text-amber-600 text-xs">(locked – contact admin)</span>}
+                About Your Services
               </label>
-              <div className={`border rounded-xl p-4 ${isProfileLocked ? 'border-gray-200 bg-gray-50' : 'border-gray-200'}`}>
+              <div className="border rounded-xl p-4 border-gray-200">
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
-                  readOnly={isProfileLocked}
                   rows={10}
-                  className={`w-full focus:outline-none transition-all resize-none border-0 p-0 ${isProfileLocked ? 'bg-transparent text-gray-600 cursor-not-allowed' : 'focus:border-orange-500 focus:ring-2 focus:ring-orange-100'}`}
+                  className="w-full focus:outline-none transition-all resize-none border-0 p-0 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                   placeholder="Describe your massage services, experience, and specialties..."
                 />
               </div>
