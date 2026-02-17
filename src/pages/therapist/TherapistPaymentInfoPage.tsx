@@ -246,31 +246,33 @@ const TherapistPaymentInfoPage: React.FC<TherapistPaymentInfoProps> = ({ therapi
       console.log('✅ Payment info saved:', { bankName, accountName, accountNumber, ktpPhotoUrl });
     } catch (error) {
       console.error('❌ Failed to save payment info:', error);
-      // Enhanced error logging for debugging
       const appwriteError = error as any;
+      const msg = appwriteError?.message ?? String(error);
+      const code = appwriteError?.code ?? appwriteError?.response?.code;
       console.error('❌ Appwrite Error Details:', {
-        message: appwriteError?.message,
-        code: appwriteError?.code,
+        message: msg,
+        code,
         type: appwriteError?.type,
-        response: appwriteError?.response,
-        therapistId: therapist?.$id || therapist?.id
+        therapistId: therapist?.$id || therapist?.id,
       });
-      
-      // Provide more specific error message to user
-      let errorMessage = '❌ Failed to save payment information';
-      if (appwriteError?.message?.includes('401')) {
-        errorMessage = '❌ Session expired. Please log in again.';
-      } else if (appwriteError?.message?.includes('403')) {
-        errorMessage = '❌ Permission denied. Please contact support.';
-      } else if (appwriteError?.message?.includes('404')) {
-        errorMessage = '❌ Collection not found. Please contact support.';
-      } else if (appwriteError?.message?.includes('attribute')) {
-        errorMessage = '❌ Database configuration error. Please contact support.';
-      } else if (appwriteError?.message) {
-        errorMessage = `❌ Save failed: ${appwriteError.message}`;
+
+      let errorMessage: string;
+      if (msg.includes('401') || code === 401) {
+        errorMessage = 'Sesi habis. Silakan masuk lagi.';
+      } else if (msg.includes('403') || code === 403) {
+        errorMessage = 'Akses ditolak. Pastikan Anda sudah login, lalu coba lagi.';
+      } else if (msg.includes('404') || code === 404) {
+        errorMessage = 'Layanan tidak ditemukan. Hubungi dukungan.';
+      } else if (msg.includes('attribute') || msg.includes('Invalid') || msg.includes('required')) {
+        errorMessage = 'Data tidak valid. Pastikan nama bank, nama rekening, dan nomor rekening diisi, dan KTP diunggah.';
+      } else if (msg.includes('Permission') || msg.includes('permission')) {
+        errorMessage = 'Tidak punya izin menyimpan. Coba logout lalu login lagi.';
+      } else if (msg) {
+        errorMessage = `Gagal menyimpan: ${msg.length > 60 ? msg.slice(0, 60) + '…' : msg}`;
+      } else {
+        errorMessage = 'Gagal menyimpan informasi pembayaran. Coba lagi atau hubungi dukungan.';
       }
-      
-      showToast(errorMessage, 'error');
+      showToast('❌ ' + errorMessage, 'error');
     } finally {
       setSaving(false);
       setUploading(false);

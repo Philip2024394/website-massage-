@@ -76,7 +76,20 @@ export const therapistDashboardService = {
       
       if (response.documents.length > 0) {
         console.log('✅ [DASHBOARD] Found dashboard data');
-        return response.documents[0] as unknown as TherapistDashboardData;
+        const doc = response.documents[0] as any;
+        // Normalize attribute names (Appwrite may return camelCase or snake_case)
+        return {
+          ...doc,
+          bankName: doc.bankName ?? doc.bank_name ?? '',
+          accountName: doc.accountName ?? doc.account_name ?? '',
+          accountNumber: doc.accountNumber ?? doc.account_number ?? '',
+          ktpPhotoFileId: doc.ktpPhotoFileId ?? doc.ktp_photo_file_id,
+          ktpPhotoUrl: doc.ktpPhotoUrl ?? doc.ktp_photo_url ?? '',
+          ktpSubmitted: doc.ktpSubmitted ?? doc.ktp_submitted ?? false,
+          ktpVerified: doc.ktpVerified ?? doc.ktp_verified ?? false,
+          ktpRejected: doc.ktpRejected ?? doc.ktp_rejected ?? false,
+          ktpRejectionReason: doc.ktpRejectionReason ?? doc.ktp_rejection_reason,
+        } as unknown as TherapistDashboardData;
       }
       
       console.log('ℹ️ [DASHBOARD] No dashboard data found, will create on first save');
@@ -88,6 +101,17 @@ export const therapistDashboardService = {
   },
   
   /**
+   * Strip undefined so Appwrite does not receive undefined (can cause "Invalid document" errors).
+   */
+  _cleanPayload<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v !== undefined) out[k] = v;
+    }
+    return out;
+  },
+
+  /**
    * Create or update dashboard data for a therapist
    */
   async upsert(therapistId: string, data: Partial<TherapistDashboardData>): Promise<TherapistDashboardData> {
@@ -98,24 +122,24 @@ export const therapistDashboardService = {
       const existing = await this.get(therapistId);
       
       const timestamp = new Date().toISOString();
-      const saveData = {
+      const saveData = this._cleanPayload({
         ...data,
         therapistId,
         updatedAt: timestamp,
-      };
+      }) as Record<string, unknown>;
       
       if (existing && existing.$id) {
-        // Update existing document
-        console.log('📝 [DASHBOARD] Updating existing document:', existing.$id);
+        // Update existing document – do not send $id to updateDocument
+        const { $id, ...updateData } = saveData;
+        const payload = this._cleanPayload(updateData as Record<string, unknown>);
         
-        // Remove $id from save data
-        const { $id, ...updateData } = saveData as any;
+        console.log('📝 [DASHBOARD] Updating existing document:', existing.$id);
         
         const response = await databases.updateDocument(
           APPWRITE_CONFIG.databaseId,
           COLLECTION_ID,
           existing.$id,
-          updateData
+          payload
         );
         
         console.log('✅ [DASHBOARD] Updated successfully');
@@ -124,14 +148,16 @@ export const therapistDashboardService = {
         // Create new document
         console.log('📝 [DASHBOARD] Creating new document');
         
+        const createPayload = this._cleanPayload({
+          ...saveData,
+          createdAt: timestamp,
+        } as Record<string, unknown>);
+        
         const response = await databases.createDocument(
           APPWRITE_CONFIG.databaseId,
           COLLECTION_ID,
           ID.unique(),
-          {
-            ...saveData,
-            createdAt: timestamp,
-          }
+          createPayload
         );
         
         console.log('✅ [DASHBOARD] Created successfully:', (response as any).$id);
@@ -223,16 +249,18 @@ export const therapistDashboardService = {
   ): Promise<TherapistDashboardData> {
     console.log('💳 [DASHBOARD] Saving bank details and KTP for therapist:', therapistId);
     
-    return this.upsert(therapistId, {
-      bankName: data.bankName,
-      accountName: data.accountName,
-      accountNumber: data.accountNumber,
-      ktpPhotoFileId: data.ktpPhotoFileId,
-      ktpPhotoUrl: data.ktpPhotoUrl,
-      ktpSubmitted: true, // Mark as submitted for admin review
+    const payload: Partial<TherapistDashboardData> = {
+      bankName: data.bankName.trim(),
+      accountName: data.accountName.trim(),
+      accountNumber: data.accountNumber.trim(),
+      ktpSubmitted: true,
       ktpVerified: false,
       ktpRejected: false,
-    });
+    };
+    if (data.ktpPhotoFileId?.trim()) payload.ktpPhotoFileId = data.ktpPhotoFileId.trim();
+    if (data.ktpPhotoUrl?.trim()) payload.ktpPhotoUrl = data.ktpPhotoUrl.trim();
+    
+    return this.upsert(therapistId, payload);
   },
   
   /**

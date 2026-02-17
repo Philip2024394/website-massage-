@@ -776,6 +776,7 @@ export const therapistService = {
             if (data.accountName !== undefined) mappedData.accountName = data.accountName;
             if (data.accountNumber !== undefined) mappedData.accountNumber = data.accountNumber;
             if (data.ktpPhotoFileId !== undefined) mappedData.ktpPhotoFileId = data.ktpPhotoFileId;
+            if ((data as any).ktpPhotoUrl !== undefined) (mappedData as any).ktpPhotoUrl = (data as any).ktpPhotoUrl;
             
             // Handle KTP verification status fields  
             if (data.ktpSubmitted !== undefined) mappedData.ktpSubmitted = data.ktpSubmitted;
