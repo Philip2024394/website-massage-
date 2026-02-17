@@ -487,8 +487,14 @@ const HomePage: React.FC<HomePageProps> = ({
     // Populate cityFilteredTherapists: only therapists whose profile city matches the selected city
     // (from main landing page city OR location dropdown) are shown on home.
     useEffect(() => {
-        const effectiveCity = selectedCity || contextCity ||
+        let effectiveCity = selectedCity || contextCity ||
             (typeof window !== 'undefined' ? window.localStorage.getItem('user_city_name') : null);
+        // Fallback: after landing→home navigation, state may not be synced yet; use localStorage directly
+        if ((!effectiveCity || effectiveCity === 'all') && typeof window !== 'undefined') {
+            const storedName = window.localStorage.getItem('user_city_name');
+            const storedId = window.localStorage.getItem('user_city_id');
+            effectiveCity = (storedName || storedId || '').trim() || effectiveCity;
+        }
         const hasCity = !!effectiveCity && effectiveCity !== 'all';
 
         if (!initializingCityGuard && !hasConfirmedCity && !hasCity && effectiveCity !== 'all') {
@@ -500,33 +506,39 @@ const HomePage: React.FC<HomePageProps> = ({
             return;
         }
 
-        // When user has selected a city: show therapists in that city, nearest first; include all within 25km when user has coords.
+        // When user has selected a city: show ALL therapists in that city; sort by distance (nearest first) when user has coords.
+        // We do not filter by 25km when a city is selected, so "Yogyakarta" always shows all Yogyakarta therapists.
         if (hasCity) {
             const byCity = filterTherapistsByCity(therapists, effectiveCity);
+            if (byCity.length === 0 && therapists.length > 0) {
+                logger.warn('🏙️ No therapists match selected city. Ensure therapist profiles have city/locationId set (e.g. "Yogyakarta", "yogyakarta", "Jogja").', {
+                    city: effectiveCity,
+                    totalTherapists: therapists.length,
+                    sampleCities: therapists.slice(0, 5).map((t: any) => t.city || t.locationId || t.location_id || t.location)
+                });
+            }
             const userLat = confirmedLocation?.latitude;
             const userLng = confirmedLocation?.longitude;
             const hasUserCoords = typeof userLat === 'number' && typeof userLng === 'number';
 
             if (hasUserCoords) {
                 const userCoords = { lat: userLat, lng: userLng };
-                const RADIUS_KM = 25;
                 const withDistance = byCity.map((t) => {
                     const gp = extractGeopoint(t);
                     const distanceKm = gp ? calculateDistance(userCoords, gp) / 1000 : null;
                     return { therapist: t, distanceKm };
                 });
-                const withinRadius = withDistance.filter((w) => w.distanceKm === null || w.distanceKm <= RADIUS_KM);
-                const sorted = [...withinRadius].sort((a, b) => {
+                const sorted = [...withDistance].sort((a, b) => {
                     if (a.distanceKm == null && b.distanceKm == null) return 0;
                     if (a.distanceKm == null) return 1;
                     if (b.distanceKm == null) return -1;
                     return a.distanceKm - b.distanceKm;
                 });
                 const result = sorted.map((x) => ({ ...x.therapist, _distanceKm: x.distanceKm }));
-                logger.debug('🏙️ City + 25km radius, nearest first', { city: effectiveCity, count: result.length, total: byCity.length });
+                logger.debug('🏙️ City + nearest first', { city: effectiveCity, count: result.length, total: therapists.length });
                 setCityFilteredTherapists(result);
             } else {
-                logger.debug('🏙️ City filter (no user coords)', { city: effectiveCity, count: byCity.length, total: therapists.length });
+                logger.debug('🏙️ City filter', { city: effectiveCity, count: byCity.length, total: therapists.length });
                 setCityFilteredTherapists(byCity);
             }
         } else if (effectiveCity === 'all') {

@@ -101,7 +101,7 @@ export const therapistService = {
                 console.log('🏙️ [APPWRITE] Fetching therapists:', APPWRITE_CONFIG.collections.therapists);
             }
             // Build query filters
-            const queries = [Query.limit(100)]; // OOM: Cap at 100 to avoid memory crash
+            const queries = [Query.limit(200)]; // Ensure all therapists loaded for city filtering (e.g. Yogyakarta)
             if (city) {
                 queries.push(Query.search('location', city));
             }

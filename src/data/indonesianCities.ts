@@ -181,7 +181,7 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         coordinates: { lat: -7.7956, lng: 110.3695 },
         isMainCity: true,
         isTouristDestination: true,
-        aliases: ["Jogja", "Yogya", "Cultural Capital"]
+        aliases: ["Jogja", "Yogya", "Cultural Capital", "DI Yogyakarta", "Daerah Istimewa Yogyakarta"]
       },
       {
         name: "Semarang",
