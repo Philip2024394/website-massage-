@@ -1,0 +1,25 @@
+<!-- Basic App Icon SVG -->
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="96" cy="96" r="90" fill="#4F46E5" stroke="#3730A3" stroke-width="4"/>
+  
+  <!-- Massage Icon -->
+  <g transform="translate(96,96)">
+    <!-- Hands -->
+    <ellipse cx="-20" cy="-10" rx="25" ry="15" fill="#FBBF24" transform="rotate(-15)"/>
+    <ellipse cx="20" cy="-10" rx="25" ry="15" fill="#F59E0B" transform="rotate(15)"/>
+    
+    <!-- Body/Table -->
+    <rect x="-30" y="10" width="60" height="40" rx="8" fill="#F3F4F6"/>
+    <rect x="-25" y="15" width="50" height="30" rx="6" fill="#E5E7EB"/>
+    
+    <!-- Sparkles -->
+    <circle cx="-40" cy="-30" r="3" fill="#FBBF24"/>
+    <circle cx="40" cy="-35" r="2" fill="#F59E0B"/>
+    <circle cx="-35" cy="45" r="2" fill="#FBBF24"/>
+    <circle cx="35" cy="40" r="3" fill="#F59E0B"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="96" y="160" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">MASSAGE</text>
+</svg>

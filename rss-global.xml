@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<channel>
+  <title>IndaStreet - Global Massage & Wellness Directory</title>
+  <link>https://www.indastreetmassage.com</link>
+  <description>Find professional massage therapists, spa treatments, and wellness services worldwide. Coverage in Indonesia, Philippines, UK, USA, Australia, and Germany. Expert therapists, verified spas, instant booking.</description>
+  <language>en</language>
+  <lastBuildDate>Sun, 19 Jan 2026 00:00:00 GMT</lastBuildDate>
+  <atom:link href="https://www.indastreetmassage.com/rss-global.xml" rel="self" type="application/rss+xml" />
+  <image>
+    <url>https://ik.imagekit.io/7grri5v7d/Massage%20hub%20indastreet.png</url>
+    <title>IndaStreet</title>
+    <link>https://www.indastreetmassage.com</link>
+  </image>
+
+  <!-- Global Expansion -->
+  <item>
+    <title>IndaStreet Expands Globally - Now in 6 Countries</title>
+    <link>https://www.indastreetmassage.com/</link>
+    <description>IndaStreet now serves Indonesia, Philippines, United Kingdom, United States, Australia, and Germany. Find massage therapists, spa services, and wellness professionals in 200+ cities worldwide.</description>
+    <pubDate>Sun, 19 Jan 2026 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/global-expansion-2026</guid>
+    <category>Global Expansion</category>
+    <category>International Services</category>
+  </item>
+
+  <!-- UK Launch -->
+  <item>
+    <title>UK Massage Directory - Find Therapists in London, Manchester, Birmingham</title>
+    <link>https://www.indastreetmassage.com/gb</link>
+    <description>IndaStreet launches in the United Kingdom. Find professional massage therapists and spa services in London, Manchester, Birmingham, Edinburgh, Glasgow, and 20+ UK cities. Sports massage, deep tissue, Swedish massage, and more.</description>
+    <pubDate>Sun, 19 Jan 2026 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/uk-launch</guid>
+    <category>United Kingdom</category>
+    <category>UK Massage</category>
+    <category>London Spa</category>
+  </item>
+
+  <!-- USA Launch -->
+  <item>
+    <title>USA Massage Directory - NYC, LA, Chicago, Miami & 28 Major Cities</title>
+    <link>https://www.indastreetmassage.com/us</link>
+    <description>Find licensed massage therapists across the United States. Coverage in New York City, Los Angeles, Chicago, Miami, San Francisco, Boston, Seattle, and 20+ major metros. Licensed professionals, verified spas, instant booking.</description>
+    <pubDate>Sun, 19 Jan 2026 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/usa-launch</guid>
+    <category>United States</category>
+    <category>USA Massage</category>
+    <category>NYC Spa</category>
+  </item>
+
+  <!-- Australia Launch -->
+  <item>
+    <title>Australia Massage Directory - Sydney, Melbourne, Brisbane & More</title>
+    <link>https://www.indastreetmassage.com/au</link>
+    <description>IndaStreet launches in Australia. Find qualified massage therapists in Sydney, Melbourne, Brisbane, Perth, Adelaide, and 15+ Australian cities. Remedial massage, relaxation massage, sports therapy.</description>
+    <pubDate>Sun, 19 Jan 2026 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/australia-launch</guid>
+    <category>Australia</category>
+    <category>Australian Massage</category>
+    <category>Sydney Spa</category>
+  </item>
+
+  <!-- Germany Launch -->
+  <item>
+    <title>Germany Massage Directory - Berlin, Munich, Hamburg, Frankfurt</title>
+    <link>https://www.indastreetmassage.com/de</link>
+    <description>IndaStreet now in Germany. Find professional massage therapists in Berlin, Munich, Hamburg, Frankfurt, Cologne, and 18+ German cities. Bilingual support (German/English). Wellness massage, physiotherapy, spa treatments.</description>
+    <pubDate>Sun, 19 Jan 2026 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/germany-launch</guid>
+    <category>Germany</category>
+    <category>German Massage</category>
+    <category>Berlin Wellness</category>
+  </item>
+
+  <!-- Philippines Services -->
+  <item>
+    <title>Philippines Massage Directory - Manila, Cebu, Boracay & More</title>
+    <link>https://www.indastreetmassage.com/ph</link>
+    <description>Find professional massage therapists across the Philippines. Coverage in Manila, Makati, Quezon City, Cebu City, Boracay, and 10+ major cities. Hilot massage, Swedish massage, deep tissue, aromatherapy.</description>
+    <pubDate>Sun, 19 Jan 2026 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/philippines-services</guid>
+    <category>Philippines</category>
+    <category>Manila Massage</category>
+    <category>Boracay Spa</category>
+  </item>
+
+  <!-- Indonesia Services -->
+  <item>
+    <title>Indonesia Massage Directory - Bali, Jakarta, Yogyakarta & 23+ Cities</title>
+    <link>https://www.indastreetmassage.com/id</link>
+    <description>Indonesia's original massage directory. Find therapists in Canggu, Seminyak, Ubud, Jakarta, Yogyakarta, and 20+ cities. Balinese massage, traditional Indonesian therapy, facial treatments, home service available.</description>
+    <pubDate>Sun, 19 Jan 2026 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/indonesia-services</guid>
+    <category>Indonesia</category>
+    <category>Bali Massage</category>
+    <category>Jakarta Spa</category>
+  </item>
+
+</channel>
+</rss>
