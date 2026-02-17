@@ -33,7 +33,7 @@
  * DO NOT MODIFY unless you understand React reconciliation.
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { logger } from '../utils/logger';
@@ -128,6 +128,9 @@ interface RoundButtonRowProps {
     dynamicSpacing: string;
 }
 
+/** Guard interval (ms) to avoid running the same action twice from pointer + click in one gesture */
+const BUTTON_ACTION_GUARD_MS = 400;
+
 const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
     onBookNow,
     onSchedule,
@@ -139,6 +142,9 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
     dynamicSpacing
 }) => {
     const [activeButton, setActiveButton] = useState<'book' | 'schedule' | 'price' | null>(null);
+    const lastBookRun = useRef(0);
+    const lastScheduleRun = useRef(0);
+    const lastPriceRun = useRef(0);
     const bookScheduleDisabled = hasActiveScheduledBooking;
     const scheduleUnavailable = !hasScheduledBookings;
     const disabledTitle = bookScheduleDisabled
@@ -146,71 +152,92 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
         : scheduleUnavailable
         ? 'Scheduled bookings require bank details and KTP in the provider dashboard'
         : undefined;
-    
+
+    const runBookNow = useCallback((e: React.MouseEvent | React.PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (bookScheduleDisabled) return;
+        const now = Date.now();
+        if (now - lastBookRun.current < BUTTON_ACTION_GUARD_MS) return;
+        lastBookRun.current = now;
+        setActiveButton('book');
+        onBookNow();
+    }, [bookScheduleDisabled, onBookNow]);
+
+    const runSchedule = useCallback((e: React.MouseEvent | React.PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (bookScheduleDisabled || !hasScheduledBookings) return;
+        const now = Date.now();
+        if (now - lastScheduleRun.current < BUTTON_ACTION_GUARD_MS) return;
+        lastScheduleRun.current = now;
+        setActiveButton('schedule');
+        onSchedule();
+    }, [bookScheduleDisabled, hasScheduledBookings, onSchedule]);
+
+    const runPriceSlider = useCallback((e: React.MouseEvent | React.PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const now = Date.now();
+        if (now - lastPriceRun.current < BUTTON_ACTION_GUARD_MS) return;
+        lastPriceRun.current = now;
+        setActiveButton('price');
+        onPriceSlider();
+    }, [onPriceSlider]);
+
     return (
-        <div className={`flex gap-2 px-4 ${dynamicSpacing}`}>
-            {/* Book Button */}
+        <div className={`relative z-10 flex gap-2 px-4 ${dynamicSpacing}`} style={{ touchAction: 'manipulation' }}>
+            {/* Book Button - type=button + pointer/click so one tap or one click opens chat */}
             <button
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (bookScheduleDisabled) return;
-                    setActiveButton('book');
-                    onBookNow();
-                }}
+                type="button"
+                onClick={runBookNow}
+                onPointerUp={runBookNow}
                 disabled={bookScheduleDisabled}
                 title={disabledTitle}
-                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
+                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] min-w-[44px] select-none ${
                     bookScheduleDisabled
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : activeButton === 'book'
                         ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
                         : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
-                } active:scale-95 shadow-md`}
+                } active:scale-95 shadow-md cursor-pointer`}
             >
-                <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm font-semibold">Book</span>
+                <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" />
+                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Book</span>
             </button>
 
             {/* Schedule Button */}
             <button
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (bookScheduleDisabled || !hasScheduledBookings) return;
-                    setActiveButton('schedule');
-                    onSchedule();
-                }}
+                type="button"
+                onClick={runSchedule}
+                onPointerUp={runSchedule}
                 disabled={!hasScheduledBookings || bookScheduleDisabled}
                 title={disabledTitle}
-                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
+                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] min-w-[44px] select-none ${
                     !hasScheduledBookings || bookScheduleDisabled
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
-                } active:scale-95 shadow-md`}
+                } active:scale-95 shadow-md cursor-pointer`}
             >
-                <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm font-semibold">Schedule</span>
+                <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" />
+                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Schedule</span>
             </button>
 
             {/* Prices Button */}
             <button
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setActiveButton('price');
-                    onPriceSlider();
-                }}
-                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] ${
+                type="button"
+                onClick={runPriceSlider}
+                onPointerUp={runPriceSlider}
+                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] min-w-[44px] select-none ${
                     activeButton === 'price'
                         ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
                         : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
-                } active:scale-95 shadow-md`}
+                } active:scale-95 shadow-md cursor-pointer`}
             >
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-xs sm:text-sm font-semibold">Prices</span>
+                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Prices</span>
             </button>
         </div>
     );

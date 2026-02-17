@@ -248,6 +248,66 @@ function categorizeBookingError(error: Error): 'timeout' | 'network' | 'validati
   return 'unknown';
 }
 
+// 🌐 Booking chat UI – Indonesian (default) and English
+const CHAT_MSG: Record<'id' | 'en', Record<string, string>> = {
+  id: {
+    bookingAccepted: '✅ Booking diterima!',
+    acceptFailed: '❌ Gagal menerima booking. Silakan coba lagi.',
+    bookingDeclined: '📝 Booking ditolak.',
+    declineFailed: '❌ Gagal menolak booking. Silakan coba lagi.',
+    bookingExpired: '⏰ Booking kedaluwarsa – tidak ada respons tepat waktu. Terapis/tempat saran ditampilkan di bawah.',
+    noOtherProviders: 'Tidak ada terapis aktif atau tempat buka saat ini. Anda bisa coba lagi nanti atau buka beranda.',
+    confirmRejectReminder: 'Pengingat: Silakan konfirmasi atau tolak bukti pembayaran. Jika tidak ada respons dalam 24 jam, booking dapat kedaluwarsa.',
+    fillRequiredFields: '❌ Harap isi semua field wajib: Nama, WhatsApp, dan Tipe Lokasi',
+    hotelVillaRequired: '❌ Booking hotel/villa memerlukan nama fasilitas dan nomor kamar',
+    bookingFailed: '❌ Booking gagal. Periksa data Anda dan coba lagi.',
+    scheduledCreatedBefore: '📅 Booking terjadwal dibuat! Bayar uang muka 30% (',
+    scheduledCreatedAfter: ') untuk mengonfirmasi janji. Uang muka tidak dapat dikembalikan.',
+    scheduledFailed: '❌ Gagal membuat booking terjadwal. Silakan coba lagi.',
+    depositSubmitted: '✅ Pembayaran uang muka terkirim! Booking akan dikonfirmasi setelah terapis menyetujui bukti pembayaran. Anda akan dapat notifikasi untuk janji mendatang.',
+    depositFailed: '❌ Gagal memproses pembayaran uang muka. Silakan coba lagi.',
+    uploadJpgPng: '❌ Harap unggah gambar JPG atau PNG.',
+    fileMax5mb: '❌ Ukuran file maksimal 5MB.',
+    paymentProofUploaded: '✅ Bukti pembayaran terunggah. Terapis dapat melihatnya di chat ini.',
+    uploadProofFailed: '❌ Gagal mengunggah bukti. Silakan coba lagi.',
+    requestExpired: '⏰ Permintaan booking kedaluwarsa.',
+    extendedWait: '⏰ Waktu tunggu diperpanjang 2 menit',
+    invalidDiscount: 'Kode diskon tidak valid',
+    discountValidateFailed: 'Gagal memvalidasi kode diskon',
+    discountApplied: 'diskon akan diterapkan!',
+    paymentProofReceived: 'Bukti pembayaran diterima',
+    paymentProofBody: 'Pelanggan mengunggah bukti pembayaran. Konfirmasi atau tolak dalam 30 menit.',
+  },
+  en: {
+    bookingAccepted: '✅ Booking accepted successfully!',
+    acceptFailed: '❌ Failed to accept booking. Please try again.',
+    bookingDeclined: '📝 Booking declined.',
+    declineFailed: '❌ Failed to decline booking. Please try again.',
+    bookingExpired: '⏰ Booking expired – no response in time. Suggested therapists and places are shown below.',
+    noOtherProviders: 'No other active therapists or open places right now. You can try again later or browse the home page.',
+    confirmRejectReminder: 'Reminder: Please confirm or reject the payment proof. If no response within 24 hours, the booking may be expired.',
+    fillRequiredFields: '❌ Please fill in all required fields: Name, WhatsApp, and Location Type',
+    hotelVillaRequired: '❌ Hotel/Villa bookings require facility name and room number',
+    bookingFailed: '❌ Booking failed. Please check your details and try again.',
+    scheduledCreatedBefore: '📅 Scheduled booking created! Please pay 30% deposit (',
+    scheduledCreatedAfter: ') to confirm your appointment. Deposits are non-refundable.',
+    scheduledFailed: '❌ Failed to create scheduled booking. Please try again.',
+    depositSubmitted: '✅ Deposit payment submitted! Your booking will be confirmed once the therapist approves your payment proof. You will receive notifications about your upcoming appointment.',
+    depositFailed: '❌ Failed to process deposit payment. Please try again.',
+    uploadJpgPng: '❌ Please upload a JPG or PNG image.',
+    fileMax5mb: '❌ File must be 5MB or smaller.',
+    paymentProofUploaded: '✅ Payment proof uploaded. Therapist can view it in this chat.',
+    uploadProofFailed: '❌ Failed to upload proof. Please try again.',
+    requestExpired: '⏰ Booking request expired due to timeout.',
+    extendedWait: '⏰ Extended waiting time by 2 minutes',
+    invalidDiscount: 'Invalid discount code',
+    discountValidateFailed: 'Failed to validate discount code',
+    discountApplied: 'discount will be applied!',
+    paymentProofReceived: 'Payment proof received',
+    paymentProofBody: 'Customer uploaded payment proof. Confirm or reject within 30 minutes.',
+  },
+};
+
 export function PersistentChatWindow() {
   const {
     chatState,
@@ -444,10 +504,10 @@ export function PersistentChatWindow() {
       // Remove from notifications
       setBookingNotifications(prev => prev.filter(n => n.bookingId !== bookingId));
       
-      addSystemNotification('✅ Booking accepted successfully!');
+      addSystemNotification(CHAT_MSG[currentLanguage].bookingAccepted);
     } catch (error) {
       logger.error('Failed to accept booking:', error);
-      addSystemNotification('❌ Failed to accept booking. Please try again.');
+      addSystemNotification(CHAT_MSG[currentLanguage].acceptFailed);
     }
   };
 
@@ -459,10 +519,10 @@ export function PersistentChatWindow() {
       // Remove from notifications
       setBookingNotifications(prev => prev.filter(n => n.bookingId !== bookingId));
       
-      addSystemNotification('📝 Booking declined.');
+      addSystemNotification(CHAT_MSG[currentLanguage].bookingDeclined);
     } catch (error) {
       logger.error('Failed to decline booking:', error);
-      addSystemNotification('❌ Failed to decline booking. Please try again.');
+      addSystemNotification(CHAT_MSG[currentLanguage].declineFailed);
     }
   };
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
@@ -493,20 +553,20 @@ export function PersistentChatWindow() {
         setDiscountValidation({
           valid: true,
           percentage: result.discountPercentage,
-          message: `🎉 ${result.discountPercentage}% discount will be applied!`,
+          message: `🎉 ${result.discountPercentage}% ${CHAT_MSG[currentLanguage].discountApplied}`,
           codeData: result
         });
       } else {
         setDiscountValidation({
           valid: false,
-          message: result.message || 'Invalid discount code'
+          message: result.message || CHAT_MSG[currentLanguage].invalidDiscount
         });
       }
     } catch (error: unknown) {
       const err = error as Error; logger.error('Discount validation error:', err);
       setDiscountValidation({
         valid: false,
-        message: 'Failed to validate discount code'
+        message: CHAT_MSG[currentLanguage].discountValidateFailed
       });
     } finally {
       setIsValidatingDiscount(false);
@@ -535,13 +595,13 @@ export function PersistentChatWindow() {
               bookingLifecycleService.expireBooking(docId, 'Therapist timeout').catch((err) => logger.error('Expire booking on countdown:', err));
             });
           }
-          addSystemNotification('⏰ Booking expired – no response in time. Suggested therapists and places are shown below.');
+          addSystemNotification(CHAT_MSG[currentLanguage].bookingExpired);
         }
         return Math.max(0, newCount);
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [chatState.currentBooking?.status, therapistResponseCountdown, chatState.currentBooking?.documentId, addSystemNotification]);
+  }, [chatState.currentBooking?.status, therapistResponseCountdown, chatState.currentBooking?.documentId, addSystemNotification, currentLanguage]);
 
   // Reset countdown timer when a new booking is created (5 min BOOK_NOW, 30 min SCHEDULED per spec)
   useEffect(() => {
@@ -585,7 +645,7 @@ export function PersistentChatWindow() {
         if (therapists.length === 0 && places.length === 0) {
           setSuggestedTherapists([]);
           setSuggestedPlaces([]);
-          addSystemNotification('No other active therapists or open places right now. You can try again later or browse the home page.');
+          addSystemNotification(CHAT_MSG[currentLanguage].noOtherProviders);
         } else {
           setSuggestedTherapists(therapists);
           setSuggestedPlaces(places);
@@ -596,7 +656,7 @@ export function PersistentChatWindow() {
         setSuggestedLoading(false);
       }
     })();
-  }, [bookingExpiredOrDeclined, suggestedLoading, suggestedTherapists.length, chatState.therapist?.appwriteId, addSystemNotification]);
+  }, [bookingExpiredOrDeclined, suggestedLoading, suggestedTherapists.length, chatState.therapist?.appwriteId, addSystemNotification, currentLanguage]);
 
   // Spec 2.2: 30 min deposit countdown when scheduled booking accepted (same chat window as bank details)
   const isScheduledAccepted = Boolean(
@@ -676,11 +736,11 @@ export function PersistentChatWindow() {
       return;
     }
     if (prevTherapistConfirmCountdownRef.current > 0 && therapistConfirmCountdownSeconds === 0 && !therapistConfirmReminderSentRef.current) {
-      addSystemNotification('Reminder: Please confirm or reject the payment proof. If no response within 24 hours, the booking may be expired.');
+      addSystemNotification(CHAT_MSG[currentLanguage].confirmRejectReminder);
       therapistConfirmReminderSentRef.current = true;
     }
     prevTherapistConfirmCountdownRef.current = therapistConfirmCountdownSeconds;
-  }, [isScheduledAcceptedAsTherapist, therapistConfirmCountdownSeconds, addSystemNotification]);
+  }, [isScheduledAcceptedAsTherapist, therapistConfirmCountdownSeconds, addSystemNotification, currentLanguage]);
   useEffect(() => {
     if (!isScheduledAcceptedAsTherapist) return;
     therapistConfirmReminderSentRef.current = false;
@@ -700,18 +760,14 @@ export function PersistentChatWindow() {
         mp3NotificationService.playNotification('payment_success', 0.7).catch(() => {});
         // Browser notification when tab is in background
         if (typeof document !== 'undefined' && document.hidden && typeof Notification !== 'undefined') {
+          const notifTitle = CHAT_MSG[currentLanguage].paymentProofReceived;
+          const notifBody = CHAT_MSG[currentLanguage].paymentProofBody;
           if (Notification.permission === 'granted') {
-            new Notification('Payment proof received', {
-              body: 'Customer uploaded payment proof. Confirm or reject within 30 minutes.',
-              icon: '/favicon.ico',
-            });
+            new Notification(notifTitle, { body: notifBody, icon: '/favicon.ico' });
           } else if (Notification.permission === 'default') {
             Notification.requestPermission().then(p => {
               if (p === 'granted') {
-                new Notification('Payment proof received', {
-                  body: 'Customer uploaded payment proof. Confirm or reject within 30 minutes.',
-                  icon: '/favicon.ico',
-                });
+                new Notification(notifTitle, { body: notifBody, icon: '/favicon.ico' });
               }
             });
           }
@@ -720,7 +776,7 @@ export function PersistentChatWindow() {
     } else {
       lastPaymentProofCountRef.current = count;
     }
-  }, [chatState.isTherapistView, chatState.isOpen, chatState.messages]);
+  }, [chatState.isTherapistView, chatState.isOpen, chatState.messages, currentLanguage]);
 
   // ✅ CRITICAL FIX: Extract data BEFORE hooks to avoid Rules of Hooks violation
   const { therapist, messages, bookingStep, selectedDuration, isMinimized } = chatState;
@@ -924,7 +980,7 @@ export function PersistentChatWindow() {
       });
       
       // Show user-friendly error notification
-      addSystemNotification('❌ Please fill in all required fields: Name, WhatsApp, and Location Type');
+      addSystemNotification(CHAT_MSG[currentLanguage].fillRequiredFields);
       
       // Additional validation for hotel/villa specific fields
       if (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') {
@@ -933,7 +989,7 @@ export function PersistentChatWindow() {
         
         if (!customerForm.hotelVillaName || !customerForm.roomNumber) {
           logger.error('❌ Hotel/Villa booking requires name and room number');
-          addSystemNotification('❌ Hotel/Villa bookings require facility name and room number');
+          addSystemNotification(CHAT_MSG[currentLanguage].hotelVillaRequired);
           unlockChat(); // Unlock chat so user can fix the form
           return;
         }
@@ -1377,7 +1433,7 @@ export function PersistentChatWindow() {
       
       // �🔄 [FIXED FLOW] Keep user in details step on error so they can retry
       logger.debug('🔄 [ERROR RECOVERY] Staying in details step for user to retry booking...');
-      addSystemNotification('❌ Booking failed. Please check your details and try again.');
+      addSystemNotification(CHAT_MSG[currentLanguage].bookingFailed);
       
       // 🔓 UNLOCK CHAT on error to allow user to retry or close if needed
       unlockChat();
@@ -1433,13 +1489,13 @@ export function PersistentChatWindow() {
       
       // Add system message about deposit requirement
       addSystemNotification(
-        `📅 Scheduled booking created! Please pay 30% deposit (${formatPrice(depositAmount)}) to confirm your appointment. Deposits are non-refundable.`
+        CHAT_MSG[currentLanguage].scheduledCreatedBefore + formatPrice(depositAmount) + CHAT_MSG[currentLanguage].scheduledCreatedAfter
       );
       
       logger.debug('💰 Scheduled booking created with deposit requirement:', scheduledDeposit);
     } catch (error) {
       logger.error('❌ Failed to create scheduled booking with deposit:', error);
-      addSystemNotification('❌ Failed to create scheduled booking. Please try again.');
+      addSystemNotification(CHAT_MSG[currentLanguage].scheduledFailed);
     }
   };
   
@@ -1494,14 +1550,12 @@ export function PersistentChatWindow() {
       setShowDepositModal(false);
       
       // Add confirmation message
-      addSystemNotification(
-        '✅ Deposit payment submitted! Your booking will be confirmed once the therapist approves your payment proof. You will receive notifications about your upcoming appointment.'
-      );
+      addSystemNotification(CHAT_MSG[currentLanguage].depositSubmitted);
       
       logger.debug('💳 Deposit payment submitted successfully');
     } catch (error) {
       logger.error('❌ Failed to process deposit payment:', error);
-      addSystemNotification('❌ Failed to process deposit payment. Please try again.');
+      addSystemNotification(CHAT_MSG[currentLanguage].depositFailed);
     } finally {
       setIsProcessingDeposit(false);
     }
@@ -1514,11 +1568,11 @@ export function PersistentChatWindow() {
     if (!file) return;
     const allowed = ['image/jpeg', 'image/png', 'image/jpg'];
     if (!allowed.includes(file.type)) {
-      addSystemNotification('❌ Please upload a JPG or PNG image.');
+      addSystemNotification(CHAT_MSG[currentLanguage].uploadJpgPng);
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      addSystemNotification('❌ File must be 5MB or smaller.');
+      addSystemNotification(CHAT_MSG[currentLanguage].fileMax5mb);
       return;
     }
     setUploadingProof(true);
@@ -1538,10 +1592,10 @@ export function PersistentChatWindow() {
       if (chatState.currentBooking?.documentId) {
         updateBookingPaymentProof(chatState.currentBooking.documentId, url).catch(() => {});
       }
-      addSystemNotification('✅ Payment proof uploaded. Therapist can view it in this chat.');
+      addSystemNotification(CHAT_MSG[currentLanguage].paymentProofUploaded);
     } catch (err) {
       logger.error('Upload payment proof failed', err);
-      addSystemNotification('❌ Failed to upload proof. Please try again.');
+      addSystemNotification(CHAT_MSG[currentLanguage].uploadProofFailed);
     } finally {
       setUploadingProof(false);
     }
@@ -1621,7 +1675,7 @@ export function PersistentChatWindow() {
 
   const handleBookingExpire = (bookingId: string) => {
     logger.debug('Booking expired:', { bookingId });
-    addSystemNotification('⏰ Booking request expired due to timeout.');
+    addSystemNotification(CHAT_MSG[currentLanguage].requestExpired);
   };
 
   // Convert current booking to BookingRequest format for the banner
@@ -3222,7 +3276,7 @@ export function PersistentChatWindow() {
                           onClick={() => {
                             // Extend timer by 2 minutes
                             setTherapistResponseCountdown(prev => prev + 120);
-                            addSystemNotification('⏰ Extended waiting time by 2 minutes');
+                            addSystemNotification(CHAT_MSG[currentLanguage].extendedWait);
                           }}
                           className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
                         >

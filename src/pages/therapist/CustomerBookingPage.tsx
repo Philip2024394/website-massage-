@@ -204,7 +204,7 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
         notificationSent: false,
       };
 
-      showToast('Booking request submitted! Awaiting payment verification.', 'success');
+      showToast('Permintaan booking terkirim! Menunggu verifikasi pembayaran.', 'success');
       
       // Reset form
       setSelectedDate(null);

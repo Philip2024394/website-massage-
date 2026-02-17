@@ -303,7 +303,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             }
 
             // Show browser toast notification
-            showToast(`🔔 New Booking from ${booking.customerName || 'Customer'}`, 'success');
+            showToast(`🔔 Booking baru dari ${booking.customerName || 'Pelanggan'}`, 'success');
           } else {
             logger.debug('Booking is for different therapist, ignoring');
           }
