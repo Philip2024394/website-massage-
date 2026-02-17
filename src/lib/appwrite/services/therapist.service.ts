@@ -9,6 +9,7 @@ import { duplicateAccountDetectionService } from '../../../services/duplicateAcc
 import { getRandomTherapistImage } from '../../../utils/therapistImageUtils';
 import { handleAppwriteError } from '../../../lib/globalErrorHandler';
 import { APPWRITE_CRASH_ERROR_CODE } from '../../../utils/appwriteHelpers';
+import { applyDisplayStatusToTherapists } from '../../../utils/therapistDisplayStatus';
 
 // Import services with proper fallbacks
 let sendAdminNotification: any;
@@ -92,24 +93,95 @@ export const therapistService = {
             throw error as Error;
         }
     },
-    async getTherapists(): Promise<any[]> {
-        return this.getAll();
+    /** Consumer-facing list: only approved, online, and available therapists. */
+    async getTherapists(city?: string, area?: string): Promise<any[]> {
+        return this.getAll(city, area, { liveOnly: true });
     },
-    async getAll(city?: string, area?: string): Promise<any[]> {
+    /** All therapists (admin/back-office). Use getTherapists() for consumer home for approved+online+available only. */
+    async getAll(city?: string, area?: string, options?: { liveOnly?: boolean }): Promise<any[]> {
+        const databaseId = APPWRITE_CONFIG.databaseId;
+        const collectionId = APPWRITE_CONFIG.collections.therapists;
+        const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
+
+        // Filter step: 0=baseline (limit only), 1=+approved, 2=+status, 3=+availability. Set VITE_THERAPIST_FILTER_STEP to reintroduce filters after confirming baseline works. Data types: approved=boolean true, status="online", availability="available".
+        const filterStepRaw = typeof import.meta !== 'undefined' && (import.meta.env?.VITE_THERAPIST_FILTER_STEP ?? '0');
+        const filterStep = String(filterStepRaw) === '1' || String(filterStepRaw) === '2' || String(filterStepRaw) === '3' ? parseInt(String(filterStepRaw), 10) : 0;
+        let filterDescription = filterStep === 0 ? 'none (limit only) — baseline' : '';
+
         try {
-            if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-                console.log('🏙️ [APPWRITE] Fetching therapists:', APPWRITE_CONFIG.collections.therapists);
+            // Baseline: only Query.limit(200). Reintroduce filters one at a time via VITE_THERAPIST_FILTER_STEP=1|2|3.
+            const queries: string[] = [Query.limit(200)];
+
+            if (options?.liveOnly && filterStep >= 1) {
+                queries.push(Query.equal('approved', true));
+                filterDescription = 'approved=true';
             }
-            // Build query filters
-            const queries = [Query.limit(200)]; // Ensure all therapists loaded for city filtering (e.g. Yogyakarta)
+            if (options?.liveOnly && filterStep >= 2) {
+                queries.push(Query.equal('status', 'online'));
+                filterDescription = filterDescription ? filterDescription + ', status=online' : 'status=online';
+            }
+            if (options?.liveOnly && filterStep >= 3) {
+                queries.push(Query.equal('availability', 'available'));
+                filterDescription = filterDescription ? filterDescription + ', availability=available' : 'availability=available';
+            }
             if (city) {
                 queries.push(Query.search('location', city));
+                filterDescription += (filterDescription ? ' + ' : '') + `search(location,${city})`;
             }
-            const response = await rateLimitedDb.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists,
-                queries
-            );
+
+            // Always log config and env at runtime (dev) so we can confirm IDs and filters.
+            if (isDev) {
+                console.log('[APPWRITE therapists] env (runtime):', {
+                    VITE_APPWRITE_DATABASE_ID: typeof import.meta !== 'undefined' ? import.meta.env?.VITE_APPWRITE_DATABASE_ID : 'n/a',
+                    VITE_THERAPISTS_COLLECTION_ID: typeof import.meta !== 'undefined' ? import.meta.env?.VITE_THERAPISTS_COLLECTION_ID : 'n/a'
+                });
+                console.log('[APPWRITE therapists] listDocuments config:', {
+                    DATABASE_ID: databaseId,
+                    THERAPISTS_COLLECTION_ID: collectionId,
+                    resultWillLog: 'total, documents.length',
+                    filters: filterDescription,
+                    filterStep,
+                    queryCount: queries.length
+                });
+            }
+
+            const response = await rateLimitedDb.listDocuments(databaseId, collectionId, queries);
+            const docs = response?.documents ?? [];
+            const total = response?.total ?? 'n/a';
+
+            // Required logging: DATABASE_ID, THERAPISTS_COLLECTION_ID, result.total, result.documents.length
+            if (isDev) {
+                console.log('[APPWRITE therapists] listDocuments response:', {
+                    DATABASE_ID: databaseId,
+                    THERAPISTS_COLLECTION_ID: collectionId,
+                    'result.total': total,
+                    'result.documents.length': docs.length,
+                    filtersUsed: filterDescription
+                });
+            }
+            // When empty, log once in production so we don't silently return empty results
+            if (docs.length === 0 && !isDev) {
+                console.warn('[APPWRITE therapists] documents array is empty. DATABASE_ID:', databaseId, 'THERAPISTS_COLLECTION_ID:', collectionId, 'total:', total, 'filters:', filterDescription);
+            }
+
+            // After each step: log first document values + typeof for approved/status/availability
+            if (isDev) {
+                if (docs.length > 0 && docs[0]) {
+                    const first = docs[0] as any;
+                    console.log('[APPWRITE therapists] first document (verify types):', {
+                        documentsLength: docs.length,
+                        approved: first.approved,
+                        approvedType: typeof first.approved,
+                        status: first.status,
+                        statusType: typeof first.status,
+                        availability: first.availability,
+                        availabilityType: typeof first.availability
+                    });
+                } else {
+                    console.warn('[APPWRITE therapists] documents array is empty. Check: attribute names (approved/status/availability), values (approved=boolean true, status="online", availability="available"), index on approved, collection Read permission for Role: Any or Users.');
+                }
+            }
+
             // Client-side filtering by service area if specified
             let filteredDocuments = response.documents;
             if (area) {
@@ -232,8 +304,9 @@ export const therapistService = {
             console.error('🔍 [ERROR DETAILS] Message:', (error as Error).message);
             console.error('🔍 [ERROR DETAILS] Code:', (error as any).code);
             console.error('🔍 [ERROR DETAILS] Type:', (error as any).type);
-            console.error('Database ID:', APPWRITE_CONFIG.databaseId);
-            console.error('Collection ID:', APPWRITE_CONFIG.collections.therapists);
+            console.error('🔍 [ERROR DETAILS] DATABASE_ID:', APPWRITE_CONFIG.databaseId);
+            console.error('🔍 [ERROR DETAILS] THERAPISTS_COLLECTION_ID:', APPWRITE_CONFIG.collections.therapists);
+            console.error('🔍 [ERROR DETAILS] Filters used:', filterDescription);
             
             if ((error as Error).message?.includes('Collection with the requested ID could not be found')) {
                 console.error('💡 [FIX HINT] The collection ID doesn\'t exist in Appwrite!');
@@ -243,88 +316,147 @@ export const therapistService = {
             if ((error as Error).message?.includes('not authorized')) {
                 console.error('💡 [FIX HINT] Permission issue - collection permissions need to be set for "any" role');
             }
-            
-            // 🔧 DEVELOPMENT FALLBACK: Provide sample data when Appwrite is not accessible
-            if ((error as Error).message?.includes('Failed to fetch') || (error as Error).message?.includes('CORS') || (error as Error).message?.includes('Network error')) {
-                console.warn('🔄 CORS/Network error detected - providing development sample data');
-                console.warn('💡 This ensures therapist cards display during development even with CORS issues');
-                
-                return [
-                    {
-                        $id: 'dev-budi-001',
-                        id: 'dev-budi-001',
-                        name: 'Budi Massage Therapy',
-                        therapistName: 'Budi',
-                        status: 'Available',
-                        availability: 'Available',
-                        isLive: true,
-                        city: 'Yogyakarta',
-                        location: 'Yogyakarta',
-                        coordinate: {
-                            lat: -7.8268801,
-                            lng: 110.4197215
-                        },
-                        description: 'Professional massage therapist with 10+ years experience in traditional Indonesian massage techniques.',
-                        mainImage: createPlaceholderDataURL('Budi Massage', '#3b82f6', '#ffffff'),
-                        profilePicture: createPlaceholderDataURL('Budi', '#10b981', '#ffffff'),
-                        pricing: '150000',
-                        rating: 4.8,
-                        reviewCount: 127,
-                        busyUntil: null,
-                        busyDuration: null
-                    },
-                    {
-                        $id: 'dev-sari-002',
-                        id: 'dev-sari-002',
-                        name: 'Sari Holistic Care',
-                        therapistName: 'Sari',
-                        status: 'Available',
-                        availability: 'Available',
-                        isLive: true,
-                        city: 'Yogyakarta',
-                        location: 'Yogyakarta',
-                        coordinate: {
-                            lat: -7.8268801,
-                            lng: 110.4197215
-                        },
-                        description: 'Specializing in holistic healing and therapeutic massage for stress relief and wellness.',
-                        mainImage: createPlaceholderDataURL('Sari Holistic', '#8b5cf6', '#ffffff'),
-                        profilePicture: createPlaceholderDataURL('Sari', '#f59e0b', '#ffffff'),
-                        pricing: '175000',
-                        rating: 4.9,
-                        reviewCount: 89,
-                        busyUntil: null,
-                        busyDuration: null
-                    },
-                    {
-                        $id: 'dev-maya-003',
-                        id: 'dev-maya-003',
-                        name: 'Maya Wellness',
-                        therapistName: 'Maya',
-                        status: 'Busy',
-                        availability: 'Busy',
-                        isLive: true,
-                        city: 'Yogyakarta',
-                        location: 'Yogyakarta',
-                        coordinate: {
-                            lat: -7.8268801,
-                            lng: 110.4197215
-                        },
-                        description: 'Expert in deep tissue massage and sports therapy. Currently serving another client.',
-                        mainImage: createPlaceholderDataURL('Maya Wellness', '#ef4444', '#ffffff'),
-                        profilePicture: createPlaceholderDataURL('Maya', '#ec4899', '#ffffff'),
-                        pricing: '200000',
-                        rating: 4.7,
-                        reviewCount: 156,
-                        busyUntil: Date.now() + 3600000, // 1 hour from now
-                        busyDuration: 60 // 60 minutes
-                    }
-                ];
-            }
-            
-            return [];
+            // Real-time data only: do not return fallback or mock data. Callers must handle errors and show e.g. "Cannot access Appwrite data".
+            throw new Error('Cannot access Appwrite data');
         }
     },
+
+    /**
+     * Return exact count of therapists from Appwrite (real-time, no cache).
+     * Use for "how many therapists in [location]" – only returns data that exists in the database.
+     * @param location optional – filter by location (search)
+     * @returns total count from listDocuments (response.total)
+     */
+    async getTherapistCount(location?: string): Promise<number> {
+        try {
+            const queries = [Query.limit(1)];
+            if (location && location.trim()) {
+                queries.push(Query.search('location', location.trim()));
+            }
+            const response = await rateLimitedDb.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                queries
+            );
+            return response.total ?? 0;
+        } catch (e) {
+            console.error('getTherapistCount failed:', e);
+            throw new Error('Cannot access Appwrite data');
+        }
+    },
+
+    /**
+     * Return count of therapists that are "live" on the app (isLive === true).
+     * Real-time from Appwrite; no cache.
+     */
+    async getLiveTherapistCount(): Promise<number> {
+        const all = await this.getAll();
+        return all.filter((t: any) => t?.isLive === true || t?.isLive === 'true').length;
+    },
+
+    /**
+     * Audit therapist locations against app landing page / dropdown / filter options.
+     * Returns counts and list of therapists whose city does not match any app city (locationId, name, or alias).
+     * Real-time from Appwrite.
+     */
+    async getTherapistLocationAudit(): Promise<{
+        total: number;
+        liveCount: number;
+        withCorrectLocation: number;
+        incorrectOrMissingLocation: number;
+        incorrectDetails: Array<{ id: string; name: string; city: string }>;
+    }> {
+        const { ALL_INDONESIAN_CITIES } = await import('../../../data/indonesianCities');
+        const validCityValues = new Set<string>();
+        for (const city of ALL_INDONESIAN_CITIES) {
+            validCityValues.add(city.locationId.toLowerCase().trim());
+            validCityValues.add(city.name.toLowerCase().trim());
+            (city.aliases || []).forEach((a: string) => validCityValues.add(a.toLowerCase().trim()));
+        }
+        const normalize = (s: string | undefined | null) => (s ? String(s).toLowerCase().trim() : '');
+        const all = await this.getAll();
+        const liveCount = all.filter((t: any) => t?.isLive === true || t?.isLive === 'true').length;
+        const incorrectDetails: Array<{ id: string; name: string; city: string }> = [];
+        for (const t of all) {
+            const cityRaw = t.city || t.locationId || t.location_id || t.location || '';
+            const cityNorm = normalize(cityRaw);
+            const cityPart = cityNorm.includes(',') ? cityNorm.split(',')[0].trim() : cityNorm;
+            const matches = cityNorm && (validCityValues.has(cityNorm) || validCityValues.has(cityPart));
+            if (!matches && (cityRaw || t.name)) {
+                incorrectDetails.push({
+                    id: t.$id || t.id || '',
+                    name: t.name || '—',
+                    city: cityRaw || '(empty)'
+                });
+            }
+        }
+        return {
+            total: all.length,
+            liveCount,
+            withCorrectLocation: all.length - incorrectDetails.length,
+            incorrectOrMissingLocation: incorrectDetails.length,
+            incorrectDetails
+        };
+    },
+
+    /**
+     * Fetch therapists who can receive bookings: real_status true and display_status Available (per location).
+     * Top performers always Available; normal therapists use rotating display (~30% Busy per location).
+     * Optionally filter by service_type (massage/facial).
+     */
+    async getAvailableTherapistsByLocation(location: string, serviceType?: 'massage' | 'facial'): Promise<any[]> {
+        try {
+            const all = await this.getAll(location);
+            const realAvailable = all.filter((t: any) => {
+                const status = String(t?.status || t?.availability || '').toLowerCase();
+                const isLive = t?.isLive === true || t?.isLive === 'true';
+                const isAvailable = status === 'available' || status === 'online' || (t?.available === true) || isLive;
+                if (!isAvailable) return false;
+                if (serviceType) {
+                    const st = String(t?.service_type || t?.serviceType || '').toLowerCase();
+                    return st === serviceType || st === 'both' || !st;
+                }
+                return true;
+            });
+            const withDisplay = applyDisplayStatusToTherapists(realAvailable);
+            return withDisplay.filter((t: any) => t.display_status === 'Available');
+        } catch (e) {
+            console.error('getAvailableTherapistsByLocation failed:', e);
+            throw new Error('Cannot access Appwrite data');
+        }
+    },
+
+    /** Read terms_acknowledged from therapist document (dashboard T&C gate). */
+    async getTermsAcknowledged(id: string): Promise<boolean> {
+        if (!id) return false;
+        try {
+            const doc = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                id
+            );
+            return (doc as any)?.terms_acknowledged === true || (doc as any)?.terms_acknowledged === 'true';
+        } catch {
+            return false;
+        }
+    },
+
+    /** Set terms_acknowledged = true in Appwrite after therapist agrees to dashboard T&C. */
+    async setTermsAcknowledged(id: string): Promise<void> {
+        if (!id) return;
+        try {
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                id,
+                { terms_acknowledged: true }
+            );
+        } catch (e) {
+            console.error('setTermsAcknowledged failed:', e);
+            throw e;
+        }
+    },
+
     async getById(id: string): Promise<any> {
         try {
             console.log('\n' + '📡'.repeat(50));

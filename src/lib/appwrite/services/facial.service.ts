@@ -5,12 +5,12 @@ import { databases } from '../client';
 import { APPWRITE_CONFIG } from '../../appwrite.config';
 import { MOCK_FACIAL_PLACE } from '../../../constants/mockFacialPlace';
 
-/** Normalize to therapist-style availability: Available | Busy (no Offline; default Busy) */
+/** Normalize to therapist-style availability: Available | Busy (no Offline). Default Available so facial home service displays available until booking. */
 function normalizeAvailability(v: string | undefined): string {
-    const s = String(v ?? 'busy').trim().toLowerCase();
-    if (s === 'available') return 'Available';
+    const s = String(v ?? 'available').trim().toLowerCase();
+    if (s === 'available' || s === 'online') return 'Available';
     if (s === 'busy' || s === 'offline') return 'Busy';
-    return 'Busy';
+    return 'Available';
 }
 
 function mapDocToPlace(fp: any): any {
@@ -65,9 +65,9 @@ function mapDocToPlace(fp: any): any {
         websiteUrl: fp.websiteurl,
         rating: fp.starrate != null ? parseFloat(String(fp.starrate)) : (fp.rating ?? 0),
         reviewCount: fp.reviewCount ?? fp.reviewcount ?? 0,
-        // Online status – same as therapist: Available or Busy (no Offline)
-        status: normalizeAvailability(fp.status ?? fp.availability ?? 'Busy'),
-        availability: normalizeAvailability(fp.availability ?? fp.status ?? 'Busy'),
+        // Online status – same as therapist: Available until Book now / Order now / Scheduled booking
+        status: normalizeAvailability(fp.status ?? fp.availability ?? 'Available'),
+        availability: normalizeAvailability(fp.availability ?? fp.status ?? 'Available'),
         isLive: fp.isLive !== false,
         city: fp.city,
         coordinates: fp.coordinates,
@@ -205,5 +205,36 @@ export const facialPlaceService = {
             payload
         );
         return mapDocToPlace(doc);
+    },
+
+    /** Read terms_acknowledged from facial place document (dashboard T&C gate). */
+    async getTermsAcknowledged(id: string): Promise<boolean> {
+        if (!id) return false;
+        try {
+            const doc = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.facial_places,
+                id
+            );
+            return (doc as any)?.terms_acknowledged === true || (doc as any)?.terms_acknowledged === 'true';
+        } catch {
+            return false;
+        }
+    },
+
+    /** Set terms_acknowledged = true in Appwrite after provider agrees to dashboard T&C. */
+    async setTermsAcknowledged(id: string): Promise<void> {
+        if (!id) return;
+        try {
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.facial_places,
+                id,
+                { terms_acknowledged: true }
+            );
+        } catch (e) {
+            console.error('facial setTermsAcknowledged failed:', e);
+            throw e;
+        }
     },
 };

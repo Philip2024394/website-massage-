@@ -16,6 +16,7 @@ import { useHomeHandlers } from './useHomeHandlers';
 import { useSessionRestore } from './useSessionRestore';
 import { useURLRouting } from './useURLRouting';
 import { useEffect } from 'react';
+import { getClient, APPWRITE_CONFIG } from '../lib/appwrite/config';
 
 export const useAllHooks = () => {
     // ALWAYS call hooks in the same order - never conditionally
@@ -67,7 +68,38 @@ export const useAllHooks = () => {
         // ⚡ PERFORMANCE: Start fetch immediately (parallel with loading screen)
         initializeData();
     }, []); // Empty dependency array - only run once on mount
-    
+
+    // Live therapist feed: refetch when therapists collection changes (status/availability/approved)
+    useEffect(() => {
+        const databaseId = APPWRITE_CONFIG.databaseId;
+        const collectionId = APPWRITE_CONFIG.collections.therapists;
+        const channel = `databases.${databaseId}.collections.${collectionId}.documents`;
+
+        const refetchTherapists = async () => {
+            try {
+                const { therapists, places, facialPlaces, hotels } = await dataFetching.fetchPublicData();
+                state.setTherapists(therapists);
+                state.setPlaces(places);
+                state.setFacialPlaces(facialPlaces);
+                state.setHotels(hotels);
+            } catch (e) {
+                console.warn('[APPWRITE therapists] Realtime refetch failed:', e);
+            }
+        };
+
+        let unsubscribe: (() => void) | undefined;
+        try {
+            unsubscribe = getClient().subscribe(channel, () => {
+                refetchTherapists();
+            });
+        } catch (err) {
+            console.warn('[APPWRITE therapists] Realtime subscription setup failed:', err);
+        }
+        return () => {
+            if (typeof unsubscribe === 'function') unsubscribe();
+        };
+    }, []); // Subscribe once; refetch uses stable fetchPublicData and state setters
+
     // 🔄 Listen for discount activation events and refresh data
     useEffect(() => {
         const handleDataRefresh = async (event: Event) => {

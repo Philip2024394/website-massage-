@@ -60,6 +60,7 @@ import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
 import { matchesLocation } from '../utils/locationNormalization';
 import { filterTherapistsByCity } from '../utils/cityFilterUtils';
 import { convertLocationStringToId } from '../utils/locationNormalizationV2';
+import { applyDisplayStatusToTherapists } from '../utils/therapistDisplayStatus';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
@@ -312,19 +313,20 @@ const HomePage: React.FC<HomePageProps> = ({
         };
     }, [confirmedLocation, contextCity, selectedCity]);
     
+    // No distance radius: therapists are displayed per city location (all in selected city)
     const therapistMatchOutcome = useMemo<MatchOutcome | null>(() => {
         if (!userLocationForMatching) return null;
         return matchTherapistsForUser(
             Array.isArray(therapists) ? (therapists as any[]) : [],
             userLocationForMatching,
             {
-                radiusKm: 8,
+                radiusKm: 999,
                 minResults: 5,
-                maxResults: 12
+                maxResults: 500
             }
         );
     }, [therapists, userLocationForMatching]);
-    
+
     useEffect(() => {
         if (typeof window === 'undefined') {
             setInitializingCityGuard(false);
@@ -381,11 +383,12 @@ const HomePage: React.FC<HomePageProps> = ({
     const [selectedSpecialFeature, setSelectedSpecialFeature] = useState<string>('');
     const [priceRange, setPriceRange] = useState<[number, number]>([100000, 450000]);
 
-    // 🚀 PERFORMANCE: Prefetched bulk data for therapist cards (eliminates N+1 queries)
+    // 🚀 PERFORMANCE: Prefetched bulk data for therapist cards (eliminates N+1 queries).
+    // Always-initialized Maps: no null, no defensive ?. required; stable production pattern.
     const [prefetchedData, setPrefetchedData] = useState<{
         menus: Map<string, any>;
         shareLinks: Map<string, any>;
-    } | null>(null);
+    }>({ menus: new Map(), shareLinks: new Map() });
 
     // When arriving from Massage Types page, prop is set so filter applies on first paint
     const effectiveMassageType = selectedMassageTypeProp ?? selectedMassageType;
@@ -484,6 +487,13 @@ const HomePage: React.FC<HomePageProps> = ({
         onSetUserLocation
     });
 
+    // TEMPORARY DEBUG – remove after confirming location/filter behavior
+    useEffect(() => {
+        console.log('Selected location:', selectedCity ?? contextCity ?? 'all');
+        console.log('All therapists:', therapists);
+        console.log('After city filter:', cityFilteredTherapists);
+    }, [selectedCity, contextCity, therapists, cityFilteredTherapists]);
+
     // Populate cityFilteredTherapists: only therapists whose profile city matches the selected city
     // (from main landing page city OR location dropdown) are shown on home.
     useEffect(() => {
@@ -509,7 +519,22 @@ const HomePage: React.FC<HomePageProps> = ({
         // When user has selected a city: show ALL therapists in that city; sort by distance (nearest first) when user has coords.
         // We do not filter by 25km when a city is selected, so "Yogyakarta" always shows all Yogyakarta therapists.
         if (hasCity) {
-            const byCity = filterTherapistsByCity(therapists, effectiveCity);
+            let byCity = filterTherapistsByCity(therapists, effectiveCity);
+            // Fallback: if 0 match (e.g. effectiveCity stored as "Yogyakarta, Indonesia"), try canonical locationId so "yogyakarta" matches
+            if (byCity.length === 0 && therapists.length > 0) {
+                const cityPart = effectiveCity.includes(',') ? effectiveCity.split(',')[0].trim() : effectiveCity;
+                const canonicalId = convertLocationStringToId(cityPart || effectiveCity);
+                if (canonicalId && canonicalId !== 'all') {
+                    byCity = filterTherapistsByCity(therapists, canonicalId);
+                    if (byCity.length > 0) {
+                        logger.debug('🏙️ City filter fallback: matched using locationId', { effectiveCity, locationId: canonicalId, count: byCity.length });
+                    }
+                }
+            }
+            const isYogyakarta = /yogyakarta|jogja|yogya/i.test(effectiveCity || '');
+            if (isYogyakarta && typeof console !== 'undefined') {
+                console.log(`[IndaStreet] Listed therapists in Yogyakarta: ${byCity.length} (of ${therapists.length} total from database)`);
+            }
             if (byCity.length === 0 && therapists.length > 0) {
                 logger.warn('🏙️ No therapists match selected city. Ensure therapist profiles have city/locationId set (e.g. "Yogyakarta", "yogyakarta", "Jogja").', {
                     city: effectiveCity,
@@ -655,7 +680,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 logger.debug(`Prefetch complete - ${data.menus.size} menus, ${data.shareLinks.size} share links`);
             } catch (error) {
                 logger.error('Prefetch failed:', { error });
-                // Set empty data so cards can still render (will fall back to individual queries)
+                // Reset to empty Maps so cards still render (will fall back to individual queries)
                 setPrefetchedData({ menus: new Map(), shareLinks: new Map() });
                 hasPrefetched.current = true; // 🔒 Mark as attempted to prevent infinite retry
             }
@@ -1358,6 +1383,181 @@ const HomePage: React.FC<HomePageProps> = ({
     // Count of online therapists (status === 'online')
     const onlineTherapistsCount = safeTherapists.filter(t => t.status === 'online').length;
 
+    // Single source of truth: header count and list both from this pipeline (never count from A, list from B).
+    // Must be after safeTherapists so useMemo can reference it.
+    const therapistDisplay = useMemo(() => {
+        const isOwner = (t: any) => (
+            loggedInProvider && loggedInProvider.type === 'therapist' && (
+                String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
+            )
+        );
+        const currentUserLocation = (isDev && devLocationOverride)
+            ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng }
+            : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
+        const getCoords = (t: any) => {
+            try {
+                const c = typeof t.coordinates === 'string' ? JSON.parse(t.coordinates) : t.coordinates;
+                if (typeof c?.lat === 'number' && typeof c?.lng === 'number') return c;
+            } catch (e) { logger.warn('Invalid coordinates for therapist', { therapistId: t.$id }); }
+            return null;
+        };
+        const calculateHaversineDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
+            const R = 6371;
+            const dLat = (point2.lat - point1.lat) * Math.PI / 180;
+            const dLon = (point2.lng - point1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) ** 2 + Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) * Math.sin(dLon/2) ** 2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        };
+        const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.slice(0, 100) : [];
+        let therapistsWithDistance = safeInput.map((t: any) => {
+            let distance: number | null = null;
+            let locationArea: string = t.city || t.location || 'Unknown';
+            if (currentUserLocation) {
+                const therapistCoords = getCoords(t) || (t.geopoint ? { lat: t.geopoint.latitude, lng: t.geopoint.longitude } : null);
+                if (therapistCoords) {
+                    distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
+                    const matchedCity = matchProviderToCity(therapistCoords, 25);
+                    if (matchedCity) locationArea = matchedCity.locationId;
+                }
+            }
+            return { ...t, _distance: distance, _locationArea: locationArea };
+        });
+        let baseList = therapistsWithDistance.filter((t: any) => {
+            if (isFeaturedSample(t, 'therapist')) return true;
+            if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) return t._locationArea === adminViewArea;
+            return true;
+        });
+        if (showFemaleOnly) {
+            baseList = baseList.filter((t: any) => {
+                const gender = String(t.therapistGender || t.gender || '').toLowerCase();
+                const clientPrefs = String(t.clientPreferences || '').toLowerCase();
+                return gender === 'female' || clientPrefs.includes('female') || clientPrefs.includes('woman') || gender === 'unisex';
+            });
+        }
+        if (selectedArea) {
+            baseList = baseList.filter((t: any) => {
+                let serviceAreas: string[] = [];
+                if (t.serviceAreas) {
+                    try {
+                        serviceAreas = typeof t.serviceAreas === 'string' ? JSON.parse(t.serviceAreas) : Array.isArray(t.serviceAreas) ? t.serviceAreas : [];
+                    } catch (_) { return false; }
+                }
+                return Array.isArray(serviceAreas) && serviceAreas.includes(selectedArea);
+            });
+        }
+        if (selectedTherapistGender || selectedServiceFor || effectiveMassageType || selectedSpecialFeature || (priceRange[0] !== 100000 || priceRange[1] !== 450000)) {
+            baseList = baseList.filter((t: any) => {
+                if (selectedTherapistGender && String(t.therapistGender || t.gender || '').toLowerCase() !== selectedTherapistGender) return false;
+                if (selectedServiceFor) {
+                    const clientPrefs = String(t.clientPreferences || '').toLowerCase();
+                    const serviceFor = selectedServiceFor.toLowerCase();
+                    const searchTerm = serviceFor === 'women' ? ['women', 'female', 'ladies'] : serviceFor === 'men' ? ['men', 'male', 'gentleman'] : ['children', 'kids', 'family'];
+                    if (!searchTerm.some(term => clientPrefs.includes(term)) && clientPrefs !== 'all' && clientPrefs !== 'everyone') return false;
+                }
+                if (effectiveMassageType) {
+                    const services = String(t.services || t.massageTypes || '').toLowerCase();
+                    const specialties = String(t.specialties || '').toLowerCase();
+                    if (!services.includes(effectiveMassageType.toLowerCase()) && !specialties.includes(effectiveMassageType.toLowerCase())) return false;
+                }
+                if (selectedSpecialFeature) {
+                    const feat = selectedSpecialFeature;
+                    if (feat === 'verified-only' && !t.isVerified && !t.hasIndustryStandards) return false;
+                    if (feat === 'with-facial' && !String(t.services || '').toLowerCase().includes('facial')) return false;
+                    if (feat === 'highly-rated' && parseFloat(t.averageRating || '0') < 4.5) return false;
+                    if (feat === 'home-service' && !t.homeService && !t.mobileService) return false;
+                    if (['coin-rub','body-scrub','hot-stones','aromatherapy','deep-pressure'].includes(feat)) {
+                        const str = String(t.services || t.specialties || '').toLowerCase();
+                        const key = feat === 'coin-rub' ? 'coin' : feat === 'body-scrub' ? 'scrub' : feat === 'hot-stones' ? 'hot stone' : feat === 'aromatherapy' ? 'aroma' : 'deep';
+                        if (!str.includes(key)) return false;
+                    }
+                }
+                const price = parseInt(t.price || t.basePrice || t.hourlyRate || '0');
+                if (price > 0 && (price < priceRange[0] || price > priceRange[1])) return false;
+                return true;
+            });
+        }
+        if (loggedInProvider && loggedInProvider.type === 'therapist') {
+            const alreadyIncluded = baseList.some((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
+            if (!alreadyIncluded) {
+                const ownerDoc = safeTherapists.find((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
+                if (ownerDoc) {
+                    let includeOwner = selectedCity === 'all';
+                    if (!includeOwner && ownerDoc.coordinates && currentUserLocation) {
+                        const coords = typeof ownerDoc.coordinates === 'object' ? ownerDoc.coordinates : (() => { try { return JSON.parse(ownerDoc.coordinates); } catch { return null; } })();
+                        if (coords?.lat != null && coords?.lng != null) {
+                            includeOwner = calculateHaversineDistance(currentUserLocation, { lat: coords.lat, lng: coords.lng }) <= 10;
+                        }
+                    }
+                    if (includeOwner) baseList = [ownerDoc, ...baseList];
+                }
+            }
+        }
+        if (selectedCity !== 'all') {
+            const realTherapistsInCity = baseList.filter((t: any) => !isFeaturedSample(t, 'therapist'));
+            if (realTherapistsInCity.length === 0) {
+                const showcaseProfiles = getYogyakartaShowcaseProfiles(safeTherapists, selectedCity);
+                if (showcaseProfiles.length > 0) baseList = [...baseList, ...showcaseProfiles];
+            }
+        }
+        // When optional filters (female-only, area, price, etc.) remove everyone but city has therapists, show full city list so we never show "60" then 0 cards
+        if (baseList.length === 0 && safeInput.length > 0) {
+            baseList = therapistsWithDistance.slice();
+        }
+        const getPriorityScore = (therapist: any) => {
+            let score = 0;
+            const status = String(therapist.status || '').toLowerCase();
+            if (status === 'available' || status === 'online') score += 10000;
+            else if (status === 'busy') score += 5000;
+            if (therapist.isPremium || therapist.accountType === 'premium') score += 500;
+            if (therapist.isVerified || therapist.hasIndustryStandards || therapist.certifications?.length > 0) score += 300;
+            const lastActivity = therapist.lastSeen || therapist.$updatedAt || therapist.updatedAt;
+            if (lastActivity) {
+                const hoursAgo = (new Date().getTime() - new Date(lastActivity).getTime()) / (1000 * 60 * 60);
+                if (hoursAgo <= 1) score += 200; else if (hoursAgo <= 6) score += 150; else if (hoursAgo <= 24) score += 100; else if (hoursAgo <= 72) score += 50; else if (hoursAgo <= 168) score += 25;
+            }
+            score -= Math.min(500, (therapist.missedBookingsCount ?? therapist.missedBookings ?? 0) * 100);
+            const rating = parseFloat(therapist.averageRating || '0');
+            if (rating >= 4.5) score += 100; else if (rating >= 4.0) score += 75; else if (rating >= 3.5) score += 50;
+            const orders = parseInt(therapist.orderCount || '0');
+            if (orders >= 50) score += 50; else if (orders >= 20) score += 30; else if (orders >= 10) score += 20;
+            return score;
+        };
+        baseList = applyDisplayStatusToTherapists(baseList);
+        baseList = baseList.map((t: any) => ({ ...t, status: t.display_status ?? t.status, availability: t.display_status ?? t.availability }));
+        baseList = baseList.map(therapist => {
+            const status = String(therapist.status || '').toLowerCase();
+            if (status === 'offline' || status === '') return { ...therapist, status: therapist.display_status || 'Busy' };
+            return therapist;
+        });
+        baseList = baseList.slice()
+            .map(therapist => ({ ...therapist, priorityScore: getPriorityScore(therapist), randomSeed: Math.random() }))
+            .sort((a: any, b: any) => {
+                if (b.priorityScore !== a.priorityScore) return b.priorityScore - a.priorityScore;
+                if (currentUserLocation && a._distance != null && b._distance != null && a._distance !== b._distance) return a._distance - b._distance;
+                const priceA = parseFloat(a.price) || parseFloat(a.basePrice) || 999999;
+                const priceB = parseFloat(b.price) || parseFloat(b.basePrice) || 999999;
+                if (priceA !== priceB) return priceA - priceB;
+                return a.randomSeed - b.randomSeed;
+            });
+        const preparedTherapists = baseList.map((therapist: any) => {
+            let displayLocation = therapist.location, displayCity = therapist.city;
+            if (isFeaturedSample(therapist, 'therapist') && selectedCity !== 'all') { displayLocation = selectedCity; displayCity = selectedCity; }
+            return { ...therapist, location: displayLocation, city: displayCity };
+        });
+        const MAX_INITIAL_THERAPIST_CARDS = 12;
+        const therapistsToRender = preparedTherapists.slice(0, MAX_INITIAL_THERAPIST_CARDS);
+        const therapistsByLocation: { [key: string]: any[] } = {};
+        therapistsToRender.forEach((therapist: any) => {
+            const area = therapist._locationArea || 'Unknown';
+            if (!therapistsByLocation[area]) therapistsByLocation[area] = [];
+            therapistsByLocation[area].push(therapist);
+        });
+        const locationAreas = Object.keys(therapistsByLocation).sort();
+        const noTherapistsToShow = baseList.length === 0;
+        return { therapistsToRender, therapistsByLocation, locationAreas, noTherapistsToShow };
+    }, [cityFilteredTherapists, isDev, devLocationOverride, autoDetectedLocation, userLocation, adminViewArea, selectedCity, bypassRadiusForAdmin, hasAdminPrivileges, showFemaleOnly, selectedArea, selectedTherapistGender, selectedServiceFor, effectiveMassageType, selectedSpecialFeature, priceRange, loggedInProvider, safeTherapists]);
+
     // Rating modal handlers removed for design mock
 
     // SEO: Add Schema.org structured data for LocalBusiness and AggregateRating
@@ -1542,37 +1742,12 @@ const HomePage: React.FC<HomePageProps> = ({
                             </div>
                             <p className="text-base font-semibold text-gray-600">{country}'s {(activeTab === 'facials' || activeTab === 'facial-places') ? 'Facial' : 'Massage'} Therapist Hub</p>
                             <p className="text-xs text-gray-500 mt-1">
-                                {distanceMatchCount > 0
-                                    ? `Prioritizing ${distanceMatchCount} therapist${distanceMatchCount === 1 ? '' : 's'} closest to you.`
-                                    : 'Showing trusted therapists across the city.'}
+                                {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all'
+                                    ? `Showing ${Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.length : 0} therapist${(Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.length : 0) === 1 ? '' : 's'} in ${getLocationDisplayName(selectedCity || contextCity, translationsObject?.home?.allAreas ?? 'All areas')}.`
+                                    : (distanceMatchCount > 0
+                                        ? `Showing ${distanceMatchCount} therapist${distanceMatchCount === 1 ? '' : 's'} in your area.`
+                                        : 'Showing trusted therapists across the city.')}
                             </p>
-                        </div>
-                    )}
-
-                    {hasPlaceholderMatches && (
-                        <div className="px-4 mt-3">
-                            <div className="rounded-2xl border border-dashed border-orange-400 bg-orange-50 px-5 py-4 text-center shadow-sm">
-                                <p className="text-sm font-semibold text-orange-700">
-                                    We are onboarding therapists in {displayCityName}.
-                                </p>
-                                <p className="text-xs text-orange-600 mt-1">
-                                    Request a therapist for your next session or become the first professional in this area.
-                                </p>
-                                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-center">
-                                    <button
-                                        onClick={() => onNavigate?.('contact')}
-                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-orange-600 transition-colors"
-                                    >
-                                        Request Therapist
-                                    </button>
-                                    <button
-                                        onClick={() => onTherapistPortalClick?.()}
-                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-orange-600 border border-orange-300 shadow-sm hover:bg-orange-100 transition-colors"
-                                    >
-                                        Become a Therapist
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     )}
 
@@ -1693,460 +1868,21 @@ const HomePage: React.FC<HomePageProps> = ({
                             <p className="text-xs text-gray-500 mt-1">
                                 {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
                             </p>
+                            {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
+                                <p className="text-sm font-medium text-gray-700 mt-2" data-testid="therapist-city-count">
+                                    Showing {Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.length : 0} therapists in {getLocationDisplayName(selectedCity || contextCity, t?.home?.allAreas ?? 'All areas')}
+                                </p>
+                            )}
                         </div>
                         
                         <div className="space-y-3 max-w-full overflow-hidden">
-                        {/* Build list with injected unique mainImage per view */}
+                        {/* Build list from single source of truth (therapistDisplay); header count = therapistsToRender.length */}
                         {(() => {
-                            const isOwner = (t: any) => (
-                                loggedInProvider && loggedInProvider.type === 'therapist' && (
-                                    String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
-                                )
-                            );
-
-                            // 🌍 GPS-BASED INCLUSION: Get therapists within radius (or all if dev mode bypass enabled)
-                            const currentUserLocation = (isDev && devLocationOverride) 
-                                ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng }
-                                : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
-
-                            // 🔧 COORDINATE PARSER: Safely parse Appwrite JSON string coordinates
-                            const getCoords = (t: any) => {
-                                try {
-                                    const c = typeof t.coordinates === "string"
-                                        ? JSON.parse(t.coordinates)
-                                        : t.coordinates;
-
-                                    if (typeof c?.lat === "number" && typeof c?.lng === "number") {
-                                        return c;
-                                    }
-                                } catch (e) {
-                                    // OOM: no coordinates in log – avoids retaining large objects
-                                    logger.warn('Invalid coordinates for therapist', { therapistId: t.$id });
-                                }
-                                return null;
-                            };
-
-                            // Helper: Calculate distance using Haversine formula
-                            const calculateHaversineDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
-                                const R = 6371; // Earth radius in km
-                                const dLat = (point2.lat - point1.lat) * Math.PI / 180;
-                                const dLon = (point2.lng - point1.lng) * Math.PI / 180;
-                                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                                         Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) *
-                                         Math.sin(dLon/2) * Math.sin(dLon/2);
-                                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                                return R * c;
-                            };
-
-                            // OOM: Cap and defensive check – avoid crash on undefined/large lists
-                            const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.slice(0, 100) : [];
-                            let therapistsWithDistance = safeInput
-                .map((t: any) => {
-                    let distance: number | null = null;
-                    let locationArea: string = t.city || t.location || 'Unknown';
-                    
-                    // 🌍 GPS DISTANCE: Calculate only if both user location and valid coordinates exist
-                    if (currentUserLocation) {
-                        const therapistCoords = getCoords(t) || (t.geopoint ? { lat: t.geopoint.latitude, lng: t.geopoint.longitude } : null);
-                        
-                        if (therapistCoords) {
-                            distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
-                            
-                            // OOM: distance debug removed from render path
-                            // Try to determine location area from coordinates
-                            const matchedCity = matchProviderToCity(therapistCoords, 25);
-                            if (matchedCity) {
-                                locationArea = matchedCity.locationId;
-                            }
-                        }
-                    }
-                    
-                    return { ...t, _distance: distance, _locationArea: locationArea };
-                });
-
-            // 🌍 STEP 2: GPS-BASED INCLUSION (10km radius or all if dev bypass enabled)
-            let baseList = therapistsWithDistance
-                .filter((t: any) => {
-                    // 🔍 DETAILED FILTERING COMPARISON: Track each condition for Budi vs others
-                    const isBudi = t.name?.toLowerCase().includes('budi');
-                    
-                    // CRITICAL: First check if therapist should be treated as live
-                    const treatedAsLive = shouldTreatTherapistAsLive(t);
-                    const isOwnerTherapist = isOwner(t);
-                    const isFeatured = isFeaturedSample(t, 'therapist');
-                    
-                    // OOM: per-therapist debug removed from filter (was Filter check with full object)
-                    // ✅ FIXED: Don't exclude therapists just because they lack isLive/status fields
-                    // Allow all therapists with GPS coordinates - let GPS filtering be the primary filter
-                    // Only exclude if explicitly marked as not live (isLive: false)
-                    
-                    // Always show featured sample therapists (Budi) in all cities
-                    if (isFeatured) return true;
-                    
-                    // 🔐 ADMIN AREA VIEW: Special admin feature to view all therapists in specific area
-                    if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
-                        return t._locationArea === adminViewArea;
-                    }
-                    
-                    // ✅ Default: include (location-based filtering, no radius; distance used for sort only)
-                    return true;
-                });
-
-            // 🔍 FILTERING RESULTS SUMMARY
-            const budiInBaseList = baseList.find(t => t.name?.toLowerCase().includes('budi'));
-            const nonBudiInBaseList = baseList.filter(t => !t.name?.toLowerCase().includes('budi'));
-            
-                            // OOM: Filtering summary debug removed (was building object with slices)
-            
-            if (baseList.length === 1 && budiInBaseList) {
-                logger.warn('[CRITICAL ISSUE] Only Budi is in the final list - this is the bug');
-            }
-            
-            // 👩‍⚕️ FEMALE THERAPIST FILTER: Apply if showFemaleOnly is active
-            if (showFemaleOnly) {
-                baseList = baseList.filter((t: any) => {
-                    // Check therapistGender field or clientPreferences for female-friendly options
-                    const gender = String(t.therapistGender || t.gender || '').toLowerCase();
-                    const clientPrefs = String(t.clientPreferences || '').toLowerCase();
-                    
-                    // Include if:
-                    // 1. therapistGender is "female"
-                    // 2. clientPreferences includes "female" or "woman"
-                    // 3. therapistGender is "unisex" (serves all)
-                    const isFemale = gender === 'female' || 
-                                    clientPrefs.includes('female') || 
-                                    clientPrefs.includes('woman') ||
-                                    gender === 'unisex';
-                    
-                    return isFemale;
-                });
-                logger.debug(`Female filter applied: ${baseList.length} female/female-friendly therapists`);
-            }
-            
-            // 🗺️ AREA FILTER: Apply if selectedArea is active (city-first location system)
-            if (selectedArea) {
-                baseList = baseList.filter((t: any) => {
-                    // Parse serviceAreas from JSON string (Appwrite format)
-                    let serviceAreas: string[] = [];
-                    if (t.serviceAreas) {
-                        try {
-                            if (typeof t.serviceAreas === 'string') {
-                                serviceAreas = JSON.parse(t.serviceAreas);
-                            } else if (Array.isArray(t.serviceAreas)) {
-                                serviceAreas = t.serviceAreas;
-                            }
-                        } catch (error) {
-                            logger.warn('Failed to parse serviceAreas for therapist', { therapistName: t.name, error });
-                            return false;
-                        }
-                    }
-                    
-                    const servesArea = Array.isArray(serviceAreas) && serviceAreas.includes(selectedArea);
-                    if (servesArea) {
-                        logger.debug(`Area filter: ${t.name} serves area "${selectedArea}"`);
-                    }
-                    return servesArea;
-                });
-                logger.debug(`Area filter applied: ${baseList.length} therapists serving area "${selectedArea}"`);
-            }
-
-            // 🔍 ADVANCED FILTERS: Apply all advanced filter selections
-            if (selectedTherapistGender || selectedServiceFor || effectiveMassageType || selectedSpecialFeature || (priceRange[0] !== 100000 || priceRange[1] !== 450000)) {
-                logger.debug('Applying advanced filters', {
-                    therapistGender: selectedTherapistGender,
-                    serviceFor: selectedServiceFor,
-                    massageType: effectiveMassageType,
-                    specialFeature: selectedSpecialFeature,
-                    priceRange: priceRange
-                });
-
-                baseList = baseList.filter((t: any) => {
-                    // 1. Therapist Gender Filter
-                    if (selectedTherapistGender) {
-                        const gender = String(t.therapistGender || t.gender || '').toLowerCase();
-                        if (gender !== selectedTherapistGender) {
-                            return false;
-                        }
-                    }
-
-                    // 2. Service For Filter (check clientPreferences)
-                    if (selectedServiceFor) {
-                        const clientPrefs = String(t.clientPreferences || '').toLowerCase();
-                        const serviceFor = selectedServiceFor.toLowerCase();
-                        
-                        // Map serviceFor values to match data
-                        const searchTerm = serviceFor === 'women' ? ['women', 'female', 'ladies'] :
-                                          serviceFor === 'men' ? ['men', 'male', 'gentleman'] :
-                                          serviceFor === 'children' ? ['children', 'kids', 'family'] : [];
-                        
-                        const matches = searchTerm.some(term => clientPrefs.includes(term));
-                        if (!matches && clientPrefs !== 'all' && clientPrefs !== 'everyone') {
-                            return false;
-                        }
-                    }
-
-                    // 3. Massage Type Filter
-                    if (effectiveMassageType) {
-                        const services = String(t.services || t.massageTypes || '').toLowerCase();
-                        const specialties = String(t.specialties || '').toLowerCase();
-                        const massageType = effectiveMassageType.toLowerCase();
-                        
-                        // Check if the massage type exists in services or specialties
-                        if (!services.includes(massageType) && !specialties.includes(massageType)) {
-                            return false;
-                        }
-                    }
-
-                    // 4. Special Feature Filter
-                    if (selectedSpecialFeature) {
-                        const feature = selectedSpecialFeature;
-                        
-                        switch (feature) {
-                            case 'verified-only':
-                                if (!t.isVerified && !t.hasIndustryStandards) return false;
-                                break;
-                            case 'with-facial':
-                                const services = String(t.services || '').toLowerCase();
-                                if (!services.includes('facial')) return false;
-                                break;
-                            case 'highly-rated':
-                                const rating = parseFloat(t.averageRating || '0');
-                                if (rating < 4.5) return false;
-                                break;
-                            case 'coin-rub':
-                                const hasCoinRub = String(t.services || t.specialties || '').toLowerCase().includes('coin');
-                                if (!hasCoinRub) return false;
-                                break;
-                            case 'body-scrub':
-                                const hasScrub = String(t.services || t.specialties || '').toLowerCase().includes('scrub');
-                                if (!hasScrub) return false;
-                                break;
-                            case 'hot-stones':
-                                const hasHotStone = String(t.services || t.specialties || '').toLowerCase().includes('hot stone');
-                                if (!hasHotStone) return false;
-                                break;
-                            case 'aromatherapy':
-                                const hasAroma = String(t.services || t.specialties || '').toLowerCase().includes('aroma');
-                                if (!hasAroma) return false;
-                                break;
-                            case 'deep-pressure':
-                                const hasDeep = String(t.services || t.specialties || '').toLowerCase().includes('deep');
-                                if (!hasDeep) return false;
-                                break;
-                            case 'home-service':
-                                if (!t.homeService && !t.mobileService) return false;
-                                break;
-                        }
-                    }
-
-                    // 5. Price Range Filter
-                    const price = parseInt(t.price || t.basePrice || t.hourlyRate || '0');
-                    if (price > 0) {
-                        if (price < priceRange[0] || price > priceRange[1]) {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                });
-
-                logger.debug(`Advanced filters applied: ${baseList.length} therapists matching criteria`);
-            }
-
-                            // Ensure owner's profile appears once
-                            if (loggedInProvider && loggedInProvider.type === 'therapist') {
-                                const alreadyIncluded = baseList.some((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
-                                if (!alreadyIncluded) {
-                                    const ownerDoc = safeTherapists.find((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
-                                    if (ownerDoc) {
-                                        let includeOwner = selectedCity === 'all';
-                                        if (!includeOwner && ownerDoc.coordinates && currentUserLocation) {
-                                            // ✅ FIXED: Use GPS distance instead of string matching
-                                            const ownerLocation = { lat: ownerDoc.coordinates.lat || 0, lng: ownerDoc.coordinates.lng || 0 };
-                                            const distance = calculateHaversineDistance(currentUserLocation, ownerLocation);
-                                            includeOwner = distance <= 10; // Same 10km radius as other therapists
-                                        }
-                                        
-                                        if (includeOwner) {
-                                            baseList = [ownerDoc, ...baseList];
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Add Yogyakarta showcase profiles ONLY to cities with no real therapists
-                            if (selectedCity !== 'all') {
-                                // Count real therapists in baseList (excluding featured Budi sample)
-                                const realTherapistsInCity = baseList.filter((t: any) => !isFeaturedSample(t, 'therapist'));
-                                
-                                // Only add showcase profiles if city has NO real therapists
-                                if (realTherapistsInCity.length === 0) {
-                                    const showcaseProfiles = getYogyakartaShowcaseProfiles(safeTherapists, selectedCity);
-                                    if (showcaseProfiles.length > 0) {
-                                        // Add showcase profiles (they appear as busy, can't be booked)
-                                        baseList = [...baseList, ...showcaseProfiles];
-                                        logger.debug(`Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} display (no real therapists)`);
-                                    }
-                                } else {
-                                    logger.debug(`${selectedCity} has ${realTherapistsInCity.length} real therapist(s) in display, skipping showcase profiles`);
-                                }
-                            }
-
-                            // Advanced priority sorting system
-                            const getPriorityScore = (therapist: any) => {
-                                let score = 0;
-
-                                // 1. Status Priority (0-10000 points) - HIGHEST WEIGHT
-                                const status = String(therapist.status || '').toLowerCase();
-                                if (status === 'available' || status === 'online') {
-                                    score += 10000; // Available first - HIGHEST priority
-                                } else if (status === 'busy') {
-                                    score += 5000;  // Busy second - Medium priority
-                                } else {
-                                    score += 0;     // Offline last - Lowest priority
-                                }
-
-                                // 2. Premium Account Boost (0-500 points)
-                                if (therapist.isPremium || therapist.accountType === 'premium') {
-                                    score += 500;
-                                }
-
-                                // 3. Industry Standards Boost (0-300 points)
-                                if (therapist.isVerified || therapist.hasIndustryStandards || therapist.certifications?.length > 0) {
-                                    score += 300;
-                                }
-
-                                // 4. Dashboard activity / last seen (0-200 points) – active profiles rank higher
-                                const now = new Date();
-                                const lastActivity = therapist.lastSeen || therapist.$updatedAt || therapist.updatedAt;
-                                if (lastActivity) {
-                                    const then = new Date(lastActivity);
-                                    if (!isNaN(then.getTime())) {
-                                        const hoursAgo = (now.getTime() - then.getTime()) / (1000 * 60 * 60);
-                                        if (hoursAgo <= 1) score += 200;       // Active within 1 hour
-                                        else if (hoursAgo <= 6) score += 150;  // Active within 6 hours
-                                        else if (hoursAgo <= 24) score += 100;  // Active within 24 hours
-                                        else if (hoursAgo <= 72) score += 50;  // Active within 3 days
-                                        else if (hoursAgo <= 168) score += 25; // Active within 7 days
-                                    }
-                                }
-
-                                // 5. Missed bookings penalty – lowers search ranking
-                                const missedCount = therapist.missedBookingsCount ?? therapist.missedBookings ?? 0;
-                                score -= Math.min(500, missedCount * 100);
-
-                                // 6. Rating Quality Bonus (0-100 points)
-                                const rating = parseFloat(therapist.averageRating || '0');
-                                if (rating >= 4.5) score += 100;
-                                else if (rating >= 4.0) score += 75;
-                                else if (rating >= 3.5) score += 50;
-
-                                // 7. Order Count Boost (0-50 points)
-                                const orders = parseInt(therapist.orderCount || '0');
-                                if (orders >= 50) score += 50;
-                                else if (orders >= 20) score += 30;
-                                else if (orders >= 10) score += 20;
-
-                                // 8. Featured samples (Budi) - NO SPECIAL BOOST
-                                // Featured samples are randomized with other available therapists
-                                // No longer pinned to top to avoid "stuck" appearance
-
-                                return score;
-                            };
-
-                            // All offline therapists display as "Busy" (stored status remains offline; set on logout).
-                            const transformOfflineToBusy = (list: any[]) => {
-                                return list.map(therapist => {
-                                    const status = String(therapist.status || '').toLowerCase();
-                                    if (status === 'offline' || status === '') {
-                                        return {
-                                            ...therapist,
-                                            displayStatus: 'Busy',
-                                            _originalStatus: therapist.status,
-                                            status: 'Busy'
-                                        };
-                                    }
-                                    return therapist;
-                                });
-                            };
-
-                            // Apply offline-to-busy transformation before sorting
-                            baseList = transformOfflineToBusy(baseList);
-
-                            // Apply intelligent sorting: PRIMARY SORT BY STATUS, then distance, then PRICE
-                            baseList = baseList
-                                .slice()
-                                .map(therapist => ({ 
-                                    ...therapist, 
-                                    priorityScore: getPriorityScore(therapist),
-                                    randomSeed: Math.random() // For randomization within groups
-                                }))
-                                .sort((a: any, b: any) => {
-                                    // 🎯 PRIMARY SORT: Status Priority (Available → Busy → Offline)
-                                    if (b.priorityScore !== a.priorityScore) {
-                                        return b.priorityScore - a.priorityScore;
-                                    }
-                                    
-                                    // 🌍 SECONDARY SORT: Distance (nearest first) - ONLY if user location exists
-                                    if (currentUserLocation && a._distance !== null && b._distance !== null) {
-                                        if (a._distance !== b._distance) {
-                                            return a._distance - b._distance; // Ascending (nearest first)
-                                        }
-                                    }
-                                    
-                                    // 💰 TERTIARY SORT: Price (lowest first) - Show cheapest therapists first
-                                    // This helps customers find the best deals from available/busy therapists
-                                    const priceA = parseFloat(a.price) || parseFloat(a.basePrice) || 999999;
-                                    const priceB = parseFloat(b.price) || parseFloat(b.basePrice) || 999999;
-                                    if (priceA !== priceB) {
-                                        return priceA - priceB; // Ascending (cheapest first)
-                                    }
-                                    
-                                    // Quaternary sort by random seed for same-priority items
-                                    return a.randomSeed - b.randomSeed;
-                                });
-
-                            // Removed sample therapist fallback: now show empty-state message below if none live
-
-                            const preparedTherapists = baseList
-                                .map((therapist: any) => {
-                                    // Keep therapist image as-is so home card and profile show same main image (getTherapistMainImage in TherapistHomeCard)
-                                    // Override location for featured samples when shown in non-home cities
-                                    let displayLocation = therapist.location;
-                                    let displayCity = therapist.city;
-                                    if (isFeaturedSample(therapist, 'therapist') && selectedCity !== 'all') {
-                                        displayLocation = selectedCity;
-                                        displayCity = selectedCity;
-                                        logger.debug(`Overriding featured sample ${therapist.name} location to ${selectedCity}`);
-                                    }
-                                    return {
-                                        ...therapist,
-                                        location: displayLocation,
-                                        city: displayCity
-                                    };
-                                });
-
-                            // OOM FIX: Cap initial cards to avoid memory crash on large lists
-                            const MAX_INITIAL_THERAPIST_CARDS = 12;
-                            const therapistsToRender = preparedTherapists.slice(0, MAX_INITIAL_THERAPIST_CARDS);
-
-                            // 🏷️ GROUP BY LOCATION AREA for display (sorted by distance within each group)
-                            const therapistsByLocation: { [key: string]: any[] } = {};
-                            therapistsToRender.forEach((therapist: any) => {
-                                const area = therapist._locationArea || 'Unknown';
-                                if (!therapistsByLocation[area]) {
-                                    therapistsByLocation[area] = [];
-                                }
-                                therapistsByLocation[area].push(therapist);
-                            });
-
-                            // Render grouped therapists with section headers (no large-object logging in render path to avoid OOM)
-                            const locationAreas = Object.keys(therapistsByLocation).sort();
-                            
+                            const d = therapistDisplay;
                             return (
                                 <>
-                                {locationAreas.map((area) => {
-                                    const therapistsInArea = therapistsByLocation[area];
+                                {d.locationAreas.map((area) => {
+                                    const therapistsInArea = d.therapistsByLocation[area];
                                     return (
                                         <div key={`area-${area}`} className="mb-8">
                                             {/* Therapist Cards in This Area */}
@@ -2212,9 +1948,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                     selectedCity={selectedCity}
                                     t={t}
                                     avatarOffsetPx={8}
-                                    // 🚀 PERFORMANCE: Pass prefetched data to eliminate N+1 queries
-                                    prefetchedMenu={prefetchedData?.menus.get(String(therapist.$id || therapist.id))}
-                                    prefetchedShareLink={prefetchedData?.shareLinks.get(String(therapist.$id || therapist.id))}
+                                    // 🚀 PERFORMANCE: Pass prefetched data to eliminate N+1 queries (prefetchedData always has menus/shareLinks)
+                                    prefetchedMenu={prefetchedData.menus.get(String(therapist.$id || therapist.id))}
+                                    prefetchedShareLink={prefetchedData.shareLinks.get(String(therapist.$id || therapist.id))}
                                     onClick={(selectedTherapist) => {
                                         logger.debug('TherapistHomeCard onClick', { selectedCity });
                                         // Set selected therapist and navigate to profile page with URL update
@@ -2247,19 +1983,19 @@ const HomePage: React.FC<HomePageProps> = ({
                                         </div>
                                     );
                                 })}
+                                    {d.noTherapistsToShow && (
+                                        <div className="text-center py-12 bg-white rounded-lg">
+                                            <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable ?? 'No therapists are available right now.'}</p>
+                                            {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
+                                                <p className="text-gray-400 text-sm mt-2">
+                                                    Showing therapists in your selected region
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </>
                             );
                         })()}
-                        {safeTherapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
-                            <div className="text-center py-12 bg-white rounded-lg">
-                                <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable || 'No therapists available in your area at the moment.'}</p>
-                                {autoDetectedLocation && (
-                                    <p className="text-gray-400 text-sm mt-2">
-                                        Showing providers within 15km of your location
-                                    </p>
-                                )}
-                            </div>
-                        )}
 
                         </div>
                     </div>
@@ -2359,9 +2095,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                         </div>
                                         <p className="text-gray-500 mb-2 text-lg font-semibold">{t?.home?.noPlacesAvailable || 'Tidak ada tempat pijat tersedia di area Anda'}</p>
                                         <p className="text-sm text-gray-400">Check back soon for featured spas!</p>
-                                        {autoDetectedLocation && (
+                                        {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
                                             <p className="text-xs text-gray-300 mt-2">
-                                                Showing places within 15km of your location
+                                                Showing places in your selected region
                                             </p>
                                         )}
                                         <p className="text-xs text-gray-300 mt-4">Total places in DB: {places?.length || 0} | Nearby: {nearbyPlaces.length} | Live: {livePlaces.length}</p>

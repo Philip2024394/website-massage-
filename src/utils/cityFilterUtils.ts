@@ -9,6 +9,7 @@
 
 import { Therapist, Place } from '../types';
 import { findCityByLocationIdOrName } from '../data/indonesianCities';
+import { convertLocationStringToId } from './locationNormalizationV2';
 
 /**
  * Normalize city name for comparison
@@ -20,17 +21,34 @@ export function normalizeCityName(city: string | undefined | null): string {
 
 /**
  * Get all normalized values that count as a match for the active city
- * (locationId, official name, and aliases e.g. Yogyakarta → yogyakarta, jogja, yogya)
+ * (locationId, official name, and aliases e.g. Yogyakarta → yogyakarta, jogja, yogya).
+ * Uses both indonesianCities and convertLocationStringToId so display names (e.g. "Yogyakarta")
+ * always match therapist city stored as locationId ("yogyakarta").
  */
 function getMatchableCityValues(activeCity: string | undefined | null): Set<string> {
   if (!activeCity || activeCity === 'all') return new Set();
   const normalized = normalizeCityName(activeCity);
-  const city = findCityByLocationIdOrName(activeCity);
   const set = new Set<string>([normalized]);
+  let city = findCityByLocationIdOrName(activeCity);
+  // When stored value is "City, Country" (e.g. "Yogyakarta, Indonesia"), resolve by city part so therapist city "yogyakarta" still matches
+  if (!city && activeCity.includes(',')) {
+    const cityPart = activeCity.split(',')[0].trim();
+    if (cityPart) city = findCityByLocationIdOrName(cityPart);
+  }
   if (city) {
     set.add(normalizeCityName(city.locationId));
     set.add(normalizeCityName(city.name));
     (city.aliases || []).forEach(alias => set.add(normalizeCityName(alias)));
+  }
+  const canonicalId = convertLocationStringToId(activeCity);
+  if (canonicalId && canonicalId !== 'all') set.add(normalizeCityName(canonicalId));
+  // Also try canonical id of the part before comma (e.g. "Yogyakarta, Indonesia" -> "yogyakarta")
+  if (activeCity.includes(',')) {
+    const cityPart = activeCity.split(',')[0].trim();
+    if (cityPart) {
+      const partId = convertLocationStringToId(cityPart);
+      if (partId && partId !== 'all') set.add(normalizeCityName(partId));
+    }
   }
   return set;
 }
