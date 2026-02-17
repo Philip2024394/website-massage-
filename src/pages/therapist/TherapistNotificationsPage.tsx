@@ -541,8 +541,9 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
 
   return (
     <TherapistSimplePageLayout
-      title="Notifications"
+      title="Notifikasi"
       subtitle="Pantau kesehatan akun, booking, dan performa bisnis Anda"
+      language="id"
       onBackToStatus={onBack}
       onNavigate={onNavigate}
       therapist={therapist}
@@ -605,7 +606,7 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
                 <span className="text-xs font-medium text-gray-600">Respons</span>
               </div>
               <p className="text-lg font-bold text-gray-900">{accountHealth.responseRate}%</p>
-              <p className="text-xs text-gray-500">response rate</p>
+              <p className="text-xs text-gray-500">tingkat respons</p>
             </div>
           </div>
         </section>
@@ -766,7 +767,7 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
                   <TrendingUp className="w-4 h-4 text-blue-500" />
                 </div>
                 <p className="text-3xl font-bold text-blue-600 mb-1">{notifications.filter(n => n.type === 'booking').length}</p>
-                <p className="text-xs text-blue-700 font-medium">Booking Update</p>
+                <p className="text-xs text-blue-700 font-medium">Pembaruan Booking</p>
               </div>
 
               {/* Message Notifications */}
@@ -813,7 +814,7 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
                             {!notification.read && (
                               <div className="flex items-center gap-1">
                                 <span className="w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse"></span>
-                                <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">NEW</span>
+                                <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">BARU</span>
                               </div>
                             )}
                           </div>
@@ -822,7 +823,7 @@ const TherapistNotificationsPage: React.FC<TherapistNotificationsProps> = ({
                             <button
                               onClick={() => handleDeleteNotification(notification.$id)}
                               className="text-gray-400 hover:text-red-500 transition-all p-1.5 hover:bg-red-50 rounded-lg hover:scale-110"
-                              title="Delete notification"
+                              title="Hapus notifikasi"
                             >
                               <X className="w-4 h-4" />
                             </button>

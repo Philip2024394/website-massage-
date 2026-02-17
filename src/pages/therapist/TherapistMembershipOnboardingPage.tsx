@@ -278,30 +278,30 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
           </div>
         )}
 
-        {/* Terms and Conditions */}
+        {/* Syarat dan Ketentuan */}
         <div className="bg-white rounded-2xl p-8 mb-8 border border-gray-200">
           <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5" />
-            Terms and Conditions
+            Syarat & Ketentuan
           </h3>
           <div className="space-y-4 text-gray-700 text-sm">
             <div>
-              <h4 className="font-semibold mb-2">Membership Terms:</h4>
+              <h4 className="font-semibold mb-2">Ketentuan Keanggotaan:</h4>
               <ul className="space-y-1 ml-4">
-                <li>• Monthly packages auto-renew unless cancelled 48 hours before renewal</li>
-                <li>• Commission packages have no contracts - pay per booking only</li>
-                <li>• Switching from commission to monthly requires 30-day notice</li>
-                <li>• All outstanding fees must be cleared before package changes</li>
-                <li>• Verified badge removed upon membership cancellation</li>
+                <li>• Paket bulanan diperpanjang otomatis kecuali dibatalkan 48 jam sebelum perpanjangan</li>
+                <li>• Paket komisi tanpa kontrak—bayar per booking saja</li>
+                <li>• Pindah dari komisi ke bulanan memerlukan pemberitahuan 30 hari</li>
+                <li>• Semua biaya tertunggak harus dilunasi sebelum perubahan paket</li>
+                <li>• Lencana terverifikasi dihapus saat keanggotaan dibatalkan</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Service Terms:</h4>
+              <h4 className="font-semibold mb-2">Ketentuan Layanan:</h4>
               <ul className="space-y-1 ml-4">
-                <li>• Professional conduct expected at all times</li>
-                <li>• Accurate profile information required</li>
-                <li>• Customer safety and satisfaction priority</li>
-                <li>• Platform fees non-refundable once services rendered</li>
+                <li>• Perilaku profesional diharapkan setiap saat</li>
+                <li>• Informasi profil yang akurat wajib</li>
+                <li>• Keamanan dan kepuasan pelanggan prioritas</li>
+                <li>• Biaya platform tidak dapat dikembalikan setelah layanan diberikan</li>
               </ul>
             </div>
             <div className="flex items-start gap-3 mt-6">
@@ -313,13 +313,13 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
                 className="mt-1 w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
               />
               <label htmlFor="terms" className="text-sm text-gray-700 cursor-pointer">
-                I have read and agree to the{' '}
+                Saya telah membaca dan setuju dengan{' '}
                 <a href="#" className="text-orange-600 hover:text-orange-700 font-semibold">
-                  Terms and Conditions
+                  Syarat & Ketentuan
                 </a>{' '}
-                and{' '}
+                dan{' '}
                 <a href="#" className="text-orange-600 hover:text-orange-700 font-semibold">
-                  Privacy Policy
+                  Kebijakan Privasi
                 </a>
               </label>
             </div>
@@ -331,7 +331,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
           <div className="max-w-sm mx-auto">
             {/* Helper text */}
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[12px] text-gray-600">{selectedPackage ? (selectedPackage === 'monthly' ? 'Plus Plan selected' : 'Pro Plan selected') : 'Select a plan above'}</p>
+              <p className="text-[12px] text-gray-600">{selectedPackage ? (selectedPackage === 'monthly' ? 'Paket Plus dipilih' : 'Paket Pro dipilih') : 'Pilih paket di atas'}</p>
               <label className="flex items-center gap-2 text-[12px]">
                 <input
                   type="checkbox"
@@ -339,7 +339,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
                   onChange={(e) => setTermsAccepted(e.target.checked)}
                   className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
                 />
-                <span className="text-gray-700">Agree to terms</span>
+                <span className="text-gray-700">Setuju syarat & ketentuan</span>
               </label>
             </div>
 
