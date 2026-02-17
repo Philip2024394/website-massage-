@@ -50,27 +50,54 @@ import { initializeBootGuard, markBootSuccess } from './utils/bootGuard';
 // 🔍 PRODUCTION MONITOR - Error Tracking & Alerts
 import { initializeMonitoring, recordBootStart, recordBootComplete } from './monitoring/productionMonitor';
 
-// 🆕 ELITE PWA: Register Service Worker (Production Only)
-// ✅ Achieves 97% download reliability vs 75% without PWA
-// 🚨 TEMPORARILY DISABLED TO BREAK CACHE LOOP
-/*
+// 🆕 ELITE PWA: Check-for-update before Install – when user taps "Download app to phone" we refresh first
+declare global {
+  interface Window {
+    __PWA_UPDATE__?: {
+      checkBeforeInstall: (onReady: () => void) => void;
+    };
+  }
+}
+(window as any).__PWA_UPDATE__ = {
+  checkBeforeInstall(onReady: () => void) {
+    onReady();
+  },
+};
+
+// 🆕 ELITE PWA: Register Service Worker – old installed app gets new version when updates are deployed
 if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
+  const pendingInstall: { callback: (() => void) | null; timeoutId: ReturnType<typeof setTimeout> | null } = {
+    callback: null,
+    timeoutId: null,
+  };
   const updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {
+      if (pendingInstall.timeoutId != null) {
+        clearTimeout(pendingInstall.timeoutId);
+        pendingInstall.timeoutId = null;
+        pendingInstall.callback = null;
+      }
       logger.log('🔄 PWA: New version available, updating...');
-      updateSW(true); // Auto-update for seamless experience
+      updateSW(true); // Apply new version so old downloaded app becomes the new app
     },
     onOfflineReady() {
       logger.log('✅ PWA: App ready to work offline');
     },
     onRegistered(registration) {
-      logger.log('✅ PWA: Service worker registered successfully');
-      // Check for updates every hour
+      logger.log('✅ PWA: Service worker registered');
       if (registration) {
-        setInterval(() => {
+        setInterval(() => registration.update(), 60 * 60 * 1000);
+        (window as any).__PWA_UPDATE__.checkBeforeInstall = (onReady: () => void) => {
+          pendingInstall.callback = onReady;
           registration.update();
-        }, 60 * 60 * 1000);
+          pendingInstall.timeoutId = setTimeout(() => {
+            pendingInstall.timeoutId = null;
+            const cb = pendingInstall.callback;
+            pendingInstall.callback = null;
+            if (cb) cb();
+          }, 2500);
+        };
       }
     },
     onRegisterError(error) {
@@ -78,7 +105,6 @@ if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
     }
   });
 }
-*/
 
 // 🆕 ELITE PWA: Capture install prompt for manual trigger
 window.addEventListener('beforeinstallprompt', (e) => {

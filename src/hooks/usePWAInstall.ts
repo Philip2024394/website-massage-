@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { checkPWAUpdateBeforeInstall } from '../utils/checkPWAUpdateBeforeInstall';
 
 /**
  * Hook: usePWAInstall
@@ -67,12 +68,16 @@ export const usePWAInstall = () => {
     // Already installed
     if (isInstalled) return { outcome: 'already-installed' };
 
-    // Chromium flow
+    // Chromium flow: ELITE – check for update before showing install prompt
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const choiceResult = await deferredPrompt.userChoice;
-      setDeferredPrompt(null); // cannot reuse
-      return choiceResult; // { outcome: 'accepted' | 'dismissed' }
+      return new Promise<{ outcome: 'accepted' | 'dismissed' }>((resolve) => {
+        checkPWAUpdateBeforeInstall(async () => {
+          deferredPrompt.prompt();
+          const choiceResult = await deferredPrompt.userChoice;
+          setDeferredPrompt(null); // cannot reuse
+          resolve(choiceResult);
+        });
+      });
     }
 
     // iOS manual flow

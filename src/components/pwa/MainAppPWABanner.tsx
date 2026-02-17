@@ -15,6 +15,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Download, Share2 } from 'lucide-react';
+import { checkPWAUpdateBeforeInstall } from '../../utils/checkPWAUpdateBeforeInstall';
 
 interface PWAInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -80,7 +81,7 @@ export const MainAppPWABanner: React.FC = () => {
     };
   }, []);
 
-  // 🔒 GOLD STANDARD RULE: Handle install (user action required)
+  // 🔒 GOLD STANDARD RULE: Handle install (user action required). ELITE: Check for update first, then prompt.
   const handleInstall = async () => {
     if (isIOS) {
       // iOS: Show simple instructions
@@ -100,27 +101,29 @@ export const MainAppPWABanner: React.FC = () => {
       return;
     }
 
-    try {
-      setIsInstalling(true);
-      logger.debug('[Main App PWA] Showing install prompt');
-      
-      await deferredPrompt.prompt();
-      const choiceResult = await deferredPrompt.userChoice;
-      
-      if (choiceResult.outcome === 'accepted') {
-        logger.debug('[Main App PWA] Installation accepted');
-        localStorage.setItem('pwa-main-installed', 'true');
-        setShowBanner(false);
-      } else {
-        logger.debug('[Main App PWA] Installation dismissed');
+    checkPWAUpdateBeforeInstall(async () => {
+      try {
+        setIsInstalling(true);
+        logger.debug('[Main App PWA] Showing install prompt');
+        
+        await deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        
+        if (choiceResult.outcome === 'accepted') {
+          logger.debug('[Main App PWA] Installation accepted');
+          localStorage.setItem('pwa-main-installed', 'true');
+          setShowBanner(false);
+        } else {
+          logger.debug('[Main App PWA] Installation dismissed');
+          setIsInstalling(false);
+        }
+        
+        setDeferredPrompt(null);
+      } catch (error) {
+        logger.error('[Main App PWA] Install error:', error);
         setIsInstalling(false);
       }
-      
-      setDeferredPrompt(null);
-    } catch (error) {
-      logger.error('[Main App PWA] Install error:', error);
-      setIsInstalling(false);
-    }
+    });
   };
 
   // 🔒 GOLD STANDARD RULE: Handle dismiss with 7-day timeout

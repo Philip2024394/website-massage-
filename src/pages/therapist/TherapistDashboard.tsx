@@ -172,6 +172,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // Location state
   const [locationSet, setLocationSet] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false); // Add GPS loading state
+  const [locationJustUpdated, setLocationJustUpdated] = useState(false); // Show "New location updated" notice after Set Location
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(() => {
     try {
       const coords = therapist?.coordinates;
@@ -355,7 +356,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // ============================================================================
   // Business Rule: Load latest therapist data from database on mount
   // Impact: Ensures form fields display current database values
-  // DO NOT MODIFY - Stable mounting behavior, no redirects or conditionals
+  // Auto-refresh: on mount and when user returns to this tab so they always see latest changes
   // Dependencies: [therapist?.$id, therapist?.id] - STABLE
   // ============================================================================
   useEffect(() => {
@@ -434,6 +435,36 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     loadLatestTherapistData();
   }, [therapist?.$id, therapist?.id]);
 
+  // Auto-refresh when user enters dashboard (e.g. returns to tab) so they see latest changes
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible' || !therapist?.$id && !therapist?.id) return;
+      const therapistId = String(therapist.$id || therapist.id);
+      therapistService.getById(therapistId).then((latestData) => {
+        if (latestData.name) setName(latestData.name);
+        if (latestData.description) setDescription(latestData.description);
+        if (latestData.whatsappNumber) setWhatsappNumber(latestData.whatsappNumber);
+        if (latestData.price60) setPrice60(String(latestData.price60));
+        if (latestData.price90) setPrice90(String(latestData.price90));
+        if (latestData.price120) setPrice120(String(latestData.price120));
+        if (latestData.yearsOfExperience) setYearsOfExperience(String(latestData.yearsOfExperience));
+        if (latestData.clientPreferences) setClientPreferences(latestData.clientPreferences);
+        if (latestData.profilePicture) setProfileImageDataUrl(latestData.profilePicture);
+        if (latestData.coordinates) {
+          try {
+            const coords = typeof latestData.coordinates === 'string' ? JSON.parse(latestData.coordinates) : latestData.coordinates;
+            if (coords?.lat && coords?.lng) {
+              setCoordinates({ lat: coords.lat, lng: coords.lng });
+              setLocationSet(true);
+            }
+          } catch (_) {}
+        }
+      }).catch(() => {});
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [therapist?.$id, therapist?.id]);
+
   // Detect package from localStorage
   useEffect(() => {
     try {
@@ -509,9 +540,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           return;
         }
         
-        // Derive city from GPS coordinates
-        const derivedCity = deriveLocationIdFromGeopoint(coords);
-        logger.debug('🎯 GPS-derived city', { derivedCity });
+        // Derive city from GPS using same city list as main app dropdown/filter (so therapist appears in correct city)
+        const matchedCity = matchProviderToCity(coords, 50);
+        const derivedCity = matchedCity ? matchedCity.locationId : deriveLocationIdFromGeopoint(coords);
+        logger.debug('🎯 GPS-derived city', { derivedCity, matchedCity: matchedCity?.name });
         
         setCoordinates(coords);
         setLocationSet(true);
@@ -533,6 +565,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             
             logger.debug('✅ GPS location saved immediately to database');
             logger.debug('✅ City assignment', { derivedCity });
+            setLocationJustUpdated(true);
+            const clearNotice = () => setLocationJustUpdated(false);
+            setTimeout(clearNotice, 8000);
             
             // Verify the save
             setTimeout(async () => {
@@ -1428,6 +1463,20 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   '📍 ATUR LOKASI GPS (WAJIB)'
                 )}
               </button>
+              
+              {locationJustUpdated && (
+                <div className="mt-3 p-3 bg-emerald-100 border-2 border-emerald-500 rounded-xl space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">✅</span>
+                    <p className="text-sm font-bold text-emerald-800">
+                      New location has been updated.
+                    </p>
+                  </div>
+                  <p className="text-xs text-emerald-700 pl-8">
+                    Your profile is now assigned to the correct city on the main app. Customers will see you when they select this city in the location dropdown and when they search or filter by this location.
+                  </p>
+                </div>
+              )}
               
               {locationSet && coordinates && (
                 <div className="mt-3 p-4 bg-green-50 border-2 border-green-200 rounded-xl">

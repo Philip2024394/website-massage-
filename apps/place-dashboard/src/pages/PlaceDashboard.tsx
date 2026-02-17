@@ -20,6 +20,7 @@ import MainImageCropper from '../../../../src/components/MainImageCropper';
 import HotelVillaOptIn from '../../../../src/components/HotelVillaOptIn';
 
 import { placeService, imageUploadService } from '../../../../src/lib/appwriteService';
+import { checkPWAUpdateBeforeInstall } from '../../../../src/utils/checkPWAUpdateBeforeInstall';
 import { sanitizePlacePayload } from '../../../../src/schemas/placeSchema';
 import LoadingSpinner from '../../../../src/components/LoadingSpinner';
 import NotificationBell from '../../../../src/components/NotificationBell';
@@ -270,7 +271,23 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         loadPlaceData();
         // Only re-run if the external identifier or prop changes, not when local place state updates
     }, [_placeId, placeProp]);
-    
+
+    // Auto-refresh when user returns to this tab so dashboard shows latest changes
+    useEffect(() => {
+        if (!_placeId) return;
+        const onVisible = () => {
+            if (document.visibilityState !== 'visible') return;
+            placeService.getByProviderId(String(_placeId)).then((loadedPlace) => {
+                if (loadedPlace) {
+                    setPlace(loadedPlace);
+                    initializeWithPlaceData(loadedPlace);
+                }
+            }).catch(() => {});
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => document.removeEventListener('visibilitychange', onVisible);
+    }, [_placeId]);
+
     // PWA Install functionality
     useEffect(() => {
         const handleBeforeInstallPrompt = (e: Event) => {
@@ -536,7 +553,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     // Note: All data is saved to Appwrite only - no localStorage usage
 
     const handleInstallApp = async () => {
-        if (deferredPrompt) {
+        if (!deferredPrompt) return;
+        checkPWAUpdateBeforeInstall(async () => {
             try {
                 await deferredPrompt.prompt();
                 const choiceResult = await deferredPrompt.userChoice;
@@ -548,7 +566,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             } catch (error) {
                 console.error('Error installing app:', error);
             }
-        }
+        });
     };
 
     const handleSave = () => {

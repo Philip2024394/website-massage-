@@ -294,6 +294,36 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
     loadLatestTherapistData();
   }, [therapist?.$id, therapist?.id]);
 
+  // Auto-refresh when user returns to this tab so dashboard shows latest changes
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible' || (!therapist?.$id && !therapist?.id)) return;
+      const therapistId = String(therapist.$id || therapist.id);
+      therapistService.getById(therapistId).then((latestData) => {
+        if (latestData.name) setName(latestData.name);
+        if (latestData.description) setDescription(latestData.description);
+        if (latestData.whatsappNumber) setWhatsappNumber(latestData.whatsappNumber);
+        if (latestData.price60) setPrice60(String(latestData.price60));
+        if (latestData.price90) setPrice90(String(latestData.price90));
+        if (latestData.price120) setPrice120(String(latestData.price120));
+        if (latestData.yearsOfExperience) setYearsOfExperience(String(latestData.yearsOfExperience));
+        if (latestData.clientPreferences) setClientPreferences(latestData.clientPreferences);
+        if (latestData.profilePicture) setProfileImageDataUrl(latestData.profilePicture);
+        if (latestData.coordinates) {
+          try {
+            const coords = typeof latestData.coordinates === 'string' ? JSON.parse(latestData.coordinates) : latestData.coordinates;
+            if (coords?.lat && coords?.lng) {
+              setCoordinates({ lat: coords.lat, lng: coords.lng });
+              setLocationSet(true);
+            }
+          } catch (_) {}
+        }
+      }).catch(() => {});
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [therapist?.$id, therapist?.id]);
+
   // Detect package from localStorage
   useEffect(() => {
     try {

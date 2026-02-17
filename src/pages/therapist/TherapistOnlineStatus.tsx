@@ -20,6 +20,7 @@ import { TherapistHelpModal } from '../../components/therapist/TherapistHelpModa
 import { useHelpModal } from '../../hooks/useHelpModal';
 import { getTherapistSidebarPage } from '../../config/therapistSidebarConfig';
 import { showToast, showErrorToast, showWarningToast, showConfirmationToast } from '../../lib/toastUtils';
+import { checkPWAUpdateBeforeInstall } from '../../utils/checkPWAUpdateBeforeInstall';
 import UniversalPWAInstall from '../../components/UniversalPWAInstall';
 import IOSInstallInstructions from '../../components/IOSInstallInstructions';
 import { pwaNotificationSoundHandler } from '../../services/pwaNotificationSoundHandler';
@@ -41,7 +42,7 @@ interface TherapistOnlineStatusProps {
   language?: 'en' | 'id';
 }
 
-type OnlineStatus = 'available' | 'busy' | 'active'; // No offline: logout/app close sets Busy
+type OnlineStatus = 'available' | 'busy' | 'active' | 'offline'; // offline used for UI display (e.g. getStatusColor/getStatusIcon)
 
 const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, onLogout, language: propLanguage = 'id' }) => {
   // Help modal state
@@ -1063,42 +1064,41 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     // Try to get the deferred prompt from window object first
     const promptEvent = deferredPrompt || (window as any).deferredPrompt;
     
-    // AUTO-TRIGGER: First try native browser installation
+    // AUTO-TRIGGER: ELITE – check for update first, then native browser installation
     if (promptEvent) {
-      try {
-        console.log('✅ Found deferred prompt - showing native install dialog...');
-        await promptEvent.prompt();
-        const choiceResult = await promptEvent.userChoice;
-        
-        if (choiceResult.outcome === 'accepted') {
-          console.log('✅ User accepted PWA installation!');
-          setIsAppInstalled(true);
-          localStorage.setItem('pwa-installed', 'true');
-          localStorage.setItem('pwa-install-completed', 'true');
+      checkPWAUpdateBeforeInstall(async () => {
+        try {
+          console.log('✅ Found deferred prompt - showing native install dialog...');
+          await promptEvent.prompt();
+          const choiceResult = await promptEvent.userChoice;
           
-          // Request notification permission immediately after install
-          setTimeout(async () => {
-            if ('Notification' in window && Notification.permission === 'default') {
-              const permission = await Notification.requestPermission();
-              if (permission === 'granted') {
-                new Notification('IndaStreet Therapist', {
-                  body: '🎉 App installed successfully! Notifications are now enabled.',
-                  icon: '/pwa-icon-192.png',
-                  tag: 'install-success'
-                });
+          if (choiceResult.outcome === 'accepted') {
+            console.log('✅ User accepted PWA installation!');
+            setIsAppInstalled(true);
+            localStorage.setItem('pwa-installed', 'true');
+            localStorage.setItem('pwa-install-completed', 'true');
+            
+            // Request notification permission immediately after install
+            setTimeout(async () => {
+              if ('Notification' in window && Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                  new Notification('IndaStreet Therapist', {
+                    body: '🎉 App installed successfully! Notifications are now enabled.',
+                    icon: '/pwa-icon-192.png',
+                    tag: 'install-success'
+                  });
+                }
               }
-            }
-          }, 1000);
-          
-          return;
-        } else {
-          console.log('❌ User declined PWA installation');
-          return;
+            }, 1000);
+          } else {
+            console.log('❌ User declined PWA installation');
+          }
+        } catch (error) {
+          console.error('❌ Error with native install prompt:', error);
         }
-      } catch (error) {
-        console.error('❌ Error with native install prompt:', error);
-        // Continue to fallback methods below
-      }
+      });
+      return;
     }
     
     // FALLBACK: Try to trigger beforeinstallprompt event manually
