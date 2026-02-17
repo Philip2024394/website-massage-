@@ -5,6 +5,8 @@
  * NO string-based location matching
  */
 
+import { findCityByCoordinates } from '../data/indonesianCities';
+
 /**
  * Calculate distance between two points using Haversine formula
  * Returns distance in meters
@@ -84,33 +86,21 @@ export function isWithinRadius(
   return distance <= radiusMeters;
 }
 
+/** Max distance (km) to assign therapist to nearest app city; beyond this returns 'other'. */
+const DEFAULT_MAX_DISTANCE_KM = 75;
+
 /**
- * Auto-derive locationId from geopoint (for UI/SEO only)
- * Uses reverse geocoding concept with known city boundaries
+ * Auto-derive locationId from geopoint using the app's city list.
+ * Ensures therapists are assigned to the same GPS locations used in the app
+ * (dropdown/filter), so they appear under the correct city when users select a location.
+ * Uses nearest city within maxDistance km; returns 'other' if none in range.
  */
-export function deriveLocationIdFromGeopoint(geopoint: { lat: number; lng: number }): string {
-  const { lat, lng } = geopoint;
-  
-  // Indonesian city boundaries (approximate)
-  const cityBounds = {
-    'yogyakarta': { lat: [-7.9, -7.7], lng: [110.2, 110.5] },
-    'bandung': { lat: [-7.0, -6.8], lng: [107.5, 107.8] },
-    'jakarta': { lat: [-6.4, -6.0], lng: [106.7, 107.0] },
-    'denpasar': { lat: [-8.8, -8.5], lng: [115.1, 115.3] },
-    'ubud': { lat: [-8.6, -8.4], lng: [115.2, 115.3] },
-    'canggu': { lat: [-8.7, -8.6], lng: [115.1, 115.2] },
-    'surabaya': { lat: [-7.4, -7.2], lng: [112.6, 112.8] },
-    'semarang': { lat: [-7.1, -6.9], lng: [110.3, 110.5] }
-  };
-  
-  for (const [locationId, bounds] of Object.entries(cityBounds)) {
-    if (lat >= bounds.lat[0] && lat <= bounds.lat[1] &&
-        lng >= bounds.lng[0] && lng <= bounds.lng[1]) {
-      return locationId;
-    }
-  }
-  
-  return 'other'; // Default for unknown areas
+export function deriveLocationIdFromGeopoint(
+  geopoint: { lat: number; lng: number },
+  maxDistanceKm: number = DEFAULT_MAX_DISTANCE_KM
+): string {
+  const city = findCityByCoordinates(geopoint.lat, geopoint.lng, maxDistanceKm);
+  return city ? city.locationId : 'other';
 }
 
 /**
