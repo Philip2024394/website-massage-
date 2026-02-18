@@ -368,6 +368,10 @@ export interface Therapist {
     
     // Custom service menu (premium feature)
     customMenu?: string; // JSON string of custom services array
+
+    // Achievements & Insurance documents (Indastreet) – JSON strings of DocumentItem[]
+    achievementsDocuments?: string; // [{ url, name }] licenses, certs, achievements
+    insuranceDocuments?: string; // [{ url, name }] insurance docs
     
     // Account status for commission payment enforcement
     accountStatus?: 'active' | 'frozen' | 'suspended'; // Account status

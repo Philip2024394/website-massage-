@@ -370,20 +370,16 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                             }
                                                         </button>
                                                         
+                                                        {/* Schedule button: active for all members; user can always select to book scheduled menu item */}
                                                         <button
-                                                            disabled={!hasScheduledBookings}
-                                                            title={!hasScheduledBookings ? (chatLang === 'id' ? 'Penyedia perlu mengunggah KTP dan detail bank' : 'Provider needs to upload KTP and bank details') : undefined}
+                                                            title={!hasScheduledBookings ? (chatLang === 'id' ? 'Penyedia mungkin perlu melengkapi verifikasi untuk menerima booking' : 'Provider may need to complete verification to accept') : (chatLang === 'id' ? 'Jadwalkan layanan ini' : 'Schedule this service')}
                                                             className={`px-6 py-3 font-semibold rounded-lg border-2 transition-all duration-200 flex items-center justify-center gap-2 ${
-                                                                !hasScheduledBookings
-                                                                    ? 'border-gray-300 bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                                    : isRowSelected && selectedDuration
+                                                                isRowSelected && selectedDuration
                                                                     ? 'border-orange-500 bg-orange-500 text-white hover:bg-orange-600 shadow-lg'
                                                                     : 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
                                                             }`}
                                             onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (!hasScheduledBookings) return;
-                                                
                                                 if (isRowSelected && selectedDuration) {
                                                     const priceNum = Number(service[`price${selectedDuration}`]);
                                                     

@@ -1576,12 +1576,12 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 })));
             }
             
-            // OOM: Cap and defensive check – avoid crash on undefined/large lists
-            const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.slice(0, 100) : [];
+            const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists : [];
             let therapistsWithDistance = safeInput
                 .map((t: any) => {
                     let distance: number | null = null;
-                    let locationArea: string = t.city || t.location || 'Unknown';
+                    // Use city/locationId/location_id/location so Yogyakarta (and all cities) show all matching profiles
+                    let locationArea: string = t.city || t.locationId || t.location_id || t.location || 'Unknown';
                     
                     // 🌍 GPS DISTANCE: Calculate only if both user location and valid coordinates exist
                     if (currentUserLocation) {
@@ -2227,7 +2227,6 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
                                     {livePlaces
-                                        .slice(0, 9) // Show maximum 9 places
                                         .map((place, index) => {
                                             const placeId = place.id || (place as any).$id;
                                             
@@ -2381,7 +2380,6 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
                                     {liveFacialPlaces
-                                        .slice(0, 9) // Show maximum 9 facial places
                                         .map((place: any) => {
                                             const placeId = place.id || place.$id;
                                             

@@ -907,6 +907,10 @@ export const therapistService = {
             
             // Handle custom menu field
             if (data.customMenu !== undefined) mappedData.customMenu = data.customMenu;
+
+            // Achievements & Insurance documents (JSON arrays: licenses/certs, insurance)
+            if ((data as any).achievementsDocuments !== undefined) (mappedData as any).achievementsDocuments = (data as any).achievementsDocuments;
+            if ((data as any).insuranceDocuments !== undefined) (mappedData as any).insuranceDocuments = (data as any).insuranceDocuments;
             
             // Handle payment information fields
             if (data.bankName !== undefined) mappedData.bankName = data.bankName;

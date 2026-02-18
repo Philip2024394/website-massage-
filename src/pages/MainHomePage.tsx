@@ -1511,7 +1511,8 @@ const HomePage: React.FC<HomePageProps> = ({
             let therapistsWithDistance = safeInput
                 .map((t: any) => {
                     let distance: number | null = null;
-                    let locationArea: string = t.city || t.location || 'Unknown';
+                    // Use city/locationId/location_id/location so Yogyakarta (and all cities) show all matching profiles
+                    let locationArea: string = t.city || t.locationId || t.location_id || t.location || 'Unknown';
                     
                     // 🌍 GPS DISTANCE: Calculate only if both user location and valid coordinates exist
                     if (currentUserLocation) {
@@ -1896,9 +1897,8 @@ const HomePage: React.FC<HomePageProps> = ({
 
                             // OOM: Final therapist list debug removed (was priorityBreakdown array in render)
 
-                            // Show all therapists in city (cap at 500 for very large lists to avoid perf issues)
-                            const MAX_INITIAL_THERAPIST_CARDS = 500;
-                            const therapistsToRender = preparedTherapists.slice(0, MAX_INITIAL_THERAPIST_CARDS);
+                            // No cap: show all therapists with location for the selected city
+                            const therapistsToRender = preparedTherapists;
 
                             // 🏷️ GROUP BY LOCATION AREA for display (sorted by distance within each group)
                             const therapistsByLocation: { [key: string]: any[] } = {};
@@ -2112,7 +2112,6 @@ const HomePage: React.FC<HomePageProps> = ({
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
                                     {livePlaces
-                                        .slice(0, 9) // Show maximum 9 places
                                         .map((place, index) => {
                                             const placeId = place.id || (place as any).$id;
                                             
@@ -2229,7 +2228,6 @@ const HomePage: React.FC<HomePageProps> = ({
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
                                     {listToShow
-                                        .slice(0, 9) // Show maximum 9 facial places
                                         .map((place: any) => {
                                             const placeId = place.id || place.$id;
                                             

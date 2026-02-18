@@ -56,7 +56,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   buildBookNowMessage,
   buildWhatsAppUrl,
-  getTherapistWhatsApp,
+  getBookingWhatsAppNumber,
   getFirstMassageType,
   getDefaultDurationAndPrice,
 } from '../utils/whatsappBookingMessages';
@@ -161,11 +161,8 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
     const lastScheduleRun = useRef(0);
     const lastPriceRun = useRef(0);
     const bookScheduleDisabled = hasActiveScheduledBooking;
-    const scheduleUnavailable = !hasScheduledBookings;
     const disabledTitle = bookScheduleDisabled
         ? 'Complete or cancel your current scheduled booking first'
-        : scheduleUnavailable
-        ? 'Scheduled bookings require bank details and KTP in the provider dashboard'
         : undefined;
 
     const runBookNow = useCallback((e: React.MouseEvent | React.PointerEvent) => {
@@ -182,13 +179,13 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
     const runSchedule = useCallback((e: React.MouseEvent | React.PointerEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (bookScheduleDisabled || !hasScheduledBookings) return;
+        if (bookScheduleDisabled) return;
         const now = Date.now();
         if (now - lastScheduleRun.current < BUTTON_ACTION_GUARD_MS) return;
         lastScheduleRun.current = now;
         setActiveButton('schedule');
         onSchedule();
-    }, [bookScheduleDisabled, hasScheduledBookings, onSchedule]);
+    }, [bookScheduleDisabled, onSchedule]);
 
     const runPriceSlider = useCallback((e: React.MouseEvent | React.PointerEvent) => {
         e.preventDefault();
@@ -221,16 +218,18 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                 <span className="text-xs sm:text-sm font-semibold pointer-events-none">Book</span>
             </button>
 
-            {/* Schedule Button */}
+            {/* Schedule Button: always active, orange until selected then green */}
             <button
                 type="button"
                 onClick={runSchedule}
                 onPointerUp={runSchedule}
-                disabled={!hasScheduledBookings || bookScheduleDisabled}
+                disabled={bookScheduleDisabled}
                 title={disabledTitle}
                 className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 transform touch-manipulation min-h-[48px] min-w-[44px] select-none ${
-                    !hasScheduledBookings || bookScheduleDisabled
+                    bookScheduleDisabled
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : activeButton === 'schedule'
+                        ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
                         : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
                 } active:scale-95 shadow-md cursor-pointer`}
             >
@@ -273,9 +272,8 @@ interface BookViaWhatsAppRowProps {
 
 function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, onPriceSlider, dynamicSpacing, isBusy = false, busyUntil }: BookViaWhatsAppRowProps) {
     const [showBusyPopup, setShowBusyPopup] = useState(false);
-    const therapistPhone = getTherapistWhatsApp(therapist);
-    const fallbackPhone = therapistPhone ? therapistPhone.replace(/\D/g, '') : ADMIN_WHATSAPP.replace(/\D/g, '');
-    const phoneForUrl = therapistPhone ? getTherapistWhatsApp(therapist) : (ADMIN_WHATSAPP.startsWith('+') ? ADMIN_WHATSAPP.slice(1).replace(/\D/g, '') : ADMIN_WHATSAPP.replace(/\D/g, ''));
+    const adminDigits = ADMIN_WHATSAPP.replace(/\D/g, '');
+    const phoneForUrl = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP) || adminDigits;
     const { durationMin, price } = getDefaultDurationAndPrice(therapist);
     const massageType = getFirstMassageType(therapist);
     const message = buildBookNowMessage({
@@ -286,7 +284,7 @@ function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, 
         price,
         priceFormatted: price >= 1000 ? `IDR ${(price / 1000).toFixed(0)}K` : `IDR ${price}`,
     });
-    const whatsappHref = buildWhatsAppUrl(phoneForUrl, message) || `https://wa.me/${fallbackPhone}?text=${encodeURIComponent(message)}`;
+    const whatsappHref = buildWhatsAppUrl(phoneForUrl, message) || `https://wa.me/${adminDigits}?text=${encodeURIComponent(message)}`;
 
     const handleBookClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -1050,8 +1048,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         let cityName = '';
         
         if (!therapistLocationArea) {
-            // Fallback to database location field if no GPS-computed area
-            cityName = (therapist.location || 'Bali').split(',')[0].trim();
+            // Fallback: use city/locationId/location (never default to "Bali" — was causing Bali to show in Yogyakarta)
+            const raw = (therapist as any).city || (therapist as any).locationId || therapist.location || '';
+            cityName = (typeof raw === 'string' ? raw : '').split(',')[0].trim() || '—';
         } else {
             const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
             const cityData = allCities.find(city => city.locationId === therapistLocationArea);

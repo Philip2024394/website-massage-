@@ -1414,10 +1414,11 @@ const HomePage: React.FC<HomePageProps> = ({
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c;
         };
-        const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.slice(0, 100) : [];
+        const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists : [];
         let therapistsWithDistance = safeInput.map((t: any) => {
             let distance: number | null = null;
-            let locationArea: string = t.city || t.location || 'Unknown';
+            // Use city/locationId/location_id/location so Yogyakarta (and all cities) show all matching profiles
+            let locationArea: string = t.city || t.locationId || t.location_id || t.location || 'Unknown';
             if (currentUserLocation) {
                 const therapistCoords = getCoords(t) || (t.geopoint ? { lat: t.geopoint.latitude, lng: t.geopoint.longitude } : null);
                 if (therapistCoords) {
@@ -1550,8 +1551,8 @@ const HomePage: React.FC<HomePageProps> = ({
             if (isFeaturedSample(therapist, 'therapist') && selectedCity !== 'all') { displayLocation = selectedCity; displayCity = selectedCity; }
             return { ...therapist, location: displayLocation, city: displayCity };
         });
-        const MAX_INITIAL_THERAPIST_CARDS = 12;
-        const therapistsToRender = preparedTherapists.slice(0, MAX_INITIAL_THERAPIST_CARDS);
+        // No cap: show all therapists with location for the selected city
+        const therapistsToRender = preparedTherapists;
         const therapistsByLocation: { [key: string]: any[] } = {};
         therapistsToRender.forEach((therapist: any) => {
             const area = therapist._locationArea || 'Unknown';
@@ -1748,7 +1749,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <p className="text-base font-semibold text-gray-600">{country}'s {(activeTab === 'facials' || activeTab === 'facial-places') ? 'Facial' : 'Massage'} Therapist Hub</p>
                             <p className="text-xs text-gray-500 mt-1">
                                 {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all'
-                                    ? `Showing ${Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.length : 0} therapist${(Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.length : 0) === 1 ? '' : 's'} in ${getLocationDisplayName(selectedCity || contextCity, translationsObject?.home?.allAreas ?? 'All areas')}.`
+                                    ? `Showing ${therapistDisplay.therapistsToRender.length} therapist${therapistDisplay.therapistsToRender.length === 1 ? '' : 's'} in ${getLocationDisplayName(selectedCity || contextCity, translationsObject?.home?.allAreas ?? 'All areas')}.`
                                     : (distanceMatchCount > 0
                                         ? `Showing ${distanceMatchCount} therapist${distanceMatchCount === 1 ? '' : 's'} in your area.`
                                         : 'Showing trusted therapists across the city.')}
@@ -1874,9 +1875,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                 {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
                             </p>
                             {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
-                                <p className="text-sm font-medium text-gray-700 mt-2" data-testid="therapist-city-count">
-                                    Showing {Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.length : 0} therapists in {getLocationDisplayName(selectedCity || contextCity, t?.home?.allAreas ?? 'All areas')}
-                                </p>
+                                <>
+                                    <p className="text-sm font-medium text-gray-700 mt-2" data-testid="therapist-city-count">
+                                        Showing {therapistDisplay.therapistsToRender.length} therapist{therapistDisplay.therapistsToRender.length === 1 ? '' : 's'} in {getLocationDisplayName(selectedCity || contextCity, t?.home?.allAreas ?? 'All areas')}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5" data-testid="therapist-city-total-vs-shown">
+                                        {Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.length : 0} therapist{(Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.length : 0) === 1 ? '' : 's'} with location for this city · all shown on this page
+                                    </p>
+                                </>
                             )}
                         </div>
                         
@@ -2113,7 +2119,6 @@ const HomePage: React.FC<HomePageProps> = ({
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
                                     {livePlaces
-                                        .slice(0, 9) // Show maximum 9 places
                                         .map((place, index) => {
                                             const placeId = place.id || (place as any).$id;
                                             
@@ -2232,7 +2237,6 @@ const HomePage: React.FC<HomePageProps> = ({
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
                                     {listToShow
-                                        .slice(0, 9) // Show maximum 9 facial places
                                         .map((place: any) => {
                                             const placeId = place.id || place.$id;
                                             

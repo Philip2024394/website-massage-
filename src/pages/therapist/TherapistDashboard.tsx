@@ -44,23 +44,24 @@ import type { Therapist } from '../../types';
 import { therapistService, imageUploadService } from '../../lib/appwriteService';
 import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '../../utils/clientPreferencesUtils';
 import { showToast } from '../../utils/showToastPortal';
-import { matchProviderToCity } from '../../constants/indonesianCities';
 import { extractLocationId, normalizeLocationForSave, assertValidLocationData } from '../../utils/locationNormalizationV2';
-import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoint } from '../../utils/geoDistance';
 import { getServiceAreasForCity } from '../../constants/serviceAreas';
 import { useCityContext } from '../../context/CityContext';
+import { ALL_INDONESIAN_CITIES } from '../../data/indonesianCities';
+import { getCitiesForCountry } from '../../data/citiesByCountry';
 import { locations } from '../../../locations';
 import { logger } from '../../utils/logger';
 import BookingRequestCard from '../../components/therapist/BookingRequestCard';
 import ProPlanWarnings from '../../components/therapist/ProPlanWarnings';
 import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock } from 'lucide-react';
-import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
+import TherapistDocumentsSection, { type DocumentItem } from '../../components/therapist/TherapistDocumentsSection';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { profileEditHelp } from './constants/helpContent';
 import { client, databases, DATABASE_ID } from '../../lib/appwrite';
 import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
 import { bookingSoundService } from '../../services/bookingSound.service';
+import { WHATSAPP_COUNTRY_PREFIXES, getWhatsAppPrefixForCountry, normalizeWhatsAppToDigits } from '../../config/whatsappCountryPrefix';
 
 /* P0 FIX: App-sized dashboard layout for proper desktop/mobile rendering */
 
@@ -126,6 +127,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [name, setName] = useState(therapist?.name || '');
   const [description, setDescription] = useState(therapist?.description || '');
   const [whatsappNumber, setWhatsappNumber] = useState(therapist?.whatsappNumber || '+62');
+  const [whatsappCountryCode, setWhatsappCountryCode] = useState<string>(() => {
+    const raw = therapist?.whatsappNumber || '';
+    for (const [code, { dial }] of Object.entries(WHATSAPP_COUNTRY_PREFIXES)) {
+      if (raw.startsWith(dial)) return code;
+    }
+    return 'ID';
+  });
   const [price60, setPrice60] = useState(String(therapist?.price60 || '100'));
   const [price90, setPrice90] = useState(String(therapist?.price90 || '150'));
   const [price120, setPrice120] = useState(String(therapist?.price120 || '200'));
@@ -156,28 +164,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   });
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
   
-  // Get country from context (selected on landing page)
+  // Get country from context (selected on landing page) – dashboard city list is per country
   const { country, countryCode } = useCityContext();
+  const citiesForDropdown = getCitiesForCountry(countryCode || 'ID');
   
   // Profile lock removed: therapists can always edit name, profile image, phone, and description.
   const isProfileLocked = false;
   
-  // Location state
-  const [locationSet, setLocationSet] = useState(false);
-  const [gpsLoading, setGpsLoading] = useState(false); // Add GPS loading state
-  const [locationJustUpdated, setLocationJustUpdated] = useState(false); // Show "New location updated" notice after Set Location
-  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(() => {
-    try {
-      const coords = therapist?.coordinates;
-      if (coords) {
-        const parsed = typeof coords === 'string' ? JSON.parse(coords) : coords;
-        if (parsed?.lat && parsed?.lng) {
-          return { lat: parsed.lat, lng: parsed.lng };
-        }
-      }
-    } catch {}
-    return null;
+  // Location: city dropdown only (no GPS). Matches app landing dropdown and filter (per country).
+  const [selectedCityId, setSelectedCityId] = useState<string>(() => {
+    const raw = therapist?.locationId || therapist?.city || therapist?.location || '';
+    return (typeof raw === 'string' ? raw : '').trim().toLowerCase();
   });
+  const [locationJustUpdated, setLocationJustUpdated] = useState(false);
 
   // Service areas state
   const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>(() => {
@@ -193,6 +192,24 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     }
     return [];
   });
+
+  // Achievements & Insurance documents (licenses, certs, insurance)
+  const parseDocList = (raw: any): DocumentItem[] => {
+    try {
+      if (Array.isArray(raw)) return raw.filter((x: any) => x && typeof x.url === 'string');
+      if (typeof raw === 'string' && raw) {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.filter((x: any) => x && typeof x.url === 'string') : [];
+      }
+    } catch (e) { logger.warn('Parse doc list failed', e); }
+    return [];
+  };
+  const [achievementsDocuments, setAchievementsDocuments] = useState<DocumentItem[]>(() =>
+    parseDocList((therapist as any)?.achievementsDocuments)
+  );
+  const [insuranceDocuments, setInsuranceDocuments] = useState<DocumentItem[]>(() =>
+    parseDocList((therapist as any)?.insuranceDocuments)
+  );
 
   // Fixed Indonesian language - therapists can add additional languages
   
@@ -366,7 +383,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         // Update form fields with latest data
         if (latestData.name) setName(latestData.name);
         if (latestData.description) setDescription(latestData.description);
-        if (latestData.whatsappNumber) setWhatsappNumber(latestData.whatsappNumber);
+        if (latestData.whatsappNumber) {
+          setWhatsappNumber(latestData.whatsappNumber);
+          const raw = String(latestData.whatsappNumber);
+          for (const [code, { dial }] of Object.entries(WHATSAPP_COUNTRY_PREFIXES)) {
+            if (raw.startsWith(dial)) { setWhatsappCountryCode(code); break; }
+          }
+        }
         if (latestData.price60) setPrice60(String(latestData.price60));
         if (latestData.price90) setPrice90(String(latestData.price90));
         if (latestData.price120) setPrice120(String(latestData.price120));
@@ -403,20 +426,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           }
         }
         
-        // Handle coordinates
-        if (latestData.coordinates) {
-          try {
-            const coords = typeof latestData.coordinates === 'string' 
-              ? JSON.parse(latestData.coordinates) 
-              : latestData.coordinates;
-            if (coords?.lat && coords?.lng) {
-              setCoordinates({ lat: coords.lat, lng: coords.lng });
-              setLocationSet(true);
-            }
-          } catch (e) {
-            logger.warn('Failed to parse coordinates:', e);
-          }
-        }
+        // Handle city (location from dropdown; no GPS)
+        const cityRaw = latestData.locationId || latestData.city || latestData.location || '';
+        const cityStr = (typeof cityRaw === 'string' ? cityRaw : '').trim().toLowerCase();
+        setSelectedCityId(cityStr || '');
+
+        // Achievements & Insurance documents
+        if ((latestData as any).achievementsDocuments) setAchievementsDocuments(parseDocList((latestData as any).achievementsDocuments));
+        if ((latestData as any).insuranceDocuments) setInsuranceDocuments(parseDocList((latestData as any).insuranceDocuments));
         
       } catch (error) {
         logger.error('Failed to load latest therapist data:', error);
@@ -434,22 +451,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       therapistService.getById(therapistId).then((latestData) => {
         if (latestData.name) setName(latestData.name);
         if (latestData.description) setDescription(latestData.description);
-        if (latestData.whatsappNumber) setWhatsappNumber(latestData.whatsappNumber);
+        if (latestData.whatsappNumber) {
+          setWhatsappNumber(latestData.whatsappNumber);
+          const raw = String(latestData.whatsappNumber);
+          for (const [code, { dial }] of Object.entries(WHATSAPP_COUNTRY_PREFIXES)) {
+            if (raw.startsWith(dial)) { setWhatsappCountryCode(code); break; }
+          }
+        }
         if (latestData.price60) setPrice60(String(latestData.price60));
         if (latestData.price90) setPrice90(String(latestData.price90));
         if (latestData.price120) setPrice120(String(latestData.price120));
         if (latestData.yearsOfExperience) setYearsOfExperience(String(latestData.yearsOfExperience));
         if (latestData.clientPreferences) setClientPreferences(latestData.clientPreferences);
         if (latestData.profilePicture) setProfileImageDataUrl(latestData.profilePicture);
-        if (latestData.coordinates) {
-          try {
-            const coords = typeof latestData.coordinates === 'string' ? JSON.parse(latestData.coordinates) : latestData.coordinates;
-            if (coords?.lat && coords?.lng) {
-              setCoordinates({ lat: coords.lat, lng: coords.lng });
-              setLocationSet(true);
-            }
-          } catch (_) {}
-        }
+        const cityRaw = latestData.locationId || latestData.city || latestData.location || '';
+        const cityStr = (typeof cityRaw === 'string' ? cityRaw : '').trim().toLowerCase();
+        setSelectedCityId(cityStr || '');
       }).catch(() => {});
     };
     document.addEventListener('visibilitychange', onVisible);
@@ -473,143 +490,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // Reset profileSaved when any form field changes
   useEffect(() => {
     setProfileSaved(false);
-  }, [name, whatsappNumber, description, selectedMassageTypes, selectedGlobe, price60, price90, price120, yearsOfExperience, clientPreferences]);
-
-  const handleSetLocation = () => {
-    logger.debug('🔘 Location button clicked');
-    
-    // Prevent multiple simultaneous requests
-    if (gpsLoading) {
-      logger.debug('⏳ GPS request already in progress');
-      return;
-    }
-    
-    // ✅ LOG BROWSER INFO for debugging
-    logBrowserInfo();
-    
-    // ✅ COMPREHENSIVE BROWSER COMPATIBILITY CHECK
-    const compatCheck = checkGeolocationSupport();
-    
-    if (!compatCheck.supported) {
-      logger.error('❌ Browser compatibility issue', { error: compatCheck.error });
-      showToast(`❌ ${compatCheck.error}`, 'error');
-      return;
-    }
-    
-    const { browserInfo } = compatCheck;
-    logger.debug('✅ Browser supported', { browser: browserInfo.name, version: browserInfo.version });
-
-    setGpsLoading(true);
-    showToast('📍 Getting your GPS location... Please allow location access', 'info');
-    logger.debug('📍 Requesting GPS location');
-    
-    // ✅ USE BROWSER-OPTIMIZED GEOLOCATION OPTIONS
-    const geoOptions = getGeolocationOptions(browserInfo);
-    logger.debug('🔧 Geolocation options', { geoOptions });
-    
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        logger.debug('✅ GPS position received', { position });
-        const accuracy = position.coords.accuracy;
-        logger.debug('📍 GPS accuracy', { accuracy: `${accuracy}m` });
-        
-        const coords = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        
-        logger.debug('📍 Raw coordinates', { coords });
-        
-        // Validate GPS coordinates are within Indonesia
-        const validation = validateTherapistGeopoint({ geopoint: coords });
-        logger.debug('🔍 Validation result', { validation });
-        
-        if (!validation.isValid) {
-          logger.error('❌ GPS validation failed', { error: validation.error });
-          showToast(`❌ GPS location invalid: ${validation.error}`, 'error');
-          setGpsLoading(false);
-          return;
-        }
-        
-        // Derive city from GPS using same city list as main app dropdown/filter (so therapist appears in correct city)
-        const matchedCity = matchProviderToCity(coords, 50);
-        const derivedCity = matchedCity ? matchedCity.locationId : deriveLocationIdFromGeopoint(coords);
-        logger.debug('🎯 GPS-derived city', { derivedCity, matchedCity: matchedCity?.name });
-        
-        setCoordinates(coords);
-        setLocationSet(true);
-        
-        // 🌍 CRITICAL FIX: IMMEDIATELY SAVE GPS TO DATABASE
-        // "Set Location" button is the SINGLE SOURCE OF TRUTH for location
-        logger.debug('💾 Saving GPS location immediately to database');
-        
-        try {
-            await therapistService.update(String(therapist.$id || therapist.id), {
-                geopoint: coords,
-                coordinates: JSON.stringify(coords),
-                city: derivedCity,
-                locationId: derivedCity,
-                location: derivedCity,
-                isLive: true, // GPS location enables marketplace visibility
-                lastLocationUpdateAt: new Date().toISOString() // For admin safety / location monitoring
-            });
-            
-            logger.debug('✅ GPS location saved immediately to database');
-            logger.debug('✅ City assignment', { derivedCity });
-            setLocationJustUpdated(true);
-            const clearNotice = () => setLocationJustUpdated(false);
-            setTimeout(clearNotice, 8000);
-            
-            // Verify the save
-            setTimeout(async () => {
-                try {
-                    const updated = await therapistService.getById(String(therapist.$id || therapist.id));
-                    if (updated.city === derivedCity && updated.locationId === derivedCity) {
-                        logger.debug('✅ VERIFICATION PASSED: GPS location saved correctly');
-                    } else {
-                        logger.error('❌ VERIFICATION FAILED', {
-                            expected: derivedCity,
-                            savedCity: updated.city,
-                            savedLocationId: updated.locationId
-                        });
-                    }
-                } catch (verifyError) {
-                    logger.warn('⚠️ Could not verify GPS save', { verifyError });
-                }
-            }, 1000);
-            
-        } catch (saveError) {
-            logger.error('❌ Failed to save GPS to database', { saveError });
-            showToast('⚠️ GPS captured but not saved. Please try again or contact support.', 'error');
-            setGpsLoading(false);
-            return;
-        }
-        
-        setGpsLoading(false);
-        
-        if (accuracy > 500) {
-            showToast(`⚠️ GPS accuracy is low (${Math.round(accuracy)}m). Consider moving to an open area for better accuracy.`, 'warning');
-        } else {
-            showToast(`✅ GPS location saved! You are now live in ${derivedCity}.`, 'success');
-        }
-        
-        logger.debug('✅ Location state updated successfully');
-      },
-      (error) => {
-        setGpsLoading(false);
-        logger.error('❌ GPS error occurred', { error, code: error.code, message: error.message });
-        
-        // ✅ USE BROWSER-SPECIFIC ERROR FORMATTING
-        const errorMessage = formatGeolocationError(error, browserInfo);
-        logger.error('📱 Formatted error', { errorMessage });
-        
-        showToast(`❌ ${errorMessage}`, 'error');
-      },
-      geoOptions
-    );
-    
-    logger.debug('⏳ Waiting for GPS response');
-  };
+  }, [name, whatsappNumber, description, selectedMassageTypes, selectedGlobe, selectedCityId, price60, price90, price120, yearsOfExperience, clientPreferences, achievementsDocuments, insuranceDocuments]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -667,8 +548,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       // REQUIRED FIELDS VALIDATION (including Traditional Massage 3 prices – profile cannot save without them)
       const missingFields: string[] = [];
       if (!name.trim()) missingFields.push('Name');
-      if (!whatsappNumber.trim() || whatsappNumber.trim() === '+62') missingFields.push('WhatsApp Number');
-      if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location (MANDATORY - click SET GPS LOCATION button)');
+      const waDigits = normalizeWhatsAppToDigits(whatsappNumber);
+      if (!whatsappNumber.trim() || waDigits.length < 10) missingFields.push('WhatsApp Number');
+      if (!selectedCityId?.trim()) missingFields.push('Service city (select your city from dropdown)');
       const minP = 100;
       const pp60 = parseInt(price60, 10);
       const pp90 = parseInt(price90, 10);
@@ -690,13 +572,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         return;
       }
       
-      // Normalize WhatsApp
-      let normalizedWhatsApp = whatsappNumber.trim();
-      if (!normalizedWhatsApp.startsWith('+62')) {
-        normalizedWhatsApp = '+62' + normalizedWhatsApp.replace(/^\+?/, '');
-      }
-      if (!/^\+62\d{6,15}$/.test(normalizedWhatsApp)) {
-        showToast('Invalid WhatsApp (+62 + digits)', 'error');
+      // Normalize WhatsApp: full number with country prefix (e.g. +62812345678 or +447911123456)
+      const dial = WHATSAPP_COUNTRY_PREFIXES[whatsappCountryCode]?.dial || '+62';
+      const prefixDigits = dial.replace(/\D/g, '');
+      const digits = normalizeWhatsAppToDigits(whatsappNumber);
+      const localPart = digits.startsWith(prefixDigits) ? digits.slice(prefixDigits.length) : digits;
+      const normalizedWhatsApp = dial + localPart;
+      const fullDigits = normalizeWhatsAppToDigits(normalizedWhatsApp);
+      if (fullDigits.length < 10 || fullDigits.length > 15) {
+        showToast('Invalid WhatsApp (10–15 digits with country prefix)', 'error');
         setSaving(false);
         return;
       }
@@ -714,32 +598,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         }
       }
 
-      // 🌍 VALIDASI LOKASI GPS - WAJIB UNTUK ONLINE
-      logger.debug('🌍 Memvalidasi persyaratan GPS WAJIB');
-      
-      // LANGKAH 1: Koordinat GPS SANGAT DIPERLUKAN
-      if (!coordinates || !coordinates.lat || !coordinates.lng) {
-        showToast('❌ Lokasi GPS WAJIB. Silakan klik tombol "ATUR LOKASI GPS" di atas.', 'error');
-        setSaving(false);
-        return;
-      }
-      
-      const geopoint = { lat: coordinates.lat, lng: coordinates.lng };
-      logger.debug('📍 GPS coordinates for save', { geopoint });
-      
-      // STEP 2: Validate GPS is within Indonesia bounds
-      const validation = validateTherapistGeopoint({ geopoint });
-      if (!validation.isValid) {
-        showToast(`❌ GPS location invalid: ${validation.error}`, 'error');
-        setSaving(false);
-        return;
-      }
-      
-      // STEP 3: Auto-derive city from GPS (GPS IS ONLY SOURCE OF TRUTH)
-      const derivedLocationId = deriveLocationIdFromGeopoint(geopoint);
-      logger.debug('🏷️ GPS-derived city (ONLY SOURCE)', { derivedLocationId });
-      
-      logger.debug('✅ Geopoint validation passed');
+      // Location: city from dropdown (same list as app filter; Indonesia has coordinates for backward compat)
+      const derivedLocationId = selectedCityId.trim();
+      const cityData = (countryCode === 'ID' ? ALL_INDONESIAN_CITIES.find(c => c.locationId === derivedLocationId) : null) ?? null;
+      const geopoint = cityData?.coordinates ? { lat: cityData.coordinates.lat, lng: cityData.coordinates.lng } : undefined;
+      logger.debug('🏷️ City from dropdown', { derivedLocationId, hasGeopoint: !!geopoint });
 
       // Price minimum: 100 = Rp 100,000 for 60/90/120 min
       const MIN_PRICE = 100;
@@ -752,7 +615,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         return;
       }
 
-      const existingGeopoint = coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : (therapist?.geopoint || (therapist?.coordinates && (typeof therapist.coordinates === 'string' ? JSON.parse(therapist.coordinates) : therapist.coordinates)));
       const existingLocationId = therapist?.locationId || therapist?.city || therapist?.location || derivedLocationId;
       
       const updateData: any = {
@@ -769,19 +631,21 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         serviceAreas: JSON.stringify(selectedServiceAreas),
         country: country || 'Indonesia', // Save country from context
         
-        // 🌍 LOCATION: always editable (never locked) – therapist can update GPS/location anytime
-        geopoint: geopoint,
+        // Location: city from dropdown (same list as app filter)
         city: derivedLocationId,
         locationId: derivedLocationId,
         location: derivedLocationId,
-        coordinates: JSON.stringify(geopoint),
+        ...(geopoint && { geopoint, coordinates: JSON.stringify(geopoint) }),
         
-        // 🚨 ENFORCEMENT: Cannot go live without GPS
-        isLive: geopoint && geopoint.lat && geopoint.lng ? true : false,
+        isLive: !!derivedLocationId,
         // Home services: set Available immediately on save so therapist displays right away
         status: 'available',
         availability: 'Available',
         isOnline: true,
+
+        // Achievements & Insurance documents (licenses, certs, insurance)
+        achievementsDocuments: JSON.stringify(achievementsDocuments),
+        insuranceDocuments: JSON.stringify(insuranceDocuments),
       };
       
       if (profilePictureUrl && !profilePictureUrl.startsWith('data:')) {
@@ -790,19 +654,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
       const savedTherapist = await therapistService.update(String(therapist.$id || therapist.id), updateData);
       logger.debug('✅ Profile saved to Appwrite', { savedTherapist });
-      
-      // 🌍 GEO-BASED VERIFICATION
-      const savedGeopoint = extractGeopoint(savedTherapist);
-      if (savedGeopoint && 
-          Math.abs(savedGeopoint.lat - geopoint.lat) < 0.001 && 
-          Math.abs(savedGeopoint.lng - geopoint.lng) < 0.001) {
-        logger.debug('✅ GEOPOINT SAVE VERIFIED', { savedGeopoint });
-      } else {
-        logger.error('❌ GEOPOINT SAVE FAILED', {
-          expected: geopoint,
-          saved: savedGeopoint
-        });
-      }
       
       // Verify locationId and city
       if (savedTherapist.locationId === derivedLocationId && savedTherapist.city === derivedLocationId) {
@@ -849,7 +700,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
       // Update local state with saved data to reflect changes immediately
       setName(savedTherapist.name || name);
-      setWhatsappNumber(savedTherapist.whatsappNumber || whatsappNumber);
+      const savedWa = savedTherapist.whatsappNumber || whatsappNumber;
+      setWhatsappNumber(savedWa);
+      if (savedWa) {
+        const raw = String(savedWa);
+        for (const [code, { dial }] of Object.entries(WHATSAPP_COUNTRY_PREFIXES)) {
+          if (raw.startsWith(dial)) { setWhatsappCountryCode(code); break; }
+        }
+      }
       setDescription(savedTherapist.description || description);
       setPrice60(String(savedTherapist.price60 || price60));
       setPrice90(String(savedTherapist.price90 || price90));
@@ -867,13 +725,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       
       logger.debug('🎉 About to show success toast');
       
-      // 🚨 DATABASE ENFORCEMENT: Warn about geopoint requirement
-      if (!geopoint || !geopoint.lat || !geopoint.lng) {
-        showToast('⚠️ Profile saved but NOT LIVE: GPS location required for marketplace visibility', 'warning');
-        logger.warn('🚨 PRODUCTION SAFETY: Therapist saved with isLive=false due to missing geopoint');
+      if (derivedLocationId) {
+        showToast('✅ Profile saved and LIVE! Visit the main homepage and select your city to see your card.', 'success');
+        setLocationJustUpdated(true);
+        setTimeout(() => setLocationJustUpdated(false), 6000);
       } else {
-        showToast('✅ Profile saved and LIVE! Visit the main homepage to see your card.', 'success');
-        logger.debug('✅ isLive set to true - visible on HomePage at https://www.indastreetmassage.com');
+        showToast('✅ Profile saved. Select a service city to go live.', 'success');
       }
       
       // Suggest updating menu price list for higher customer conversion
@@ -891,8 +748,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     }
   };
 
-  // Form validation for save button - GPS is MANDATORY
-  // Traditional Massage 3 prices are MANDATORY – profile cannot save without them
+  // Form validation for save button – city and Traditional Massage 3 prices are required
   const MIN_PRICE_VAL = 100;
   const p60Val = parseInt(price60, 10);
   const p90Val = parseInt(price90, 10);
@@ -902,9 +758,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     !isNaN(p90Val) && p90Val >= MIN_PRICE_VAL &&
     !isNaN(p120Val) && p120Val >= MIN_PRICE_VAL;
   const canSave = name.trim() && 
-                  /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && 
-                  coordinates && coordinates.lat && coordinates.lng &&
-                  hasValidThreePrices; // GPS + Traditional Massage 3 prices MANDATORY
+                  normalizeWhatsAppToDigits(whatsappNumber).length >= 10 && normalizeWhatsAppToDigits(whatsappNumber).length <= 15 && 
+                  !!selectedCityId?.trim() &&
+                  hasValidThreePrices; // City + Traditional Massage 3 prices MANDATORY
 
   // Handle "Go Live" button click
   const handleGoLive = async () => {
@@ -1262,26 +1118,49 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               />
             </div>
 
-            {/* WhatsApp */}
+            {/* WhatsApp with country prefix (so tourists can contact from any country) */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                WhatsApp Number *
+                WhatsApp Number * (with country prefix)
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none z-10">
-                  +62
-                </span>
+              <div className="flex gap-2">
+                <select
+                  value={whatsappCountryCode}
+                  onChange={e => {
+                    const code = e.target.value;
+                    const prevDial = WHATSAPP_COUNTRY_PREFIXES[whatsappCountryCode]?.dial || '+62';
+                    const newDial = WHATSAPP_COUNTRY_PREFIXES[code]?.dial || '+62';
+                    const allDigits = whatsappNumber.replace(/\D/g, '');
+                    const prevPrefix = prevDial.replace(/\D/g, '');
+                    const local = allDigits.startsWith(prevPrefix) ? allDigits.slice(prevPrefix.length) : allDigits;
+                    setWhatsappCountryCode(code);
+                    setWhatsappNumber(newDial + local);
+                  }}
+                  className="border border-gray-300 rounded-lg px-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none min-w-[120px]"
+                >
+                  {Object.entries(WHATSAPP_COUNTRY_PREFIXES).map(([code, { dial, label }]) => (
+                    <option key={code} value={code}>{dial} {label}</option>
+                  ))}
+                </select>
                 <input
                   type="tel"
-                  value={whatsappNumber.replace(/^\+62/, '')}
+                  value={(() => {
+                    const dial = WHATSAPP_COUNTRY_PREFIXES[whatsappCountryCode]?.dial || '+62';
+                    const prefixDigits = dial.replace(/\D/g, '');
+                    const raw = whatsappNumber.replace(/\D/g, '');
+                    if (raw.startsWith(prefixDigits)) return raw.slice(prefixDigits.length);
+                    return raw || '';
+                  })()}
                   onChange={e => {
                     const digits = e.target.value.replace(/\D/g, '');
-                    setWhatsappNumber('+62' + digits);
+                    const dial = WHATSAPP_COUNTRY_PREFIXES[whatsappCountryCode]?.dial || '+62';
+                    setWhatsappNumber(dial + digits);
                   }}
-                  className="w-full border border-gray-300 rounded-lg pl-14 pr-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none"
-                  placeholder="812345678"
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none"
+                  placeholder={whatsappCountryCode === 'ID' ? '812345678' : '7911123456'}
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1">Use your country prefix so clients can reach you from anywhere.</p>
             </div>
 
             {/* Foto Profil */}
@@ -1338,145 +1217,51 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             {/* GPS-Only Location Display */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                📍 Your Location * {country && `(${country})`}
+                📍 Service city * {country && `(${country})`}
               </label>
-              
-              {/* Read-only location display */}
-              <div className="mb-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-gray-900 mb-1">
-                      Current City: {coordinates && deriveLocationIdFromGeopoint(coordinates) ? (
-                        <span className="text-blue-700 uppercase">{deriveLocationIdFromGeopoint(coordinates)}</span>
-                      ) : (
-                        <span className="text-gray-400">Not set - Click "Set Location" below</span>
-                      )}
-                    </p>
-                    <p className="text-xs text-gray-600 leading-relaxed">
-                      Your location is determined by GPS coordinates only. Use the "Set Location" button below to update.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-            </div>
-
-            {/* Lokasi GPS - WAJIB */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Lokasi GPS * <span className="text-red-500 font-bold">(WAJIB UNTUK ONLINE)</span>
-              </label>
-              
-              {/* Pemberitahuan Persyaratan GPS */}
-              <div className="mb-3 bg-red-50 border-2 border-red-500 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <span className="text-xl">📍</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-red-900 mb-1">
-                      Lokasi GPS WAJIB
-                    </p>
-                    <p className="text-xs text-red-800">
-                      Anda tidak dapat online tanpa mengatur koordinat GPS yang tepat. Ini memastikan Anda muncul di kota yang benar untuk pelanggan.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* UX FIX: Added tooltip to clarify GPS button behavior */}
-              {!locationSet && !gpsLoading && (
-                <div className="mb-3 text-center">
-                  <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 text-xs px-3 py-2 rounded-full animate-bounce">
-                    <span className="text-base">👆</span>
-                    <span className="font-medium">Click button below to set your GPS location (required)</span>
-                  </div>
-                </div>
-              )}
-              
-              <button
-                onClick={handleSetLocation}
-                disabled={gpsLoading}
-                className={`w-full px-4 py-3 rounded-xl font-medium transition-all shadow-sm flex items-center justify-center gap-2 ${
-                  gpsLoading
-                    ? 'bg-gray-400 text-white cursor-not-allowed'
-                    : locationSet 
-                      ? 'bg-green-500 text-white hover:bg-green-600' 
-                      : 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
-                }`}
+              <p className="text-xs text-gray-600 mb-2">
+                Select the city where you provide service. This must match the city list on the main app so customers can find you.
+              </p>
+              <select
+                value={selectedCityId}
+                onChange={(e) => setSelectedCityId(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {gpsLoading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span>Mendapatkan Lokasi...</span>
-                  </>
-                ) : locationSet ? (
-                  '✅ Lokasi GPS Terverifikasi - Klik untuk Update'
-                ) : (
-                  '📍 ATUR LOKASI GPS (WAJIB)'
-                )}
-              </button>
-              
+                <option value="">— Pilih kota / Select city —</option>
+                {citiesForDropdown.map((c) => (
+                  <option key={c.locationId} value={c.locationId}>{c.name}</option>
+                ))}
+              </select>
+              {citiesForDropdown.length === 0 && (
+                <p className="text-sm text-amber-700 mt-2">No cities configured for this country. Select your country on the main app first, then return here.</p>
+              )}
+              {selectedCityId && citiesForDropdown.length > 0 && (
+                <p className="text-sm text-green-700 mt-1 font-medium">
+                  ✅ You will appear when customers select <span className="uppercase">{selectedCityId}</span>
+                </p>
+              )}
               {locationJustUpdated && (
                 <div className="mt-3 p-3 bg-emerald-100 border-2 border-emerald-500 rounded-xl space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">✅</span>
-                    <p className="text-sm font-bold text-emerald-800">
-                      New location has been updated.
-                    </p>
+                    <p className="text-sm font-bold text-emerald-800">Location updated.</p>
                   </div>
                   <p className="text-xs text-emerald-700 pl-8">
-                    Your profile is now assigned to the correct city on the main app. Customers will see you when they select this city in the location dropdown and when they search or filter by this location.
-                  </p>
-                </div>
-              )}
-              
-              {locationSet && coordinates && (
-                <div className="mt-3 p-4 bg-green-50 border-2 border-green-200 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">🎯</span>
-                    <p className="text-sm font-bold text-green-800">
-                      Lokasi Terverifikasi via GPS
-                    </p>
-                  </div>
-                  <div className="text-sm text-green-700 space-y-1">
-                    <p><strong>Koordinat:</strong> {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}</p>
-                    {(() => {
-                      const derivedCity = deriveLocationIdFromGeopoint(coordinates);
-                      return (
-                        <p><strong>Kota dari GPS:</strong> <span className="font-bold text-green-900">{derivedCity}</span></p>
-                      );
-                    })()}
-                    <p className="text-xs text-green-600 mt-1">
-                      ⚠️ Profil Anda akan muncul di kota yang diturunkan dari GPS, terlepas dari pilihan manual di atas.
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {!locationSet && (
-                <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-xl">
-                  <p className="text-sm text-orange-800">
-                    ⚠️ Lokasi GPS belum diatur. Anda tidak dapat online sampai Anda memberikan koordinat yang tepat.
+                    Your profile is assigned to this city. Customers will see you when they select this city on the main app.
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Service Areas - Show when GPS location is set */}
-            {coordinates && (() => {
-              const currentCity = deriveLocationIdFromGeopoint(coordinates);
-              const availableAreas = getServiceAreasForCity(currentCity);
+            {/* Service Areas - Show when city is selected */}
+            {selectedCityId && (() => {
+              const availableAreas = getServiceAreasForCity(selectedCityId);
               if (availableAreas.length === 0) return null;
               
               return (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Service Areas in {currentCity} *
+                    Service Areas in {selectedCityId} *
                   </label>
                   <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 mb-3">
                     <p className="text-sm text-blue-800">
@@ -1622,6 +1407,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </p>
             </div>
 
+            {/* Achievements & Insurance – upload licenses, certs, insurance docs */}
+            <div>
+              <TherapistDocumentsSection
+                achievementsDocuments={achievementsDocuments}
+                insuranceDocuments={insuranceDocuments}
+                onAchievementsChange={setAchievementsDocuments}
+                onInsuranceChange={setInsuranceDocuments}
+                uploading={uploadingImage}
+                language={language}
+              />
+            </div>
+
             {/* Massage Types – tidy format by category, easy to select up to 5 */}
             <div>
               <div className="flex items-center justify-between mb-3">
@@ -1737,9 +1534,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 <p className="text-sm text-red-700 font-medium mb-2">Complete these required fields:</p>
                 <ul className="text-sm text-red-600 space-y-1">
                   {!name.trim() && <li>• Full name</li>}
-                  {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
-                  {!coordinates && <li>• GPS Location (click "Set Location" button)</li>}
-                  {(!coordinates || !coordinates.lat || !coordinates.lng) && <li>• GPS Location (click SET GPS LOCATION button)</li>}
+                  {(normalizeWhatsAppToDigits(whatsappNumber).length < 10 || normalizeWhatsAppToDigits(whatsappNumber).length > 15) && <li>• Valid WhatsApp with country prefix</li>}
+                  {!selectedCityId?.trim() && <li>• Service city (select from dropdown above)</li>}
                   {!hasValidThreePrices && <li>• Traditional Massage – 3 prices (60, 90, 120 min, min 100 = Rp 100,000 each)</li>}
                 </ul>
               </div>
@@ -1795,8 +1591,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     e.preventDefault();
                     const missingFields: string[] = [];
                     if (!name.trim()) missingFields.push('First Name');
-                    if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
-                    if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location');
+                    if (normalizeWhatsAppToDigits(whatsappNumber).length < 10 || normalizeWhatsAppToDigits(whatsappNumber).length > 15) missingFields.push('WhatsApp Number');
+                    if (!selectedCityId?.trim()) missingFields.push('Service city');
                     if (!hasValidThreePrices) missingFields.push('Traditional Massage 3 prices (60/90/120 min)');
                     showToast(`⚠️ Please complete all required fields: ${missingFields.join(', ')}`, 'error');
                     return;

@@ -364,8 +364,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         let cityName = '';
         
         if (!therapistLocationArea) {
-            // Fallback to database location field if no GPS-computed area
-            cityName = (therapist.location || 'Bali').split(',')[0].trim();
+            // Fallback: use city/locationId/location (never default to "Bali" — was causing Bali to show in Yogyakarta)
+            const raw = (therapist as any).city || (therapist as any).locationId || therapist.location || '';
+            cityName = (typeof raw === 'string' ? raw : '').split(',')[0].trim() || '—';
         } else {
             const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
             const cityData = allCities.find(city => city.locationId === therapistLocationArea);

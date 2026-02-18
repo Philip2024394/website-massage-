@@ -1,9 +1,11 @@
 /**
  * Build WhatsApp pre-filled messages for Book Now and Scheduled booking.
  * Used when user selects Book in menu slider or sends scheduled booking via WhatsApp.
+ * Dashboard numbers are stored with country prefix (e.g. +62, +44); Indonesia booking uses admin.
  */
 
 import type { Therapist } from '../types';
+import { isBookingUseAdminCountry } from '../config/whatsappCountryPrefix';
 
 function normalizePhone(phone: string | undefined): string {
   if (!phone || !String(phone).trim()) return '';
@@ -11,15 +13,26 @@ function normalizePhone(phone: string | undefined): string {
 }
 
 /**
- * Build WhatsApp URL for therapist (or fallback number).
- * Number should include country code, e.g. 6281234567890.
+ * Build WhatsApp URL. Phone should already include country code (e.g. 6281234567890 or 447911123456).
  */
 export function buildWhatsAppUrl(phone: string, text: string): string {
   const num = normalizePhone(phone);
   if (!num) return '';
-  const prefix = num.startsWith('62') ? '' : '62';
-  const full = prefix + num;
-  return `https://wa.me/${full}?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
+}
+
+/**
+ * For booking: Indonesia (ID) → use admin WhatsApp; other countries → use provider's saved number.
+ */
+export function getBookingWhatsAppNumber(
+  provider: { country?: string; countryCode?: string; whatsappNumber?: string; contactNumber?: string },
+  adminNumber: string
+): string {
+  const country = provider.country ?? (provider as any).countryCode ?? '';
+  if (isBookingUseAdminCountry(country)) return normalizePhone(adminNumber) || adminNumber.replace(/\D/g, '');
+  const raw = provider.whatsappNumber ?? (provider as any).contactNumber ?? '';
+  const num = normalizePhone(raw);
+  return num || normalizePhone(adminNumber);
 }
 
 /**
@@ -92,13 +105,11 @@ export function buildScheduledBookingMessage(opts: {
 }
 
 /**
- * Get therapist WhatsApp number (with country code). Returns empty if not set.
+ * Get provider WhatsApp number as digits (with country code). No default prefix – use dashboard-stored value.
  */
 export function getTherapistWhatsApp(therapist: Therapist): string {
   const raw = (therapist as any).whatsappNumber ?? (therapist as any).contactNumber ?? '';
-  const num = normalizePhone(raw);
-  if (!num) return '';
-  return num.startsWith('62') ? num : '62' + num;
+  return normalizePhone(raw);
 }
 
 /**

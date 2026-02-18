@@ -70,6 +70,7 @@ import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, H
 import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../utils/browserCompatibility';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { profileEditHelp } from './constants/helpContent';
+import { WHATSAPP_COUNTRY_PREFIXES, normalizeWhatsAppToDigits } from '../../config/whatsappCountryPrefix';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -132,6 +133,13 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
   const [name, setName] = useState(therapist?.name || '');
   const [description, setDescription] = useState(therapist?.description || '');
   const [whatsappNumber, setWhatsappNumber] = useState(therapist?.whatsappNumber || '+62');
+  const [whatsappCountryCode, setWhatsappCountryCode] = useState<string>(() => {
+    const raw = therapist?.whatsappNumber || '';
+    for (const [code, { dial }] of Object.entries(WHATSAPP_COUNTRY_PREFIXES)) {
+      if (raw.startsWith(dial)) return code;
+    }
+    return 'ID';
+  });
   const [price60, setPrice60] = useState(String(therapist?.price60 || '100'));
   const [price90, setPrice90] = useState(String(therapist?.price90 || '150'));
   const [price120, setPrice120] = useState(String(therapist?.price120 || '200'));
@@ -230,7 +238,13 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         // Update form fields with latest data
         if (latestData.name) setName(latestData.name);
         if (latestData.description) setDescription(latestData.description);
-        if (latestData.whatsappNumber) setWhatsappNumber(latestData.whatsappNumber);
+        if (latestData.whatsappNumber) {
+          setWhatsappNumber(latestData.whatsappNumber);
+          const raw = String(latestData.whatsappNumber);
+          for (const [code, { dial }] of Object.entries(WHATSAPP_COUNTRY_PREFIXES)) {
+            if (raw.startsWith(dial)) { setWhatsappCountryCode(code); break; }
+          }
+        }
         if (latestData.price60) setPrice60(String(latestData.price60));
         if (latestData.price90) setPrice90(String(latestData.price90));
         if (latestData.price120) setPrice120(String(latestData.price120));
@@ -302,7 +316,13 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       therapistService.getById(therapistId).then((latestData) => {
         if (latestData.name) setName(latestData.name);
         if (latestData.description) setDescription(latestData.description);
-        if (latestData.whatsappNumber) setWhatsappNumber(latestData.whatsappNumber);
+        if (latestData.whatsappNumber) {
+          setWhatsappNumber(latestData.whatsappNumber);
+          const raw = String(latestData.whatsappNumber);
+          for (const [code, { dial }] of Object.entries(WHATSAPP_COUNTRY_PREFIXES)) {
+            if (raw.startsWith(dial)) { setWhatsappCountryCode(code); break; }
+          }
+        }
         if (latestData.price60) setPrice60(String(latestData.price60));
         if (latestData.price90) setPrice90(String(latestData.price90));
         if (latestData.price120) setPrice120(String(latestData.price120));
@@ -487,7 +507,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
       // REQUIRED FIELDS VALIDATION
       const missingFields: string[] = [];
       if (!name.trim()) missingFields.push('Name');
-      if (!whatsappNumber.trim() || whatsappNumber.trim() === '+62') missingFields.push('WhatsApp Number');
+      if (!whatsappNumber.trim() || normalizeWhatsAppToDigits(whatsappNumber).length < 10) missingFields.push('WhatsApp Number');
       if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location (MANDATORY - click SET GPS LOCATION button)');
       
       if (missingFields.length > 0) {
@@ -504,13 +524,13 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         return;
       }
       
-      // Normalize WhatsApp
-      let normalizedWhatsApp = whatsappNumber.trim();
-      if (!normalizedWhatsApp.startsWith('+62')) {
-        normalizedWhatsApp = '+62' + normalizedWhatsApp.replace(/^\+?/, '');
-      }
-      if (!/^\+62\d{6,15}$/.test(normalizedWhatsApp)) {
-        showToast('Invalid WhatsApp (+62 + digits)', 'error');
+      const dial = WHATSAPP_COUNTRY_PREFIXES[whatsappCountryCode]?.dial || '+62';
+      const prefixDigits = dial.replace(/\D/g, '');
+      const digits = normalizeWhatsAppToDigits(whatsappNumber);
+      const localPart = digits.startsWith(prefixDigits) ? digits.slice(prefixDigits.length) : digits;
+      const normalizedWhatsApp = dial + localPart;
+      if (normalizeWhatsAppToDigits(normalizedWhatsApp).length < 10 || normalizeWhatsAppToDigits(normalizedWhatsApp).length > 15) {
+        showToast('Invalid WhatsApp (10–15 digits with country prefix)', 'error');
         setSaving(false);
         return;
       }
@@ -707,7 +727,14 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
 
       // Update local state with saved data to reflect changes immediately
       setName(savedTherapist.name || name);
-      setWhatsappNumber(savedTherapist.whatsappNumber || whatsappNumber);
+      const savedWa = savedTherapist.whatsappNumber || whatsappNumber;
+      setWhatsappNumber(savedWa);
+      if (savedWa) {
+        const raw = String(savedWa);
+        for (const [code, { dial }] of Object.entries(WHATSAPP_COUNTRY_PREFIXES)) {
+          if (raw.startsWith(dial)) { setWhatsappCountryCode(code); break; }
+        }
+      }
       setDescription(savedTherapist.description || description);
       setPrice60(String(savedTherapist.price60 || price60));
       setPrice90(String(savedTherapist.price90 || price90));
@@ -756,7 +783,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
     !isNaN(p90Val) && p90Val >= MIN_PRICE_VAL &&
     !isNaN(p120Val) && p120Val >= MIN_PRICE_VAL;
   const canSave = name.trim() && 
-                  /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && 
+                  (normalizeWhatsAppToDigits(whatsappNumber).length >= 10 && normalizeWhatsAppToDigits(whatsappNumber).length <= 15) && 
                   selectedCity !== 'all' &&
                   coordinates && coordinates.lat && coordinates.lng &&
                   hasValidThreePrices; // GPS + Traditional Massage 3 prices MANDATORY
@@ -1323,24 +1350,46 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
               />
             </div>
 
-            {/* WhatsApp */}
+            {/* WhatsApp with country prefix */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                WhatsApp Number *
+                WhatsApp Number * (with country prefix)
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none z-10">
-                  +62
-                </span>
+              <div className="flex gap-2">
+                <select
+                  value={whatsappCountryCode}
+                  onChange={e => {
+                    const code = e.target.value;
+                    const prevDial = WHATSAPP_COUNTRY_PREFIXES[whatsappCountryCode]?.dial || '+62';
+                    const newDial = WHATSAPP_COUNTRY_PREFIXES[code]?.dial || '+62';
+                    const allDigits = whatsappNumber.replace(/\D/g, '');
+                    const prevPrefix = prevDial.replace(/\D/g, '');
+                    const local = allDigits.startsWith(prevPrefix) ? allDigits.slice(prevPrefix.length) : allDigits;
+                    setWhatsappCountryCode(code);
+                    setWhatsappNumber(newDial + local);
+                  }}
+                  className="border border-gray-300 rounded-lg px-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none min-w-[120px]"
+                >
+                  {Object.entries(WHATSAPP_COUNTRY_PREFIXES).map(([code, { dial, label }]) => (
+                    <option key={code} value={code}>{dial} {label}</option>
+                  ))}
+                </select>
                 <input
                   type="tel"
-                  value={whatsappNumber.replace(/^\+62/, '')}
+                  value={(() => {
+                    const dial = WHATSAPP_COUNTRY_PREFIXES[whatsappCountryCode]?.dial || '+62';
+                    const prefixDigits = dial.replace(/\D/g, '');
+                    const raw = whatsappNumber.replace(/\D/g, '');
+                    if (raw.startsWith(prefixDigits)) return raw.slice(prefixDigits.length);
+                    return raw || '';
+                  })()}
                   onChange={e => {
                     const digits = e.target.value.replace(/\D/g, '');
-                    setWhatsappNumber('+62' + digits);
+                    const dial = WHATSAPP_COUNTRY_PREFIXES[whatsappCountryCode]?.dial || '+62';
+                    setWhatsappNumber(dial + digits);
                   }}
-                  className="w-full border border-gray-300 rounded-lg pl-14 pr-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none"
-                  placeholder="812345678"
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none"
+                  placeholder={whatsappCountryCode === 'ID' ? '812345678' : '7911123456'}
                 />
               </div>
             </div>
@@ -1784,7 +1833,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                 <p className="text-sm text-red-700 font-medium mb-2">Complete these required fields:</p>
                 <ul className="text-sm text-red-600 space-y-1">
                   {!name.trim() && <li>• Full name</li>}
-                  {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
+                  {(normalizeWhatsAppToDigits(whatsappNumber).length < 10 || normalizeWhatsAppToDigits(whatsappNumber).length > 15) && <li>• Valid WhatsApp with country prefix</li>}
                   {selectedCity === 'all' && <li>• City/Location</li>}
                   {(!coordinates || !coordinates.lat || !coordinates.lng) && <li>• GPS Location (click SET GPS LOCATION button)</li>}
                   {!hasValidThreePrices && <li>• Traditional Massage – 3 prices (60, 90, 120 min, min 100 = Rp 100,000 each)</li>}
@@ -1842,7 +1891,7 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
                     e.preventDefault();
                     const missingFields: string[] = [];
                     if (!name.trim()) missingFields.push('First Name');
-                    if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
+                    if (!(normalizeWhatsAppToDigits(whatsappNumber).length >= 10 && normalizeWhatsAppToDigits(whatsappNumber).length <= 15)) missingFields.push('WhatsApp Number');
                     if (selectedCity === 'all') missingFields.push('Location');
                     if (!hasValidThreePrices) missingFields.push('Traditional Massage 3 prices (60/90/120 min)');
                     showToast(`⚠️ Please complete all required fields: ${missingFields.join(', ')}`, 'error');
