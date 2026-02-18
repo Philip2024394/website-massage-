@@ -46,6 +46,28 @@ export { SAMPLE_ACHIEVEMENTS };
 
 const MAX_THERAPISTS_PAGE = 100; // Appwrite max per request
 
+/** Parse busyUntil and busyDuration from therapist description [TIMER:...] (admin + auto-revert). */
+export function getTherapistBusyTimer(doc: any): { busyUntil: string | null; busyDuration: number | null } {
+    const desc = doc?.description || '';
+    const match = desc.match(/\[TIMER:(.+?)\]/);
+    if (!match) return { busyUntil: null, busyDuration: null };
+    try {
+        const data = JSON.parse(match[1]);
+        return {
+            busyUntil: data.busyUntil || null,
+            busyDuration: data.busyDuration ?? null
+        };
+    } catch {
+        return { busyUntil: null, busyDuration: null };
+    }
+}
+
+/** Strip [TIMER:...] from description and return clean description. */
+function stripTimerFromDescription(description: string): string {
+    if (!description || typeof description !== 'string') return '';
+    return description.replace(/\[TIMER:.+?\]/, '').trim();
+}
+
 export const adminTherapistService = {
     getAll: async () => {
         try {
@@ -111,6 +133,63 @@ export const adminTherapistService = {
         } catch (error) {
             console.error('❌ [ADMIN] Error verifying KTP:', error);
             throw error;
+        }
+    },
+
+    /**
+     * Set therapist availability (admin override). Uses status/availability and stores busyUntil in description [TIMER:...].
+     * status: 'available' | 'busy' | 'offline'; availability: 'Available' | 'Busy' | 'Offline'.
+     * For busy: pass busyUntil (ISO string) and optional busyDuration (minutes).
+     */
+    setAvailability: async (
+        id: string,
+        opts: { status: string; availability: string; busyUntil?: string | null; busyDuration?: number | null }
+    ) => {
+        const doc = await databases.getDocument(DATABASE_ID, COLLECTIONS.THERAPISTS, id);
+        let description = stripTimerFromDescription(doc.description || '');
+        const status = opts.status.toLowerCase();
+        const availability = opts.availability.charAt(0).toUpperCase() + opts.availability.slice(1).toLowerCase();
+        if (status === 'busy' && opts.busyUntil) {
+            const timer = JSON.stringify({
+                busyUntil: opts.busyUntil,
+                busyDuration: opts.busyDuration ?? null
+            });
+            description = description ? `${description} [TIMER:${timer}]` : `[TIMER:${timer}]`;
+        }
+        // when reverting to available/offline, description is already stripped above (no timer added)
+        return await databases.updateDocument(DATABASE_ID, COLLECTIONS.THERAPISTS, id, {
+            status,
+            availability,
+            description
+        });
+    },
+
+    /** Revert therapists whose busyUntil has passed to available. Call on admin load / cron. */
+    revertExpiredBusyTherapists: async () => {
+        try {
+            const all = await adminTherapistService.getAll();
+            const now = new Date().toISOString();
+            let reverted = 0;
+            for (const t of all) {
+                const av = (t.availability || t.status || '').toString().toLowerCase();
+                const st = (t.status || '').toString().toLowerCase();
+                if (av !== 'busy' && st !== 'busy') continue;
+                const { busyUntil } = getTherapistBusyTimer(t);
+                if (!busyUntil || busyUntil <= now) {
+                    await adminTherapistService.setAvailability(t.$id, {
+                        status: 'available',
+                        availability: 'Available',
+                        busyUntil: null,
+                        busyDuration: null
+                    });
+                    reverted++;
+                }
+            }
+            if (reverted > 0) console.log('✅ [ADMIN] Auto-reverted', reverted, 'expired busy therapists');
+            return reverted;
+        } catch (e) {
+            console.error('❌ [ADMIN] revertExpiredBusyTherapists:', e);
+            return 0;
         }
     }
 };

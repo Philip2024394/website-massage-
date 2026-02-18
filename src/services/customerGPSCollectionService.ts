@@ -116,7 +116,9 @@ class CustomerGPSCollectionService {
 
     } catch (error) {
       console.error('❌ [CUSTOMER GPS] Booking GPS collection failed:', error);
-      throw new Error('Unable to get your location. Please enable location services and try again.');
+      // Re-throw with original message so landing page can show it
+      const message = error instanceof Error ? error.message : 'Unable to get your location. Please enable location services and try again.';
+      throw new Error(message);
     }
   }
 
@@ -125,6 +127,7 @@ class CustomerGPSCollectionService {
    * Uses device-optimized settings and fallback strategies
    */
   private async collectGPSWithFallback(source: CustomerGPSData['collectedAt']): Promise<CustomerGPSData | null> {
+    let primaryError: { code: number; message: string } | undefined;
     try {
       // Use existing locationService for device-optimized GPS collection
       const location: UserLocation = await locationService.getCurrentLocation({
@@ -151,20 +154,51 @@ class CustomerGPSCollectionService {
 
       return gpsData;
 
-    } catch (error) {
-      console.warn('📍 [CUSTOMER GPS] Primary GPS collection failed, trying fallback');
+    } catch (error: unknown) {
+      primaryError = this.normalizeLocationError(error);
+      console.warn('📍 [CUSTOMER GPS] Primary GPS collection failed, trying fallback', primaryError?.message);
       
-      // Fallback to basic geolocation API
-      return await this.fallbackGPSCollection(source);
+      const result = await this.fallbackGPSCollection(source);
+      if (result.gpsData) return result.gpsData;
+      // Both failed: throw with a clear message so the UI can show it
+      const fallbackError = result.error ?? primaryError;
+      const userMessage = this.toUserFriendlyMessage(fallbackError);
+      throw new Error(userMessage);
+    }
+  }
+
+  private normalizeLocationError(error: unknown): { code: number; message: string } | undefined {
+    if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+      return { code: (error as { code: number }).code, message: (error as { message: string }).message };
+    }
+    if (error instanceof Error) return { code: 0, message: error.message };
+    return undefined;
+  }
+
+  private toUserFriendlyMessage(err?: { code: number; message: string }): string {
+    if (!err) return 'We couldn\'t detect your location. Please choose your city from the list below.';
+    switch (err.code) {
+      case 1: // PERMISSION_DENIED
+        return 'Location access was denied. Please enable location in your browser or device settings and try again, or choose your city from the list below.';
+      case 2: // POSITION_UNAVAILABLE
+        return 'Your location could not be determined (e.g. GPS off or weak signal). Please choose your city from the list below.';
+      case 3: // TIMEOUT
+        return 'Location request timed out. Please try again or choose your city from the list below.';
+      default:
+        return err.message || 'We couldn\'t detect your location. Please choose your city from the list below.';
     }
   }
 
   /**
    * 🛡️ FALLBACK GPS COLLECTION
-   * Basic geolocation when advanced service fails
+   * Basic geolocation when advanced service fails. Returns gpsData or error for UI message.
    */
-  private async fallbackGPSCollection(source: CustomerGPSData['collectedAt']): Promise<CustomerGPSData | null> {
+  private async fallbackGPSCollection(source: CustomerGPSData['collectedAt']): Promise<{ gpsData: CustomerGPSData | null; error?: { code: number; message: string } }> {
     return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve({ gpsData: null, error: { code: 0, message: 'Geolocation is not supported in this browser.' } });
+        return;
+      }
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const gpsData: CustomerGPSData = {
@@ -179,15 +213,15 @@ class CustomerGPSCollectionService {
           };
           
           console.log('📍 [CUSTOMER GPS] Fallback collection successful');
-          resolve(gpsData);
+          resolve({ gpsData });
         },
-        (error) => {
-          console.warn('📍 [CUSTOMER GPS] Fallback also failed:', error);
-          resolve(null);
+        (error: GeolocationPositionError) => {
+          console.warn('📍 [CUSTOMER GPS] Fallback also failed:', error.code, error.message);
+          resolve({ gpsData: null, error: { code: error.code, message: error.message } });
         },
         {
           enableHighAccuracy: false, // Less accurate but more likely to work
-          timeout: 10000,
+          timeout: 15000,
           maximumAge: 600000 // 10 minutes cache
         }
       );

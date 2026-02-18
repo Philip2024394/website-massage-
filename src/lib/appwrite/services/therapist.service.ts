@@ -441,7 +441,7 @@ export const therapistService = {
         }
     },
 
-    /** Set terms_acknowledged = true in Appwrite after therapist agrees to dashboard T&C. */
+    /** Set terms_acknowledged = true in Appwrite after therapist agrees to dashboard T&C. Falls back to localStorage-only if attribute is not on collection. */
     async setTermsAcknowledged(id: string): Promise<void> {
         if (!id) return;
         try {
@@ -451,7 +451,12 @@ export const therapistService = {
                 id,
                 { terms_acknowledged: true }
             );
-        } catch (e) {
+        } catch (e: any) {
+            const msg = e?.message ?? String(e);
+            if (msg.includes('Unknown attribute') && msg.includes('terms_acknowledged')) {
+                // Collection doesn't have terms_acknowledged yet; DashboardTermsGate will persist via localStorage only
+                return;
+            }
             console.error('setTermsAcknowledged failed:', e);
             throw e;
         }
@@ -980,8 +985,9 @@ export const therapistService = {
                 }
             }
             
-            // 🌍 GPS AND LOCATION FIELDS (GPS-AUTHORITATIVE) - FIX FOR LOCATION AUDIT
-            // Critical: These fields must be saved to enable correct city-based filtering
+            // 🌍 GPS AND LOCATION FIELDS (GPS-AUTHORITATIVE) – SYNCED WITH MAIN APP
+            // Therapist/place upload page sets GPS → we derive city via deriveLocationIdFromGeopoint (same as app city list).
+            // Main app lists profiles only by this saved city; no distance limit per city, no km shown in city view.
             if (data.geopoint) {
                 mappedData.geopoint = data.geopoint;
                 mappedData.lastLocationUpdateAt = data.lastLocationUpdateAt || new Date().toISOString();

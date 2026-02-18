@@ -269,6 +269,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     };
     
     const therapistDistance = React.useMemo(() => {
+        // Per-city view: no km distance – profiles listed only by GPS location city
+        if (selectedCity && selectedCity !== 'all') return null;
         if (!userLocation) return null;
         
         let therapistCoords = null;
@@ -303,7 +305,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         } else {
             return `${distanceKm.toFixed(1)}km away`;
         }
-    }, [userLocation, (therapist as any).geopoint, therapist.coordinates]);
+    }, [selectedCity, userLocation, (therapist as any).geopoint, therapist.coordinates]);
 
     // Get the location area from GPS-computed _locationArea (consistent with filtering)
     const therapistLocationArea = (therapist as any)._locationArea;

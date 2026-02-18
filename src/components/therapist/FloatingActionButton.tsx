@@ -78,15 +78,6 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       priority: 'high'
     },
     {
-      id: 'earnings',
-      label: 'Earnings',
-      icon: DollarSign,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100 hover:bg-blue-200',
-      onClick: () => onNavigate('earnings'),
-      priority: 'high'
-    },
-    {
       id: 'notifications',
       label: 'Alerts',
       icon: Bell,
@@ -113,26 +104,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       bgColor: 'bg-indigo-100 hover:bg-indigo-200',
       onClick: () => onNavigate('analytics'),
       priority: 'low',
-      contextual: ['dashboard', 'earnings']
-    },
-    {
-      id: 'customers',
-      label: 'Customers',
-      icon: Users,
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-100 hover:bg-teal-200',
-      onClick: () => onNavigate('more-customers'),
-      priority: 'low'
-    },
-    {
-      id: 'discount',
-      label: 'Discount',
-      icon: Gift,
-      color: 'text-pink-600',
-      bgColor: 'bg-pink-100 hover:bg-pink-200',
-      onClick: () => onNavigate('send-discount'),
-      priority: 'low',
-      contextual: ['bookings', 'more-customers']
+      contextual: ['dashboard']
     }
   ];
 

@@ -25,6 +25,7 @@ import { adminTherapistService, adminPlacesService, adminBookingService } from '
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '../../lib/appwriteClient';
 import AdminSupportDashboard from '../../components/admin/AdminSupportDashboard';
 import TherapistManager from '../../components/admin/TherapistManager';
+import AdminTranslationConsole from '../../components/admin/AdminTranslationConsole';
 import DashboardPWABanner from '../../components/pwa/DashboardPWABanner';
 
 // =====================================================================
@@ -81,7 +82,8 @@ type AdminView =
     | 'achievements'
     | 'system-health'
     | 'analytics'
-    | 'support';
+    | 'support'
+    | 'translation-console';
 
 // =====================================================================
 // ADMIN DASHBOARD COMPONENT
@@ -120,12 +122,16 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 adminBookingService.getAll()
             ]);
 
+            // Auto-revert therapists whose busyUntil has passed (admin override → available)
+            const reverted = await adminTherapistService.revertExpiredBusyTherapists().catch(() => 0);
+            const therapistsFinal = reverted > 0 ? await adminTherapistService.getAll() : therapists;
+
             // Calculate stats
             const today = new Date().toDateString();
-            const activeTherapists = therapists.filter((t: any) => 
+            const activeTherapists = therapistsFinal.filter((t: any) => 
                 t.status === 'active' || t.status === 'available' || t.status === 'busy'
             ).length;
-            const pendingTherapists = therapists.filter((t: any) => t.status === 'pending').length;
+            const pendingTherapists = therapistsFinal.filter((t: any) => t.status === 'pending').length;
             const activePlaces = places.filter((p: any) => p.status === 'active').length;
             const pendingPlaces = places.filter((p: any) => p.status === 'pending').length;
             const todayBookings = bookings.filter((b: any) =>
@@ -134,7 +140,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
             const totalRevenue = bookings.reduce((sum: number, b: any) => sum + (b.totalCost || 0), 0);
 
             setStats({
-                totalTherapists: therapists.length,
+                totalTherapists: therapistsFinal.length,
                 totalPlaces: places.length,
                 totalBookings: bookings.length,
                 totalRevenue,
@@ -193,6 +199,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
         { id: 'ktp-verification', label: 'KTP Verification', icon: <FileCheck className="w-5 h-5" /> },
         { id: 'achievements', label: 'Achievements', icon: <Award className="w-5 h-5" /> },
         { id: 'system-health', label: 'System Health', icon: <ShieldCheck className="w-5 h-5" /> },
+        { id: 'translation-console', label: 'Translation Console', icon: <MessageSquare className="w-5 h-5" /> },
         { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
     ];
 
@@ -319,6 +326,8 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 return <SettingsPanel />;
             case 'support':
                 return <AdminSupportDashboard />;
+            case 'translation-console':
+                return <AdminTranslationConsole />;
             default:
                 return renderDashboard();
         }

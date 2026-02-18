@@ -73,30 +73,6 @@ const PAGE_HIERARCHY: Record<string, {
     color: 'text-green-600',
     description: 'Control your availability'
   },
-  'earnings': {
-    parent: 'home',
-    label: 'Earnings',
-    icon: DollarSign,
-    category: 'financial',
-    color: 'text-green-600',
-    description: 'View your income and payouts'
-  },
-  'payment': {
-    parent: 'earnings',
-    label: 'Payment Proof',
-    icon: DollarSign,
-    category: 'financial',
-    color: 'text-green-500',
-    description: 'Submit payment verification'
-  },
-  'commission-payment': {
-    parent: 'earnings',
-    label: 'Commission',
-    icon: DollarSign,
-    category: 'financial',
-    color: 'text-green-500',
-    description: 'Commission payments'
-  },
   'analytics': {
     parent: 'dashboard',
     label: 'Analytics',
@@ -105,14 +81,6 @@ const PAGE_HIERARCHY: Record<string, {
     color: 'text-indigo-600',
     description: 'Performance insights'
   },
-  'more-customers': {
-    parent: 'dashboard',
-    label: 'More Customers',
-    icon: Users,
-    category: 'business',
-    color: 'text-teal-600',
-    description: 'Grow your customer base'
-  },
   'notifications': {
     parent: 'home',
     label: 'Notifications',
@@ -120,14 +88,6 @@ const PAGE_HIERARCHY: Record<string, {
     category: 'tools',
     color: 'text-purple-600',
     description: 'Manage your alerts'
-  },
-  'send-discount': {
-    parent: 'more-customers',
-    label: 'Send Discount',
-    icon: Gift,
-    category: 'tools',
-    color: 'text-pink-600',
-    description: 'Create discount campaigns'
   },
   'custom-menu': {
     parent: 'bookings',
@@ -194,14 +154,8 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
           { id: 'custom-menu', label: 'Menu', icon: Settings, color: 'text-gray-600' }
         );
         break;
-      case 'financial':
-        actions.push(
-          { id: 'analytics', label: 'Analytics', icon: BarChart3, color: 'text-indigo-600' }
-        );
-        break;
       case 'business':
         actions.push(
-          { id: 'more-customers', label: 'Customers', icon: Users, color: 'text-teal-600' },
           { id: 'analytics', label: 'Analytics', icon: BarChart3, color: 'text-indigo-600' }
         );
         break;

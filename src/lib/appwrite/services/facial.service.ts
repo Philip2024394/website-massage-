@@ -222,7 +222,7 @@ export const facialPlaceService = {
         }
     },
 
-    /** Set terms_acknowledged = true in Appwrite after provider agrees to dashboard T&C. */
+    /** Set terms_acknowledged = true in Appwrite after provider agrees to dashboard T&C. Falls back to localStorage-only if attribute is not on collection. */
     async setTermsAcknowledged(id: string): Promise<void> {
         if (!id) return;
         try {
@@ -232,7 +232,11 @@ export const facialPlaceService = {
                 id,
                 { terms_acknowledged: true }
             );
-        } catch (e) {
+        } catch (e: any) {
+            const msg = e?.message ?? String(e);
+            if (msg.includes('Unknown attribute') && msg.includes('terms_acknowledged')) {
+                return;
+            }
             console.error('facial setTermsAcknowledged failed:', e);
             throw e;
         }

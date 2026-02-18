@@ -67,6 +67,12 @@ class LazyLoadErrorBoundary extends React.Component<
 
 // Landing page error boundary: shows Try again/Reload if MainLandingPage throws (admin-approved for UX)
 import { LandingPageErrorBoundary } from './components/error-boundaries/LandingPageErrorBoundary';
+
+/** Shown when a therapist route has been removed from dashboard; redirects to therapist-dashboard. */
+function TherapistRedirectToDashboard({ onNavigate }: { onNavigate?: (p: string) => void }) {
+  useEffect(() => { onNavigate?.('therapist-dashboard'); }, [onNavigate]);
+  return <div className="min-h-[120px] flex items-center justify-center text-gray-500 text-sm">Redirecting...</div>;
+}
 // Route configurations
 import { publicRoutes } from './router/routes/publicRoutes';
 import { authRoutes } from './router/routes/authRoutes';
@@ -98,6 +104,8 @@ const QRCodePage = React.lazy(() => import('./pages/QRCodePage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
 const BookingPage = React.lazy(() => import('./pages/BookingPage'));
 const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
+const MembershipPartnerPage = React.lazy(() => import('./pages/MembershipPartnerPage').then(m => ({ default: m.MembershipPartnerPage })));
+const MembershipSuccessPage = React.lazy(() => import('./pages/MembershipSuccessPage').then(m => ({ default: m.MembershipSuccessPage })));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
 const LeadAcceptPage = React.lazy(() => import('./pages/LeadAcceptPage'));
@@ -1661,6 +1669,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'membership':
             return renderRoute(MembershipPage);
         
+        case 'membership-partner':
+            return renderRoute(MembershipPartnerPage, {
+                initialCountryCode: (props as any).countryCode ?? '',
+                onJoinCommission: (countryCode: string) => {
+                    props.onNavigate?.('create-account' as Page);
+                },
+                onBack: () => props.onNavigate?.('home'),
+            });
+        
+        case 'membership-success':
+            return renderRoute(MembershipSuccessPage, {
+                onNavigateToSignup: () => props.onNavigate?.('create-account' as Page),
+                onNavigateToLogin: () => props.onNavigate?.('therapist-login' as Page),
+                onBack: () => props.onNavigate?.('home'),
+            });
+        
         case 'accept-booking':
             return renderRoute(AcceptBookingPage);
         
@@ -2038,27 +2062,30 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language || 'id'
             }, 'therapist-bookings');
         
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        // Removed from dashboard – redirect to dashboard
         case 'earnings':
         case 'therapist-earnings':
-            logger.debug('[ROUTE RESOLVE] therapist-earnings → TherapistEarnings');
-            return renderRoute(therapistRoutes.earnings.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-        
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'chat':
         case 'therapist-chat':
-            logger.debug('[ROUTE RESOLVE] therapist-chat → TherapistChat');
-            return renderRoute(therapistRoutes.chat.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
+        case 'calendar':
+        case 'therapist-calendar':
+        case 'payment':
+        case 'therapist-payment':
+        case 'payment-status':
+        case 'therapist-payment-status':
+        case 'commission-payment':
+        case 'therapist-commission':
+        case 'therapist-commission-payment':
+        case 'send-discount':
+        case 'customers':
+        case 'therapist-customers':
+        case 'more-customers':
+        case 'banner-discount':
+        case 'therapist-banner-discount':
+        case 'schedule':
+        case 'therapist-schedule':
+        case 'therapist-package-terms':
+            return renderRoute(TherapistRedirectToDashboard, { onNavigate: props.onNavigate });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'therapist-notifications':
@@ -2102,40 +2129,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
-        case 'calendar':
-        case 'therapist-calendar':
-            logger.debug('[ROUTE RESOLVE] therapist-calendar → TherapistCalendar');
-            return renderRoute(therapistRoutes.calendar.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-        
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
-        case 'payment':
-        case 'therapist-payment':
-            logger.debug('[ROUTE RESOLVE] therapist-payment → TherapistPaymentInfo');
-            return renderRoute(therapistRoutes.payment.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-        
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
-        case 'payment-status':
-        case 'therapist-payment-status':
-            logger.debug('[ROUTE RESOLVE] payment-status/therapist-payment-status → TherapistPaymentStatus');
-            const paymentStatusComponent = renderRoute(therapistRoutes.paymentStatus.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-            logger.debug('[ROUTER OK] payment-status component bound successfully');
-            return paymentStatusComponent;
-        
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'custom-menu':
         case 'therapist-menu':
@@ -2149,49 +2142,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             logger.debug('[ROUTER OK] therapist-menu component bound successfully');
             return menuComponent;
         
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
-        case 'commission-payment':
-        case 'therapist-commission':
-        case 'therapist-commission-payment':
-            logger.debug('[ROUTE RESOLVE] therapist-commission → CommissionPayment');
-            return renderRoute(therapistRoutes.commission.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-        
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
-        case 'send-discount':
-            logger.debug('[ROUTE RESOLVE] send-discount → SendDiscountPage');
-            return renderRoute(therapistRoutes.sendDiscount.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-status'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-        
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Customers List with booking history)
-        case 'customers':
-        case 'therapist-customers':
-            logger.debug('[ROUTE RESOLVE] customers → TherapistCustomersPage');
-            return renderRoute(therapistRoutes.customers.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-        
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Guide page for getting more customers)
-        case 'more-customers':
-            logger.debug('[ROUTE RESOLVE] more-customers → MoreCustomersPage');
-            return renderRoute(therapistRoutes.moreCustomers.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-        
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Dedicated Analytics Page)
         case 'analytics':
         case 'therapist-analytics':
@@ -2199,17 +2149,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(therapistRoutes.analytics.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            });
-        
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Banner Discount / Voucher System)
-        case 'banner-discount':
-        case 'therapist-banner-discount':
-            logger.debug('[ROUTE RESOLVE] banner-discount → BannerDiscountPage');
-            return renderRoute(therapistRoutes.bannerDiscount.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-customers' as Page),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
@@ -2231,24 +2170,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBack: () => props.onNavigate?.('therapist-dashboard')
             });
         
-        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
-        case 'schedule':
-        case 'therapist-schedule':
-            logger.debug('[ROUTE RESOLVE] therapist-schedule → TherapistSchedule');
-            logger.debug('[ROUTER OK] therapist-schedule', { route: '/dashboard/therapist/schedule' });
-            return renderRoute(therapistRoutes.schedule.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
-                onNavigate: props.onNavigate,
-                language: props.language || 'id'
-            }, 'therapist-schedule');
-        
-        case 'therapist-package-terms':
-            return renderRoute(therapistRoutes.packageTerms.component, {
-                therapist: props.user,
-                language: props.language || 'id'
-            });
-
         // ===== OTHER DASHBOARD ROUTES =====
         
         case 'placeDashboard':

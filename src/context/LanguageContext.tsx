@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 
-export type SupportedLanguage = 'en' | 'id' | 'ms' | 'th' | 'tl' | 'vi';
+export type SupportedLanguage = 'en' | 'id' | 'ms' | 'th' | 'tl' | 'vi' | 'de';
 
 export interface LanguageContextValue {
   language: SupportedLanguage;
@@ -23,15 +23,19 @@ export function useLanguageContext(): LanguageContextValue {
   return useContext(LanguageContext);
 }
 
-// Helper: Map country code to its native language
+// Helper: Map country code to its native language (landing country selection drives app/dashboard language)
 export const getCountryLanguage = (countryCode: string): SupportedLanguage => {
   const countryLanguageMap: Record<string, SupportedLanguage> = {
-    'ID': 'id', // Indonesia → Indonesian
-    'MY': 'ms', // Malaysia → Malay
-    'SG': 'en', // Singapore → English
-    'TH': 'th', // Thailand → Thai
-    'PH': 'tl', // Philippines → Tagalog
-    'VN': 'vi', // Vietnam → Vietnamese
+    'ID': 'id',   // Indonesia → Indonesian (option for English in app)
+    'MY': 'ms',   // Malaysia → Malay (option for English)
+    'SG': 'en',   // Singapore → English
+    'TH': 'th',   // Thailand → Thai (option for English)
+    'PH': 'tl',   // Philippines → Tagalog (option for English)
+    'VN': 'vi',   // Vietnam → Vietnamese (option for English)
+    'GB': 'en',   // United Kingdom → English
+    'US': 'en',   // United States → English
+    'AU': 'en',   // Australia → English
+    'DE': 'de',   // Germany → German (option for English)
   };
   return countryLanguageMap[countryCode] || 'en';
 };
@@ -61,6 +65,7 @@ export const getLanguageName = (lang: SupportedLanguage, inNativeLanguage: boole
       'th': 'ภาษาไทย',
       'tl': 'Tagalog',
       'vi': 'Tiếng Việt',
+      'de': 'Deutsch',
     };
     return nativeNames[lang];
   }
@@ -72,6 +77,7 @@ export const getLanguageName = (lang: SupportedLanguage, inNativeLanguage: boole
     'th': 'Thai',
     'tl': 'Tagalog',
     'vi': 'Vietnamese',
+    'de': 'German',
   };
   return englishNames[lang];
 };

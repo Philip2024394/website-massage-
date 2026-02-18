@@ -183,9 +183,9 @@ Store detailed payment history for each member's monthly subscription.
 
 ### Step 2: Update Existing Collections
 
-1. Go to `therapists` collection → Add attributes: `verified`, `visibleOnHomepage`, `subscriptionId`
+1. Go to `therapists` collection → Add attributes: `verified`, `visibleOnHomepage`, `subscriptionId`, `terms_acknowledged` (boolean, optional – dashboard T&C gate; app works without it using localStorage)
 2. Go to `places` collection → Add attributes: `verified`, `visibleOnHomepage`, `subscriptionId`
-3. Go to `facial_places` collection → Add attributes: `verified`, `visibleOnHomepage`, `subscriptionId`
+3. Go to `facial_places` collection → Add attributes: `verified`, `visibleOnHomepage`, `subscriptionId`, `terms_acknowledged` (boolean, optional)
 
 ### Step 3: Create Appwrite Functions (Optional but Recommended)
 

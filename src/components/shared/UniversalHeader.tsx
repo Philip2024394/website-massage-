@@ -112,19 +112,14 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
         
         const currentLang = language || 'en';
         
-        // Language rules by country:
-        // - US, UK, AU, PH: English only (no toggle needed)
-        // - DE: German ↔ English (bilingual)
-        // - ID: Indonesian ↔ English (bilingual)
-        
-        // Check if current country is English-only
-        const englishOnlyCountries = ['US', 'GB', 'AU', 'PH'];
+        // Language rules: non-English locales get option to view in English (Indonesia ↔ EN, Vietnam ↔ EN, etc.)
+        const englishOnlyCountries = ['US', 'GB', 'AU', 'SG'];
         if (englishOnlyCountries.includes(activeCountryCode)) {
             console.log('🌐 English-only country, no language toggle');
             return; // No toggle for English-only countries
         }
         
-        // For bilingual countries (Germany, Indonesia), toggle between native and English
+        // For all other countries (ID, VN, TH, MY, PH, DE): toggle between native and English
         const countryLanguage = getCountryLanguage(activeCountryCode);
         const newLanguage = currentLang === 'en' ? countryLanguage : 'en';
         
@@ -137,8 +132,8 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
         onLanguageChange(newLanguage);
     };
     
-    // Determine if language toggle should be visible
-    const showLanguageToggle = !['US', 'GB', 'AU', 'PH'].includes(activeCountryCode);
+    // Show English option for non-English locales (ID, VN, TH, MY, PH, DE)
+    const showLanguageToggle = !['US', 'GB', 'AU', 'SG'].includes(activeCountryCode);
     
     // Determine which flags to show
     const showCountryFlag = language !== 'en';

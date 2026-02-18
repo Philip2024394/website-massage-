@@ -17,30 +17,21 @@
 
 import type { Page } from '../types/pageTypes';
 
-/** FAB quick action ids (used by FloatingActionButton). Must resolve via getTherapistSidebarPage. */
+/** FAB quick action ids (used by FloatingActionButton). Only kept dashboard pages. */
 export const FAB_ACTION_IDS = [
   'bookings',
   'status',
-  'earnings',
   'notifications',
   'dashboard',
   'analytics',
-  'more-customers',
-  'send-discount',
 ] as const;
 
-/** Sidebar menu item ids (as used in TherapistLayout menuItems). */
+/** Sidebar menu item ids – only kept pages: status, how-it-works, dashboard, bookings, notifications, menu, analytics, safe-pass, legal, job-applications. */
 export const THERAPIST_SIDEBAR_IDS = [
   'status',
   'therapist-how-it-works',
   'dashboard',
   'bookings',
-  'customers',
-  'send-discount',
-  'earnings',
-  'payment',
-  'payment-status',
-  'commission-payment',
   'custom-menu',
   'analytics',
   'therapist-hotel-villa-safe-pass',
@@ -58,17 +49,10 @@ export type TherapistSidebarId = (typeof THERAPIST_SIDEBAR_IDS)[number];
  */
 export const THERAPIST_SIDEBAR_TO_PAGE: Record<string, Page> = {
   status: 'therapist-status',
-  'quick-booking-check': 'therapist-bookings', // EnhancedNavigation "Check Bookings" → Bookings page
+  'quick-booking-check': 'therapist-bookings',
   'therapist-how-it-works': 'therapist-how-it-works',
-  dashboard: 'dashboard', // Profile/edit page (AppRouter case 'dashboard' for therapist)
+  dashboard: 'dashboard',
   bookings: 'therapist-bookings',
-  customers: 'customers', // AppRouter accepts both 'customers' and 'therapist-customers'
-  'more-customers': 'more-customers', // FAB "Customers" → MoreCustomersPage (guide for getting more customers)
-  'send-discount': 'send-discount',
-  earnings: 'therapist-earnings',
-  payment: 'therapist-payment',
-  'payment-status': 'therapist-payment-status',
-  'commission-payment': 'therapist-commission', // AppRouter case is therapist-commission
   'custom-menu': 'therapist-menu',
   analytics: 'therapist-analytics',
   'therapist-hotel-villa-safe-pass': 'therapist-hotel-villa-safe-pass',

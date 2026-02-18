@@ -50,11 +50,21 @@ import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
 import { APP_CONSTANTS } from '../constants/appConstants';
+import { APP_CONFIG } from '../config';
 import { enterpriseBookingFlowService } from '../services/enterpriseBookingFlowService';
+import { useAuth } from '../context/AuthContext';
+import {
+  buildBookNowMessage,
+  buildWhatsAppUrl,
+  getTherapistWhatsApp,
+  getFirstMassageType,
+  getDefaultDurationAndPrice,
+} from '../utils/whatsappBookingMessages';
+import TherapistBusyPopup from './TherapistBusyPopup';
 
-/** Admin WhatsApp (used for "Chat on WhatsApp" button). */
+/** Admin WhatsApp (used when therapist has no number). */
 const ADMIN_WHATSAPP = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER;
-const WHATSAPP_BOOK_MSG = 'Hi Indastreet, I would like to book a massage.';
+const IN_APP_BOOKING_DISABLED = APP_CONFIG.IN_APP_BOOKING_DISABLED === true;
 
 import BookingPopup from './BookingPopup';
 import ScheduleBookingPopup from './ScheduleBookingPopup';
@@ -247,6 +257,82 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
         </div>
     );
 };
+
+/** Single "Book via WhatsApp" + Prices row when in-app booking is disabled. */
+interface BookViaWhatsAppRowProps {
+    therapist: Therapist;
+    locationAreaDisplayName: string;
+    selectedCity?: string;
+    onPriceSlider: () => void;
+    dynamicSpacing: string;
+    /** When true, Book button shows busy popup instead of opening WhatsApp */
+    isBusy?: boolean;
+    /** ISO string when therapist becomes available again */
+    busyUntil?: string | null;
+}
+
+function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, onPriceSlider, dynamicSpacing, isBusy = false, busyUntil }: BookViaWhatsAppRowProps) {
+    const [showBusyPopup, setShowBusyPopup] = useState(false);
+    const therapistPhone = getTherapistWhatsApp(therapist);
+    const fallbackPhone = therapistPhone ? therapistPhone.replace(/\D/g, '') : ADMIN_WHATSAPP.replace(/\D/g, '');
+    const phoneForUrl = therapistPhone ? getTherapistWhatsApp(therapist) : (ADMIN_WHATSAPP.startsWith('+') ? ADMIN_WHATSAPP.slice(1).replace(/\D/g, '') : ADMIN_WHATSAPP.replace(/\D/g, ''));
+    const { durationMin, price } = getDefaultDurationAndPrice(therapist);
+    const massageType = getFirstMassageType(therapist);
+    const message = buildBookNowMessage({
+        therapistName: therapist.name || 'Therapist',
+        therapistId: String(therapist.$id || therapist.id || 'N/A'),
+        massageType,
+        durationMin,
+        price,
+        priceFormatted: price >= 1000 ? `IDR ${(price / 1000).toFixed(0)}K` : `IDR ${price}`,
+    });
+    const whatsappHref = buildWhatsAppUrl(phoneForUrl, message) || `https://wa.me/${fallbackPhone}?text=${encodeURIComponent(message)}`;
+
+    const handleBookClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isBusy) {
+            setShowBusyPopup(true);
+            return;
+        }
+        if (whatsappHref) window.open(whatsappHref, '_blank', 'noopener,noreferrer');
+    };
+
+    return (
+        <div className={`relative z-10 flex gap-2 px-4 ${dynamicSpacing}`} style={{ touchAction: 'manipulation' }}>
+            <TherapistBusyPopup
+                isOpen={showBusyPopup}
+                onClose={() => setShowBusyPopup(false)}
+                busyUntil={busyUntil}
+                providerName={therapist.name || undefined}
+            />
+            <button
+                type="button"
+                onClick={handleBookClick}
+                className="flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 bg-[#25D366] text-white hover:bg-[#20BD5A] active:bg-[#1DA851] active:scale-95 shadow-md cursor-pointer min-h-[48px] min-w-[44px]"
+            >
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Book via WhatsApp</span>
+            </button>
+            <button
+                type="button"
+                onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onPriceSlider();
+                }}
+                className="flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95 shadow-md min-h-[48px] min-w-[44px] select-none"
+            >
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Prices</span>
+            </button>
+        </div>
+    );
+}
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ 
     therapist, 
@@ -1169,75 +1255,88 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 />
             )}
 
-            {/* Round Button Row - Book Now | Scheduled Bookings | Price Slider */}
-            <RoundButtonRow
-                therapist={therapist}
-                onBookNow={async () => {
-                    if (onQuickBookWithChat) {
-                        logger.debug('📤 [SHARED PROFILE] Using onQuickBookWithChat handler');
-                        onQuickBookWithChat();
-                    } else {
-                        logger.debug('💬 [BOOK NOW] Opening persistent chat window...');
-                        openBookingChat(therapist, isSharedProfile ? 'share' : null);
-                    }
-                    onIncrementAnalytics('bookings');
-                    setBookingsCount(prev => prev + 1);
-                }}
-                onSchedule={async () => {
-                    const hasBank = !!(therapist.bankName && therapist.accountNumber && therapist.accountName) || !!(therapist as any).bankCardDetails;
-                    const hasKtp = !!(therapist as any).ktpPhotoUrl;
-                    if (hasBank && hasKtp) {
-                        try {
-                            await enterpriseBookingFlowService.createBookingRequest({
-                                userId: 'current_user',
-                                userDetails: { name: 'Current User', phone: '+1234567890', location: 'User Location' },
-                                serviceType: 'scheduled',
-                                scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                                services: [{ id: 'massage', name: 'Massage Service', duration: 90, price: pricing?.[0]?.price || 100 }],
-                                totalPrice: pricing?.[0]?.price || 100,
-                                duration: 90,
-                                location: { address: locationAreaDisplayName, coordinates: { lat: 0, lng: 0 } },
-                                preferredTherapists: [therapist.$id],
-                                urgency: 'normal'
-                            });
-                        } catch (_) {
-                            // Continue to open chat even if createBookingRequest fails (e.g. no backend)
-                        }
-                        openScheduleChat(therapist, isSharedProfile ? 'share' : null);
-                        onIncrementAnalytics('bookings');
-                        setBookingsCount(prev => prev + 1);
-                    } else {
-                        alert('Scheduled bookings require the therapist to add bank details and KTP in their dashboard. Please choose another therapist or try again later.');
-                    }
-                }}
-                onPriceSlider={() => {
-                    logger.debug('💰 [PRICE SLIDER] Opening price modal...');
-                    setShowPriceListModal(true);
-                }}
-                hasScheduledBookings={!!((therapist.bankName && therapist.accountNumber && therapist.accountName) || (therapist as any).bankCardDetails) && !!((therapist as any).ktpPhotoUrl)}
-                hasActiveScheduledBooking={hasActiveScheduledBooking}
-                bookNowText={bookNowText}
-                scheduleText={scheduleText}
-                dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
-            />
-
-            {/* WhatsApp booking - below Book / Schedule / Prices */}
-            <div className="mt-4 px-4 w-full">
-                <a
-                    href={`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(WHATSAPP_BOOK_MSG)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 font-bold py-3 px-4 rounded-full transition-colors duration-300 bg-[#25D366] text-white hover:bg-[#20BD5A] active:bg-[#1DA851] shadow-md min-h-[48px]"
-                >
-                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                    </svg>
-                    Chat on WhatsApp
-                </a>
-                <p className="text-xs text-gray-500 text-center mt-2">
-                    Chat directly with Indastreet to arrange your booking.
-                </p>
-            </div>
+            {/* Booking row: when in-app booking disabled, single "Book via WhatsApp" + Prices only */}
+            {IN_APP_BOOKING_DISABLED ? (
+                <BookViaWhatsAppRow
+                    therapist={therapist}
+                    locationAreaDisplayName={locationAreaDisplayName}
+                    selectedCity={selectedCity}
+                    onPriceSlider={() => {
+                        logger.debug('💰 [PRICE SLIDER] Opening price modal...');
+                        setShowPriceListModal(true);
+                    }}
+                    dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
+                    isBusy={displayStatus === AvailabilityStatus.Busy}
+                    busyUntil={(therapist as any).busyUntil ?? (therapist as any).bookedUntil ?? undefined}
+                />
+            ) : (
+                <>
+                    <RoundButtonRow
+                        therapist={therapist}
+                        onBookNow={async () => {
+                            if (onQuickBookWithChat) {
+                                logger.debug('📤 [SHARED PROFILE] Using onQuickBookWithChat handler');
+                                onQuickBookWithChat();
+                            } else {
+                                logger.debug('💬 [BOOK NOW] Opening persistent chat window...');
+                                openBookingChat(therapist, isSharedProfile ? 'share' : null);
+                            }
+                            onIncrementAnalytics('bookings');
+                            setBookingsCount(prev => prev + 1);
+                        }}
+                        onSchedule={async () => {
+                            const hasBank = !!(therapist.bankName && therapist.accountNumber && therapist.accountName) || !!(therapist as any).bankCardDetails;
+                            const hasKtp = !!(therapist as any).ktpPhotoUrl;
+                            if (hasBank && hasKtp) {
+                                try {
+                                    await enterpriseBookingFlowService.createBookingRequest({
+                                        userId: 'current_user',
+                                        userDetails: { name: 'Current User', phone: '+1234567890', location: 'User Location' },
+                                        serviceType: 'scheduled',
+                                        scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                                        services: [{ id: 'massage', name: 'Massage Service', duration: 90, price: pricing?.[0]?.price || 100 }],
+                                        totalPrice: pricing?.[0]?.price || 100,
+                                        duration: 90,
+                                        location: { address: locationAreaDisplayName, coordinates: { lat: 0, lng: 0 } },
+                                        preferredTherapists: [therapist.$id],
+                                        urgency: 'normal'
+                                    });
+                                } catch (_) {}
+                                openScheduleChat(therapist, isSharedProfile ? 'share' : null);
+                                onIncrementAnalytics('bookings');
+                                setBookingsCount(prev => prev + 1);
+                            } else {
+                                alert('Scheduled bookings require the therapist to add bank details and KTP in their dashboard. Please choose another therapist or try again later.');
+                            }
+                        }}
+                        onPriceSlider={() => {
+                            logger.debug('💰 [PRICE SLIDER] Opening price modal...');
+                            setShowPriceListModal(true);
+                        }}
+                        hasScheduledBookings={!!((therapist.bankName && therapist.accountNumber && therapist.accountName) || (therapist as any).bankCardDetails) && !!((therapist as any).ktpPhotoUrl)}
+                        hasActiveScheduledBooking={hasActiveScheduledBooking}
+                        bookNowText={bookNowText}
+                        scheduleText={scheduleText}
+                        dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
+                    />
+                    <div className="mt-4 px-4 w-full">
+                        <a
+                            href={`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(`Hi Indastreet, I would like to book a massage with ${therapist.name || 'this therapist'} (ID: ${therapist.$id || therapist.id || 'N/A'}).`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex w-full items-center justify-center gap-2 font-bold py-3 px-4 rounded-full transition-colors duration-300 bg-[#25D366] text-white hover:bg-[#20BD5A] active:bg-[#1DA851] shadow-md min-h-[48px]"
+                        >
+                            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                            </svg>
+                            Chat on WhatsApp
+                        </a>
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                            Chat directly with Indastreet to arrange your booking.
+                        </p>
+                    </div>
+                </>
+            )}
 
             {/* End Content Section wrapper */}
             </div>

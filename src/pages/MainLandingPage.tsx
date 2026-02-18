@@ -48,13 +48,14 @@ interface LandingPageProps {
 const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?v=2026';
 
 // Multi-country data for location selectors with native language mapping
+// Country selection on landing sets main app and dashboard language. Non-English locales get option for English view.
 const COUNTRIES = [
   { code: 'ID', name: 'Indonesia', flag: '🇮🇩', description: 'Southeast Asian archipelago', language: 'id', languages: ['id', 'en'] },
-  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', description: 'Truly Asia', language: 'en', languages: ['en'] },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', description: 'Truly Asia', language: 'ms', languages: ['ms', 'en'] },
   { code: 'SG', name: 'Singapore', flag: '🇸🇬', description: 'Lion City', language: 'en', languages: ['en'] },
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭', description: 'Land of Smiles', language: 'en', languages: ['en'] },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭', description: 'Land of Smiles', language: 'th', languages: ['th', 'en'] },
   { code: 'PH', name: 'Philippines', flag: '🇵🇭', description: 'Pearl of the Orient Seas', language: 'tl', languages: ['tl', 'en'] },
-  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', description: 'Timeless Charm', language: 'en', languages: ['en'] },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', description: 'Timeless Charm', language: 'vi', languages: ['vi', 'en'] },
   { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', description: 'England, Scotland, Wales', language: 'en', languages: ['en'] },
   { code: 'US', name: 'United States', flag: '🇺🇸', description: 'Land of opportunity', language: 'en', languages: ['en'] },
   { code: 'AU', name: 'Australia', flag: '🇦🇺', description: 'Down under', language: 'en', languages: ['en'] },
@@ -215,7 +216,7 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Pangkalpinang', region: 'Bangka Belitung Islands', description: 'Tin island', popular: false, country: 'ID' },
   ],
   
-  // MALAYSIA - Major cities
+  // MALAYSIA - Full city list
   MY: [
     { name: 'Kuala Lumpur', region: 'Federal Territory', description: 'Capital of Malaysia', popular: true, country: 'MY' },
     { name: 'KLCC', region: 'Kuala Lumpur', description: 'Twin towers district', popular: true, country: 'MY' },
@@ -223,13 +224,23 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'George Town', region: 'Penang', description: 'UNESCO heritage city', popular: true, country: 'MY' },
     { name: 'Johor Bahru', region: 'Johor', description: 'Gateway to Singapore', popular: true, country: 'MY' },
     { name: 'Petaling Jaya', region: 'Selangor', description: 'Satellite city', popular: true, country: 'MY' },
-    { name: 'Shah Alam', region: 'Selangor', description: 'State capital', popular: false, country: 'MY' },
-    { name: 'Ipoh', region: 'Perak', description: 'Heritage city', popular: false, country: 'MY' },
-    { name: 'Malacca City', region: 'Malacca', description: 'Historic port city', popular: false, country: 'MY' },
-    { name: 'Kota Kinabalu', region: 'Sabah', description: 'Gateway to Borneo', popular: false, country: 'MY' },
+    { name: 'Shah Alam', region: 'Selangor', description: 'State capital', popular: true, country: 'MY' },
+    { name: 'Ipoh', region: 'Perak', description: 'Heritage city', popular: true, country: 'MY' },
+    { name: 'Malacca City', region: 'Malacca', description: 'Historic port city', popular: true, country: 'MY' },
+    { name: 'Kota Kinabalu', region: 'Sabah', description: 'Gateway to Borneo', popular: true, country: 'MY' },
+    { name: 'Kuching', region: 'Sarawak', description: 'Capital of Sarawak', popular: false, country: 'MY' },
+    { name: 'Putrajaya', region: 'Federal Territory', description: 'Administrative capital', popular: false, country: 'MY' },
+    { name: 'Cyberjaya', region: 'Selangor', description: 'Tech hub', popular: false, country: 'MY' },
+    { name: 'Seremban', region: 'Negeri Sembilan', description: 'State capital', popular: false, country: 'MY' },
+    { name: 'Kuantan', region: 'Pahang', description: 'East coast capital', popular: false, country: 'MY' },
+    { name: 'Kota Bharu', region: 'Kelantan', description: 'Cultural capital', popular: false, country: 'MY' },
+    { name: 'Alor Setar', region: 'Kedah', description: 'State capital', popular: false, country: 'MY' },
+    { name: 'Kangar', region: 'Perlis', description: 'Smallest state capital', popular: false, country: 'MY' },
+    { name: 'Subang Jaya', region: 'Selangor', description: 'Commercial hub', popular: false, country: 'MY' },
+    { name: 'Nilai', region: 'Negeri Sembilan', description: 'Education hub', popular: false, country: 'MY' },
   ],
   
-  // SINGAPORE - City-state
+  // SINGAPORE - Full area list
   SG: [
     { name: 'Singapore', region: 'Central', description: 'City-state', popular: true, country: 'SG' },
     { name: 'Marina Bay', region: 'Downtown Core', description: 'Iconic waterfront', popular: true, country: 'SG' },
@@ -237,11 +248,18 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Chinatown', region: 'Outram', description: 'Historic district', popular: true, country: 'SG' },
     { name: 'Sentosa', region: 'Southern Islands', description: 'Resort island', popular: true, country: 'SG' },
     { name: 'Clarke Quay', region: 'Singapore River', description: 'Riverside dining & nightlife', popular: true, country: 'SG' },
-    { name: 'Bugis', region: 'Rochor', description: 'Shopping & culture', popular: false, country: 'SG' },
-    { name: 'Raffles Place', region: 'Downtown Core', description: 'Financial district', popular: false, country: 'SG' },
+    { name: 'Bugis', region: 'Rochor', description: 'Shopping & culture', popular: true, country: 'SG' },
+    { name: 'Raffles Place', region: 'Downtown Core', description: 'Financial district', popular: true, country: 'SG' },
+    { name: 'Tampines', region: 'East Region', description: 'Regional centre', popular: false, country: 'SG' },
+    { name: 'Jurong East', region: 'West Region', description: 'Business hub', popular: false, country: 'SG' },
+    { name: 'Little India', region: 'Rochor', description: 'Cultural quarter', popular: false, country: 'SG' },
+    { name: 'Holland Village', region: 'Central Region', description: 'Expat hub', popular: false, country: 'SG' },
+    { name: 'Changi', region: 'East Region', description: 'Airport & coast', popular: false, country: 'SG' },
+    { name: 'Tanglin', region: 'Central Region', description: 'Embassy district', popular: false, country: 'SG' },
+    { name: 'Katong', region: 'East Region', description: 'Peranakan heritage', popular: false, country: 'SG' },
   ],
   
-  // THAILAND - Major cities
+  // THAILAND - Full city list
   TH: [
     { name: 'Bangkok', region: 'Central Thailand', description: 'Capital of Thailand', popular: true, country: 'TH' },
     { name: 'Sukhumvit', region: 'Bangkok', description: 'Expat & nightlife hub', popular: true, country: 'TH' },
@@ -251,12 +269,21 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Patong', region: 'Phuket', description: 'Beach & nightlife', popular: true, country: 'TH' },
     { name: 'Chiang Mai', region: 'Northern Thailand', description: 'Cultural hub', popular: true, country: 'TH' },
     { name: 'Pattaya', region: 'Eastern Thailand', description: 'Beach resort city', popular: true, country: 'TH' },
-    { name: 'Krabi', region: 'Southern Thailand', description: 'Limestone cliffs & beaches', popular: false, country: 'TH' },
-    { name: 'Koh Samui', region: 'Southern Thailand', description: 'Tropical island', popular: false, country: 'TH' },
-    { name: 'Hua Hin', region: 'Central Thailand', description: 'Royal beach resort', popular: false, country: 'TH' },
+    { name: 'Krabi', region: 'Southern Thailand', description: 'Limestone cliffs & beaches', popular: true, country: 'TH' },
+    { name: 'Koh Samui', region: 'Southern Thailand', description: 'Tropical island', popular: true, country: 'TH' },
+    { name: 'Hua Hin', region: 'Central Thailand', description: 'Royal beach resort', popular: true, country: 'TH' },
+    { name: 'Chiang Rai', region: 'Northern Thailand', description: 'Golden Triangle', popular: false, country: 'TH' },
+    { name: 'Koh Phangan', region: 'Southern Thailand', description: 'Full moon island', popular: false, country: 'TH' },
+    { name: 'Koh Tao', region: 'Southern Thailand', description: 'Diving island', popular: false, country: 'TH' },
+    { name: 'Khao Lak', region: 'Southern Thailand', description: 'Beach resort', popular: false, country: 'TH' },
+    { name: 'Ayutthaya', region: 'Central Thailand', description: 'Ancient capital', popular: false, country: 'TH' },
+    { name: 'Rayong', region: 'Eastern Thailand', description: 'Industrial & beach', popular: false, country: 'TH' },
+    { name: 'Udon Thani', region: 'Northeast Thailand', description: 'Isan hub', popular: false, country: 'TH' },
+    { name: 'Nakhon Ratchasima', region: 'Northeast Thailand', description: 'Korat gateway', popular: false, country: 'TH' },
+    { name: 'Surat Thani', region: 'Southern Thailand', description: 'Gateway to islands', popular: false, country: 'TH' },
   ],
   
-  // PHILIPPINES - Major cities with areas
+  // PHILIPPINES - Full city list
   PH: [
     { name: 'Manila', region: 'Metro Manila', description: 'Capital of Philippines', popular: true, country: 'PH' },
     { name: 'Makati', region: 'Metro Manila', description: 'Financial district', popular: true, country: 'PH' },
@@ -268,12 +295,21 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Davao City', region: 'Davao del Sur', description: 'Largest city in Mindanao', popular: true, country: 'PH' },
     { name: 'Puerto Princesa', region: 'Palawan', description: 'Underground river', popular: true, country: 'PH' },
     { name: 'Baguio', region: 'Benguet', description: 'Summer capital', popular: true, country: 'PH' },
-    { name: 'Iloilo City', region: 'Iloilo', description: 'City of love', popular: false, country: 'PH' },
+    { name: 'Iloilo City', region: 'Iloilo', description: 'City of love', popular: true, country: 'PH' },
     { name: 'Mandaue', region: 'Cebu', description: 'Industrial city', popular: false, country: 'PH' },
     { name: 'Lapu-Lapu', region: 'Cebu', description: 'Mactan Island', popular: false, country: 'PH' },
+    { name: 'Cagayan de Oro', region: 'Misamis Oriental', description: 'City of Golden Friendship', popular: false, country: 'PH' },
+    { name: 'Bacolod', region: 'Negros Occidental', description: 'City of Smiles', popular: false, country: 'PH' },
+    { name: 'Zamboanga City', region: 'Zamboanga del Sur', description: 'Asia\'s Latin City', popular: false, country: 'PH' },
+    { name: 'Tagaytay', region: 'Cavite', description: 'Ridge city', popular: false, country: 'PH' },
+    { name: 'Angeles City', region: 'Pampanga', description: 'Entertainment hub', popular: false, country: 'PH' },
+    { name: 'Naga', region: 'Camarines Sur', description: 'Pilgrimage city', popular: false, country: 'PH' },
+    { name: 'Legazpi', region: 'Albay', description: 'Gateway to Mayon', popular: false, country: 'PH' },
+    { name: 'Vigan', region: 'Ilocos Sur', description: 'UNESCO heritage city', popular: false, country: 'PH' },
+    { name: 'Dumaguete', region: 'Negros Oriental', description: 'City of gentle people', popular: false, country: 'PH' },
   ],
   
-  // VIETNAM - Major cities
+  // VIETNAM - Full city list
   VN: [
     { name: 'Ho Chi Minh City', region: 'Southern Vietnam', description: 'Economic capital', popular: true, country: 'VN' },
     { name: 'District 1', region: 'Ho Chi Minh City', description: 'Downtown core', popular: true, country: 'VN' },
@@ -283,12 +319,19 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Da Nang', region: 'Central Vietnam', description: 'Coastal city', popular: true, country: 'VN' },
     { name: 'Hoi An', region: 'Central Vietnam', description: 'Ancient town', popular: true, country: 'VN' },
     { name: 'Nha Trang', region: 'Central Vietnam', description: 'Beach resort city', popular: true, country: 'VN' },
-    { name: 'Vung Tau', region: 'Southern Vietnam', description: 'Beach city near Saigon', popular: false, country: 'VN' },
-    { name: 'Dalat', region: 'Central Highlands', description: 'Mountain resort town', popular: false, country: 'VN' },
-    { name: 'Hue', region: 'Central Vietnam', description: 'Imperial city', popular: false, country: 'VN' },
+    { name: 'Vung Tau', region: 'Southern Vietnam', description: 'Beach city near Saigon', popular: true, country: 'VN' },
+    { name: 'Dalat', region: 'Central Highlands', description: 'Mountain resort town', popular: true, country: 'VN' },
+    { name: 'Hue', region: 'Central Vietnam', description: 'Imperial city', popular: true, country: 'VN' },
+    { name: 'Can Tho', region: 'Mekong Delta', description: 'Delta hub', popular: false, country: 'VN' },
+    { name: 'Hai Phong', region: 'Northern Vietnam', description: 'Port city', popular: false, country: 'VN' },
+    { name: 'Phu Quoc', region: 'Kien Giang', description: 'Island paradise', popular: false, country: 'VN' },
+    { name: 'Mui Ne', region: 'Binh Thuan', description: 'Beach & dunes', popular: false, country: 'VN' },
+    { name: 'Ninh Binh', region: 'Northern Vietnam', description: 'Karst landscape', popular: false, country: 'VN' },
+    { name: 'Sapa', region: 'Lao Cai', description: 'Mountain town', popular: false, country: 'VN' },
+    { name: 'Ha Long', region: 'Quang Ninh', description: 'Bay gateway', popular: false, country: 'VN' },
   ],
   
-  // UNITED KINGDOM - Major cities with areas
+  // UNITED KINGDOM - Full city list
   GB: [
     { name: 'London', region: 'Greater London', description: 'Capital of UK', popular: true, country: 'GB' },
     { name: 'Westminster', region: 'London', description: 'Political heart', popular: true, country: 'GB' },
@@ -303,16 +346,28 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Glasgow', region: 'Scotland', description: 'Largest Scottish city', popular: true, country: 'GB' },
     { name: 'Edinburgh', region: 'Scotland', description: 'Capital of Scotland', popular: true, country: 'GB' },
     { name: 'Bristol', region: 'South West England', description: 'Creative city', popular: true, country: 'GB' },
-    { name: 'Newcastle', region: 'Tyne and Wear', description: 'Geordie city', popular: false, country: 'GB' },
-    { name: 'Cardiff', region: 'Wales', description: 'Capital of Wales', popular: false, country: 'GB' },
-    { name: 'Brighton', region: 'East Sussex', description: 'Seaside city', popular: false, country: 'GB' },
-    { name: 'Oxford', region: 'Oxfordshire', description: 'University city', popular: false, country: 'GB' },
-    { name: 'Cambridge', region: 'Cambridgeshire', description: 'University city', popular: false, country: 'GB' },
-    { name: 'Nottingham', region: 'Nottinghamshire', description: 'Robin Hood city', popular: false, country: 'GB' },
-    { name: 'Sheffield', region: 'South Yorkshire', description: 'Steel city', popular: false, country: 'GB' },
+    { name: 'Newcastle', region: 'Tyne and Wear', description: 'Geordie city', popular: true, country: 'GB' },
+    { name: 'Cardiff', region: 'Wales', description: 'Capital of Wales', popular: true, country: 'GB' },
+    { name: 'Brighton', region: 'East Sussex', description: 'Seaside city', popular: true, country: 'GB' },
+    { name: 'Oxford', region: 'Oxfordshire', description: 'University city', popular: true, country: 'GB' },
+    { name: 'Cambridge', region: 'Cambridgeshire', description: 'University city', popular: true, country: 'GB' },
+    { name: 'Nottingham', region: 'Nottinghamshire', description: 'Robin Hood city', popular: true, country: 'GB' },
+    { name: 'Sheffield', region: 'South Yorkshire', description: 'Steel city', popular: true, country: 'GB' },
+    { name: 'Southampton', region: 'Hampshire', description: 'Port city', popular: false, country: 'GB' },
+    { name: 'Plymouth', region: 'Devon', description: 'Ocean city', popular: false, country: 'GB' },
+    { name: 'Leicester', region: 'Leicestershire', description: 'Diverse city', popular: false, country: 'GB' },
+    { name: 'Coventry', region: 'West Midlands', description: 'Cathedral city', popular: false, country: 'GB' },
+    { name: 'Hull', region: 'East Yorkshire', description: 'Port city', popular: false, country: 'GB' },
+    { name: 'Aberdeen', region: 'Scotland', description: 'Granite city', popular: false, country: 'GB' },
+    { name: 'Belfast', region: 'Northern Ireland', description: 'Capital of NI', popular: false, country: 'GB' },
+    { name: 'York', region: 'North Yorkshire', description: 'Historic city', popular: false, country: 'GB' },
+    { name: 'Bath', region: 'Somerset', description: 'UNESCO spa city', popular: false, country: 'GB' },
+    { name: 'Norwich', region: 'Norfolk', description: 'Cathedral city', popular: false, country: 'GB' },
+    { name: 'Chester', region: 'Cheshire', description: 'Roman walls', popular: false, country: 'GB' },
+    { name: 'Inverness', region: 'Scotland', description: 'Highland capital', popular: false, country: 'GB' },
   ],
   
-  // UNITED STATES - Major cities with areas
+  // UNITED STATES - Full city list
   US: [
     { name: 'New York City', region: 'New York', description: 'The Big Apple', popular: true, country: 'US' },
     { name: 'Manhattan', region: 'New York', description: 'Heart of NYC', popular: true, country: 'US' },
@@ -337,14 +392,29 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Boston', region: 'Massachusetts', description: 'Historic city', popular: true, country: 'US' },
     { name: 'Las Vegas', region: 'Nevada', description: 'Entertainment capital', popular: true, country: 'US' },
     { name: 'Miami', region: 'Florida', description: 'Magic City', popular: true, country: 'US' },
-    { name: 'Orlando', region: 'Florida', description: 'Theme park capital', popular: false, country: 'US' },
-    { name: 'Atlanta', region: 'Georgia', description: 'Capital of the South', popular: false, country: 'US' },
-    { name: 'Portland', region: 'Oregon', description: 'Keep Portland weird', popular: false, country: 'US' },
-    { name: 'Nashville', region: 'Tennessee', description: 'Music City', popular: false, country: 'US' },
-    { name: 'New Orleans', region: 'Louisiana', description: 'The Big Easy', popular: false, country: 'US' },
+    { name: 'Orlando', region: 'Florida', description: 'Theme park capital', popular: true, country: 'US' },
+    { name: 'Atlanta', region: 'Georgia', description: 'Capital of the South', popular: true, country: 'US' },
+    { name: 'Portland', region: 'Oregon', description: 'Keep Portland weird', popular: true, country: 'US' },
+    { name: 'Nashville', region: 'Tennessee', description: 'Music City', popular: true, country: 'US' },
+    { name: 'New Orleans', region: 'Louisiana', description: 'The Big Easy', popular: true, country: 'US' },
+    { name: 'San Jose', region: 'California', description: 'Silicon Valley', popular: false, country: 'US' },
+    { name: 'Detroit', region: 'Michigan', description: 'Motor City', popular: false, country: 'US' },
+    { name: 'Minneapolis', region: 'Minnesota', description: 'Twin Cities', popular: false, country: 'US' },
+    { name: 'Tampa', region: 'Florida', description: 'Bay area', popular: false, country: 'US' },
+    { name: 'Sacramento', region: 'California', description: 'State capital', popular: false, country: 'US' },
+    { name: 'Charlotte', region: 'North Carolina', description: 'Queen City', popular: false, country: 'US' },
+    { name: 'Indianapolis', region: 'Indiana', description: 'Racing capital', popular: false, country: 'US' },
+    { name: 'Columbus', region: 'Ohio', description: 'State capital', popular: false, country: 'US' },
+    { name: 'Jacksonville', region: 'Florida', description: 'River city', popular: false, country: 'US' },
+    { name: 'Memphis', region: 'Tennessee', description: 'Blues city', popular: false, country: 'US' },
+    { name: 'Kansas City', region: 'Missouri', description: 'BBQ capital', popular: false, country: 'US' },
+    { name: 'Salt Lake City', region: 'Utah', description: 'Mountain hub', popular: false, country: 'US' },
+    { name: 'Raleigh', region: 'North Carolina', description: 'Research Triangle', popular: false, country: 'US' },
+    { name: 'Milwaukee', region: 'Wisconsin', description: 'Brew City', popular: false, country: 'US' },
+    { name: 'Cleveland', region: 'Ohio', description: 'Forest City', popular: false, country: 'US' },
   ],
   
-  // AUSTRALIA - Major cities with areas
+  // AUSTRALIA - Full city list
   AU: [
     { name: 'Sydney', region: 'New South Wales', description: 'Harbor city', popular: true, country: 'AU' },
     { name: 'CBD Sydney', region: 'New South Wales', description: 'Business district', popular: true, country: 'AU' },
@@ -360,14 +430,23 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Perth', region: 'Western Australia', description: 'Most isolated city', popular: true, country: 'AU' },
     { name: 'Adelaide', region: 'South Australia', description: 'City of churches', popular: true, country: 'AU' },
     { name: 'Canberra', region: 'Australian Capital Territory', description: 'Nations capital', popular: true, country: 'AU' },
-    { name: 'Hobart', region: 'Tasmania', description: 'Island capital', popular: false, country: 'AU' },
+    { name: 'Hobart', region: 'Tasmania', description: 'Island capital', popular: true, country: 'AU' },
     { name: 'Darwin', region: 'Northern Territory', description: 'Top End city', popular: false, country: 'AU' },
     { name: 'Cairns', region: 'Queensland', description: 'Great Barrier Reef gateway', popular: false, country: 'AU' },
     { name: 'Newcastle', region: 'New South Wales', description: 'Coal city', popular: false, country: 'AU' },
     { name: 'Wollongong', region: 'New South Wales', description: 'Steel city', popular: false, country: 'AU' },
+    { name: 'Geelong', region: 'Victoria', description: 'Gateway to coast', popular: false, country: 'AU' },
+    { name: 'Sunshine Coast', region: 'Queensland', description: 'Beach region', popular: false, country: 'AU' },
+    { name: 'Townsville', region: 'Queensland', description: 'Tropical city', popular: false, country: 'AU' },
+    { name: 'Ballarat', region: 'Victoria', description: 'Gold rush heritage', popular: false, country: 'AU' },
+    { name: 'Bendigo', region: 'Victoria', description: 'Historic gold city', popular: false, country: 'AU' },
+    { name: 'Launceston', region: 'Tasmania', description: 'Northern Tasmania', popular: false, country: 'AU' },
+    { name: 'Alice Springs', region: 'Northern Territory', description: 'Red Centre', popular: false, country: 'AU' },
+    { name: 'Coffs Harbour', region: 'New South Wales', description: 'Coastal town', popular: false, country: 'AU' },
+    { name: 'Byron Bay', region: 'New South Wales', description: 'Surf & wellness', popular: false, country: 'AU' },
   ],
   
-  // GERMANY - Major cities with areas
+  // GERMANY - Full city list
   DE: [
     { name: 'Berlin', region: 'Berlin', description: 'Capital of Germany', popular: true, country: 'DE' },
     { name: 'Mitte', region: 'Berlin', description: 'Central district', popular: true, country: 'DE' },
@@ -380,13 +459,25 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Cologne', region: 'North Rhine-Westphalia', description: 'Cathedral city', popular: true, country: 'DE' },
     { name: 'Stuttgart', region: 'Baden-Württemberg', description: 'Auto industry hub', popular: true, country: 'DE' },
     { name: 'Düsseldorf', region: 'North Rhine-Westphalia', description: 'Fashion capital', popular: true, country: 'DE' },
-    { name: 'Dortmund', region: 'North Rhine-Westphalia', description: 'Industrial city', popular: false, country: 'DE' },
-    { name: 'Essen', region: 'North Rhine-Westphalia', description: 'Ruhr area', popular: false, country: 'DE' },
-    { name: 'Leipzig', region: 'Saxony', description: 'Music city', popular: false, country: 'DE' },
-    { name: 'Dresden', region: 'Saxony', description: 'Baroque city', popular: false, country: 'DE' },
-    { name: 'Hanover', region: 'Lower Saxony', description: 'Fair city', popular: false, country: 'DE' },
-    { name: 'Nuremberg', region: 'Bavaria', description: 'Medieval city', popular: false, country: 'DE' },
-    { name: 'Bremen', region: 'Bremen', description: 'Hanseatic city', popular: false, country: 'DE' },
+    { name: 'Dortmund', region: 'North Rhine-Westphalia', description: 'Industrial city', popular: true, country: 'DE' },
+    { name: 'Essen', region: 'North Rhine-Westphalia', description: 'Ruhr area', popular: true, country: 'DE' },
+    { name: 'Leipzig', region: 'Saxony', description: 'Music city', popular: true, country: 'DE' },
+    { name: 'Dresden', region: 'Saxony', description: 'Baroque city', popular: true, country: 'DE' },
+    { name: 'Hanover', region: 'Lower Saxony', description: 'Fair city', popular: true, country: 'DE' },
+    { name: 'Nuremberg', region: 'Bavaria', description: 'Medieval city', popular: true, country: 'DE' },
+    { name: 'Bremen', region: 'Bremen', description: 'Hanseatic city', popular: true, country: 'DE' },
+    { name: 'Heidelberg', region: 'Baden-Württemberg', description: 'University city', popular: false, country: 'DE' },
+    { name: 'Freiburg', region: 'Baden-Württemberg', description: 'Green city', popular: false, country: 'DE' },
+    { name: 'Münster', region: 'North Rhine-Westphalia', description: 'Bike city', popular: false, country: 'DE' },
+    { name: 'Aachen', region: 'North Rhine-Westphalia', description: 'Imperial city', popular: false, country: 'DE' },
+    { name: 'Bonn', region: 'North Rhine-Westphalia', description: 'Former capital', popular: false, country: 'DE' },
+    { name: 'Mainz', region: 'Rhineland-Palatinate', description: 'Wine capital', popular: false, country: 'DE' },
+    { name: 'Mannheim', region: 'Baden-Württemberg', description: 'Grid city', popular: false, country: 'DE' },
+    { name: 'Karlsruhe', region: 'Baden-Württemberg', description: 'Fan-shaped city', popular: false, country: 'DE' },
+    { name: 'Würzburg', region: 'Bavaria', description: 'Wine city', popular: false, country: 'DE' },
+    { name: 'Regensburg', region: 'Bavaria', description: 'UNESCO old town', popular: false, country: 'DE' },
+    { name: 'Kiel', region: 'Schleswig-Holstein', description: 'Baltic port', popular: false, country: 'DE' },
+    { name: 'Lübeck', region: 'Schleswig-Holstein', description: 'Hanseatic heritage', popular: false, country: 'DE' },
   ],
 };
 
@@ -797,6 +888,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         setCityNotListed(true);
         setIsDetectingLocation(true);
         setGpsErrorMessage(null);
+
+        if (typeof window !== 'undefined' && !window.isSecureContext) {
+            setGpsErrorMessage('Location access requires a secure connection (HTTPS). Please select your city from the list below.');
+            setIsDetectingLocation(false);
+            return;
+        }
         
         try {
             // Use enhanced customer GPS service for precise location
@@ -804,7 +901,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             const gpsData = await customerGPSService.collectForBooking();
             
             if (!gpsData) {
-                throw new Error('Unable to get your location');
+                throw new Error('We couldn\'t detect your location. Please choose your city from the list below.');
             }
             
             // Extract city name from GPS data
@@ -856,7 +953,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             
         } catch (error) {
             console.error('❌ GPS detection failed:', error);
-            setGpsErrorMessage('We couldn’t detect your location. Please choose your city from the list below to continue.');
+            const msg = error instanceof Error ? error.message : 'We couldn\'t detect your location. Please choose your city from the list below to continue.';
+            setGpsErrorMessage(msg);
         } finally {
             if (isMountedRef.current) {
                 setIsDetectingLocation(false);

@@ -18,8 +18,123 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { adminTherapistService } from '@/lib/adminServices';
-import { AdminGuardDev } from '@/lib/adminGuard';
+import { adminTherapistService, getTherapistBusyTimer } from '../../lib/adminServices';
+import { AdminGuardDev } from '../../lib/adminGuard';
+
+// ============================================================================
+// ⏱️ AVAILABILITY CELL – status badge, dropdown, Busy 60/90/120/custom, countdown
+// ============================================================================
+
+function BusyCountdown({ busyUntil }: { busyUntil: string | null }) {
+    const [left, setLeft] = useState<string>('');
+    useEffect(() => {
+        if (!busyUntil) {
+            setLeft('');
+            return;
+        }
+        const run = () => {
+            const end = new Date(busyUntil).getTime();
+            const now = Date.now();
+            if (end <= now) {
+                setLeft('Expired');
+                return;
+            }
+            const d = Math.floor((end - now) / 1000);
+            const m = Math.floor(d / 60);
+            const s = d % 60;
+            setLeft(`${m}m ${s}s`);
+        };
+        run();
+        const t = setInterval(run, 1000);
+        return () => clearInterval(t);
+    }, [busyUntil]);
+    if (!busyUntil || !left) return null;
+    return <span className="text-xs text-orange-700 ml-1">({left})</span>;
+}
+
+function AvailabilityCell({
+    therapist,
+    getAvailabilityInfo,
+    onAvailabilityChange
+}: {
+    therapist: any;
+    getAvailabilityInfo: (t: any) => { label: string; busyUntil: string | null; busyDuration: number | null };
+    onAvailabilityChange: (id: string, av: 'available' | 'busy' | 'offline', busyMinutes?: number) => void;
+}) {
+    const info = getAvailabilityInfo(therapist);
+    const [customMins, setCustomMins] = useState<string>('60');
+    const isBusy = info.label === 'Busy';
+    const isOffline = info.label === 'Offline';
+    const badgeClass = isOffline
+        ? 'bg-gray-200 text-gray-800'
+        : isBusy
+        ? 'bg-orange-100 text-orange-800'
+        : 'bg-green-100 text-green-800';
+    return (
+        <div className="space-y-1">
+            <div className="flex items-center flex-wrap gap-1">
+                <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${badgeClass}`}>
+                    {info.label}
+                    {isBusy && <BusyCountdown busyUntil={info.busyUntil} />}
+                </span>
+            </div>
+            <div className="flex flex-wrap gap-1 mt-1">
+                <select
+                    value={info.label.toLowerCase()}
+                    onChange={(e) => {
+                        const v = e.target.value as 'available' | 'busy' | 'offline';
+                        if (v === 'busy') onAvailabilityChange(therapist.$id, 'busy', 60);
+                        else if (v === 'available') onAvailabilityChange(therapist.$id, 'available');
+                        else if (v === 'offline') onAvailabilityChange(therapist.$id, 'offline');
+                    }}
+                    className="text-xs border border-gray-300 rounded px-1.5 py-0.5"
+                >
+                    <option value="available">Available</option>
+                    <option value="busy">Busy</option>
+                    <option value="offline">Offline</option>
+                </select>
+                <button
+                    type="button"
+                    onClick={() => onAvailabilityChange(therapist.$id, 'busy', 60)}
+                    className="text-xs bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded hover:bg-orange-200"
+                >
+                    Busy 60m
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onAvailabilityChange(therapist.$id, 'busy', 90)}
+                    className="text-xs bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded hover:bg-orange-200"
+                >
+                    Busy 90m
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onAvailabilityChange(therapist.$id, 'busy', 120)}
+                    className="text-xs bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded hover:bg-orange-200"
+                >
+                    Busy 120m
+                </button>
+                <span className="inline-flex items-center gap-0.5">
+                    <input
+                        type="number"
+                        min={1}
+                        max={480}
+                        value={customMins}
+                        onChange={(e) => setCustomMins(e.target.value)}
+                        className="w-12 text-xs border rounded px-1 py-0.5"
+                    />
+                    <button
+                        type="button"
+                        onClick={() => onAvailabilityChange(therapist.$id, 'busy', parseInt(customMins, 10) || 60)}
+                        className="text-xs bg-orange-200 text-orange-900 px-1 py-0.5 rounded hover:bg-orange-300"
+                    >
+                        Set
+                    </button>
+                </span>
+            </div>
+        </div>
+    );
+}
 
 // ============================================================================
 // 🎯 THERAPIST MANAGER COMPONENT
@@ -93,7 +208,47 @@ export const TherapistManager: React.FC = () => {
       setError(err.message || 'Failed to update KTP status');
     }
   };
-  
+
+  /** Admin availability override: available | busy | offline. Busy uses busyUntil (auto-revert). */
+  const handleAvailabilityChange = async (therapistId: string, availability: 'available' | 'busy' | 'offline', busyMinutes?: number) => {
+    try {
+      if (availability === 'available' || availability === 'offline') {
+        await adminTherapistService.setAvailability(therapistId, {
+          status: availability,
+          availability: availability === 'available' ? 'Available' : 'Offline',
+          busyUntil: null,
+          busyDuration: null
+        });
+      } else {
+        const mins = busyMinutes ?? 60;
+        const busyUntil = new Date(Date.now() + mins * 60 * 1000).toISOString();
+        await adminTherapistService.setAvailability(therapistId, {
+          status: 'busy',
+          availability: 'Busy',
+          busyUntil,
+          busyDuration: mins
+        });
+      }
+      await loadTherapists();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update availability');
+    }
+  };
+
+  /** Parse availability and busyUntil for display (from raw doc). */
+  const getAvailabilityInfo = (t: any) => {
+    const av = (t.availability || t.status || '').toString();
+    const st = (t.status || '').toString();
+    const { busyUntil, busyDuration } = getTherapistBusyTimer(t);
+    const isBusy = /busy/i.test(av) || /busy/i.test(st);
+    const isOffline = /offline/i.test(av) || /offline/i.test(st);
+    return {
+      label: isOffline ? 'Offline' : isBusy ? 'Busy' : 'Available',
+      busyUntil: busyUntil || null,
+      busyDuration: busyDuration ?? null
+    };
+  };
+
   // ============================================================================
   // 🎨 RENDER COMPONENTS
   // ============================================================================
@@ -187,6 +342,9 @@ export const TherapistManager: React.FC = () => {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Availability
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     KTP
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -234,6 +392,13 @@ export const TherapistManager: React.FC = () => {
                       }`}>
                         {therapist.status || 'unknown'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <AvailabilityCell
+                        therapist={therapist}
+                        getAvailabilityInfo={getAvailabilityInfo}
+                        onAvailabilityChange={handleAvailabilityChange}
+                      />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

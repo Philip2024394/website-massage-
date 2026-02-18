@@ -178,6 +178,13 @@ export const useAppState = () => {
           devLog('🔗 [INIT] Home hash');
           return 'home';
         }
+        // Partner membership (Become a Partner / Join Now)
+        if (hashPath === '/membership-partner' || hashPath.startsWith('/membership-partner?')) {
+          return 'membership-partner';
+        }
+        if (hashPath === '/membership-success' || hashPath.startsWith('/membership-success?')) {
+          return 'membership-success';
+        }
       }
       
       // �🔧 DISABLED: Provider auto-login to prevent confusion with customer landing page
@@ -304,7 +311,9 @@ export const useAppState = () => {
         return 'id';
       }
       let storedLang: Language = stored === 'gb' ? 'en' : (stored as Language);
-      if (storedLang !== 'en' && storedLang !== 'id' && storedLang !== 'gb') {
+      // Allow all app-supported languages (en, id, vi, th, tl, ms, de) so landing country selection persists
+      const allowed: Language[] = ['en', 'id', 'vi', 'th', 'tl', 'ms', 'de'];
+      if (!allowed.includes(storedLang)) {
         storedLang = 'id';
         try {
           window.localStorage.setItem('app_language', 'id');

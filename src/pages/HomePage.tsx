@@ -53,6 +53,7 @@ import { initializeGoogleMaps, loadGoogleMapsScript } from '../lib/appwrite.conf
 import MusicPlayer from '../components/MusicPlayer';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { FloatingChatWindow } from '../chat';
+import { APP_CONFIG } from '../config';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
 import { deriveLocationIdFromGeopoint, calculateDistance, extractGeopoint } from '../utils/geoDistance';
@@ -68,9 +69,9 @@ import { matchTherapistsForUser, type MatchOutcome, type UserLocationContext } f
 import { parseMassageTypes } from '../utils/appwriteHelpers';
 import { logger } from '../utils/logger';
 
-// Per-location cap: each city can store/display up to 100 therapists and 100 places
-const MAX_THERAPISTS_PER_LOCATION = 100;
-const MAX_PLACES_PER_LOCATION = 100;
+// No cap: show all profiles per GPS-derived city (synced with therapist/place upload page)
+const MAX_THERAPISTS_PER_LOCATION = 99999;
+const MAX_PLACES_PER_LOCATION = 99999;
 
 // 🚀 PERFORMANCE: Bulk data fetching to eliminate N+1 queries
 import { prefetchTherapistCardData } from '../lib/services/bulkDataService';
@@ -565,13 +566,13 @@ const HomePage: React.FC<HomePageProps> = ({
                 });
                 const result = sorted.map((x) => ({ ...x.therapist, _distanceKm: x.distanceKm }));
                 logger.debug('🏙️ City + nearest first', { city: effectiveCity, count: result.length, total: therapists.length });
-                setCityFilteredTherapists(result.slice(0, MAX_THERAPISTS_PER_LOCATION));
+                setCityFilteredTherapists(result);
             } else {
                 logger.debug('🏙️ City filter', { city: effectiveCity, count: byCity.length, total: therapists.length });
-                setCityFilteredTherapists(byCity.slice(0, MAX_THERAPISTS_PER_LOCATION));
+                setCityFilteredTherapists(byCity);
             }
         } else if (effectiveCity === 'all') {
-            setCityFilteredTherapists(therapists.slice(0, MAX_THERAPISTS_PER_LOCATION));
+            setCityFilteredTherapists(therapists);
         }
     }, [initializingCityGuard, hasConfirmedCity, therapists, selectedCity, contextCity, confirmedLocation, setCityFilteredTherapists]);
 
@@ -1276,7 +1277,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
             return matches;
         });
-        setCityFilteredPlaces(filteredPlacesByCity.slice(0, MAX_PLACES_PER_LOCATION));
+        setCityFilteredPlaces(filteredPlacesByCity);
 
         const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
         const filteredHotels = liveHotels.filter((h: any) => {
@@ -2608,12 +2609,14 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
             )}
 
-            {/* Floating Chat Window - Bottom Right - Always mounted, internally manages visibility */}
-            <FloatingChatWindow
-                userId={loggedInCustomer?.$id || loggedInCustomer?.id || user?.id || 'guest'}
-                userName={loggedInCustomer?.name || loggedInCustomer?.username || user?.name || 'Guest User'}
-                userRole="customer"
-            />
+            {/* Floating Chat Window - hidden when in-app booking disabled */}
+            {!APP_CONFIG.IN_APP_BOOKING_DISABLED && (
+                <FloatingChatWindow
+                    userId={loggedInCustomer?.$id || loggedInCustomer?.id || user?.id || 'guest'}
+                    userName={loggedInCustomer?.name || loggedInCustomer?.username || user?.name || 'Guest User'}
+                    userRole="customer"
+                />
+            )}
 
             {/* PWA Install Banner - Fixed positioning for mobile */}
             <div className="pwa-install-banner mobile-safe-area">

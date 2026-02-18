@@ -68,6 +68,8 @@ export type Page =
     | 'terms'
     | 'cookies-policy' 
     | 'membership' 
+    | 'membership-partner' 
+    | 'membership-success' 
     | 'packageTerms'
     | 'simpleSignup'
     | 'membershipPayment'

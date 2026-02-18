@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PersistentChatWindow from './PersistentChatWindow';
 import { usePersistentChat } from '../context/PersistentChatProvider';
+import { APP_CONFIG } from '../config';
 
 /** Parse first segment from hash or pathname (e.g. #/home → home, #/therapist-profile/123 → therapist-profile, /share/therapist/123 → share) */
 function getCurrentPageFromHash(): string {
@@ -38,6 +39,9 @@ export default function PersistentChatWindowSafe(props: any) {
     };
   }, []);
 
+  if (APP_CONFIG.IN_APP_BOOKING_DISABLED) {
+    return null;
+  }
   if (isLandingOrHome(currentPage)) {
     return null;
   }

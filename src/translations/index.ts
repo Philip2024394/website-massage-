@@ -611,38 +611,38 @@ translations.en.serviceTerms = {
     otherContent: 'You agree to provide only professional, lawful massage and wellness services; to comply with all applicable laws and regulations; and to maintain accurate profile information. IndaStreet reserves the right to suspend or terminate accounts that breach these terms.'
   },
   dashboardTerms: {
-    modalTitle: 'Terms & Conditions — Dashboard',
-    modalSubtitle: 'Please read and accept before using your therapist or facial provider dashboard.',
+    modalTitle: 'Partner Terms & Conditions — Dashboard',
+    modalSubtitle: 'Please read and accept before using your therapist or provider dashboard. These terms apply in all countries where we operate.',
     agreeButton: 'I Agree',
-    effectiveDate: 'Effective for all therapists and facial/skincare providers. Last updated: February 2025.',
+    effectiveDate: 'Effective for all therapists and facial/skincare providers globally. Last updated: 2025.',
     accountSetup: {
-      title: 'Account Setup and Edits',
-      content: 'Accounts are free to create. Unlimited profile edits are allowed for the first 72 hours after account creation. After 72 hours, profile image, description, name, WhatsApp number, massage/facial types, and language are locked. Admin may allow one free profile edit after 72 hours; additional edits require approval and fees per section.'
+      title: 'Account setup and profile edits',
+      content: 'You may create an account in accordance with the signup flow. Profile edits may be freely allowed for an initial period after creation; after that, certain profile fields (e.g. name, contact details, service types, images) may be locked or subject to review. Additional or repeated edits may require approval and, where applicable, fees as communicated by the platform in your region. You are responsible for keeping your account information accurate and up to date.'
     },
     profileVerification: {
-      title: 'Profile Verification',
-      content: 'Profile image, KTP image, and bank details must match the therapist’s account. Mismatched information may result in account suspension or booking restrictions.'
+      title: 'Profile verification and identity',
+      content: 'Profile photos, identity documents, and payment or bank details must truthfully represent you or your business. Mismatched or fraudulent information may result in account suspension, booking restrictions, or termination. The platform may verify your identity and documents in accordance with local laws and our policies.'
     },
     accountDeletion: {
-      title: 'Account Deletion',
-      content: 'Accounts may only be deleted after IDR 1,000,000 has been received by admin, or an upfront payment of IDR 350,000. Deletion requests without proper payment will not be processed.'
+      title: 'Account deletion and termination',
+      content: 'Account deletion is subject to the terms of your membership and any applicable fees or conditions communicated in your region. Requests must be submitted through the designated process. The platform may suspend or terminate accounts for breach of these terms, fraud, or illegal activity, in accordance with applicable law.'
     },
     userConduct: {
-      title: 'User Conduct',
-      content: 'Members are prohibited from posting false information, spam, or malicious content. Violations may result in temporary or permanent account suspension.'
+      title: 'Professional conduct and prohibited behaviour',
+      content: 'You must use the dashboard and platform only for lawful, professional purposes. You may not post false information, spam, or harmful content; harass users or staff; circumvent platform rules or fees; or engage in any activity that violates these terms or applicable law. Violations may result in warnings, temporary suspension, or permanent termination of your account.'
     }
   },
 };
 translations.en.userTerms = {
   modalBadge: 'For clients',
-  modalTitle: 'IndaStreet Massage — Terms for users',
+  modalTitle: 'Terms of Use — IndaStreet Massage',
   title: 'Terms & Conditions for Users',
-  effectiveDate: 'Effective for use of indastreetmassage.com and IndaStreet services.',
-  intro: 'By using IndaStreet (indastreetmassage.com and related platforms) to browse, book, or receive massage or wellness services, you agree to these Terms & Conditions for users. Please read them carefully.',
-  acceptance: 'By clicking "Agree to terms and conditions" below, you confirm that you have read and agree to these terms, including the section on location and safety below.',
-  locationTrackingTitle: 'Location and safety (services only on indastreetmassage.com)',
-  locationTrackingContent: 'We use location to give you a better experience: relevant updates about nearby therapists and massage places, personalised promos, and to help match you with the right provider. When you use IndaStreet services on indastreetmassage.com (and related IndaStreet platforms), we may use location-related information only in connection with providing and securing those services—for example to help match you with nearby therapists, to support your and the therapist’s safety during a booking, and to improve service delivery. This applies only to your use of services on indastreetmassage.com and does not extend beyond our platforms. By agreeing, you consent to this use of location for services and safety on IndaStreet.',
-  agreeButton: 'Agree to terms and conditions',
+  effectiveDate: 'Effective for all users globally. Last updated: 2025.',
+  intro: 'Welcome to IndaStreet Massage. These Terms & Conditions ("Terms") form a binding agreement between you and IndaStreet. By accessing or using our websites, apps, or services (including indastreetmassage.com and related platforms), you agree to these Terms, our Privacy Policy, and any applicable local laws. If you do not agree, do not use our services.',
+  acceptance: 'By clicking "I Accept the Terms and Conditions" below, you confirm that you have read, understood, and agree to these Terms, including the sections on eligibility, acceptable use, location and safety, and dispute resolution.',
+  locationTrackingTitle: 'Location and safety',
+  locationTrackingContent: 'We may collect and use location-related information when you use our services to: (1) show you nearby therapists and wellness providers, (2) support your safety and the safety of service providers before, during, and after bookings, (3) improve service delivery and matching, and (4) personalise offers where permitted. This use is limited to providing and securing our services and is described in our Privacy Policy. By accepting these Terms, you consent to this use of location data in connection with our platform. You may withdraw consent by disabling location services or ceasing use of our apps.',
+  agreeButton: 'I Accept the Terms and Conditions',
 };
 translations.en.privacyPolicy = {
   title: 'Privacy Policy',
@@ -1164,38 +1164,38 @@ translations.id.serviceTerms = {
     otherContent: 'Anda setuju hanya memberikan layanan pijat dan wellness profesional yang sah; mematuhi semua hukum dan peraturan yang berlaku; dan menjaga informasi profil yang akurat. IndaStreet berhak menangguhkan atau menghentikan akun yang melanggar ketentuan ini.'
   },
   dashboardTerms: {
-    modalTitle: 'Syarat & Ketentuan — Dashboard',
-    modalSubtitle: 'Harap baca dan setuju sebelum menggunakan dashboard terapis atau penyedia facial.',
+    modalTitle: 'Syarat & Ketentuan Mitra — Dashboard',
+    modalSubtitle: 'Harap baca dan setuju sebelum menggunakan dashboard terapis atau penyedia. Ketentuan ini berlaku di semua negara tempat kami beroperasi.',
     agreeButton: 'Saya Setuju',
-    effectiveDate: 'Berlaku untuk semua terapis dan penyedia facial/perawatan kulit. Terakhir diperbarui: Februari 2025.',
+    effectiveDate: 'Berlaku untuk semua terapis dan penyedia facial/perawatan kulit secara global. Terakhir diperbarui: 2025.',
     accountSetup: {
-      title: 'Penyiapan dan Pengeditan Akun',
-      content: 'Akun gratis untuk dibuat. Pengeditan profil tak terbatas diizinkan dalam 72 jam pertama setelah pembuatan akun. Setelah 72 jam, foto profil, deskripsi, nama, nomor WhatsApp, jenis pijat/facial, dan bahasa dikunci. Admin dapat mengizinkan satu pengeditan profil gratis setelah 72 jam; pengeditan tambahan memerlukan persetujuan dan biaya per bagian.'
+      title: 'Penyiapan akun dan pengeditan profil',
+      content: 'Anda dapat membuat akun sesuai alur pendaftaran. Pengeditan profil dapat diizinkan secara bebas untuk periode awal setelah pembuatan; setelah itu, bidang profil tertentu (mis. nama, detail kontak, jenis layanan, gambar) dapat dikunci atau tunduk pada tinjauan. Pengeditan tambahan atau berulang dapat memerlukan persetujuan dan, jika berlaku, biaya sebagaimana dikomunikasikan oleh platform di wilayah Anda. Anda bertanggung jawab untuk menjaga informasi akun tetap akurat dan mutakhir.'
     },
     profileVerification: {
-      title: 'Verifikasi Profil',
-      content: 'Foto profil, foto KTP, dan detail rekening bank harus sesuai dengan akun terapis. Informasi yang tidak sesuai dapat mengakibatkan penangguhan akun atau pembatasan pemesanan.'
+      title: 'Verifikasi profil dan identitas',
+      content: 'Foto profil, dokumen identitas, serta detail pembayaran atau rekening bank harus mewakili Anda atau bisnis Anda dengan jujur. Informasi yang tidak sesuai atau palsu dapat mengakibatkan penangguhan akun, pembatasan pemesanan, atau penghentian. Platform dapat memverifikasi identitas dan dokumen Anda sesuai hukum setempat dan kebijakan kami.'
     },
     accountDeletion: {
-      title: 'Penghapusan Akun',
-      content: 'Akun hanya dapat dihapus setelah IDR 1.000.000 diterima oleh admin, atau pembayaran di muka IDR 350.000. Permintaan penghapusan tanpa pembayaran yang benar tidak akan diproses.'
+      title: 'Penghapusan akun dan penghentian',
+      content: 'Penghapusan akun tunduk pada ketentuan keanggotaan Anda dan biaya atau kondisi yang berlaku yang dikomunikasikan di wilayah Anda. Permintaan harus diajukan melalui proses yang ditentukan. Platform dapat menangguhkan atau menghentikan akun karena pelanggaran ketentuan ini, penipuan, atau aktivitas ilegal, sesuai hukum yang berlaku.'
     },
     userConduct: {
-      title: 'Perilaku Pengguna',
-      content: 'Anggota dilarang memposting informasi palsu, spam, atau konten berbahaya. Pelanggaran dapat mengakibatkan penangguhan akun sementara atau permanen.'
+      title: 'Perilaku profesional dan larangan',
+      content: 'Anda hanya boleh menggunakan dashboard dan platform untuk tujuan yang sah dan profesional. Anda tidak boleh memposting informasi palsu, spam, atau konten berbahaya; melecehkan pengguna atau staf; mengakali aturan atau biaya platform; atau terlibat dalam aktivitas yang melanggar ketentuan ini atau hukum yang berlaku. Pelanggaran dapat mengakibatkan peringatan, penangguhan sementara, atau penghentian permanen akun Anda.'
     }
   },
 };
 translations.id.userTerms = {
   modalBadge: 'Untuk klien',
-  modalTitle: 'IndaStreet Massage — Syarat untuk pengguna',
+  modalTitle: 'Syarat Penggunaan — IndaStreet Massage',
   title: 'Syarat & Ketentuan untuk Pengguna',
-  effectiveDate: 'Berlaku untuk penggunaan indastreetmassage.com dan layanan IndaStreet.',
-  intro: 'Dengan menggunakan IndaStreet (indastreetmassage.com dan platform terkait) untuk menjelajah, memesan, atau menerima layanan pijat atau wellness, Anda setuju dengan Syarat & Ketentuan untuk pengguna ini. Harap baca dengan saksama.',
-  acceptance: 'Dengan mengklik "Setuju syarat dan ketentuan" di bawah, Anda mengonfirmasi bahwa Anda telah membaca dan setuju dengan ketentuan ini, termasuk bagian tentang lokasi dan keselamatan di bawah.',
-  locationTrackingTitle: 'Lokasi dan keselamatan (hanya layanan di indastreetmassage.com)',
-  locationTrackingContent: 'Kami menggunakan lokasi untuk memberi Anda pengalaman yang lebih baik: pembaruan tentang terapis dan tempat pijat terdekat, promosi yang relevan, serta untuk mencocokkan Anda dengan penyedia yang tepat. Saat Anda menggunakan layanan IndaStreet di indastreetmassage.com (dan platform IndaStreet terkait), kami dapat menggunakan informasi terkait lokasi hanya sehubungan dengan penyediaan dan pengamanan layanan tersebut—misalnya untuk mencocokkan Anda dengan terapis terdekat, mendukung keselamatan Anda dan terapis selama pemesanan, dan meningkatkan penyampaian layanan. Ini hanya berlaku untuk penggunaan layanan Anda di indastreetmassage.com dan tidak melampaui platform kami. Dengan menyetujui, Anda setuju dengan penggunaan lokasi ini untuk layanan dan keselamatan di IndaStreet.',
-  agreeButton: 'Setuju syarat dan ketentuan',
+  effectiveDate: 'Berlaku untuk semua pengguna secara global. Terakhir diperbarui: 2025.',
+  intro: 'Selamat datang di IndaStreet Massage. Syarat & Ketentuan ini ("Ketentuan") merupakan perjanjian yang mengikat antara Anda dan IndaStreet. Dengan mengakses atau menggunakan situs web, aplikasi, atau layanan kami (termasuk indastreetmassage.com dan platform terkait), Anda setuju dengan Ketentuan ini, Kebijakan Privasi kami, dan hukum setempat yang berlaku. Jika tidak setuju, jangan gunakan layanan kami.',
+  acceptance: 'Dengan mengklik "Saya Menerima Syarat dan Ketentuan" di bawah, Anda mengonfirmasi bahwa Anda telah membaca, memahami, dan setuju dengan Ketentuan ini, termasuk bagian tentang kelayakan, penggunaan yang dapat diterima, lokasi dan keselamatan, serta penyelesaian sengketa.',
+  locationTrackingTitle: 'Lokasi dan keselamatan',
+  locationTrackingContent: 'Kami dapat mengumpulkan dan menggunakan informasi terkait lokasi saat Anda menggunakan layanan kami untuk: (1) menampilkan terapis dan penyedia wellness terdekat, (2) mendukung keselamatan Anda dan penyedia layanan sebelum, selama, dan setelah pemesanan, (3) meningkatkan penyampaian layanan dan pencocokan, dan (4) mempersonalisasi penawaran jika diizinkan. Penggunaan ini terbatas pada penyediaan dan pengamanan layanan kami dan dijelaskan dalam Kebijakan Privasi kami. Dengan menerima Ketentuan ini, Anda setuju dengan penggunaan data lokasi ini sehubungan dengan platform kami. Anda dapat menarik persetujuan dengan menonaktifkan layanan lokasi atau menghentikan penggunaan aplikasi kami.',
+  agreeButton: 'Saya Menerima Syarat dan Ketentuan',
 };
 translations.id.privacyPolicy = {
   title: 'Kebijakan Privasi',

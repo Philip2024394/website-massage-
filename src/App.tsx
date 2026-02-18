@@ -1121,14 +1121,13 @@ const App = () => {
         };
     }, [state.loggedInProvider, state.loggedInCustomer, state.page]);
 
-    // Use the actual language handler from hooks
-    const handleLanguageSelect = async (lang: 'en' | 'id' | 'gb') => {
+    // Language set by landing country selection; non-English locales get option for English (ID↔EN, VN↔EN, etc.)
+    const handleLanguageSelect = async (lang: string) => {
         logger.debug('handleLanguageSelect called', { lang });
-        const normalized = lang === 'gb' ? 'en' : lang;
+        const normalized = lang === 'gb' ? 'en' : (lang as Language);
         logger.debug('Normalized language', { normalized, previous: language });
         setLanguage(normalized);
         logger.debug('Language state updated', { language: normalized });
-        // Force re-render by ensuring state change is processed
         await new Promise(resolve => setTimeout(resolve, 0));
         return Promise.resolve();
     };

@@ -126,6 +126,8 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'notifications': '/notifications',
     'booking': '/booking',
     'membership': '/membership',
+    'membership-partner': '/membership-partner',
+    'membership-success': '/membership-success',
     'accept-booking': '/accept-booking',
     'decline-booking': '/decline-booking',
     'lead-accept': '/lead-accept',

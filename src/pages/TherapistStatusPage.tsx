@@ -20,8 +20,17 @@ const HomeIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
+// Map API status (online/available/busy/offline) to UI enum so "online" shows as Available
+function apiStatusToAvailability(apiStatus: string | undefined): AvailabilityStatus {
+    if (!apiStatus) return AvailabilityStatus.Offline;
+    const s = String(apiStatus).toLowerCase();
+    if (s === 'online' || s === 'available') return AvailabilityStatus.Available;
+    if (s === 'busy') return AvailabilityStatus.Busy;
+    return AvailabilityStatus.Offline;
+}
+
 const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, onStatusChange, onNavigateToDashboard, onNavigateToHome, onLogout, t: _t }) => {
-    const [currentStatus, setCurrentStatus] = useState<AvailabilityStatus>(therapist?.status || AvailabilityStatus.Offline);
+    const [currentStatus, setCurrentStatus] = useState<AvailabilityStatus>(() => apiStatusToAvailability(therapist?.status as string));
     const [discountPercent, setDiscountPercent] = useState<number | null>(therapist?.discountPercentage || null);
     const [discountHours, setDiscountHours] = useState<number | null>(therapist?.discountDuration || null);
     const [savingDiscount, setSavingDiscount] = useState(false);
@@ -32,7 +41,8 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
     // Update countdown every 30s if busy
     useEffect(() => {
         const compute = () => {
-            if (!therapist || therapist.status !== AvailabilityStatus.Busy || !therapist.busyUntil) { setBusyCountdown(null); return; }
+            const isBusy = therapist && apiStatusToAvailability(therapist.status as string) === AvailabilityStatus.Busy;
+            if (!therapist || !isBusy || !therapist.busyUntil) { setBusyCountdown(null); return; }
             const end = new Date(therapist.busyUntil).getTime();
             const now = Date.now();
             const diff = end - now;
@@ -75,32 +85,34 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
 
     useEffect(() => {
         if (therapist) {
-            setCurrentStatus(therapist.status);
+            setCurrentStatus(apiStatusToAvailability(therapist.status as string));
         }
     }, [therapist]);
 
     const handleStatusChange = async (status: AvailabilityStatus) => {
         setCurrentStatus(status);
         try {
-            // Update both status and availability fields
-            const update: any = { 
-                status: status.toLowerCase(),
-                availability: status  // Use proper case for availability enum
-            };
-            if (status === AvailabilityStatus.Busy) {
+            // Appwrite/homepage filter: status='online' + availability='available' = show as available; status='busy' = busy; status='offline' = offline
+            const update: any = {};
+            if (status === AvailabilityStatus.Available) {
+                update.status = 'online';
+                update.availability = 'available';
+                update.available = new Date().toISOString();
+                update.busy = '';
+                update.bookedUntil = null;
+                update.busyDuration = null;
+            } else if (status === AvailabilityStatus.Busy) {
+                update.status = 'busy';
+                update.availability = 'busy';
                 const duration = busyMinutes || 120;
                 const bookedUntil = new Date(Date.now() + duration * 60 * 1000).toISOString();
                 update.bookedUntil = bookedUntil;
                 update.busyDuration = duration;
                 update.busy = bookedUntil;
                 update.available = '';
-            } else if (status === AvailabilityStatus.Available) {
-                update.available = new Date().toISOString();
-                update.busy = '';
-                update.bookedUntil = null;
-                update.busyDuration = null;
             } else {
-                // Offline
+                update.status = 'offline';
+                update.availability = 'offline';
                 update.available = '';
                 update.busy = '';
                 update.bookedUntil = null;

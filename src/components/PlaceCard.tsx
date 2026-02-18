@@ -7,7 +7,9 @@ import { useLanguageContext } from '../context/LanguageContext';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { Share2 } from 'lucide-react';
 import { logger } from '../utils/logger';
-import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+import { VERIFIED_BADGE_IMAGE_URL, APP_CONSTANTS } from '../constants/appConstants';
+import { APP_CONFIG } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 interface PlaceCardProps {
     place: Place;
@@ -34,8 +36,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
     const { language } = useLanguageContext();
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
     const [showSharePopup, setShowSharePopup] = useState(false);
-    
-    // 🔒 PERSISTENT CHAT - Facebook Messenger style booking integration
+    const { user, loggedInCustomer } = useAuth();
     const { openBookingChat } = usePersistentChatIntegration();
     
     // Use language from context instead of detecting from translations
@@ -94,24 +95,37 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
         onRate(place);
     };
     
-    // Handle booking - opens persistent chat with place details
+    // Handle booking - when in-app booking disabled, open WhatsApp; else open persistent chat
     const handleBooking = (e: React.MouseEvent) => {
         e.stopPropagation();
-        
         logger.debug('🏬 Opening booking for place:', place.name);
-        
-        // 🔒 CRITICAL: Use appwriteId (Appwrite document ID), not id
+
+        if (APP_CONFIG.IN_APP_BOOKING_DISABLED) {
+            const userName = (loggedInCustomer?.name || loggedInCustomer?.username || (user as any)?.name) || 'Guest';
+            const parts = [
+                'Hi Indastreet, I would like to book a massage at a place.',
+                `Place: ${place.name} (ID: ${place.$id || place.id || 'N/A'}).`,
+                'Service: Massage.',
+                `My name: ${userName}.`,
+                'Location: To be specified.',
+                'Requested time: To be arranged.',
+            ];
+            const text = encodeURIComponent(parts.join(' '));
+            window.open(`https://wa.me/${APP_CONSTANTS.DEFAULT_CONTACT_NUMBER}?text=${text}`, '_blank', 'noopener,noreferrer');
+            return;
+        }
+
         openBookingChat({
-            appwriteId: place.$id,  // ✅ REQUIRED: Appwrite document ID
+            appwriteId: place.$id,
             name: place.name,
             image: place.mainImage || (place as any).profileImageUrl || (place as any).image || place.profileImage || place.profilePicture,
             pricing: getParsedPricing(),
             whatsapp: (place as any).whatsapp || (place as any).phoneNumber,
-            status: 'AVAILABLE', // Places are always available (no BUSY status)
+            status: 'AVAILABLE',
             availabilityStatus: 'AVAILABLE',
-            duration: 60, // Default duration
-            clientPreferences: undefined, // Places don't have client preferences
-            providerType: 'place', // Spec 9: same scheduled flow as therapists
+            duration: 60,
+            clientPreferences: undefined,
+            providerType: 'place',
         } as any);
     };
 

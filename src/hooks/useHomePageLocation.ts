@@ -8,7 +8,7 @@ import type { UserLocation, Therapist, Place } from '../types';
 import { getCustomerLocation, findAllNearbyTherapists, findAllNearbyPlaces } from '../lib/nearbyProvidersService';
 import { findCityByCoordinates, matchProviderToCity } from '../constants/indonesianCities';
 import { matchesLocation } from '../utils/locationNormalization';
-import { filterTherapistsByCity, filterPlacesByCity } from '../utils/cityFilterUtils';
+import { filterTherapistsByCity, filterPlacesByCity, filterHotelsByCity } from '../utils/cityFilterUtils';
 
 interface UseHomePageLocationProps {
     therapists: Therapist[];
@@ -110,11 +110,26 @@ export function useHomePageLocation({
         
         if (!effectiveSelectedCity || effectiveSelectedCity === 'all') {
             setCityFilteredTherapists(safeTherapists);
+            const effectiveLocation = devLocationOverride || autoDetectedLocation || (userLocation ? {lat: userLocation.lat, lng: userLocation.lng} : null);
+            if (!effectiveLocation) {
+                setNearbyTherapists([]);
+                setNearbyPlaces([]);
+                setNearbyHotels([]);
+                return;
+            }
+            // Fall through to 10km radius logic below for "all" view
+        } else {
+            // Per-city view: show ALL profiles whose saved GPS-derived city matches. No distance limit, no km.
+            const filtered = filterTherapistsByCity(safeTherapists, effectiveSelectedCity);
+            setCityFilteredTherapists(filtered);
+            setNearbyTherapists(filtered);
+            const safePlaces = Array.isArray(places) ? places : [];
+            setNearbyPlaces(filterPlacesByCity(safePlaces, effectiveSelectedCity));
+            const safeHotels = Array.isArray(hotels) ? hotels : [];
+            setNearbyHotels(filterHotelsByCity(safeHotels, effectiveSelectedCity));
+            console.log('📍 Per-city view: showing all profiles in', effectiveSelectedCity, { therapists: filtered.length, places: filterPlacesByCity(safePlaces, effectiveSelectedCity).length, hotels: filterHotelsByCity(safeHotels, effectiveSelectedCity).length });
             return;
         }
-        
-        const filtered = filterTherapistsByCity(safeTherapists, effectiveSelectedCity);
-        setCityFilteredTherapists(filtered);
         
         const effectiveLocation = devLocationOverride || autoDetectedLocation || (userLocation ? {lat: userLocation.lat, lng: userLocation.lng} : null);
         

@@ -36,6 +36,8 @@ import UniversalPWAInstall from '../components/UniversalPWAInstall';
 import { PersistentChatProvider } from '../context/PersistentChatProvider';
 import { MessageCircle, X, MapPin } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
+import { APP_CONFIG } from '../config';
+import { APP_CONSTANTS } from '../constants/appConstants';
 
 // Custom hooks for logic extraction
 import { useHomePageState } from '../hooks/useHomePageState';
@@ -49,9 +51,9 @@ import { getCustomerLocation } from '../lib/nearbyProvidersService';
 // Production logger
 import { logger } from '../utils/logger';
 
-// Per-location cap: each city can store/display up to 100 therapists and 100 places
-const MAX_THERAPISTS_PER_LOCATION = 100;
-const MAX_PLACES_PER_LOCATION = 100;
+// No cap: show all profiles per GPS-derived city (therapist/place upload page city is synced with main app)
+const MAX_THERAPISTS_PER_LOCATION = 99999;
+const MAX_PLACES_PER_LOCATION = 99999;
 
 interface HomePageProps {
     page?: string; // Current page from routing system
@@ -968,8 +970,8 @@ const HomePage: React.FC<HomePageProps> = ({
             }
         }
         
-        // Update city-filtered therapists state (cap per location)
-        setCityFilteredTherapists(finalTherapistList.slice(0, MAX_THERAPISTS_PER_LOCATION));
+        // Update city-filtered therapists state (no cap – all profiles per city)
+        setCityFilteredTherapists(finalTherapistList);
         
         // Filter places by selected city (same logic as therapists)
         const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
@@ -1006,8 +1008,8 @@ const HomePage: React.FC<HomePageProps> = ({
             return matches;
         });
         
-        // Save filtered places to state (cap per location)
-        setCityFilteredPlaces(filteredPlacesByCity.slice(0, MAX_PLACES_PER_LOCATION));
+        // Save filtered places to state (no cap – all profiles per city)
+        setCityFilteredPlaces(filteredPlacesByCity);
         
         // Filter hotels by selected city (STRICT MATCHING - same as therapists/places)
         const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
@@ -1218,20 +1220,36 @@ const HomePage: React.FC<HomePageProps> = ({
         setAvailableTherapists(onlineTherapists);
     }, [therapists]);
 
-    // Handle therapist selection for chat
+    // Handle therapist selection for chat (only when in-app booking enabled)
     const handleTherapistChatSelect = (therapist: any) => {
+        if (APP_CONFIG.IN_APP_BOOKING_DISABLED) return;
         setSelectedTherapistForChat(therapist);
-        setShowTherapistChat(false); // Hide therapist list when chat opens
+        setShowTherapistChat(false);
         logger.debug('Starting chat with therapist', { name: therapist.name });
     };
 
-    // Handle booking from chat
+    // Handle booking from chat (only when in-app booking enabled)
     const handleBookingFromChat = (therapist: any) => {
+        if (APP_CONFIG.IN_APP_BOOKING_DISABLED) return;
         logger.debug('Booking therapist from chat', { name: therapist.name });
-        if (onSelectTherapist) {
-            onSelectTherapist(therapist);
-        }
+        if (onSelectTherapist) onSelectTherapist(therapist);
         onBook(therapist, 'therapist');
+    };
+
+    // Book via WhatsApp: open admin WhatsApp with pre-filled message (when in-app booking disabled)
+    const handleBookViaWhatsApp = (therapist: any) => {
+        const userName = loggedInCustomer?.name || loggedInCustomer?.username || (user as any)?.name || 'Guest';
+        const locationDisplay = selectedCity && selectedCity !== 'all' ? selectedCity : (userLocation?.cityName || 'Not specified');
+        const parts = [
+            'Hi Indastreet, I would like to book a massage.',
+            `Therapist: ${therapist.name || 'this therapist'} (ID: ${therapist.$id || therapist.id || 'N/A'}).`,
+            'Service: Massage.',
+            `My name: ${userName}.`,
+            `Location: ${locationDisplay}.`,
+            'Requested time: To be arranged.',
+        ];
+        const text = encodeURIComponent(parts.join(' '));
+        window.open(`https://wa.me/${APP_CONSTANTS.DEFAULT_CONTACT_NUMBER}?text=${text}`, '_blank', 'noopener,noreferrer');
     };
 
     // ...existing code...
@@ -1488,8 +1506,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                 return R * c;
                             };
 
-            // OOM: Cap and defensive check – avoid crash on undefined/large lists
-            const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists.slice(0, 100) : [];
+            // No cap: show all profiles per city (defensive check only)
+            const safeInput = Array.isArray(cityFilteredTherapists) ? cityFilteredTherapists : [];
             let therapistsWithDistance = safeInput
                 .map((t: any) => {
                     let distance: number | null = null;
@@ -1836,8 +1854,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                         return b.priorityScore - a.priorityScore;
                                     }
                                     
-                                    // 🌍 SECONDARY SORT: Distance (nearest first) - ONLY if user location exists
-                                    if (currentUserLocation && a._distance !== null && b._distance !== null) {
+                                    // 🌍 SECONDARY SORT: Distance (nearest first) – only when viewing "all" (not per-city)
+                                    if (selectedCity === 'all' && currentUserLocation && a._distance !== null && b._distance !== null) {
                                         if (a._distance !== b._distance) {
                                             return a._distance - b._distance; // Ascending (nearest first)
                                         }
@@ -1878,8 +1896,8 @@ const HomePage: React.FC<HomePageProps> = ({
 
                             // OOM: Final therapist list debug removed (was priorityBreakdown array in render)
 
-                            // OOM FIX: Cap initial cards to avoid memory crash on large lists
-                            const MAX_INITIAL_THERAPIST_CARDS = 12;
+                            // Show all therapists in city (cap at 500 for very large lists to avoid perf issues)
+                            const MAX_INITIAL_THERAPIST_CARDS = 500;
                             const therapistsToRender = preparedTherapists.slice(0, MAX_INITIAL_THERAPIST_CARDS);
 
                             // 🏷️ GROUP BY LOCATION AREA for display (sorted by distance within each group)
@@ -1984,7 +2002,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable || 'No therapists available in your area at the moment.'}</p>
                                 {autoDetectedLocation && (
                                     <p className="text-gray-400 text-sm mt-2">
-                                        Showing providers within 15km of your location
+                                        {selectedCity && selectedCity !== 'all' ? `Showing all providers in ${selectedCity}` : 'Showing providers within 15km of your location'}
                                     </p>
                                 )}
                             </div>
@@ -2607,19 +2625,31 @@ const HomePage: React.FC<HomePageProps> = ({
                                             </div>
                                             
                                             <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleTherapistChatSelect(therapist)}
-                                                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                                >
-                                                    <MessageCircle className="w-4 h-4" />
-                                                    Chat
-                                                </button>
-                                                <button
-                                                    onClick={() => handleBookingFromChat(therapist)}
-                                                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
-                                                >
-                                                    Book Now
-                                                </button>
+                                                {APP_CONFIG.IN_APP_BOOKING_DISABLED ? (
+                                                    <button
+                                                        onClick={() => handleBookViaWhatsApp(therapist)}
+                                                        className="flex-1 bg-[#25D366] hover:bg-[#20BD5A] text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <MessageCircle className="w-4 h-4" />
+                                                        Book via WhatsApp
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleTherapistChatSelect(therapist)}
+                                                            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                                        >
+                                                            <MessageCircle className="w-4 h-4" />
+                                                            Chat
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleBookingFromChat(therapist)}
+                                                            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+                                                        >
+                                                            Book Now
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -2636,8 +2666,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
             )}
             
-            {/* Floating Chat Window */}
-            {selectedTherapistForChat && (
+            {/* Floating Chat Window (hidden when in-app booking disabled) */}
+            {!APP_CONFIG.IN_APP_BOOKING_DISABLED && selectedTherapistForChat && (
                 <div className="fixed bottom-4 right-4 z-[9999]">
                     <PersistentChatProvider>
                         <div className="relative">

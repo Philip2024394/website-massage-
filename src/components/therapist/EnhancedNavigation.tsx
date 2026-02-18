@@ -83,16 +83,6 @@ const QUICK_ACTIONS: NavigationItem[] = [
     description: 'Change your availability status'
   },
   {
-    id: 'earnings',
-    label: 'Earnings',
-    icon: DollarSign,
-    color: 'text-blue-500',
-    category: 'quick',
-    priority: 'high',
-    quickAction: true,
-    description: 'View your income and payouts'
-  },
-  {
     id: 'notifications',
     label: 'Notifications',
     icon: Bell,
@@ -130,15 +120,6 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         category: 'business',
         priority: 'medium',
         description: 'Performance metrics and insights'
-      },
-      {
-        id: 'more-customers',
-        label: 'More Customers',
-        icon: Users,
-        color: 'text-orange-500',
-        category: 'business',
-        priority: 'medium',
-        description: 'Grow your customer base'
       }
     ]
   },
@@ -180,66 +161,12 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
     ]
   },
   {
-    id: 'financial',
-    label: 'Financial',
-    icon: DollarSign,
-    color: 'text-orange-600',
-    collapsed: false,
-    items: [
-      {
-        id: 'earnings',
-        label: 'Earnings',
-        icon: DollarSign,
-        color: 'text-orange-500',
-        category: 'financial',
-        priority: 'high',
-        description: 'View your income'
-      },
-      {
-        id: 'payment',
-        label: 'Payment',
-        icon: CreditCard,
-        color: 'text-orange-500',
-        category: 'financial',
-        priority: 'medium',
-        description: 'Submit payment proof'
-      },
-      {
-        id: 'payment-status',
-        label: 'Payment History',
-        icon: History,
-        color: 'text-orange-500',
-        category: 'financial',
-        priority: 'medium',
-        description: 'Track payment status'
-      },
-      {
-        id: 'commission-payment',
-        label: 'Commission (30%)',
-        icon: Wallet,
-        color: 'text-orange-500',
-        category: 'financial',
-        priority: 'medium',
-        description: 'Commission payments'
-      }
-    ]
-  },
-  {
     id: 'tools',
     label: 'Tools & Marketing',
     icon: Gift,
     color: 'text-orange-600',
     collapsed: true,
     items: [
-      {
-        id: 'send-discount',
-        label: 'Send Discount',
-        icon: Gift,
-        color: 'text-orange-500',
-        category: 'tools',
-        priority: 'low',
-        description: 'Create discount campaigns'
-      },
       {
         id: 'notifications',
         label: 'Notifications',

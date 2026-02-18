@@ -20,5 +20,8 @@ export const APP_CONFIG = {
         PUSH_NOTIFICATIONS: true,
         ADMIN_DASHBOARD: true,
         AGENT_SYSTEM: true
-    }
+    },
+
+    /** When true, all booking goes via WhatsApp only; in-app chat/booking UI is disabled. */
+    IN_APP_BOOKING_DISABLED: true,
 };

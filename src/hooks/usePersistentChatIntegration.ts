@@ -23,6 +23,7 @@ import type { Therapist } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
+import { APP_CONFIG } from '../config';
 
 /**
  * Hook to integrate TherapistCard buttons with PersistentChatWindow
@@ -32,6 +33,7 @@ export function usePersistentChatIntegration() {
   const ctx = usePersistentChat();
   const { openChat, openChatWithService, chatState, minimizeChat, maximizeChat } = ctx;
   const hasActiveScheduledBooking = ctx.hasActiveScheduledBooking === true;
+  const bookingDisabled = APP_CONFIG.IN_APP_BOOKING_DISABLED === true;
 
   const safeAlert = useCallback((message: string) => {
     try {
@@ -231,6 +233,7 @@ export function usePersistentChatIntegration() {
    * Open chat for "Book Now" button
    */
   const openBookingChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
+    if (bookingDisabled) return;
     console.log('🔒 [PersistentChatIntegration] Opening booking chat for:', therapist.name, 'source:', source);
     if (!assertTherapistCanOpenChat(therapist, 'book', source === 'share')) return;
     try {
@@ -240,12 +243,13 @@ export function usePersistentChatIntegration() {
       console.error('❌ [PersistentChatIntegration] Failed to open booking chat:', e);
       safeAlert('Sorry — booking chat could not be opened for this therapist. Please try another therapist.');
     }
-  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert]);
+  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert, bookingDisabled]);
   
   /**
    * Open chat for "Schedule" button
    */
   const openScheduleChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
+    if (bookingDisabled) return;
     console.log('🔒 [PersistentChatIntegration] Opening schedule chat for:', therapist.name, 'source:', source);
     if (!assertTherapistCanOpenChat(therapist, 'schedule', source === 'share')) return;
     const hasBank = !!((therapist as any).bankName && (therapist as any).accountNumber && (therapist as any).accountName) || !!(therapist as any).bankCardDetails;
@@ -261,12 +265,13 @@ export function usePersistentChatIntegration() {
       console.error('❌ [PersistentChatIntegration] Failed to open schedule chat:', e);
       safeAlert('Sorry — schedule chat could not be opened for this therapist. Please try another therapist.');
     }
-  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert]);
+  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert, bookingDisabled]);
   
   /**
    * Open chat for "View Prices" / Price slider
    */
   const openPriceChat = useCallback((therapist: Therapist, source: 'share' | 'profile' | 'search' | null = null) => {
+    if (bookingDisabled) return;
     console.log('🔒 [PersistentChatIntegration] Opening price chat for:', therapist.name, 'source:', source);
     if (!assertTherapistCanOpenChat(therapist, 'price', source === 'share')) return;
     try {
@@ -276,7 +281,7 @@ export function usePersistentChatIntegration() {
       console.error('❌ [PersistentChatIntegration] Failed to open price chat:', e);
       safeAlert('Sorry — price chat could not be opened for this therapist. Please try another therapist.');
     }
-  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert]);
+  }, [openChat, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert, bookingDisabled]);
   
   /**
    * Open chat with pre-selected service from Menu Harga
@@ -286,6 +291,7 @@ export function usePersistentChatIntegration() {
     service: { serviceName: string; duration: number; price: number },
     options?: { bookingType?: 'immediate' | 'scheduled'; source?: 'share' | 'profile' | 'search' | null }
   ) => {
+    if (bookingDisabled) return;
     console.log('🔒 [PersistentChatIntegration] Opening chat with service and options:', {
       therapist: therapist.name,
       service,
@@ -307,7 +313,7 @@ export function usePersistentChatIntegration() {
       console.error('❌ [PersistentChatIntegration] Failed to open service chat:', e);
       safeAlert('Sorry — booking chat could not be opened for this service. Please try again.');
     }
-  }, [openChatWithService, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert]);
+  }, [openChatWithService, convertToChatTherapist, assertTherapistCanOpenChat, safeAlert, bookingDisabled]);
   
   /**
    * Check if chat is currently open for a specific therapist

@@ -122,6 +122,23 @@ export function filterPlacesByCity(
 }
 
 /**
+ * Filter hotels by active city (same logic as places)
+ * STRICT: Only returns hotels that match the active city exactly (city/locationId from saved GPS).
+ */
+export function filterHotelsByCity(
+  hotels: any[] | undefined | null,
+  activeCity: string | undefined | null
+): any[] {
+  if (!Array.isArray(hotels)) return [];
+  if (!activeCity) return [];
+  if (activeCity === 'all') return hotels;
+  return hotels.filter(hotel => {
+    const hotelCity = hotel.city || (hotel as any).locationId || hotel.location;
+    return cityMatches(hotelCity, activeCity);
+  });
+}
+
+/**
  * Validate that a therapist belongs to the active city
  * Used for individual lookups (profile views, etc.)
  */
