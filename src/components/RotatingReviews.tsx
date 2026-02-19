@@ -52,7 +52,7 @@ interface RotatingReviewsProps {
     limit?: number;
     providerId?: string | number;
     providerName?: string;
-    providerType?: 'therapist' | 'place';
+    providerType?: 'therapist' | 'place' | 'facial-place';
     providerImage?: string;
     onNavigate?: (page: string, params?: Record<string, string>) => void; // Optional navigation handler
 }

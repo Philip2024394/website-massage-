@@ -28,6 +28,10 @@ interface LocationSectionProps {
   locationInputRef: React.RefObject<HTMLInputElement>;
   setToast: (toast: { message: string; type: 'success' | 'error' } | null) => void;
   t: any;
+  /** Country name for label; when set, dropdown shows that country's cities (matches main app filter). */
+  country?: string;
+  /** Country code (e.g. 'ID', 'MY'). When set, dropdown shows that country's cities only. */
+  countryCode?: string;
 }
 
 const LocationSection: React.FC<LocationSectionProps> = ({
@@ -46,19 +50,23 @@ const LocationSection: React.FC<LocationSectionProps> = ({
   locationInputRef,
   setToast,
   t,
+  country,
+  countryCode,
 }: LocationSectionProps): JSX.Element => {
   return (
     <div className="space-y-6">
-      {/* City Selection */}
+      {/* City Selection – per-country list, matches main app so customers find you when they select this city */}
       <div>
         <CityLocationDropdown
           selectedCity={selectedCity}
           onCityChange={setSelectedCity}
-          placeholder="Select Your City/Location"
+          placeholder={country ? `Select City in ${country}` : 'Select Your City/Location'}
           label="🏙️ City / Tourist Location *"
           showLabel={true}
           includeAll={false}
           className="w-full"
+          country={country}
+          countryCode={countryCode}
         />
         <p className="text-xs text-gray-500 mt-1">
           Select the city or tourist area where your Facial Place is located. This helps customers find you easily.

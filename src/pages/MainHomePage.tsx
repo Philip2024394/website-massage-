@@ -23,7 +23,6 @@ import { initializeGoogleMaps, loadGoogleMapsScript } from '../lib/appwrite.conf
 import MusicPlayer from '../components/MusicPlayer';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { FloatingChatWindow } from '../chat';
-import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
 import { deriveLocationIdFromGeopoint } from '../utils/geoDistance';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
@@ -402,14 +401,8 @@ const HomePage: React.FC<HomePageProps> = ({
         };
 
         const loadMapsAPI = () => {
-            const apiKey = getStoredGoogleMapsApiKey();
-            if (!apiKey) {
-                logger.warn('Google Maps API key not configured');
-                return;
-            }
-
             logger.debug('Loading Google Maps API for location autocomplete');
-            loadGoogleMapsScript(apiKey, () => {
+            loadGoogleMapsScript(() => {
                 logger.debug('Google Maps API loaded for HomePage');
                 setMapsApiLoaded(true);
             });
@@ -2168,8 +2161,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
                             <p className="text-gray-600">
                                 {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.facialTherapistsSubtitleAll || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
-                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', contextCity) || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
+                                    ? (t?.home?.facialTherapistsSubtitleAll || 'A safe platform for everyone.')
+                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', contextCity) || 'A safe platform for everyone.')
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">

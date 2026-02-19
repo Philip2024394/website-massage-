@@ -10,7 +10,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
     const pageToPath: Partial<Record<Page, string>> = {
         'landing': '/',
         'home': '/home',
-        'facialProviders': '/facials',
+        'facialProviders': '/facial-providers',
         'massageTypes': '/massage-types',
         'massage-types': '/massage-types', // drawer link uses kebab-case; must map so URL updates and stays open
         'facialTypes': '/facial-types',
@@ -224,6 +224,13 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 // Handle direct URL navigation (pathname or hash for SPA)
                 const pathFromHash = (window.location.hash || '').replace('#', '').replace(/^\/+/, '') || '';
                 const path = (window.location.pathname && window.location.pathname !== '/') ? window.location.pathname : (pathFromHash ? `/${pathFromHash}` : window.location.pathname);
+                
+                // /facials → show home page with facial tab (not the standalone FacialProvidersPage)
+                if (path === '/facials') {
+                    try { sessionStorage.setItem('home_initial_tab', 'facials'); } catch (_) {}
+                    setPage('home');
+                    return;
+                }
                 
                 // Handle new share URLs (with SEO keywords or simple format)
                 // Match: /share/pijat-yogyakarta-wiwid/123 OR /share/therapist/123
@@ -487,6 +494,18 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 setPage('shared-therapist-profile');
                 return () => window.removeEventListener('popstate', handlePopState);
             }
+            // Facial place profile – #/profile/facial/:id must not fall through to pathname /home → home
+            if (hashPathWithSlash.startsWith('/profile/facial/') || hashPath.startsWith('profile/facial/')) {
+                console.log('✅ Hash route matched: facial-place-profile');
+                setPage('facial-place-profile');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            // Massage place profile – #/profile/place/:id
+            if (hashPathWithSlash.startsWith('/profile/place/') || hashPath.startsWith('profile/place/')) {
+                console.log('✅ Hash route matched: massage-place-profile');
+                setPage('massage-place-profile');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
             
             // Map hash routes to pages (path-style with leading slash)
             if (hashPathWithSlash === '/therapist-status' || hashPathWithSlash === '/status') {
@@ -539,6 +558,16 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         // Handle legacy therapist profile URL
         if (initialPath.startsWith('/therapist-profile/')) {
             setPage('shared-therapist-profile');
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+        
+        // /facials → show home with facial tab (same experience as clicking Facials on home)
+        if (initialPath === '/facials') {
+            try { sessionStorage.setItem('home_initial_tab', 'facials'); } catch (_) {}
+            setPage('home');
+            if (typeof window !== 'undefined' && window.history.replaceState) {
+                window.history.replaceState({ page: 'home' }, '', '/home');
+            }
             return () => window.removeEventListener('popstate', handlePopState);
         }
         
@@ -595,8 +624,14 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             
             const targetPage = pathToPage[initialPath];
             if (targetPage && targetPage !== page) {
-                console.log(`🎯 Initial URL: ${initialPath} → ${targetPage}`);
-                setPage(targetPage);
+                // Don't overwrite when hash is a profile route (facial/place) – avoids reverting to home after "View profile"
+                const currentHash = (window.location.hash || '').substring(1).replace(/^\/+/, '');
+                const isFacialProfile = currentHash.startsWith('/profile/facial/') || currentHash.startsWith('profile/facial/');
+                const isPlaceProfile = currentHash.startsWith('/profile/place/') || currentHash.startsWith('profile/place/');
+                if (!isFacialProfile && !isPlaceProfile) {
+                    console.log(`🎯 Initial URL: ${initialPath} → ${targetPage}`);
+                    setPage(targetPage);
+                }
             }
         } else {
             // Root path (pathname === '/') – only treat as landing if hash is empty or landing/home

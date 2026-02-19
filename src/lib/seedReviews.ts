@@ -128,6 +128,26 @@ const REVIEW_TEMPLATES = [
   }
 ];
 
+// Facial / skincare / clinic review templates – for facial places only (no massage)
+const FACIAL_REVIEW_TEMPLATES = [
+  { template: 'Excellent facial treatment! My skin felt so refreshed and glowing. Very professional clinic in {city}.', rating: 5, length: 'short' },
+  { template: 'Amazing skincare experience! The staff knew exactly what my skin needed. Highly recommend for facials.', rating: 5, length: 'short' },
+  { template: 'Best facial in {city}! Clean place and skilled therapists. My skin has never looked better.', rating: 5, length: 'short' },
+  { template: 'Great facial and very relaxing atmosphere. Perfect for skin rejuvenation and self-care!', rating: 4, length: 'short' },
+  { template: 'Outstanding facial treatment in {city}. They really understood my skin concerns and tailored the treatment. My complexion improved a lot. The clinic is clean and peaceful.', rating: 5, length: 'medium' },
+  { template: 'Very professional from start to finish. The facial was excellent and my skin felt so soft afterwards. Good value in {city}. Will definitely return!', rating: 5, length: 'medium' },
+  { template: 'Fantastic facial experience! The therapist was knowledgeable about skincare and explained each step. My acne scars and dullness improved after a few sessions. Highly recommended!', rating: 5, length: 'medium' },
+  { template: 'Good facial overall. The place was clean and the staff friendly. Only minor wait, but the treatment quality made up for it.', rating: 4, length: 'medium' },
+  { template: 'Absolutely incredible facial in {city}! I came with dull, tired skin and left with a healthy glow. They used quality products and the extraction was gentle. The room was relaxing. Now my go-to for skincare!', rating: 5, length: 'long' },
+  { template: 'I have tried several skin clinics in {city}; this is the best. Professional facial treatments, clean facility, and my skin has never looked better. They focus on skin health, not just quick fixes. Cannot recommend enough!', rating: 5, length: 'long' },
+  { template: 'Wonderful facial and skincare service. My oily and acne-prone skin improved a lot. They explained the products and gave good aftercare advice. Clean, calm environment. Reasonable prices for the quality.', rating: 5, length: 'long' },
+  { template: 'Great experience at this skin clinic. Welcoming staff and professional treatment. The facial was tailored to my skin type. Room was clean and comfortable. Will book again in {city}!', rating: 4, length: 'long' },
+  { template: 'Perfect facial! They listened to my skin concerns and delivered exactly what I needed. Skin felt smooth and hydrated.', rating: 5, length: 'short' },
+  { template: 'Incredible facial treatment in {city}. My skin is clearer and brighter! Professional service and hygienic clinic.', rating: 5, length: 'short' },
+  { template: 'Top-notch facial and skincare. Knowledgeable staff and effective treatments. My skin felt refreshed and glowing. Definitely returning!', rating: 5, length: 'medium' },
+  { template: 'Very satisfied with the facial. The treatment was effective and my skin looked better. Good location in {city} and easy to book.', rating: 4, length: 'medium' }
+];
+
 // Reviewer names for variety
 const REVIEWER_NAMES = [
   'Sarah Johnson', 'Michael Chen', 'Emma Williams', 'David Lee',
@@ -185,20 +205,26 @@ function deterministicShuffle<T>(array: T[], profileId: string, timeBucket: numb
   return arr;
 }
 
+/** Provider type for seed review template selection (facial-place uses facial/skincare templates). */
+export type SeedReviewProviderType = 'therapist' | 'place' | 'facial-place';
+
 /**
  * Generate exactly 5 unique seed reviews for a profile
- * Reviews are deterministic based on profileId and rotate every 5 minutes
+ * Reviews are deterministic based on profileId and rotate every 5 minutes.
+ * For facial-place, uses facial/skincare/clinic themed templates only.
  */
 export function generateSeedReviews(
   profileId: string,
   city: string = 'Yogyakarta',
-  count: number = 5
+  count: number = 5,
+  providerType: SeedReviewProviderType = 'therapist'
 ): SeedReview[] {
   const timeBucket = getTimeBucket();
   const seed = simpleHash(profileId + timeBucket.toString());
-  
+  const templates = providerType === 'facial-place' ? FACIAL_REVIEW_TEMPLATES : REVIEW_TEMPLATES;
+
   // Shuffle templates and names deterministically
-  const shuffledTemplates = deterministicShuffle(REVIEW_TEMPLATES, profileId, timeBucket);
+  const shuffledTemplates = deterministicShuffle(templates, profileId, timeBucket);
   const shuffledNames = deterministicShuffle(REVIEWER_NAMES, profileId, timeBucket);
   const shuffledAvatars = deterministicShuffle(AVATAR_POOL, profileId, timeBucket);
   
@@ -234,22 +260,24 @@ export function generateSeedReviews(
 
 /**
  * Get display reviews: Real reviews + seed reviews to fill up to 5
- * Real reviews always take priority
+ * Real reviews always take priority.
+ * For facial-place, seed reviews use facial/skincare themed text only.
  */
 export function getDisplayReviews(
   profileId: string,
   realReviews: any[],
-  city: string = 'Yogyakarta'
+  city: string = 'Yogyakarta',
+  providerType: SeedReviewProviderType = 'therapist'
 ): Array<any | SeedReview> {
   // If we have 5 or more real reviews, only show real reviews
   if (realReviews.length >= 5) {
     return realReviews.slice(0, 5);
   }
-  
-  // Generate seed reviews to fill the gap
+
+  // Generate seed reviews to fill the gap (facial-place gets facial templates)
   const seedReviewsNeeded = 5 - realReviews.length;
-  const seedReviews = generateSeedReviews(profileId, city, seedReviewsNeeded);
-  
+  const seedReviews = generateSeedReviews(profileId, city, seedReviewsNeeded, providerType);
+
   // Real reviews first, then seed reviews
   return [...realReviews, ...seedReviews];
 }

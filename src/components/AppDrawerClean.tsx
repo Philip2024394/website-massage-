@@ -429,9 +429,16 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     const callback =
                       item.id === 'massage-jobs'
                         ? onMassageJobsClick
-                        : onNavigate
-                          ? () => onNavigate(item.id as Page)
-                          : undefined;
+                        : item.id === 'facial-types'
+                          ? (onNavigate
+                              ? () => {
+                                  try { sessionStorage.setItem('home_initial_tab', 'facials'); } catch (_) {}
+                                  onNavigate('home');
+                                }
+                              : undefined)
+                          : onNavigate
+                            ? () => onNavigate(item.id as Page)
+                            : undefined;
                     const label = typeof item.labelOverride === 'string'
                       ? item.labelOverride
                       : (dt && typeof dt === 'object' && item.labelKey && (dt[item.labelKey as keyof typeof dt] ?? item.labelKey)) || item.labelKey || '';

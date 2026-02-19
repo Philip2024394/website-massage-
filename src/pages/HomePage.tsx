@@ -54,7 +54,6 @@ import MusicPlayer from '../components/MusicPlayer';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { FloatingChatWindow } from '../chat';
 import { APP_CONFIG } from '../config';
-import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
 import { deriveLocationIdFromGeopoint, calculateDistance, extractGeopoint } from '../utils/geoDistance';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
@@ -255,6 +254,18 @@ const HomePage: React.FC<HomePageProps> = ({
     } = useHomePageState();
 
     const [showLocationSelectPopup, setShowLocationSelectPopup] = useState(false);
+    
+    // Open with facial tab when arriving via /facials or drawer "Facial Directory"
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        try {
+            const initialTab = sessionStorage.getItem('home_initial_tab');
+            if (initialTab === 'facials') {
+                sessionStorage.removeItem('home_initial_tab');
+                setActiveTab('facials');
+            }
+        } catch (_) {}
+    }, [setActiveTab]);
     
     // Sync selectedCity with CityContext city
     useEffect(() => {
@@ -717,14 +728,8 @@ const HomePage: React.FC<HomePageProps> = ({
         };
 
         const loadMapsAPI = () => {
-            const apiKey = getStoredGoogleMapsApiKey();
-            if (!apiKey) {
-                logger.warn('Google Maps API key not configured');
-                return;
-            }
-
             logger.debug('Loading Google Maps API for location autocomplete');
-            loadGoogleMapsScript(apiKey, () => {
+            loadGoogleMapsScript(() => {
                 logger.debug('Google Maps API loaded for HomePage');
                 setMapsApiLoaded(true);
             });
@@ -1867,8 +1872,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
                             <p className="text-gray-600">
                                 {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.therapistsSubtitleAll || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
-                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
+                                    ? (t?.home?.therapistsSubtitleAll || 'A safe platform for everyone.')
+                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'A safe platform for everyone.')
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
@@ -2175,8 +2180,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
                             <p className="text-gray-600">
                                 {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.facialTherapistsSubtitleAll || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
-                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'We monitor provider locations and user activity to ensure a safe platform for everyone.')
+                                    ? (t?.home?.facialTherapistsSubtitleAll || 'A safe platform for everyone.')
+                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'A safe platform for everyone.')
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">

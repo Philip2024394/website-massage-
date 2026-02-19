@@ -761,6 +761,8 @@ export const therapistService = {
             );
             
             console.log('📋 Current document data:', currentDocument);
+            const { extractGeopoint, deriveLocationIdFromGeopoint } = require('../../utils/geoDistance');
+            const existingGeopoint = extractGeopoint(currentDocument);
             
             // Start with current document data and update only the provided fields
             const mappedData: any = {
@@ -859,7 +861,8 @@ export const therapistService = {
             }
             if (data.description) mappedData.description = data.description;
             if (data.whatsappNumber) mappedData.whatsappNumber = data.whatsappNumber;
-            if (data.location) mappedData.location = data.location;
+            // Therapist has ONE location = from set coordinates. Do not apply text location when coordinates exist.
+            if (data.location && !data.geopoint && !existingGeopoint) mappedData.location = data.location;
             if (data.pricing) mappedData.pricing = data.pricing;
             if (data.price60 !== undefined) mappedData.price60 = String(data.price60);
             if (data.price90 !== undefined) mappedData.price90 = String(data.price90);
@@ -989,49 +992,42 @@ export const therapistService = {
                 }
             }
             
-            // 🌍 GPS AND LOCATION FIELDS (GPS-AUTHORITATIVE) – SYNCED WITH MAIN APP
-            // Therapist/place upload page sets GPS → we derive city via deriveLocationIdFromGeopoint (same as app city list).
-            // Main app lists profiles only by this saved city; no distance limit per city, no km shown in city view.
+            // 🌍 SINGLE LOCATION FROM COORDINATES – therapist cannot have 2 locations
+            // Location, city, and locationId are always derived from the set coordinates (geopoint).
+            const isLocationLocked = wentLiveAt && (Date.now() - new Date(wentLiveAt).getTime() > 72 * 60 * 60 * 1000);
+            let locationSetFromCoordinates = false;
+            const effectiveGeopoint = data.geopoint || existingGeopoint;
+            if (effectiveGeopoint && !isLocationLocked) {
+                try {
+                    const derivedCity = deriveLocationIdFromGeopoint(effectiveGeopoint);
+                    mappedData.location = derivedCity;
+                    mappedData.city = derivedCity;
+                    mappedData.locationId = derivedCity;
+                    locationSetFromCoordinates = true;
+                    console.log('✅ Single location from coordinates:', derivedCity);
+                } catch (e) {
+                    console.warn('⚠️ Failed to derive city from geopoint:', e);
+                }
+            }
             if (data.geopoint) {
                 mappedData.geopoint = data.geopoint;
                 mappedData.lastLocationUpdateAt = data.lastLocationUpdateAt || new Date().toISOString();
                 console.log('✅ GPS geopoint field will be saved:', data.geopoint);
-                
-                // Auto-derive city from geopoint if not explicitly provided
-                if (!data.city && !data.locationId) {
-                    try {
-                        const { deriveLocationIdFromGeopoint } = require('../../utils/geoDistance');
-                        const derivedCity = deriveLocationIdFromGeopoint(data.geopoint);
-                        mappedData.city = derivedCity;
-                        mappedData.locationId = derivedCity;
-                        console.log('✅ GPS-derived city will be saved:', derivedCity);
-                        
-                        // Update location field to match GPS-derived city (if not custom)
-                        if (!data.location || data.location === 'custom') {
-                            mappedData.location = derivedCity;
-                        }
-                    } catch (e) {
-                        console.warn('⚠️ Failed to derive city from geopoint:', e);
-                    }
-                }
             }
-            
-            // Explicit city/locationId fields (GPS-derived from dashboard)
-            if (data.city) {
-                mappedData.city = data.city;
-                console.log('✅ City field will be saved:', data.city);
-            }
-            if (data.locationId) {
-                mappedData.locationId = data.locationId;
-                console.log('✅ LocationId field will be saved:', data.locationId);
-            }
-            
-            // Coordinates field (legacy format - both string and object supported)
             if (data.coordinates) {
-                mappedData.coordinates = typeof data.coordinates === 'string' 
-                    ? data.coordinates 
+                mappedData.coordinates = typeof data.coordinates === 'string'
+                    ? data.coordinates
                     : JSON.stringify(data.coordinates);
-                console.log('✅ Coordinates field will be saved');
+            }
+            // Only allow explicit city/locationId when therapist has NO coordinates (new profile)
+            if (!locationSetFromCoordinates) {
+                if (data.city) {
+                    mappedData.city = data.city;
+                    mappedData.locationId = data.locationId ?? data.city;
+                    mappedData.location = data.location ?? data.city;
+                }
+            if (data.locationId) mappedData.locationId = data.locationId;
+            if (data.location) mappedData.location = data.location;
             }
             
             // Remove Appwrite metadata fields

@@ -209,6 +209,21 @@ export const TherapistManager: React.FC = () => {
     }
   };
 
+  /** Full deactivate: set offline and no longer available. */
+  const handleDeactivate = async (therapistId: string) => {
+    if (!window.confirm('Deactivate this therapist? They will no longer appear as available.')) return;
+    try {
+      await adminTherapistService.update(therapistId, {
+        status: 'offline',
+        availability: 'Offline',
+        isLive: false,
+      });
+      await loadTherapists();
+    } catch (err: any) {
+      setError(err.message || 'Failed to deactivate');
+    }
+  };
+
   /** Admin availability override: available | busy | offline. Busy uses busyUntil (auto-revert). */
   const handleAvailabilityChange = async (therapistId: string, availability: 'available' | 'busy' | 'offline', busyMinutes?: number) => {
     try {
@@ -317,7 +332,7 @@ export const TherapistManager: React.FC = () => {
           <div className="bg-purple-50 rounded-lg p-4">
             <h3 className="text-purple-800 font-semibold">KTP Verified</h3>
             <p className="text-2xl font-bold text-purple-600">
-              {therapists.filter(t => t.isKTPVerified).length}
+              {therapists.filter(t => t.ktpVerified || t.isKTPVerified).length}
             </p>
           </div>
         </div>
@@ -402,13 +417,13 @@ export const TherapistManager: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        therapist.isKTPVerified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        (therapist.ktpVerified || therapist.isKTPVerified) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                       }`}>
-                        {therapist.isKTPVerified ? 'Verified' : 'Not Verified'}
+                        {(therapist.ktpVerified || therapist.isKTPVerified) ? 'Verified' : 'Not Verified'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => handleEdit(therapist)}
                           className="text-blue-600 hover:text-blue-900"
@@ -424,8 +439,9 @@ export const TherapistManager: React.FC = () => {
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
                           <option value="suspended">Suspended</option>
+                          <option value="offline">Offline</option>
                         </select>
-                        {!therapist.isKTPVerified && (
+                        {!(therapist.ktpVerified || therapist.isKTPVerified) && (
                           <button
                             onClick={() => handleKTPVerification(therapist.$id, true)}
                             className="text-green-600 hover:text-green-900"
@@ -433,6 +449,13 @@ export const TherapistManager: React.FC = () => {
                             Verify KTP
                           </button>
                         )}
+                        <button
+                          onClick={() => handleDeactivate(therapist.$id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Deactivate: set offline and no longer available"
+                        >
+                          Deactivate
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -486,6 +509,26 @@ export const TherapistManager: React.FC = () => {
                     onChange={(e) => setSelectedTherapist({ ...selectedTherapist, location: e.target.value })}
                     className="w-full border rounded-lg px-3 py-2"
                     placeholder="e.g. Yogyakarta, Bali"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <input 
+                    type="text"
+                    value={selectedTherapist.city || ''}
+                    onChange={(e) => setSelectedTherapist({ ...selectedTherapist, city: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    placeholder="e.g. Denpasar, Yogyakarta"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country / Location ID</label>
+                  <input 
+                    type="text"
+                    value={selectedTherapist.country || selectedTherapist.locationId || ''}
+                    onChange={(e) => setSelectedTherapist({ ...selectedTherapist, country: e.target.value, locationId: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    placeholder="e.g. Indonesia, ID"
                   />
                 </div>
                 <div>

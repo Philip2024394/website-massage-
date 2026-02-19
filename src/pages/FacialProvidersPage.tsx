@@ -268,13 +268,12 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                             </button>
                             <button 
                                 onClick={() => {
-                                    console.log('Switching to massage places tab');
                                     setActiveTab('places');
                                 }} 
                                 className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                             >
                                 <Building className="w-4 h-4 flex-shrink-0" />
-                                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{t?.home?.massagePlacesTab || 'Massage Places'}</span>
+                                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{language === 'id' ? 'Tempat Facial' : 'Facial Places'}</span>
                             </button>
                         </div>
 

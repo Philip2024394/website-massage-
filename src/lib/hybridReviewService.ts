@@ -5,7 +5,7 @@
  */
 
 import { reviewService as appwriteReviewService } from './appwrite/services/review.service';
-import { generateSeedReviews, getDisplayReviews, isSeedReview, type SeedReview } from './seedReviews';
+import { generateSeedReviews, getDisplayReviews, isSeedReview, type SeedReview, type SeedReviewProviderType } from './seedReviews';
 
 interface CachedReviews {
   data: any[];
@@ -20,11 +20,19 @@ const reviewCache = new Map<string, CachedReviews>();
 // Cache duration: 5 minutes (matches seed review rotation)
 const CACHE_DURATION = 5 * 60 * 1000;
 
+/** Provider type for review fetch; facial-place uses 'place' for API but facial templates for seeds. */
+export type ReviewProviderType = 'therapist' | 'place' | 'facial-place';
+
 /**
  * Generate cache key for a profile
  */
-function getCacheKey(profileId: string | number, providerType: 'therapist' | 'place'): string {
+function getCacheKey(profileId: string | number, providerType: ReviewProviderType): string {
   return `${providerType}_${profileId}`;
+}
+
+/** Map to Appwrite providerType (facial-place stores as place). */
+function toAppwriteProviderType(providerType: ReviewProviderType): 'therapist' | 'place' {
+  return providerType === 'facial-place' ? 'place' : providerType;
 }
 
 /**
@@ -42,7 +50,7 @@ function isCacheValid(cached: CachedReviews | undefined): boolean {
  */
 export async function getReviewsForProfile(
   profileId: string | number,
-  providerType: 'therapist' | 'place',
+  providerType: ReviewProviderType,
   city: string = 'Yogyakarta',
   options: {
     forceRefresh?: boolean;
@@ -56,13 +64,14 @@ export async function getReviewsForProfile(
   const { forceRefresh = false, includeSeeds = true } = options;
   const cacheKey = getCacheKey(profileId, providerType);
   const cached = reviewCache.get(cacheKey);
+  const seedProviderType: SeedReviewProviderType = providerType;
 
   // Return cached data immediately if valid and not forcing refresh
   if (!forceRefresh && isCacheValid(cached)) {
-    const displayReviews = includeSeeds 
-      ? getDisplayReviews(String(profileId), cached!.data, city)
+    const displayReviews = includeSeeds
+      ? getDisplayReviews(String(profileId), cached!.data, city, seedProviderType)
       : cached!.data;
-    
+
     return {
       reviews: displayReviews,
       fromCache: true,
@@ -72,8 +81,8 @@ export async function getReviewsForProfile(
 
   // If we have stale cache, return it immediately and refresh in background
   if (cached && !forceRefresh) {
-    const displayReviews = includeSeeds 
-      ? getDisplayReviews(String(profileId), cached.data, city)
+    const displayReviews = includeSeeds
+      ? getDisplayReviews(String(profileId), cached.data, city, seedProviderType)
       : cached.data;
 
     // Refresh in background (don't await)
@@ -88,10 +97,11 @@ export async function getReviewsForProfile(
     };
   }
 
-  // No cache or forced refresh - fetch fresh data
+  // No cache or forced refresh - fetch fresh data (facial-place uses 'place' in API)
+  const apiProviderType = toAppwriteProviderType(providerType);
   try {
-    const realReviews = await appwriteReviewService.getByProvider(profileId, providerType);
-    
+    const realReviews = await appwriteReviewService.getByProvider(profileId, apiProviderType);
+
     // Cache the real reviews
     reviewCache.set(cacheKey, {
       data: realReviews,
@@ -100,8 +110,8 @@ export async function getReviewsForProfile(
       providerType
     });
 
-    const displayReviews = includeSeeds 
-      ? getDisplayReviews(String(profileId), realReviews, city)
+    const displayReviews = includeSeeds
+      ? getDisplayReviews(String(profileId), realReviews, city, seedProviderType)
       : realReviews;
 
     return {
@@ -111,13 +121,13 @@ export async function getReviewsForProfile(
     };
   } catch (error) {
     console.error('Error fetching reviews:', error);
-    
+
     // If fetch fails but we have cached data, use it
     if (cached) {
-      const displayReviews = includeSeeds 
-        ? getDisplayReviews(String(profileId), cached.data, city)
+      const displayReviews = includeSeeds
+        ? getDisplayReviews(String(profileId), cached.data, city, seedProviderType)
         : cached.data;
-      
+
       return {
         reviews: displayReviews,
         fromCache: true,
@@ -125,8 +135,8 @@ export async function getReviewsForProfile(
       };
     }
 
-    // No cache and fetch failed - return only seed reviews
-    const seedReviews = includeSeeds ? generateSeedReviews(String(profileId), city, 5) : [];
+    // No cache and fetch failed - return only seed reviews (facial-place gets facial templates)
+    const seedReviews = includeSeeds ? generateSeedReviews(String(profileId), city, 5, seedProviderType) : [];
     return {
       reviews: seedReviews,
       fromCache: false,
@@ -140,15 +150,16 @@ export async function getReviewsForProfile(
  */
 async function refreshReviewCache(
   profileId: string | number,
-  providerType: 'therapist' | 'place',
+  providerType: ReviewProviderType,
   city: string,
   includeSeeds: boolean
 ): Promise<void> {
   const cacheKey = getCacheKey(profileId, providerType);
-  
+  const apiProviderType = toAppwriteProviderType(providerType);
+
   try {
-    const realReviews = await appwriteReviewService.getByProvider(profileId, providerType);
-    
+    const realReviews = await appwriteReviewService.getByProvider(profileId, apiProviderType);
+
     reviewCache.set(cacheKey, {
       data: realReviews,
       timestamp: Date.now(),
@@ -235,12 +246,12 @@ export async function submitReview(review: {
  * Useful for card lists
  */
 export async function preloadReviews(
-  profiles: Array<{ id: string | number; type: 'therapist' | 'place'; city?: string }>
+  profiles: Array<{ id: string | number; type: ReviewProviderType; city?: string }>
 ): Promise<void> {
-  const promises = profiles.map(profile => 
+  const promises = profiles.map(profile =>
     getReviewsForProfile(profile.id, profile.type, profile.city || 'Yogyakarta')
   );
-  
+
   await Promise.allSettled(promises);
 }
 
@@ -256,7 +267,7 @@ export function clearReviewCache(): void {
  */
 export function clearProfileReviewCache(
   profileId: string | number,
-  providerType: 'therapist' | 'place'
+  providerType: ReviewProviderType
 ): void {
   const cacheKey = getCacheKey(profileId, providerType);
   reviewCache.delete(cacheKey);

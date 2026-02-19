@@ -6,7 +6,9 @@ import { INDONESIAN_CITIES_CATEGORIZED, CityLocation } from '../constants/indone
 import { citiesService } from '../lib/citiesService';
 import { locations } from '../../locations';
 import { getPopularCustomLocations, type PopularCustomLocation } from '../utils/customLocationsService';
+import { getCitiesForCountry } from '../data/citiesByCountry';
 
+/** Same city list as main app / home filter – per-country so therapist and place dashboards match user location selection. */
 interface CityLocationDropdownProps {
   selectedCity: string;
   onCityChange: (city: string) => void;
@@ -16,8 +18,10 @@ interface CityLocationDropdownProps {
   showLabel?: boolean;
   disabled?: boolean;
   includeAll?: boolean;
-  onCoordinatesChange?: (coordinates: { lat: number; lng: number } | null) => void; // NEW: Auto-populate coordinates
-  country?: string; // NEW: Filter by country
+  onCoordinatesChange?: (coordinates: { lat: number; lng: number } | null) => void;
+  country?: string;
+  /** Country code (e.g. 'ID', 'MY', 'SG'). When set, dropdown shows that country's cities only – matches main app filter. */
+  countryCode?: string;
 }
 
 const CityLocationDropdown = ({
@@ -29,11 +33,17 @@ const CityLocationDropdown = ({
   showLabel = false,
   disabled = false,
   includeAll = true,
-  onCoordinatesChange, // NEW: Auto-populate coordinates callback
-  country // NEW: Filter by country
+  onCoordinatesChange,
+  country,
+  countryCode
 }: CityLocationDropdownProps): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
   const [cities, setCities] = useState(INDONESIAN_CITIES_CATEGORIZED); // Start with static fallback
+  const isOtherCountry = !!(countryCode && countryCode.toUpperCase() !== 'ID');
+  const otherCountryList = isOtherCountry ? getCitiesForCountry(countryCode!) : null;
+  const citiesSource = otherCountryList
+    ? [{ category: country || countryCode || 'Cities', cities: otherCountryList.map(c => ({ name: c.name, locationId: c.locationId, province: '', coordinates: { lat: 0, lng: 0 }, isMainCity: false, isTouristDestination: false } as CityLocation)) }]
+    : cities;
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [popularCustomLocations, setPopularCustomLocations] = useState<PopularCustomLocation[]>([]);
@@ -100,8 +110,12 @@ const CityLocationDropdown = ({
     }
   }, []);
 
-  // Fetch cities from Appwrite on component mount
+  // Fetch cities from Appwrite on component mount (Indonesia only; other countries use getCitiesForCountry)
   useEffect(() => {
+    if (isOtherCountry) {
+      setLoading(false);
+      return;
+    }
     const loadCities = async () => {
       try {
         logger.debug('🏙️ Loading cities from Appwrite...');
@@ -123,7 +137,7 @@ const CityLocationDropdown = ({
     };
 
     loadCities();
-  }, []);
+  }, [isOtherCountry]);
 
   // Close dropdown when clicking outside (supports portalized menu)
   useEffect(() => {
@@ -218,25 +232,32 @@ const CityLocationDropdown = ({
     setSearchQuery('');
   };
 
-  // Filter cities based on search query and country
+  // Filter cities: per-country list (same as main app) – when countryCode set, already using that country's list
   const filteredCities = (() => {
-    let filtered = cities;
-    
-    // Apply country filter if provided
+    let filtered = citiesSource;
+    if (isOtherCountry && filtered.length > 0) {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        filtered = [{
+          category: filtered[0].category,
+          cities: (filtered[0].cities as CityLocation[]).filter(city =>
+            city.name.toLowerCase().includes(q)
+          )
+        }];
+      }
+      return filtered;
+    }
     if (country) {
-      filtered = cities.map(category => ({
+      filtered = filtered.map(category => ({
         ...category,
         cities: category.cities.filter(city => {
-          // Check if city belongs to selected country from locations.ts
-          const locationEntry = locations.find(loc => 
+          const locationEntry = locations.find(loc =>
             loc.cities.includes(city.name) && loc.country === country
           );
           return !!locationEntry;
         })
       })).filter(category => category.cities.length > 0);
     }
-    
-    // Apply search query filter
     if (searchQuery.trim()) {
       filtered = filtered.map(category => ({
         ...category,
@@ -246,7 +267,6 @@ const CityLocationDropdown = ({
         )
       })).filter(category => category.cities.length > 0);
     }
-    
     return filtered;
   })();
 
@@ -266,7 +286,7 @@ const CityLocationDropdown = ({
     }
     
     // Find the selected city by locationId or name - display readable name
-    for (const category of cities) {
+    for (const category of citiesSource) {
       const foundCity = category.cities.find(city => 
         city.locationId === selectedCity || 
         city.name.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-') === selectedCity ||

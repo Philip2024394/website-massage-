@@ -1,10 +1,12 @@
 /**
  * Adapter: maps Appwrite Place (facial_places) to FacialClinic shape
  * so the facial card view profile diverts to the new Facial Skin Clinic page.
+ * When place is missing (e.g. direct URL or refresh), fetches by placeId from Appwrite.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import FacialClinicProfilePage from './FacialClinicProfilePage';
 import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
+import { facialPlaceService } from '../lib/appwrite/services/facial.service';
 
 type Place = {
     id?: string | number;
@@ -46,6 +48,21 @@ export interface FacialPlaceToClinicAdapterProps {
     onNavigate?: (page: string) => void;
     therapists?: any[];
     places?: any[];
+    userLocation?: { lat: number; lng: number; address?: string } | null;
+    language?: string;
+    onLanguageChange?: (lang: string) => void;
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onFacialPortalClick?: () => void;
+    onFacialPlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
 }
 
 const DEFAULT_HERO = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1761918521382';
@@ -62,13 +79,14 @@ function buildClinic(p: Place) {
     const price120 = Number(p.price120 ?? pricing['120'] ?? 0);
     const facialTypeNames = parseMassageTypes(p.facialTypes);
     const hours = p.operatingHours || (p.openingTime && p.closingTime ? `${p.openingTime} - ${p.closingTime}` : '') || '09:00 - 21:00';
+    const mainImageUrl = (p.mainImage || p.profilePicture || '').trim() || DEFAULT_HERO;
 
     const treatments = facialTypeNames.length > 0
         ? facialTypeNames.map((name, i) => ({
             id: `t-${i}-${(p.$id || p.id || '').toString()}`,
             name,
             description: `${name} – professional facial treatment.`,
-            image: (p.galleryImages && p.galleryImages[0]?.imageUrl) || p.mainImage || p.profilePicture || DEFAULT_HERO,
+            image: (p.galleryImages && p.galleryImages[0]?.imageUrl) || mainImageUrl,
             prices: { min60: price60, min90: price90, min120: price120 },
             category: 'treatment',
             popular: i < 2,
@@ -77,7 +95,7 @@ function buildClinic(p: Place) {
             id: 't-default',
             name: 'Facial treatment',
             description: 'Professional facial and skin care.',
-            image: p.mainImage || p.profilePicture || DEFAULT_HERO,
+            image: mainImageUrl,
             prices: { min60: price60, min90: price90, min120: price120 },
             category: 'treatment',
             popular: true,
@@ -85,14 +103,14 @@ function buildClinic(p: Place) {
 
     const gallery = (p.galleryImages || []).slice(0, 12).map((item, i) => ({
         id: `g-${i}`,
-        url: item.imageUrl || '',
+        url: (item.imageUrl || '').trim() || mainImageUrl,
         caption: item.caption || item.header || item.description || '',
         category: 'interior' as const,
     }));
-    if (gallery.length === 0 && (p.mainImage || p.profilePicture)) {
+    if (gallery.length === 0) {
         gallery.push({
             id: 'g-hero',
-            url: p.mainImage || p.profilePicture || DEFAULT_HERO,
+            url: mainImageUrl,
             caption: p.name,
             category: 'interior',
         });
@@ -103,8 +121,8 @@ function buildClinic(p: Place) {
         name: p.name || 'Facial & Skin Clinic',
         tagline: p.description?.slice(0, 80) || 'Premium facial and skin care.',
         description: p.description || 'Professional facial treatments and skin care in a relaxing environment.',
-        heroImage: p.mainImage || p.profilePicture || DEFAULT_HERO,
-        logo: p.profilePicture || p.mainImage || DEFAULT_HERO,
+        heroImage: mainImageUrl,
+        logo: mainImageUrl,
         location: p.location || p.address || p.city || '',
         address: p.address || p.location || '',
         phone: (p.contactNumber as string) || (p.whatsappNumber as string) || '',
@@ -141,16 +159,52 @@ const FacialPlaceToClinicProfileAdapter: React.FC<FacialPlaceToClinicAdapterProp
     onNavigate,
     therapists = [],
     places = [],
+    userLocation,
+    language = 'id',
+    onLanguageChange,
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onFacialPortalClick,
+    onFacialPlacePortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick,
 }) => {
-    const resolvedPlace = useMemo(() => {
-        if (placeProp) return placeProp;
-        if (placeId && facialPlaces.length) {
+    const [fetchedPlace, setFetchedPlace] = useState<Place | null>(null);
+    const [fetchLoading, setFetchLoading] = useState(false);
+
+    const resolvedFromList = useMemo(() => {
+        if (placeId && facialPlaces.length)
             return facialPlaces.find((p: any) => (p.$id || p.id || '').toString() === placeId) || null;
-        }
         return null;
-    }, [placeProp, placeId, facialPlaces]);
+    }, [placeId, facialPlaces]);
+
+    const resolvedPlace = placeProp || resolvedFromList || fetchedPlace;
+
+    useEffect(() => {
+        if (placeProp || resolvedFromList || !placeId) return;
+        setFetchedPlace(null);
+        setFetchLoading(true);
+        facialPlaceService.getByProviderId(placeId)
+            .then((p) => { setFetchedPlace(p); })
+            .catch(() => { setFetchedPlace(null); })
+            .finally(() => { setFetchLoading(false); });
+    }, [placeId, placeProp, resolvedFromList]);
 
     const clinic = useMemo(() => placeToClinic(resolvedPlace), [resolvedPlace]);
+
+    if (fetchLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <p className="text-gray-500">Loading clinic...</p>
+            </div>
+        );
+    }
 
     if (!clinic) {
         return (
@@ -173,6 +227,20 @@ const FacialPlaceToClinicProfileAdapter: React.FC<FacialPlaceToClinicAdapterProp
             onNavigate={onNavigate}
             therapists={therapists}
             places={places}
+            userLocation={userLocation}
+            language={language}
+            onLanguageChange={onLanguageChange}
+            onMassageJobsClick={onMassageJobsClick}
+            onHotelPortalClick={onHotelPortalClick}
+            onVillaPortalClick={onVillaPortalClick}
+            onTherapistPortalClick={onTherapistPortalClick}
+            onMassagePlacePortalClick={onMassagePlacePortalClick}
+            onFacialPortalClick={onFacialPortalClick ?? onFacialPlacePortalClick}
+            onAgentPortalClick={onAgentPortalClick}
+            onCustomerPortalClick={onCustomerPortalClick}
+            onAdminPortalClick={onAdminPortalClick}
+            onTermsClick={onTermsClick}
+            onPrivacyClick={onPrivacyClick}
         />
     );
 };

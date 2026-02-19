@@ -128,7 +128,6 @@ import { initializeGoogleMaps, loadGoogleMapsScript } from '../lib/appwrite.conf
 import MusicPlayer from '../components/MusicPlayer';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { FloatingChatWindow } from '../chat';
-import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
 import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
@@ -477,14 +476,8 @@ const HomePage: React.FC<HomePageProps> = ({
         };
 
         const loadMapsAPI = () => {
-            const apiKey = getStoredGoogleMapsApiKey();
-            if (!apiKey) {
-                console.warn('⚠️ Google Maps API key not configured');
-                return;
-            }
-
             console.log('🗺️ Loading Google Maps API for location autocomplete...');
-            loadGoogleMapsScript(apiKey, () => {
+            loadGoogleMapsScript(() => {
                 console.log('✅ Google Maps API loaded for HomePage');
                 setMapsApiLoaded(true);
             });

@@ -60,6 +60,7 @@ import {
   getFirstMassageType,
   getDefaultDurationAndPrice,
 } from '../utils/whatsappBookingMessages';
+import { logWaClickEvent } from '../services/waClickEventService';
 import TherapistBusyPopup from './TherapistBusyPopup';
 
 /** Admin WhatsApp (used when therapist has no number). */
@@ -293,7 +294,16 @@ function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, 
             setShowBusyPopup(true);
             return;
         }
-        if (whatsappHref) window.open(whatsappHref, '_blank', 'noopener,noreferrer');
+        if (whatsappHref) {
+            logWaClickEvent({
+                profileId: String(therapist.$id || therapist.id || ''),
+                therapistName: therapist.name || 'Therapist',
+                city: locationAreaDisplayName || selectedCity || '',
+                country: therapist.country || '',
+                source: 'slider_booking',
+            });
+            window.open(whatsappHref, '_blank', 'noopener,noreferrer');
+        }
     };
 
     return (

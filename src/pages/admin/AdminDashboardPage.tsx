@@ -21,7 +21,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AdminGuardDev, adminLogout } from '../../lib/adminGuard';
-import { adminTherapistService, adminPlacesService, adminBookingService } from '../../lib/adminServices';
+import { adminTherapistService, adminPlacesService, adminBookingService, adminSubscriptionService } from '../../lib/adminServices';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '../../lib/appwriteClient';
 import AdminSupportDashboard from '../../components/admin/AdminSupportDashboard';
 import TherapistManager from '../../components/admin/TherapistManager';
@@ -64,6 +64,9 @@ interface LiveStats {
     activeTherapists: number;
     activePlaces: number;
     pendingApprovals: number;
+    awaitingKtpVerification: number;
+    paymentsThisMonth: number;
+    paymentsThisMonthCount: number;
     todayBookings: number;
     monthlyRevenue: number;
 }
@@ -73,6 +76,7 @@ type AdminView =
     | 'therapists'
     | 'places'
     | 'bookings'
+    | 'subscriptions'
     | 'chat'
     | 'revenue'
     | 'commissions'
@@ -103,6 +107,9 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
         activeTherapists: 0,
         activePlaces: 0,
         pendingApprovals: 0,
+        awaitingKtpVerification: 0,
+        paymentsThisMonth: 0,
+        paymentsThisMonthCount: 0,
         todayBookings: 0,
         monthlyRevenue: 0
     });
@@ -134,10 +141,16 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
             const pendingTherapists = therapistsFinal.filter((t: any) => t.status === 'pending').length;
             const activePlaces = places.filter((p: any) => p.status === 'active').length;
             const pendingPlaces = places.filter((p: any) => p.status === 'pending').length;
+            const awaitingKtpVerification = therapistsFinal.filter((t: any) =>
+                t.ktpSubmitted === true && !t.ktpVerified && !t.ktpRejected
+            ).length;
             const todayBookings = bookings.filter((b: any) =>
                 new Date(b.$createdAt).toDateString() === today
             ).length;
             const totalRevenue = bookings.reduce((sum: number, b: any) => sum + (b.totalCost || 0), 0);
+
+            const yearMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+            const paymentsMonth = await adminSubscriptionService.getPaymentsReceivedForMonth(yearMonth).catch(() => ({ total: 0, count: 0 }));
 
             setStats({
                 totalTherapists: therapistsFinal.length,
@@ -147,6 +160,9 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 activeTherapists,
                 activePlaces,
                 pendingApprovals: pendingTherapists + pendingPlaces,
+                awaitingKtpVerification,
+                paymentsThisMonth: paymentsMonth.total,
+                paymentsThisMonthCount: paymentsMonth.count,
                 todayBookings,
                 monthlyRevenue: totalRevenue * 0.3 // 30% commission
             });
@@ -195,6 +211,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
         { id: 'chat', label: 'Chat Center', icon: <MessageSquare className="w-5 h-5" /> },
         { id: 'support', label: 'Support Tickets', icon: <Headphones className="w-5 h-5" /> },
         { id: 'revenue', label: 'Revenue', icon: <DollarSign className="w-5 h-5" /> },
+        { id: 'subscriptions', label: 'Subscriptions & Payments', icon: <DollarSign className="w-5 h-5" /> },
         { id: 'commissions', label: 'Commissions', icon: <Activity className="w-5 h-5" /> },
         { id: 'ktp-verification', label: 'KTP Verification', icon: <FileCheck className="w-5 h-5" /> },
         { id: 'achievements', label: 'Achievements', icon: <Award className="w-5 h-5" /> },
@@ -265,6 +282,18 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                     color="yellow"
                 />
                 <StatCard
+                    title="Awaiting ID/Bank Verification"
+                    value={stats.awaitingKtpVerification}
+                    icon={<FileCheck className="w-6 h-6 text-amber-500" />}
+                    color="orange"
+                />
+                <StatCard
+                    title="Payments This Month"
+                    value={stats.paymentsThisMonthCount > 0 ? `${stats.paymentsThisMonthCount} (IDR ${stats.paymentsThisMonth.toLocaleString()})` : '0'}
+                    icon={<DollarSign className="w-6 h-6 text-emerald-600" />}
+                    color="emerald"
+                />
+                <StatCard
                     title="Total Places"
                     value={stats.totalPlaces}
                     icon={<Database className="w-6 h-6 text-indigo-500" />}
@@ -292,7 +321,12 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                         color="green"
                     />
                     <QuickActionButton
-                        label="KTP Verification"
+                        label="Subscriptions & Payments"
+                        onClick={() => setActiveView('subscriptions')}
+                        color="emerald"
+                    />
+                    <QuickActionButton
+                        label={stats.awaitingKtpVerification > 0 ? `KTP Verification (${stats.awaitingKtpVerification})` : 'KTP Verification'}
                         onClick={() => setActiveView('ktp-verification')}
                         color="orange"
                     />
@@ -316,6 +350,8 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 return <RevenueDashboard />;
             case 'commissions':
                 return <CommissionManagement />;
+            case 'subscriptions':
+                return <SubscriptionsPaymentsView onNavigateToKtp={() => setActiveView('ktp-verification')} />;
             case 'ktp-verification':
                 return <KtpVerification />;
             case 'achievements':
@@ -393,6 +429,11 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                         >
                             {item.icon}
                             <span>{item.label}</span>
+                            {item.id === 'ktp-verification' && stats.awaitingKtpVerification > 0 && (
+                                <span className="ml-1 min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">
+                                    {stats.awaitingKtpVerification}
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -766,12 +807,259 @@ const CommissionManagement = () => {
     );
 };
 
-const KtpVerification = () => (
-    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
-        <h2 className="text-lg font-bold text-slate-800 mb-2">📋 KTP Verification</h2>
-        <p className="text-sm text-slate-600">Review and verify KTP documents.</p>
-    </div>
-);
+// =====================================================================
+// SUBSCRIPTIONS & PAYMENTS – Monthly subscriptions, payments received (Indonesia + all countries)
+// =====================================================================
+interface SubscriptionsPaymentsViewProps {
+    onNavigateToKtp?: () => void;
+}
+const SubscriptionsPaymentsView: React.FC<SubscriptionsPaymentsViewProps> = ({ onNavigateToKtp }) => {
+    const [payments, setPayments] = useState<any[]>([]);
+    const [subscriptions, setSubscriptions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const load = async () => {
+        setLoading(true);
+        try {
+            const [pay, sub] = await Promise.all([
+                adminSubscriptionService.getPaymentRecords(),
+                adminSubscriptionService.getSubscriptions()
+            ]);
+            setPayments(pay);
+            setSubscriptions(sub);
+        } catch {
+            setPayments([]);
+            setSubscriptions([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { load(); }, []);
+
+    const paid = payments.filter((p: any) => p.paymentStatus === 'paid');
+    const pending = payments.filter((p: any) => (p.paymentStatus || '').toLowerCase() === 'pending');
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    const paidThisMonth = paid.filter((p: any) => p.paidDate && String(p.paidDate).startsWith(thisMonth));
+    const totalThisMonth = paidThisMonth.reduce((s: number, p: any) => s + (Number(p.amount) || 0), 0);
+
+    const formatDate = (d: string) => d ? new Date(d).toLocaleDateString() : '—';
+    const formatCurrency = (n: number) => `IDR ${Number(n).toLocaleString()}`;
+
+    return (
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+            <h2 className="text-lg font-bold text-slate-800 mb-2">💰 Subscriptions & Payments</h2>
+            <p className="text-sm text-slate-600 mb-4">
+                Monthly subscription payments received. Covers Indonesia and all countries. When verification is required, use KTP Verification.
+            </p>
+            {onNavigateToKtp && (
+                <button
+                    type="button"
+                    onClick={onNavigateToKtp}
+                    className="mb-4 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600"
+                >
+                    📋 Open KTP / ID Verification
+                </button>
+            )}
+            {loading ? (
+                <p className="text-sm text-slate-500">Loading...</p>
+            ) : (
+                <>
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                            <p className="text-xs font-medium text-emerald-800">Payments this month</p>
+                            <p className="text-lg font-bold text-emerald-700">{paidThisMonth.length}</p>
+                            <p className="text-xs text-emerald-600">{formatCurrency(totalThisMonth)}</p>
+                        </div>
+                        <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                            <p className="text-xs font-medium text-slate-800">Pending</p>
+                            <p className="text-lg font-bold text-slate-700">{pending.length}</p>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <section>
+                            <h3 className="text-sm font-semibold text-slate-800 mb-2">Active subscriptions ({subscriptions.length})</h3>
+                            {subscriptions.length === 0 ? (
+                                <p className="text-sm text-slate-500">No subscription records. Add member_subscriptions collection for full flow.</p>
+                            ) : (
+                                <ul className="space-y-2 text-sm">
+                                    {subscriptions.slice(0, 20).map((s: any) => (
+                                        <li key={s.$id} className="flex justify-between border-b border-slate-100 pb-2">
+                                            <span>{s.memberName || s.memberId}</span>
+                                            <span className="text-slate-600">{s.subscriptionStatus || '—'} · {s.memberLocation || ''}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                        <section>
+                            <h3 className="text-sm font-semibold text-slate-800 mb-2">Recent payments ({payments.length})</h3>
+                            {payments.length === 0 ? (
+                                <p className="text-sm text-slate-500">No payment records. Add payment_records collection for monthly subscription tracking.</p>
+                            ) : (
+                                <ul className="space-y-2 text-sm">
+                                    {payments.slice(0, 30).map((p: any) => (
+                                        <li key={p.$id} className="flex justify-between border-b border-slate-100 pb-2">
+                                            <span>Member {p.memberId?.slice(-6)} · Month {p.monthNumber}</span>
+                                            <span className={p.paymentStatus === 'paid' ? 'text-emerald-600' : 'text-amber-600'}>
+                                                {p.paymentStatus} · {formatCurrency(p.amount || 0)} {p.paidDate ? `· ${formatDate(p.paidDate)}` : ''}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
+// =====================================================================
+// KTP VERIFICATION – Admin reviews ID + Bank; Verify / Reject / Deactivate
+// Therapists and places must upload ID (KTP/passport) and bank details to get verified badge.
+// Once uploaded, admin receives notice here and can verify, request more info (reject), or deactivate.
+// =====================================================================
+const KtpVerification = () => {
+    const [therapists, setTherapists] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+    const fetchAwaiting = async () => {
+        setLoading(true);
+        try {
+            const all = await adminTherapistService.getAll();
+            const awaiting = all.filter((t: any) =>
+                t.ktpSubmitted === true && !t.ktpVerified && !t.ktpRejected
+            );
+            setTherapists(awaiting);
+        } catch (e) {
+            console.error('KTP Verification fetch failed', e);
+            setTherapists([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchAwaiting(); }, []);
+
+    const handleVerify = async (id: string) => {
+        setActionLoading(id);
+        try {
+            await adminTherapistService.update(id, {
+                ktpVerified: true,
+                ktpRejected: false,
+                ktpVerifiedAt: new Date().toISOString(),
+                ktpVerifiedBy: 'admin',
+            });
+            await fetchAwaiting();
+        } catch (e) {
+            console.error('Verify failed', e);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleReject = async (id: string) => {
+        const reason = window.prompt('Reason for rejection / request more information (therapist will see this):');
+        if (reason == null) return;
+        setActionLoading(id);
+        try {
+            await adminTherapistService.update(id, {
+                ktpVerified: false,
+                ktpRejected: true,
+                ktpRejectionReason: reason.trim() || 'More information required.',
+                ktpVerifiedAt: new Date().toISOString(),
+                ktpVerifiedBy: 'admin',
+            });
+            await fetchAwaiting();
+        } catch (e) {
+            console.error('Reject failed', e);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleDeactivate = async (id: string) => {
+        if (!window.confirm('Deactivate this therapist? They will no longer appear as available.')) return;
+        setActionLoading(id);
+        try {
+            await adminTherapistService.update(id, {
+                status: 'offline',
+                availability: 'Offline',
+                isLive: false,
+            });
+            await fetchAwaiting();
+        } catch (e) {
+            console.error('Deactivate failed', e);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">
+            <h2 className="text-lg font-bold text-slate-800 mb-2">📋 KTP / ID & Bank Verification</h2>
+            <p className="text-sm text-slate-600 mb-4">
+                Therapists and places must upload ID (KTP or passport) and bank details in their dashboard. Once uploaded, they appear below. Verify to grant the verified badge, or reject (request more info) / deactivate.
+            </p>
+            {loading ? (
+                <p className="text-sm text-slate-500">Loading...</p>
+            ) : therapists.length === 0 ? (
+                <p className="text-sm text-slate-500">No submissions awaiting verification.</p>
+            ) : (
+                <div className="space-y-4">
+                    {therapists.map((t: any) => (
+                        <div key={t.$id} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                            <div className="flex flex-wrap gap-4">
+                                <div>
+                                    <p className="font-semibold text-slate-800">{t.name}</p>
+                                    <p className="text-xs text-slate-500">{t.email}</p>
+                                    <p className="text-xs text-slate-600 mt-1">
+                                        Bank: {t.bankName || '—'} · Account: {t.accountName || '—'} · ****{String(t.accountNumber || '').slice(-4)}
+                                    </p>
+                                </div>
+                                {t.ktpPhotoUrl && (
+                                    <a href={t.ktpPhotoUrl} target="_blank" rel="noopener noreferrer" className="block shrink-0">
+                                        <img src={t.ktpPhotoUrl} alt="KTP/ID" className="w-20 h-24 object-cover rounded border" />
+                                        <span className="text-xs text-orange-600">View ID</span>
+                                    </a>
+                                )}
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleVerify(t.$id)}
+                                    disabled={!!actionLoading}
+                                    className="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50"
+                                >
+                                    {actionLoading === t.$id ? '...' : 'Verify'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleReject(t.$id)}
+                                    disabled={!!actionLoading}
+                                    className="px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 disabled:opacity-50"
+                                >
+                                    Reject / Request more info
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleDeactivate(t.$id)}
+                                    disabled={!!actionLoading}
+                                    className="px-3 py-1.5 bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-slate-700 disabled:opacity-50"
+                                >
+                                    Deactivate
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const AchievementManager = () => (
     <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4">

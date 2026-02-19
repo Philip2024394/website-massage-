@@ -109,6 +109,16 @@ export const PlacesManager: React.FC = () => {
       setError(err.message || 'Failed to update verification status');
     }
   };
+
+  const handleDeactivate = async (placeId: string) => {
+    if (!window.confirm('Deactivate this place? It will no longer appear as available.')) return;
+    try {
+      await adminPlacesService.update(placeId, { status: 'inactive', isLive: false });
+      await loadPlaces();
+    } catch (err: any) {
+      setError(err.message || 'Failed to deactivate');
+    }
+  };
   
   // ============================================================================
   // 🎨 RENDER COMPONENTS
@@ -348,6 +358,13 @@ export const PlacesManager: React.FC = () => {
                             Verify
                           </button>
                         )}
+                        <button
+                          onClick={() => handleDeactivate(place.$id)}
+                          className="text-red-600 hover:text-red-900 text-xs"
+                          title="Deactivate place"
+                        >
+                          Deactivate
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -444,6 +461,36 @@ export const PlacesManager: React.FC = () => {
                       ...selectedPlace,
                       location: e.target.value
                     })}
+                    className="w-full border rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    City
+                  </label>
+                  <input 
+                    type="text"
+                    value={selectedPlace.city || ''}
+                    onChange={(e) => setSelectedPlace({
+                      ...selectedPlace,
+                      city: e.target.value
+                    })}
+                    placeholder="e.g. Denpasar, Yogyakarta"
+                    className="w-full border rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Country
+                  </label>
+                  <input 
+                    type="text"
+                    value={selectedPlace.country || ''}
+                    onChange={(e) => setSelectedPlace({
+                      ...selectedPlace,
+                      country: e.target.value
+                    })}
+                    placeholder="e.g. Indonesia, ID"
                     className="w-full border rounded-lg px-3 py-2"
                   />
                 </div>

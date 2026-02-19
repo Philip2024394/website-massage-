@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { FACIAL_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import { FACIAL_TYPE_DETAILS, getFacialTypeDetails } from '../constants';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
 import { Page } from '../types/pageTypes';
 import { AppDrawer } from '../components/AppDrawerClean';
+import UniversalHeader from '../components/shared/UniversalHeader';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
+import { parseMassageTypes } from '../utils/appwriteHelpers';
 
 interface FacialTypesPageProps {
     _onBack?: () => void;
@@ -40,6 +41,12 @@ const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
 const BuildingIcon = ({ className = 'w-5 h-5' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+);
+
+const TherapistIcon = ({ className = 'w-4 h-4' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
     </svg>
 );
 
@@ -139,37 +146,29 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
         setFacialTypes(updatedTypes);
     };
 
-    return (
-        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50  w-full max-w-full">
-            {/* Header matching HomePage */}
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
-                        <button 
-                            onClick={() => onNavigate?.('home')} 
-                            title="Home"
-                            className="hover:text-orange-500 transition-colors"
-                        >
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-                        <button 
-                            onClick={() => setIsMenuOpen(true)} 
-                            title="Menu"
-                            className="hover:bg-orange-50 rounded-full transition-colors text-orange-500"
-                        >
-                           <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
-                </div>
-            </header>
+    // Count places/therapists that offer this facial type (facialTypes / facialtypes)
+    const offersFacialType = (facialTypeName: string) => (item: any) => {
+        const raw = (item as any).facialTypes ?? (item as any).facialtypes;
+        const types = parseMassageTypes(raw);
+        return types.some((ft: string) => ft === facialTypeName || ft.trim() === facialTypeName);
+    };
+    const countOffers = (facialTypeName: string): { therapists: number; places: number } => {
+        const therapistCount = (therapists || []).filter(offersFacialType(facialTypeName)).length;
+        const placeCount = (places || []).filter(offersFacialType(facialTypeName)).length;
+        return { therapists: therapistCount, places: placeCount };
+    };
 
-            {/* App Drawer */}
+    return (
+        <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full">
+            <UniversalHeader
+                language={language}
+                onLanguageChange={undefined}
+                onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={() => onNavigate?.('home')}
+                showHomeButton={true}
+                title={t?.home?.facialTypes ?? 'Facial Types'}
+            />
+
             <React19SafeWrapper condition={isMenuOpen}>
                 <AppDrawer
                     isOpen={isMenuOpen}
@@ -191,141 +190,153 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="p-4 pb-20  max-w-full">
-                <div className="flex flex-col gap-4 max-w-full">
-                    {facialTypes.map((facial, index) => (
-                        <div 
-                            key={facial.name}
-                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 max-w-full"
-                        >
-                            <div className="relative">
-                                <img 
-                                    src={facial.image} 
-                                    alt={facial.name}
-                                    className="w-full h-40 object-cover"
-                                    loading="lazy"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x200/ec4899/FFFFFF?text=' + encodeURIComponent(facial.name);
-                                    }}
-                                />
-                                {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                                
-                                {/* Facial Type Name on Image */}
-                                <h3 className="absolute bottom-3 left-3 text-white font-bold text-lg drop-shadow-lg">
-                                    {facial.name}
-                                </h3>
-                                
-                                {/* Popularity Badge */}
-                                <button
-                                    onClick={() => handlePopularityClick(index)}
-                                    className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1.5 hover:bg-white transition-colors cursor-pointer"
-                                    aria-label={`${facial.popularity} stars`}
-                                >
-                                    <StarIcon className="w-4 h-4 text-yellow-400" />
-                                    <span className="font-bold text-gray-800 text-sm">{facial.popularity}</span>
-                                </button>
-                            </div>
-                            
-                            {/* Description and Links Below Image */}
-                            <div className="p-4">
-                                {/* Short Description */}
-                                <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                                    {facial.description}
-                                </p>
+            <main className="p-4 pt-24 pb-20 max-w-full">
+                <div className="max-w-7xl mx-auto">
+                    <div className="mb-8">
+                        <h1 className="text-2xl font-bold text-slate-900">
+                            {t?.home?.facialTypes ?? 'Facial Types'}
+                        </h1>
+                        <p className="text-sm text-slate-600 mt-1.5">
+                            {language === 'id'
+                                ? 'Pilih jenis facial di bawah untuk menemukan terapis atau tempat facial.'
+                                : 'Select a facial type below to find therapists or facial places near you.'}
+                        </p>
+                    </div>
 
-                                {/* Quick Info Pills */}
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
-                                        {facial.duration}
-                                    </span>
-                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
-                                        {facial.intensity}
-                                    </span>
-                                </div>
-
-                                {/* Read More Button */}
-                                {facial.fullDescription && (
-                                    <button 
-                                        onClick={() => toggleExpanded(index)}
-                                        className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors mb-3 flex items-center gap-1"
-                                    >
-                                        {facial.expanded ? '− Read Less' : '+ Read More'}
-                                    </button>
-                                )}
-
-                                {/* Expanded Content */}
-                                {facial.expanded && (
-                                    <div className="mt-3 pt-3 border-t border-gray-200 space-y-4">
-                                        {/* Full Description */}
-                                        <div>
-                                            <h4 className="text-sm font-bold text-gray-900 mb-2">About {facial.name}</h4>
-                                            <p className="text-xs text-gray-600 leading-relaxed">
-                                                {facial.fullDescription}
-                                            </p>
-                                        </div>
-
-                                        {/* Benefits */}
-                                        {facial.benefits && facial.benefits.length > 0 && (
-                                            <div>
-                                                <h4 className="text-sm font-bold text-gray-900 mb-2">Key Benefits</h4>
-                                                <ul className="space-y-1">
-                                                    {facial.benefits.map((benefit, idx) => (
-                                                        <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
-                                                            <span className="text-orange-500 mt-0.5">✓</span>
-                                                            <span>{benefit}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        {/* Best For */}
-                                        {facial.bestFor && facial.bestFor.length > 0 && (
-                                            <div>
-                                                <h4 className="text-sm font-bold text-gray-900 mb-2">Best For</h4>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {facial.bestFor.map((item, idx) => (
-                                                        <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                                                            {item}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {facialTypes.map((facial, index) => (
+                            <div
+                                key={facial.name}
+                                className="bg-white rounded-2xl border border-gray-200 shadow-md overflow-hidden hover:shadow-lg hover:border-orange-200/80 transition-all duration-300"
+                            >
+                                <div className="relative h-52 bg-gray-100">
+                                    <img
+                                        src={facial.image}
+                                        alt={facial.name}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x200/f97316/FFFFFF?text=' + encodeURIComponent(facial.name);
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                                    <div className="absolute bottom-3 left-4 right-4 text-white drop-shadow-md space-y-1">
+                                        <h3 className="font-bold text-xl sm:text-2xl leading-tight">
+                                            {facial.name}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm text-white/90 line-clamp-2 leading-snug">
+                                            {facial.description}
+                                        </p>
                                     </div>
-                                )}
+                                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/20">
+                                        <StarIcon className="w-3.5 h-3.5 text-amber-300" />
+                                        <span className="font-semibold text-white text-xs">{facial.popularity}</span>
+                                    </div>
+                                </div>
 
-                                {/* Action Buttons */}
-                                <div className="flex gap-3 text-xs mt-3 pt-3 border-t border-gray-100">
-                                    {/* Find Therapists - Left */}
-                                    <button 
-                                        onClick={() => onFindTherapists?.(facial.name)}
-                                        className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
-                                    >
-                                        Find Therapists →
-                                    </button>
-                                    
-                                    {/* Spacer */}
-                                    <div className="flex-1"></div>
-                                    
-                                    {/* Find Facial Spas - Right with circular icon */}
-                                    <button 
-                                        onClick={() => onFindPlaces?.(facial.name)}
-                                        className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
-                                    >
-                                        <span className="flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full">
-                                            <BuildingIcon className="w-4 h-4" />
+                                <div className="p-4 sm:p-5">
+                                    <div className="mb-2">
+                                        <span className="inline-block px-3 py-1.5 bg-orange-500 text-white text-[11px] font-semibold rounded-full shadow-sm">
+                                            {facial.duration} • {facial.intensity}
                                         </span>
-                                        Find Facial Spas →
-                                    </button>
+                                    </div>
+                                    {facial.bestFor?.length > 0 && (
+                                        <p className="text-xs text-gray-600 mb-3">
+                                            <span className="font-semibold text-gray-800">
+                                                {language === 'id' ? 'Direkomendasikan untuk: ' : 'Recommended for: '}
+                                            </span>
+                                            {facial.bestFor.slice(0, 4).join(', ')}
+                                        </p>
+                                    )}
+
+                                    <div className="rounded-xl bg-gray-50 border border-gray-100 p-3 mb-3 space-y-1.5">
+                                        {(() => {
+                                            const { therapists: therapistCount, places: placeCount } = countOffers(facial.name);
+                                            return (
+                                                <p className="text-xs text-gray-700 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                    <span className="inline-flex items-center gap-1">
+                                                        <TherapistIcon className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                                                        {therapistCount} {language === 'id' ? 'terapis' : therapistCount === 1 ? 'therapist' : 'therapists'}
+                                                    </span>
+                                                    <span className="text-gray-300">·</span>
+                                                    <span className="inline-flex items-center gap-1">
+                                                        <BuildingIcon className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                                                        {placeCount} {language === 'id' ? 'tempat facial' : placeCount === 1 ? 'facial place' : 'facial places'}
+                                                    </span>
+                                                </p>
+                                            );
+                                        })()}
+                                        <p className="text-xs text-gray-600">
+                                            {language === 'id' ? 'Harga bervariasi tergantung lokasi' : 'Prices vary depending on location'}
+                                        </p>
+                                    </div>
+
+                                    {facial.fullDescription && (
+                                        <button
+                                            onClick={() => toggleExpanded(index)}
+                                            className="text-orange-600 font-semibold text-sm hover:text-orange-700 transition-colors mb-3 flex items-center gap-1"
+                                        >
+                                            {facial.expanded ? `− ${t?.home?.readLess || 'Read Less'}` : `+ ${t?.home?.readMore || 'Read More'}`}
+                                        </button>
+                                    )}
+
+                                    {facial.expanded && (
+                                        <div className="mt-3 pt-3 border-t border-gray-200 space-y-3">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-gray-900 mb-1.5">{t?.home?.aboutMassage || 'About'} {facial.name}</h4>
+                                                <p className="text-xs text-gray-600 leading-relaxed">
+                                                    {facial.fullDescription}
+                                                </p>
+                                            </div>
+                                            {facial.benefits?.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-sm font-bold text-gray-900 mb-1.5">{t?.home?.keyBenefits || 'Key Benefits'}</h4>
+                                                    <ul className="space-y-1">
+                                                        {facial.benefits.map((benefit, idx) => (
+                                                            <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
+                                                                <span className="text-orange-500 mt-0.5">✓</span>
+                                                                <span>{benefit}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            {facial.bestFor?.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-sm font-bold text-gray-900 mb-1.5">{t?.home?.bestFor || 'Best For'}</h4>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {facial.bestFor.map((item, idx) => (
+                                                            <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200">
+                                                                {item}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="pt-3 mt-3 border-t border-gray-100 space-y-2">
+                                        <button
+                                            onClick={() => onFindTherapists?.(facial.name)}
+                                            className="w-full py-2.5 px-4 font-semibold text-sm rounded-xl transition-all duration-200 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-sm"
+                                        >
+                                            {t?.home?.findTherapists || 'Find Therapists'}
+                                        </button>
+                                        <button
+                                            onClick={() => onFindPlaces?.(facial.name)}
+                                            className="w-full py-2 px-4 border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <BuildingIcon className="w-4 h-4 text-gray-500" />
+                                            {language === 'id' ? 'Temukan Tempat Facial' : 'Find Facial Places'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
-                {/* Directory footer: Brand + Terms & Privacy */}
                 <div className="mt-12 mb-6 flex flex-col items-center gap-2">
                     <div className="font-bold text-base">
                         <span className="text-black">Inda</span>

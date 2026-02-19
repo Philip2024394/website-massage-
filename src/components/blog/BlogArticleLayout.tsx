@@ -7,6 +7,10 @@
 import React, { useState } from 'react';
 import UniversalHeader from '../shared/UniversalHeader';
 import { AppDrawer } from '../AppDrawerClean';
+import { ExternalLink } from 'lucide-react';
+
+const BLOGGER_URL = 'https://indastreetmasssage.blogspot.com/';
+const MEDIUM_URL = 'https://medium.com/@indastreet.id/about';
 
 export interface BlogArticleLayoutProps {
   /** Article title (h1) */
@@ -172,7 +176,7 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
             </header>
 
             {/* Hero image – rounded-2xl/3xl to match blog index */}
-            <div className="mb-10 rounded-2xl sm:rounded-3xl overflow-hidden bg-gray-100 shadow-inner">
+            <div className="mb-4 rounded-2xl sm:rounded-3xl overflow-hidden bg-gray-100 shadow-inner">
               {heroImageSrc ? (
                 <img
                   src={heroImageSrc}
@@ -184,6 +188,30 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
                   <span className="text-sm text-orange-600 font-medium">Hero image – update heroImageSrc to add image</span>
                 </div>
               )}
+            </div>
+
+            {/* Blogger + Medium links – icons and buttons */}
+            <div className="mb-10 flex flex-wrap items-center gap-3">
+              <a
+                href={BLOGGER_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-semibold shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
+                aria-label={language === 'id' ? 'Baca lebih banyak di blog kami di Blogger' : 'Read more on our blog at Blogger'}
+              >
+                <ExternalLink className="w-4 h-4 flex-shrink-0" aria-hidden />
+                <span>{language === 'id' ? 'Postingan di Blog Kami' : 'Our posts on Blogger'}</span>
+              </a>
+              <a
+                href={MEDIUM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-800 text-white text-sm font-semibold shadow-md hover:bg-gray-900 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                aria-label={language === 'id' ? 'Halaman kami di Medium' : 'Our page on Medium'}
+              >
+                <ExternalLink className="w-4 h-4 flex-shrink-0" aria-hidden />
+                <span>{language === 'id' ? 'Halaman kami di Medium' : 'Our page on Medium'}</span>
+              </a>
             </div>
 
             <div className="prose prose-lg max-w-none text-gray-700 prose-headings:text-gray-900 prose-a:text-orange-600 prose-a:no-underline hover:prose-a:underline">

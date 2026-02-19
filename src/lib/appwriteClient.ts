@@ -78,7 +78,14 @@ export const COLLECTIONS = {
     // Admin-specific (commission, notifications)
     COMMISSION_RECORDS: 'commission_records',
     NOTIFICATIONS: 'notifications',
-    
+
+    // Indonesia admin real-time WhatsApp click alerts (create in Appwrite: profileId, therapistName, city, country, source, timestamp)
+    WA_CLICK_EVENTS: 'wa_click_events',
+
+    // Membership & subscription payments (Indonesia + all countries)
+    MEMBER_SUBSCRIPTIONS: 'member_subscriptions',
+    PAYMENT_RECORDS: 'payment_records',
+
     // Disabled collections (don't exist yet)
     USERS: '',
     AGENTS: '',

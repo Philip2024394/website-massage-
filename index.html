@@ -178,10 +178,18 @@
             overscroll-behavior-y: auto;
             overscroll-behavior-x: none;
         }
-        /* Prevent mobile browser horizontal overscroll navigation */
+        /* Prevent mobile browser horizontal overscroll navigation; keep vertical scroll enabled */
         body {
             position: relative;
             overflow-x: hidden;
+            overflow-y: auto;
+        }
+        /* Ensure mobile view can scroll: root grows with content */
+        @media (max-width: 768px) {
+            html, body {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
         }
     </style>
     

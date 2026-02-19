@@ -104,11 +104,12 @@ export const adminTherapistService = {
         try {
             const cleanData: Record<string, any> = {};
             const allowedFields = [
-                'name', 'description', 'location', 'phone', 'email', 'whatsappNumber',
+                'name', 'description', 'location', 'city', 'country', 'locationId', 'phone', 'email', 'whatsappNumber',
                 'status', 'isVerified', 'profileImage', 'profilePicture', 'images', 'specialties', 'services',
                 'availability', 'experience', 'price60', 'price90', 'price120', 'ktpVerified',
+                'ktpRejected', 'ktpRejectionReason', 'ktpVerifiedAt', 'ktpVerifiedBy',
                 'bankName', 'accountName', 'accountNumber', 'ktpPhotoUrl', 'hotelVillaSafePassStatus',
-                'hasSafePassVerification', 'profileWentLiveAt'
+                'hasSafePassVerification', 'profileWentLiveAt', 'isLive'
             ];
             
             for (const key of allowedFields) {
@@ -227,9 +228,10 @@ export const adminPlacesService = {
         try {
             const cleanData: Record<string, any> = {};
             const allowedFields = [
-                'name', 'description', 'location', 'phone', 'email',
+                'name', 'description', 'location', 'city', 'country', 'phone', 'email',
                 'website', 'status', 'isVerified', 'profileImage', 'images',
-                'services', 'amenities', 'serviceType', 'price60', 'price90', 'price120'
+                'services', 'amenities', 'serviceType', 'price60', 'price90', 'price120',
+                'availability', 'isLive'
             ];
             
             for (const key of allowedFields) {
@@ -295,6 +297,58 @@ export const adminBookingService = {
         } catch (error) {
             console.error('❌ [ADMIN] Error fetching bookings by status:', error);
             return [];
+        }
+    }
+};
+
+// =====================================================================
+// ADMIN SUBSCRIPTION & PAYMENT SERVICE (monthly subscriptions, payments received)
+// Indonesia + all countries – uses member_subscriptions & payment_records
+// =====================================================================
+
+const PAYMENT_RECORDS_COLLECTION = (COLLECTIONS as any).PAYMENT_RECORDS || 'payment_records';
+const MEMBER_SUBSCRIPTIONS_COLLECTION = (COLLECTIONS as any).MEMBER_SUBSCRIPTIONS || 'member_subscriptions';
+
+export const adminSubscriptionService = {
+    /** All payment records (paid + pending). Supports monthly subscription view. */
+    getPaymentRecords: async (): Promise<any[]> => {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                PAYMENT_RECORDS_COLLECTION,
+                [Query.orderDesc('dueDate'), Query.limit(500)]
+            );
+            return response.documents || [];
+        } catch (error) {
+            console.warn('[ADMIN] payment_records not available:', error);
+            return [];
+        }
+    },
+
+    /** All member subscriptions (therapists, massage_place, facial_place). */
+    getSubscriptions: async (): Promise<any[]> => {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                MEMBER_SUBSCRIPTIONS_COLLECTION,
+                [Query.limit(500)]
+            );
+            return response.documents || [];
+        } catch (error) {
+            console.warn('[ADMIN] member_subscriptions not available:', error);
+            return [];
+        }
+    },
+
+    /** Sum of payments received in a given month (paidDate in YYYY-MM). */
+    getPaymentsReceivedForMonth: async (yearMonth: string): Promise<{ total: number; count: number }> => {
+        try {
+            const all = await adminSubscriptionService.getPaymentRecords();
+            const paid = all.filter((r: any) => r.paymentStatus === 'paid' && r.paidDate && String(r.paidDate).startsWith(yearMonth));
+            const total = paid.reduce((sum: number, r: any) => sum + (Number(r.amount) || 0), 0);
+            return { total, count: paid.length };
+        } catch {
+            return { total: 0, count: 0 };
         }
     }
 };

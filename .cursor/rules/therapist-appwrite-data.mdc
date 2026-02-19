@@ -1,0 +1,33 @@
+# Therapist & Facial Provider Data — Real-Time Appwrite Only
+
+## Rule
+All therapist and facial home service provider data must come from the **live Appwrite database** only. Do not use fallback, estimated, or mock data for counts, lists, or availability.
+
+## Database
+- **Database:** Appwrite
+- **Collection:** `therapists` (and `facial_places` for facial providers)
+- **Fields of interest:** `name`, `location`, `service_type` ("massage" or "facial"), `status` / `availability` / `real_status`, `performance_level` ("top", "normal")
+
+## Data retrieval
+- Only return therapists that exist in Appwrite and match the requested filters (location, service_type, availability).
+- For "how many therapists in [location]" use `therapistService.getTherapistCount(location)` and return the exact count.
+- For "show therapists in [location]" use `therapistService.getAll(location)` (or filtered result) and return real documents from Appwrite.
+- **Never** use simulated or fallback profiles (e.g. dev-budi-001, sample data).
+
+## Availability & booking
+- Only therapists with `status = available` or `real_status = true` should be counted for bookings.
+- Use `therapistService.getAvailableTherapistsByLocation(location, serviceType)` for booking-eligible lists.
+- Include all therapists in listings unless explicitly excluded by app rules (e.g. display_status filtering).
+
+## Error handling
+- If an Appwrite call fails, **throw** or surface an error (e.g. "Cannot access Appwrite data") — do **not** return estimated numbers or mock lists.
+- In `therapist.service.ts`, `getAll`, `getTherapistCount`, and `getAvailableTherapistsByLocation` throw on failure; do not reintroduce fallback arrays or sample data.
+
+## Real-time updates
+- Always query the latest live data from Appwrite.
+- Do not cache therapist lists or counts unless explicitly required for a specific feature (and document it).
+
+## Constraints
+- No fallback data for therapists or facial providers.
+- No mock or sample profiles in production or data layer.
+- All numbers, lists, and reports must reflect real data from Appwrite only.

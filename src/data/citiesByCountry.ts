@@ -1,7 +1,8 @@
 /**
  * Cities by country – single source for dashboard city dropdown and landing.
- * Ensures therapist "Service city" dropdown shows the same cities as the app's
- * country selection so filtering matches (locationId aligns with convertLocationStringToId).
+ * Each country has its own city list. Therapist, facial, and massage-place dashboards
+ * use this so their city dropdown matches the main app / home page filter – location
+ * match: providers appear when the user selects the same city.
  */
 
 import { ALL_INDONESIAN_CITIES, type CityLocation } from './indonesianCities';
