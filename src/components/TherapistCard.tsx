@@ -39,7 +39,7 @@ import { AvailabilityStatus } from '../types';
 import { logger } from '../utils/logger';
 import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
-import { getTherapistMainImage } from '../utils/therapistImageUtils';
+import { useTherapistDisplayImage } from '../utils/therapistImageUtils';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
@@ -55,6 +55,7 @@ import { enterpriseBookingFlowService } from '../services/enterpriseBookingFlowS
 import { useAuth } from '../context/AuthContext';
 import {
   buildBookNowMessage,
+  buildScheduledBookingMessage,
   buildWhatsAppUrl,
   getBookingWhatsAppNumber,
   getFirstMassageType,
@@ -80,6 +81,11 @@ import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
 import TherapistCardHeader from './therapist/TherapistCardHeader';
 import TherapistPricingGrid from '../modules/therapist/TherapistPricingGrid';
+import BeauticianTreatmentCards from './therapist/BeauticianTreatmentCards';
+import BeauticianPriceListModal from '../modules/therapist/BeauticianPriceListModal';
+import { therapistOffersService } from '../constants/serviceTypes';
+import { SERVICE_TYPES } from '../constants/serviceTypes';
+import { parseBeauticianTreatments, getCombinedBeauticianTreatmentsForDisplay } from '../constants/beauticianTreatments';
 import TherapistModalsContainer from '../modules/therapist/TherapistModalsContainer';
 import TherapistProfile from '../modules/therapist/TherapistProfile';
 import TherapistSpecialties from '../modules/therapist/TherapistSpecialties';
@@ -142,6 +148,8 @@ interface RoundButtonRowProps {
     bookNowText: string;
     scheduleText: string;
     dynamicSpacing: string;
+    /** When true, Book button gets a subtle flash animation (e.g. beautician treatment selected). */
+    bookButtonFlash?: boolean;
 }
 
 /** Guard interval (ms) to avoid running the same action twice from pointer + click in one gesture */
@@ -155,7 +163,8 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
     hasActiveScheduledBooking = false,
     bookNowText,
     scheduleText,
-    dynamicSpacing
+    dynamicSpacing,
+    bookButtonFlash = false,
 }) => {
     const [activeButton, setActiveButton] = useState<'book' | 'schedule' | 'price' | null>(null);
     const lastBookRun = useRef(0);
@@ -213,7 +222,7 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                         : activeButton === 'book'
                         ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700'
                         : 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
-                } active:scale-95 shadow-md cursor-pointer`}
+                } active:scale-95 shadow-md cursor-pointer ${bookButtonFlash && !bookScheduleDisabled ? 'book-button-flash' : ''}`}
             >
                 <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" />
                 <span className="text-xs sm:text-sm font-semibold pointer-events-none">Book</span>
@@ -407,7 +416,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // SafePass modal state
     const [showSafePassModal, setShowSafePassModal] = useState(false);
-    
+    // Beautician: when user selects a treatment container, Book button flashes
+    const [selectedBeauticianTreatmentIndex, setSelectedBeauticianTreatmentIndex] = useState<number | null>(null);
+
     const {
         menuData,
         setMenuData,
@@ -455,6 +466,55 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         },
         [openBookingWithService, isSharedProfile]
     );
+
+    /** Open WhatsApp with prefilled Book Now message – user can press Send. No navigation. */
+    const openWhatsAppBookNow = useCallback((opts?: { serviceName?: string; durationMin?: number; price?: number }) => {
+        const therapistId = therapist.appwriteId || therapist.$id || therapist.id?.toString() || 'N/A';
+        const therapistName = therapist.name || 'Therapist';
+        const { durationMin, price } = opts ? { durationMin: opts.durationMin ?? 60, price: opts.price ?? getDefaultDurationAndPrice(therapist).price } : getDefaultDurationAndPrice(therapist);
+        const massageType = opts?.serviceName || getFirstMassageType(therapist);
+        const message = buildBookNowMessage({
+            therapistName,
+            therapistId,
+            massageType,
+            durationMin,
+            price,
+        });
+        const phone = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP);
+        const url = buildWhatsAppUrl(phone, message);
+        if (url) {
+            logWaClickEvent?.({ therapistId, type: 'book-now' });
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+        onIncrementAnalytics('bookings');
+        setBookingsCount(prev => prev + 1);
+    }, [therapist, onIncrementAnalytics, setBookingsCount]);
+
+    /** Open WhatsApp with prefilled Scheduled booking message – user can add date/time and press Send. No navigation. */
+    const openWhatsAppSchedule = useCallback((opts?: { serviceName?: string; durationMin?: number; price?: number }) => {
+        const therapistId = therapist.appwriteId || therapist.$id || therapist.id?.toString() || 'N/A';
+        const therapistName = therapist.name || 'Therapist';
+        const durationMin = opts?.durationMin ?? getDefaultDurationAndPrice(therapist).durationMin;
+        const price = opts?.price ?? getDefaultDurationAndPrice(therapist).price;
+        const massageType = opts?.serviceName || getFirstMassageType(therapist);
+        const message = buildScheduledBookingMessage({
+            therapistName,
+            therapistId,
+            date: 'To be confirmed',
+            time: 'To be confirmed',
+            durationMin,
+            massageType,
+            price,
+        });
+        const phone = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP);
+        const url = buildWhatsAppUrl(phone, message);
+        if (url) {
+            logWaClickEvent?.({ therapistId, type: 'scheduled' });
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+        onIncrementAnalytics('bookings');
+        setBookingsCount(prev => prev + 1);
+    }, [therapist, onIncrementAnalytics, setBookingsCount]);
 
     // Debug modal state changes
     useEffect(() => {
@@ -867,6 +927,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Combined menu: real + Traditional from profile (if set) + sample fill to 5. Cheapest from this set for display (same as slider).
     const combinedMenu = getCombinedMenuForDisplay(menuData, therapist);
 
+    // Beautician: combined treatments for slider (real 1–3 + sample fill to 4), same pattern as therapist menu.
+    const therapistIdForBeautician = String((therapist as any)?.$id ?? (therapist as any)?.id ?? '');
+    const therapistCountry = (therapist as any)?.country ?? (therapist as any)?.countryCode ?? '';
+    const combinedBeauticianTreatments = getCombinedBeauticianTreatmentsForDisplay(
+        (therapist as any)?.beauticianTreatments,
+        therapistIdForBeautician,
+        therapistCountry
+    );
+    const isBeauticianWithTreatments = therapistOffersService(therapist, SERVICE_TYPES.BEAUTICIAN);
+
     // Parse pricing - use combined menu so profile shows same cheapest as menu slider
     const getPricing = (): { "60": number; "90": number; "120": number } => {
         if (!menuLoadAttempted) return { "60": 0, "90": 0, "120": 0 };
@@ -966,8 +1036,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return `${priceInThousands}k`;
     };
     
-    // Single source of truth: same image as profile page (home card + profile page must match exactly)
-    const displayImage = getTherapistMainImage(therapist as any);
+    // Single source of truth: same image as profile page (home card + profile page must match exactly). Beautician: random per visit.
+    const displayImage = useTherapistDisplayImage(therapist);
     
     const isSvgPlaceholder = typeof displayImage === 'string' && displayImage.startsWith('data:image/svg+xml');
     
@@ -1246,8 +1316,24 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
 
 
-            {/* Only show 3 price containers when we have complete 60/90/120 pricing */}
-            {pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 && (
+            {/* Beautician: treatments replace Swedish massage + 3 price containers (60/90/120). Slider = 4 items (real + sample). */}
+            {isBeauticianWithTreatments ? (
+                <div className="px-4 pb-4">
+                    <button
+                        type="button"
+                        onClick={() => setShowPriceListModal(true)}
+                        className="mb-3 text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center gap-1.5"
+                    >
+                        <span>{chatLang === 'id' ? 'Lihat semua perawatan' : 'View full menu'}</span>
+                        <span className="text-gray-500 font-normal">({combinedBeauticianTreatments.length})</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                    <BeauticianTreatmentCards
+                        therapist={therapist}
+                        onSelectionChange={(index) => setSelectedBeauticianTreatmentIndex(index)}
+                    />
+                </div>
+            ) : pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 ? (
                 <TherapistPricingGrid
                     pricing={pricing}
                     therapist={therapist}
@@ -1262,7 +1348,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         setShowPriceListModal(true);
                     }}
                 />
-            )}
+            ) : null}
 
             {/* Booking row: when in-app booking disabled, single "Book via WhatsApp" + Prices only */}
             {IN_APP_BOOKING_DISABLED ? (
@@ -1282,41 +1368,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 <>
                     <RoundButtonRow
                         therapist={therapist}
-                        onBookNow={async () => {
-                            if (onQuickBookWithChat) {
-                                logger.debug('📤 [SHARED PROFILE] Using onQuickBookWithChat handler');
-                                onQuickBookWithChat();
-                            } else {
-                                logger.debug('💬 [BOOK NOW] Opening persistent chat window...');
-                                openBookingChat(therapist, isSharedProfile ? 'share' : null);
-                            }
-                            onIncrementAnalytics('bookings');
-                            setBookingsCount(prev => prev + 1);
+                        onBookNow={() => {
+                            logger.debug('📱 [BOOK NOW] Opening WhatsApp with prefilled message');
+                            openWhatsAppBookNow();
                         }}
-                        onSchedule={async () => {
-                            const hasBank = !!(therapist.bankName && therapist.accountNumber && therapist.accountName) || !!(therapist as any).bankCardDetails;
-                            const hasKtp = !!(therapist as any).ktpPhotoUrl;
-                            if (hasBank && hasKtp) {
-                                try {
-                                    await enterpriseBookingFlowService.createBookingRequest({
-                                        userId: 'current_user',
-                                        userDetails: { name: 'Current User', phone: '+1234567890', location: 'User Location' },
-                                        serviceType: 'scheduled',
-                                        scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                                        services: [{ id: 'massage', name: 'Massage Service', duration: 90, price: pricing?.[0]?.price || 100 }],
-                                        totalPrice: pricing?.[0]?.price || 100,
-                                        duration: 90,
-                                        location: { address: locationAreaDisplayName, coordinates: { lat: 0, lng: 0 } },
-                                        preferredTherapists: [therapist.$id],
-                                        urgency: 'normal'
-                                    });
-                                } catch (_) {}
-                                openScheduleChat(therapist, isSharedProfile ? 'share' : null);
-                                onIncrementAnalytics('bookings');
-                                setBookingsCount(prev => prev + 1);
-                            } else {
-                                alert('Scheduled bookings require the therapist to add bank details and KTP in their dashboard. Please choose another therapist or try again later.');
-                            }
+                        onSchedule={() => {
+                            logger.debug('📱 [SCHEDULE] Opening WhatsApp with prefilled scheduled message');
+                            openWhatsAppSchedule();
                         }}
                         onPriceSlider={() => {
                             logger.debug('💰 [PRICE SLIDER] Opening price modal...');
@@ -1327,6 +1385,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         bookNowText={bookNowText}
                         scheduleText={scheduleText}
                         dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
+                        bookButtonFlash={isBeauticianWithTreatments && selectedBeauticianTreatmentIndex !== null}
                     />
                     <div className="mt-4 px-4 w-full">
                         <a
@@ -1429,25 +1488,44 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
             </div>
 
-            <TherapistPriceListModal
-                showPriceListModal={showPriceListModal}
-                setShowPriceListModal={setShowPriceListModal}
-                therapist={therapist}
-                displayRating={displayRating}
-                arrivalCountdown={arrivalCountdown.toString()}
-                formatCountdown={formatCountdownDisplay}
-                menuData={menuData}
-                selectedServiceIndex={selectedServiceIndex}
-                selectedDuration={selectedDuration}
-                handleSelectService={handleSelectService}
-                setSelectedServiceIndex={setSelectedServiceIndex}
-                setSelectedDuration={setSelectedDuration}
-                openBookingWithService={openBookingWithServiceWithSource}
-                chatLang={chatLang}
-                showBookingButtons={true}
-                handleBookNowClick={handleBookNowClick}
-                closeAllModals={closeAllModals}
-            />
+            {isBeauticianWithTreatments ? (
+                <BeauticianPriceListModal
+                    showModal={showPriceListModal}
+                    setShowModal={setShowPriceListModal}
+                    therapist={therapist}
+                    displayRating={displayRating}
+                    treatments={combinedBeauticianTreatments}
+                    chatLang={chatLang}
+                />
+            ) : (
+                <TherapistPriceListModal
+                    showPriceListModal={showPriceListModal}
+                    setShowPriceListModal={setShowPriceListModal}
+                    therapist={therapist}
+                    displayRating={displayRating}
+                    arrivalCountdown={arrivalCountdown.toString()}
+                    formatCountdown={formatCountdownDisplay}
+                    menuData={menuData}
+                    selectedServiceIndex={selectedServiceIndex}
+                    selectedDuration={selectedDuration}
+                    handleSelectService={handleSelectService}
+                    setSelectedServiceIndex={setSelectedServiceIndex}
+                    setSelectedDuration={setSelectedDuration}
+                    openBookingWithService={openBookingWithServiceWithSource}
+                    chatLang={chatLang}
+                    showBookingButtons={true}
+                    handleBookNowClick={handleBookNowClick}
+                    closeAllModals={closeAllModals}
+                    onOpenWhatsAppBooking={(type, service) => {
+                        if (type === 'immediate') {
+                            openWhatsAppBookNow({ serviceName: service.serviceName, durationMin: service.duration, price: service.price });
+                        } else {
+                            openWhatsAppSchedule({ serviceName: service.serviceName, durationMin: service.duration, price: service.price });
+                        }
+                        setShowPriceListModal(false);
+                    }}
+                />
+            )}
             
             <SafePassModal
                 isOpen={showSafePassModal}

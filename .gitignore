@@ -34,6 +34,7 @@ ADMIN_UNLOCK_THERAPIST.flag
 ADMIN_UNLOCK_*.flag
 .env.development
 .env.vapid
+.env.migration
 
 # Editor directories and files
 .vscode/*

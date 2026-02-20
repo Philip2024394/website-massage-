@@ -41,7 +41,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService, bookingService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawerClean';
-import { Users, Building, Sparkles, X } from 'lucide-react';
+import { Users, Building, Sparkles, X, Scissors, SlidersHorizontal } from 'lucide-react';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
@@ -57,11 +57,13 @@ import { APP_CONFIG } from '../config';
 import { matchProviderToCity } from '../constants/indonesianCities';
 import { deriveLocationIdFromGeopoint, calculateDistance, extractGeopoint } from '../utils/geoDistance';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
+import { MOCK_FACIAL_THERAPIST, MOCK_BEAUTY_THERAPIST } from '../constants/mockHomeServiceTherapists';
 import { matchesLocation } from '../utils/locationNormalization';
 import { filterTherapistsByCity } from '../utils/cityFilterUtils';
 import { convertLocationStringToId } from '../utils/locationNormalizationV2';
 import { applyDisplayStatusToTherapists } from '../utils/therapistDisplayStatus';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
+import { findCityByLocationIdOrName } from '../data/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
 import { matchTherapistsForUser, type MatchOutcome, type UserLocationContext } from '../utils/therapistMatching';
@@ -227,8 +229,14 @@ const HomePage: React.FC<HomePageProps> = ({
     
     // ✅ CRITICAL FIX: Destructure all hook returns
     const {
+        mainTab,
+        setMainTab,
+        serviceButton,
+        setServiceButton,
         activeTab,
         setActiveTab,
+        showFilterDrawer,
+        setShowFilterDrawer,
         showComingSoonModal,
         setShowComingSoonModal,
         comingSoonSection,
@@ -255,14 +263,14 @@ const HomePage: React.FC<HomePageProps> = ({
 
     const [showLocationSelectPopup, setShowLocationSelectPopup] = useState(false);
     
-    // Open with facial tab when arriving via /facials or drawer "Facial Directory"
+    // Open with correct tab when arriving from profile hero or drawer (facials, places, beautician, etc.)
     useEffect(() => {
         if (typeof window === 'undefined') return;
         try {
             const initialTab = sessionStorage.getItem('home_initial_tab');
-            if (initialTab === 'facials') {
+            if (initialTab && ['facials', 'places', 'beautician', 'facial-places', 'beautician-places', 'home'].includes(initialTab)) {
                 sessionStorage.removeItem('home_initial_tab');
-                setActiveTab('facials');
+                setActiveTab(initialTab);
             }
         } catch (_) {}
     }, [setActiveTab]);
@@ -378,21 +386,25 @@ const HomePage: React.FC<HomePageProps> = ({
         ? getLocationDisplayName(locationSelection, translationsObject?.home?.allAreas ?? 'All areas')
         : (userLocationForMatching?.cityName || 'your area');
     
-    // Female therapist filter state
+    // Per-service filter state: Massage, Facial, and Beautician each have their own filters
+    type ServiceFilterId = 'massage' | 'facial' | 'beautician';
+    const DEFAULT_SERVICE_FILTERS = { priceRange: [100000, 450000] as [number, number], selectedArea: null as string | null, selectedSpecialFeature: '', showFemaleOnly: false };
+    const [filtersByService, setFiltersByService] = useState<Record<ServiceFilterId, typeof DEFAULT_SERVICE_FILTERS>>(() => ({
+        massage: { ...DEFAULT_SERVICE_FILTERS },
+        facial: { ...DEFAULT_SERVICE_FILTERS },
+        beautician: { ...DEFAULT_SERVICE_FILTERS },
+    }));
+
+    // Legacy filter state (still used by massage pipeline until we switch it to filtersByService.massage)
     const [showFemaleOnly, setShowFemaleOnly] = useState(false);
-    
-    // Area filter state
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const [showAreaFilter, setShowAreaFilter] = useState(false);
     
-    // FAB menu state
     const [fabMenuOpen, setFabMenuOpen] = useState(false);
     
-    // Special Offers State (for click-to-enlarge)
     const [selectedOffer, setSelectedOffer] = useState<any>(null);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
     
-    // Advanced Filter States
     const [selectedTherapistGender, setSelectedTherapistGender] = useState<'female' | 'male' | null>(null);
     const [selectedServiceFor, setSelectedServiceFor] = useState<'women' | 'men' | 'children' | null>(null);
     const [selectedMassageType, setSelectedMassageType] = useState<string>('');
@@ -480,6 +492,10 @@ const HomePage: React.FC<HomePageProps> = ({
         setNearbyHotels,
         cityFilteredTherapists,
         setCityFilteredTherapists,
+        cityFilteredFacialTherapists,
+        setCityFilteredFacialTherapists,
+        cityFilteredBeauticianTherapists,
+        setCityFilteredBeauticianTherapists,
         isLocationDetecting,
         setIsLocationDetecting,
         parseCoordinates,
@@ -524,7 +540,8 @@ const HomePage: React.FC<HomePageProps> = ({
         const hasCity = !!effectiveCity && effectiveCity !== 'all';
 
         if (!initializingCityGuard && !hasConfirmedCity && !hasCity && effectiveCity !== 'all') {
-            setCityFilteredTherapists([]);
+            // No city selected yet – show all therapists so Massage (Home Service) tab is not empty
+            setCityFilteredTherapists(Array.isArray(therapists) ? therapists : []);
             return;
         }
 
@@ -584,6 +601,9 @@ const HomePage: React.FC<HomePageProps> = ({
             }
         } else if (effectiveCity === 'all') {
             setCityFilteredTherapists(therapists);
+        } else {
+            // No city or empty: show all therapists so list is never stuck empty
+            setCityFilteredTherapists(therapists);
         }
     }, [initializingCityGuard, hasConfirmedCity, therapists, selectedCity, contextCity, confirmedLocation, setCityFilteredTherapists]);
 
@@ -641,6 +661,26 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         setActiveTab('home');
     }, []); // Run once when component mounts
+
+    // SEO: dynamic meta title and description for city pages (e.g. /indonesia/yogyakarta/home-massage)
+    const effectiveCityForSeo = selectedCity || contextCity;
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        if (effectiveCityForSeo && effectiveCityForSeo !== 'all') {
+            const cityInfo = findCityByLocationIdOrName(effectiveCityForSeo);
+            const cityName = cityInfo?.name ?? effectiveCityForSeo;
+            const title = `Home Massage in ${cityName} | IndaStreetMassage`;
+            const description = `Book trusted home massage therapists in ${cityName}. Safe, verified, and easy to book.`;
+            document.title = title;
+            let metaDesc = document.querySelector('meta[name="description"]');
+            if (!metaDesc) {
+                metaDesc = document.createElement('meta');
+                metaDesc.setAttribute('name', 'description');
+                document.head.appendChild(metaDesc);
+            }
+            metaDesc.setAttribute('content', description);
+        }
+    }, [effectiveCityForSeo]);
 
     // Apply advanced search params when arriving from Advanced Search (tab + city); clear after so next visit is normal
     useEffect(() => {
@@ -1439,14 +1479,15 @@ const HomePage: React.FC<HomePageProps> = ({
             if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) return t._locationArea === adminViewArea;
             return true;
         });
-        if (showFemaleOnly) {
+        const filtersMassage = filtersByService.massage;
+        if (filtersMassage.showFemaleOnly) {
             baseList = baseList.filter((t: any) => {
                 const gender = String(t.therapistGender || t.gender || '').toLowerCase();
                 const clientPrefs = String(t.clientPreferences || '').toLowerCase();
                 return gender === 'female' || clientPrefs.includes('female') || clientPrefs.includes('woman') || gender === 'unisex';
             });
         }
-        if (selectedArea) {
+        if (filtersMassage.selectedArea) {
             baseList = baseList.filter((t: any) => {
                 let serviceAreas: string[] = [];
                 if (t.serviceAreas) {
@@ -1454,10 +1495,10 @@ const HomePage: React.FC<HomePageProps> = ({
                         serviceAreas = typeof t.serviceAreas === 'string' ? JSON.parse(t.serviceAreas) : Array.isArray(t.serviceAreas) ? t.serviceAreas : [];
                     } catch (_) { return false; }
                 }
-                return Array.isArray(serviceAreas) && serviceAreas.includes(selectedArea);
+                return Array.isArray(serviceAreas) && serviceAreas.includes(filtersMassage.selectedArea!);
             });
         }
-        if (selectedTherapistGender || selectedServiceFor || effectiveMassageType || selectedSpecialFeature || (priceRange[0] !== 100000 || priceRange[1] !== 450000)) {
+        if (selectedTherapistGender || selectedServiceFor || effectiveMassageType || filtersMassage.selectedSpecialFeature || (filtersMassage.priceRange[0] !== 100000 || filtersMassage.priceRange[1] !== 450000)) {
             baseList = baseList.filter((t: any) => {
                 if (selectedTherapistGender && String(t.therapistGender || t.gender || '').toLowerCase() !== selectedTherapistGender) return false;
                 if (selectedServiceFor) {
@@ -1471,8 +1512,8 @@ const HomePage: React.FC<HomePageProps> = ({
                     const specialties = String(t.specialties || '').toLowerCase();
                     if (!services.includes(effectiveMassageType.toLowerCase()) && !specialties.includes(effectiveMassageType.toLowerCase())) return false;
                 }
-                if (selectedSpecialFeature) {
-                    const feat = selectedSpecialFeature;
+                if (filtersMassage.selectedSpecialFeature) {
+                    const feat = filtersMassage.selectedSpecialFeature;
                     if (feat === 'verified-only' && !t.isVerified && !t.hasIndustryStandards) return false;
                     if (feat === 'with-facial' && !String(t.services || '').toLowerCase().includes('facial')) return false;
                     if (feat === 'highly-rated' && parseFloat(t.averageRating || '0') < 4.5) return false;
@@ -1484,7 +1525,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     }
                 }
                 const price = parseInt(t.price || t.basePrice || t.hourlyRate || '0');
-                if (price > 0 && (price < priceRange[0] || price > priceRange[1])) return false;
+                if (price > 0 && (price < filtersMassage.priceRange[0] || price > filtersMassage.priceRange[1])) return false;
                 return true;
             });
         }
@@ -1567,7 +1608,213 @@ const HomePage: React.FC<HomePageProps> = ({
         const locationAreas = Object.keys(therapistsByLocation).sort();
         const noTherapistsToShow = baseList.length === 0;
         return { therapistsToRender, therapistsByLocation, locationAreas, noTherapistsToShow };
-    }, [cityFilteredTherapists, isDev, devLocationOverride, autoDetectedLocation, userLocation, adminViewArea, selectedCity, bypassRadiusForAdmin, hasAdminPrivileges, showFemaleOnly, selectedArea, selectedTherapistGender, selectedServiceFor, effectiveMassageType, selectedSpecialFeature, priceRange, loggedInProvider, safeTherapists]);
+    }, [cityFilteredTherapists, isDev, devLocationOverride, autoDetectedLocation, userLocation, adminViewArea, selectedCity, bypassRadiusForAdmin, hasAdminPrivileges, filtersByService, selectedTherapistGender, selectedServiceFor, effectiveMassageType, loggedInProvider, safeTherapists]);
+
+    // Same display pipeline for Facial Home Service tab (therapists with servicesOffered includes "facial")
+    const therapistDisplayFacial = useMemo(() => {
+        const safeInput = Array.isArray(cityFilteredFacialTherapists) ? cityFilteredFacialTherapists : [];
+        const isOwner = (t: any) => (
+            loggedInProvider && loggedInProvider.type === 'therapist' && (
+                String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
+            )
+        );
+        const currentUserLocation = (isDev && devLocationOverride)
+            ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng }
+            : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
+        const getCoords = (t: any) => {
+            try {
+                const c = typeof t.coordinates === 'string' ? JSON.parse(t.coordinates) : t.coordinates;
+                if (typeof c?.lat === 'number' && typeof c?.lng === 'number') return c;
+            } catch (e) { logger.warn('Invalid coordinates for therapist', { therapistId: t.$id }); }
+            return null;
+        };
+        const calculateHaversineDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
+            const R = 6371;
+            const dLat = (point2.lat - point1.lat) * Math.PI / 180;
+            const dLon = (point2.lng - point1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) ** 2 + Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) * Math.sin(dLon/2) ** 2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        };
+        let therapistsWithDistance = safeInput.map((t: any) => {
+            let distance: number | null = null;
+            let locationArea: string = t.city || t.locationId || t.location_id || t.location || 'Unknown';
+            if (currentUserLocation) {
+                const therapistCoords = getCoords(t) || (t.geopoint ? { lat: t.geopoint.latitude, lng: t.geopoint.longitude } : null);
+                if (therapistCoords) {
+                    distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
+                    const matchedCity = matchProviderToCity(therapistCoords, 25);
+                    if (matchedCity) locationArea = matchedCity.locationId;
+                }
+            }
+            return { ...t, _distance: distance, _locationArea: locationArea };
+        });
+        let baseList = therapistsWithDistance.filter((t: any) => {
+            if (isFeaturedSample(t, 'therapist')) return true;
+            if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) return t._locationArea === adminViewArea;
+            return true;
+        });
+        const filtersFacial = filtersByService.facial;
+        if (filtersFacial.showFemaleOnly) {
+            baseList = baseList.filter((t: any) => {
+                const gender = String(t.therapistGender || t.gender || '').toLowerCase();
+                const clientPrefs = String(t.clientPreferences || '').toLowerCase();
+                return gender === 'female' || clientPrefs.includes('female') || clientPrefs.includes('woman') || gender === 'unisex';
+            });
+        }
+        if (filtersFacial.selectedArea) {
+            baseList = baseList.filter((t: any) => {
+                let serviceAreas: string[] = [];
+                if (t.serviceAreas) {
+                    try {
+                        serviceAreas = typeof t.serviceAreas === 'string' ? JSON.parse(t.serviceAreas) : Array.isArray(t.serviceAreas) ? t.serviceAreas : [];
+                    } catch (_) { return false; }
+                }
+                return Array.isArray(serviceAreas) && serviceAreas.includes(filtersFacial.selectedArea!);
+            });
+        }
+        if (filtersFacial.selectedSpecialFeature || (filtersFacial.priceRange[0] !== 100000 || filtersFacial.priceRange[1] !== 450000)) {
+            baseList = baseList.filter((t: any) => {
+                if (filtersFacial.selectedSpecialFeature === 'highly-rated' && parseFloat(t.averageRating || '0') < 4.5) return false;
+                const price = parseInt(t.price || t.basePrice || t.hourlyRate || '0');
+                if (price > 0 && (price < filtersFacial.priceRange[0] || price > filtersFacial.priceRange[1])) return false;
+                return true;
+            });
+        }
+        if (baseList.length === 0 && safeInput.length > 0) baseList = therapistsWithDistance.slice();
+        const getPriorityScore = (therapist: any) => {
+            let score = 0;
+            const status = String(therapist.status || '').toLowerCase();
+            if (status === 'available' || status === 'online') score += 10000;
+            else if (status === 'busy') score += 5000;
+            if (therapist.isVerified || therapist.hasIndustryStandards) score += 300;
+            const rating = parseFloat(therapist.averageRating || '0');
+            if (rating >= 4.5) score += 100; else if (rating >= 4.0) score += 75;
+            return score;
+        };
+        baseList = applyDisplayStatusToTherapists(baseList);
+        baseList = baseList.map((t: any) => ({ ...t, status: t.display_status ?? t.status, availability: t.display_status ?? t.availability }));
+        baseList = baseList.slice()
+            .map((therapist: any) => ({ ...therapist, priorityScore: getPriorityScore(therapist), randomSeed: Math.random() }))
+            .sort((a: any, b: any) => {
+                if (b.priorityScore !== a.priorityScore) return b.priorityScore - a.priorityScore;
+                if (currentUserLocation && a._distance != null && b._distance != null && a._distance !== b._distance) return a._distance - b._distance;
+                return (a.randomSeed || 0) - (b.randomSeed || 0);
+            });
+        const preparedTherapists = baseList.map((therapist: any) => {
+            let displayLocation = therapist.location, displayCity = therapist.city;
+            if (isFeaturedSample(therapist, 'therapist') && selectedCity !== 'all') { displayLocation = selectedCity; displayCity = selectedCity; }
+            return { ...therapist, location: displayLocation, city: displayCity };
+        });
+        const therapistsByLocation: { [key: string]: any[] } = {};
+        preparedTherapists.forEach((therapist: any) => {
+            const area = therapist._locationArea || 'Unknown';
+            if (!therapistsByLocation[area]) therapistsByLocation[area] = [];
+            therapistsByLocation[area].push(therapist);
+        });
+        const locationAreas = Object.keys(therapistsByLocation).sort();
+        return { therapistsToRender: preparedTherapists, therapistsByLocation, locationAreas, noTherapistsToShow: baseList.length === 0 };
+    }, [cityFilteredFacialTherapists, isDev, devLocationOverride, autoDetectedLocation, userLocation, adminViewArea, selectedCity, bypassRadiusForAdmin, hasAdminPrivileges, filtersByService, loggedInProvider]);
+
+    // Same display pipeline for Beautician Home Service tab (therapists with servicesOffered includes "beautician")
+    const therapistDisplayBeautician = useMemo(() => {
+        const safeInput = Array.isArray(cityFilteredBeauticianTherapists) ? cityFilteredBeauticianTherapists : [];
+        const currentUserLocation = (isDev && devLocationOverride)
+            ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng }
+            : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
+        const getCoords = (t: any) => {
+            try {
+                const c = typeof t.coordinates === 'string' ? JSON.parse(t.coordinates) : t.coordinates;
+                if (typeof c?.lat === 'number' && typeof c?.lng === 'number') return c;
+            } catch (e) { return null; }
+            return null;
+        };
+        const calculateHaversineDistance = (p1: { lat: number; lng: number }, p2: { lat: number; lng: number }) => {
+            const R = 6371;
+            const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+            const dLon = (p2.lng - p1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) ** 2 + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLon/2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        };
+        let therapistsWithDistance = safeInput.map((t: any) => {
+            let distance: number | null = null;
+            let locationArea: string = t.city || t.locationId || t.location_id || t.location || 'Unknown';
+            if (currentUserLocation) {
+                const therapistCoords = getCoords(t) || (t.geopoint ? { lat: t.geopoint.latitude, lng: t.geopoint.longitude } : null);
+                if (therapistCoords) {
+                    distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
+                    const matchedCity = matchProviderToCity(therapistCoords, 25);
+                    if (matchedCity) locationArea = matchedCity.locationId;
+                }
+            }
+            return { ...t, _distance: distance, _locationArea: locationArea };
+        });
+        let baseList = therapistsWithDistance.filter((t: any) => {
+            if (isFeaturedSample(t, 'therapist')) return true;
+            if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) return t._locationArea === adminViewArea;
+            return true;
+        });
+        const filtersBeautician = filtersByService.beautician;
+        if (filtersBeautician.showFemaleOnly) {
+            baseList = baseList.filter((t: any) => {
+                const gender = String(t.therapistGender || t.gender || '').toLowerCase();
+                const clientPrefs = String(t.clientPreferences || '').toLowerCase();
+                return gender === 'female' || clientPrefs.includes('female') || clientPrefs.includes('woman') || gender === 'unisex';
+            });
+        }
+        if (filtersBeautician.selectedArea) {
+            baseList = baseList.filter((t: any) => {
+                let serviceAreas: string[] = [];
+                if (t.serviceAreas) {
+                    try {
+                        serviceAreas = typeof t.serviceAreas === 'string' ? JSON.parse(t.serviceAreas) : Array.isArray(t.serviceAreas) ? t.serviceAreas : [];
+                    } catch (_) { return false; }
+                }
+                return Array.isArray(serviceAreas) && serviceAreas.includes(filtersBeautician.selectedArea!);
+            });
+        }
+        if (filtersBeautician.selectedSpecialFeature || (filtersBeautician.priceRange[0] !== 100000 || filtersBeautician.priceRange[1] !== 450000)) {
+            baseList = baseList.filter((t: any) => {
+                if (filtersBeautician.selectedSpecialFeature === 'highly-rated' && parseFloat(t.averageRating || '0') < 4.5) return false;
+                const price = parseInt(t.price || t.basePrice || t.hourlyRate || '0');
+                if (price > 0 && (price < filtersBeautician.priceRange[0] || price > filtersBeautician.priceRange[1])) return false;
+                return true;
+            });
+        }
+        if (baseList.length === 0 && safeInput.length > 0) baseList = therapistsWithDistance.slice();
+        const getPriorityScore = (therapist: any) => {
+            let score = 0;
+            const status = String(therapist.status || '').toLowerCase();
+            if (status === 'available' || status === 'online') score += 10000;
+            else if (status === 'busy') score += 5000;
+            if (therapist.isVerified || therapist.hasIndustryStandards) score += 300;
+            const rating = parseFloat(therapist.averageRating || '0');
+            if (rating >= 4.5) score += 100; else if (rating >= 4.0) score += 75;
+            return score;
+        };
+        baseList = applyDisplayStatusToTherapists(baseList);
+        baseList = baseList.map((t: any) => ({ ...t, status: t.display_status ?? t.status, availability: t.display_status ?? t.availability }));
+        baseList = baseList.slice()
+            .map((t: any) => ({ ...t, priorityScore: getPriorityScore(t), randomSeed: Math.random() }))
+            .sort((a: any, b: any) => {
+                if (b.priorityScore !== a.priorityScore) return b.priorityScore - a.priorityScore;
+                if (currentUserLocation && a._distance != null && b._distance != null && a._distance !== b._distance) return a._distance - b._distance;
+                return (a.randomSeed || 0) - (b.randomSeed || 0);
+            });
+        const preparedTherapists = baseList.map((therapist: any) => {
+            let displayLocation = therapist.location, displayCity = therapist.city;
+            if (isFeaturedSample(therapist, 'therapist') && selectedCity !== 'all') { displayLocation = selectedCity; displayCity = selectedCity; }
+            return { ...therapist, location: displayLocation, city: displayCity };
+        });
+        const therapistsByLocation: { [key: string]: any[] } = {};
+        preparedTherapists.forEach((therapist: any) => {
+            const area = therapist._locationArea || 'Unknown';
+            if (!therapistsByLocation[area]) therapistsByLocation[area] = [];
+            therapistsByLocation[area].push(therapist);
+        });
+        const locationAreas = Object.keys(therapistsByLocation).sort();
+        return { therapistsToRender: preparedTherapists, therapistsByLocation, locationAreas, noTherapistsToShow: baseList.length === 0 };
+    }, [cityFilteredBeauticianTherapists, isDev, devLocationOverride, autoDetectedLocation, userLocation, adminViewArea, selectedCity, bypassRadiusForAdmin, hasAdminPrivileges, filtersByService, loggedInProvider]);
 
     // Rating modal handlers removed for design mock
 
@@ -1729,82 +1976,66 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-            {/* Fixed Hero Section - Always Visible */}
+            {/* Fixed Hero Section - Same for all: Home Service | City Places, Massage | Facial | Beauty, Filter (no location container) */}
             <div className="bg-white sticky top-[60px] z-10">
                 <PageContainer className="px-0 sm:px-0 pt-0 pb-3">
-                    {/* Location Display */}
-                    {(userLocation || userLocationForMatching) && (
-                        <div className="bg-white flex flex-col items-center gap-0.5 pt-4 pb-3">
-                            <div className="flex items-center justify-center gap-2">
-                                {userLocation && <MusicPlayer autoPlay={true} />}
-                                <svg
-                                    className="w-4 h-4 text-gray-700"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span className="text-lg font-bold text-gray-900">
-                                    {displayCityName}
-                                </span>
-                            </div>
-                            <p className="text-base font-semibold text-gray-600">{country}'s {(activeTab === 'facials' || activeTab === 'facial-places') ? 'Facial' : 'Massage'} Therapist Hub</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                                {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all'
-                                    ? `Showing ${therapistDisplay.therapistsToRender.length} therapist${therapistDisplay.therapistsToRender.length === 1 ? '' : 's'} in ${getLocationDisplayName(selectedCity || contextCity, translationsObject?.home?.allAreas ?? 'All areas')}.`
-                                    : (distanceMatchCount > 0
-                                        ? `Showing ${distanceMatchCount} therapist${distanceMatchCount === 1 ? '' : 's'} in your area.`
-                                        : 'Showing trusted therapists across the city.')}
-                            </p>
-                        </div>
-                    )}
+                    {/* Hero: Two tabs – Home Service (default) | City Places – label is "City Places" not Massage Places */}
+                    <div className="flex bg-gray-200 rounded-full p-1 max-w-2xl mx-auto overflow-x-auto">
+                        <button
+                            onClick={() => setMainTab('home-service')}
+                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'home-service' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                        >
+                            <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Service</span>
+                        </button>
+                        <button
+                            onClick={() => setMainTab('places')}
+                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                        >
+                            <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">City Places</span>
+                        </button>
+                    </div>
 
-                    {/* Tab bar: 2 tabs only – Massage mode: "Home Massage" | "Massage Places" ; Facial mode: "Home Facial" | "Facial Places" */}
-                    {(() => {
-                        const isFacialMode = activeTab === 'facials' || activeTab === 'facial-places';
-                        return (
-                            <div className="flex bg-gray-200 rounded-full p-1 max-w-2xl mx-auto overflow-x-auto">
-                                {!isFacialMode ? (
-                                    <>
-                                        <button
-                                            onClick={() => setActiveTab('home')}
-                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
-                                        >
-                                            <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Massage</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('places')}
-                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
-                                        >
-                                            <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Massage Places</span>
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button
-                                            onClick={() => setActiveTab('facials')}
-                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'facials' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
-                                        >
-                                            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Facial</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('facial-places')}
-                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'facial-places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
-                                        >
-                                            <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Facial Places</span>
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        );
-                    })()}
+                    {/* Service buttons: Massage | Facial | Beauty | Filter */}
+                    <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 sm:gap-3 items-center min-h-[54px]">
+                        <button
+                            onClick={() => setServiceButton('massage')}
+                            title={t?.home?.massage ?? 'Massage'}
+                            aria-label="Massage"
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'massage' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                        >
+                            <HomeIcon className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap">{t?.home?.massage ?? 'Massage'}</span>
+                        </button>
+                        <button
+                            onClick={() => setServiceButton('facial')}
+                            title={t?.home?.facialHomeService ?? 'Facial'}
+                            aria-label="Facial"
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'facial' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                        >
+                            <Sparkles className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap truncate min-w-0">{t?.home?.facialHomeService || t?.home?.facial || 'Facial'}</span>
+                        </button>
+                        <button
+                            onClick={() => setServiceButton('beautician')}
+                            title="Beauty"
+                            aria-label="Beauty"
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'beautician' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                        >
+                            <Scissors className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap truncate min-w-0">Beauty</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setShowFilterDrawer(true)}
+                            title="Filter"
+                            aria-label="Open filters"
+                            className="flex-shrink-0 h-[42px] w-[42px] rounded-full border border-gray-300 bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors"
+                        >
+                            <SlidersHorizontal className="w-5 h-5" />
+                        </button>
+                    </div>
 
                     {/*  ADMIN/PREVIEW MODE BANNER */}
                     {(previewTherapistId || (adminViewArea && bypassRadiusForAdmin)) && hasAdminPrivileges && (
@@ -1817,48 +2048,6 @@ const HomePage: React.FC<HomePageProps> = ({
                             </div>
                         </div>
                     )}
-
-                    {/* Row: Massage (left) | Location dropdown (center) | Facial (right) */}
-                    <div className="max-w-2xl mx-auto mt-4">
-                        <div className="flex flex-row gap-2 sm:gap-3 items-center min-h-[54px]">
-                            {(() => {
-                                const isFacialMode = activeTab === 'facials' || activeTab === 'facial-places';
-                                return (
-                                    <>
-                                        <button
-                                            onClick={() => setActiveTab('home')}
-                                            title={t?.home?.massage ?? 'Home massage & massage places'}
-                                            aria-label="Massage"
-                                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${!isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
-                                        >
-                                            <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap">{t?.home?.massage ?? 'Massage'}</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowLocationSelectPopup(true)}
-                                            title={getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')}
-                                            aria-label={t?.home?.changeCity || 'Select location'}
-                                            className="flex-shrink-0 w-[54px] h-[54px] rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-500 hover:bg-orange-100 transition-colors shadow-sm"
-                                        >
-                                            <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                                                <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('facials')}
-                                            title={t?.home?.facialHomeService ?? 'Facial & Skin Clinic'}
-                                            aria-label="Facial"
-                                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
-                                        >
-                                            <Sparkles className="w-4 h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap truncate min-w-0">{t?.home?.facialHomeService || t?.home?.facial || 'Facial'}</span>
-                                        </button>
-                                    </>
-                                );
-                            })()}
-                        </div>
-                    </div>
                 </PageContainer>
             </div>
             
@@ -1870,14 +2059,8 @@ const HomePage: React.FC<HomePageProps> = ({
                     <div className="max-w-full  pb-8">
                         <div className="mb-3 text-center mt-[26px]">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
-                            <p className="text-gray-600">
-                                {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.therapistsSubtitleAll || 'A safe platform for everyone.')
-                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'A safe platform for everyone.')
-                                }
-                            </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
+                                {t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}
                             </p>
                             {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
                                 <>
@@ -1975,6 +2158,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                         const slug = selectedTherapist.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
                                         const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
                                         window.history.pushState({}, '', profileUrl);
+                                        try { sessionStorage.setItem('profile_source_service', serviceButton); sessionStorage.setItem('profile_source_tab', mainTab); } catch (_) {}
                                         onNavigate?.('therapist-profile');
                                     }}
                                     onNavigate={onNavigate}
@@ -2001,12 +2185,11 @@ const HomePage: React.FC<HomePageProps> = ({
                                 })}
                                     {d.noTherapistsToShow && (
                                         <div className="text-center py-12 bg-white rounded-lg">
-                                            <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable ?? 'No therapists are available right now.'}</p>
-                                            {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
-                                                <p className="text-gray-400 text-sm mt-2">
-                                                    Showing therapists in your selected region
-                                                </p>
-                                            )}
+                                            <p className="text-gray-500">
+                                                {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all'
+                                                    ? (translationsObject?.home?.noTherapistsInCity ?? 'No therapists available in this city yet.')
+                                                    : (translationsObject?.home?.noTherapistsAvailable ?? 'No therapists are available right now.')}
+                                            </p>
                                         </div>
                                     )}
                                 </>
@@ -2173,27 +2356,123 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
                 )}
 
-                {/* Home Facial / Facial Places - Show facial / skin clinic places */}
-                {(activeTab === 'facials' || activeTab === 'facial-places') && (
+                {/* Home Facial – therapist cards (same collection, servicesOffered includes "facial") – same UX as Home Massage */}
+                {activeTab === 'facials' && (
+                    <div className="max-w-full pb-8">
+                        <div className="mb-3 text-center mt-[26px]">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}
+                            </p>
+                            {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
+                                <>
+                                    <p className="text-sm font-medium text-gray-700 mt-2">
+                                        Showing {therapistDisplayFacial.therapistsToRender.length} facial therapist{therapistDisplayFacial.therapistsToRender.length === 1 ? '' : 's'} in {getLocationDisplayName(selectedCity || contextCity, t?.home?.allAreas ?? 'All areas')}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                        {Array.isArray(cityFilteredFacialTherapists) ? cityFilteredFacialTherapists.length : 0} with location for this city
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                        <div className="space-y-3 max-w-full overflow-hidden">
+                            {/* Mock facial profile – always show one for Home Service Facial */}
+                            <div key="mock-facial" className="mb-8">
+                                <TherapistHomeCard
+                                    therapist={MOCK_FACIAL_THERAPIST as any}
+                                    userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                    readOnly={readOnly}
+                                    selectedCity={selectedCity}
+                                    t={t}
+                                    avatarOffsetPx={8}
+                                    prefetchedMenu={prefetchedData.menus.get(String(MOCK_FACIAL_THERAPIST.$id))}
+                                    prefetchedShareLink={prefetchedData.shareLinks.get(String(MOCK_FACIAL_THERAPIST.$id))}
+                                    onClick={(selectedTherapist) => {
+                                        onSelectTherapist?.(selectedTherapist);
+                                        const therapistId = selectedTherapist.id || selectedTherapist.$id;
+                                        const slug = selectedTherapist.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                                        const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
+                                        window.history.pushState({}, '', profileUrl);
+                                        try { sessionStorage.setItem('profile_source_service', serviceButton); sessionStorage.setItem('profile_source_tab', mainTab); } catch (_) {}
+                                        onNavigate?.('therapist-profile');
+                                    }}
+                                    onNavigate={onNavigate}
+                                    onIncrementAnalytics={(metric) => onIncrementAnalytics(MOCK_FACIAL_THERAPIST.id, 'therapist', metric)}
+                                />
+                                <div className="mt-2 mb-8 flex justify-center">
+                                    <button onClick={() => onNavigate?.('indastreet-partners')} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors">
+                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {therapistDisplayFacial.locationAreas.map((area) => {
+                                const therapistsInArea = therapistDisplayFacial.therapistsByLocation[area];
+                                return (
+                                    <div key={`facial-area-${area}`} className="mb-8">
+                                        {therapistsInArea.map((therapist: any) => (
+                                                <div key={therapist.$id || therapist.id}>
+                                                    <TherapistHomeCard
+                                                        therapist={therapist}
+                                                        userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                                        readOnly={readOnly}
+                                                        selectedCity={selectedCity}
+                                                        t={t}
+                                                        avatarOffsetPx={8}
+                                                        prefetchedMenu={prefetchedData.menus.get(String(therapist.$id || therapist.id))}
+                                                        prefetchedShareLink={prefetchedData.shareLinks.get(String(therapist.$id || therapist.id))}
+                                                        onClick={(selectedTherapist) => {
+                                                            onSelectTherapist?.(selectedTherapist);
+                                                            const therapistId = selectedTherapist.id || selectedTherapist.$id;
+                                                            const slug = selectedTherapist.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                                                            const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
+                                                            window.history.pushState({}, '', profileUrl);
+                                                            try { sessionStorage.setItem('profile_source_service', serviceButton); sessionStorage.setItem('profile_source_tab', mainTab); } catch (_) {}
+                                                            onNavigate?.('therapist-profile');
+                                                        }}
+                                                        onNavigate={onNavigate}
+                                                        onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
+                                                    />
+                                                    <div className="mt-2 mb-8 flex justify-center">
+                                                        <button
+                                                            onClick={() => onNavigate?.('indastreet-partners')}
+                                                            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                        >
+                                                            <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                                            </svg>
+                                                            <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                        ))}
+                                    </div>
+                                );
+                            })}
+                            {therapistDisplayFacial.noTherapistsToShow && (
+                                <div className="text-center py-12 bg-white rounded-lg">
+                                    <p className="text-gray-500">
+                                        {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all'
+                                            ? (translationsObject?.home?.noTherapistsInCity ?? 'No facial therapists available in this city yet.')
+                                            : (translationsObject?.home?.noTherapistsAvailable ?? 'No facial therapists are available right now.')}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Facial Places – skin clinic / facial place cards (facial_places collection) */}
+                {activeTab === 'facial-places' && (
                     <div className="max-w-full ">
                         <div className="mb-3 text-center mt-[26px]">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
-                            <p className="text-gray-600">
-                                {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.facialTherapistsSubtitleAll || 'A safe platform for everyone.')
-                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')) || 'A safe platform for everyone.')
-                                }
-                            </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
+                                {t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}
                             </p>
                         </div>
-                        
-                        {/* Show facial places from Appwrite – same online status as therapist: Available, Busy, Offline; filter by isLive like therapists */}
                         {(() => {
                             const normalizedFacialStatus = (place: any) => String(place.availability || place.status || 'offline').trim().toLowerCase();
-                            const facialStatusImpliesLive = (s: string) => s === 'available' || s === 'busy';
-                            // Only hide if explicitly isLive false AND status offline/empty (same as therapist)
                             const isFacialPlaceVisible = (place: any) => {
                                 if (isFeaturedSample(place, 'place')) return true;
                                 const isLive = place.isLive !== false;
@@ -2203,61 +2482,159 @@ const HomePage: React.FC<HomePageProps> = ({
                             };
                             const liveFacialPlaces = (facialPlaces?.filter((place: any) => {
                                 if (!isFacialPlaceVisible(place)) return false;
-                                // Always show featured sample places in ALL cities
-                                if (isFeaturedSample(place, 'place')) {
-                                    logger.debug(`Including featured place "${place.name}" in Facial Places tab for city "${selectedCity}"`);
-                                    return true;
-                                }
+                                if (isFeaturedSample(place, 'place')) return true;
                                 if (selectedCity === 'all') return true;
-                                
-                                // Try to match place location to selected city
                                 if (place.coordinates) {
-                                    // Handle both array [lng, lat] and object {lat, lng} formats
                                     const placeLocation = Array.isArray(place.coordinates)
                                         ? { lat: place.coordinates[1], lng: place.coordinates[0] }
                                         : { lat: place.coordinates.lat || 0, lng: place.coordinates.lng || 0 };
                                     const matchedCity = matchProviderToCity(placeLocation, 25);
                                     return matchedCity?.locationId === selectedCity;
                                 }
-                                
                                 return false;
                             }) || []).slice();
-
-                            // Sort facial places by status: same as therapist – Available → Busy → Offline
                             const getFacialPlaceStatusScore = (p: any) => {
                                 const status = String(p.availability || p.status || 'offline').toLowerCase();
-                                if (status === 'available' || status === 'online') {
-                                    return 10000; // Available first
-                                } else if (status === 'busy') {
-                                    return 5000;  // Busy second
-                                }
-                                return 0; // Offline last
+                                if (status === 'available' || status === 'online') return 10000;
+                                if (status === 'busy') return 5000;
+                                return 0;
                             };
                             liveFacialPlaces.sort((a, b) => getFacialPlaceStatusScore(b) - getFacialPlaceStatusScore(a));
-
-                            // OOM: Facial Places debug removed (was building facialPlaceNames array in render)
-                            // When no places after filter, show mock facial home service card so user always sees at least one
                             const listToShow = liveFacialPlaces.length > 0 ? liveFacialPlaces : [MOCK_FACIAL_PLACE];
-
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
-                                    {listToShow
-                                        .map((place: any) => {
-                                            const placeId = place.id || place.$id;
-                                            
-                                            return (
-                                                <FacialPlaceHomeCard
-                                                    key={placeId}
-                                                    place={place}
-                                                    onClick={onSelectPlace}
-                                                    onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
-                                                    userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
-                                                />
-                                            );
-                                        })}
+                                    {listToShow.map((place: any) => {
+                                        const placeId = place.id || place.$id;
+                                        return (
+                                            <FacialPlaceHomeCard
+                                                key={placeId}
+                                                place={place}
+                                                onClick={onSelectPlace}
+                                                onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
+                                                userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             );
                         })()}
+                    </div>
+                )}
+
+                {/* Beautician Home Service – therapist cards (servicesOffered includes "beautician") */}
+                {activeTab === 'beautician' && (
+                    <div className="max-w-full pb-8">
+                        <div className="mb-3 text-center mt-[26px]">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.beauticianTitle || 'Home Service Beauty'}</h3>
+                            <p className="text-xs text-gray-500 mt-1">{t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}</p>
+                            {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
+                                <>
+                                    <p className="text-sm font-medium text-gray-700 mt-2">
+                                        Showing {therapistDisplayBeautician.therapistsToRender.length} Beauty provider{therapistDisplayBeautician.therapistsToRender.length === 1 ? '' : 's'} in {getLocationDisplayName(selectedCity || contextCity, t?.home?.allAreas ?? 'All areas')}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                        {Array.isArray(cityFilteredBeauticianTherapists) ? cityFilteredBeauticianTherapists.length : 0} with location for this city
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                        <div className="space-y-3 max-w-full overflow-hidden">
+                            {/* Mock Beauty profile – always show one for Home Service Beauty */}
+                            <div key="mock-beauty" className="mb-8">
+                                <TherapistHomeCard
+                                    therapist={MOCK_BEAUTY_THERAPIST as any}
+                                    userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                    readOnly={readOnly}
+                                    selectedCity={selectedCity}
+                                    t={t}
+                                    avatarOffsetPx={8}
+                                    prefetchedMenu={prefetchedData.menus.get(String(MOCK_BEAUTY_THERAPIST.$id))}
+                                    prefetchedShareLink={prefetchedData.shareLinks.get(String(MOCK_BEAUTY_THERAPIST.$id))}
+                                    onClick={(selectedTherapist) => {
+                                        onSelectTherapist?.(selectedTherapist);
+                                        const therapistId = selectedTherapist.id || selectedTherapist.$id;
+                                        const slug = selectedTherapist.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                                        const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
+                                        window.history.pushState({}, '', profileUrl);
+                                        try { sessionStorage.setItem('profile_source_service', serviceButton); sessionStorage.setItem('profile_source_tab', mainTab); } catch (_) {}
+                                        onNavigate?.('therapist-profile');
+                                    }}
+                                    onNavigate={onNavigate}
+                                    onIncrementAnalytics={(metric) => onIncrementAnalytics(MOCK_BEAUTY_THERAPIST.id, 'therapist', metric)}
+                                />
+                                <div className="mt-2 mb-8 flex justify-center">
+                                    <button onClick={() => onNavigate?.('indastreet-partners')} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors">
+                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {therapistDisplayBeautician.locationAreas.map((area) => {
+                                const therapistsInArea = therapistDisplayBeautician.therapistsByLocation[area];
+                                return (
+                                    <div key={`beautician-area-${area}`} className="mb-8">
+                                        {therapistsInArea.map((therapist: any) => (
+                                            <div key={therapist.$id || therapist.id}>
+                                                <TherapistHomeCard
+                                                    therapist={therapist}
+                                                    userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                                    readOnly={readOnly}
+                                                    selectedCity={selectedCity}
+                                                    t={t}
+                                                    avatarOffsetPx={8}
+                                                    prefetchedMenu={prefetchedData.menus.get(String(therapist.$id || therapist.id))}
+                                                    prefetchedShareLink={prefetchedData.shareLinks.get(String(therapist.$id || therapist.id))}
+                                                    onClick={(selectedTherapist) => {
+                                                        onSelectTherapist?.(selectedTherapist);
+                                                        const therapistId = selectedTherapist.id || selectedTherapist.$id;
+                                                        const slug = selectedTherapist.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                                                        const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
+                                                        window.history.pushState({}, '', profileUrl);
+                                                        try { sessionStorage.setItem('profile_source_service', serviceButton); sessionStorage.setItem('profile_source_tab', mainTab); } catch (_) {}
+                                                        onNavigate?.('therapist-profile');
+                                                    }}
+                                                    onNavigate={onNavigate}
+                                                    onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
+                                                />
+                                                <div className="mt-2 mb-8 flex justify-center">
+                                                    <button
+                                                        onClick={() => onNavigate?.('indastreet-partners')}
+                                                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                    >
+                                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                                        </svg>
+                                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })}
+                            {therapistDisplayBeautician.noTherapistsToShow && (
+                                <div className="text-center py-12 bg-white rounded-lg">
+                                    <p className="text-gray-500">
+                                        {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all'
+                                            ? (translationsObject?.home?.noTherapistsInCity ?? 'No Beauty providers available in this city yet.')
+                                            : (translationsObject?.home?.noTherapistsAvailable ?? 'No Beauty providers are available right now.')}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Beautician Places – placeholder until beautician_places or place type exists */}
+                {activeTab === 'beautician-places' && (
+                    <div className="max-w-full pb-8">
+                        <div className="mb-3 text-center mt-[26px]">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">Beauty (City Places)</h3>
+                            <p className="text-gray-600">Salons and beauty venues. Coming soon.</p>
+                        </div>
+                        <div className="text-center py-12 bg-white rounded-lg">
+                            <p className="text-gray-500">No Beauty city places listed yet. Check back soon.</p>
+                        </div>
                     </div>
                 )}
 
@@ -2378,6 +2755,109 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
             </div>
             
+            {/* Filter drawer – per service: Massage / Facial / Beautician each have their own filter options */}
+            {showFilterDrawer && (() => {
+                const serviceKey = serviceButton;
+                const currentFilters = filtersByService[serviceKey];
+                const filterTitle = serviceKey === 'massage' ? 'Massage' : serviceKey === 'facial' ? 'Facial' : 'Beauty';
+                return (
+                <>
+                    <div className="fixed inset-0 bg-black bg-opacity-40 z-[60]" onClick={() => setShowFilterDrawer(false)} aria-hidden />
+                    <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white shadow-2xl z-[61] flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
+                        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                            <h2 className="text-lg font-bold text-gray-900">Filter – {filterTitle}</h2>
+                            <button type="button" onClick={() => setShowFilterDrawer(false)} className="p-2 rounded-full hover:bg-gray-100" aria-label="Close">
+                                <X className="w-5 h-5 text-gray-600" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Location (city)</label>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowFilterDrawer(false); setShowLocationSelectPopup(true); }}
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-gray-50 text-left text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                    {getLocationDisplayName(selectedCity || contextCity, t?.home?.allAreas ?? 'All areas')}
+                                </button>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Price range (IDR)</label>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="number"
+                                        value={currentFilters.priceRange[0] / 1000}
+                                        onChange={(e) => setFiltersByService(prev => ({ ...prev, [serviceKey]: { ...prev[serviceKey], priceRange: [Math.max(0, Number(e.target.value) || 0) * 1000, prev[serviceKey].priceRange[1]] } }))}
+                                        className="w-24 px-2 py-1.5 rounded border border-gray-300 text-sm"
+                                        placeholder="Min"
+                                    />
+                                    <span className="text-gray-500">–</span>
+                                    <input
+                                        type="number"
+                                        value={currentFilters.priceRange[1] / 1000}
+                                        onChange={(e) => setFiltersByService(prev => ({ ...prev, [serviceKey]: { ...prev[serviceKey], priceRange: [prev[serviceKey].priceRange[0], Math.max(0, Number(e.target.value) || 0) * 1000] } }))}
+                                        className="w-24 px-2 py-1.5 rounded border border-gray-300 text-sm"
+                                        placeholder="Max"
+                                    />
+                                    <span className="text-xs text-gray-500">k</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Minimum rating</label>
+                                <select
+                                    value={currentFilters.selectedSpecialFeature === 'highly-rated' ? '4.5' : '0'}
+                                    onChange={(e) => setFiltersByService(prev => ({ ...prev, [serviceKey]: { ...prev[serviceKey], selectedSpecialFeature: e.target.value === '4.5' ? 'highly-rated' : '' } }))}
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-700"
+                                >
+                                    <option value="0">Any</option>
+                                    <option value="4.5">4.5+ stars</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id={`filter-female-only-${serviceKey}`}
+                                    checked={currentFilters.showFemaleOnly}
+                                    onChange={(e) => setFiltersByService(prev => ({ ...prev, [serviceKey]: { ...prev[serviceKey], showFemaleOnly: e.target.checked } }))}
+                                    className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                                />
+                                <label htmlFor={`filter-female-only-${serviceKey}`} className="text-sm font-medium text-gray-700">Female therapists only</label>
+                            </div>
+                            {(selectedCity && selectedCity !== 'all') && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Area</label>
+                                    <AreaFilter
+                                        city={selectedCity}
+                                        selectedArea={currentFilters.selectedArea}
+                                        onAreaChange={(area) => setFiltersByService(prev => ({ ...prev, [serviceKey]: { ...prev[serviceKey], selectedArea: area } }))}
+                                    />
+                                </div>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setFiltersByService(prev => ({ ...prev, [serviceKey]: { priceRange: [100000, 450000], selectedArea: null, selectedSpecialFeature: '', showFemaleOnly: false } }));
+                                    setShowFilterDrawer(false);
+                                }}
+                                className="w-full py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-100"
+                            >
+                                Clear {filterTitle} filters
+                            </button>
+                        </div>
+                        <div className="p-4 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={() => setShowFilterDrawer(false)}
+                                className="w-full py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600"
+                            >
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+                </>
+                );
+            })()}
+
             {/* Coming Soon Modal */}
             {showComingSoonModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

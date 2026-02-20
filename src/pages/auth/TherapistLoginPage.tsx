@@ -30,12 +30,19 @@ import { React19SafeWrapper } from '../../components/React19SafeWrapper';
 import PageNumberBadge from '../../components/PageNumberBadge';
 
 
+/** Service type for separate Massage / Facial / Beautician sign-in and dashboards */
+export type TherapistLoginServiceType = 'massage' | 'facial' | 'beautician';
+
 interface TherapistLoginPageProps {
     onSuccess: (therapistId: string) => void;
     onBack: () => void;
     t?: any;
     // Session restore - REQUIRED for populating loggedInProvider after Appwrite auth
     restoreUserSession?: () => Promise<void>;
+    // Separate sign-in: which dashboard to open after login (e.g. 'facial-therapist-dashboard')
+    redirectToPage?: string;
+    // Label for this sign-in (Massage / Facial / Beauty)
+    serviceType?: TherapistLoginServiceType;
     // Navigation handlers
     onMassageJobsClick?: () => void;
     onHotelPortalClick?: () => void;
@@ -50,11 +57,19 @@ interface TherapistLoginPageProps {
     onNavigate?: (page: string) => void;
 }
 
+const LOGIN_TITLES: Record<TherapistLoginServiceType, string> = {
+    massage: 'Massage Therapist',
+    facial: 'Facial (Home Service)',
+    beautician: 'Beauty (Home Service)',
+};
+
 const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({ 
     onSuccess, 
     onBack: _onBack, 
     t,
     restoreUserSession,
+    redirectToPage,
+    serviceType = 'massage',
     onMassageJobsClick,
     onHotelPortalClick,
     onVillaPortalClick,
@@ -67,6 +82,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
     onPrivacyClick,
     onNavigate
 }) => {
+    const signInTitle = LOGIN_TITLES[serviceType];
     const [viewMode, setViewMode] = useState<'login' | 'register'>('login');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
@@ -123,10 +139,11 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                     console.log('✅ [Login] Session restored - loggedInProvider should now be set');
                 }
                 
-                // Fix: Navigate to main therapist dashboard after successful login
+                // Navigate to the appropriate dashboard (massage / facial / beautician or legacy therapist)
+                const targetPage = redirectToPage || 'therapist';
                 if (onNavigate) {
-                    console.log('🚀 [Login] Navigating to therapist dashboard');
-                    onNavigate('therapist');
+                    console.log('🚀 [Login] Navigating to', targetPage);
+                    onNavigate(targetPage);
                 } else {
                     console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
                     // Fallback: Try direct navigation method
@@ -166,10 +183,11 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                     console.log('✅ [Register] Session restored - loggedInProvider should now be set');
                 }
                 
-                // Redirect to therapist dashboard after successful registration
+                // Redirect to the appropriate dashboard (massage / facial / beautician or legacy therapist)
+                const targetPage = redirectToPage || 'therapist';
                 if (onNavigate) {
-                    console.log('🚀 [Register] Navigating to therapist dashboard');
-                    onNavigate('therapist');
+                    console.log('🚀 [Register] Navigating to', targetPage);
+                    onNavigate(targetPage);
                 } else {
                     console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
                 }
@@ -337,7 +355,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                                     </div>
                                 ) : (
                                     <div className="flex items-center justify-center gap-2">
-                                        🔑 Sign In to Therapist
+                                        🔑 Sign In to {signInTitle}
                                     </div>
                                 )}
                             </button>

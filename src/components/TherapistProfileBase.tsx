@@ -21,7 +21,7 @@ import SocialMediaLinks from './SocialMediaLinks';
 import IndastreetAchievements from './IndastreetAchievements';
 import TherapistServiceShowcase from './shared/TherapistServiceShowcase';
 import type { Therapist, UserLocation } from '../types';
-import { getTherapistMainImage } from '../utils/therapistImageUtils';
+import { useTherapistDisplayImage } from '../utils/therapistImageUtils';
 import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import { HERO_WELCOME_TEXT } from '../config/heroImages';
 
@@ -209,6 +209,8 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
         expiresAt: new Date(therapist.discountEndTime)
     } : null;
 
+    const providerDisplayImage = useTherapistDisplayImage(therapist);
+
     // Hero image = Indastreet logo on shared/profile view (from Top 5 or shared link)
     const heroImage = mode === 'shared'
         ? 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258'
@@ -281,8 +283,59 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     shareCount={mode === 'shared' ? shareCount : undefined}
                 />
 
-                {/* Professional Massage Services - Unified across all modes */}
-                <TherapistServiceShowcase therapist={therapist} />
+                {/* Beautician treatments are shown inside TherapistCard (replacing Swedish massage + 3 price containers) */}
+
+                {/* Professional Massage Services / Facial body guide - Unified across all modes */}
+                <TherapistServiceShowcase
+                    therapist={therapist}
+                    variant={((therapist as any).businessType === 'facial_clinic' || (therapist as any).businessType === 'facial_place' || (therapist as any).portalType === 'facial_clinic' || (therapist as any).portalType === 'facial_place') ? 'facial' : 'massage'}
+                />
+
+                {/* Facial-specific attributes (when therapist offers facial and has data) */}
+                {(() => {
+                    const t = therapist as any;
+                    const toList = (v: string | string[] | undefined): string[] => {
+                        if (!v) return [];
+                        if (Array.isArray(v)) return v.filter(Boolean);
+                        if (typeof v === 'string') {
+                            try {
+                                const parsed = JSON.parse(v);
+                                return Array.isArray(parsed) ? parsed.filter(Boolean) : [v];
+                            } catch { return v.trim() ? [v] : []; }
+                        }
+                        return [];
+                    };
+                    const certs = toList(t.facialCertifications);
+                    const products = toList(t.facialProductsUsed);
+                    const equipment = toList(t.facialEquipment);
+                    const specialties = toList(t.facialSpecialties);
+                    const hasAny = certs.length > 0 || products.length > 0 || equipment.length > 0 || specialties.length > 0;
+                    if (!hasAny) return null;
+                    const Section = ({ title, items }: { title: string; items: string[] }) =>
+                        items.length > 0 ? (
+                            <div className="mb-3">
+                                <h4 className="text-sm font-semibold text-gray-700 mb-1">{title}</h4>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {items.map((item, i) => (
+                                        <span key={i} className="px-2 py-0.5 bg-orange-50 text-orange-800 rounded-full text-xs">
+                                            {item}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null;
+                    return (
+                        <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                            <h3 className="text-base font-bold text-gray-900 mb-3">
+                                {language === 'id' ? 'Detail Facial' : 'Facial details'}
+                            </h3>
+                            <Section title={language === 'id' ? 'Sertifikasi' : 'Certifications'} items={certs} />
+                            <Section title={language === 'id' ? 'Produk yang digunakan' : 'Products used'} items={products} />
+                            <Section title={language === 'id' ? 'Peralatan' : 'Equipment'} items={equipment} />
+                            <Section title={language === 'id' ? 'Spesialisasi facial' : 'Facial specialties'} items={specialties} />
+                        </div>
+                    );
+                })()}
 
                 {/* Indastreet Achievements - Professional Standards Display */}
                 <IndastreetAchievements 
@@ -310,7 +363,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         providerId={(therapist as any).id || (therapist as any).$id}
                         providerName={(therapist as any).name}
                         providerType={'therapist'}
-                        providerImage={getTherapistMainImage(therapist as any)}
+                        providerImage={providerDisplayImage}
                         onNavigate={onNavigate}
                     />
                 </div>

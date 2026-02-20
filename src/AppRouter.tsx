@@ -86,6 +86,7 @@ import { facialRoutes } from './router/routes/facialRoutes';
 import { getTermsAgreed, setTermsAgreed } from './lib/termsAgreementStorage';
 import { facialPlaceService } from './lib/appwriteService';
 import { MOCK_FACIAL_PLACE, MOCK_FACIAL_PLACE_ID } from './constants/mockFacialPlace';
+import { MOCK_BEAUTY_THERAPIST, MOCK_BEAUTY_THERAPIST_ID } from './constants/mockHomeServiceTherapists';
 import DashboardTermsGate from './components/DashboardTermsGate';
 import UserTermsGate from './components/UserTermsGate';
 
@@ -547,7 +548,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     }
 
     // Wrap consumer pages with user terms gate (tracking agreement for services on indastreetmassage.com)
-    const consumerPagesForUserTerms: Page[] = ['home', 'about', 'contact', 'company', 'how-it-works', 'faq', 'massage-types', 'facial-types', 'providers', 'facialProviders', 'facial-providers', 'discounts', 'women-reviews', 'advanced-search', 'help-faq', 'top-therapists', 'special-offers', 'video-center', 'hotels-and-villas', 'hotel-villa-safe-pass', 'safePass', 'therapist-profile', 'place-profile', 'booking', 'terms', 'privacy'];
+    const consumerPagesForUserTerms: Page[] = ['home', 'about', 'contact', 'company', 'how-it-works', 'faq', 'massage-types', 'facial-types', 'providers', 'facialProviders', 'facial-providers', 'facial-places', 'facial-home-service', 'discounts', 'women-reviews', 'advanced-search', 'help-faq', 'top-therapists', 'special-offers', 'video-center', 'hotels-and-villas', 'hotel-villa-safe-pass', 'safePass', 'therapist-profile', 'place-profile', 'booking', 'terms', 'privacy'];
     const wrapWithUserTermsIfNeeded = (currentPage: Page, content: React.ReactNode) => {
         if (!consumerPagesForUserTerms.includes(currentPage)) return content;
         return (
@@ -654,6 +655,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language,
                 therapists: props.therapists,
                 places: props.places,
+                onFindTherapists: () => {
+                    try { sessionStorage.setItem('home_initial_tab', 'facials'); } catch (_) {}
+                    props.onNavigate?.('home');
+                },
+                onFindPlaces: () => props.onNavigate?.('facial-places'),
                 onMassageJobsClick: props.onMassageJobsClick,
                 onTherapistPortalClick: props.onTherapistPortalClick,
                 onMassagePlacePortalClick: props.onMassagePlacePortalClick,
@@ -679,6 +685,48 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onIncrementAnalytics: (id: number | string, type: 'therapist' | 'place', metric: string) => props.handleIncrementAnalytics?.(id, type, metric),
                 onShowRegisterPrompt: props.handleShowRegisterPrompt,
                 onBack: () => props.onNavigate?.('home'),
+                t: t,
+                language: props.language,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                therapists: props.therapists,
+                places: props.places,
+            }));
+
+        case 'facial-places':
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.facialPlaces.component, {
+                facialPlaces: props.facialPlaces ?? [],
+                userLocation: props.userLocation,
+                selectedCity: props.selectedCity,
+                onSelectPlace: props.handleSetSelectedPlace,
+                onIncrementAnalytics: (id: number | string, type: 'therapist' | 'place', metric: string) => props.handleIncrementAnalytics?.(id, type, metric),
+                onShowRegisterPrompt: props.handleShowRegisterPrompt,
+                onNavigate: props.onNavigate,
+                t: t,
+                language: props.language,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                therapists: props.therapists,
+                places: props.places,
+            }));
+
+        case 'facial-home-service':
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.facialHomeService.component, {
+                onNavigate: props.onNavigate,
                 t: t,
                 language: props.language,
                 onMassageJobsClick: props.onMassageJobsClick,
@@ -813,16 +861,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'auth':
             return renderRoute(authRoutes.auth.component, {
                 onAuthSuccess: (userType: string) => {
-                    // Redirect to appropriate dashboard based on role
-                    const dashboardMap: Record<string, string> = {
-                        'therapist': '/dashboard/therapist',
-                        'massage-place': '/dashboard/massage-place', 
-                        'facial-place': '/dashboard/facial-place'
+                    const dashboardPageMap: Record<string, string> = {
+                        'therapist': 'massage-therapist-dashboard',
+                        'facial-therapist': 'facial-therapist-dashboard',
+                        'beauty-therapist': 'beautician-therapist-dashboard',
+                        'massage-place': 'massage-place-dashboard',
+                        'facial-place': 'facial-place-dashboard'
                     };
-                    
-                    const dashboardUrl = dashboardMap[userType];
-                    if (dashboardUrl) {
-                        window.location.href = dashboardUrl;
+                    const page = dashboardPageMap[userType];
+                    if (page) {
+                        props.onNavigate(page as Page);
                     } else {
                         logger.error('Unknown user type:', userType);
                     }
@@ -855,7 +903,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     
                     // Navigate within React app instead of external redirect
                     const dashboardPageMap: Record<string, string> = {
-                        'therapist': 'therapist-status',
+                        'therapist': 'massage-therapist-dashboard',
+                        'facial-therapist': 'facial-therapist-dashboard',
+                        'beauty-therapist': 'beautician-therapist-dashboard',
                         'massage-place': 'massage-place-dashboard', 
                         'facial-place': 'facial-place-dashboard'
                     };
@@ -881,7 +931,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         await props.restoreUserSession();
                     }
                     const dashboardPageMap: Record<string, string> = {
-                        'therapist': 'therapist-status',
+                        'therapist': 'massage-therapist-dashboard',
+                        'facial-therapist': 'facial-therapist-dashboard',
+                        'beauty-therapist': 'beautician-therapist-dashboard',
                         'massage-place': 'massage-place-dashboard', 
                         'facial-place': 'facial-place-dashboard'
                     };
@@ -900,7 +952,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         await props.restoreUserSession();
                     }
                     const dashboardPageMap: Record<string, string> = {
-                        'therapist': 'therapist-status',
+                        'therapist': 'massage-therapist-dashboard',
+                        'facial-therapist': 'facial-therapist-dashboard',
+                        'beauty-therapist': 'beautician-therapist-dashboard',
                         'massage-place': 'massage-place-dashboard', 
                         'facial-place': 'facial-place-dashboard'
                     };
@@ -926,7 +980,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     }
                     
                     const dashboardPageMap: Record<string, string> = {
-                        'therapist': 'therapist-status',
+                        'therapist': 'massage-therapist-dashboard',
+                        'facial-therapist': 'facial-therapist-dashboard',
+                        'beauty-therapist': 'beautician-therapist-dashboard',
                         'massage-place': 'massage-place-dashboard',
                         'facial-place': 'facial-place-dashboard',
                         'employer': 'employer-job-posting'
@@ -962,20 +1018,45 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
             
         case 'therapist-signup':
-            // Redirect to unified signup with therapist role
+        case 'massage-therapist-signup':
             return renderRoute(authRoutes.signup.component, {
                 mode: 'signup',
                 defaultRole: 'therapist',
                 onAuthSuccess: async (userType: string) => {
-                    if (props.restoreUserSession) {
-                        await props.restoreUserSession();
-                    }
-                    props.onNavigate('therapist-status');
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate('massage-therapist-dashboard');
                 },
                 onBack: () => props.onNavigate('home'),
-                language: props.language || 'id'
+                language: props.language || 'id',
+                onNavigate: props.onNavigate,
             });
-            
+
+        case 'facial-therapist-signup':
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'facial-therapist',
+                onAuthSuccess: async (userType: string) => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate('facial-therapist-dashboard');
+                },
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id',
+                onNavigate: props.onNavigate,
+            });
+
+        case 'beautician-therapist-signup':
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'beauty-therapist',
+                onAuthSuccess: async (userType: string) => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                    props.onNavigate('beautician-therapist-dashboard');
+                },
+                onBack: () => props.onNavigate('home'),
+                language: props.language || 'id',
+                onNavigate: props.onNavigate,
+            });
+
         case 'massage-place-signup':
         case 'place-signup':
             // Redirect to unified signup with massage place role
@@ -1020,7 +1101,46 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist-login':
         case 'therapistLogin':
             return renderRoute(authRoutes.therapistLogin.component, {
-                language: props.language || 'id'
+                language: props.language || 'id',
+                restoreUserSession: props.restoreUserSession,
+                onNavigate: (p: string) => props.onNavigate?.(p),
+                onBack: () => props.onNavigate?.('home'),
+                onSuccess: () => props.onNavigate?.('therapist'),
+                serviceType: 'massage',
+                redirectToPage: 'massage-therapist-dashboard',
+            });
+
+        case 'massage-therapist-login':
+            return renderRoute(authRoutes.therapistLogin.component, {
+                language: props.language || 'id',
+                restoreUserSession: props.restoreUserSession,
+                onNavigate: (p: string) => props.onNavigate?.(p),
+                onBack: () => props.onNavigate?.('home'),
+                onSuccess: () => props.onNavigate?.('massage-therapist-dashboard'),
+                serviceType: 'massage',
+                redirectToPage: 'massage-therapist-dashboard',
+            });
+
+        case 'facial-therapist-login':
+            return renderRoute(authRoutes.therapistLogin.component, {
+                language: props.language || 'id',
+                restoreUserSession: props.restoreUserSession,
+                onNavigate: (p: string) => props.onNavigate?.(p),
+                onBack: () => props.onNavigate?.('home'),
+                onSuccess: () => props.onNavigate?.('facial-therapist-dashboard'),
+                serviceType: 'facial',
+                redirectToPage: 'facial-therapist-dashboard',
+            });
+
+        case 'beautician-therapist-login':
+            return renderRoute(authRoutes.therapistLogin.component, {
+                language: props.language || 'id',
+                restoreUserSession: props.restoreUserSession,
+                onNavigate: (p: string) => props.onNavigate?.(p),
+                onBack: () => props.onNavigate?.('home'),
+                onSuccess: () => props.onNavigate?.('beautician-therapist-dashboard'),
+                serviceType: 'beautician',
+                redirectToPage: 'beautician-therapist-dashboard',
             });
 
         case 'therapist-login-for-jobs':
@@ -1175,6 +1295,42 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         therapists: props.therapists,
                         places: props.places,
                         onNavigate: props.onNavigate,
+                        onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
+                        onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
+                        onIncrementAnalytics: props.handleIncrementAnalytics,
+                        userLocation: props.userLocation,
+                        loggedInCustomer: props.loggedInCustomer,
+                        loggedInProvider: props.loggedInProvider,
+                        onMassageJobsClick: props.onMassageJobsClick,
+                        onHotelPortalClick: props.onHotelPortalClick,
+                        onVillaPortalClick: props.onVillaPortalClick,
+                        onTherapistPortalClick: props.onTherapistPortalClick,
+                        onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                        onFacialPortalClick: props.onFacialPortalClick,
+                        onAgentPortalClick: props.onAgentPortalClick,
+                        onCustomerPortalClick: props.onCustomerPortalClick,
+                        onAdminPortalClick: props.onAdminPortalClick,
+                        onTermsClick: props.onTermsClick,
+                        onPrivacyClick: props.onPrivacyClick,
+                        t: props.t
+                    });
+                }
+                // Use selectedTherapist when ID matches (e.g. mock Facial/Beauty cards)
+                const urlSlug = pathMatch[1];
+                const selectedId = (props.selectedTherapist?.$id || props.selectedTherapist?.id || '').toString();
+                const urlMatchesSelected = selectedId && (urlSlug === selectedId || urlSlug.startsWith(selectedId + '-'));
+                if (props.selectedTherapist && urlMatchesSelected) {
+                    logger.debug('  Using selectedTherapist (e.g. mock or just-selected):', { name: (props.selectedTherapist as any).name });
+                    return renderRoute(profileRoutes.therapistProfile.component, {
+                        therapist: props.selectedTherapist,
+                        onBack: () => props.setPage?.('home'),
+                        onLanguageChange: props.onLanguageChange,
+                        language: props.language,
+                        selectedCity: props.selectedCity,
+                        onCityChange: props.onCityChange,
+                        therapists: props.therapists,
+                        places: props.places,
+                        onNavigate: props.onNavigate,
                         // Chat/booking handlers - SIMPLIFIED: Direct PersistentChatProvider integration  
                         // onQuickBookWithChat: props.handleQuickBookWithChat, // ❌ REMOVED: Complex event chain
                         onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
@@ -1198,6 +1354,40 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         t: props.t
                     });
                 } else {
+                    // Mock beautician profile: use static mock so treatment containers show (no Appwrite document)
+                    const isMockBeauty = urlId === MOCK_BEAUTY_THERAPIST_ID || urlId.startsWith(MOCK_BEAUTY_THERAPIST_ID + '-');
+                    if (isMockBeauty) {
+                        logger.debug('  Using mock beautician profile (URL match):', { urlId });
+                        return renderRoute(profileRoutes.therapistProfile.component, {
+                            therapist: MOCK_BEAUTY_THERAPIST,
+                            onBack: () => props.setPage?.('home'),
+                            onLanguageChange: props.onLanguageChange,
+                            language: props.language,
+                            selectedCity: props.selectedCity,
+                            onCityChange: props.onCityChange,
+                            therapists: props.therapists,
+                            places: props.places,
+                            onNavigate: props.onNavigate,
+                            onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
+                            onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
+                            onIncrementAnalytics: props.handleIncrementAnalytics,
+                            userLocation: props.userLocation,
+                            loggedInCustomer: props.loggedInCustomer,
+                            loggedInProvider: props.loggedInProvider,
+                            onMassageJobsClick: props.onMassageJobsClick,
+                            onHotelPortalClick: props.onHotelPortalClick,
+                            onVillaPortalClick: props.onVillaPortalClick,
+                            onTherapistPortalClick: props.onTherapistPortalClick,
+                            onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                            onFacialPortalClick: props.onFacialPortalClick,
+                            onAgentPortalClick: props.onAgentPortalClick,
+                            onCustomerPortalClick: props.onCustomerPortalClick,
+                            onAdminPortalClick: props.onAdminPortalClick,
+                            onTermsClick: props.onTermsClick,
+                            onPrivacyClick: props.onPrivacyClick,
+                            t: props.t
+                        });
+                    }
                     logger.warn('  Not in memory, attempting Appwrite fetch...', {
                         searchedId: urlId,
                         idPrefix: urlId.split('-')[0],
@@ -1407,7 +1597,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             const resolvedPlace = props.selectedPlace
                 || findPlaceByUrlSegment(fullSegment || '')
                 || (isMockUrl ? (MOCK_FACIAL_PLACE as Place) : null)
-                || null;
+                || (MOCK_FACIAL_PLACE as Place);
             const placeId = (resolvedPlace?.$id || resolvedPlace?.id || fullSegment?.split('-')[0] || '') as string;
             return renderRoute(profileRoutes.facialPlace.component, {
                 place: resolvedPlace,
@@ -2025,6 +2215,57 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 childProps: {
                     therapist: therapistDashboardUser,
                     onBack: () => props.onNavigate?.('therapist-status'),
+                    onNavigate: props.onNavigate,
+                    language: props.language || 'id'
+                }
+            });
+        }
+
+        case 'massage-therapist-dashboard': {
+            const therapistDashboardUser = props.loggedInProvider || props.user;
+            const therapistDashboardId = (therapistDashboardUser as any)?.$id;
+            return renderRoute(DashboardTermsGate, {
+                userId: therapistDashboardId ?? undefined,
+                providerType: 'therapist',
+                t: dict?.serviceTerms,
+                ChildComponent: therapistRoutes.status.component,
+                childProps: {
+                    therapist: therapistDashboardUser,
+                    onBack: () => props.onNavigate?.('massage-therapist-dashboard'),
+                    onNavigate: props.onNavigate,
+                    language: props.language || 'id'
+                }
+            });
+        }
+
+        case 'facial-therapist-dashboard': {
+            const therapistDashboardUser = props.loggedInProvider || props.user;
+            const therapistDashboardId = (therapistDashboardUser as any)?.$id;
+            return renderRoute(DashboardTermsGate, {
+                userId: therapistDashboardId ?? undefined,
+                providerType: 'therapist',
+                t: dict?.serviceTerms,
+                ChildComponent: therapistRoutes.status.component,
+                childProps: {
+                    therapist: therapistDashboardUser,
+                    onBack: () => props.onNavigate?.('facial-therapist-dashboard'),
+                    onNavigate: props.onNavigate,
+                    language: props.language || 'id'
+                }
+            });
+        }
+
+        case 'beautician-therapist-dashboard': {
+            const therapistDashboardUser = props.loggedInProvider || props.user;
+            const therapistDashboardId = (therapistDashboardUser as any)?.$id;
+            return renderRoute(DashboardTermsGate, {
+                userId: therapistDashboardId ?? undefined,
+                providerType: 'therapist',
+                t: dict?.serviceTerms,
+                ChildComponent: therapistRoutes.status.component,
+                childProps: {
+                    therapist: therapistDashboardUser,
+                    onBack: () => props.onNavigate?.('beautician-therapist-dashboard'),
                     onNavigate: props.onNavigate,
                     language: props.language || 'id'
                 }

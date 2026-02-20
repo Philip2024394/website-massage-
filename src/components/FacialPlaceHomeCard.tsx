@@ -196,12 +196,12 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
             {/* Image Container – same height/ratio as therapist card */}
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                 <img
-                    src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/facial%202.png'}
+                    src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682'}
                     alt={place.name || "Facial Clinic"}
                     className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl group-hover:scale-105"
                     style={{ aspectRatio: '400/224', minHeight: '224px' }}
                     onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/facial%202.png';
+                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682';
                     }}
                 />
 
@@ -261,11 +261,11 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                         <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden relative">
                             <img
                                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full"
-                                src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/facial%202.png'}
+                                src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682'}
                                 alt={place.name || 'Clinic'}
                                 loading="lazy"
                                 onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/facial%202.png';
+                                    (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682';
                                 }}
                             />
                         </div>

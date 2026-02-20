@@ -13,7 +13,7 @@ interface AuthPageProps {
     onBack: () => void;
     t?: any;
     mode?: 'signin' | 'signup' | 'unified';
-    defaultRole?: 'therapist' | 'massage-place' | 'facial-place' | 'employer';
+    defaultRole?: 'therapist' | 'facial-therapist' | 'beauty-therapist' | 'massage-place' | 'facial-place' | 'employer';
     language?: string;
     onLanguageChange?: (lang: string) => void;
     onNavigate?: (page: string) => void;
@@ -61,6 +61,8 @@ const AuthPage: React.FC<AuthPageProps> = ({
 
     const accountTypes = [
         { value: 'therapist', label: t?.massageTherapist || 'Massage Therapist', Icon: UserCircle },
+        { value: 'facial-therapist', label: t?.facialTherapist || 'Facial (Home Service)', Icon: Sparkles },
+        { value: 'beauty-therapist', label: t?.beautyTherapist || 'Beauty (Home Service)', Icon: Sparkles },
         { value: 'massage-place', label: t?.massageSpa || 'Massage Place', Icon: Building2 },
         { value: 'facial-place', label: t?.facialClinic || 'Facial Place', Icon: Sparkles },
         { value: 'employer', label: t?.postJob || 'Post Job', Icon: Briefcase },
@@ -88,29 +90,34 @@ const AuthPage: React.FC<AuthPageProps> = ({
                 const email = (user as any).email || '';
                 const name = (user as any).name || email.split('@')[0] || 'User';
                 const profileData = { email, role: accountTypeToUse, name, userId: (user as any).$id };
+                const therapistPayload = {
+                    email: profileData.email,
+                    name: profileData.name,
+                    countryCode: '+62',
+                    whatsappNumber: '',
+                    specialization: accountTypeToUse === 'therapist' ? 'General Massage' : (accountTypeToUse === 'facial-therapist' ? 'Facial' : 'Beauty'),
+                    yearsOfExperience: 0,
+                    isLicensed: false,
+                    isLive: false,
+                    hourlyRate: 100,
+                    pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                    price60: '100', price90: '150', price120: '200',
+                    coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                    location: 'Bali, Indonesia',
+                    status: 'available',
+                    availability: 'Available',
+                    description: '',
+                    profilePicture: (user as any).picture || '',
+                    mainImage: '',
+                    massageTypes: '',
+                    languages: '',
+                };
                 if (accountTypeToUse === 'therapist') {
-                    await (therapistService as any).create({
-                        email: profileData.email,
-                        name: profileData.name,
-                        countryCode: '+62',
-                        whatsappNumber: '',
-                        specialization: 'General Massage',
-                        yearsOfExperience: 0,
-                        isLicensed: false,
-                        isLive: false,
-                        hourlyRate: 100,
-                        pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
-                        price60: '100', price90: '150', price120: '200',
-                        coordinates: JSON.stringify({ lat: 0, lng: 0 }),
-                        location: 'Bali, Indonesia',
-                        status: 'available',
-                        availability: 'Available',
-                        description: '',
-                        profilePicture: (user as any).picture || '',
-                        mainImage: '',
-                        massageTypes: '',
-                        languages: '',
-                    });
+                    await (therapistService as any).create({ ...therapistPayload, servicesOffered: ['massage'] });
+                } else if (accountTypeToUse === 'facial-therapist') {
+                    await (therapistService as any).create({ ...therapistPayload, servicesOffered: ['facial'] });
+                } else if (accountTypeToUse === 'beauty-therapist') {
+                    await (therapistService as any).create({ ...therapistPayload, servicesOffered: ['beautician'] });
                 } else if (accountTypeToUse === 'massage-place') {
                     const placeId = ID.unique();
                     await placesService.create({
@@ -150,7 +157,8 @@ const AuthPage: React.FC<AuthPageProps> = ({
                     });
                 }
                 window.history.replaceState({}, '', window.location.pathname);
-                if (!cancelled) onAuthSuccess(accountTypeToUse);
+                const redirectType = (accountTypeToUse === 'facial-therapist' || accountTypeToUse === 'beauty-therapist') ? 'therapist' : accountTypeToUse;
+                if (!cancelled) onAuthSuccess(redirectType);
             } catch (err) {
                 console.error('OAuth callback profile creation failed:', err);
                 if (!cancelled) setError('Account created but profile setup failed. Please contact support.');
@@ -234,14 +242,16 @@ const AuthPage: React.FC<AuthPageProps> = ({
             if (accountType === 'employer') {
                 console.log('🔵 Employer account – auth created; employer will complete profile in dashboard');
                 // No separate employer_profiles create here; employer fills job listing in employer-job-posting page
-            } else if (accountType === 'therapist') {
-                console.log('🔵 Creating therapist profile');
+            } else if (accountType === 'therapist' || accountType === 'facial-therapist' || accountType === 'beauty-therapist') {
+                const servicesOffered = accountType === 'therapist' ? ['massage'] : accountType === 'facial-therapist' ? ['facial'] : ['beautician'];
+                const specialization = accountType === 'therapist' ? 'General Massage' : accountType === 'facial-therapist' ? 'Facial' : 'Beauty';
+                console.log('🔵 Creating therapist profile', { accountType, servicesOffered });
                 await (therapistService as any).create({
                     email: profileData.email,
                     name: (profileData as any).name,
                     countryCode: '+62',
                     whatsappNumber: '',
-                    specialization: 'General Massage',
+                    specialization,
                     yearsOfExperience: 0,
                     isLicensed: false,
                     isLive: false,
@@ -259,6 +269,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                     mainImage: '',
                     massageTypes: '',
                     languages: '',
+                    servicesOffered,
                 });
                 console.log('✅ Therapist profile created successfully');
             } else if (accountType === 'massage-place') {

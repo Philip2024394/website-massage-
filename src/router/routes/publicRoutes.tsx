@@ -18,6 +18,8 @@ const MassageTypesPage = lazy(() => import('../../pages/MassageTypesPage'));
 const FacialTypesPage = lazy(() => import('../../pages/FacialTypesPage'));
 const CustomerProvidersPage = lazy(() => import('../../pages/CustomerProvidersPage'));
 const FacialProvidersPage = lazy(() => import('../../pages/FacialProvidersPage'));
+const FacialPlacesDirectoryPage = lazy(() => import('../../pages/FacialPlacesDirectoryPage'));
+const FacialHomeServicePage = lazy(() => import('../../pages/FacialHomeServicePage'));
 const TodaysDiscountsPage = lazy(() => import('../../pages/TodaysDiscountsPage'));
 const WomenReviewsPage = lazy(() => import('../../pages/WomenReviewsPage'));
 const AdvancedSearchPage = lazy(() => import('../../pages/AdvancedSearchPage'));
@@ -83,6 +85,16 @@ export const publicRoutes = {
     path: '/facial-providers',
     component: FacialProvidersPage,
     name: 'facialProviders'
+  },
+  facialPlaces: {
+    path: '/facial-places',
+    component: FacialPlacesDirectoryPage,
+    name: 'facialPlaces'
+  },
+  facialHomeService: {
+    path: '/facial-home-service',
+    component: FacialHomeServicePage,
+    name: 'facialHomeService'
   },
   discounts: {
     path: '/discounts',

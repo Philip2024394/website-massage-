@@ -20,6 +20,8 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'facial-types': '/facial-types',
     'providers': '/providers',
     'facialProviders': '/facial-providers',
+  'facial-places': '/facial-places',
+  'facial-home-service': '/facial-home-service',
     'discounts': '/discounts',
     
     // 🔗 Real Chat Integration Test

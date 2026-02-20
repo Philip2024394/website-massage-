@@ -72,6 +72,7 @@ const SAMPLE_NEWS: NewsItem[] = [
     date: 'Jan 10, 2026',
     category: 'places-opening',
     body: 'A major wellness operator has confirmed the launch of three new locations, creating positions for massage therapists, aestheticians, and support staff. The new sites will offer massage, facials, and related treatments. Recruitment is underway for qualified therapists and clinic personnel. The company said the expansion reflects strong demand for in-person wellness services and a focus on convenient neighbourhood locations. Local industry associations have welcomed the move as a boost for employment in the sector.',
+    imageSrc: 'https://ik.imagekit.io/7grri5v7d/garden%204s.png',
   },
   {
     id: '3',
@@ -80,6 +81,7 @@ const SAMPLE_NEWS: NewsItem[] = [
     date: 'Feb 2, 2026',
     category: 'producers',
     body: 'An international certification organisation has expanded its therapist and wellness programme into new regions. The move gives massage and skin care professionals a recognised credential that can be used across borders. Training partners in the new markets will deliver the curriculum and assessments. Industry figures say a shared standard helps clients identify qualified practitioners and supports career mobility for therapists. Venues that employ certified staff can use the credential in their marketing and quality assurance.',
+    imageSrc: 'https://ik.imagekit.io/7grri5v7d/blog%201.png',
   },
   {
     id: '4',
@@ -88,6 +90,7 @@ const SAMPLE_NEWS: NewsItem[] = [
     date: 'Jan 28, 2026',
     category: 'good-news',
     body: 'Skin clinic groups are reporting a noticeable rise in bookings for facial and body treatments as clients return to post-summer routines. Demand is particularly strong for maintenance and corrective treatments. Clinic managers say the trend is encouraging after a quieter period and are adjusting staffing and schedules to meet it. Therapists and aestheticians in the network describe steady appointment books and growing interest in combined packages. Analysts point to sustained consumer focus on skin health and self-care as a driver for the sector.',
+    imageSrc: 'https://ik.imagekit.io/7grri5v7d/garden%204ss.png',
   },
   {
     id: '5',
@@ -112,6 +115,7 @@ const SAMPLE_NEWS: NewsItem[] = [
     date: 'Jan 18, 2026',
     category: 'producers',
     body: 'A sector report has set out a structured career pathway for massage therapists, from first certification through to senior and specialist roles. The framework includes recommended continuing education, mentorship, and optional specialisations such as sports or clinical massage. Professional bodies say the clarity helps new entrants plan their development and gives employers a shared language for progression. Therapists who contributed to the report welcomed the focus on recognition and career growth, which they say supports retention and quality of care.',
+    imageSrc: 'https://ik.imagekit.io/7grri5v7d/ssdd.png',
   },
   {
     id: '8',
@@ -120,6 +124,7 @@ const SAMPLE_NEWS: NewsItem[] = [
     date: 'Feb 5, 2026',
     category: 'places-opening',
     body: 'A new day spa and skin bar has opened in the city centre, targeting office workers and visitors with express facials, short massage sessions, and walk-in availability. The concept focuses on convenient booking and 30- to 60-minute treatments. The team includes licensed aestheticians and massage therapists. The owner said the location and format were chosen to fit around lunch breaks and errands. Early feedback from clients has highlighted ease of booking and consistent results. Industry watchers see the model as part of a broader trend toward accessible, urban wellness offerings.',
+    imageSrc: 'https://ik.imagekit.io/7grri5v7d/ss.png',
   },
   {
     id: '9',
@@ -128,6 +133,7 @@ const SAMPLE_NEWS: NewsItem[] = [
     date: 'Jan 30, 2026',
     category: 'good-news',
     body: 'Sports and recovery massage is in strong demand, according to gyms, clinics, and independent therapists. Clients are booking for injury prevention, post-workout recovery, and support for training goals. Many practitioners have added or expanded sports massage qualifications. Fitness centres are partnering with therapists to offer on-site or referred sessions. Professionals say the trend reflects greater awareness of recovery as part of training and a willingness to invest in preventive care. The uptick is seen as positive for both therapists and venues that offer recovery services.',
+    imageSrc: 'https://ik.imagekit.io/7grri5v7d/ssd.png',
   },
   {
     id: '10',

@@ -37,7 +37,7 @@ export const SIGNUP_CONFIG = {
 };
 
 export type PlanType = 'pro' | 'plus';
-export type PortalType = 'massage_therapist' | 'massage_place' | 'facial_place' | 'hotel';
+export type PortalType = 'massage_therapist' | 'facial_therapist' | 'beauty_therapist' | 'massage_place' | 'facial_place' | 'hotel';
 export type SignupStatus = 'plan_selected' | 'terms_accepted' | 'portal_selected' | 'account_created' | 'profile_uploaded' | 'awaiting_payment' | 'payment_pending' | 'active' | 'deactivated';
 
 export interface MembershipSignup {
@@ -1105,7 +1105,9 @@ class MembershipSignupService {
         email: string; 
         password: string; 
         whatsappNumber: string;
-        portalType: PortalType 
+        portalType: PortalType;
+        /** For therapist accounts: service type(s). Defaults to ['massage'] if omitted. */
+        servicesOffered?: string[];
     }): Promise<{ user: any; memberId: string }> {
         try {
             console.log('🔧 Creating Appwrite account (simplified flow)...');
@@ -1177,7 +1179,8 @@ class MembershipSignupService {
         email: string,
         whatsappNumber: string,
         portalType: PortalType,
-        planType: PlanType
+        planType: PlanType,
+        therapistOptions?: { servicesOffered?: string[] }
     ): any {
         const baseMemberData = {
             email,
@@ -1201,9 +1204,9 @@ class MembershipSignupService {
         // Add portal-specific required fields
         switch (portalType) {
             case 'therapist':
+            case 'massage_therapist':
                 return {
                     ...baseMemberData,
-                    // Required fields for therapists collection
                     therapistId: userId,
                     specialization: 'General Massage',
                     yearsOfExperience: 1,
@@ -1218,7 +1221,48 @@ class MembershipSignupService {
                     rating: 0,
                     reviewCount: 0,
                     bookingsEnabled: true,
-                    isOwnerTherapist: null
+                    isOwnerTherapist: null,
+                    servicesOffered: therapistOptions?.servicesOffered ?? ['massage']
+                };
+            case 'facial_therapist':
+                return {
+                    ...baseMemberData,
+                    therapistId: userId,
+                    specialization: 'Facial',
+                    yearsOfExperience: 1,
+                    isLicensed: false,
+                    location: '',
+                    hourlyRate: 100,
+                    services: [],
+                    availability: {},
+                    languages: ['id'],
+                    coordinates: [0, 0],
+                    city: '',
+                    rating: 0,
+                    reviewCount: 0,
+                    bookingsEnabled: true,
+                    isOwnerTherapist: null,
+                    servicesOffered: ['facial']
+                };
+            case 'beauty_therapist':
+                return {
+                    ...baseMemberData,
+                    therapistId: userId,
+                    specialization: 'Beauty',
+                    yearsOfExperience: 1,
+                    isLicensed: false,
+                    location: '',
+                    hourlyRate: 100,
+                    services: [],
+                    availability: {},
+                    languages: ['id'],
+                    coordinates: [0, 0],
+                    city: '',
+                    rating: 0,
+                    reviewCount: 0,
+                    bookingsEnabled: true,
+                    isOwnerTherapist: null,
+                    servicesOffered: ['beautician']
                 };
             case 'massage_place':
                 return {
@@ -1412,6 +1456,9 @@ class MembershipSignupService {
     private getCollectionIdFromPortalType(portalType: string): string {
         switch (portalType) {
             case 'therapist':
+            case 'massage_therapist':
+            case 'facial_therapist':
+            case 'beauty_therapist':
                 return SIGNUP_CONFIG.COLLECTIONS.THERAPISTS;
             case 'massage_place':
                 return SIGNUP_CONFIG.COLLECTIONS.PLACES;

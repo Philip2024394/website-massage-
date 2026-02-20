@@ -17,7 +17,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
-import { getTherapistMainImage } from '../utils/therapistImageUtils';
+import { useTherapistDisplayImage } from '../utils/therapistImageUtils';
 import { bookingService } from '../lib/bookingService';
 import { therapistMenusService } from '../lib/appwriteService';
 import { isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay, getTherapistDisplayName } from '../utils/therapistCardHelpers';
@@ -34,6 +34,10 @@ import { logger } from '../utils/logger';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import SafePassModal from './modals/SafePassModal';
 import HomePageBookingSlider, { HomePageBookingType } from './HomePageBookingSlider';
+import { therapistOffersService } from '../constants/serviceTypes';
+import { SERVICE_TYPES } from '../constants/serviceTypes';
+import { parseBeauticianTreatments } from '../constants/beauticianTreatments';
+import type { BeauticianTreatment } from '../types';
 
 interface TherapistHomeCardProps {
     therapist: Therapist;
@@ -488,6 +492,17 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         return price.toLocaleString('id-ID');
     };
 
+    const formatBeauticianPrice = (t: BeauticianTreatment): string => {
+        const currency = t.currency ?? 'IDR';
+        const p = t.fixed_price ?? 0;
+        if (currency === 'IDR') return p >= 1000 ? `${(p / 1000).toFixed(0)}K` : String(p);
+        return `€${p}`;
+    };
+
+    const beauticianTreatments = parseBeauticianTreatments((therapist as any).beauticianTreatments);
+    const isBeauticianWithTreatments = therapistOffersService(therapist, SERVICE_TYPES.BEAUTICIAN) && beauticianTreatments.length > 0;
+    const [selectedBeauticianIndex, setSelectedBeauticianIndex] = useState<number | null>(null);
+
     // Get status - display_status (per-location rotation) takes precedence; then availability/status
     const getStatusStyles = () => {
         const statusStr = String(
@@ -527,6 +542,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     })();
 
     const displayBookingsCount = bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount;
+
+    const displayImage = useTherapistDisplayImage(therapist);
 
     // 🧱 MOBILE STABILITY CHECK - This should log identical values on every refresh
     if (process.env.NODE_ENV === 'development') {
@@ -570,7 +587,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             {/* Image Container - Fixed height for mobile stability */}
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                 <img
-                    src={getTherapistMainImage(therapist as any)}
+                    src={displayImage}
                     alt={getTherapistDisplayName(therapist.name)}
                     className="w-full h-full object-cover transition-transform duration-500 rounded-t-2xl"
                     style={{ aspectRatio: '400/224', minHeight: '224px' }}
@@ -664,16 +681,6 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     {/* Name left aligned with offset */}
                     <div className="mb-2 ml-[75px]">
                         <div className="flex items-center gap-2">
-                            {/* Verified Badge - Auto-show for Safe Pass holders */}
-                            {((therapist as any).verifiedBadge || therapist.isVerified || (therapist as any).hotelVillaSafePassStatus === 'active') && (
-                                <img 
-                                    src={VERIFIED_BADGE_IMAGE_URL}
-                                    alt="Verified"
-                                    className="w-5 h-5 flex-shrink-0"
-                                    title="Verified Therapist"
-                                />
-                            )}
-                            
                             {/* Preferred by Women Badge - Show if therapist accepts female clients */}
                             {(() => {
                                 const clientPrefs = String((therapist as any).clientPreferences || (therapist as any).clientPreference || '').toLowerCase();
@@ -776,10 +783,66 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </div>
             )}
 
-            {/* 3 Price Containers - Lowest menu item with complete 60/90/120 pricing */}
-            {pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 && (
+            {/* Beautician: same design as profile – 3 stacked containers, selectable, orange glow when selected */}
+            {isBeauticianWithTreatments ? (
                 <div className="mx-4 mb-4">
-                    {/* Massage type name above the 3 containers */}
+                    <style>{`
+                        @keyframes beautician-glow-card {
+                          0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
+                          50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
+                        }
+                        .beautician-card-container-selected {
+                          border-color: rgb(249 115 22);
+                          box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
+                          animation: beautician-glow-card 2.5s ease-in-out infinite;
+                        }
+                    `}</style>
+                    <div className="text-center mb-3">
+                        <h3 className="text-gray-800 font-bold text-sm tracking-wide">Treatments</h3>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Select Container And Press Book Now</p>
+                    </div>
+                    <div className="space-y-2">
+                        {beauticianTreatments.slice(0, 3).map((t, idx) => {
+                            const isSelected = selectedBeauticianIndex === idx;
+                            return (
+                                <button
+                                    type="button"
+                                    key={therapist.$id || therapist.id || idx}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedBeauticianIndex((prev) => (prev === idx ? null : idx));
+                                    }}
+                                    className={`w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 ${
+                                        isSelected
+                                            ? 'beautician-card-container-selected bg-orange-50/80 border-orange-400'
+                                            : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                    aria-pressed={isSelected}
+                                    aria-label={`${t.treatment_name || `Treatment ${idx + 1}`}, ${t.estimated_duration_minutes} min, ${t.currency === 'IDR' ? 'IDR ' : ''}${formatBeauticianPrice(t)}. ${isSelected ? 'Selected' : 'Select'}`}
+                                >
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">
+                                            {t.treatment_name || `Treatment ${idx + 1}`}
+                                        </h4>
+                                        <p className="text-[10px] text-gray-600">
+                                            Estimated time: {t.estimated_duration_minutes} minutes
+                                        </p>
+                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                            Price: {t.currency === 'IDR' ? 'IDR ' : ''}{formatBeauticianPrice(t)} (fixed)
+                                        </p>
+                                    </div>
+                                    {isSelected && (
+                                        <span className="flex-shrink-0 text-orange-600 text-[10px] font-semibold uppercase tracking-wide">
+                                            Selected
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            ) : pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 ? (
+                <div className="mx-4 mb-4">
                     <h3 className="text-gray-800 font-bold text-sm tracking-wide text-center mb-2">
                         {serviceName}
                     </h3>
@@ -807,7 +870,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </div>
                     </div>
                 </div>
-            )}
+            ) : null}
 
             {/* View Profile Button */}
             <div className="px-4 pb-4">

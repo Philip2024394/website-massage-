@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Therapist } from '../types';
-import { getTherapistMainImage, getRandomTherapistImage } from '../../utils/therapistImageUtils';
+import { useTherapistDisplayImage, getRandomTherapistImage } from '../../utils/therapistImageUtils';
 import { getTherapistDisplayName } from '../../utils/therapistCardHelpers';
 import { getDisplayRating, formatRating, getDisplayReviewCount } from '../../utils/ratingUtils';
 import { Share2 } from 'lucide-react';
@@ -20,7 +20,7 @@ const TherapistHeader = ({
   isDiscountActive,
   discountPercentage
 }: TherapistHeaderProps): JSX.Element => {
-  const mainImage = getTherapistMainImage(therapist as any);
+  const mainImage = useTherapistDisplayImage(therapist);
 
   return (
     <div className="relative h-48 overflow-hidden rounded-t-2xl">

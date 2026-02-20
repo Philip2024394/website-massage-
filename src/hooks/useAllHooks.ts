@@ -23,8 +23,8 @@ export const useAllHooks = () => {
     const state = useAppState();
     const dataFetching = useDataFetching();
     
-    // URL routing - sync page state with browser URL
-    useURLRouting(state.page, state.setPage);
+    // URL routing - sync page state with browser URL; city from /indonesia/:city/:service
+    useURLRouting(state.page, state.setPage, state.setSelectedCity);
     
     // Loading coordinator: switch from loading → landing after 300ms (or when therapists ready)
     useEffect(() => {
@@ -36,12 +36,12 @@ export const useAllHooks = () => {
         return () => clearTimeout(timer);
     }, [state.page, state.setPage]);
     
-    // Fetch therapists and places on app initialization
+    // Fetch therapists and places on app init (always all; HomePage filters by selectedCity client-side)
     useEffect(() => {
         const initializeData = async () => {
             try {
                 console.log('� [STAGE 3 - useAllHooks] Starting data fetch...');
-                const { therapists, places, facialPlaces, hotels } = await dataFetching.fetchPublicData();
+                const { therapists, places, facialPlaces, hotels } = await dataFetching.fetchPublicData(undefined);
                 console.log('✅ [STAGE 3 - useAllHooks] Received from fetchPublicData:', {
                     therapists: therapists?.length || 0,
                     places: places?.length || 0,
@@ -65,9 +65,8 @@ export const useAllHooks = () => {
             }
         };
 
-        // ⚡ PERFORMANCE: Start fetch immediately (parallel with loading screen)
         initializeData();
-    }, []); // Empty dependency array - only run once on mount
+    }, []); // Fetch once on mount; city filtering is done client-side in HomePage
 
     // Live therapist feed: refetch when therapists collection changes (status/availability/approved)
     useEffect(() => {
@@ -77,7 +76,7 @@ export const useAllHooks = () => {
 
         const refetchTherapists = async () => {
             try {
-                const { therapists, places, facialPlaces, hotels } = await dataFetching.fetchPublicData();
+                const { therapists, places, facialPlaces, hotels } = await dataFetching.fetchPublicData(undefined);
                 state.setTherapists(therapists);
                 state.setPlaces(places);
                 state.setFacialPlaces(facialPlaces);

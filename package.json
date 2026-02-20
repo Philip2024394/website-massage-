@@ -41,6 +41,8 @@
     "pre-deploy": "node scripts/pre-deploy.js",
     "preview": "vite preview --port 3000",
     "generate-sitemap": "node scripts/generate-sitemap.mjs",
+    "migrate:therapist-location": "node -r dotenv/config scripts/migrate-therapist-location-country.mjs",
+    "migrate:therapist-location:apply": "node -r dotenv/config scripts/migrate-therapist-location-country.mjs --apply",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",

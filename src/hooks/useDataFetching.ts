@@ -27,7 +27,7 @@ export const useDataFetching = () => {
             // Fetch therapists first (this should work)
             console.log('� [STAGE 2 - HOOK] Fetching therapists data...');
             const [therapistsData, placesData, facialPlacesData, hotelsData] = await Promise.all([
-                robustCollectionQuery(() => therapistService.getTherapists(), 'therapists', [] as Therapist[]),
+                robustCollectionQuery(() => therapistService.getTherapists(activeCity && activeCity !== 'all' ? activeCity : undefined), 'therapists', [] as Therapist[]),
                 robustCollectionQuery(() => placesService.getPlaces(), 'places', [] as Place[]),
                 robustCollectionQuery(() => facialPlaceService.getAll(), 'facial_places', [] as Place[]),
                 robustCollectionQuery(() => hotelService.getHotels(), 'hotels', [] as any[])

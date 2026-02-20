@@ -1,13 +1,48 @@
 /**
  * useHomePageState - Core UI state management for HomePage
- * Extracted from HomePage.tsx to reduce file size
+ * Hero: mainTab (Home Service | Places) + serviceButton (Massage | Facial | Beautician).
+ * activeTab is derived for content routing; setActiveTab maps legacy tab ids to mainTab+serviceButton.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 
+export type MainTabId = 'home-service' | 'places';
+export type ServiceButtonId = 'massage' | 'facial' | 'beautician';
+
+function deriveActiveTab(mainTab: MainTabId, serviceButton: ServiceButtonId): string {
+    if (mainTab === 'home-service') {
+        if (serviceButton === 'massage') return 'home';
+        if (serviceButton === 'facial') return 'facials';
+        return 'beautician';
+    }
+    if (serviceButton === 'massage') return 'places';
+    if (serviceButton === 'facial') return 'facial-places';
+    return 'beautician-places';
+}
+
+function parseActiveTabToMainAndService(tab: string): { mainTab: MainTabId; serviceButton: ServiceButtonId } {
+    switch (tab) {
+        case 'home': return { mainTab: 'home-service', serviceButton: 'massage' };
+        case 'places': return { mainTab: 'places', serviceButton: 'massage' };
+        case 'facials': return { mainTab: 'home-service', serviceButton: 'facial' };
+        case 'facial-places': return { mainTab: 'places', serviceButton: 'facial' };
+        case 'beautician': return { mainTab: 'home-service', serviceButton: 'beautician' };
+        case 'beautician-places': return { mainTab: 'places', serviceButton: 'beautician' };
+        default: return { mainTab: 'home-service', serviceButton: 'massage' };
+    }
+}
+
 export function useHomePageState() {
-    const [activeTab, setActiveTab] = useState('home');
+    const [mainTab, setMainTab] = useState<MainTabId>('home-service');
+    const [serviceButton, setServiceButton] = useState<ServiceButtonId>('massage');
+    const activeTab = useMemo(() => deriveActiveTab(mainTab, serviceButton), [mainTab, serviceButton]);
+    const setActiveTab = (tab: string) => {
+        const { mainTab: m, serviceButton: s } = parseActiveTabToMainAndService(tab);
+        setMainTab(m);
+        setServiceButton(s);
+    };
+    const [showFilterDrawer, setShowFilterDrawer] = useState(false);
     const [showComingSoonModal, setShowComingSoonModal] = useState(false);
     const [comingSoonSection, setComingSoonSection] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -41,14 +76,14 @@ export function useHomePageState() {
         return shuffled;
     };
     
-    // Reshuffle images when viewing Home tab
+    // Reshuffle images when viewing Home Service Massage tab
     useEffect(() => {
-        if (activeTab === 'home') {
+        if (mainTab === 'home-service' && serviceButton === 'massage') {
             const baseImages = [...THERAPIST_MAIN_IMAGES];
             const shuffled = shuffleArray(baseImages);
             setShuffledHomeImages(shuffled);
         }
-    }, [activeTab]);
+    }, [mainTab, serviceButton]);
     
     // Development mode keyboard shortcut (Ctrl+Shift+D)
     useEffect(() => {
@@ -66,8 +101,14 @@ export function useHomePageState() {
     }, [isDevelopmentMode]);
     
     return {
+        mainTab,
+        setMainTab,
+        serviceButton,
+        setServiceButton,
         activeTab,
         setActiveTab,
+        showFilterDrawer,
+        setShowFilterDrawer,
         showComingSoonModal,
         setShowComingSoonModal,
         comingSoonSection,

@@ -135,3 +135,45 @@ export function getDefaultDurationAndPrice(therapist: Therapist): { durationMin:
   const price = typeof p60 === 'number' ? p60 * 1000 : (parseInt(String(p60 || '0'), 10) * 1000) || 250000;
   return { durationMin: 60, price };
 }
+
+/**
+ * Beautician booking message – sent to Admin. Fixed price per treatment, no per-minute logic.
+ */
+export function buildBeauticianBookingMessage(opts: {
+  beauticianName: string;
+  treatmentName: string;
+  fixedPrice: number;
+  estimatedDurationMin: number;
+  currency?: string;
+  customerName?: string;
+  date?: string;
+  time?: string;
+}): string {
+  const {
+    beauticianName,
+    treatmentName,
+    fixedPrice,
+    estimatedDurationMin,
+    currency = 'EUR',
+    customerName,
+    date,
+    time,
+  } = opts;
+  const priceStr =
+    currency === 'IDR'
+      ? `IDR ${fixedPrice >= 1000 ? `${(fixedPrice / 1000).toFixed(0)}K` : fixedPrice}`
+      : `€${fixedPrice}`;
+  const lines = [
+    'Hello, I would like to book:',
+    `Beautician: ${beauticianName}`,
+    `Treatment: ${treatmentName}`,
+    `Price: ${priceStr}`,
+    `Estimated Duration: ${estimatedDurationMin} minutes`,
+    '',
+    'Please confirm availability.',
+  ];
+  if (customerName) lines.splice(lines.length - 2, 0, `My name: ${customerName}`);
+  if (date) lines.splice(lines.length - 2, 0, `Preferred date: ${date}`);
+  if (time) lines.splice(lines.length - 2, 0, `Preferred time: ${time}`);
+  return lines.join('\n');
+}

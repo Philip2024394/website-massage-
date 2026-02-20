@@ -545,7 +545,7 @@ export const MASSAGE_TYPES_WITH_IMAGES: MassageTypeWithImage[] = [
     },
     { 
         name: 'Facial', 
-        imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328'
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682'
     },
     { 
         name: 'Traditional', 

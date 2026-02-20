@@ -8,9 +8,11 @@ import { translations } from '../../translations';
 
 interface SignupPageProps {
   onNavigate?: (page: string) => void;
+  /** When set (e.g. from facial-therapist-signup route), use this role instead of URL */
+  initialRole?: PortalType;
 }
 
-const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
+const SignupPage: React.FC<SignupPageProps> = ({ onNavigate, initialRole: initialRoleProp }) => {
   const { language } = useLanguage();
   // Normalize 'gb' to 'en' for translations
   const normalizedLang = (language as string) === 'gb' ? 'en' : language;
@@ -29,12 +31,16 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
     termsAccepted: false,
   });
 
-  // Extract role from URL params
+  // Role: from initialRole prop (separate create-account routes) or from URL params
   useEffect(() => {
+    if (initialRoleProp && ['therapist', 'massage_therapist', 'facial_therapist', 'beauty_therapist', 'massage_place', 'facial_place'].includes(initialRoleProp)) {
+      setRole(initialRoleProp);
+      return;
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const roleParam = urlParams.get('role') as PortalType;
     
-    if (roleParam && ['therapist', 'massage_place', 'facial_place'].includes(roleParam)) {
+    if (roleParam && ['therapist', 'massage_therapist', 'facial_therapist', 'beauty_therapist', 'massage_place', 'facial_place'].includes(roleParam)) {
       setRole(roleParam);
     } else {
       // If no valid role, redirect to home
@@ -44,12 +50,17 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
         window.location.href = '/';
       }
     }
-  }, [onNavigate]);
+  }, [onNavigate, initialRoleProp]);
 
   const getRoleDisplay = (role: PortalType) => {
     switch (role) {
       case 'massage_therapist':
+      case 'therapist':
         return { name: 'Massage Therapist', icon: User };
+      case 'facial_therapist':
+        return { name: 'Facial (Home Service)', icon: Sparkles };
+      case 'beauty_therapist':
+        return { name: 'Beauty (Home Service)', icon: Sparkles };
       case 'massage_place':
         return { name: 'Massage Spa', icon: Building2 };
       case 'facial_place':
@@ -121,35 +132,49 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
   };
 
   const redirectToDashboard = () => {
-    // Redirect to appropriate dashboard based on role
+    // Separate dashboards: Massage, Facial, Beautician each have their own dashboard
     switch (role) {
       case 'massage_therapist':
+      case 'therapist':
         if (onNavigate) {
-          onNavigate('therapist');
+          onNavigate('massage-therapist-dashboard');
         } else {
-          window.location.href = '/dashboard/therapist';
+          window.location.href = '/#/massage-therapist-dashboard';
+        }
+        break;
+      case 'facial_therapist':
+        if (onNavigate) {
+          onNavigate('facial-therapist-dashboard');
+        } else {
+          window.location.href = '/#/facial-therapist-dashboard';
+        }
+        break;
+      case 'beauty_therapist':
+        if (onNavigate) {
+          onNavigate('beautician-therapist-dashboard');
+        } else {
+          window.location.href = '/#/beautician-therapist-dashboard';
         }
         break;
       case 'massage_place':
         if (onNavigate) {
-          onNavigate('massagePlace');
+          onNavigate('massage-place-dashboard');
         } else {
           window.location.href = '/dashboard/massage-place';
         }
         break;
       case 'facial_place':
         if (onNavigate) {
-          onNavigate('facialPlace');
+          onNavigate('facial-place-dashboard');
         } else {
           window.location.href = '/dashboard/facial-place';
         }
         break;
       default:
-        // Default to therapist dashboard
         if (onNavigate) {
-          onNavigate('therapist');
+          onNavigate('massage-therapist-dashboard');
         } else {
-          window.location.href = '/dashboard/therapist';
+          window.location.href = '/#/massage-therapist-dashboard';
         }
     }
   };

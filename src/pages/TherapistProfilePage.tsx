@@ -6,15 +6,14 @@
  * SEALED PROFILE MANAGEMENT - Business-Critical Profile Interface
  * Protection Level: TIER 1 - Owner-Sealed Operational Interface
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TherapistProfileBase from '../components/TherapistProfileBase';
+import { therapistOffersService, SERVICE_TYPES } from '../constants/serviceTypes';
 import { FloatingChatWindow } from '../chat';
 import HomeIcon from '../components/icons/HomeIcon';
-import CityLocationDropdown from '../components/CityLocationDropdown';
-import { Building, Sparkles } from 'lucide-react';
+import { Building, Sparkles, Scissors, SlidersHorizontal } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
-import MusicPlayer from '../components/MusicPlayer';
 import { logger } from '../utils/logger';
 
 interface TherapistProfilePageProps {
@@ -85,9 +84,61 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     onTermsClick,
     onPrivacyClick
 }) => {
-    const [activeTab, setActiveTab] = useState('home');
+    // Initial state: prefer source from navigation (so the button/tab user came from is highlighted)
+    const [mainTab, setMainTab] = useState<'home-service' | 'places'>(() => {
+        try {
+            const tab = sessionStorage.getItem('profile_source_tab');
+            if (tab === 'places' || tab === 'home-service') return tab;
+        } catch (_) {}
+        return 'home-service';
+    });
+    const [serviceButton, setServiceButton] = useState<'massage' | 'facial' | 'beautician'>(() => {
+        try {
+            const service = sessionStorage.getItem('profile_source_service');
+            if (service === 'massage' || service === 'facial' || service === 'beautician') return service;
+        } catch (_) {}
+        return 'massage';
+    });
     const [cityState, setCityState] = useState<string>(selectedCity);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const goToHomeWithTab = (tab: string) => {
+        try {
+            sessionStorage.setItem('home_initial_tab', tab);
+        } catch (_) {}
+        onNavigate?.('home');
+    };
+
+    const appliedSourceFromNavigation = useRef(false);
+
+    // Apply stored source on mount (from View profile click) so the correct button/tab is highlighted
+    useEffect(() => {
+        try {
+            const service = sessionStorage.getItem('profile_source_service');
+            const tab = sessionStorage.getItem('profile_source_tab');
+            if (service === 'massage' || service === 'facial' || service === 'beautician') {
+                setServiceButton(service);
+                appliedSourceFromNavigation.current = true;
+            }
+            if (tab === 'places' || tab === 'home-service') {
+                setMainTab(tab);
+            }
+            sessionStorage.removeItem('profile_source_service');
+            sessionStorage.removeItem('profile_source_tab');
+        } catch (_) {}
+    }, []);
+
+    // If no stored source (e.g. direct link), infer service from therapist so the right button is still highlighted
+    useEffect(() => {
+        if (!therapist || appliedSourceFromNavigation.current) return;
+        if (therapistOffersService(therapist, SERVICE_TYPES.FACIAL)) {
+            setServiceButton('facial');
+        } else if (therapistOffersService(therapist, SERVICE_TYPES.BEAUTICIAN)) {
+            setServiceButton('beautician');
+        } else {
+            setServiceButton('massage');
+        }
+    }, [therapist?.$id, therapist?.id]);
     
     // 🔥 CRITICAL LOG: Track TherapistProfilePage mount
     console.log('🎯 TherapistProfilePage MOUNTED:', {
@@ -194,82 +245,62 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 </div>
             )}
 
-            {/* Hero Section with Location & Controls - Always show for authenticated views */}
+            {/* Hero Section - Same as Home: Home Service | City Places, Massage | Facial | Beauty, Filter (no location container) */}
             <div className="bg-white border-b border-gray-100 pt-16">
-                <div className="px-3 sm:px-4 pb-3 max-w-6xl mx-auto">
-                    {/* Location Display */}
-                    {userLocation && (
-                        <div className="bg-white flex flex-col items-center gap-0.5 pt-4 pb-3">
-                            <div className="flex items-center justify-center gap-2">
-                                <MusicPlayer autoPlay={true} />
-                                <svg 
-                                    className="w-4 h-4 text-gray-700" 
-                                    fill="none" 
-                                    viewBox="0 0 24 24" 
-                                    stroke="currentColor" 
-                                    strokeWidth={2}
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span className="text-lg font-bold text-gray-900">
-                                    {cityState === 'all' ? 'All Indonesia' : cityState}
-                                </span>
-                            </div>
-                            <p className="text-base font-semibold text-gray-600">Indonesia's Massage Therapist Hub</p>
-                        </div>
-                    )}
-
-                    {/* Toggle Buttons */}
-                    <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto">
-                        <button 
-                            onClick={() => {
-                                setActiveTab('home');
-                                onNavigate?.('home');
-                            }}
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                <div className="px-3 sm:px-4 pb-3 max-w-2xl mx-auto">
+                    {/* Two tabs – Home Service | City Places (label is City Places, not Massage Places) */}
+                    <div className="flex bg-gray-200 rounded-full p-1 overflow-x-auto">
+                        <button
+                            onClick={() => { setMainTab('home-service'); goToHomeWithTab('home'); }}
+                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'home-service' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                         >
-                            <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">{language === 'id' ? 'Layanan Rumah' : 'Home Service'}</span>
+                            <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Service</span>
                         </button>
-                        <button 
-                            onClick={() => {
-                                setActiveTab('places');
-                                onNavigate?.('home');
-                            }}
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        <button
+                            onClick={() => { setMainTab('places'); goToHomeWithTab('places'); }}
+                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                         >
-                            <Building className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">{language === 'id' ? 'Tempat Pijat' : 'Massage Places'}</span>
+                            <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">City Places</span>
                         </button>
                     </div>
 
-                    {/* City Dropdown + Facial Button */}
-                    <div className="flex flex-row gap-2 items-center max-w-2xl mx-auto mt-4">
-                        <div className="relative flex-1 min-w-0 max-w-[200px] sm:max-w-none z-20">
-                            <CityLocationDropdown
-                                selectedCity={cityState}
-                                onCityChange={(city) => {
-                                    setCityState(city);
-                                    onCityChange?.(city);
-                                }}
-                                placeholder="🇮🇩 All Indonesia"
-                                includeAll={true}
-                                showLabel={false}
-                                className="w-full"
-                            />
-                        </div>
-                        
-                        <div className="flex justify-end flex-shrink-0">
-                            <button
-                                onClick={() => onNavigate?.('facialProviders')}
-                                className="px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
-                                title={language === 'id' ? 'Facial Indonesia' : 'Facials Indonesia'}
-                            >
-                                <Sparkles className="w-5 h-5" />
-                                <span>Facial</span>
-                            </button>
-                        </div>
+                    {/* Service buttons: Massage | Facial | Beauty | Filter */}
+                    <div className="mt-4 flex flex-row gap-2 sm:gap-3 items-center min-h-[54px]">
+                        <button
+                            onClick={() => { setServiceButton('massage'); goToHomeWithTab('home'); }}
+                            title="Massage"
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'massage' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                        >
+                            <HomeIcon className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap">Massage</span>
+                        </button>
+                        <button
+                            onClick={() => { setServiceButton('facial'); goToHomeWithTab('facials'); }}
+                            title="Facial"
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'facial' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                        >
+                            <Sparkles className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap truncate min-w-0">Facial</span>
+                        </button>
+                        <button
+                            onClick={() => { setServiceButton('beautician'); goToHomeWithTab('beautician'); }}
+                            title="Beauty"
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'beautician' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                        >
+                            <Scissors className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap truncate min-w-0">Beauty</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => goToHomeWithTab('home')}
+                            title="Filter"
+                            aria-label="Open filters"
+                            className="flex-shrink-0 h-[42px] w-[42px] rounded-full border border-gray-300 bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors"
+                        >
+                            <SlidersHorizontal className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -284,7 +315,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 selectedCity={cityState}
                 onRate={() => console.log('Rate therapist:', therapist)}
                 onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist) : undefined}
-                onChatWithBusyTherapist={() => onChatWithBusyTherapist?.(selectedTherapist)}
+                onChatWithBusyTherapist={() => onChatWithBusyTherapist?.(therapist)}
                 onShowRegisterPrompt={onShowRegisterPrompt}
                 onIncrementAnalytics={(metric) => onIncrementAnalytics?.(therapist.id || therapist.$id, 'therapist', metric)}
                 isCustomerLoggedIn={!!loggedInCustomer}

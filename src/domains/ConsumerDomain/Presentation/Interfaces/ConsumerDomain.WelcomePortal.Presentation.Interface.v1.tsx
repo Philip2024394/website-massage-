@@ -1484,7 +1484,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
+                                {t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}
                             </p>
                         </div>
                         

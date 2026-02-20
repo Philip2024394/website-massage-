@@ -23,6 +23,14 @@ const THERAPIST_MAIN_IMAGES = [
     'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4191002e5db0dfef/view?project=68f23b11000d25eb3664',
 ];
 
+// Beautician profile main images – randomly shown each visit (same system as therapist main image).
+// Can be replaced with Appwrite storage view URLs after uploading to a bucket.
+export const BEAUTICIAN_MAIN_IMAGES = [
+    'https://ik.imagekit.io/7grri5v7d/phil%201.png',
+    'https://ik.imagekit.io/7grri5v7d/phil%202.png',
+    'https://ik.imagekit.io/7grri5v7d/phil%203.png',
+];
+
 // Live menu image URLs for hotel/villa therapist cards (7 images - stored in Appwrite)
 const LIVE_MENU_THERAPIST_IMAGES = [
     'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4192003445db55a5/view?project=68f23b11000d25eb3664',

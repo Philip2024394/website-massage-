@@ -38,6 +38,8 @@ interface TherapistPriceListModalProps {
     // Enhanced modal management
     handleBookNowClick?: (options?: { modalType?: any; onAfterClose?: () => void }) => Promise<void>;
     closeAllModals?: () => Promise<void>;
+    /** When set, Book Now / Schedule open WhatsApp with prefilled message instead of in-app chat. */
+    onOpenWhatsAppBooking?: (type: 'immediate' | 'scheduled', service: { serviceName: string; duration: number; price: number }) => void;
     // Enhanced badge system
     showBadges?: boolean;
     badgesRefreshKey?: string; // For dynamic badge updates per session
@@ -61,6 +63,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
     showBookingButtons = true,
     handleBookNowClick,
     closeAllModals,
+    onOpenWhatsAppBooking,
     showBadges = true,
     badgesRefreshKey = '' // Stable default; pass a value only when badges need refresh
 }) => {
@@ -320,14 +323,6 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                     const priceNum = Number(service[`price${selectedDuration}`]);
                                                                     
                                                                     if (!isNaN(priceNum) && priceNum > 0) {
-                                                                        console.log('🚀 PRICE SLIDER → Book Now with service (Enhanced):', {
-                                                                            serviceName: service.serviceName,
-                                                                            duration: selectedDuration,
-                                                                            price: priceNum * 1000,
-                                                                            serviceId: service.id,
-                                                                            isDefault: isDefaultMenu
-                                                                        });
-
                                                                         const serviceData = {
                                                                             id: service.id,
                                                                             serviceName: service.serviceName || service.name,
@@ -335,30 +330,32 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                             price: priceNum * 1000
                                                                         };
 
+                                                                        // 📱 WhatsApp flow: open WhatsApp with prefilled Book Now message
+                                                                        if (onOpenWhatsAppBooking) {
+                                                                            onOpenWhatsAppBooking('immediate', { serviceName: serviceData.serviceName, duration: serviceData.duration, price: serviceData.price });
+                                                                            setShowPriceListModal(false);
+                                                                            setSelectedServiceIndex(null);
+                                                                            setSelectedDuration(null);
+                                                                            return;
+                                                                        }
+
                                                                         // 🎯 ENHANCED MODAL MANAGEMENT WITH BOOKING TRACKING
-                                                                        // Close price list and any other modals before opening booking
                                                                         if (handleBookNowClick) {
                                                                             await handleBookNowClick({
                                                                                 onAfterClose: async () => {
-                                                                                    // Execute booking with enhanced tracking after modals are closed
                                                                                     await handleServiceBooking(serviceData, 'immediate');
-                                                                                    
-                                                                                    // Reset selection state
                                                                                     setSelectedServiceIndex(null);
                                                                                     setSelectedDuration(null);
                                                                                 }
                                                                             });
                                                                         } else {
-                                                                            // Fallback to legacy behavior with enhanced tracking
                                                                             await handleServiceBooking(serviceData, 'immediate');
-
                                                                             setShowPriceListModal(false);
                                                                             setSelectedServiceIndex(null);
                                                                             setSelectedDuration(null);
                                                                         }
                                                                     }
                                                                 } else if (availableDurations.length > 0) {
-                                                                    // Auto-select first available duration
                                                                     const firstDuration = availableDurations[0] as '60' | '90' | '120';
                                                                     handleSelectService(index, firstDuration);
                                                                 }
@@ -384,14 +381,6 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                     const priceNum = Number(service[`price${selectedDuration}`]);
                                                     
                                                     if (!isNaN(priceNum) && priceNum > 0) {
-                                                        console.log('📅 PRICE SLIDER → Schedule with service:', {
-                                                            serviceName: service.serviceName,
-                                                            duration: selectedDuration,
-                                                            price: priceNum * 1000,
-                                                            serviceId: service.id,
-                                                            isDefault: isDefaultMenu
-                                                        });
-
                                                         const serviceData = {
                                                             id: service.id,
                                                             serviceName: service.serviceName || service.name,
@@ -399,14 +388,21 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                             price: priceNum * 1000
                                                         };
 
-                                                        await handleServiceBooking(serviceData, 'scheduled');
+                                                        // 📱 WhatsApp flow: open WhatsApp with prefilled Scheduled message
+                                                        if (onOpenWhatsAppBooking) {
+                                                            onOpenWhatsAppBooking('scheduled', { serviceName: serviceData.serviceName, duration: serviceData.duration, price: serviceData.price });
+                                                            setShowPriceListModal(false);
+                                                            setSelectedServiceIndex(null);
+                                                            setSelectedDuration(null);
+                                                            return;
+                                                        }
 
+                                                        await handleServiceBooking(serviceData, 'scheduled');
                                                         setShowPriceListModal(false);
                                                         setSelectedServiceIndex(null);
                                                         setSelectedDuration(null);
                                                     }
                                                 } else if (availableDurations.length > 0) {
-                                                    // Auto-select first available duration
                                                     const firstDuration = availableDurations[0] as '60' | '90' | '120';
                                                     handleSelectService(index, firstDuration);
                                                 }

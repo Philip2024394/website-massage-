@@ -1382,6 +1382,8 @@ const App = () => {
                     isVillaLoggedIn={state.isVillaLoggedIn}
                     therapists={state.therapists}
                     places={state.places}
+                    selectedCity={state.selectedCity ?? undefined}
+                    setSelectedCity={(city: string) => state.setSelectedCity(city)}
                     facialPlaces={state.facialPlaces}
                     hotels={state.hotels}
                     notifications={state.notifications}

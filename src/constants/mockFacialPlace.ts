@@ -31,6 +31,13 @@ export const MOCK_FACIAL_PLACE = {
   galleryImages: [
     { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Our Space', description: 'A welcoming environment for premium facial and skin treatments.' },
     { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Treatment Room', description: 'Clean, professional setup for your comfort and safety.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Reception', description: 'Comfortable waiting area with refreshments.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Skincare Products', description: 'Premium products used in our treatments.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Relaxation Zone', description: 'Post-treatment rest and hydration area.' },
+  ],
+  licenseCertImages: [
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Skincare Specialist Certificate', description: 'Certified in advanced facial treatments and skin analysis. Valid through 2026.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png', header: 'Health & Hygiene License', description: 'Clinic meets local health and safety standards for beauty services.' },
   ],
   coordinates: '-8.6705,115.2126',
   lat: -8.6705,

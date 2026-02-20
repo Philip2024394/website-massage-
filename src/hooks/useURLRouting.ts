@@ -1,16 +1,28 @@
 import { useEffect } from 'react';
 import type { Page } from '../types/pageTypes';
 
-/**
- * Hook to sync page state with browser URL
- * Updates URL without page reload and handles browser back/forward buttons
- */
-export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
+/** City slug from URL is persisted so data fetch uses it. Optional. */
+export const useURLRouting = (
+    page: Page,
+    setPage: (page: Page) => void,
+    setSelectedCity?: (city: string) => void
+) => {
+    const persistCityFromUrl = (citySlug: string) => {
+        try {
+            if (typeof window !== 'undefined' && window.localStorage && setSelectedCity) {
+                window.localStorage.setItem('user_city_id', citySlug);
+                window.localStorage.setItem('user_city_name', citySlug);
+                setSelectedCity(citySlug);
+            }
+        } catch (_) {}
+    };
     // Map key page states to URL paths (partial mapping for main routes)
     const pageToPath: Partial<Record<Page, string>> = {
         'landing': '/',
         'home': '/home',
         'facialProviders': '/facial-providers',
+        'facial-places': '/facial-places',
+        'facial-home-service': '/facial-home-service',
         'massageTypes': '/massage-types',
         'massage-types': '/massage-types', // drawer link uses kebab-case; must map so URL updates and stays open
         'facialTypes': '/facial-types',
@@ -224,6 +236,15 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 // Handle direct URL navigation (pathname or hash for SPA)
                 const pathFromHash = (window.location.hash || '').replace('#', '').replace(/^\/+/, '') || '';
                 const path = (window.location.pathname && window.location.pathname !== '/') ? window.location.pathname : (pathFromHash ? `/${pathFromHash}` : window.location.pathname);
+                
+                // /indonesia/:city/:service → strict city page (e.g. back/forward to city URL)
+                const indoMatch = path.match(/^\/indonesia\/([^/]+)\/([^/]+)\/?$/);
+                if (indoMatch) {
+                    const [, citySlug] = indoMatch;
+                    setPage('home');
+                    persistCityFromUrl(citySlug);
+                    return;
+                }
                 
                 // /facials → show home page with facial tab (not the standalone FacialProvidersPage)
                 if (path === '/facials') {
@@ -561,6 +582,15 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             return () => window.removeEventListener('popstate', handlePopState);
         }
         
+        // /indonesia/:city/:service → strict city page (SEO-friendly; set city and show home)
+        const indoMatch = initialPath.match(/^\/indonesia\/([^/]+)\/([^/]+)\/?$/);
+        if (indoMatch) {
+            const [, citySlug] = indoMatch;
+            setPage('home');
+            persistCityFromUrl(citySlug);
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+
         // /facials → show home with facial tab (same experience as clicking Facials on home)
         if (initialPath === '/facials') {
             try { sessionStorage.setItem('home_initial_tab', 'facials'); } catch (_) {}
@@ -654,5 +684,5 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         return () => {
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [setPage]);
+    }, [setPage, setSelectedCity]);
 };

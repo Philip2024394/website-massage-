@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import {
     MapPin, Phone, Star, Sparkles, Calendar, X, TrendingUp, Building,
-    Clock, Award, Shield, CreditCard, FileText, Globe, Zap
+    Clock, Award, Shield, CreditCard, FileText, Globe, Share2
 } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -12,9 +12,10 @@ import RotatingReviews from '../components/RotatingReviews';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import IndastreetAchievements from '../components/IndastreetAchievements';
 import HomeIcon from '../components/icons/HomeIcon';
+import SocialSharePopup from '../components/SocialSharePopup';
 import { getAuthAppUrl } from '../utils/therapistCardHelpers';
 
-const DEFAULT_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1761918521382';
+const DEFAULT_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682';
 
 interface Treatment {
     id: string;
@@ -47,6 +48,12 @@ interface GalleryImage {
     category: 'before-after' | 'interior' | 'treatment';
 }
 
+export interface ClinicInfoPhoto {
+    imageUrl: string;
+    header: string;
+    description: string;
+}
+
 interface FacialClinic {
     id: string;
     name: string;
@@ -72,6 +79,10 @@ interface FacialClinic {
     treatments: Treatment[];
     team: TeamMember[];
     gallery: GalleryImage[];
+    clinicInfoPhotos?: ClinicInfoPhoto[];
+    /** Max 5: licenses or certs – from dashboard; each has imageUrl, header, description */
+    licenseCertImages?: ClinicInfoPhoto[];
+    bookingsCount?: number;
     amenities: string[];
     specialOffers?: {
         title: string;
@@ -129,6 +140,9 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
     const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
     const [selectedMainImageIndex, setSelectedMainImageIndex] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [selectedClinicPhoto, setSelectedClinicPhoto] = useState<ClinicInfoPhoto | null>(null);
+    const [showSharePopup, setShowSharePopup] = useState(false);
+    const [selectedLicenseCert, setSelectedLicenseCert] = useState<ClinicInfoPhoto | null>(null);
 
     // Hero first, then gallery; ensure every URL is non-empty for correct display
     const heroUrl = (clinic.heroImage || '').trim() || DEFAULT_HERO_IMAGE;
@@ -156,7 +170,8 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
     const [selectedTreatment, setSelectedTreatment] = useState<Treatment | null>(null);
     const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120>(90);
     const [menuSliderOpen, setMenuSliderOpen] = useState(false);
-    const [menuSliderBookingType, setMenuSliderBookingType] = useState<'book-now' | 'scheduled'>('book-now');
+    const [menuSliderServiceIndex, setMenuSliderServiceIndex] = useState<number | null>(null);
+    const [menuSliderDuration, setMenuSliderDuration] = useState<'60' | '90' | '120' | null>(null);
     const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
     const [scheduleForTreatment, setScheduleForTreatment] = useState<Treatment | null>(null);
     const [scheduleDate, setScheduleDate] = useState<Date | null>(null);
@@ -177,6 +192,11 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
         setScheduleDate(null);
         setScheduleTime(null);
         setScheduleModalOpen(true);
+    };
+
+    const handleMenuSliderSelectService = (index: number, duration: '60' | '90' | '120') => {
+        setMenuSliderServiceIndex(index);
+        setMenuSliderDuration(duration);
     };
 
     const handleConfirmSchedule = () => {
@@ -274,7 +294,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                         </button>
                         <button
                             type="button"
-                            onClick={() => { setActiveTab('facial-places'); onNavigate?.('facialProviders'); }}
+                            onClick={() => { setActiveTab('facial-places'); onNavigate?.('facial-places'); }}
                             className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'facial-places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                         >
                             <Building className="w-4 h-4 flex-shrink-0" />
@@ -284,10 +304,14 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                     <div className="flex flex-row gap-2 sm:gap-3 items-center max-w-2xl mx-auto mt-4 min-h-[54px]">
                         <button
                             type="button"
-                            onClick={() => onNavigate?.('home')}
-                            title={language === 'id' ? 'Pijat & tempat pijat' : 'Massage & massage places'}
+                            onClick={() => {
+                                try { sessionStorage.removeItem('home_initial_tab'); } catch (_) {}
+                                if (typeof onNavigate === 'function') onNavigate('home');
+                                else if (typeof onBack === 'function') onBack();
+                            }}
+                            title={language === 'id' ? 'Pijat & tempat pijat' : 'Massage home – Home service or Massage places'}
                             aria-label="Massage"
-                            className="flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300"
+                            className="relative z-10 flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300"
                         >
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap truncate">{language === 'id' ? 'Pijat' : 'Massage'}</span>
@@ -304,8 +328,11 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                         </div>
                         <button
                             type="button"
-                            onClick={() => onNavigate?.('facialProviders')}
-                            title={language === 'id' ? 'Facial Indonesia' : 'Facials Indonesia'}
+                            onClick={() => {
+                                try { sessionStorage.setItem('home_initial_tab', 'facials'); } catch (_) {}
+                                onNavigate?.('home');
+                            }}
+                            title={language === 'id' ? 'Facial layanan rumah' : 'Home page – Home service facials & Facial places tab'}
                             aria-label="Facial"
                             className="flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border bg-orange-500 text-white border-orange-500 shadow"
                         >
@@ -318,26 +345,99 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
 
             {/* Luxury skin clinic profile – soft neutral, mobile-first, conversion-focused */}
             <div className="bg-[#faf8f5] min-h-screen">
-                <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
-                    {/* 1️⃣ Hero Profile Card – premium, clean, trust */}
-                    <div className="bg-white rounded-[20px] shadow-lg shadow-stone-200/60 overflow-hidden mb-6 border border-stone-100">
-                        <div className="relative aspect-[16/10] max-h-52 bg-stone-100">
+                {/* 1️⃣ Hero – full-width main image, top corners rounded; badges (star, orders, share); Joined over image left */}
+                <div className="w-full overflow-hidden rounded-t-2xl">
+                    <div className="h-48 w-full overflow-visible relative sm:h-52">
+                        <div className="absolute inset-0 overflow-hidden rounded-t-2xl bg-gradient-to-r from-stone-200 to-stone-300" style={{ minHeight: '192px' }}>
                             <img
                                 src={mainDisplayImages[selectedMainImageIndex]}
                                 alt=""
-                                className="w-full h-full object-cover object-center"
+                                className="w-full h-full object-cover object-center rounded-t-2xl"
+                                style={{ aspectRatio: '16/9', minHeight: '192px' }}
                                 loading="eager"
                                 onError={(e) => {
                                     const el = e.currentTarget;
                                     if (el.src !== DEFAULT_HERO_IMAGE) el.src = DEFAULT_HERO_IMAGE;
                                 }}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/70 via-stone-900/20 to-transparent" />
-                            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-stone-700 text-xs font-medium rounded-full px-2.5 py-1">
-                                <Calendar className="w-3.5 h-3.5" />
-                                {joinedDisplay}
-                            </div>
                         </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/50 via-transparent to-transparent pointer-events-none rounded-t-2xl" />
+                        {/* Star rating badge – top left (same as therapist) */}
+                        <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg">
+                            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                            <span className="text-sm font-bold text-white">{clinic.rating.toFixed(1)}</span>
+                        </div>
+                        {/* Joined date – over main image, left side with icon */}
+                        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg text-white text-xs font-medium">
+                            <Calendar className="w-3.5 h-3.5 text-amber-300" />
+                            <span>Joined {joinedDisplay}</span>
+                        </div>
+                        {/* Orders badge – top right (same as therapist) */}
+                        {(clinic.bookingsCount ?? 0) > 0 && (
+                            <div className="absolute top-3 right-3 z-10 bg-black/70 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg">
+                                {clinic.bookingsCount}+ Orders
+                            </div>
+                        )}
+                        {/* Share profile button – bottom right (same as therapist) */}
+                        <button
+                            type="button"
+                            onClick={() => setShowSharePopup(true)}
+                            className="absolute bottom-3 right-3 z-10 bg-black/50 backdrop-blur-sm text-white p-2.5 rounded-full hover:bg-black/70 transition-all"
+                            title="Share this clinic"
+                            aria-label="Share profile"
+                        >
+                            <Share2 className="w-5 h-5" strokeWidth={2.5} />
+                        </button>
+                    </div>
+                    {/* Location under main image – right-aligned with pin (Joined moved over image) */}
+                    <div className="px-4 py-2 bg-white/95 backdrop-blur-sm flex flex-col items-end border-b border-stone-100">
+                        {clinic.location && (
+                            <>
+                                <div className="flex items-center gap-1 text-xs text-stone-800 font-medium uppercase">
+                                    <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                                    {clinic.location}
+                                </div>
+                                <div className="text-xs text-amber-600 mt-0.5 font-medium">
+                                    Serves {clinic.location} area
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Licenses & certifications – max 5 thumbnails; click to enlarge with header and details */}
+                    {(() => {
+                        const licenses = (clinic.licenseCertImages && clinic.licenseCertImages.length > 0)
+                            ? clinic.licenseCertImages.slice(0, 5)
+                            : [];
+                        if (licenses.length === 0) return null;
+                        return (
+                            <div className="px-4 py-4 bg-white border-b border-stone-100">
+                                <h3 className="font-serif text-base font-bold text-stone-800 mb-3">
+                                    {language === 'id' ? 'Lisensi & Sertifikasi' : 'Licenses & certifications'}
+                                </h3>
+                                <p className="text-xs text-stone-500 mb-3">
+                                    {language === 'id' ? 'Klik untuk memperbesar' : 'Tap to enlarge'}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {licenses.map((item, idx) => (
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => setSelectedLicenseCert(item)}
+                                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-stone-200 shadow-sm hover:ring-2 hover:ring-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 flex-shrink-0"
+                                        >
+                                            <img src={item.imageUrl} alt={item.header} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_HERO_IMAGE; }} />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })()}
+                </div>
+
+                <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
+                    {/* Profile card – name, tagline, actions */}
+                    <div className="bg-white rounded-[20px] shadow-lg shadow-stone-200/60 overflow-hidden mb-6 border border-stone-100 -mt-2 relative z-10">
                         <div className="p-5">
                             <div className="flex items-start gap-4">
                                 <img
@@ -416,7 +516,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                             <div className="grid grid-cols-2 gap-3 p-4">
                                 <div className="relative rounded-xl overflow-hidden border border-stone-100 bg-stone-50 min-h-[320px] sm:min-h-[400px]">
                                     <img
-                                        src="https://ik.imagekit.io/7grri5v7d/body%20part%205.png?updatedAt=1770240547579"
+                                        src="https://ik.imagekit.io/7grri5v7d/body%20front.png"
                                         alt={language === 'id' ? 'Tubuh depan – referensi area perawatan' : 'Body front – treatment area reference'}
                                         className="w-full h-full min-h-[320px] sm:min-h-[400px] object-cover object-top"
                                         loading="lazy"
@@ -428,7 +528,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                 </div>
                                 <div className="rounded-xl overflow-hidden border border-stone-100 bg-stone-50 min-h-[320px] sm:min-h-[400px] relative">
                                     <img
-                                        src="https://ik.imagekit.io/7grri5v7d/body%20part%204.png?updatedAt=1770240670476"
+                                        src="https://ik.imagekit.io/7grri5v7d/body%20back.png"
                                         alt={language === 'id' ? 'Tubuh belakang – referensi area perawatan' : 'Body back – treatment area reference'}
                                         className="w-full h-full min-h-[320px] sm:min-h-[400px] object-cover object-top"
                                         loading="lazy"
@@ -468,6 +568,33 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                     {/* 6️⃣ Business information section */}
                     <section className="bg-white rounded-2xl border border-stone-100 shadow-lg shadow-stone-200/40 p-5 mb-8">
                         <h2 className="font-serif text-lg font-bold text-stone-800 mb-4">Clinic information</h2>
+                        {/* Up to 5 thumbnail photos – click to open image with header and description */}
+                        {(() => {
+                            const photos: ClinicInfoPhoto[] = (clinic.clinicInfoPhotos && clinic.clinicInfoPhotos.length > 0)
+                                ? clinic.clinicInfoPhotos.slice(0, 5)
+                                : clinic.gallery.slice(0, 5).map((g) => ({ imageUrl: g.url, header: g.caption || 'Photo', description: '' }));
+                            if (photos.length === 0) return null;
+                            return (
+                                <div className="mb-5">
+                                    <div className="font-semibold text-stone-700 flex items-center gap-2 mb-2">
+                                        <Sparkles className="w-4 h-4 text-amber-600" />
+                                        Clinic photos
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {photos.map((photo, idx) => (
+                                            <button
+                                                key={idx}
+                                                type="button"
+                                                onClick={() => setSelectedClinicPhoto(photo)}
+                                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-stone-200 shadow-sm hover:ring-2 hover:ring-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 flex-shrink-0"
+                                            >
+                                                <img src={photo.imageUrl} alt={photo.header} className="w-full h-full object-cover" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                         <div className="space-y-4 text-sm">
                             {clinic.description && (
                                 <div>
@@ -515,12 +642,12 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                             <div>
                                 <div className="font-semibold text-stone-700 flex items-center gap-2 mb-1">
                                     <Globe className="w-4 h-4 text-amber-600" />
-                                    Contact & languages
+                                    Languages
                                 </div>
                                 <p className="text-stone-600">
-                                    {clinic.phone && <a href={`tel:${clinic.phone}`} className="text-amber-600 underline">{clinic.phone}</a>}
-                                    {clinic.email && ` · ${clinic.email}`}
-                                    {' · English, Indonesian'}
+                                    {clinic.email && <span>{clinic.email}</span>}
+                                    {clinic.email && ' · '}
+                                    English, Indonesian
                                 </p>
                             </div>
                         </div>
@@ -560,121 +687,227 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                 </div>
             </div>
 
-            {/* 4️⃣ Bottom slider – same as therapist: orange header, Book Now / Scheduled, then menu with Book Now + Schedule per item */}
-            {menuSliderOpen && (
-                <>
-                    <div className="fixed inset-0 bg-black/50 z-40 transition-opacity" onClick={() => setMenuSliderOpen(false)} aria-hidden />
+            {/* Clinic photo lightbox – image, header, description */}
+            {selectedClinicPhoto && (
+                <div
+                    className="fixed inset-0 z-[11000] bg-black/70 flex items-center justify-center p-4"
+                    onClick={() => setSelectedClinicPhoto(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="clinic-photo-title"
+                >
                     <div
-                        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col animate-[slideUp_0.3s_ease-out_forwards]"
+                        className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => setSelectedClinicPhoto(null)}
+                            className="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                            aria-label="Close"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <div className="flex-1 min-h-0 flex flex-col overflow-auto">
+                            <img
+                                src={selectedClinicPhoto.imageUrl}
+                                alt={selectedClinicPhoto.header}
+                                className="w-full object-contain max-h-[50vh] bg-stone-100"
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_HERO_IMAGE; }}
+                            />
+                            <div className="p-4 flex-shrink-0">
+                                <h3 id="clinic-photo-title" className="font-serif text-lg font-bold text-stone-800 mb-2">{selectedClinicPhoto.header}</h3>
+                                {selectedClinicPhoto.description && (
+                                    <p className="text-stone-600 text-sm leading-relaxed">{selectedClinicPhoto.description}</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* License/cert lightbox – image, header, details */}
+            {selectedLicenseCert && (
+                <div
+                    className="fixed inset-0 z-[11000] bg-black/70 flex items-center justify-center p-4"
+                    onClick={() => setSelectedLicenseCert(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="license-cert-title"
+                >
+                    <div
+                        className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => setSelectedLicenseCert(null)}
+                            className="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                            aria-label="Close"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <div className="flex-1 min-h-0 flex flex-col overflow-auto">
+                            <img
+                                src={selectedLicenseCert.imageUrl}
+                                alt={selectedLicenseCert.header}
+                                className="w-full object-contain max-h-[50vh] bg-stone-100"
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_HERO_IMAGE; }}
+                            />
+                            <div className="p-4 flex-shrink-0">
+                                <h3 id="license-cert-title" className="font-serif text-lg font-bold text-stone-800 mb-2">{selectedLicenseCert.header}</h3>
+                                {selectedLicenseCert.description && (
+                                    <p className="text-stone-600 text-sm leading-relaxed">{selectedLicenseCert.description}</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Share profile popup */}
+            <SocialSharePopup
+                isOpen={showSharePopup}
+                onClose={() => setShowSharePopup(false)}
+                title={clinic.name}
+                description={clinic.tagline || clinic.description?.slice(0, 120) || 'Facial & skin clinic'}
+                url={typeof window !== 'undefined' ? window.location.href : ''}
+                type="facial"
+                headerTitle={language === 'id' ? 'Bagikan profil klinik' : 'Share clinic profile'}
+            />
+
+            {/* 4️⃣ Bottom slider – clone of therapist profile price list modal */}
+            {menuSliderOpen && (
+                <div
+                    className="fixed inset-0 z-[10000] bg-black bg-opacity-50 transition-opacity duration-300"
+                    onClick={() => setMenuSliderOpen(false)}
+                >
+                    <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+                    <div
+                        className="absolute bottom-0 left-0 right-0 h-full w-full bg-white transform transition-transform duration-300 ease-out"
                         style={{ animation: 'slideUp 0.3s ease-out forwards' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
-                        {/* Orange header – same as therapist price list modal */}
-                        <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-t-3xl sticky top-0 z-10">
-                            <h3 className="text-lg font-bold text-white">{clinic.name} – Menu</h3>
-                            <button type="button" onClick={() => setMenuSliderOpen(false)} className="flex items-center justify-center w-8 h-8 bg-black/70 hover:bg-black rounded-full transition-colors" aria-label="Close">
-                                <X className="w-5 h-5 text-white" />
+                        {/* Header – orange gradient with logo, name, rating (same as therapist) */}
+                        <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 sticky top-0 z-10">
+                            <div className="flex items-center gap-3 flex-1">
+                                <img
+                                    src={(clinic.logo || '').trim() || DEFAULT_HERO_IMAGE}
+                                    alt={clinic.name}
+                                    className="w-11 h-11 rounded-full border-2 border-white object-cover"
+                                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_HERO_IMAGE; }}
+                                />
+                                <div>
+                                    <h2 className="text-lg font-bold text-white leading-tight">{clinic.name}</h2>
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <Star className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
+                                        <span className="font-bold text-black bg-white/90 rounded px-1.5 py-0.5 shadow-sm">{clinic.rating.toFixed(1)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setMenuSliderOpen(false)}
+                                className="flex items-center justify-center w-8 h-8 bg-black/70 hover:bg-black rounded-full transition-colors"
+                                aria-label="Close"
+                            >
+                                <X className="h-5 w-5 text-white" />
                             </button>
                         </div>
-                        {/* Book Now / Scheduled toggle – same as therapist slider */}
-                        <div className="px-4 py-3 bg-gray-100 border-b border-gray-200">
-                            <div className="relative bg-gray-200 rounded-lg p-1">
-                                <div
-                                    className={`absolute top-1 left-1 w-1/2 h-[calc(100%-8px)] rounded-lg shadow transition-transform duration-300 ${
-                                        menuSliderBookingType === 'scheduled'
-                                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 translate-x-full'
-                                            : 'bg-gradient-to-r from-orange-500 to-red-500 translate-x-0'
-                                    }`}
-                                />
-                                <div className="relative grid grid-cols-2 gap-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => setMenuSliderBookingType('book-now')}
-                                        className={`relative z-10 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
-                                            menuSliderBookingType === 'book-now' ? 'text-white' : 'text-gray-700 bg-transparent hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        <span className="flex items-center justify-center gap-2">
-                                            <Zap className="w-5 h-5" />
-                                            <span>Pesan Sekarang</span>
-                                        </span>
-                                        <span className="block text-xs opacity-90">Langsung</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setMenuSliderBookingType('scheduled')}
-                                        className={`relative z-10 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
-                                            menuSliderBookingType === 'scheduled' ? 'text-white' : 'text-gray-700 bg-transparent hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        <span className="flex items-center justify-center gap-2">
-                                            <Calendar className="w-5 h-5" />
-                                            <span>Terjadwal</span>
-                                        </span>
-                                        <span className="block text-xs opacity-90">Rencanakan</span>
-                                    </button>
+
+                        {/* Service Prices row (same as therapist, no arrival for facial) */}
+                        <div className="px-4 py-2 flex items-center justify-between bg-white border-b border-gray-100">
+                            <div className="text-sm sm:text-base font-bold text-gray-900">Service Prices</div>
+                        </div>
+
+                        {/* Price list content – card layout like therapist */}
+                        <div className="flex-1 p-4 max-h-[70vh] overflow-y-auto">
+                            <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
+                                <div className="text-center p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-2">
+                                        {language === 'id' ? 'Menu Facial' : 'Facial Menu'}
+                                    </h2>
+                                    <p className="text-gray-600">
+                                        {language === 'id' ? 'Pilih layanan dan durasi, lalu pilih opsi pemesanan' : 'Select service and duration, then choose your booking option'}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-6 p-4">
+                                    {clinic.treatments.map((t, index) => {
+                                        const isRowSelected = menuSliderServiceIndex === index;
+                                        const durations = (['60', '90', '120'] as const).filter(d => (t.prices as any)[`min${d}`] != null && (t.prices as any)[`min${d}`] > 0);
+
+                                        return (
+                                            <div
+                                                key={t.id}
+                                                className={`relative bg-white rounded-xl border-2 p-4 transition-all ${
+                                                    isRowSelected ? 'border-orange-400 shadow-lg bg-orange-50' : 'border-gray-200 hover:border-orange-300'
+                                                }`}
+                                            >
+                                                <div className="mb-4 text-center">
+                                                    <h3 className="text-lg font-bold text-gray-900 mb-1">{t.name}</h3>
+                                                    {t.description && <p className="text-sm text-gray-600">{t.description}</p>}
+                                                </div>
+
+                                                <div className="mb-6">
+                                                    <div className="flex flex-wrap justify-center gap-3">
+                                                        {(['60', '90', '120'] as const).map((d) => {
+                                                            const price = (t.prices as any)[`min${d}`];
+                                                            const isSelected = isRowSelected && menuSliderDuration === d;
+                                                            if (price == null || price === 0) return null;
+                                                            return (
+                                                                <button
+                                                                    key={d}
+                                                                    type="button"
+                                                                    onClick={() => handleMenuSliderSelectService(index, d)}
+                                                                    className={`flex-1 min-w-[100px] max-w-[140px] px-4 py-3 rounded-xl border-2 transition-all ${
+                                                                        isSelected
+                                                                            ? 'border-orange-500 bg-orange-500 text-white shadow-lg transform scale-105'
+                                                                            : 'border-orange-200 bg-white text-gray-800 hover:border-orange-400 hover:bg-orange-50'
+                                                                    }`}
+                                                                >
+                                                                    <div className="text-center">
+                                                                        <div className="text-sm font-semibold mb-1">{d} min</div>
+                                                                        <div className="text-sm font-bold">Rp {Number(price).toLocaleString('id-ID')}</div>
+                                                                    </div>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                                <div className="border-t border-gray-200 pt-4">
+                                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                                        <a
+                                                            href={buildWhatsAppUrl(
+                                                                isRowSelected && menuSliderDuration
+                                                                    ? `Hi, I would like to book ${t.name} (${menuSliderDuration} min) at ${clinic.name}.`
+                                                                    : `Hi, I would like to book ${t.name} at ${clinic.name}.`
+                                                            )}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="px-6 py-3 font-semibold rounded-lg transition-all duration-200 bg-orange-600 text-white hover:bg-orange-700 shadow-lg text-center"
+                                                        >
+                                                            {language === 'id' ? 'Book Now' : 'Book Now'}
+                                                        </a>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setMenuSliderOpen(false); setMenuSliderServiceIndex(null); setMenuSliderDuration(null); handleScheduleAppointment(t); }}
+                                                            className="px-6 py-3 font-semibold rounded-lg border-2 border-orange-500 bg-orange-500 text-white hover:bg-orange-600 transition-all duration-200 flex items-center justify-center gap-2"
+                                                        >
+                                                            <Calendar className="w-5 h-5" />
+                                                            {language === 'id' ? 'Schedule' : 'Schedule'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
-                        <div className="overflow-y-auto flex-1 px-4 pb-6">
-                            <div className="text-sm font-bold text-gray-900 py-2">Service Prices</div>
-                            {clinic.treatments.map((t) => (
-                                <div key={t.id} className="py-4 border-b border-stone-100 last:border-0">
-                                    <div className="font-semibold text-stone-800">{t.name}</div>
-                                    <p className="text-stone-500 text-sm mt-0.5">{t.description}</p>
-                                    <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-stone-600">
-                                        <span>60m: Rp {(t.prices.min60 || 0).toLocaleString()}</span>
-                                        <span>90m: Rp {(t.prices.min90 || 0).toLocaleString()}</span>
-                                        <span>120m: Rp {(t.prices.min120 || 0).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex gap-2 mt-3">
-                                        {menuSliderBookingType === 'book-now' ? (
-                                            <a
-                                                href={buildWhatsAppUrl(`Hi, I would like to book ${t.name} at ${clinic.name}.`)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold text-sm hover:from-orange-600 hover:to-orange-700 transition"
-                                            >
-                                                <Zap className="w-4 h-4" />
-                                                Book Now
-                                            </a>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => { setMenuSliderOpen(false); handleScheduleAppointment(t); }}
-                                                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold text-sm hover:from-orange-600 hover:to-orange-700 transition"
-                                            >
-                                                <Calendar className="w-4 h-4" />
-                                                Schedule
-                                            </button>
-                                        )}
-                                        {menuSliderBookingType === 'book-now' ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => { setMenuSliderOpen(false); handleScheduleAppointment(t); }}
-                                                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 border-orange-500 text-orange-600 font-semibold text-sm hover:bg-orange-50 transition"
-                                            >
-                                                <Calendar className="w-4 h-4" />
-                                                Schedule
-                                            </button>
-                                        ) : (
-                                            <a
-                                                href={buildWhatsAppUrl(`Hi, I would like to book ${t.name} at ${clinic.name}.`)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 border-orange-500 text-orange-600 font-semibold text-sm hover:bg-orange-50 transition"
-                                            >
-                                                <Phone className="w-4 h-4" />
-                                                Book Now
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
-                </>
+                </div>
             )}
 
             {/* 5️⃣ Schedule appointment modal – calendar + time slots */}

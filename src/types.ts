@@ -233,6 +233,15 @@ export interface Analytics {
     bookings: number;
 }
 
+/** Beautician treatment container: fixed price per treatment, estimated time for scheduling only. */
+export interface BeauticianTreatment {
+    treatment_name: string;
+    fixed_price: number;
+    estimated_duration_minutes: number;
+    /** Optional currency code for display (e.g. 'EUR', 'IDR'). Default from locale. */
+    currency?: string;
+}
+
 export interface Therapist {
     id: number | string; // Support both for Appwrite compatibility ($id is string)
     $id?: string; // Appwrite document ID (added for update operations)
@@ -411,6 +420,18 @@ export interface Therapist {
     
     // SafePass Verification Display (for hotels, villas, homes)
     hasSafePassVerification?: boolean; // Whether to show SafePass verification button
+
+    // Service category – same collection can offer massage, facial, or both (future-proof for more services)
+    servicesOffered?: string[]; // e.g. ['massage'], ['facial'], or ['massage', 'facial']
+
+    // Beautician treatment containers (1–3 fixed-price treatments; JSON string for Appwrite)
+    beauticianTreatments?: string; // JSON: BeauticianTreatment[]
+
+    // Facial-specific attributes (optional; shown on profile when therapist offers facial)
+    facialCertifications?: string | string[];
+    facialProductsUsed?: string | string[];
+    facialEquipment?: string | string[];
+    facialSpecialties?: string | string[];
 }
 
 // Commission payment record

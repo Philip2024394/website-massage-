@@ -25,6 +25,9 @@ import UniversalPWAInstall from '../../components/UniversalPWAInstall';
 import IOSInstallInstructions from '../../components/IOSInstallInstructions';
 import { pwaNotificationSoundHandler } from '../../services/pwaNotificationSoundHandler';
 import { isEmergencyWindowActive, triggerEmergencyAlert, type BookingForEmergency } from '../../services/emergencyAlertService';
+import { therapistOffersService, SERVICE_TYPES } from '../../constants/serviceTypes';
+import BeauticianServiceCategories from '../../components/therapist/BeauticianServiceCategories';
+import BeauticianTreatmentContainersConfig from '../../components/therapist/BeauticianTreatmentContainersConfig';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -1224,6 +1227,22 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             </div>
           </div>
         </div>
+
+        {/* Beautician Dashboard: Service categories (max 5) + Facial upgrade */}
+        {therapist && therapistOffersService(therapist, SERVICE_TYPES.BEAUTICIAN) && (
+          <div className="mt-4 space-y-4">
+            <BeauticianServiceCategories
+              therapist={therapist}
+              onRefresh={onRefresh}
+              language={propLanguage}
+            />
+            <BeauticianTreatmentContainersConfig
+              therapist={therapist}
+              onRefresh={onRefresh}
+              language={propLanguage}
+            />
+          </div>
+        )}
         
         {/* Install App on Mobile Device - at end of Status page */}
         {(() => {

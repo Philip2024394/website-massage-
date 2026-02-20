@@ -1,5 +1,5 @@
 // State management hooks and utilities for the main App component
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, ChatRoom } from '../types';
 import type { Page, Language, LoggedInProvider, LoggedInUser } from '../types/pageTypes';
 
@@ -481,6 +481,18 @@ export const useAppState = () => {
   // UI state
   const [isLoading, setIsLoading] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  // City for strict filtering: when set, therapists are fetched by primary_city only (no cross-listing)
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+
+  // Initialize selectedCity from localStorage on mount so initial fetch uses last-selected city
+  useEffect(() => {
+    if (selectedCity !== null) return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    const id = window.localStorage.getItem('user_city_id');
+    const name = window.localStorage.getItem('user_city_name');
+    const stored = (id || name || '').trim();
+    if (stored && stored !== 'all') setSelectedCity(stored);
+  }, []);
 
   return {
     // User
@@ -492,6 +504,7 @@ export const useAppState = () => {
     language, setLanguage,
     userLocation, setUserLocation,
     selectedMassageType, setSelectedMassageType,
+    selectedCity, setSelectedCity,
     
     // Admin
     isAdminLoggedIn, setIsAdminLoggedIn,

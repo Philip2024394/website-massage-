@@ -9,6 +9,7 @@ import { getCustomerLocation, findAllNearbyTherapists, findAllNearbyPlaces } fro
 import { findCityByCoordinates, matchProviderToCity } from '../constants/indonesianCities';
 import { matchesLocation } from '../utils/locationNormalization';
 import { filterTherapistsByCity, filterPlacesByCity, filterHotelsByCity } from '../utils/cityFilterUtils';
+import { SERVICE_TYPES, therapistOffersService, shouldAppearInFacialListing } from '../constants/serviceTypes';
 
 interface UseHomePageLocationProps {
     therapists: Therapist[];
@@ -46,6 +47,8 @@ export function useHomePageLocation({
     const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
     const [nearbyHotels, setNearbyHotels] = useState<any[]>([]);
     const [cityFilteredTherapists, setCityFilteredTherapists] = useState<Therapist[]>([]);
+    const [cityFilteredFacialTherapists, setCityFilteredFacialTherapists] = useState<Therapist[]>([]);
+    const [cityFilteredBeauticianTherapists, setCityFilteredBeauticianTherapists] = useState<Therapist[]>([]);
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
     
     // Parse coordinates utility
@@ -103,13 +106,17 @@ export function useHomePageLocation({
         detectLocation();
     }, []); // Run once on mount
     
-    // City-based filtering logic
+    // City-based filtering logic (massage + facial therapists from same collection)
     useEffect(() => {
         const safeTherapists = Array.isArray(therapists) ? therapists : [];
+        const facialTherapists = safeTherapists.filter((t: any) => shouldAppearInFacialListing(t));
+        const beauticianTherapists = safeTherapists.filter((t: any) => therapistOffersService(t, SERVICE_TYPES.BEAUTICIAN));
         const effectiveSelectedCity = propSelectedCity || selectedCity;
         
         if (!effectiveSelectedCity || effectiveSelectedCity === 'all') {
             setCityFilteredTherapists(safeTherapists);
+            setCityFilteredFacialTherapists(facialTherapists);
+            setCityFilteredBeauticianTherapists(beauticianTherapists);
             const effectiveLocation = devLocationOverride || autoDetectedLocation || (userLocation ? {lat: userLocation.lat, lng: userLocation.lng} : null);
             if (!effectiveLocation) {
                 setNearbyTherapists([]);
@@ -121,7 +128,11 @@ export function useHomePageLocation({
         } else {
             // Per-city view: show ALL profiles whose saved GPS-derived city matches. No distance limit, no km.
             const filtered = filterTherapistsByCity(safeTherapists, effectiveSelectedCity);
+            const filteredFacial = filterTherapistsByCity(facialTherapists, effectiveSelectedCity);
+            const filteredBeautician = filterTherapistsByCity(beauticianTherapists, effectiveSelectedCity);
             setCityFilteredTherapists(filtered);
+            setCityFilteredFacialTherapists(filteredFacial);
+            setCityFilteredBeauticianTherapists(filteredBeautician);
             setNearbyTherapists(filtered);
             const safePlaces = Array.isArray(places) ? places : [];
             setNearbyPlaces(filterPlacesByCity(safePlaces, effectiveSelectedCity));
@@ -224,6 +235,10 @@ export function useHomePageLocation({
         setNearbyHotels,
         cityFilteredTherapists,
         setCityFilteredTherapists,
+        cityFilteredFacialTherapists,
+        setCityFilteredFacialTherapists,
+        cityFilteredBeauticianTherapists,
+        setCityFilteredBeauticianTherapists,
         isLocationDetecting,
         setIsLocationDetecting,
         parseCoordinates,

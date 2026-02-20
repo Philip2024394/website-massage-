@@ -1,10 +1,13 @@
-import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
+import { useMemo } from 'react';
+import { THERAPIST_MAIN_IMAGES, BEAUTICIAN_MAIN_IMAGES } from '../lib/services/imageService';
+import { therapistOffersService, SERVICE_TYPES } from '../constants/serviceTypes';
 
 /**
  * Random Therapist Image Assignment Utility
  * Uses the Appwrite therapist main image gallery (same as imageService) so home and profile
  * show the correct gallery. Therapists only upload profile image (avatar); main image
  * is assigned from this pool by therapist ID for consistency.
+ * Beautician profiles use a separate pool (BEAUTICIAN_MAIN_IMAGES) and show a random image per visit.
  */
 
 /** Pool of main/cover images from Appwrite storage – single source for home + profile. */
@@ -60,12 +63,36 @@ export const isValidTherapistImage = (imageUrl: string): boolean => {
 };
 
 /**
+ * Get a random beautician main image – changes each visit (per mount).
+ * Used when displaying a therapist who offers beautician service.
+ */
+export const getRandomBeauticianMainImage = (): string => {
+    if (!BEAUTICIAN_MAIN_IMAGES.length) return getRandomTherapistImage('beautician');
+    const index = Math.floor(Math.random() * BEAUTICIAN_MAIN_IMAGES.length);
+    return BEAUTICIAN_MAIN_IMAGES[index];
+};
+
+/**
  * Get therapist main image - SINGLE SOURCE OF TRUTH for home page card AND profile page.
  * Therapists/places only upload their profile image (avatar). They never set main image.
  * Main image = pool from Appwrite storage (imageService), assigned by therapist ID
  * so the same therapist always gets the same image on home and profile.
+ * For beautician providers use useTherapistDisplayImage() so the random image is stable per visit.
  */
 export const getTherapistMainImage = (therapist: { [key: string]: unknown }): string => {
     const therapistId = String(therapist.$id || therapist.id || therapist.name || '');
     return getRandomTherapistImage(therapistId);
 };
+
+/**
+ * Hook: main image for display (card or profile). Use this instead of getTherapistMainImage
+ * when the provider may be a beautician – beautician gets one random image per visit (stable per mount).
+ */
+export function useTherapistDisplayImage(therapist: { [key: string]: unknown } | null | undefined): string {
+    const isBeautician = therapist ? therapistOffersService(therapist as any, SERVICE_TYPES.BEAUTICIAN) : false;
+    return useMemo(() => {
+        if (!therapist) return '';
+        if (isBeautician) return getRandomBeauticianMainImage();
+        return getTherapistMainImage(therapist);
+    }, [therapist?.$id, therapist?.id, isBeautician]);
+}

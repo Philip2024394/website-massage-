@@ -33,7 +33,7 @@ export const homeTranslations = {
       changeCity: 'Select location',
       locationError: 'Could not get location. Please enable permissions and try again.',
       gettingLocation: 'Getting location...',
-      browseRegionNote: 'Browse Region dropdown (distance still applies)',
+      browseRegionNote: 'Browse Region By Filtering Location',
       viewProfile: 'View Profile',
       viewOnly: 'View Only',
       therapistCard: {

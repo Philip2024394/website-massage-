@@ -29,7 +29,7 @@ import { usePersistentChatIntegration } from '../../hooks/usePersistentChatInteg
 import type { Therapist, UserLocation } from '../../types';
 import { generateTherapistShareURL } from './utils/shareUrlBuilder';
 import { PREVIEW_IMAGES } from '../../config/previewImages';
-import { getTherapistMainImage } from '../../utils/therapistImageUtils';
+import { useTherapistDisplayImage } from '../../utils/therapistImageUtils';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from '../../lib/appwrite';
 import { shareLinkService } from '../../lib/services/shareLinkService';
 import PWAInstallBanner from '../../components/PWAInstallBanner';
@@ -191,6 +191,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [attemptedTherapistId, setAttemptedTherapistId] = useState<string | null>(null);
     const [shareCount, setShareCount] = useState<number | undefined>(undefined);
+
+    const displayImage = useTherapistDisplayImage(therapist ?? undefined);
 
     // Fetch share count when therapist is loaded (for digit counter over main image)
     useEffect(() => {
@@ -483,8 +485,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         const description = `✨ Book ${displayName} for professional massage therapy in ${city}. ⭐ Verified therapist • 💬 Instant chat • 🔒 Secure booking`;
         const shareUrl = generateTherapistShareURL(therapist);
         
-        // Use same image as home page and profile page for social sharing
-        const previewImage = getTherapistMainImage(therapist as any);
+        // Use same image as home page and profile page for social sharing (beautician: random per visit)
+        const previewImage = displayImage;
         
         console.log('📱 Social Media Preview:', { 
             therapist: therapist.name, 
@@ -676,7 +678,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             ogImage: previewImage,
             canonical: shareUrl
         });
-    }, [therapist]);
+    }, [therapist, displayImage]);
 
     // Helper for preview images
     const getPreviewImage = (therapist: Therapist) => {

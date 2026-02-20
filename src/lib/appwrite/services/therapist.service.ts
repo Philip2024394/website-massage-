@@ -1,6 +1,9 @@
 /**
  * Therapist management and operations
  * Extracted from monolithic appwriteService.ts for better maintainability
+ *
+ * CITY FILTERING: Strict primary_city only. Each therapist must have primary_city (required).
+ * Query uses exact match only – no contains(), no GPS, no fuzzy matching.
  */
 
 import { databases, storage, APPWRITE_CONFIG, account, rateLimitedDb } from '../config';
@@ -10,6 +13,7 @@ import { getRandomTherapistImage } from '../../../utils/therapistImageUtils';
 import { handleAppwriteError } from '../../../lib/globalErrorHandler';
 import { APPWRITE_CRASH_ERROR_CODE } from '../../../utils/appwriteHelpers';
 import { applyDisplayStatusToTherapists } from '../../../utils/therapistDisplayStatus';
+import { findCityByLocationIdOrName } from '../../../data/indonesianCities';
 
 // Import services with proper fallbacks
 let sendAdminNotification: any;
@@ -34,6 +38,19 @@ try {
     ({ getNonRepeatingMainImage } = require('../config'));
 } catch {
     getNonRepeatingMainImage = (index: number) => createPlaceholderDataURL(`Therapist ${index + 1}`);
+}
+
+/**
+ * Normalize city to canonical primary_city value (locationId) for exact-match query.
+ * Used so URL/dropdown values (e.g. "Yogyakarta", "Jogja") match DB primary_city (e.g. "yogyakarta").
+ */
+function normalizePrimaryCity(city: string | undefined | null): string {
+    if (!city || typeof city !== 'string') return '';
+    const trimmed = city.trim().toLowerCase();
+    if (!trimmed || trimmed === 'all') return '';
+    const found = findCityByLocationIdOrName(city);
+    if (found) return found.locationId;
+    return trimmed;
 }
 
 export const therapistService = {
@@ -124,9 +141,17 @@ export const therapistService = {
                 queries.push(Query.equal('availability', 'available'));
                 filterDescription = filterDescription ? filterDescription + ', availability=available' : 'availability=available';
             }
+            // STRICT city filter: exact match only (no contains, no GPS).
+            // Uses locationId and country. isLive omitted so therapists show even if not yet "live" in DB.
+            let primaryCityForFallback = '';
             if (city) {
-                queries.push(Query.search('location', city));
-                filterDescription += (filterDescription ? ' + ' : '') + `search(location,${city})`;
+                const primaryCity = normalizePrimaryCity(city);
+                if (primaryCity) {
+                    primaryCityForFallback = primaryCity;
+                    queries.push(Query.equal('locationId', primaryCity));
+                    queries.push(Query.equal('country', 'Indonesia'));
+                    filterDescription += (filterDescription ? ' + ' : '') + `locationId=${primaryCity}, country=Indonesia`;
+                }
             }
 
             // Always log config and env at runtime (dev) so we can confirm IDs and filters.
@@ -145,7 +170,31 @@ export const therapistService = {
                 });
             }
 
-            const response = await rateLimitedDb.listDocuments(databaseId, collectionId, queries);
+            let response: { documents: any[]; total?: number };
+            try {
+                response = await rateLimitedDb.listDocuments(databaseId, collectionId, queries);
+            } catch (listError: unknown) {
+                // Schema may not have locationId/isLive indexed or query failed; retry without city filter and filter client-side
+                const msg = String((listError as Error)?.message || '');
+                if (primaryCityForFallback && (msg.includes('Unknown attribute') || msg.includes('invalid') || msg.includes('attribute'))) {
+                    const baselineQueries = queries.filter((q) => {
+                        const s = String(q);
+                        return !s.includes('locationId') && !s.includes('country');
+                    });
+                    if (baselineQueries.length > 0) {
+                        response = await rateLimitedDb.listDocuments(databaseId, collectionId, baselineQueries);
+                        const filtered = (response?.documents ?? []).filter((d: any) => {
+                            const pc = (d.locationId ?? d.primary_city ?? d.city ?? d.location_id ?? '').toString().toLowerCase().trim();
+                            const c = (d.country ?? '').toString().trim();
+                            return pc === primaryCityForFallback && (!c || c === 'Indonesia');
+                        });
+                        response = { ...response, documents: filtered };
+                        if (isDev) console.warn('[APPWRITE therapists] Used client-side city fallback (locationId/country query may have failed).');
+                    } else throw listError;
+                } else {
+                    throw listError;
+                }
+            }
             const docs = response?.documents ?? [];
             const total = response?.total ?? 'n/a';
 
@@ -954,6 +1003,17 @@ export const therapistService = {
                 }
             });
             
+            // Beautician dashboard: service categories (max 5) and facial therapist upgrade
+            if ((data as any).beauticianServiceCategories !== undefined) {
+                const raw = (data as any).beauticianServiceCategories;
+                (mappedData as any).beauticianServiceCategories = Array.isArray(raw) ? JSON.stringify(raw) : (typeof raw === 'string' ? raw : '[]');
+            }
+            if ((data as any).beauticianTreatments !== undefined) {
+                (mappedData as any).beauticianTreatments = typeof (data as any).beauticianTreatments === 'string' ? (data as any).beauticianTreatments : JSON.stringify((data as any).beauticianTreatments || []);
+            }
+            if ((data as any).facialTherapistListingActive !== undefined) (mappedData as any).facialTherapistListingActive = (data as any).facialTherapistListingActive;
+            if ((data as any).facialTherapistListingExpiresAt !== undefined) (mappedData as any).facialTherapistListingExpiresAt = (data as any).facialTherapistListingExpiresAt;
+
             // Handle busy timer fields - store in existing description field as JSON for now
             if (data.bookedUntil !== undefined || (data as any).busyDuration as any !== undefined || (data as any).busyUntil as any !== undefined) {
                 try {

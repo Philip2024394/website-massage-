@@ -27,6 +27,8 @@ import logger from '../../utils/logger';
 
 interface TherapistServiceShowcaseProps {
     therapist: Therapist;
+    /** When 'facial', show only front & back body images with treatment/avoid-area communication copy */
+    variant?: 'massage' | 'facial';
 }
 
 // Massage guide reference images from ImageKit CDN
@@ -38,7 +40,13 @@ const MASSAGE_GUIDE_IMAGES = {
     footCalf: 'https://ik.imagekit.io/7grri5v7d/body%20part%201.png?updatedAt=1770240868167'
 };
 
-const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ therapist }) => {
+// Facial profile: front & back body images for treatment/avoid-area communication
+const FACIAL_BODY_IMAGES = {
+    bodyFront: 'https://ik.imagekit.io/7grri5v7d/body%20front.png?updatedAt=1771524761647',
+    bodyBack: 'https://ik.imagekit.io/7grri5v7d/body%20back.png?updatedAt=1771524747870',
+};
+
+const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ therapist, variant = 'massage' }) => {
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
     const [isMassageTypesOpen, setIsMassageTypesOpen] = useState(false);
@@ -126,6 +134,8 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
         };
     }, [isLightboxOpen, isMassageTypesOpen]);
 
+    const bodyImages = variant === 'facial' ? FACIAL_BODY_IMAGES : MASSAGE_GUIDE_IMAGES;
+
     return (
         <>
             {/* Main Container */}
@@ -135,31 +145,44 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                     <h3 className="text-lg font-semibold text-gray-800">
                         Panduan Fokus & Sensitivitas Pijat
                     </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                        Panduan visual ini memungkinkan Anda untuk berkomunikasi dengan jelas tentang preferensi pijat Anda kepada terapis.
-                        Dengan merujuk pada nama gambar dan titik-titik yang diberi nomor, Anda dapat menunjukkan area tertentu untuk difokuskan atau dihindari, memastikan pengalaman pijat yang personal, nyaman, dan efektif.
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2">
-                        Anda cukup menyebutkan nama gambar dan nomor titik (misalnya, "Punggung Belakang – Titik 6") untuk membimbing terapis.
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2 italic">
-                        Panduan ini mendukung komunikasi tetapi tidak menggantikan diskusi verbal dengan terapis Anda.
-                    </p>
+                    {variant === 'facial' ? (
+                        <>
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                                Gambar tubuh depan dan belakang di bawah membantu Anda berkomunikasi dengan terapis: <strong>area yang ingin Anda rawat</strong> dan <strong>area yang bermasalah atau perlu dihindari</strong>. Dengan merujuk pada gambar ini, Anda dapat memastikan perawatan yang tepat sasaran dan nyaman.
+                            </p>
+                            <p className="text-xs text-gray-500 mt-2 italic">
+                                Panduan ini mendukung komunikasi tetapi tidak menggantikan diskusi verbal dengan terapis Anda.
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                                Panduan visual ini memungkinkan Anda untuk berkomunikasi dengan jelas tentang preferensi pijat Anda kepada terapis.
+                                Dengan merujuk pada nama gambar dan titik-titik yang diberi nomor, Anda dapat menunjukkan area tertentu untuk difokuskan atau dihindari, memastikan pengalaman pijat yang personal, nyaman, dan efektif.
+                            </p>
+                            <p className="text-xs text-gray-500 mt-2">
+                                Anda cukup menyebutkan nama gambar dan nomor titik (misalnya, "Punggung Belakang – Titik 6") untuk membimbing terapis.
+                            </p>
+                            <p className="text-xs text-gray-500 mt-2 italic">
+                                Panduan ini mendukung komunikasi tetapi tidak menggantikan diskusi verbal dengan terapis Anda.
+                            </p>
+                        </>
+                    )}
                 </div>
                 
                 {/* Multi-Image Reference Layout */}
                 <div className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Left Side: 2 Tall Images (Body Front & Back) */}
+                    <div className={`grid gap-4 ${variant === 'facial' ? 'grid-cols-1 md:grid-cols-2 max-w-2xl' : 'grid-cols-1 md:grid-cols-2'}`}>
+                        {/* Body Front & Back (2 images – used for both facial and massage) */}
                         <div className="grid grid-cols-2 gap-3 min-h-[400px]">
                             {/* Body Front */}
                             <div 
                                 className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative h-full min-h-[400px]"
-                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyFront, 'Tubuh Depan - Titik referensi pijat')}
+                                onClick={() => openLightbox(bodyImages.bodyFront, 'Tubuh Depan - Titik referensi')}
                             >
                                 <img
-                                    src={MASSAGE_GUIDE_IMAGES.bodyFront}
-                                    alt="Tubuh Depan - Panduan referensi pijat"
+                                    src={bodyImages.bodyFront}
+                                    alt="Tubuh Depan - Panduan referensi"
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     loading="lazy"
                                     onError={(e) => {
@@ -174,11 +197,11 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                             {/* Body Back */}
                             <div 
                                 className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer group relative h-full min-h-[400px]"
-                                onClick={() => openLightbox(MASSAGE_GUIDE_IMAGES.bodyBack, 'Punggung Belakang - Titik referensi pijat')}
+                                onClick={() => openLightbox(bodyImages.bodyBack, 'Punggung Belakang - Titik referensi')}
                             >
                                 <img
-                                    src={MASSAGE_GUIDE_IMAGES.bodyBack}
-                                    alt="Punggung Belakang - Panduan referensi pijat"
+                                    src={bodyImages.bodyBack}
+                                    alt="Punggung Belakang - Panduan referensi"
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     loading="lazy"
                                     onError={(e) => {
@@ -191,7 +214,8 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                             </div>
                         </div>
 
-                        {/* Right Side: 3 Landscape Images Stacked */}
+                        {/* Right Side: 3 Landscape Images Stacked (massage only) */}
+                        {variant === 'massage' && (
                         <div className="space-y-3">
                             {/* Arm and Hand */}
                             <div 
@@ -250,17 +274,21 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                                 </div>
                             </div>
                         </div>
+                        )}
                     </div>
                     
                     {/* Helper Text */}
                     <div className="mt-4 text-center">
                         <p className="text-sm text-gray-500">
-                            Klik gambar apa pun untuk melihat titik referensi detail • Gunakan panduan ini untuk mengkomunikasikan preferensi Anda dengan jelas
+                            {variant === 'facial'
+                                ? 'Klik gambar untuk memperbesar • Gunakan gambar ini untuk menunjukkan area yang ingin dirawat atau area yang perlu dihindari'
+                                : 'Klik gambar apa pun untuk melihat titik referensi detail • Gunakan panduan ini untuk mengkomunikasikan preferensi Anda dengan jelas'}
                         </p>
                     </div>
                 </div>
 
-                {/* Bottom Action Link */}
+                {/* Bottom Action Link (massage only) */}
+                {variant === 'massage' && (
                 <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
                     <button
                         onClick={openMassageTypes}
@@ -270,6 +298,7 @@ const TherapistServiceShowcase: React.FC<TherapistServiceShowcaseProps> = ({ the
                         <span className="font-medium">Jenis Pijat Apa</span>
                     </button>
                 </div>
+                )}
             </div>
 
             {/* Massage Types Full-Screen Modal */}

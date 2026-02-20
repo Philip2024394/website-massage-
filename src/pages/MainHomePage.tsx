@@ -1453,7 +1453,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
+                                {t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}
                             </p>
                         </div>
                         
@@ -2159,14 +2159,8 @@ const HomePage: React.FC<HomePageProps> = ({
                     <div className="max-w-full ">
                         <div className="mb-3 text-center mt-[26px]">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
-                            <p className="text-gray-600">
-                                {(contextCity === 'all' || !contextCity)
-                                    ? (t?.home?.facialTherapistsSubtitleAll || 'A safe platform for everyone.')
-                                    : (t?.home?.facialTherapistsSubtitleCity?.replace('{city}', contextCity) || 'A safe platform for everyone.')
-                                }
-                            </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
+                                {t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}
                             </p>
                         </div>
                         

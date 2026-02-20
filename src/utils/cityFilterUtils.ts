@@ -93,9 +93,9 @@ export function filterTherapistsByCity(
     return therapists;
   }
   const filtered = therapists.filter(therapist => {
-    // 🔒 GPS-AUTHORITATIVE: Prefer city (GPS-derived) → locationId (camelCase) → location_id (API) → location (legacy fallback)
-    // NOTE: therapist.location is LEGACY ONLY and should not be trusted for filtering
-    const therapistCity = therapist.city || (therapist as any).locationId || (therapist as any).location_id || therapist.location;
+    // STRICT: locationId is canonical city slug (e.g. "yogyakarta"); primary_city when string; fallbacks for legacy
+    const t = therapist as any;
+    const therapistCity = typeof t.locationId === 'string' ? t.locationId : (typeof t.primary_city === 'string' ? t.primary_city : null) || therapist.city || t.location_id || therapist.location;
     return cityMatches(therapistCity, activeCity);
   });
   return filtered;

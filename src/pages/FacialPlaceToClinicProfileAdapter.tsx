@@ -16,6 +16,8 @@ type Place = {
     mainImage?: string;
     profilePicture?: string;
     galleryImages?: Array<{ imageUrl: string; caption?: string; header?: string; description?: string }>;
+    /** Max 5: licenses or certs for service – dashboard can add; each has imageUrl, header, description */
+    licenseCertImages?: Array<{ imageUrl: string; header?: string; description?: string }>;
     location?: string;
     address?: string;
     city?: string;
@@ -65,7 +67,7 @@ export interface FacialPlaceToClinicAdapterProps {
     onPrivacyClick?: () => void;
 }
 
-const DEFAULT_HERO = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1761918521382';
+const DEFAULT_HERO = 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682';
 
 function placeToClinic(place: Place | null): ReturnType<typeof buildClinic> | null {
     if (!place) return null;
@@ -116,6 +118,18 @@ function buildClinic(p: Place) {
         });
     }
 
+    const clinicInfoPhotos = (p.galleryImages || []).slice(0, 5).map((img) => ({
+        imageUrl: (img.imageUrl || '').trim() || mainImageUrl,
+        header: img.header || 'Clinic photo',
+        description: img.description || img.caption || '',
+    }));
+
+    const licenseCertImages = (p.licenseCertImages || (p as any).licenseImages || (p as any).certificationImages || []).slice(0, 5).map((img: any) => ({
+        imageUrl: (img.imageUrl || img.url || '').trim() || mainImageUrl,
+        header: img.header || img.title || 'License / Certification',
+        description: img.description || img.details || img.caption || '',
+    }));
+
     return {
         id: String(p.$id ?? p.id ?? ''),
         name: p.name || 'Facial & Skin Clinic',
@@ -138,6 +152,16 @@ function buildClinic(p: Place) {
         treatments,
         team: [],
         gallery,
+        clinicInfoPhotos: clinicInfoPhotos.length > 0 ? clinicInfoPhotos : undefined,
+        licenseCertImages: licenseCertImages.length > 0 ? licenseCertImages : undefined,
+        bookingsCount: (p as any).bookingsCount ?? (() => {
+            try {
+                const a = (p as any).analytics;
+                if (a && typeof a === 'object' && typeof (a as any).bookings === 'number') return (a as any).bookings;
+                if (typeof a === 'string') { const parsed = JSON.parse(a); return parsed?.bookings ?? 0; }
+            } catch (_) {}
+            return 0;
+        })(),
         amenities: Array.isArray(p.amenities) ? p.amenities : [],
         specialOffers: (p.discountPercentage && p.discountPercentage > 0)
             ? {
