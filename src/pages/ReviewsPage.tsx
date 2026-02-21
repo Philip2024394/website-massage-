@@ -5,6 +5,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { ReviewData } from '../components/ReviewModal';
 import { ReviewCard } from '../components/ReviewCard';
 import { reviewService } from '../lib/appwriteService';
+import { REAL_PEOPLE_AVATARS } from '../constants/realPeopleAvatars';
 
 interface ReviewsPageProps {
   providerId?: string;
@@ -16,25 +17,11 @@ interface ReviewsPageProps {
   onBack?: () => void;
 }
 
-const avatarOptions = [
-  { id: 1, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%201.png', label: 'Avatar 1' },
-  { id: 2, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%202.png', label: 'Avatar 2' },
-  { id: 3, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%203.png', label: 'Avatar 3' },
-  { id: 4, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%204.png', label: 'Avatar 4' },
-  { id: 5, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%206.png', label: 'Avatar 6' },
-  { id: 6, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%207.png', label: 'Avatar 7' },
-  { id: 7, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%208.png', label: 'Avatar 8' },
-  { id: 8, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%209.png', label: 'Avatar 9' },
-  { id: 9, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2010.png', label: 'Avatar 10' },
-  { id: 10, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2011.png', label: 'Avatar 11' },
-  { id: 11, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2012.png', label: 'Avatar 12' },
-  { id: 12, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2013.png', label: 'Avatar 13' },
-  { id: 13, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2014.png', label: 'Avatar 14' },
-  { id: 14, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2015.png', label: 'Avatar 15' },
-  { id: 15, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2016.png', label: 'Avatar 16' },
-  { id: 16, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2017.png', label: 'Avatar 17' },
-  { id: 17, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2018.png', label: 'Avatar 18' },
-];
+const avatarOptions = REAL_PEOPLE_AVATARS.map((imageUrl, i) => ({
+  id: i + 1,
+  imageUrl,
+  label: `Profile ${i + 1}`,
+}));
 
 export const ReviewsPage: React.FC<ReviewsPageProps> = ({
   providerId,
@@ -110,7 +97,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
           whatsappNumber: review.whatsapp || '',
           rating: review.rating,
           reviewText: review.comment || '',
-          avatar: review.avatar || 'https://ik.imagekit.io/7grri5v7d/avatar%201.png',
+          avatar: review.avatar || REAL_PEOPLE_AVATARS[0],
           date: new Date(review.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
           time: new Date(review.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
         }));
@@ -154,7 +141,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
     }
 
     if (!selectedAvatar) {
-      newErrors.avatar = 'Please select an avatar';
+      newErrors.avatar = 'Please add a profile image for your comment';
     }
 
     setErrors(newErrors);
@@ -492,11 +479,12 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
                   </div>
                 </div>
 
-                {/* Avatar Selection */}
+                {/* Profile image – required to post comment */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Choose Your Avatar *
+                    Profile image for your comment *
                   </label>
+                  <p className="text-xs text-gray-500 mb-2">Add a profile image so your review is shown with your photo. Required to post.</p>
                   <div className="grid grid-cols-5 gap-4">
                     {avatarOptions.map((avatar) => (
                       <button

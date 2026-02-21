@@ -1,12 +1,13 @@
 // Latest Reviews – shows therapist / massage place / skin care clinic per review, View profile button, and moderation disclaimer
 import React, { useState, useEffect, useMemo } from 'react';
-import { Star, ExternalLink } from 'lucide-react';
+import { Star } from 'lucide-react';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 import { reviewService } from '../lib/appwriteService';
 import { therapistService, placesService } from '../lib/appwriteService';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+import { ViewProfileButton } from '../components/ViewProfileButton';
 
 interface WomenReviewsPageProps {
   t: any;
@@ -404,14 +405,11 @@ const WomenReviewsPage: React.FC<WomenReviewsPageProps> = ({
                         {T.reviewFor}: <strong>{info.name}</strong> ({info.typeLabel})
                       </span>
                       {info.provider && (onSelectTherapist || onSelectPlace) && (
-                        <button
-                          type="button"
+                        <ViewProfileButton
                           onClick={() => handleViewProfile(r)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          {T.viewProfile}
-                        </button>
+                          className="inline-flex px-3 py-1.5 rounded-lg text-sm"
+                          ariaLabel={T.viewProfile}
+                        />
                       )}
                     </div>
                   )}

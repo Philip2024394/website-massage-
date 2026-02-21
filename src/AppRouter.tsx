@@ -617,6 +617,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'faq':
             return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.faq.component));
+
+        case 'indonesia':
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.indonesia.component, {
+                onNavigate: props.onNavigate,
+                handleSetSelectedTherapist: props.handleSetSelectedTherapist,
+                language: props.language,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onHotelPortalClick: props.onHotelPortalClick,
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                therapists: props.therapists,
+                places: props.places,
+                facialPlaces: props.facialPlaces ?? [],
+            }));
         
         case 'massage-types':
         case 'massageTypes':
@@ -882,6 +903,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'signin':
             return renderRoute(authRoutes.signin.component, {
                 mode: 'signin',
+                onNavigate: (page: string) => props.onNavigate(page as Page),
                 onAuthSuccess: async (userType: string) => {
                     logger.info('Sign in successful - navigating to dashboard for:', { userType });
                     
@@ -926,6 +948,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'signIn':
             return renderRoute(authRoutes.signIn.component, {
                 mode: 'signin',
+                onNavigate: (page: string) => props.onNavigate(page as Page),
                 onAuthSuccess: async (userType: string) => {
                     if (props.restoreUserSession) {
                         await props.restoreUserSession();
@@ -947,6 +970,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'login':
             return renderRoute(authRoutes.login.component, {
                 mode: 'signin',
+                onNavigate: (page: string) => props.onNavigate(page as Page),
                 onAuthSuccess: async (userType: string) => {
                     if (props.restoreUserSession) {
                         await props.restoreUserSession();
@@ -1693,26 +1717,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist-terms':
             return renderRoute(TherapistTermsAndConditions);
 
-        // ===== BLOG ROUTES =====
+        // ===== BLOG / INDASTREET NEWS (single page: IndaStreet News for all posts) =====
         case 'blog':
-            return wrapWithUserTermsIfNeeded(page, renderRoute(blogRoutes.index.component, {
-                onNavigate: props.onNavigate,
-                onLanguageChange: props.onLanguageChange,
-                language: props.language,
-                t: t,
-                onMassageJobsClick: () => props.onNavigate('massage-jobs'),
-                onVillaPortalClick: props.onVillaPortalClick,
-                onTherapistPortalClick: props.onTherapistPortalClick,
-                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
-                onAgentPortalClick: props.onAgentPortalClick,
-                onCustomerPortalClick: props.onCustomerPortalClick,
-                onAdminPortalClick: () => props.handleAdminLogin?.(),
-                onTermsClick: () => props.onNavigate('terms'),
-                onPrivacyClick: () => props.onNavigate('privacy'),
-                therapists: props.therapists,
-                places: props.places,
-            }));
-
+            // Redirect to same content as indastreet-news
         case 'indastreet-news':
             return renderRoute(IndastreetNewsPage, {
                 onNavigate: props.onNavigate,

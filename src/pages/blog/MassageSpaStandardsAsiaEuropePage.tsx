@@ -45,6 +45,7 @@ const MassageSpaStandardsAsiaEuropePage: React.FC<Props> = (props) => {
 
   return (
     <BlogArticleLayout
+      branding="indastreet-news"
       title="Massage & Spa Standards: What Therapists and Places Need to Know in Asia and Europe"
       category="International"
       author="IndaStreet Research"

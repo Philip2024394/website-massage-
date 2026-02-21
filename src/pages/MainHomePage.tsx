@@ -19,6 +19,7 @@ import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import CityLocationDropdown from '../components/CityLocationDropdown';
 import AreaFilter from '../components/AreaFilter';
 import PageNumberBadge from '../components/PageNumberBadge';
+import { BookNowButton } from '../components/BookNowButton';
 import { initializeGoogleMaps, loadGoogleMapsScript } from '../lib/appwrite.config';
 import MusicPlayer from '../components/MusicPlayer';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -2154,11 +2155,15 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
                 )}
 
-                {/* Home Facial / Facial Places - Show facial places */}
+                {/* Home Facial = home service; Facial Places = city clinics (same list, different labels) */}
                 {(activeTab === 'facials' || activeTab === 'facial-places') && (
                     <div className="max-w-full ">
                         <div className="mb-3 text-center mt-[26px]">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                                {activeTab === 'facial-places'
+                                    ? (t?.home?.facialClinicsTitle ?? 'Facial clinics')
+                                    : (t?.home?.facialTherapistsTitle || 'Home Service Facial')}
+                            </h3>
                             <p className="text-xs text-gray-500 mt-1">
                                 {t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}
                             </p>
@@ -2225,6 +2230,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                                     onClick={onSelectPlace}
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                                    showAsClinic={activeTab === 'facial-places'}
                                                 />
                                             );
                                         })}
@@ -2611,13 +2617,11 @@ const HomePage: React.FC<HomePageProps> = ({
                                             
                                             <div className="flex gap-2">
                                                 {APP_CONFIG.IN_APP_BOOKING_DISABLED ? (
-                                                    <button
+                                                    <BookNowButton
                                                         onClick={() => handleBookViaWhatsApp(therapist)}
-                                                        className="flex-1 bg-[#25D366] hover:bg-[#20BD5A] text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                                    >
-                                                        <MessageCircle className="w-4 h-4" />
-                                                        Book via WhatsApp
-                                                    </button>
+                                                        className="flex-1 flex items-center justify-center min-h-[48px] py-2 px-3 rounded-full"
+                                                        ariaLabel="Book via WhatsApp"
+                                                    />
                                                 ) : (
                                                     <>
                                                         <button

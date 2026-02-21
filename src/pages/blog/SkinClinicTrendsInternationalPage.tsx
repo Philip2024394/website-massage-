@@ -45,6 +45,7 @@ const SkinClinicTrendsInternationalPage: React.FC<Props> = (props) => {
 
   return (
     <BlogArticleLayout
+      branding="indastreet-news"
       title="Skin Clinic & Facial Trends: Insights from Asia, UK, Australia and Germany"
       category="International"
       author="IndaStreet Research"

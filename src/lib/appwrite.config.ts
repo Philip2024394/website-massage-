@@ -101,6 +101,7 @@ export const APPWRITE_CONFIG = {
         contactInquiries: 'contact_inquiries', // Contact/support form submissions
         indastreetNews: 'indastreet_news', // Indastreet News – massage & skin clinic headlines
         indastreetBlog: 'indastreet_blog', // Indastreet Blog – articles for blog index & view post
+        countries: VALIDATED_COLLECTIONS.countries, // Side drawer countries + linked websites
         coins: 'Coins',
         referrals: 'Referrals',
         activeDiscounts: 'active_discounts',

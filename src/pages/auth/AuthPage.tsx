@@ -780,6 +780,24 @@ const AuthPage: React.FC<AuthPageProps> = ({
                             )}
                         </button>
                     </form>
+                    {mode === 'signin' && (
+                        <p className="mt-6 text-center text-sm text-gray-600">
+                            {t?.dontHaveAccount || "Don't have an account?"}{' '}
+                            {onNavigate ? (
+                                <button
+                                    type="button"
+                                    onClick={() => onNavigate('create-account')}
+                                    className="text-orange-600 hover:text-orange-700 font-medium underline"
+                                >
+                                    {t?.createAccount || 'Create account'}
+                                </button>
+                            ) : (
+                                <a href="/signup" className="text-orange-600 hover:text-orange-700 font-medium underline">
+                                    {t?.createAccount || 'Create account'}
+                                </a>
+                            )}
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, ShieldCheck } from 'lucide-react';
 import { useChatProvider } from '../../hooks/useChatProvider';
+import { BookNowButton } from '../BookNowButton';
 import MusicPlayer from '../MusicPlayer';
 import type { UserLocation } from '../../types';
 
@@ -326,12 +327,11 @@ export const UnifiedHeroSection: React.FC<UnifiedHeroSectionProps> = ({
                 {displayData.showButtons && (
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
                         {onBookNowClick && (
-                            <button
+                            <BookNowButton
                                 onClick={onBookNowClick}
-                                className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-orange-500 text-white font-semibold text-sm rounded-lg hover:bg-orange-600 transition-colors shadow-lg"
-                            >
-                                Book Now
-                            </button>
+                                className="flex-1 flex items-center justify-center min-h-[48px] py-3 px-6 rounded-lg shadow-lg"
+                                ariaLabel="Book Now"
+                            />
                         )}
                         
                         {onBookClick && (

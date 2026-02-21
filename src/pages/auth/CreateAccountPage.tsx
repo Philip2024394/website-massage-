@@ -27,6 +27,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
     email: '',
     name: '',
     whatsappNumber: '',
+    country: '',
     accountType: null as AccountType | null,
     password: '',
     termsAccepted: false,
@@ -101,6 +102,10 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
       return;
     }
     
+    if (!formData.country || !formData.country.trim()) {
+      setError('Please enter your country');
+      return;
+    }
     if (!formData.accountType) {
       setError('Please select a portal type');
       return;
@@ -326,6 +331,22 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                 </p>
               </div>
 
+              {/* Country Input */}
+              <div>
+                <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
+                  Country *
+                </label>
+                <input
+                  id="country"
+                  type="text"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="block w-full pl-3 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="e.g. Indonesia, Singapore"
+                  required
+                />
+              </div>
+
               {/* Portal Type Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -451,7 +472,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                   >
                     Privacy Policy
                   </button>
-                  *
+                  , and I understand that posting or commenting on IndaStreet News may require admin approval before appearing publicly. *
                 </label>
               </div>
 

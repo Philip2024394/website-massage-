@@ -12,12 +12,12 @@ export const BEAUTICIAN_TREATMENT_MAX_CONTAINERS = 3;
 /** Number of items in the beautician menu slider (real + sample fill). Same idea as therapist 5-item slider. */
 export const BEAUTICIAN_SLIDER_SIZE = 4;
 
-/** Sample treatment names for Jogja/Yogyakarta market (slider fill when beautician has no/few items). */
+/** Sample treatment names for beautician slider (not facial). Slider fill when beautician has no/few items. */
 export const SAMPLE_BEAUTICIAN_TREATMENT_NAMES = [
-  'Basic Facial',
-  'Acne Deep Cleansing Facial',
-  'Whitening & Brightening Facial',
-  'Peeling Glow Facial',
+  'Nail Polish',
+  'Eyebrows',
+  'Hair Color',
+  'Blow Dry',
 ] as const;
 
 /** Default currency: IDR for Indonesia, otherwise EUR. */
@@ -71,14 +71,13 @@ function createSeed(therapistId: string): number {
 
 /**
  * Generate 4 sample beautician treatments for slider (display-only).
- * Yogyakarta/Jogja market: base prices already include +30% for admin commission.
- * Base ref: Basic ~150k, Acne ~200k, Whitening ~250k, Peeling Glow ~275k → +30% = 195k, 260k, 325k, 358k.
+ * Beautician services: nail, brows, hair color, blow dry. Base prices IDR (incl. admin).
  */
 export function getSampleBeauticianTreatments(therapistId: string, country?: string): BeauticianTreatment[] {
   const currency = getDefaultBeauticianCurrency(country);
   const seed = createSeed(therapistId);
-  const basePricesIdr = [195000, 260000, 325000, 355000]; // IDR (incl. 30% admin)
-  const baseDurations = [60, 75, 60, 75];
+  const basePricesIdr = [120000, 95000, 250000, 130000]; // Nail Polish, Eyebrows, Hair Color, Blow Dry (IDR)
+  const baseDurations = [45, 30, 90, 45];
   const items: BeauticianTreatment[] = [];
   for (let i = 0; i < BEAUTICIAN_SLIDER_SIZE; i++) {
     const priceVar = ((seed + i * 7919) % 5) - 2; // -2..2 small variation

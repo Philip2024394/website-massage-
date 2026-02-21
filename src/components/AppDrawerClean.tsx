@@ -1,10 +1,12 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles, Hotel } from 'lucide-react';
+import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles, Hotel, Globe } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
 import type { Page } from '../types/pageTypes';
 import { getSafeDrawerPage, DRAWER_NAV_ITEMS } from '../config/drawerConfig';
+import { COUNTRY_PAGE_IDS } from '../constants/drawerCountries';
+import { useDrawerCountries } from '../hooks/useDrawerCountries';
 import CitySwitcher from './CitySwitcher';
 
 const DRAWER_ICON_MAP = {
@@ -94,6 +96,8 @@ const drawerTranslations = {
     privacy: 'Privacy',
     help: 'Help',
     followUs: 'Follow Us',
+    countriesActive: 'IndaStreet Countries',
+    indonesia: 'Indonesia',
   },
   id: {
     partners: 'Mitra',
@@ -125,6 +129,8 @@ const drawerTranslations = {
     privacy: 'Privasi',
     help: 'Bantuan',
     followUs: 'Ikuti Kami',
+    countriesActive: 'IndaStreet Negara',
+    indonesia: 'Indonesia',
   },
 };
 
@@ -192,6 +198,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
       alert('Invalid code. Access denied.');
     }
   };
+
+  const { countries: drawerCountries } = useDrawerCountries();
 
   const handleItemClick = (callback?: () => void, fallbackPage?: string) => {
     console.log('🔍 Drawer navigation:', { 
@@ -421,6 +429,55 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {showCitySwitcher && (
                   <div className="ml-4 mb-2">
                     <CitySwitcher onClose={() => setShowCitySwitcher(false)} />
+                  </div>
+                )}
+
+                {/* IndaStreet Countries – from Appwrite when available; linkedWebsite opens in new tab */}
+                {drawerCountries.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-1.5">
+                      {dt.countriesActive}
+                    </p>
+                    <div className="space-y-1.5">
+                      {drawerCountries.map((country) => {
+                        const label = language === 'id' && country.nameId ? country.nameId : country.name;
+                        const hasCountryPage = COUNTRY_PAGE_IDS.has(country.id);
+                        const navigateTo = hasCountryPage ? (country.id as Page) : 'home';
+                        // Countries with a dedicated in-app page (e.g. Indonesia) always open that page; use linkedWebsite only for others
+                        const useExternalLink = country.linkedWebsite && !hasCountryPage;
+                        if (useExternalLink) {
+                          return (
+                            <a
+                              key={country.id}
+                              href={country.linkedWebsite}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => onClose?.()}
+                              className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left border border-transparent hover:border-orange-100"
+                            >
+                              <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-orange-50 text-lg leading-none" aria-hidden="true">
+                                {country.flag}
+                              </span>
+                              <span className="flex-1 min-w-0 text-left text-sm text-gray-700 font-medium pl-2">{label}</span>
+                              <Globe className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                            </a>
+                          );
+                        }
+                        return (
+                          <button
+                            key={country.id}
+                            onClick={() => handleItemClick(onNavigate ? () => onNavigate(navigateTo) : undefined, hasCountryPage ? country.id : 'home')}
+                            className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left border border-transparent hover:border-orange-100"
+                          >
+                            <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-orange-50 text-lg leading-none" aria-hidden="true">
+                              {country.flag}
+                            </span>
+                            <span className="flex-1 min-w-0 text-left text-sm text-gray-700 font-medium pl-2">{label}</span>
+                            <Globe className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
                 

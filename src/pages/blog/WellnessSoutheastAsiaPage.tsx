@@ -45,6 +45,7 @@ const WellnessSoutheastAsiaPage: React.FC<Props> = (props) => {
 
   return (
     <BlogArticleLayout
+      branding="indastreet-news"
       title="Wellness & Spa Trends Across Southeast Asia: Indonesia, Thailand, Malaysia, Singapore, Vietnam"
       category="International"
       author="IndaStreet Research"

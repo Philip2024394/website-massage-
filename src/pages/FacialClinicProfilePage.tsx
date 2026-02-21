@@ -12,6 +12,7 @@ import RotatingReviews from '../components/RotatingReviews';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import IndastreetAchievements from '../components/IndastreetAchievements';
 import HomeIcon from '../components/icons/HomeIcon';
+import { BookNowButton } from '../components/BookNowButton';
 import SocialSharePopup from '../components/SocialSharePopup';
 import { getAuthAppUrl } from '../utils/therapistCardHelpers';
 
@@ -482,15 +483,11 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                 </div>
                             </div>
                             <div className="flex gap-2 mt-4">
-                                <a
+                                <BookNowButton
                                     href={buildWhatsAppUrl(`Hi, I would like to book at ${clinic.name}.`)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#25D366] text-white font-semibold text-sm shadow-md hover:brightness-110 transition"
-                                >
-                                    <Phone className="w-5 h-5" />
-                                    Book Now
-                                </a>
+                                    className="flex-1 flex items-center justify-center min-h-[48px] py-3.5 rounded-xl shadow-md"
+                                    ariaLabel="Book Now"
+                                />
                                 <button
                                     type="button"
                                     onClick={() => setMenuSliderOpen(true)}
@@ -878,18 +875,15 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
 
                                                 <div className="border-t border-gray-200 pt-4">
                                                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                                        <a
+                                                        <BookNowButton
                                                             href={buildWhatsAppUrl(
                                                                 isRowSelected && menuSliderDuration
                                                                     ? `Hi, I would like to book ${t.name} (${menuSliderDuration} min) at ${clinic.name}.`
                                                                     : `Hi, I would like to book ${t.name} at ${clinic.name}.`
                                                             )}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="px-6 py-3 font-semibold rounded-lg transition-all duration-200 bg-orange-600 text-white hover:bg-orange-700 shadow-lg text-center"
-                                                        >
-                                                            {language === 'id' ? 'Book Now' : 'Book Now'}
-                                                        </a>
+                                                            className="px-6 py-3 rounded-lg transition-all duration-200 shadow-lg flex items-center justify-center min-h-[48px]"
+                                                            ariaLabel={language === 'id' ? 'Book Now' : 'Book Now'}
+                                                        />
                                                         <button
                                                             type="button"
                                                             onClick={() => { setMenuSliderOpen(false); setMenuSliderServiceIndex(null); setMenuSliderDuration(null); handleScheduleAppointment(t); }}

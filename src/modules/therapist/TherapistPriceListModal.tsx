@@ -14,6 +14,7 @@
  */
 
 import React, { useEffect, useMemo } from 'react';
+import { BookNowButton } from '../../components/BookNowButton';
 import { StarIcon } from '../../components/therapist/TherapistIcons';
 import { useCompatibleMenuData } from '../../hooks/useEnhancedMenuData';
 import { getUniqueMenuItemsByName, getTherapistDisplayName } from '../../utils/therapistCardHelpers';
@@ -310,18 +311,16 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                             {showBookingButtons && (
                                                 <div className="border-t border-gray-200 pt-4">
                                                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                                        <button
-                                                            className={`px-6 py-3 font-semibold rounded-lg transition-all duration-200 ${
+                                                        <BookNowButton
+                                                            className={`px-6 py-3 rounded-lg transition-all duration-200 flex items-center justify-center min-h-[55px] ${
                                                                 isRowSelected && selectedDuration
-                                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-lg'
-                                                                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                                                                    ? 'bg-orange-100 border-2 border-orange-500 shadow-lg'
+                                                                    : 'bg-orange-50 border-2 border-orange-200'
                                                             }`}
                                                             onClick={async (e) => {
                                                                 e.stopPropagation();
-                                                                
                                                                 if (isRowSelected && selectedDuration) {
                                                                     const priceNum = Number(service[`price${selectedDuration}`]);
-                                                                    
                                                                     if (!isNaN(priceNum) && priceNum > 0) {
                                                                         const serviceData = {
                                                                             id: service.id,
@@ -329,8 +328,6 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                             duration: parseInt(selectedDuration),
                                                                             price: priceNum * 1000
                                                                         };
-
-                                                                        // 📱 WhatsApp flow: open WhatsApp with prefilled Book Now message
                                                                         if (onOpenWhatsAppBooking) {
                                                                             onOpenWhatsAppBooking('immediate', { serviceName: serviceData.serviceName, duration: serviceData.duration, price: serviceData.price });
                                                                             setShowPriceListModal(false);
@@ -338,8 +335,6 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                             setSelectedDuration(null);
                                                                             return;
                                                                         }
-
-                                                                        // 🎯 ENHANCED MODAL MANAGEMENT WITH BOOKING TRACKING
                                                                         if (handleBookNowClick) {
                                                                             await handleBookNowClick({
                                                                                 onAfterClose: async () => {
@@ -360,12 +355,8 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                     handleSelectService(index, firstDuration);
                                                                 }
                                                             }}
-                                                        >
-                                                            {isRowSelected && selectedDuration 
-                                                                ? (chatLang === 'id' ? '✓ Book Now' : '✓ Book Now')
-                                                                : (chatLang === 'id' ? 'Book Now' : 'Book Now')
-                                                            }
-                                                        </button>
+                                                            ariaLabel={chatLang === 'id' ? 'Book Now' : 'Book Now'}
+                                                        />
                                                         
                                                         {/* Schedule button: active for all members; user can always select to book scheduled menu item */}
                                                         <button

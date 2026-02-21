@@ -79,7 +79,7 @@ const LoginDrawer: React.FC<LoginDrawerProps> = ({ isOpen, onClose, onLoginSelec
         // Company
         { title: 'About Us', page: 'about', icon: '🏢', category: 'company' },
         { title: 'How It Works', page: 'how-it-works', icon: '❓', category: 'company' },
-        { title: 'Blog', page: 'blog', icon: '📰', category: 'company' },
+        { title: 'IndaStreet News', page: 'indastreet-news', icon: '📰', category: 'company' },
         { title: 'Contact Us', page: 'contact', icon: '📧', category: 'company' },
         
         // Locations

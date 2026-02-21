@@ -5,6 +5,7 @@ import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import PageContainer from '../components/layout/PageContainer';
 import { useCityContext } from '../context/CityContext';
+import { ViewProfileButton } from '../components/ViewProfileButton';
 
 interface MassageBaliPageProps {
     onNavigate?: (page: string) => void;
@@ -263,7 +264,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                                     <h3 className="font-bold text-gray-900">{therapist.name}</h3>
                                     <p className="text-gray-500 text-xs">{therapist.location || 'Bali'}</p>
                                     {therapist.rating && <p className="text-orange-600 font-semibold text-sm mt-1">⭐ {therapist.rating.toFixed(1)}</p>}
-                                    <button onClick={() => onNavigate?.('home')} className="mt-3 w-full py-2 rounded-full bg-orange-500 text-white font-semibold text-sm hover:bg-orange-600 transition-colors">View profile</button>
+                                    <ViewProfileButton onClick={() => onNavigate?.('home')} className="mt-3 w-full py-2 rounded-full" ariaLabel="View profile" />
                                 </div>
                             ))}
                         </div>

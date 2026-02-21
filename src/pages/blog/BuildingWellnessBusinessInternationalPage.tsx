@@ -45,6 +45,7 @@ const BuildingWellnessBusinessInternationalPage: React.FC<Props> = (props) => {
 
   return (
     <BlogArticleLayout
+      branding="indastreet-news"
       title="Building a Massage or Spa Business: Regulations and Opportunities in Multiple Markets"
       category="International"
       author="IndaStreet Research"

@@ -13,6 +13,7 @@
  */
 
 import React from 'react';
+import { BookNowButton } from '../../components/BookNowButton';
 import { isDiscountActive, getDynamicSpacing } from '../../constants/cardConstants';
 import type { Analytics } from '../../types';
 
@@ -152,41 +153,25 @@ const PlacePricing: React.FC<PlacePricingProps> = ({
 
             {/* Action Buttons - Book Now & Schedule Booking (matching therapist card) */}
             <div className="flex gap-2 px-4 mt-4">
-                <button
+                <BookNowButton
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        
-                        // Prevent multiple rapid clicks
-                        if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
-                            return;
-                        }
+                        if ((e.target as HTMLElement).hasAttribute('data-clicking')) return;
                         (e.target as HTMLElement).setAttribute('data-clicking', 'true');
-                        requestAnimationFrame(() => {
-                            (e.target as HTMLElement).removeAttribute('data-clicking');
-                        });
-                        
+                        requestAnimationFrame(() => (e.target as HTMLElement).removeAttribute('data-clicking'));
                         console.log('🟢 Book Now button clicked - opening chat window for massage place');
-                        
-                        // Show notification instead of opening chat
-                        console.log('🔵 MassagePlaceCard: Instant booking notification for', place.name);
-                        
                         addNotification(
                             'info',
                             'Instant Booking',
                             `Please complete booking with ${place.name} to start chatting`,
                             { duration: 4000 }
                         );
-                        
                         onIncrementAnalytics('bookings');
                     }}
-                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    <span className="text-sm">{t?.home?.bookNow || 'Book Now'}</span>
-                </button>
+                    className="w-1/2 flex items-center justify-center min-h-[48px] py-2 px-3 rounded-lg touch-manipulation"
+                    ariaLabel={t?.home?.bookNow || 'Book Now'}
+                />
                 <button 
                     onClick={(e) => {
                         e.preventDefault();

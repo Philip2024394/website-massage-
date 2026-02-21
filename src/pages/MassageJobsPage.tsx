@@ -9,6 +9,7 @@ import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import { Home, SlidersHorizontal, Search, X } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 import { EMPLOYER_ACCESS_FEE_IDR } from '../constants/businessLogic';
+import { ViewProfileButton } from '../components/ViewProfileButton';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
@@ -998,7 +999,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             )}
 
                                             {/* View Profile – disabled when filled */}
-                                            <button
+                                            <ViewProfileButton
                                                 onClick={() => {
                                                     if (deactivated) return;
                                                     const therapistId = listing.therapistId || listing.$id;
@@ -1007,10 +1008,9 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                     onNavigate?.('shared-therapist-profile');
                                                 }}
                                                 disabled={deactivated}
-                                                className={`w-full py-2.5 px-4 font-semibold text-sm rounded-xl transition-all duration-200 ${!deactivated ? 'bg-primary-500 hover:bg-primary-600 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
-                                            >
-                                                {t?.jobs?.viewProfile || 'View Profile'}
-                                            </button>
+                                                className={`w-full py-2.5 px-4 text-sm rounded-xl ${deactivated ? 'bg-slate-300 cursor-not-allowed' : ''}`}
+                                                ariaLabel={t?.jobs?.viewProfile || 'View Profile'}
+                                            />
                                             {listing.contactWhatsApp && !deactivated && (
                                                 <button
                                                     onClick={() => window.open(`https://wa.me/${listing.contactWhatsApp.replace(/\D/g, '')}`, '_blank')}

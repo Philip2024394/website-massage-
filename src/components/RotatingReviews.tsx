@@ -1,30 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare, BadgeCheck } from 'lucide-react';
 import { getReviewsForProfile } from '../lib/hybridReviewService';
 import { isSeedReview } from '../lib/seedReviews';
 import { useLanguageContext } from '../context/LanguageContext';
 import { logger } from '../utils/logger';
-
-// Avatar pool for review displays
-const REVIEW_AVATARS = [
-    'https://ik.imagekit.io/7grri5v7d/avatar%201.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%202.png', 
-    'https://ik.imagekit.io/7grri5v7d/avatar%203.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%204.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%206.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%207.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%208.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%209.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2010.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2011.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2012.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2013.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2014.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2015.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2016.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2017.png',
-    'https://ik.imagekit.io/7grri5v7d/avatar%2018.png'
-];
+import { REAL_PEOPLE_AVATARS } from '../constants/realPeopleAvatars';
 
 interface Review {
     $id?: string;
@@ -129,7 +109,7 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
                 const formattedReviews = result.reviews.map((review, index) => {
                     const displayComment = review.reviewContent || review.text || review.comment || '';
                     const displayName = review.userName || review.reviewerName || review.name || 'Anonymous';
-                    const displayAvatar = review.avatarUrl || review.avatar;
+                    const displayAvatar = review.avatarUrl || review.avatar || REAL_PEOPLE_AVATARS[index % REAL_PEOPLE_AVATARS.length];
                     
                     return {
                         ...review,
@@ -262,7 +242,7 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
                 <div className="space-y-4">{reviews.map((review, index) => {
                     const displayText = review.text || review.reviewContent || review.comment || review.reviewText || '';
                     const displayName = review.userName || review.reviewerName || review.name || 'Anonymous';
-                    const displayAvatar = review.avatarUrl || review.avatar;
+                    const displayAvatar = review.avatarUrl || review.avatar || REAL_PEOPLE_AVATARS[index % REAL_PEOPLE_AVATARS.length];
                     const reviewId = review.$id || review.id || `review-${index}`;
                     const isExpanded = expanded.has(reviewId);
                     const isSeed = review.isSeed === true;
@@ -277,9 +257,16 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
                                     </span>
                                 </div>
                             )}
+                            {/* Admin Approved badge – live (non-seed) comments only */}
+                            {!isSeed && (
+                                <div className="absolute top-2 right-2 flex items-center gap-1.5 text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-1">
+                                    <BadgeCheck className="w-3.5 h-3.5 flex-shrink-0" aria-hidden />
+                                    <span className="text-[10px] font-medium">Admin Approved</span>
+                                </div>
+                            )}
                             
                             <div className="flex items-start gap-4">
-                                {/* Avatar */}
+                                {/* Avatar – real people image */}
                                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
                                     {displayAvatar && (
                                         <img

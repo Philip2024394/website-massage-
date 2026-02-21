@@ -29,6 +29,7 @@ const SpecialOffersPage = lazy(() => import('../../pages/SpecialOffersPage'));
 const VideoCenterPage = lazy(() => import('../../pages/VideoCenterPage'));
 const HotelsVillasPage = lazy(() => import('../../pages/HotelsVillasPage'));
 const HotelVillaSafePassPage = lazy(() => import('../../pages/HotelVillaSafePassPage'));
+const IndonesiaLandingPage = lazy(() => import('../../pages/IndonesiaLandingPage'));
 
 export const publicRoutes = {
   landing: {
@@ -60,6 +61,11 @@ export const publicRoutes = {
     path: '/how-it-works',
     component: HowItWorksPage,
     name: 'howItWorks'
+  },
+  indonesia: {
+    path: '/indonesia',
+    component: IndonesiaLandingPage,
+    name: 'indonesia'
   },
   faq: {
     path: '/faq',

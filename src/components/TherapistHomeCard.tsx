@@ -28,8 +28,10 @@ import TherapistJoinPopup from './TherapistJoinPopup';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
+import { ViewProfileButton } from './ViewProfileButton';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
-import { Share2, Sparkles } from 'lucide-react';
+import { Share2, Sparkles, FingerprintPattern } from 'lucide-react';
+import { BookNowButton } from './BookNowButton';
 import { logger } from '../utils/logger';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import SafePassModal from './modals/SafePassModal';
@@ -831,49 +833,85 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </div>
             ) : pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 ? (
                 <div className="mx-4 mb-4">
-                    <h3 className="text-gray-800 font-bold text-sm tracking-wide text-center mb-2">
-                        {serviceName}
-                    </h3>
-                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center">
-                            <p className="text-gray-600 text-xs mb-1 font-medium">60 min</p>
-                            <p className="font-bold text-slate-900 text-sm">
-                                IDR {formatPrice(pricing["60"])}
-                            </p>
-                            <p className="text-[10px] text-slate-600 mt-1">Basic</p>
-                        </div>
-                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center">
-                            <p className="text-gray-600 text-xs mb-1 font-medium">90 min</p>
-                            <p className="font-bold text-slate-900 text-sm">
-                                IDR {formatPrice(pricing["90"])}
-                            </p>
-                            <p className="text-[10px] text-slate-600 mt-1">Premium</p>
-                        </div>
-                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center">
-                            <p className="text-gray-600 text-xs mb-1 font-medium">120 min</p>
-                            <p className="font-bold text-slate-900 text-sm">
-                                IDR {formatPrice(pricing["120"])}
-                            </p>
-                            <p className="text-[10px] text-slate-600 mt-1">Luxury</p>
-                        </div>
+                    <style>{`
+                        @keyframes massage-container-glow {
+                          0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
+                          50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
+                        }
+                        .massage-container-selected {
+                          border-color: rgb(249 115 22);
+                          box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
+                          animation: massage-container-glow 2.5s ease-in-out infinite;
+                        }
+                        @keyframes book-button-flash {
+                          0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45); }
+                          14% { transform: scale(1.06); box-shadow: 0 6px 20px rgba(37, 211, 102, 0.55); }
+                          28% { transform: scale(1); box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45); }
+                          42% { transform: scale(1.04); box-shadow: 0 5px 18px rgba(37, 211, 102, 0.5); }
+                          70% { transform: scale(1); box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45); }
+                        }
+                        .book-button-flash {
+                          animation: book-button-flash 1.2s ease-in-out infinite;
+                        }
+                    `}</style>
+                    <h4 className="text-sm font-semibold text-slate-800 mb-3">{serviceName}</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                        {(['60', '90', '120'] as const).map((dur) => {
+                            const isSelected = selectedDuration === dur;
+                            const labels = { '60': 'Relaxation', '90': 'Deep Tissue', '120': 'Full Body' };
+                            const borders = { '60': 'border-orange-200', '90': 'border-orange-300', '120': 'border-orange-200' };
+                            return (
+                                <button
+                                    type="button"
+                                    key={dur}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedDuration(isSelected ? null : dur);
+                                    }}
+                                    className={`rounded-lg p-3 text-center transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 border ${
+                                        isSelected ? 'massage-container-selected bg-orange-50 border-orange-400' : `bg-orange-50 ${borders[dur]} hover:border-orange-300`
+                                    }`}
+                                    aria-pressed={isSelected}
+                                    aria-label={`${dur} min, ${labels[dur]}, ${pricing[dur] > 0 ? formatPrice(pricing[dur]) : 'Call'}. ${isSelected ? 'Selected' : 'Select'}`}
+                                >
+                                    <div className="text-xs font-medium text-orange-700 mb-1">{dur} min</div>
+                                    <div className="text-sm font-bold text-slate-900">
+                                        {pricing[dur] > 0 ? formatPrice(pricing[dur]) : 'Call'}
+                                    </div>
+                                    <div className="text-[10px] text-slate-600 mt-1">{labels[dur]}</div>
+                                    {isSelected && (
+                                        <div className="flex justify-center mt-1.5" aria-hidden>
+                                            <FingerprintPattern className="w-6 h-6 text-orange-600" strokeWidth={1.8} />
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
+                    {selectedDuration && (
+                        <div className="mt-3">
+                            <BookNowButton
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onClick(therapist);
+                                }}
+                                className={`w-full flex items-center justify-center min-h-[48px] py-2.5 rounded-lg shadow-md book-button-flash ${readOnly ? 'opacity-70 pointer-events-none' : ''}`}
+                                ariaLabel={t?.home?.bookNow || 'Book Now'}
+                            />
+                        </div>
+                    )}
                 </div>
             ) : null}
 
             {/* View Profile Button */}
             <div className="px-4 pb-4">
                 {/* 🔒 LOCKED: NO price modal triggers allowed on home page cards */}
-                <button 
+                <ViewProfileButton
                     onClick={() => onClick(therapist)}
                     disabled={readOnly}
-                    className={`w-full py-3 font-semibold rounded-lg transition-all ${
-                        readOnly 
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                            : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg'
-                    }`}
-                >
-                    {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
-                </button>
+                    className={`w-full py-3 rounded-lg ${readOnly ? 'bg-gray-300 cursor-not-allowed' : ''}`}
+                    ariaLabel={readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
+                />
             </div>
             </div>
 

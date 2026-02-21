@@ -6,6 +6,7 @@ import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/
 import { bookingService, reviewService } from '../lib/appwriteService';
 import { logger } from '../utils/logger';
 // import { placesMenusService } from '../lib/appwrite/services/placesMenus.service'; // TODO: Service doesn't exist yet
+import { BookNowButton } from './BookNowButton';
 import DistanceDisplay from './DistanceDisplay';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
@@ -693,11 +694,11 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                                             {/* Action Button */}
                                                             <div className="col-span-2">
                                                                 <div className="text-[10px] text-transparent text-center mb-1">-</div>
-                                                                <button
-                                                                    className={`w-full px-1 py-1.5 text-[10px] font-semibold rounded-lg transition-colors truncate ${
+                                                                <BookNowButton
+                                                                    className={`w-full px-1 py-1 min-h-0 rounded-lg transition-colors [&_img]:max-h-7 ${
                                                                         isRowSelected && selectedDuration
-                                                                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
-                                                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                                            ? 'cursor-pointer'
+                                                                            : 'opacity-50 cursor-not-allowed pointer-events-none'
                                                                     }`}
                                                                     onClick={(e) => {
                                                                         if (isRowSelected && selectedDuration) {
@@ -707,9 +708,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                                                         }
                                                                     }}
                                                                     disabled={!isRowSelected || !selectedDuration}
-                                                                >
-                                                                    {_t?.home?.bookNow || 'Book'}
-                                                                </button>
+                                                                    ariaLabel={_t?.home?.bookNow || 'Book'}
+                                                                />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -750,12 +750,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                                         ))}
 
                                                         {/* Action Buttons */}
-                                                        <div className="col-span-2 text-center min-w-0">
-                                                            <button
-                                                                className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-colors truncate ${
-                                                                    isRowSelected && selectedDuration
-                                                                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
-                                                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                        <div className="col-span-2 text-center min-w-0 flex items-center justify-center">
+                                                            <BookNowButton
+                                                                className={`w-full px-2 py-1 min-h-0 rounded-lg transition-colors [&_img]:max-h-7 ${
+                                                                    isRowSelected && selectedDuration ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
                                                                 }`}
                                                                 onClick={(e) => {
                                                                     if (isRowSelected && selectedDuration) {
@@ -765,9 +763,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                                                     }
                                                                 }}
                                                                 disabled={!isRowSelected || !selectedDuration}
-                                                            >
-                                                                {_t?.home?.bookNow || 'Book'}
-                                                            </button>
+                                                                ariaLabel={_t?.home?.bookNow || 'Book'}
+                                                            />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -825,12 +822,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                             })}
 
                                             {/* Action Button */}
-                                            <div className="col-span-2 text-center min-w-0">
-                                                <button
-                                                    className={`w-full px-1 sm:px-2 py-1 text-[9px] sm:text-xs font-semibold rounded-lg transition-colors truncate ${
-                                                        selectedServiceIndex === 0 && selectedDuration
-                                                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
-                                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            <div className="col-span-2 text-center min-w-0 flex items-center justify-center">
+                                                <BookNowButton
+                                                    className={`w-full px-1 sm:px-2 py-1 min-h-0 rounded-lg transition-colors [&_img]:max-h-7 ${
+                                                        selectedServiceIndex === 0 && selectedDuration ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
                                                     }`}
                                                     onClick={(e) => {
                                                         if (selectedServiceIndex === 0 && selectedDuration) {
@@ -840,9 +835,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                                         }
                                                     }}
                                                     disabled={selectedServiceIndex !== 0 || !selectedDuration}
-                                                >
-                                                    {_t?.home?.bookNow || 'Book'}
-                                                </button>
+                                                    ariaLabel={_t?.home?.bookNow || 'Book'}
+                                                />
                                             </div>
                                         </div>
                                     </div>

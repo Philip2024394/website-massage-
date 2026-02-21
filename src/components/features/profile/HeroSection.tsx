@@ -1,6 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Calendar, ShieldCheck, Share2 } from 'lucide-react';
+import { BookNowButton } from '../../BookNowButton';
 import AnonymousReviewModal from '../../AnonymousReviewModal';
 import SocialSharePopup from '../../SocialSharePopup';
 import { useChatProvider } from '../../../hooks/useChatProvider';
@@ -508,28 +509,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
                 {/* Booking Buttons - Added margin-top for spacing from price containers */}
                 <div className="grid grid-cols-2 gap-3 mt-6">
-                    <button
+                    <BookNowButton
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            
                             console.log('📱 Massage Place Book Now clicked - opening chat window');
-                            
-                            // Parse pricing from place data - same structure as therapist pricing
-                            const parsePricing = (pricingData: any) => {
-                                if (!pricingData) return { "60": 200000, "90": 300000, "120": 400000 };
-                                if (typeof pricingData === 'object' && pricingData !== null) return pricingData;
-                                try {
-                                    return JSON.parse(pricingData);
-                                } catch {
-                                    return { "60": 200000, "90": 300000, "120": 400000 };
-                                }
-                            };
-                            
-                            const pricing = parsePricing(place.pricing);
-                            console.log('💰 Place pricing:', pricing);
-                            
-                            // Show notification instead of dispatching event
                             addNotification(
                                 'info',
                                 'Instant Booking',
@@ -537,13 +521,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 { duration: 4000 }
                             );
                         }}
-                        className="flex items-center justify-center gap-2 py-2.5 px-4 bg-green-500 text-white font-semibold text-sm rounded-lg hover:bg-green-600 transition-colors shadow-lg"
-                    >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <span>Book Now</span>
-                    </button>
+                        className="flex items-center justify-center min-h-[48px] py-2.5 px-4 rounded-lg shadow-lg"
+                        ariaLabel="Book Now"
+                    />
                     <button
                         onClick={(e) => {
                             e.preventDefault();

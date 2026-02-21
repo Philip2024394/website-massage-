@@ -17,6 +17,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { BookNowButton } from '../BookNowButton';
 import { 
   Eye, Phone as Smartphone, Laptop as Desktop, Star, MapPin, Phone, Clock, DollarSign, Calendar, Award, Users, MessageCircle, TrendingUp, Play as ChevronRight, Shield, Heart, Share2, Star as Bookmark, Play as PlayCircle} from 'lucide-react';
 import { TherapistProfile, ProfileService, Testimonial } from './EnhancedProfileEditor';
@@ -97,10 +98,10 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = ({
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-2">
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Book Now
-            </button>
+            <BookNowButton
+              className="bg-transparent px-6 py-2 rounded-lg flex items-center justify-center min-h-[40px] [&_img]:max-h-8"
+              ariaLabel="Book Now"
+            />
             <div className="flex gap-2">
               <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 rounded-lg transition-colors">
                 <Heart className="w-4 h-4" />
@@ -282,9 +283,10 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = ({
                   <Clock className="w-4 h-4" />
                   {service.duration} min
                 </div>
-                <button className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs hover:bg-orange-600 transition-colors">
-                  Book Now
-                </button>
+                <BookNowButton
+                  className="px-3 py-1 rounded-full min-h-0 [&_img]:max-h-5"
+                  ariaLabel="Book Now"
+                />
               </div>
             </div>
           </div>

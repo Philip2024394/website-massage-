@@ -11,6 +11,7 @@ import {
     ChevronLeft, ChevronRight, Sparkles
 } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
+import { PricesButton } from '../components/PricesButton';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
@@ -360,12 +361,15 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                     </div>
                 </div>
 
-                {/* Thumbnail strip – place images for skin clinic (click to open lightbox) */}
-                {(heroImages.length > 1 || galleryBlocks.length > 0) && (
+                {/* Clinic photos – home service (team, treatments, equipment); click to open lightbox */}
+                {(heroImages.length > 0 || galleryBlocks.length > 0) && (
                     <section className="mt-4 px-4">
-                        <h2 className="text-sm font-semibold text-slate-700 mb-2">
-                            {language === 'id' ? 'Foto tempat kami' : 'Our place'}
+                        <h2 className="text-sm font-semibold text-slate-700 mb-1">
+                            {language === 'id' ? 'Foto klinik' : 'Clinic photos'}
                         </h2>
+                        <p className="text-xs text-slate-500 mb-2">
+                            {language === 'id' ? 'Layanan ke rumah – tim & perawatan kami' : 'Home service – our team & treatments'}
+                        </p>
                         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
                             {heroImages.map((src, i) => (
                                 <button
@@ -391,12 +395,15 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                     </section>
                 )}
 
-                {/* Gallery blocks – image + header + text (skin clinic style) */}
+                {/* Gallery blocks – clinic photos with captions (home service: team, treatments, equipment) */}
                 <section className="mt-6 px-4 space-y-6">
                     <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-orange-500" />
-                        {language === 'id' ? 'Galeri Klinik' : 'Clinic Gallery'}
+                        {language === 'id' ? 'Galeri foto klinik' : 'Clinic photos'}
                     </h2>
+                    <p className="text-xs text-slate-500 -mt-1">
+                        {language === 'id' ? 'Layanan facial ke rumah – tim dan perawatan' : 'Home service facial – our team & treatments'}
+                    </p>
                     {galleryBlocks.map((block, index) => (
                         <div
                             key={index}
@@ -565,13 +572,11 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                         <Calendar className="w-4 h-4" />
                         <span className="text-sm">Schedule</span>
                     </button>
-                    <button
-                        type="button"
+                    <PricesButton
                         onClick={() => setShowPriceModal(true)}
-                        className="flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full bg-orange-500 text-white hover:bg-orange-600 active:scale-95 shadow-md min-h-[48px]"
-                    >
-                        <span className="text-sm">Prices</span>
-                    </button>
+                        className="flex-1 flex items-center justify-center min-h-[48px] py-3 px-2 rounded-full shadow-md"
+                        ariaLabel="Prices"
+                    />
                 </div>
             </div>
 

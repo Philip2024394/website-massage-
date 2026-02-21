@@ -11,6 +11,7 @@ import { Share2 } from 'lucide-react';
 import SafePassModal from './modals/SafePassModal';
 import { logger } from '../utils/logger';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+import { ViewProfileButton } from './ViewProfileButton';
 
 interface MassagePlaceHomeCardProps {
     place: Place;
@@ -523,7 +524,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                 </div>
 
                 {/* View Profile Button */}
-                <button 
+                <ViewProfileButton
                     onClick={(e) => {
                         e.stopPropagation(); // Prevent card onClick from firing
                         logger.debug('🔵 MASSAGE PLACE VIEW PROFILE CLICKED:', {
@@ -537,14 +538,9 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                         }
                     }}
                     disabled={readOnly}
-                    className={`w-full py-2.5 font-semibold rounded-lg transition-all ${
-                        readOnly 
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                            : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
-                    }`}
-                >
-                    {readOnly ? 'View Only' : 'View Profile'}
-                </button>
+                    className={`w-full py-2.5 rounded-lg ${readOnly ? 'bg-gray-300 cursor-not-allowed' : ''}`}
+                    ariaLabel={readOnly ? 'View Only' : 'View Profile'}
+                />
             </div>
             </div>
 

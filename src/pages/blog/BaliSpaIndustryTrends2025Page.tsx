@@ -46,6 +46,7 @@ const BaliSpaIndustryTrends2025Page: React.FC<BaliSpaIndustryTrends2025PageProps
 
   return (
     <BlogArticleLayout
+      branding="indastreet-news"
       title="Bali Spa Industry Trends 2025: What Therapists Need to Know"
       category="Industry Trends"
       author="Dr. Ketut Wijaya"

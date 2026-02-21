@@ -31,7 +31,8 @@ export const COLLECTIONS = {
     messages: 'messages',
     employerJobPostings: 'employer_job_postings',
     therapistJobListings: 'therapist_job_listings',
-    emergency_alerts: 'emergency_alerts'
+    emergency_alerts: 'emergency_alerts',
+    countries: 'countries'
 };
 
 // Legacy APPWRITE_CONFIG for backward compatibility
@@ -48,7 +49,8 @@ export const APPWRITE_CONFIG = {
         chatSessions: COLLECTIONS.chatSessions,
         chatRooms: COLLECTIONS.chatRooms,
         messages: COLLECTIONS.messages,
-        notifications: COLLECTIONS.notifications
+        notifications: COLLECTIONS.notifications,
+        countries: COLLECTIONS.countries
     }
 };
 

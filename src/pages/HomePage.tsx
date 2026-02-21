@@ -262,17 +262,24 @@ const HomePage: React.FC<HomePageProps> = ({
     } = useHomePageState();
 
     const [showLocationSelectPopup, setShowLocationSelectPopup] = useState(false);
-    
-    // Open with correct tab when arriving from profile hero or drawer (facials, places, beautician, etc.)
+    const hasInitializedTabRef = useRef(false);
+
+    // Open with correct tab once on mount: prefer home_initial_tab when arriving from drawer/profile, else default to Home Service + Massage.
+    // Run only once so we don't reset user's tab selection on every re-render (setActiveTab is recreated each render).
     useEffect(() => {
-        if (typeof window === 'undefined') return;
+        if (typeof window === 'undefined' || hasInitializedTabRef.current) return;
+        hasInitializedTabRef.current = true;
         try {
             const initialTab = sessionStorage.getItem('home_initial_tab');
             if (initialTab && ['facials', 'places', 'beautician', 'facial-places', 'beautician-places', 'home'].includes(initialTab)) {
                 sessionStorage.removeItem('home_initial_tab');
                 setActiveTab(initialTab);
+                return;
             }
-        } catch (_) {}
+            setActiveTab('home');
+        } catch (_) {
+            setActiveTab('home');
+        }
     }, [setActiveTab]);
     
     // Sync selectedCity with CityContext city
@@ -656,11 +663,6 @@ const HomePage: React.FC<HomePageProps> = ({
             document.body.classList.remove('has-footer', 'is-home');
         };
     }, []);
-
-    // Ensure activeTab is always 'home' when HomePage loads (shows therapist cards)
-    useEffect(() => {
-        setActiveTab('home');
-    }, []); // Run once when component mounts
 
     // SEO: dynamic meta title and description for city pages (e.g. /indonesia/yogyakarta/home-massage)
     const effectiveCityForSeo = selectedCity || contextCity;

@@ -5,12 +5,13 @@ import React, { useState, useMemo } from 'react';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { Star, Calendar, Eye, CheckCircle2 } from 'lucide-react';
+import { Star, Calendar, CheckCircle2 } from 'lucide-react';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 import { logger } from '../utils/logger';
 import { getWeekSeed, seededShuffle } from '../utils/weekSeedUtils';
+import { ViewProfileButton } from '../components/ViewProfileButton';
 
 /** Therapists not active on dashboard within this many days are excluded from Top 5. */
 const DASHBOARD_ACTIVITY_DAYS = 7;
@@ -322,7 +323,7 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                     </div>
 
                                     {/* View Profile Button - diverts to therapist profile page */}
-                                    <button
+                                    <ViewProfileButton
                                         onClick={() => {
                                             const therapistId = therapist.$id || therapist.id;
                                             const slug = (therapist.name || 'therapist').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -341,13 +342,9 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                                                 logger.error('🏆 [TOP5] Navigation failed', error);
                                             }
                                         }}
-                                        className="flex-shrink-0 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors shadow-md flex items-center gap-2"
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                        <span className="hidden sm:inline">
-                                            {currentLanguage === 'id' ? 'Lihat' : 'View'}
-                                        </span>
-                                    </button>
+                                        className="flex-shrink-0 px-5 py-2.5 rounded-xl shadow-md"
+                                        ariaLabel={currentLanguage === 'id' ? 'Lihat profil' : 'View profile'}
+                                    />
                                 </div>
 
                                 {/* Badge: #1 always Most Popular; 2 of the other 4 get random badges (Newest Menu/Prices max once) */}

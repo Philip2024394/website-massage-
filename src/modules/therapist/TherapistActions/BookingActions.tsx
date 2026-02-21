@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import { MessageCircle, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
+import { BookNowButton } from '../../../components/BookNowButton';
 import type { Therapist } from '../../../types';
 
 interface BookingActionsProps {
@@ -107,13 +108,11 @@ export const TherapistBookingActions: React.FC<BookingActionsProps> = ({
     <>
       {/* Main booking buttons */}
       <div className="grid grid-cols-2 gap-2 px-4 pb-2 mt-2">
-        <button 
+        <BookNowButton
           onClick={handleBookNowClickEnhanced}
-          className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95 book-now-btn"
-        >
-          <MessageCircle className="w-4 h-4"/>
-          <span className="text-sm">{bookNowText}</span>
-        </button>
+          className="w-1/2 flex items-center justify-center min-h-[48px] py-2 px-3 rounded-lg touch-manipulation book-now-btn"
+          ariaLabel={bookNowText}
+        />
         
         <button 
           onClick={handleScheduleClick}

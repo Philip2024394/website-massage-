@@ -1,8 +1,10 @@
 /**
  * Seed Review Generator
- * Generates deterministic, unique, SEO-optimized preview reviews for profiles
- * Reviews rotate UI-side only (no database writes) based on time buckets
+ * Generates deterministic, unique, SEO-optimized preview reviews for profiles.
+ * No two reviews have the same text or the same length; avatars are real-people images.
  */
+
+import { REAL_PEOPLE_AVATARS } from '../constants/realPeopleAvatars';
 
 export interface SeedReview {
   id: string;
@@ -15,27 +17,6 @@ export interface SeedReview {
   isSeed: true;
   createdAt: string;
 }
-
-// Avatar pool for consistent assignment
-const AVATAR_POOL = [
-  'https://ik.imagekit.io/7grri5v7d/avatar%201.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%202.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%203.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%204.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%206.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%207.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%208.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%209.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2010.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2011.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2012.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2013.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2014.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2015.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2016.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2017.png',
-  'https://ik.imagekit.io/7grri5v7d/avatar%2018.png'
-];
 
 // Review templates with varied lengths and SEO keywords
 const REVIEW_TEMPLATES = [
@@ -223,25 +204,36 @@ export function generateSeedReviews(
   const seed = simpleHash(profileId + timeBucket.toString());
   const templates = providerType === 'facial-place' ? FACIAL_REVIEW_TEMPLATES : REVIEW_TEMPLATES;
 
-  // Shuffle templates and names deterministically
   const shuffledTemplates = deterministicShuffle(templates, profileId, timeBucket);
   const shuffledNames = deterministicShuffle(REVIEWER_NAMES, profileId, timeBucket);
-  const shuffledAvatars = deterministicShuffle(AVATAR_POOL, profileId, timeBucket);
-  
+  const shuffledAvatars = deterministicShuffle([...REAL_PEOPLE_AVATARS], profileId, timeBucket);
+
+  const usedTexts = new Set<string>();
+  const usedLengths = new Set<number>();
   const reviews: SeedReview[] = [];
-  
-  for (let i = 0; i < count; i++) {
-    const template = shuffledTemplates[i % shuffledTemplates.length];
-    const reviewerName = shuffledNames[i % shuffledNames.length];
-    const avatarUrl = shuffledAvatars[i % shuffledAvatars.length];
-    
-    // Replace city placeholder with actual city
+  let templateIndex = 0;
+  let nameIndex = 0;
+  let avatarIndex = 0;
+
+  while (reviews.length < count && templateIndex < shuffledTemplates.length) {
+    const template = shuffledTemplates[templateIndex];
     const text = template.template.replace(/{city}/g, city);
-    
-    // Generate timestamp (vary within last 60 days)
+    const len = text.length;
+    templateIndex++;
+
+    if (usedTexts.has(text) || usedLengths.has(len)) continue;
+    usedTexts.add(text);
+    usedLengths.add(len);
+
+    const reviewerName = shuffledNames[nameIndex % shuffledNames.length];
+    const avatarUrl = shuffledAvatars[avatarIndex % shuffledAvatars.length];
+    nameIndex++;
+    avatarIndex++;
+
+    const i = reviews.length;
     const daysAgo = Math.floor(seededRandom(seed, i * 100) * 60);
     const createdAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
-    
+
     reviews.push({
       id: `seed_${profileId}_${i}_${timeBucket}`,
       profileId,
@@ -251,10 +243,10 @@ export function generateSeedReviews(
       city,
       userName: reviewerName,
       isSeed: true,
-      createdAt
+      createdAt,
     });
   }
-  
+
   return reviews;
 }
 

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
+import { BlogCardExternalLinks } from '../components/blog/BlogCardExternalLinks';
 
 /** Map blog slug (from post.slug) to router page id for navigation */
 const BLOG_SLUG_TO_PAGE: Record<string, string> = {
@@ -406,6 +407,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                                         >
                                             {t?.blog?.readArticle || 'Read Article'}
                                         </button>
+                                        <BlogCardExternalLinks language={language} />
                                     </div>
                                 </article>
                             ))}
@@ -449,6 +451,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                                     >
                                         {t?.blog?.readMore || 'Read More'}
                                     </button>
+                                    <BlogCardExternalLinks language={language} />
                                 </div>
                             </article>
                         ))}

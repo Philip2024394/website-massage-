@@ -13,6 +13,7 @@ export const DRAWER_PAGE_IDS = [
   'home',
   'createAccount',
   'login',
+  'indonesia',
   'indastreet-partners',
   'partnership-application',
   'massage-jobs',
@@ -58,16 +59,8 @@ export const DRAWER_NAV_ITEMS: ReadonlyArray<{
   { id: 'company', labelKey: 'companyProfile', icon: 'Building' },
   { id: 'contact', labelKey: 'contact', icon: 'Phone' },
   { id: 'hotels-and-villas', labelKey: 'hotelsVillas', icon: 'Hotel' },
-  { id: 'blog', labelKey: 'blog', icon: 'BookOpen' },
   { id: 'indastreet-news', labelKey: 'indastreetNews', icon: 'BookOpen' },
-  { id: 'massage-bali', labelKey: 'massageInBali', icon: 'Heart', sectionBreak: true },
-  { id: 'massage-types', labelKey: 'massageDirectory', icon: 'BookOpen' },
-  { id: 'facial-types', labelKey: 'facialDirectory', icon: 'BookOpen' },
-  { id: 'facial-places', labelKey: 'facialPlaces', icon: 'Building' },
-  { id: 'facial-home-service', labelKey: 'facialHomeService', icon: 'Home' },
-  { id: 'balinese-massage', labelKey: 'balineseMassage', icon: 'Heart' },
-  { id: 'deep-tissue-massage', labelKey: 'deepTissueMassage', icon: 'Heart' },
-  { id: 'faq', labelKey: 'faq', icon: 'HelpCircle' },
+  { id: 'faq', labelKey: 'faq', icon: 'HelpCircle', sectionBreak: true },
   { id: 'verifiedProBadge', labelKey: 'faq', icon: 'Sparkles', labelOverride: 'Massage Therapist Standards' },
   { id: 'simple-signup', labelKey: 'joinAsProvider', icon: 'Users', labelOverride: 'Sign Up' },
   { id: 'website-management', labelKey: 'websitePartners', icon: 'Home' },
@@ -75,6 +68,27 @@ export const DRAWER_NAV_ITEMS: ReadonlyArray<{
 
 /** Set for O(1) lookup when validating before navigate. */
 export const DRAWER_FALLBACK_PAGES = new Set<string>(DRAWER_PAGE_IDS);
+
+/** @deprecated Use DRAWER_COUNTRIES_LIST from constants/drawerCountries for the full list. Kept for backwards compatibility. */
+export const DRAWER_COUNTRIES = [
+  { id: 'indonesia', labelKey: 'indonesia' },
+] as const;
+
+/** Indonesia-only pages: massage, skin clinics, beauty – all under one drawer link "Indonesia". */
+export const INDONESIA_DRAWER_ITEMS: ReadonlyArray<{
+  id: DrawerPageId;
+  labelKey: string;
+  icon: 'Home' | 'Users' | 'Briefcase' | 'HelpCircle' | 'Info' | 'Building' | 'Phone' | 'Hotel' | 'BookOpen' | 'Heart' | 'Sparkles';
+  labelOverride?: string;
+}> = [
+  { id: 'massage-bali', labelKey: 'massageInBali', icon: 'Heart' },
+  { id: 'massage-types', labelKey: 'massageDirectory', icon: 'BookOpen' },
+  { id: 'facial-types', labelKey: 'facialDirectory', icon: 'BookOpen' },
+  { id: 'facial-places', labelKey: 'facialPlaces', icon: 'Building' },
+  { id: 'facial-home-service', labelKey: 'facialHomeService', icon: 'Home' },
+  { id: 'balinese-massage', labelKey: 'balineseMassage', icon: 'Heart' },
+  { id: 'deep-tissue-massage', labelKey: 'deepTissueMassage', icon: 'Heart' },
+];
 
 /**
  * Normalize drawer target: map known aliases to the canonical page id.
@@ -85,6 +99,7 @@ const ALIASES: Record<string, DrawerPageId> = {
   'agentPortal': 'admin',
   'agent-portal': 'admin',
   'adminDashboard': 'admin',
+  'country-indonesia': 'indonesia',
 };
 
 /**

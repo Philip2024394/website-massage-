@@ -1,18 +1,20 @@
 /**
  * Shared layout for blog article pages.
  * Matches home page quality: UniversalHeader, AppDrawer, consistent styling.
- * Provides hero image container and optional inline image containers (update src to suit).
+ * When branding="indastreet-news", shows IndaStreet News header hero and breadcrumb so all article links keep the same news experience.
  */
 
 import React, { useState } from 'react';
 import UniversalHeader from '../shared/UniversalHeader';
 import { AppDrawer } from '../AppDrawerClean';
 import { ExternalLink } from 'lucide-react';
+import { BLOGGER_URL, MEDIUM_URL } from '../../config/blogLinks';
 
-const BLOGGER_URL = 'https://indastreetmasssage.blogspot.com/';
-const MEDIUM_URL = 'https://medium.com/@indastreet.id/about';
+const INDASTREET_NEWS_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet%20news.png';
 
 export interface BlogArticleLayoutProps {
+  /** When 'indastreet-news', renders IndaStreet News hero and breadcrumb (Home / IndaStreet News / article). */
+  branding?: 'default' | 'indastreet-news';
   /** Article title (h1) */
   title: string;
   /** Category label e.g. "Industry Trends" */
@@ -81,6 +83,7 @@ export function BlogImageContainer({
 }
 
 const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
+  branding = 'default',
   title,
   category,
   author,
@@ -107,6 +110,7 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
   children,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isIndastreetNews = branding === 'indastreet-news';
 
   return (
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50">
@@ -135,18 +139,39 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
         places={places}
       />
 
-      {/* Spacer so content starts below fixed header – matches BlogIndexPage */}
       <div className="pt-[60px] sm:pt-16" aria-hidden />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-16">
-        {/* Breadcrumb – app theme: gray-50 page, subtle links */}
+      {/* IndaStreet News hero – same as news page so all article links share the same header/hero */}
+      {isIndastreetNews && (
+        <section className="px-4 pt-4 pb-6 sm:px-6 sm:pt-6 sm:pb-8">
+          <div className="max-w-5xl mx-auto">
+            <div className="relative w-full aspect-[21/9] min-h-[180px] sm:min-h-[220px] bg-gray-100 rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg">
+              <img src={INDASTREET_NEWS_HERO_IMAGE} alt="IndaStreet News" className="absolute inset-0 w-full h-full object-cover rounded-2xl sm:rounded-3xl" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 text-white">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold drop-shadow-sm tracking-tight">IndaStreet News</h1>
+                <p className="mt-0.5 text-xs sm:text-sm text-white/90 max-w-xl">
+                  {language === 'id' ? 'Berita terbaru untuk pijat dan klinik kulit' : 'The latest massage and skin care news'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 pb-16">
+        {/* Breadcrumb – IndaStreet News or default Blog */}
         <nav className="mb-6 text-sm text-gray-600" aria-label="Breadcrumb">
           <button type="button" onClick={() => onNavigate?.('home')} className="hover:text-orange-600 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-orange-200">
             {language === 'id' ? 'Beranda' : 'Home'}
           </button>
           <span className="mx-1">/</span>
-          <button type="button" onClick={() => onNavigate?.('blog')} className="hover:text-orange-600 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-orange-200">
-            Blog
+          <button
+            type="button"
+            onClick={() => onNavigate?.(isIndastreetNews ? 'indastreet-news' : 'blog')}
+            className="hover:text-orange-600 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-orange-200"
+          >
+            {isIndastreetNews ? 'IndaStreet News' : 'Blog'}
           </button>
           {breadcrumbLabel && (
             <>
@@ -190,13 +215,13 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
               )}
             </div>
 
-            {/* Blogger + Medium links – icons and buttons */}
-            <div className="mb-10 flex flex-wrap items-center gap-3">
+            {/* Blogger + Medium links – full-width buttons */}
+            <div className="mb-10 flex flex-col gap-3 w-full">
               <a
                 href={BLOGGER_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-semibold shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-semibold shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
                 aria-label={language === 'id' ? 'Baca lebih banyak di blog kami di Blogger' : 'Read more on our blog at Blogger'}
               >
                 <ExternalLink className="w-4 h-4 flex-shrink-0" aria-hidden />
@@ -206,7 +231,7 @@ const BlogArticleLayout: React.FC<BlogArticleLayoutProps> = ({
                 href={MEDIUM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-800 text-white text-sm font-semibold shadow-md hover:bg-gray-900 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-800 text-white text-sm font-semibold shadow-md hover:bg-gray-900 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
                 aria-label={language === 'id' ? 'Halaman kami di Medium' : 'Our page on Medium'}
               >
                 <ExternalLink className="w-4 h-4 flex-shrink-0" aria-hidden />

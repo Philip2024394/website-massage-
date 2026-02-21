@@ -1,7 +1,11 @@
 /**
  * useHomePageState - Core UI state management for HomePage
- * Hero: mainTab (Home Service | Places) + serviceButton (Massage | Facial | Beautician).
+ * Hero: mainTab (Home Service | City Places) + serviceButton (Massage | Facial | Beauty).
  * activeTab is derived for content routing; setActiveTab maps legacy tab ids to mainTab+serviceButton.
+ *
+ * Button → Page mapping (must stay in sync with content sections in HomePage):
+ * - Home Service + Massage → home (therapists) | Facial → facials (facial therapists) | Beauty → beautician
+ * - City Places  + Massage → places (massage spas) | Facial → facial-places (facial clinics) | Beauty → beautician-places
  */
 
 import { useState, useEffect, useMemo } from 'react';

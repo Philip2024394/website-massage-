@@ -33,6 +33,8 @@ interface Country {
     cities: City[];
     totalTherapists?: number;
     totalBookings?: number;
+    /** URL for this country's linked website (e.g. country landing page). Shown in side drawer. */
+    linkedWebsite?: string;
     $createdAt?: string;
     $updatedAt?: string;
 }
@@ -76,7 +78,8 @@ const CountryManagement = () => {
         dialCode: '',
         currency: '',
         timezone: '',
-        cities: []
+        cities: [],
+        linkedWebsite: ''
     });
 
     // City form state
@@ -255,14 +258,15 @@ const CountryManagement = () => {
                 flag: doc.flag,
                 description: doc.description,
                 language: doc.language,
-                languages: doc.languages || ['en'],
+                languages: Array.isArray(doc.languages) ? doc.languages : (typeof doc.languages === 'string' ? (() => { try { return JSON.parse(doc.languages); } catch { return ['en']; } })() : ['en']),
                 active: doc.active !== false,
                 dialCode: doc.dialCode || '',
                 currency: doc.currency || '',
                 timezone: doc.timezone || '',
-                cities: doc.cities || [],
+                cities: Array.isArray(doc.cities) ? doc.cities : (typeof doc.cities === 'string' ? (() => { try { return JSON.parse(doc.cities); } catch { return []; } })() : []),
                 totalTherapists: doc.totalTherapists || 0,
                 totalBookings: doc.totalBookings || 0,
+                linkedWebsite: doc.linkedWebsite || '',
                 $createdAt: doc.$createdAt,
                 $updatedAt: doc.$updatedAt
             }));
@@ -287,11 +291,16 @@ const CountryManagement = () => {
             
             for (const country of defaultCountries) {
                 try {
+                    const payload = {
+                        ...country,
+                        languages: JSON.stringify(country.languages || ['en']),
+                        cities: JSON.stringify(country.cities || [])
+                    };
                     const created = await databases.createDocument(
                         APPWRITE_CONFIG.databaseId,
                         APPWRITE_CONFIG.collections.countries || 'countries',
                         ID.unique(),
-                        country
+                        payload
                     );
                     createdCountries.push({
                         ...country,
@@ -341,14 +350,17 @@ const CountryManagement = () => {
         try {
             setActionInProgress(true);
             
+            const payload: Record<string, unknown> = {
+                ...countryForm,
+                languages: typeof countryForm.languages === 'string' ? countryForm.languages : JSON.stringify(countryForm.languages || ['en']),
+                cities: typeof countryForm.cities === 'string' ? countryForm.cities : JSON.stringify(countryForm.cities || []),
+                linkedWebsite: (countryForm.linkedWebsite || '').trim() || undefined
+            };
             const newCountry = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.countries || 'countries',
                 ID.unique(),
-                {
-                    ...countryForm,
-                    languages: countryForm.languages || ['en']
-                }
+                payload
             );
             
             const countryData: Country = {
@@ -381,14 +393,17 @@ const CountryManagement = () => {
         try {
             setActionInProgress(true);
             
+            const payload: Record<string, unknown> = {
+                ...countryForm,
+                languages: typeof countryForm.languages === 'string' ? countryForm.languages : JSON.stringify(countryForm.languages || ['en']),
+                cities: typeof countryForm.cities === 'string' ? countryForm.cities : JSON.stringify(countryForm.cities || []),
+                linkedWebsite: (countryForm.linkedWebsite || '').trim() || undefined
+            };
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.countries || 'countries',
                 selectedCountry.$id,
-                {
-                    ...countryForm,
-                    languages: countryForm.languages || ['en']
-                }
+                payload
             );
             
             setCountries(countries.map(country =>
@@ -480,7 +495,8 @@ const CountryManagement = () => {
             dialCode: '',
             currency: '',
             timezone: '',
-            cities: []
+            cities: [],
+            linkedWebsite: ''
         });
     };
 
@@ -497,7 +513,8 @@ const CountryManagement = () => {
             dialCode: country.dialCode,
             currency: country.currency,
             timezone: country.timezone,
-            cities: country.cities
+            cities: country.cities,
+            linkedWebsite: country.linkedWebsite || ''
         });
         setShowEditModal(true);
     };
@@ -645,8 +662,13 @@ const CountryManagement = () => {
                                             {country.dialCode} • {country.currency} • {country.timezone}
                                         </div>
                                         <div className="text-xs text-gray-500 mt-1">
-                                            Languages: {country.languages.join(', ')}
+                                            Languages: {country.languages?.join(', ') || '—'}
                                         </div>
+                                        {country.linkedWebsite && (
+                                            <a href={country.linkedWebsite} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-600 hover:underline mt-1 inline-block truncate max-w-[200px]" title={country.linkedWebsite}>
+                                                🔗 {country.linkedWebsite}
+                                            </a>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">
@@ -853,6 +875,18 @@ const CountryManagement = () => {
                                 </div>
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Linked Website URL</label>
+                                <input
+                                    type="url"
+                                    value={countryForm.linkedWebsite || ''}
+                                    onChange={(e) => setCountryForm({ ...countryForm, linkedWebsite: e.target.value })}
+                                    placeholder="https://indonesia.indastreet.id"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Side drawer: opens when user taps this country. Empty = in-app only.</p>
+                            </div>
+
                             <div className="flex items-center gap-2">
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input
@@ -1020,6 +1054,18 @@ const CountryManagement = () => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Linked Website URL</label>
+                                <input
+                                    type="url"
+                                    value={countryForm.linkedWebsite || ''}
+                                    onChange={(e) => setCountryForm({ ...countryForm, linkedWebsite: e.target.value })}
+                                    placeholder="https://indonesia.indastreet.id"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Side drawer: opens when user taps this country. Empty = in-app only.</p>
                             </div>
 
                             <div className="flex items-center gap-2">

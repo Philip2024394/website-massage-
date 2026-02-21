@@ -49,14 +49,17 @@ const MOCK_BEAUTICIAN_TREATMENTS = JSON.stringify([
   { treatment_name: 'Whitening & Brightening Facial', fixed_price: 325000, estimated_duration_minutes: 60, currency: 'IDR' },
 ]);
 
+/** Profile/main image for mock beautician (hair styles). */
+const MOCK_BEAUTY_IMAGE = 'https://ik.imagekit.io/7grri5v7d/hait%20styles%20browns.png';
+
 export const MOCK_BEAUTY_THERAPIST = {
   $id: MOCK_BEAUTY_THERAPIST_ID,
   id: MOCK_BEAUTY_THERAPIST_ID,
   ...sharedMockFields,
   appwriteId: MOCK_BEAUTY_THERAPIST_ID,
   name: 'Sari Beauty',
-  profilePicture: 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682',
-  mainImage: 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682',
+  profilePicture: MOCK_BEAUTY_IMAGE,
+  mainImage: MOCK_BEAUTY_IMAGE,
   location: 'Yogyakarta',
   whatsappNumber: '6281234567890',
   rating: 4.7,

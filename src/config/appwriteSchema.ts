@@ -240,6 +240,32 @@ export const COLLECTIONS = {
       published: { type: 'boolean', required: false, default: true },
       order: { type: 'integer', required: false }
     }
+  } as CollectionSchema,
+
+  /**
+   * COUNTRIES COLLECTION
+   * Side drawer countries and linked websites. Used by admin Country Management and main app drawer.
+   * Create in Appwrite Console or run: APPWRITE_API_KEY=... npx ts-node scripts/setup-countries-collection.ts
+   */
+  COUNTRIES: {
+    name: 'countries',
+    collectionId: 'countries',
+    attributes: {
+      code: { type: 'string', required: true, size: 10 },
+      name: { type: 'string', required: true, size: 255 },
+      flag: { type: 'string', required: true, size: 20 },
+      description: { type: 'string', required: false, size: 500 },
+      language: { type: 'string', required: false, size: 20 },
+      languages: { type: 'string', required: false, size: 2000 },
+      active: { type: 'boolean', required: false, default: true },
+      dialCode: { type: 'string', required: false, size: 10 },
+      currency: { type: 'string', required: false, size: 10 },
+      timezone: { type: 'string', required: false, size: 100 },
+      cities: { type: 'string', required: false, size: 10000 },
+      totalTherapists: { type: 'integer', required: false },
+      totalBookings: { type: 'integer', required: false },
+      linkedWebsite: { type: 'string', required: false, size: 500 }
+    }
   } as CollectionSchema
 
 } as const;
@@ -432,5 +458,6 @@ export const getMessageSchema = () => COLLECTIONS.MESSAGES;
 export const getChatMessageSchema = () => COLLECTIONS.CHAT_MESSAGES;
 export const getAdminMessageSchema = () => COLLECTIONS.ADMIN_MESSAGES;
 export const getIndastreetBlogSchema = () => COLLECTIONS.INDASTREET_BLOG;
+export const getCountriesSchema = () => COLLECTIONS.COUNTRIES;
 
 export default COLLECTIONS;

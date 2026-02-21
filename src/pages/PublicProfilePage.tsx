@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { databases, DATABASE_ID } from '../lib/appwrite';
+import { BookNowButton } from '../components/BookNowButton';
 import { MapPin, Star, Clock, Phone, Mail, Share2, MessageCircle } from 'lucide-react';
 
 interface PublicProfilePageProps {
@@ -282,12 +283,11 @@ export default function PublicProfilePage({ memberId, onNavigate }: PublicProfil
                 <MessageCircle className="w-5 h-5" />
                 <span>Contact via WhatsApp</span>
               </a>
-              <button
-                onClick={() => window.location.href = '/'}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-              >
-                <span>Book Now</span>
-              </button>
+              <BookNowButton
+                onClick={() => { window.location.href = '/'; }}
+                className="flex items-center justify-center min-h-[48px] px-6 py-3 rounded-lg"
+                ariaLabel="Book Now"
+              />
             </div>
 
             {/* Share URL Section */}

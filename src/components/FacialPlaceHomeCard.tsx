@@ -10,12 +10,15 @@ import { shareLinkService } from '../lib/services/shareLinkService';
 import { Share2 } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+import { ViewProfileButton } from './ViewProfileButton';
 
 interface FacialPlaceHomeCardProps {
     place: Place;
     onClick: (place: Place) => void;
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     userLocation?: { lat: number; lng: number } | null;
+    /** When true, card is shown as clinic (visit location); when false, as home service (they come to you). */
+    showAsClinic?: boolean;
 }
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -28,7 +31,8 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
     place, 
     onClick,
     onIncrementAnalytics,
-    userLocation
+    userLocation,
+    showAsClinic = false,
 }) => {
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -235,7 +239,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
 
                 {/* Facial & Skin Clinic badge – bottom left so it doesn’t cover star/orders */}
                 <div className="absolute bottom-3 left-3 bg-orange-500/90 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md">
-                    Facial • Skin clinic
+                    {showAsClinic ? 'Facial clinic · Visit us' : 'Facial · Home service'}
                 </div>
             </div>
 
@@ -311,12 +315,36 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 </div>
             </div>
 
-            {/* Focus note: facial treatment massage & skin clinic */}
+            {/* Focus note: clinic (visit) vs home service (we come to you) */}
             <div className="mx-4 mb-1">
                 <p className="text-xs text-orange-600 font-medium">
-                    Facial treatment massage & skin care
+                    {showAsClinic ? 'Facial & skin clinic · Visit our location' : 'Facial treatment & skin care · Home service'}
                 </p>
             </div>
+
+            {/* Clinic photos strip – home service: show up to 4 thumbnails when available */}
+            {(() => {
+                const main = (place as any).mainImage || (place as any).profilePicture || (place as any).image;
+                const extraImages: string[] = [];
+                if (Array.isArray((place as any).images)) (place as any).images.forEach((u: string) => u && extraImages.push(u));
+                const gallery = (place as any).galleryImages;
+                if (Array.isArray(gallery)) gallery.forEach((g: any) => (g?.imageUrl || g?.url) && extraImages.push(g.imageUrl || g.url));
+                const allPhotos = [main, ...extraImages].filter(Boolean) as string[];
+                const unique = Array.from(new Set(allPhotos)).slice(0, 4);
+                if (unique.length === 0) return null;
+                return (
+                    <div className="mx-4 mb-2">
+                        <p className="text-[10px] font-semibold text-slate-600 mb-1.5">Clinic photos</p>
+                        <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
+                            {unique.map((src, i) => (
+                                <div key={i} className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                                    <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* Client Preference - Services with Languages on same line (After profile section like profile card) */}
             <div className="mx-4 mb-2">
@@ -481,17 +509,16 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
 
             {/* View profile button – below price containers */}
             <div className="mx-4 mb-3">
-                <button
+                <ViewProfileButton
                     onClick={(e) => {
                         e.stopPropagation();
                         if (typeof onClick === 'function') {
                             onClick(place);
                         }
                     }}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:shadow-lg flex items-center justify-center gap-2"
-                >
-                    View profile
-                </button>
+                    className="w-full px-4 py-2.5 rounded-lg"
+                    ariaLabel="View profile"
+                />
             </div>
 
             {/* Footer: distance only */}

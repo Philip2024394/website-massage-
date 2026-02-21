@@ -48,7 +48,8 @@ const COLLECTIONS = {
     LOGIN_BACKGROUNDS: '',
     TRANSLATIONS: '',
     COMMISSION_RECORDS: '',
-    ATTRIBUTES: ''
+    ATTRIBUTES: '',
+    COUNTRIES: 'countries'
 };
 
 // ============================================
@@ -250,6 +251,9 @@ export const VALIDATED_COLLECTIONS = {
   // Membership
   get massage_types() { return getValidatedCollectionId('THERAPISTS' as any); },
   get membership_pricing() { return getValidatedCollectionId('THERAPISTS' as any); },
+
+  // Countries (side drawer + linked websites)
+  get countries() { return getValidatedCollectionId('COUNTRIES' as any); },
 };
 
 // ============================================
