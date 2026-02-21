@@ -28,6 +28,7 @@ import { isEmergencyWindowActive, triggerEmergencyAlert, type BookingForEmergenc
 import { therapistOffersService, SERVICE_TYPES } from '../../constants/serviceTypes';
 import BeauticianServiceCategories from '../../components/therapist/BeauticianServiceCategories';
 import BeauticianTreatmentContainersConfig from '../../components/therapist/BeauticianTreatmentContainersConfig';
+import BeauticianColorChartsConfig from '../../components/therapist/BeauticianColorChartsConfig';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -1237,6 +1238,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               language={propLanguage}
             />
             <BeauticianTreatmentContainersConfig
+              therapist={therapist}
+              onRefresh={onRefresh}
+              language={propLanguage}
+            />
+            <BeauticianColorChartsConfig
               therapist={therapist}
               onRefresh={onRefresh}
               language={propLanguage}

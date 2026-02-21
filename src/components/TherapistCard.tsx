@@ -90,6 +90,7 @@ import TherapistModalsContainer from '../modules/therapist/TherapistModalsContai
 import TherapistProfile from '../modules/therapist/TherapistProfile';
 import TherapistSpecialties from '../modules/therapist/TherapistSpecialties';
 import TherapistLanguages from '../modules/therapist/TherapistLanguages';
+import BeauticianProfileSections from './therapist/BeauticianProfileSections';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
 import SafePassModal from './modals/SafePassModal';
 import { getDynamicSpacing, formatPrice, formatCountdownDisplay, getInitialBookingCount } from '../modules/therapist/therapistHelpers';
@@ -1231,7 +1232,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
-            <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8">
+            <div className={`w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8 ${isBeauticianWithTreatments ? 'border-t-4 border-t-orange-400 shadow-md' : ''}`}>
                 <TherapistCardHeader
                     therapist={therapist}
                     displayImage={displayImage}
@@ -1243,6 +1244,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     bookingsCount={bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount}
                     displayRating={displayRating}
                     shareCount={shareCount}
+                    isBeautician={isBeauticianWithTreatments}
                 />
 
             {/* Location display - right aligned with pin icon (capital letters on profile) */}
@@ -1314,11 +1316,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 translatedDescriptionLength={translatedDescription.length}
             />
 
-
-
             {/* Beautician: treatments replace Swedish massage + 3 price containers (60/90/120). Slider = 4 items (real + sample). */}
             {isBeauticianWithTreatments ? (
                 <div className="px-4 pb-4">
+                    <p className="text-xs text-gray-600 mb-2">
+                        {chatLang === 'id' ? 'Pilih perawatan di bawah atau buka menu lengkap, lalu Book now atau Schedule.' : 'Select a treatment below or open the full menu, then Book now or Schedule.'}
+                    </p>
                     <button
                         type="button"
                         onClick={() => setShowPriceListModal(true)}
@@ -1487,6 +1490,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <span className="text-[10px] text-gray-500">Violates Stated Standards</span>
                 </button>
             </div>
+
+            {/* Beautician: Color & Design Chart (and Services I offer, disclaimers) – shown under Report Profile */}
+            {isBeauticianWithTreatments && (
+                <BeauticianProfileSections therapist={therapist} language={chatLang === 'id' ? 'id' : 'en'} />
+            )}
 
             {isBeauticianWithTreatments ? (
                 <BeauticianPriceListModal

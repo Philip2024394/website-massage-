@@ -115,7 +115,8 @@ export const useURLRouting = (
         'commission-payment': '/dashboard/therapist/commission',
         'therapist-analytics': '/dashboard/therapist/analytics',
         'therapist-how-it-works': '/dashboard/therapist/how-it-works',
-        'therapist-hotel-villa-safe-pass': '/dashboard/therapist/safe-pass',
+        'therapist-hotel-villa-safe-pass': '/dashboard/therapist/hotel-villa-safe-pass',
+        'therapist-safe-pass-apply': '/dashboard/therapist/safe-pass-apply',
         'send-discount': '/dashboard/therapist/send-discount',
         'customers': '/dashboard/therapist/customers',
         'more-customers': '/dashboard/therapist/more-customers',
@@ -378,6 +379,14 @@ export const useURLRouting = (
                     return;
                 }
                 if (path === '/dashboard/therapist/safe-pass') {
+                    setPage('therapist-hotel-villa-safe-pass');
+                    return;
+                }
+                if (path === '/dashboard/therapist/safe-pass-apply') {
+                    setPage('therapist-safe-pass-apply');
+                    return;
+                }
+                if (path === '/dashboard/therapist/hotel-villa-safe-pass') {
                     setPage('therapist-hotel-villa-safe-pass');
                     return;
                 }

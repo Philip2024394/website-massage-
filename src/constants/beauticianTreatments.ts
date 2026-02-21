@@ -12,12 +12,12 @@ export const BEAUTICIAN_TREATMENT_MAX_CONTAINERS = 3;
 /** Number of items in the beautician menu slider (real + sample fill). Same idea as therapist 5-item slider. */
 export const BEAUTICIAN_SLIDER_SIZE = 4;
 
-/** Sample treatment names for slider when beautician has no/few items (deterministic per therapist ID). */
+/** Sample treatment names for Jogja/Yogyakarta market (slider fill when beautician has no/few items). */
 export const SAMPLE_BEAUTICIAN_TREATMENT_NAMES = [
-  'Glow Facial Treatment',
-  'Full Nail Care (Manicure + Pedicure)',
-  'Bridal Makeup & Styling',
-  'Hair Styling & Treatment',
+  'Basic Facial',
+  'Acne Deep Cleansing Facial',
+  'Whitening & Brightening Facial',
+  'Peeling Glow Facial',
 ] as const;
 
 /** Default currency: IDR for Indonesia, otherwise EUR. */
@@ -71,17 +71,18 @@ function createSeed(therapistId: string): number {
 
 /**
  * Generate 4 sample beautician treatments for slider (display-only).
- * Deterministic per therapistId. Base prices in IDR with small variation.
+ * Yogyakarta/Jogja market: base prices already include +30% for admin commission.
+ * Base ref: Basic ~150k, Acne ~200k, Whitening ~250k, Peeling Glow ~275k → +30% = 195k, 260k, 325k, 358k.
  */
 export function getSampleBeauticianTreatments(therapistId: string, country?: string): BeauticianTreatment[] {
   const currency = getDefaultBeauticianCurrency(country);
   const seed = createSeed(therapistId);
-  const basePrices = [350000, 250000, 650000, 180000]; // IDR
-  const baseDurations = [60, 90, 120, 45];
+  const basePricesIdr = [195000, 260000, 325000, 355000]; // IDR (incl. 30% admin)
+  const baseDurations = [60, 75, 60, 75];
   const items: BeauticianTreatment[] = [];
   for (let i = 0; i < BEAUTICIAN_SLIDER_SIZE; i++) {
-    const priceVar = ((seed + i * 7919) % 7) - 3; // -3..3
-    const price = Math.max(50000, basePrices[i] + priceVar * 10000);
+    const priceVar = ((seed + i * 7919) % 5) - 2; // -2..2 small variation
+    const price = Math.max(100000, basePricesIdr[i] + priceVar * 5000);
     items.push({
       treatment_name: SAMPLE_BEAUTICIAN_TREATMENT_NAMES[i],
       fixed_price: currency === 'IDR' ? price : Math.round(price / 15000),

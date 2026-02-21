@@ -197,7 +197,7 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
     items: [
       {
         id: 'therapist-hotel-villa-safe-pass',
-        label: 'Safe Pass',
+        label: 'Apply Safe Pass',
         icon: Shield,
         color: 'text-gray-500',
         category: 'support',

@@ -1013,6 +1013,11 @@ export const therapistService = {
             }
             if ((data as any).facialTherapistListingActive !== undefined) (mappedData as any).facialTherapistListingActive = (data as any).facialTherapistListingActive;
             if ((data as any).facialTherapistListingExpiresAt !== undefined) (mappedData as any).facialTherapistListingExpiresAt = (data as any).facialTherapistListingExpiresAt;
+            // Beautician color & design charts (profile dropdowns + dashboard uploads)
+            if ((data as any).nailChartImageUrl !== undefined) (mappedData as any).nailChartImageUrl = (data as any).nailChartImageUrl;
+            if ((data as any).hairColorChartImageUrl !== undefined) (mappedData as any).hairColorChartImageUrl = (data as any).hairColorChartImageUrl;
+            if ((data as any).beauticianChartImages !== undefined) (mappedData as any).beauticianChartImages = typeof (data as any).beauticianChartImages === 'string' ? (data as any).beauticianChartImages : JSON.stringify((data as any).beauticianChartImages || {});
+            if ((data as any).beauticianDisclaimers !== undefined) (mappedData as any).beauticianDisclaimers = (data as any).beauticianDisclaimers;
 
             // Handle busy timer fields - store in existing description field as JSON for now
             if (data.bookedUntil !== undefined || (data as any).busyDuration as any !== undefined || (data as any).busyUntil as any !== undefined) {

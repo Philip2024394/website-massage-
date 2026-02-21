@@ -298,6 +298,7 @@ export type Page =
     | 'banner-discount'
     | 'therapist-banner-discount'
     | 'therapist-hotel-villa-safe-pass'
+    | 'therapist-safe-pass-apply'
     | 'therapist-safepass-apply'
     | 'place-safepass-apply'
     | 'admin-safepass'

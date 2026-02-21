@@ -426,6 +426,14 @@ export interface Therapist {
 
     // Beautician treatment containers (1–3 fixed-price treatments; JSON string for Appwrite)
     beauticianTreatments?: string; // JSON: BeauticianTreatment[]
+    /** Beautician: optional custom service disclaimers (shown on profile). */
+    beauticianDisclaimers?: string;
+    /** Beautician: optional nail colour chart image URL (when offering nail services). */
+    nailChartImageUrl?: string;
+    /** Beautician: optional hair colour chart image URL (when offering hair services). */
+    hairColorChartImageUrl?: string;
+    /** Beautician: optional custom chart image URLs by chart id, JSON string e.g. {"nail":"url","hair":"url"}. Used for extra charts or overrides. */
+    beauticianChartImages?: string;
 
     // Facial-specific attributes (optional; shown on profile when therapist offers facial)
     facialCertifications?: string | string[];

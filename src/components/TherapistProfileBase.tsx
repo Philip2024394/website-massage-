@@ -20,6 +20,7 @@ import RotatingReviews from './RotatingReviews';
 import SocialMediaLinks from './SocialMediaLinks';
 import IndastreetAchievements from './IndastreetAchievements';
 import TherapistServiceShowcase from './shared/TherapistServiceShowcase';
+import { therapistOffersService, SERVICE_TYPES } from '../constants/serviceTypes';
 import type { Therapist, UserLocation } from '../types';
 import { useTherapistDisplayImage } from '../utils/therapistImageUtils';
 import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
@@ -285,11 +286,13 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
 
                 {/* Beautician treatments are shown inside TherapistCard (replacing Swedish massage + 3 price containers) */}
 
-                {/* Professional Massage Services / Facial body guide - Unified across all modes */}
-                <TherapistServiceShowcase
-                    therapist={therapist}
-                    variant={((therapist as any).businessType === 'facial_clinic' || (therapist as any).businessType === 'facial_place' || (therapist as any).portalType === 'facial_clinic' || (therapist as any).portalType === 'facial_place') ? 'facial' : 'massage'}
-                />
+                {/* Professional Massage Services / Facial body guide - Hidden for beauticians (replaced by Color & Design Chart in card) */}
+                {!therapistOffersService(therapist, SERVICE_TYPES.BEAUTICIAN) && (
+                    <TherapistServiceShowcase
+                        therapist={therapist}
+                        variant={((therapist as any).businessType === 'facial_clinic' || (therapist as any).businessType === 'facial_place' || (therapist as any).portalType === 'facial_clinic' || (therapist as any).portalType === 'facial_place') ? 'facial' : 'massage'}
+                    />
+                )}
 
                 {/* Facial-specific attributes (when therapist offers facial and has data) */}
                 {(() => {

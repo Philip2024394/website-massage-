@@ -42,11 +42,11 @@ export const MOCK_FACIAL_THERAPIST = {
   isVerified: true,
 };
 
-/** Mock beautician treatments – 3 landscape containers (fixed price, estimated time). IDR for Indonesia. */
+/** Mock beautician treatments – 3 treatments for home card. Yogyakarta/Jogja market; prices include +30% for admin commission. */
 const MOCK_BEAUTICIAN_TREATMENTS = JSON.stringify([
-  { treatment_name: 'Glow Facial Treatment', fixed_price: 350000, estimated_duration_minutes: 60, currency: 'IDR' },
-  { treatment_name: 'Full Nail Care (Manicure + Pedicure)', fixed_price: 250000, estimated_duration_minutes: 90, currency: 'IDR' },
-  { treatment_name: 'Bridal Makeup & Styling', fixed_price: 650000, estimated_duration_minutes: 120, currency: 'IDR' },
+  { treatment_name: 'Basic Facial', fixed_price: 195000, estimated_duration_minutes: 60, currency: 'IDR' },
+  { treatment_name: 'Acne Deep Cleansing Facial', fixed_price: 260000, estimated_duration_minutes: 75, currency: 'IDR' },
+  { treatment_name: 'Whitening & Brightening Facial', fixed_price: 325000, estimated_duration_minutes: 60, currency: 'IDR' },
 ]);
 
 export const MOCK_BEAUTY_THERAPIST = {

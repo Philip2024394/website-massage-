@@ -102,10 +102,13 @@ const BeauticianPriceListModal: React.FC<BeauticianPriceListModalProps> = ({
           </button>
         </div>
 
-        <div className="px-4 py-2 flex items-center justify-between">
+        <div className="px-4 py-2">
           <div className="text-sm sm:text-base font-bold text-gray-900">
             {chatLang === 'id' ? 'Daftar Perawatan' : 'Treatment Menu'}
           </div>
+          <p className="text-xs text-gray-600 mt-0.5">
+            {chatLang === 'id' ? 'Harga tetap per item. Klik "Book via WhatsApp" untuk pesan.' : 'Fixed price per item. Click "Book via WhatsApp" to send your request.'}
+          </p>
         </div>
 
         <div className="flex-1 p-4 max-h-[70vh] overflow-y-auto">

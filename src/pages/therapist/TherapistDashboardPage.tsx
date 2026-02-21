@@ -844,8 +844,8 @@ const TherapistPortalPageInner: React.FC<TherapistPortalPageProps> = ({
         onNavigate?.('analytics');
         break;
       case 'therapist-hotel-villa-safe-pass':
-        console.log('[NAV CLICK] \u2192 Navigating to SafePass page');
-        onNavigate?.('therapist-hotel-villa-safe-pass');
+        console.log('[NAV CLICK] \u2192 Navigating to Apply Safe Pass page');
+        onNavigate?.('therapist-safe-pass-apply');
         break;
       case 'therapist-profile':
         console.log('[NAV CLICK] \u2192 Navigating to public therapist profile');

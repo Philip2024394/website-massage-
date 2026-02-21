@@ -15,6 +15,8 @@ interface TherapistCardHeaderProps {
     displayRating?: string;
     /** Times this shared profile was shared (shown as small counter over image) */
     shareCount?: number;
+    /** When true, show orange strip overlay at top of image (matches beautician home card) */
+    isBeautician?: boolean;
 }
 
 const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
@@ -24,12 +26,17 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
     customVerifiedBadge,
     bookingsCount = 0,
     displayRating,
-    shareCount
+    shareCount,
+    isBeautician = false,
 }) => {
     // Keep image URL stable to avoid reload/flicker on re-renders
 
     return (
         <div className="h-48 w-full overflow-visible relative rounded-t-xl">
+            {/* Orange strip overlay at top of image for beautician (matches home card) */}
+            {isBeautician && (
+                <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-gradient-to-r from-orange-500 to-orange-600 z-20" aria-hidden />
+            )}
             {/* 🔒 MOBILE STABILITY: Reserved background prevents layout shift during image loading */}
             <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600" style={{ minHeight: '192px' }}>
                 <img 

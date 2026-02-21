@@ -29,7 +29,7 @@ import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
-import { Share2 } from 'lucide-react';
+import { Share2, Sparkles } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import SafePassModal from './modals/SafePassModal';
@@ -501,7 +501,6 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     const beauticianTreatments = parseBeauticianTreatments((therapist as any).beauticianTreatments);
     const isBeauticianWithTreatments = therapistOffersService(therapist, SERVICE_TYPES.BEAUTICIAN) && beauticianTreatments.length > 0;
-    const [selectedBeauticianIndex, setSelectedBeauticianIndex] = useState<number | null>(null);
 
     // Get status - display_status (per-location rotation) takes precedence; then availability/status
     const getStatusStyles = () => {
@@ -582,7 +581,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     onClick(therapist);
                     onIncrementAnalytics('views');
                 }}
-                className={`bg-white rounded-2xl overflow-visible border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''} relative`}
+                className={`bg-white rounded-2xl overflow-visible border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''} relative ${isBeauticianWithTreatments ? 'border-t-4 border-t-orange-400 shadow-md' : ''}`}
             >
             {/* Image Container - Fixed height for mobile stability */}
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
@@ -777,13 +776,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             {/* Description (After Menerima like profile card) */}
             {therapist.description && (
                 <div className="mx-4 mb-3">
-                    <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-2 text-left">
+                    <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-3 text-left">
                         {therapist.description}
                     </p>
                 </div>
             )}
 
-            {/* Beautician: same design as profile – 3 stacked containers, selectable, orange glow when selected */}
+            {/* Beautician: 3 containers with selected-style highlight (no booking here – view profile to book) */}
             {isBeauticianWithTreatments ? (
                 <div className="mx-4 mb-4">
                     <style>{`
@@ -791,55 +790,44 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                           0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
                           50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
                         }
-                        .beautician-card-container-selected {
+                        .beautician-card-container-highlight {
                           border-color: rgb(249 115 22);
                           box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
                           animation: beautician-glow-card 2.5s ease-in-out infinite;
                         }
                     `}</style>
                     <div className="text-center mb-3">
-                        <h3 className="text-gray-800 font-bold text-sm tracking-wide">Treatments</h3>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Select Container And Press Book Now</p>
+                        <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
+                            <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
+                            Treatments Trending
+                        </h3>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • View profile to book</p>
                     </div>
                     <div className="space-y-2">
-                        {beauticianTreatments.slice(0, 3).map((t, idx) => {
-                            const isSelected = selectedBeauticianIndex === idx;
-                            return (
-                                <button
-                                    type="button"
-                                    key={therapist.$id || therapist.id || idx}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedBeauticianIndex((prev) => (prev === idx ? null : idx));
-                                    }}
-                                    className={`w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 ${
-                                        isSelected
-                                            ? 'beautician-card-container-selected bg-orange-50/80 border-orange-400'
-                                            : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                    aria-pressed={isSelected}
-                                    aria-label={`${t.treatment_name || `Treatment ${idx + 1}`}, ${t.estimated_duration_minutes} min, ${t.currency === 'IDR' ? 'IDR ' : ''}${formatBeauticianPrice(t)}. ${isSelected ? 'Selected' : 'Select'}`}
-                                >
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">
-                                            {t.treatment_name || `Treatment ${idx + 1}`}
-                                        </h4>
-                                        <p className="text-[10px] text-gray-600">
-                                            Estimated time: {t.estimated_duration_minutes} minutes
-                                        </p>
-                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                            Price: {t.currency === 'IDR' ? 'IDR ' : ''}{formatBeauticianPrice(t)} (fixed)
-                                        </p>
-                                    </div>
-                                    {isSelected && (
-                                        <span className="flex-shrink-0 text-orange-600 text-[10px] font-semibold uppercase tracking-wide">
-                                            Selected
-                                        </span>
-                                    )}
-                                </button>
-                            );
-                        })}
+                        {beauticianTreatments.slice(0, 3).map((t, idx) => (
+                            <div
+                                key={`${therapist.$id || therapist.id || 'beautician'}-t-${idx}`}
+                                className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400"
+                                role="presentation"
+                            >
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">
+                                        {t.treatment_name || `Treatment ${idx + 1}`}
+                                    </h4>
+                                    <p className="text-[10px] text-gray-600">
+                                        Estimated time: {t.estimated_duration_minutes} minutes
+                                    </p>
+                                    <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                        Price: {t.currency === 'IDR' ? 'IDR ' : ''}{formatBeauticianPrice(t)} (fixed)
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
+                    {/* Trust line - professional info */}
+                    <p className="text-center text-[10px] text-gray-500 mt-2">
+                        Professional rates • Verified profile
+                    </p>
                 </div>
             ) : pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 ? (
                 <div className="mx-4 mb-4">

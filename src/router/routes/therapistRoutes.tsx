@@ -50,6 +50,7 @@ import SendDiscountPage from '../../pages/therapist/SendDiscountPage';
 import MoreCustomersPage from '../../pages/therapist/MoreCustomersPage';
 import TherapistPlaceholderPage from '../../pages/therapist/TherapistPlaceholderPage';
 import TherapistHotelVillaSafePassPage from '../../pages/therapist/TherapistHotelVillaSafePassPage';
+import SafePassApplyLandingPage from '../../pages/therapist/SafePassApplyLandingPage';
 import TherapistCustomersPage from '../../pages/therapist/TherapistCustomersPage';
 import TherapistAnalyticsPage from '../../pages/therapist/TherapistAnalyticsPage';
 import BannerDiscountPage from '../../pages/therapist/BannerDiscountPage.tsx';
@@ -181,6 +182,12 @@ export const therapistRoutes = {
     path: '/therapist/hotel-villa-safe-pass',
     component: TherapistHotelVillaSafePassPage,
     name: 'therapist-hotel-villa-safe-pass',
+    requiresAuth: true
+  },
+  safePassApply: {
+    path: '/therapist/safe-pass-apply',
+    component: SafePassApplyLandingPage,
+    name: 'therapist-safe-pass-apply',
     requiresAuth: true
   },
   safePassApplication: {

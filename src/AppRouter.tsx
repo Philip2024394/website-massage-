@@ -2395,15 +2395,24 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Therapist-specific)
-        case 'therapist-hotel-villa-safe-pass':
-            logger.debug('[ROUTE RESOLVE] therapist-hotel-villa-safe-pass → TherapistHotelVillaSafePassPage');
-            return renderRoute(therapistRoutes.hotelVillaSafePass.component, {
+        case 'therapist-safe-pass-apply':
+            logger.debug('[ROUTE RESOLVE] therapist-safe-pass-apply → SafePassApplyLandingPage');
+            return renderRoute(therapistRoutes.safePassApply.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language || 'id'
             });
-        
+
+        case 'therapist-hotel-villa-safe-pass':
+            logger.debug('[ROUTE RESOLVE] therapist-hotel-villa-safe-pass → TherapistHotelVillaSafePassPage');
+            return renderRoute(therapistRoutes.hotelVillaSafePass.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-safe-pass-apply'),
+                onNavigate: props.onNavigate,
+                language: props.language || 'id'
+            });
+
         // SafePass Application (New System)
         case 'therapist-safepass-apply':
             logger.debug('[ROUTE RESOLVE] therapist-safepass-apply → TherapistSafePassWrapper');
