@@ -1016,6 +1016,7 @@ export const therapistService = {
             // Beautician color & design charts (profile dropdowns + dashboard uploads)
             if ((data as any).nailChartImageUrl !== undefined) (mappedData as any).nailChartImageUrl = (data as any).nailChartImageUrl;
             if ((data as any).hairColorChartImageUrl !== undefined) (mappedData as any).hairColorChartImageUrl = (data as any).hairColorChartImageUrl;
+            if ((data as any).hairStylesChartImageUrl !== undefined) (mappedData as any).hairStylesChartImageUrl = (data as any).hairStylesChartImageUrl;
             if ((data as any).beauticianChartImages !== undefined) (mappedData as any).beauticianChartImages = typeof (data as any).beauticianChartImages === 'string' ? (data as any).beauticianChartImages : JSON.stringify((data as any).beauticianChartImages || {});
             if ((data as any).beauticianDisclaimers !== undefined) (mappedData as any).beauticianDisclaimers = (data as any).beauticianDisclaimers;
 

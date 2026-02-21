@@ -81,6 +81,15 @@ function getChartImageUrl(
   return chartImages[chartId];
 }
 
+/** For Hair Styles: use higher-res ImageKit transform when URL is from ImageKit (clearer display). */
+function getHairStylesDisplayUrl(url: string): string {
+  if (!url || typeof url !== 'string') return url;
+  if (!url.includes('ik.imagekit.io')) return url;
+  if (url.includes('tr=')) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}tr=w-1200,q-90`;
+}
+
 interface BeauticianProfileSectionsProps {
   therapist: Record<string, unknown>;
   language?: 'en' | 'id';
@@ -95,14 +104,18 @@ const BeauticianProfileSections: React.FC<BeauticianProfileSectionsProps> = ({
   const categories = BEAUTICIAN_SERVICE_CATEGORIES.filter((c) => categoryIds.includes(c.id));
   const customDisclaimer = (therapist as any).beauticianDisclaimers as string | undefined;
 
-  // Which chart dropdowns to show: chart type is shown when its category is selected
+  // Which chart dropdowns to show: Nail and Hair Styles always; others when their category is selected
   const activeCharts = BEAUTICIAN_CHART_TYPES.filter((ct) => categoryIds.includes(ct.categoryId));
-  // Always show Nail Colors chart for beauticians (default image until they upload their own)
   const nailChartType = BEAUTICIAN_CHART_TYPES.find((ct) => ct.id === BEAUTICIAN_CHART_IDS.NAIL_COLOUR);
-  const chartsToShow =
-    nailChartType && !activeCharts.some((c) => c.id === BEAUTICIAN_CHART_IDS.NAIL_COLOUR)
-      ? [nailChartType, ...activeCharts]
-      : activeCharts;
+  const hairStylesChartType = BEAUTICIAN_CHART_TYPES.find((ct) => ct.id === BEAUTICIAN_CHART_IDS.HAIR_STYLES);
+  const restCharts = activeCharts.filter(
+    (c) => c.id !== BEAUTICIAN_CHART_IDS.NAIL_COLOUR && c.id !== BEAUTICIAN_CHART_IDS.HAIR_STYLES
+  );
+  const chartsToShow = [
+    ...(nailChartType ? [nailChartType] : []),
+    ...(hairStylesChartType ? [hairStylesChartType] : []),
+    ...restCharts,
+  ];
   const [openChartId, setOpenChartId] = useState<BeauticianChartId | null>(
     chartsToShow.length > 0 ? chartsToShow[0].id : null
   );
@@ -176,7 +189,7 @@ const BeauticianProfileSections: React.FC<BeauticianProfileSectionsProps> = ({
                   >
                     <div className="px-4 pb-4 pt-0">
                       {imageUrl ? (
-                        chartType.id === BEAUTICIAN_CHART_IDS.NAIL_COLOUR ? (
+chartType.id === BEAUTICIAN_CHART_IDS.NAIL_COLOUR ? (
                           <div className="rounded-lg overflow-hidden border border-gray-200">
                             <h4 className="text-base font-semibold text-gray-900 mb-2">
                               {isEn ? NAIL_CHART_HEADER_EN : NAIL_CHART_HEADER_ID}
@@ -190,6 +203,15 @@ const BeauticianProfileSections: React.FC<BeauticianProfileSectionsProps> = ({
                             <p className="text-sm text-gray-600 mt-2">
                               {isEn ? NAIL_CHART_SUBTITLE_EN : NAIL_CHART_SUBTITLE_ID}
                             </p>
+                          </div>
+                        ) : chartType.id === BEAUTICIAN_CHART_IDS.HAIR_STYLES ? (
+                          <div className="rounded-lg overflow-hidden border border-gray-200 w-full">
+                            <img
+                              src={getHairStylesDisplayUrl(imageUrl)}
+                              alt={label}
+                              className="w-full h-auto object-contain"
+                              loading="lazy"
+                            />
                           </div>
                         ) : (
                           <div className="rounded-lg overflow-hidden border border-gray-200">

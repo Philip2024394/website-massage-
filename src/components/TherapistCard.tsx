@@ -262,7 +262,7 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Prices</span>
+                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Menu Prices</span>
             </button>
         </div>
     );
@@ -279,9 +279,11 @@ interface BookViaWhatsAppRowProps {
     isBusy?: boolean;
     /** ISO string when therapist becomes available again */
     busyUntil?: string | null;
+    /** When true, Book via WhatsApp button shows heartbeat animation (e.g. beautician treatment selected) */
+    bookButtonFlash?: boolean;
 }
 
-function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, onPriceSlider, dynamicSpacing, isBusy = false, busyUntil }: BookViaWhatsAppRowProps) {
+function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, onPriceSlider, dynamicSpacing, isBusy = false, busyUntil, bookButtonFlash = false }: BookViaWhatsAppRowProps) {
     const [showBusyPopup, setShowBusyPopup] = useState(false);
     const adminDigits = ADMIN_WHATSAPP.replace(/\D/g, '');
     const phoneForUrl = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP) || adminDigits;
@@ -327,7 +329,7 @@ function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, 
             <button
                 type="button"
                 onClick={handleBookClick}
-                className="flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 bg-[#25D366] text-white hover:bg-[#20BD5A] active:bg-[#1DA851] active:scale-95 shadow-md cursor-pointer min-h-[48px] min-w-[44px]"
+                className={`flex-1 flex items-center justify-center gap-1 font-bold py-3 px-2 rounded-full transition-colors duration-300 bg-[#25D366] text-white hover:bg-[#20BD5A] active:bg-[#1DA851] active:scale-95 shadow-md cursor-pointer min-h-[48px] min-w-[44px] ${bookButtonFlash && !isBusy ? 'book-button-flash' : ''}`}
             >
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -346,7 +348,7 @@ function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, 
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Prices</span>
+                <span className="text-xs sm:text-sm font-semibold pointer-events-none">Menu Prices</span>
             </button>
         </div>
     );
@@ -1322,15 +1324,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <p className="text-xs text-gray-600 mb-2">
                         {chatLang === 'id' ? 'Pilih perawatan di bawah atau buka menu lengkap, lalu Book now atau Schedule.' : 'Select a treatment below or open the full menu, then Book now or Schedule.'}
                     </p>
-                    <button
-                        type="button"
-                        onClick={() => setShowPriceListModal(true)}
-                        className="mb-3 text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center gap-1.5"
-                    >
-                        <span>{chatLang === 'id' ? 'Lihat semua perawatan' : 'View full menu'}</span>
-                        <span className="text-gray-500 font-normal">({combinedBeauticianTreatments.length})</span>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                    </button>
                     <BeauticianTreatmentCards
                         therapist={therapist}
                         onSelectionChange={(index) => setSelectedBeauticianTreatmentIndex(index)}
@@ -1366,6 +1359,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
                     isBusy={displayStatus === AvailabilityStatus.Busy}
                     busyUntil={(therapist as any).busyUntil ?? (therapist as any).bookedUntil ?? undefined}
+                    bookButtonFlash={isBeauticianWithTreatments && selectedBeauticianTreatmentIndex !== null}
                 />
             ) : (
                 <>

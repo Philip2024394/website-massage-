@@ -11,6 +11,7 @@ import type { BeauticianCategoryId } from './beauticianServiceCategories';
 export const BEAUTICIAN_CHART_IDS = {
   NAIL_COLOUR: 'nail',
   HAIR_COLOUR: 'hair',
+  HAIR_STYLES: 'hair_styles',
 } as const;
 
 export type BeauticianChartId = (typeof BEAUTICIAN_CHART_IDS)[keyof typeof BEAUTICIAN_CHART_IDS];
@@ -41,10 +42,19 @@ export const BEAUTICIAN_CHART_TYPES: BeauticianChartType[] = [
     categoryId: BEAUTICIAN_CATEGORY_IDS.HAIR_BEAUTY,
     defaultImageUrl: undefined,
   },
+  {
+    id: BEAUTICIAN_CHART_IDS.HAIR_STYLES,
+    labelEn: 'Hair Styles',
+    labelId: 'Gaya Rambut',
+    categoryId: BEAUTICIAN_CATEGORY_IDS.HAIR_BEAUTY,
+    /** Higher-res ImageKit transform (w-1200, q-90) for clearer display */
+    defaultImageUrl: 'https://ik.imagekit.io/7grri5v7d/hait_styles_brown-removebg-preview.png?tr=w-1200,q-90',
+  },
 ];
 
 /** Therapist field key for custom image URL per chart (legacy single fields also used). */
 export const CHART_FIELD_LEGACY: Record<BeauticianChartId, string> = {
   [BEAUTICIAN_CHART_IDS.NAIL_COLOUR]: 'nailChartImageUrl',
   [BEAUTICIAN_CHART_IDS.HAIR_COLOUR]: 'hairColorChartImageUrl',
+  [BEAUTICIAN_CHART_IDS.HAIR_STYLES]: 'hairStylesChartImageUrl',
 };

@@ -432,6 +432,8 @@ export interface Therapist {
     nailChartImageUrl?: string;
     /** Beautician: optional hair colour chart image URL (when offering hair services). */
     hairColorChartImageUrl?: string;
+    /** Beautician: optional hair styles chart image URL (when offering hair services). Replaces default if set. */
+    hairStylesChartImageUrl?: string;
     /** Beautician: optional custom chart image URLs by chart id, JSON string e.g. {"nail":"url","hair":"url"}. Used for extra charts or overrides. */
     beauticianChartImages?: string;
 

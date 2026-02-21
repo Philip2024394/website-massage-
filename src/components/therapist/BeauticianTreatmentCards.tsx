@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, FingerprintPattern } from 'lucide-react';
 import { parseBeauticianTreatments } from '../../constants/beauticianTreatments';
 import type { Therapist } from '../../types';
 import type { BeauticianTreatment } from '../../types';
@@ -53,11 +53,14 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
           animation: beautician-glow 2.5s ease-in-out infinite;
         }
         @keyframes book-button-flash {
-          0%, 100% { opacity: 1; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4); }
-          50% { opacity: 0.92; box-shadow: 0 4px 20px rgba(249, 115, 22, 0.6); }
+          0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45); }
+          14% { transform: scale(1.06); box-shadow: 0 6px 20px rgba(37, 211, 102, 0.55); }
+          28% { transform: scale(1); box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45); }
+          42% { transform: scale(1.04); box-shadow: 0 5px 18px rgba(37, 211, 102, 0.5); }
+          70% { transform: scale(1); box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45); }
         }
         .book-button-flash {
-          animation: book-button-flash 1.4s ease-in-out infinite;
+          animation: book-button-flash 1.2s ease-in-out infinite;
         }
       `}</style>
       <div className="text-center mb-3">
@@ -75,7 +78,7 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
               type="button"
               key={index}
               onClick={() => handleSelect(index)}
-              className={`w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 ${
+              className={`w-full text-center rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 ${
                 isSelected
                   ? 'beautician-container-selected bg-orange-50/80 border-orange-400'
                   : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
@@ -83,7 +86,7 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
               aria-pressed={isSelected}
               aria-label={`${t.treatment_name || `Treatment ${index + 1}`}, ${t.estimated_duration_minutes} minutes, ${formatPrice(t)}. ${isSelected ? 'Selected' : 'Select'}`}
             >
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 text-center">
                 <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">
                   {t.treatment_name || `Treatment ${index + 1}`}
                 </h4>
@@ -95,8 +98,8 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
                 </p>
               </div>
               {isSelected && (
-                <span className="flex-shrink-0 text-orange-600 text-[10px] font-semibold uppercase tracking-wide">
-                  Selected
+                <span className="flex-shrink-0 flex items-center justify-center text-orange-600" aria-hidden>
+                  <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
                 </span>
               )}
             </button>
