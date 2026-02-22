@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
-import CityLocationDropdown from '../components/CityLocationDropdown';
 import MusicPlayer from '../components/MusicPlayer';
 import RotatingReviews from '../components/RotatingReviews';
 import SocialMediaLinks from '../components/SocialMediaLinks';
@@ -308,11 +307,12 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">{language === 'id' ? 'Tempat Facial' : 'Facial Places'}</span>
                         </button>
                     </div>
+                    {/* Massage | Facial only – no location dropdown in hero so Facial button is always visible and buttons work */}
                     <div className="flex flex-row gap-2 sm:gap-3 items-center max-w-2xl mx-auto mt-4 min-h-[54px]">
                         <button
                             type="button"
                             onClick={() => {
-                                try { sessionStorage.removeItem('home_initial_tab'); } catch (_) {}
+                                try { sessionStorage.setItem('home_initial_tab', 'home'); } catch (_) {}
                                 if (typeof onNavigate === 'function') onNavigate('home');
                                 else if (typeof onBack === 'function') onBack();
                             }}
@@ -323,25 +323,16 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap truncate">{language === 'id' ? 'Pijat' : 'Massage'}</span>
                         </button>
-                        <div className="relative flex-shrink-0 min-w-0 max-w-[180px] sm:max-w-[200px] z-20">
-                            <CityLocationDropdown
-                                selectedCity={cityState}
-                                onCityChange={setCityState}
-                                placeholder="🇮🇩 All Indonesia"
-                                includeAll={true}
-                                showLabel={false}
-                                className="w-full"
-                            />
-                        </div>
                         <button
                             type="button"
                             onClick={() => {
-                                try { sessionStorage.setItem('home_initial_tab', 'facials'); } catch (_) {}
-                                onNavigate?.('home');
+                                try { sessionStorage.setItem('home_initial_tab', 'facial-places'); } catch (_) {}
+                                if (typeof onNavigate === 'function') onNavigate('home');
+                                else if (typeof onBack === 'function') onBack();
                             }}
-                            title={language === 'id' ? 'Facial layanan rumah' : 'Home page – Home service facials & Facial places tab'}
+                            title={language === 'id' ? 'Facial layanan rumah & tempat facial' : 'Home – Facial places & Home service facials'}
                             aria-label="Facial"
-                            className="flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border bg-amber-500 text-white border-amber-500 shadow"
+                            className="flex-1 min-w-0 flex-shrink-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border bg-amber-500 text-white border-amber-500 shadow"
                         >
                             <Sparkles className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap truncate">{language === 'id' ? 'Facial' : 'Facial'}</span>

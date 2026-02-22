@@ -293,6 +293,11 @@ export const useURLRouting = (
                     setPage('facial-place-profile');
                     return;
                 }
+                if (path.startsWith('/profile/beauty/')) {
+                    console.log('🎯 URL ROUTING: Customer beauty place profile URL detected → beauty-place-profile');
+                    setPage('beauty-place-profile');
+                    return;
+                }
                 
                 // Handle legacy therapist profile URL
                 if (path.startsWith('/therapist-profile/')) {
@@ -537,6 +542,12 @@ export const useURLRouting = (
                 setPage('massage-place-profile');
                 return () => window.removeEventListener('popstate', handlePopState);
             }
+            // Beauty place profile – #/profile/beauty/:id
+            if (hashPathWithSlash.startsWith('/profile/beauty/') || hashPath.startsWith('profile/beauty/')) {
+                console.log('✅ Hash route matched: beauty-place-profile');
+                setPage('beauty-place-profile');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
             
             // Map hash routes to pages (path-style with leading slash)
             if (hashPathWithSlash === '/therapist-status' || hashPathWithSlash === '/status') {
@@ -573,6 +584,11 @@ export const useURLRouting = (
         if (initialPath.startsWith('/profile/place/')) {
             console.log(`🎯 Initial URL: ${initialPath} → massage-place-profile`);
             setPage('massage-place-profile');
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+        if (initialPath.startsWith('/profile/beauty/')) {
+            console.log(`🎯 Initial URL: ${initialPath} → beauty-place-profile`);
+            setPage('beauty-place-profile');
             return () => window.removeEventListener('popstate', handlePopState);
         }
         

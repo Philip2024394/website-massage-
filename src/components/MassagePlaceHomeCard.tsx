@@ -11,7 +11,6 @@ import { Share2, Sparkles } from 'lucide-react';
 import SafePassModal from './modals/SafePassModal';
 import { logger } from '../utils/logger';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
-import { ViewProfileButton } from './ViewProfileButton';
 
 interface MassagePlaceHomeCardProps {
     place: Place;
@@ -549,24 +548,34 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                     </p>
                 </div>
 
-                {/* View Profile Button */}
-                <ViewProfileButton
-                    onClick={(e) => {
-                        e.stopPropagation(); // Prevent card onClick from firing
-                        logger.debug('🔵 MASSAGE PLACE VIEW PROFILE CLICKED:', {
-                            placeId: place.id || place.$id,
-                            placeName: place.name,
-                            readOnly
-                        });
-                        if (!readOnly) {
-                            onClick(place);
-                            onIncrementAnalytics('views');
-                        }
-                    }}
-                    disabled={readOnly}
-                    className={`w-full py-2.5 rounded-lg ${readOnly ? 'bg-gray-300 cursor-not-allowed' : ''}`}
-                    ariaLabel={readOnly ? 'View Only' : 'View Profile'}
-                />
+                {/* View Profile + Menu prices — two buttons side by side under price containers */}
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            logger.debug('🔵 MASSAGE PLACE VIEW PROFILE CLICKED:', { placeId: place.id || place.$id, placeName: place.name, readOnly });
+                            if (!readOnly) { onClick(place); onIncrementAnalytics('views'); }
+                        }}
+                        disabled={readOnly}
+                        className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-colors ${readOnly ? 'bg-gray-300 cursor-not-allowed text-gray-500' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
+                        aria-label={readOnly ? 'View Only' : 'View Profile'}
+                    >
+                        {readOnly ? 'View Only' : 'View Profile'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (!readOnly) { onClick(place); onIncrementAnalytics('views'); }
+                        }}
+                        disabled={readOnly}
+                        className={`flex-1 py-2.5 rounded-lg font-semibold text-sm border-2 transition-colors ${readOnly ? 'border-gray-300 text-gray-500 cursor-not-allowed' : 'border-amber-500 text-amber-600 hover:bg-amber-50'}`}
+                        aria-label="Menu prices"
+                    >
+                        Menu prices
+                    </button>
+                </div>
             </div>
             </div>
 

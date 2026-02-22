@@ -86,6 +86,8 @@ import { facialRoutes } from './router/routes/facialRoutes';
 import { getTermsAgreed, setTermsAgreed } from './lib/termsAgreementStorage';
 import { facialPlaceService } from './lib/appwriteService';
 import { MOCK_FACIAL_PLACE, MOCK_FACIAL_PLACE_ID } from './constants/mockFacialPlace';
+import { MOCK_MASSAGE_PLACE, MOCK_MASSAGE_PLACE_ID } from './constants/mockMassagePlace';
+import { MOCK_BEAUTY_PLACE, MOCK_BEAUTY_PLACE_ID } from './constants/mockBeautyPlace';
 import { MOCK_BEAUTY_THERAPIST, MOCK_BEAUTY_THERAPIST_ID } from './constants/mockHomeServiceTherapists';
 import DashboardTermsGate from './components/DashboardTermsGate';
 import UserTermsGate from './components/UserTermsGate';
@@ -1760,18 +1762,25 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             logger.debug('  - selected Place:', { place: props.selectedPlace });
             logger.debug('  - URL path:', { path: window.location.pathname });
             
-            // Check if accessing via URL with ID parameter
-            const placePathMatch = window.location.pathname.match(/\/profile\/place\/(\d+-[\w-]+)/);
-            if (placePathMatch && !props.selectedPlace) {
-                // Extract ID from URL and find place
-                const urlId = placePathMatch[1].split('-')[0];
-                const foundPlace = props.places.find((p: any) => 
-                    (p.id || p.$id || '').toString() === urlId
-                );
-                if (foundPlace) {
-                    return renderRoute(profileRoutes.massagePlace.component, {
-                        place: foundPlace,
-                        // Header props
+            // Resolve place: selectedPlace, or from URL (numeric or string ID including mock)
+            const placePathMatch = window.location.pathname.match(/\/profile\/place\/([^/]+)/) || (typeof window !== 'undefined' && (window.location.hash || '').match(/profile\/place\/([^/]+)/));
+            let resolvedMassagePlace = props.selectedPlace;
+            if (!resolvedMassagePlace && placePathMatch) {
+                const fullSegment = placePathMatch[1];
+                const urlId = fullSegment.split('-')[0];
+                if (urlId === MOCK_MASSAGE_PLACE_ID || fullSegment.startsWith(MOCK_MASSAGE_PLACE_ID + '-')) {
+                    resolvedMassagePlace = MOCK_MASSAGE_PLACE as Place;
+                } else {
+                    const foundPlace = props.places?.find((p: any) =>
+                        (p.id || p.$id || '').toString() === urlId
+                    );
+                    if (foundPlace) resolvedMassagePlace = foundPlace;
+                }
+            }
+            if (resolvedMassagePlace) {
+                return renderRoute(profileRoutes.massagePlace.component, {
+                        place: resolvedMassagePlace,
+                        onBack: () => props.setPage?.('home'),
                         onLanguageChange: props.onLanguageChange,
                         language: props.language,
                         selectedCity: props.selectedCity,
@@ -1791,12 +1800,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onPrivacyClick: props.onPrivacyClick,
                         onNavigate: props.onNavigate
                     });
-                }
             }
             
             return renderRoute(profileRoutes.massagePlace.component, {
                 place: props.selectedPlace,
-                // Header props
+                onBack: () => props.setPage?.('home'),
                 onLanguageChange: props.onLanguageChange,
                 language: props.language,
                 selectedCity: props.selectedCity,
@@ -1868,6 +1876,49 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 places: props.places,
                 userLocation: props.userLocation,
                 loggedInCustomer: props.loggedInCustomer,
+                language: props.language,
+                onLanguageChange: props.onLanguageChange
+            });
+        }
+
+        case 'beauty-place-profile': {
+            logger.debug('[BeautyPlaceProfile] Rendering beauty place profile page');
+            const pathForBeauty = typeof window !== 'undefined' ? (window.location.pathname || '').replace(/^\/+/, '') : '';
+            const hashForBeauty = typeof window !== 'undefined' ? (window.location.hash || '').replace(/^#\/?/, '') : '';
+            const pathOrHashBeauty = pathForBeauty || hashForBeauty;
+            const beautyPathMatch = pathOrHashBeauty ? pathOrHashBeauty.match(/profile\/beauty\/([^/]+)/) : null;
+            const fullSegmentBeauty = beautyPathMatch ? beautyPathMatch[1] : null;
+            const slugFromNameB = (name: string) => (name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const isMockBeautyUrl = fullSegmentBeauty === MOCK_BEAUTY_PLACE_ID || (fullSegmentBeauty != null && fullSegmentBeauty.startsWith(MOCK_BEAUTY_PLACE_ID + '-'));
+            const resolvedBeautyPlace = props.selectedPlace
+                || (isMockBeautyUrl ? (MOCK_BEAUTY_PLACE as Place) : null)
+                || (MOCK_BEAUTY_PLACE as Place);
+            const beautyPlaceId = (resolvedBeautyPlace?.$id || resolvedBeautyPlace?.id || fullSegmentBeauty?.split('-')[0] || '') as string;
+            return renderRoute(profileRoutes.beautyPlace.component, {
+                place: resolvedBeautyPlace,
+                placeId: beautyPlaceId || (resolvedBeautyPlace ? (resolvedBeautyPlace.$id || resolvedBeautyPlace.id) : undefined),
+                beautyPlaces: [MOCK_BEAUTY_PLACE],
+                onBack: () => props.setPage('home'),
+                onBook: () => {
+                    const p = resolvedBeautyPlace || props.selectedPlace;
+                    if (p?.whatsappNumber) {
+                        const message = `Hi! I'd like to book at ${p.name}. When are you available?`;
+                        window.open(`https://wa.me/${(p as any).whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+                    }
+                },
+                onNavigate: props.onNavigate,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onFacialPlacePortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                therapists: props.therapists,
+                places: props.places,
+                userLocation: props.userLocation,
                 language: props.language,
                 onLanguageChange: props.onLanguageChange
             });

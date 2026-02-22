@@ -270,20 +270,26 @@ export const useNavigation = ({
             const placeType = (place as any).type;
             const hasFacialTypes = (place as any).facialTypes !== undefined;
             const hasFacialServices = (place as any).facialServices !== undefined;
-            const isFacial = placeType === 'facial' || placeType === 'beauty' || hasFacialTypes || hasFacialServices;
+            const isBeauty = placeType === 'beauty';
+            const isFacial = placeType === 'facial' || (hasFacialTypes || hasFacialServices) && !isBeauty;
 
-            if (isFacial) {
+            const id = (place as any).$id ?? (place as any).id ?? '';
+            const slug = (place.name || 'place').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+            if (isBeauty) {
+                setPage('beauty-place-profile');
+                const hash = `#/profile/beauty/${id}-${slug}`;
+                if (typeof window !== 'undefined' && (window.location.hash || '') !== hash) {
+                    window.history.pushState({ page: 'beauty-place-profile' }, '', hash);
+                }
+            } else if (isFacial) {
                 setPage('facial-place-profile');
-                const id = (place as any).$id ?? (place as any).id ?? '';
-                const slug = (place.name || 'clinic').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
                 const hash = `#/profile/facial/${id}-${slug}`;
                 if (typeof window !== 'undefined' && (window.location.hash || '') !== hash) {
                     window.history.pushState({ page: 'facial-place-profile' }, '', hash);
                 }
             } else {
                 setPage('massage-place-profile');
-                const id = (place as any).$id ?? (place as any).id ?? '';
-                const slug = (place.name || 'place').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
                 const hash = `#/profile/place/${id}-${slug}`;
                 if (typeof window !== 'undefined' && (window.location.hash || '') !== hash) {
                     window.history.pushState({ page: 'massage-place-profile' }, '', hash);

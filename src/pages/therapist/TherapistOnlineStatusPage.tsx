@@ -609,7 +609,6 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         const uiStatus = (dbStatus === 'available' || dbStatus === 'active') ? 'available' : 'busy';
         setStatus(uiStatus);
         devLog('🔄 Status synced with database:', uiStatus);
-      }
       } catch (revertError) {
         console.error('❌ Failed to sync with database status:', revertError);
       }

@@ -10,7 +10,6 @@ import { shareLinkService } from '../lib/services/shareLinkService';
 import { Share2, Sparkles } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
-import { ViewProfileButton } from './ViewProfileButton';
 
 interface FacialPlaceHomeCardProps {
     place: Place;
@@ -536,18 +535,30 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 </p>
             </div>
 
-            {/* View profile button – below price containers */}
-            <div className="mx-4 mb-3">
-                <ViewProfileButton
+            {/* View Profile + Menu prices — two buttons side by side under price containers */}
+            <div className="mx-4 mb-3 flex gap-2">
+                <button
+                    type="button"
                     onClick={(e) => {
                         e.stopPropagation();
-                        if (typeof onClick === 'function') {
-                            onClick(place);
-                        }
+                        if (typeof onClick === 'function') onClick(place);
                     }}
-                    className="w-full px-4 py-2.5 rounded-lg"
-                    ariaLabel="View profile"
-                />
+                    className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors"
+                    aria-label="View profile"
+                >
+                    View Profile
+                </button>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (typeof onClick === 'function') onClick(place);
+                    }}
+                    className="flex-1 py-2.5 rounded-lg font-semibold text-sm border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors"
+                    aria-label="Menu prices"
+                >
+                    Menu prices
+                </button>
             </div>
 
             {/* Footer: distance only */}

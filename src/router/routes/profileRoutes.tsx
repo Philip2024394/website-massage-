@@ -22,6 +22,7 @@ import { lazy } from 'react';
 import TherapistProfilePage from '../../pages/TherapistProfilePage';
 const MassagePlaceProfilePage = lazy(() => import('../../pages/MassagePlaceProfilePage'));
 const FacialPlaceProfilePage = lazy(() => import('../../pages/FacialPlaceToClinicProfileAdapter'));
+const BeautyPlaceProfilePage = lazy(() => import('../../pages/BeautyPlaceProfilePage'));
 const PlaceDetailPage = lazy(() => import('../../pages/PlaceDetailPage'));
 
 // New shared profile components (bulletproof, guaranteed to work)
@@ -81,6 +82,11 @@ export const profileRoutes = {
     path: '/facial-place/:id',
     component: FacialPlaceProfilePage,
     name: 'facialPlace'
+  },
+  beautyPlace: {
+    path: '/beauty-place/:id',
+    component: BeautyPlaceProfilePage,
+    name: 'beautyPlace'
   },
   placeDetail: {
     path: '/place/:id',

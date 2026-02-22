@@ -4,7 +4,7 @@
  */
 export const MOCK_BEAUTY_PLACE_ID = 'mock-beauty-salon-1';
 
-const BEAUTY_IMG = 'https://ik.imagekit.io/7grri5v7d/hait%20styles%20browns.png';
+const BEAUTY_IMG = 'https://ik.imagekit.io/7grri5v7d/beautician%20room%201.png';
 
 export const MOCK_BEAUTY_PLACE = {
   $id: MOCK_BEAUTY_PLACE_ID,

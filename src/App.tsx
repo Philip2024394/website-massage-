@@ -889,6 +889,12 @@ const App = () => {
                         targetPage: 'facial-place-profile'
                     }));
                 }
+            } else if (path.startsWith('/profile/beauty/')) {
+                const match = path.match(/\/profile\/beauty\/([^/-]+)/);
+                if (match) {
+                    state.setSelectedPlace(null);
+                    state.setPage('beauty-place-profile');
+                }
             } else if (path === '/signup' || path.startsWith('/signup')) {
                 // Handle signup - set page state to trigger redirect or render SimpleSignupFlow
                 const urlParams = new URLSearchParams(window.location.search);
@@ -952,6 +958,9 @@ const App = () => {
                 } else if (path.startsWith('/profile/place/')) {
                     logger.debug('[HASH CHANGE] Setting page to massage-place-profile');
                     state.setPage('massage-place-profile');
+                } else if (path.startsWith('/profile/beauty/')) {
+                    logger.debug('[HASH CHANGE] Setting page to beauty-place-profile');
+                    state.setPage('beauty-place-profile');
                 }
             }
         };

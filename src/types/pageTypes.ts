@@ -53,6 +53,7 @@ export type Page =
     | 'therapist-legal'
     | 'therapist-job-applications'
     | 'facial-place-profile' // Facial place profile page
+    | 'beauty-place-profile' // Beauty place (salon) profile page
     | 'profile' // 🎯 NEW: Guest profile page for non-registered users
     | 'qr-code' // QR Code sharing page
     | 'membership-select'

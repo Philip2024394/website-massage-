@@ -28,7 +28,6 @@ import TherapistJoinPopup from './TherapistJoinPopup';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
-import { ViewProfileButton } from './ViewProfileButton';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import { Share2, Sparkles } from 'lucide-react';
 import { logger } from '../utils/logger';
@@ -879,15 +878,26 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </div>
             ) : null}
 
-            {/* View Profile Button */}
-            <div className="px-4 pb-4">
-                {/* 🔒 LOCKED: NO price modal triggers allowed on home page cards */}
-                <ViewProfileButton
-                    onClick={() => onClick(therapist)}
+            {/* View Profile + Menu prices — two buttons side by side under price containers */}
+            <div className="px-4 pb-4 flex gap-2">
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); if (!readOnly) { onClick(therapist); onIncrementAnalytics('views'); } }}
                     disabled={readOnly}
-                    className={`w-full py-3 rounded-lg ${readOnly ? 'bg-gray-300 cursor-not-allowed' : ''}`}
-                    ariaLabel={readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
-                />
+                    className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-colors ${readOnly ? 'bg-gray-300 cursor-not-allowed text-gray-500' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
+                    aria-label={readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
+                >
+                    {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
+                </button>
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); if (!readOnly) { onClick(therapist); onIncrementAnalytics('views'); } }}
+                    disabled={readOnly}
+                    className={`flex-1 py-3 rounded-lg font-semibold text-sm border-2 transition-colors ${readOnly ? 'border-gray-300 text-gray-500 cursor-not-allowed' : 'border-amber-500 text-amber-600 hover:bg-amber-50'}`}
+                    aria-label="Menu prices"
+                >
+                    Menu prices
+                </button>
             </div>
             </div>
 

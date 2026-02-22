@@ -35,6 +35,7 @@ import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins 
 import TherapistHomeCard from '../components/TherapistHomeCard';
 import MassagePlaceHomeCard from '../components/MassagePlaceHomeCard';
 import FacialPlaceHomeCard from '../components/FacialPlaceHomeCard';
+import CityPlaceCard from '../components/CityPlaceCard';
 import RatingModal from '../components/RatingModal';
 // Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -57,6 +58,8 @@ import { APP_CONFIG } from '../config';
 import { matchProviderToCity } from '../constants/indonesianCities';
 import { deriveLocationIdFromGeopoint, calculateDistance, extractGeopoint } from '../utils/geoDistance';
 import { MOCK_FACIAL_PLACE } from '../constants/mockFacialPlace';
+import { MOCK_MASSAGE_PLACE } from '../constants/mockMassagePlace';
+import { MOCK_BEAUTY_PLACE } from '../constants/mockBeautyPlace';
 import { MOCK_FACIAL_THERAPIST, MOCK_BEAUTY_THERAPIST } from '../constants/mockHomeServiceTherapists';
 import { matchesLocation } from '../utils/locationNormalization';
 import { filterTherapistsByCity } from '../utils/cityFilterUtils';
@@ -2284,59 +2287,28 @@ const HomePage: React.FC<HomePageProps> = ({
                                 }
                             };
                             livePlaces.sort((a, b) => getPlaceStatusScore(b) - getPlaceStatusScore(a));
-                            
-                            if (livePlaces.length === 0) {
-                                return (
-                                    <div className="text-center py-12">
-                                        <div className="mb-4">
-                                            <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                            </svg>
-                                        </div>
-                                        <p className="text-gray-500 mb-2 text-lg font-semibold">{t?.home?.noPlacesAvailable || 'Tidak ada tempat pijat tersedia di area Anda'}</p>
-                                        <p className="text-sm text-gray-400">Check back soon for featured spas!</p>
-                                        {(selectedCity || contextCity) && (selectedCity || contextCity) !== 'all' && (
-                                            <p className="text-xs text-gray-300 mt-2">
-                                                Showing places in your selected region
-                                            </p>
-                                        )}
-                                        <p className="text-xs text-gray-300 mt-4">Total places in DB: {places?.length || 0} | Nearby: {nearbyPlaces.length} | Live: {livePlaces.length}</p>
-                                    </div>
-                                );
-                            }
+                            const listToShowMassage = livePlaces.length > 0 ? livePlaces : [MOCK_MASSAGE_PLACE];
                             
                             return (
                                 <div className="space-y-4 max-w-full overflow-hidden">
-                                    {livePlaces
+                                    {listToShowMassage
                                         .map((place, index) => {
                                             const placeId = place.id || (place as any).$id;
-                                            
                                             return (
                                                 <React.Fragment key={placeId}>
-                                                <MassagePlaceHomeCard
+                                                <CityPlaceCard
                                                     place={place}
+                                                    category="massage"
                                                     onClick={(p) => {
-                                                        logger.debug('Homepage place card clicked', {
-                                                            placeId: p.id || p.$id,
-                                                            placeName: p.name
-                                                        });
-                                                        // Set selected place first (for AppRouter to access)
+                                                        logger.debug('Homepage place card clicked', { placeId: p.id || p.$id, placeName: p.name });
                                                         onSelectPlace(p);
-                                                        
-                                                        // Build URL with ID and slug
-                                                        const placeId = p.id || p.$id;
+                                                        const pid = p.id || p.$id;
                                                         const slug = p.name?.toLowerCase().replace(/\s+/g, '-') || 'place';
-                                                        const profileUrl = `/profile/place/${placeId}-${slug}`;
-                                                        logger.debug('Pushing place profile URL', { url: profileUrl });
-                                                        window.history.pushState({}, '', profileUrl);
-                                                        
-                                                        // Note: onSelectPlace already triggers navigation to massage-place-profile
-                                                        // via useNavigation.handleSetSelectedPlace
+                                                        window.history.pushState({}, '', `/profile/place/${pid}-${slug}`);
                                                     }}
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
-                                                {/* IndaStreet Social link */}
                                                 <div className="mt-2 mb-4 flex justify-center">
                                                     <button
                                                         onClick={() => onNavigate?.('indonesia')}
@@ -2506,13 +2478,25 @@ const HomePage: React.FC<HomePageProps> = ({
                                     {listToShow.map((place: any) => {
                                         const placeId = place.id || place.$id;
                                         return (
-                                            <FacialPlaceHomeCard
-                                                key={placeId}
+                                            <React.Fragment key={placeId}>
+                                            <CityPlaceCard
                                                 place={place}
+                                                category="facial"
                                                 onClick={onSelectPlace}
                                                 onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                 userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                             />
+                                            <div className="mt-2 mb-4 flex justify-center">
+                                                <button
+                                                    onClick={() => onNavigate?.('indonesia')}
+                                                    className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
+                                                >
+                                                    <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                                    <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                                    <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
+                                                </button>
+                                            </div>
+                                            </React.Fragment>
                                         );
                                     })}
                                 </div>
@@ -2625,16 +2609,41 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
                 )}
 
-                {/* Beautician Places – placeholder until beautician_places or place type exists */}
+                {/* Beauty (City Places) – same card layout as Beauty Home Service */}
                 {activeTab === 'beautician-places' && (
                     <div className="max-w-full pb-8">
                         <div className="mb-3 text-center mt-[26px]">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">Beauty (City Places)</h3>
-                            <p className="text-gray-600">Salons and beauty venues. Coming soon.</p>
+                            <p className="text-gray-600">Salons and beauty venues.</p>
                         </div>
-                        <div className="text-center py-12 bg-white rounded-lg">
-                            <p className="text-gray-500">No Beauty city places listed yet. Check back soon.</p>
-                        </div>
+                        {(() => {
+                            const beautyPlaces: any[] = [MOCK_BEAUTY_PLACE]; // 1 mock card; TODO: wire to beautician_places when available
+                            return (
+                                <div className="space-y-4 max-w-full overflow-hidden">
+                                    {beautyPlaces.map((place: any) => {
+                                        const placeId = place.id || place.$id;
+                                        return (
+                                            <React.Fragment key={placeId}>
+                                            <CityPlaceCard
+                                                place={place}
+                                                category="beauty"
+                                                onClick={(p) => onSelectPlace(p)}
+                                                onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
+                                                userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                            />
+                                            <div className="mt-2 mb-4 flex justify-center">
+                                                <button onClick={() => onNavigate?.('indonesia')} className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors">
+                                                    <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                                    <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                                    <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
+                                                </button>
+                                            </div>
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
                     </div>
                 )}
 
