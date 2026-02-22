@@ -32,21 +32,23 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
     // Keep image URL stable to avoid reload/flicker on re-renders
 
     return (
-        <div className="h-48 w-full overflow-visible relative rounded-t-xl">
+        <div
+            className="w-full overflow-hidden relative rounded-t-xl"
+            style={{ aspectRatio: '16/9', minHeight: '180px', maxHeight: '320px' }}
+        >
             {/* Orange over main image: same as home page — card uses border-t-4 border-t-orange-400 (no extra strip on image) */}
-            {/* 🔒 MOBILE STABILITY: Reserved background prevents layout shift during image loading */}
-            <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600" style={{ minHeight: '192px' }}>
-                <img 
+            {/* 🔒 MOBILE STABILITY: Aspect-ratio container scales on mobile; reserved background prevents layout shift during image loading */}
+            <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
+                <img
                     key={displayImage}
-                    src={displayImage} 
-                    alt={`${getTherapistDisplayName(therapist.name)} cover`} 
-                    className="w-full h-full object-cover rounded-t-xl"
-                    style={{ aspectRatio: '16/9', minHeight: '192px' }}
+                    src={displayImage}
+                    alt={`${getTherapistDisplayName(therapist.name)} cover`}
+                    className="absolute inset-0 w-full h-full object-cover rounded-t-xl"
                     loading="eager"
                     decoding="async"
                     fetchPriority="high"
                     width="400"
-                    height="192"
+                    height="225"
                     onError={(e) => {
                         logger.warn('🖼️ Main image failed to load, using fallback:', typeof displayImage === 'string' ? displayImage.slice(0, 80) : displayImage);
                         // Fallback to a working ImageKit URL (e.g. when Appwrite file returns 404)

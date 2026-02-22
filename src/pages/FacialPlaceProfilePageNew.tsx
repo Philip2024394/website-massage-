@@ -13,8 +13,9 @@ import {
 import { AppDrawer } from '../components/AppDrawerClean';
 import { PricesButton } from '../components/PricesButton';
 import UniversalHeader from '../components/shared/UniversalHeader';
-import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+import { VERIFIED_BADGE_IMAGE_URL, APP_CONSTANTS } from '../constants/appConstants';
 import { parsePricing, parseMassageTypes } from '../utils/appwriteHelpers';
+import { getBookingWhatsAppNumber, buildWhatsAppUrl } from '../utils/whatsappBookingMessages';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface Place {
@@ -212,15 +213,21 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
         return String(n);
     };
 
+    const adminNumber = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER ?? '';
+    const bookingPhone = place ? getBookingWhatsAppNumber(
+        { country: (place as any).country, countryCode: (place as any).countryCode, whatsappNumber: place.whatsappNumber, contactNumber: place.whatsappNumber },
+        adminNumber
+    ) : '';
+
     const handleBookNow = () => {
         if (!place) return;
         if (onQuickBookWithChat) {
             onQuickBookWithChat();
         } else if (onBook) {
             onBook();
-        } else if (place.whatsappNumber) {
+        } else if (bookingPhone) {
             const msg = `Hi! I'd like to book a treatment at ${place.name}. When are you available?`;
-            window.open(`https://wa.me/${place.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+            window.open(buildWhatsAppUrl(bookingPhone, msg) || `https://wa.me/${bookingPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
     };
 
@@ -228,9 +235,9 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
         if (!place) return;
         if (hasBankAndKtp && onQuickBookWithChat) {
             onQuickBookWithChat();
-        } else if (place.whatsappNumber) {
+        } else if (bookingPhone) {
             const msg = `Hi! I'd like to schedule a treatment at ${place.name}. What times do you have?`;
-            window.open(`https://wa.me/${place.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+            window.open(buildWhatsAppUrl(bookingPhone, msg) || `https://wa.me/${bookingPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
     };
 
@@ -432,24 +439,24 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
 
                 {/* Facial treatment types (main menu – facial treatment massage focus) */}
                 <section className="mt-8 px-4">
-                    <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4">
-                        <h2 className="text-lg font-bold text-slate-900 mb-1">
+                    <div className="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4">
+                        <h2 className="text-lg font-bold text-gray-900 mb-1">
                             {language === 'id' ? 'Jenis Perawatan Facial' : 'Facial Treatment Types'}
                         </h2>
-                        <p className="text-xs text-slate-500 mb-3">
+                        <p className="text-xs text-gray-600 mb-3 font-medium">
                             {language === 'id' ? 'Facial treatment massage & perawatan kulit' : 'Facial treatment massage & skin care'}
                         </p>
                         {facialTypesList.length > 0 ? (
                             <ul className="space-y-2">
                                 {facialTypesList.map((name, i) => (
-                                    <li key={i} className="flex items-center gap-2 text-slate-700">
+                                    <li key={i} className="flex items-center gap-2 text-gray-800">
                                         <CheckCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                                        <span className="text-sm font-medium">{name}</span>
+                                        <span className="text-sm font-medium text-gray-900">{name}</span>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-slate-600 text-sm">
+                            <p className="text-gray-800 text-sm font-medium">
                                 {language === 'id' ? 'Berbagai layanan facial dan perawatan kulit.' : 'Various facial and skin care services.'}
                             </p>
                         )}
@@ -458,15 +465,15 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
 
                 {/* Other services */}
                 <section className="mt-6 px-4">
-                    <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4">
-                        <h2 className="text-lg font-bold text-slate-900 mb-3">
+                    <div className="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4">
+                        <h2 className="text-lg font-bold text-gray-900 mb-3">
                             {language === 'id' ? 'Layanan Lainnya' : 'Other Services'}
                         </h2>
                         <div className="flex flex-wrap gap-2">
                             {otherServices.map((s, i) => (
                                 <span
                                     key={i}
-                                    className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-full text-sm font-medium"
+                                    className="px-3 py-1.5 bg-slate-200 text-gray-900 rounded-full text-sm font-semibold"
                                 >
                                     {s}
                                 </span>
@@ -478,8 +485,8 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                 {/* Pricing 60/90/120 – treatment packages */}
                 {hasPricing && (
                     <section className="mt-6 px-4">
-                        <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4">
-                            <h2 className="text-lg font-bold text-slate-900 mb-3">
+                        <div className="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4">
+                            <h2 className="text-lg font-bold text-gray-900 mb-3">
                                 {language === 'id' ? 'Harga perawatan' : 'Treatment pricing'}
                             </h2>
                             <div className="grid grid-cols-3 gap-2">
@@ -487,30 +494,30 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setShowPriceModal(true)}
-                                        className="p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
+                                        className="p-3 rounded-xl border-2 border-slate-300 bg-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
                                     >
-                                        <p className="text-xs text-slate-600 font-semibold">60 min</p>
-                                        <p className="text-base font-bold text-slate-900 mt-1">IDR {formatPrice(pricing['60'])}</p>
+                                        <p className="text-xs text-gray-700 font-semibold">60 min</p>
+                                        <p className="text-base font-bold text-gray-900 mt-1">IDR {formatPrice(pricing['60'])}</p>
                                     </button>
                                 )}
                                 {pricing['90'] > 0 && (
                                     <button
                                         type="button"
                                         onClick={() => setShowPriceModal(true)}
-                                        className="p-3 rounded-xl border-2 border-orange-300 bg-orange-50 text-center"
+                                        className="p-3 rounded-xl border-2 border-orange-400 bg-orange-100 text-center"
                                     >
-                                        <p className="text-xs text-slate-600 font-semibold">90 min</p>
-                                        <p className="text-base font-bold text-orange-700 mt-1">IDR {formatPrice(pricing['90'])}</p>
+                                        <p className="text-xs text-orange-800 font-semibold">90 min</p>
+                                        <p className="text-base font-bold text-orange-900 mt-1">IDR {formatPrice(pricing['90'])}</p>
                                     </button>
                                 )}
                                 {pricing['120'] > 0 && (
                                     <button
                                         type="button"
                                         onClick={() => setShowPriceModal(true)}
-                                        className="p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
+                                        className="p-3 rounded-xl border-2 border-slate-300 bg-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
                                     >
-                                        <p className="text-xs text-slate-600 font-semibold">120 min</p>
-                                        <p className="text-base font-bold text-slate-900 mt-1">IDR {formatPrice(pricing['120'])}</p>
+                                        <p className="text-xs text-gray-700 font-semibold">120 min</p>
+                                        <p className="text-base font-bold text-gray-900 mt-1">IDR {formatPrice(pricing['120'])}</p>
                                     </button>
                                 )}
                             </div>
@@ -521,28 +528,28 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                 {/* Description */}
                 {place.description && (
                     <section className="mt-6 px-4">
-                        <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4">
-                            <h2 className="text-lg font-bold text-slate-900 mb-2">
+                        <div className="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4">
+                            <h2 className="text-lg font-bold text-gray-900 mb-2">
                                 {language === 'id' ? 'Tentang' : 'About'}
                             </h2>
-                            <p className="text-slate-600 text-sm leading-relaxed">{place.description}</p>
+                            <p className="text-gray-800 text-sm leading-relaxed font-medium">{place.description}</p>
                         </div>
                     </section>
                 )}
 
                 {/* Location & contact */}
                 <section className="mt-6 px-4">
-                    <div className="bg-white rounded-2xl shadow-md border border-slate-200/80 p-4 space-y-3">
+                    <div className="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3">
                         {(place.location || place.address) && (
                             <div className="flex items-start gap-2 text-sm">
                                 <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                                <span className="text-slate-600">{place.location || place.address}</span>
+                                <span className="text-gray-800 font-medium">{place.location || place.address}</span>
                             </div>
                         )}
                         {place.operatingHours && (
                             <div className="flex items-start gap-2 text-sm">
                                 <Clock className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                                <span className="text-slate-600">{place.operatingHours}</span>
+                                <span className="text-gray-800 font-medium">{place.operatingHours}</span>
                             </div>
                         )}
                     </div>
@@ -583,9 +590,9 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
             {/* Fixed bottom bar: WhatsApp + Book Now */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg p-4 safe-area-padding">
                 <div className="max-w-4xl mx-auto flex gap-2">
-                    {place.whatsappNumber && (
+                    {bookingPhone && (
                         <a
-                            href={`https://wa.me/${place.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi! I'd like to inquire about ${place.name}`)}`}
+                            href={buildWhatsAppUrl(bookingPhone, `Hi! I'd like to inquire about ${place.name}`) || `https://wa.me/${bookingPhone}?text=${encodeURIComponent(`Hi! I'd like to inquire about ${place.name}`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex-1 py-3 bg-green-500 text-white rounded-xl font-semibold text-center hover:bg-green-600 flex items-center justify-center gap-2"

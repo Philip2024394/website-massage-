@@ -15,6 +15,8 @@ import HomeIcon from '../components/icons/HomeIcon';
 import { BookNowButton } from '../components/BookNowButton';
 import SocialSharePopup from '../components/SocialSharePopup';
 import { getAuthAppUrl } from '../utils/therapistCardHelpers';
+import { getBookingWhatsAppNumber, buildWhatsAppUrl } from '../utils/whatsappBookingMessages';
+import { APP_CONSTANTS } from '../constants/appConstants';
 
 const DEFAULT_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682';
 
@@ -178,14 +180,18 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
     const [scheduleDate, setScheduleDate] = useState<Date | null>(null);
     const [scheduleTime, setScheduleTime] = useState<string | null>(null);
 
-    const whatsappNumber = (clinic.whatsapp || '').replace(/\D/g, '');
-    const buildWhatsAppUrl = (message: string) =>
-        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    const adminNumber = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER ?? '';
+    const bookingPhone = getBookingWhatsAppNumber(
+        { country: (clinic as any).country, countryCode: (clinic as any).countryCode, whatsappNumber: clinic.whatsapp, contactNumber: clinic.whatsapp },
+        adminNumber
+    );
+    const buildBookingWhatsAppUrl = (message: string) =>
+        buildWhatsAppUrl(bookingPhone, message) || `https://wa.me/${(adminNumber && adminNumber.replace(/\D/g, '')) || '6281392000050'}?text=${encodeURIComponent(message)}`;
 
     const handleBookTreatmentWhatsApp = (treatment: Treatment, duration?: number) => {
         const durationStr = duration ? ` (${duration} min)` : '';
         const msg = `Hi, I would like to book ${treatment.name}${durationStr} at ${clinic.name}.`;
-        window.open(buildWhatsAppUrl(msg), '_blank');
+        window.open(buildBookingWhatsAppUrl(msg), '_blank');
     };
 
     const handleScheduleAppointment = (treatment: Treatment) => {
@@ -204,7 +210,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
         if (!scheduleForTreatment || !scheduleDate || !scheduleTime) return;
         const dateStr = scheduleDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
         const msg = `Hi, I would like to book ${scheduleForTreatment.name} on ${dateStr} at ${scheduleTime} at ${clinic.name}.`;
-        window.open(buildWhatsAppUrl(msg), '_blank');
+        window.open(buildBookingWhatsAppUrl(msg), '_blank');
         setScheduleModalOpen(false);
         setScheduleForTreatment(null);
         setScheduleDate(null);
@@ -484,7 +490,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                             </div>
                             <div className="flex gap-2 mt-4">
                                 <BookNowButton
-                                    href={buildWhatsAppUrl(`Hi, I would like to book at ${clinic.name}.`)}
+                                    href={buildBookingWhatsAppUrl(`Hi, I would like to book at ${clinic.name}.`)}
                                     className="flex-1 flex items-center justify-center min-h-[48px] py-3.5 rounded-xl shadow-md"
                                     ariaLabel="Book Now"
                                 />
@@ -876,7 +882,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                                 <div className="border-t border-gray-200 pt-4">
                                                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                                         <BookNowButton
-                                                            href={buildWhatsAppUrl(
+                                                            href={buildBookingWhatsAppUrl(
                                                                 isRowSelected && menuSliderDuration
                                                                     ? `Hi, I would like to book ${t.name} (${menuSliderDuration} min) at ${clinic.name}.`
                                                                     : `Hi, I would like to book ${t.name} at ${clinic.name}.`

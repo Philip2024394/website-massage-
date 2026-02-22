@@ -27,6 +27,19 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
+const DEFAULT_FACIAL_IMAGE = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
+
+function getPlaceDisplayImage(place: any): string {
+    return (
+        place?.mainImage ||
+        place?.profilePicture ||
+        place?.image ||
+        place?.main_image ||
+        place?.profile_image ||
+        DEFAULT_FACIAL_IMAGE
+    );
+}
+
 const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({ 
     place, 
     onClick,
@@ -34,6 +47,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
     userLocation,
     showAsClinic = false,
 }) => {
+    const displayImage = getPlaceDisplayImage(place);
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
             if ((place as any).analytics) {
@@ -200,12 +214,12 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
             {/* Image Container – same height/ratio as therapist card */}
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                 <img
-                    src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682'}
+                    src={displayImage}
                     alt={place.name || "Facial Clinic"}
                     className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl group-hover:scale-105"
                     style={{ aspectRatio: '400/224', minHeight: '224px' }}
                     onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682';
+                        (e.target as HTMLImageElement).src = DEFAULT_FACIAL_IMAGE;
                     }}
                 />
 
@@ -265,11 +279,11 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                         <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden relative">
                             <img
                                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full"
-                                src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682'}
+                                src={displayImage}
                                 alt={place.name || 'Clinic'}
                                 loading="lazy"
                                 onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png?updatedAt=1764966155682';
+                                    (e.target as HTMLImageElement).src = DEFAULT_FACIAL_IMAGE;
                                 }}
                             />
                         </div>
@@ -324,7 +338,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
 
             {/* Clinic photos strip – home service: show up to 4 thumbnails when available */}
             {(() => {
-                const main = (place as any).mainImage || (place as any).profilePicture || (place as any).image;
+                const main = displayImage;
                 const extraImages: string[] = [];
                 if (Array.isArray((place as any).images)) (place as any).images.forEach((u: string) => u && extraImages.push(u));
                 const gallery = (place as any).galleryImages;
@@ -349,8 +363,8 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
             {/* Client Preference - Services with Languages on same line (After profile section like profile card) */}
             <div className="mx-4 mb-2">
                 <div className="flex justify-between items-center">
-                    <p className="text-xs text-gray-600 flex-shrink-0">
-                        <span className="font-bold">Treatments:</span> {(place as any).treatments || 'Facial & Beauty Services'}
+                    <p className="text-xs text-gray-800 flex-shrink-0 font-medium">
+                        <span className="font-bold text-gray-900">Treatments:</span> {(place as any).treatments || 'Facial & Beauty Services'}
                     </p>
                     {(() => {
                         const languagesValue = (place as any).languages;
@@ -468,7 +482,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
             {/* Description (After Treatments like profile card) */}
             {place.description && (
                 <div className="mx-4 mb-3">
-                    <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-2 text-left">
+                    <p className="text-sm text-gray-900 leading-5 break-words whitespace-normal line-clamp-2 text-left font-medium">
                         {place.description}
                     </p>
                 </div>
@@ -476,33 +490,33 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
 
             {/* Price Containers for 60/90/120 min treatments – skin clinic theme orange/slate */}
             <div className="mx-4 mb-4">
-                <h4 className="text-sm font-semibold text-slate-800 mb-3">Treatment packages</h4>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Treatment packages</h4>
                 <div className="grid grid-cols-3 gap-2">
                     {/* 60 min package */}
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                        <div className="text-xs font-medium text-orange-700 mb-1">60 min</div>
-                        <div className="text-sm font-bold text-slate-900">
+                    <div className="bg-orange-100 border-2 border-orange-300 rounded-lg p-3 text-center shadow-sm">
+                        <div className="text-xs font-semibold text-orange-800 mb-1">60 min</div>
+                        <div className="text-sm font-bold text-gray-900">
                             {pricing["60"] > 0 ? `${formatPrice(pricing["60"])}` : 'Call'}
                         </div>
-                        <div className="text-[10px] text-slate-600 mt-1">Basic</div>
+                        <div className="text-[10px] font-medium text-gray-700 mt-1">Basic</div>
                     </div>
                     
                     {/* 90 min package */}
-                    <div className="bg-orange-50 border border-orange-300 rounded-lg p-3 text-center">
-                        <div className="text-xs font-medium text-orange-700 mb-1">90 min</div>
-                        <div className="text-sm font-bold text-slate-900">
+                    <div className="bg-orange-100 border-2 border-orange-400 rounded-lg p-3 text-center shadow-sm">
+                        <div className="text-xs font-semibold text-orange-800 mb-1">90 min</div>
+                        <div className="text-sm font-bold text-gray-900">
                             {pricing["90"] > 0 ? `${formatPrice(pricing["90"])}` : 'Call'}
                         </div>
-                        <div className="text-[10px] text-slate-600 mt-1">Premium</div>
+                        <div className="text-[10px] font-medium text-gray-700 mt-1">Premium</div>
                     </div>
                     
                     {/* 120 min package */}
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                        <div className="text-xs font-medium text-orange-700 mb-1">120 min</div>
-                        <div className="text-sm font-bold text-slate-900">
+                    <div className="bg-orange-100 border-2 border-orange-300 rounded-lg p-3 text-center shadow-sm">
+                        <div className="text-xs font-semibold text-orange-800 mb-1">120 min</div>
+                        <div className="text-sm font-bold text-gray-900">
                             {pricing["120"] > 0 ? `${formatPrice(pricing["120"])}` : 'Call'}
                         </div>
-                        <div className="text-[10px] text-slate-600 mt-1">Luxury</div>
+                        <div className="text-[10px] font-medium text-gray-700 mt-1">Luxury</div>
                     </div>
                 </div>
             </div>

@@ -2008,7 +2008,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'massage' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                         >
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap">{t?.home?.massage ?? 'Massage'}</span>
+                            <span className="whitespace-nowrap -ml-0.5">{t?.home?.massage ?? 'Massage'}</span>
                         </button>
                         <button
                             onClick={() => setServiceButton('facial')}

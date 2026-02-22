@@ -11,7 +11,8 @@ import { buildBeauticianBookingMessage, getBookingWhatsAppNumber, buildWhatsAppU
 import { APP_CONSTANTS } from '../../constants/appConstants';
 import type { BeauticianTreatment } from '../../types';
 
-const ADMIN_WHATSAPP = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER;
+const ADMIN_WHATSAPP = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER ?? '';
+const ADMIN_DIGITS = (ADMIN_WHATSAPP && String(ADMIN_WHATSAPP).replace(/\D/g, '')) || '6281392000050';
 
 function formatTreatmentPrice(t: BeauticianTreatment): string {
   const currency = t.currency ?? 'IDR';
@@ -50,12 +51,10 @@ const BeauticianPriceListModal: React.FC<BeauticianPriceListModalProps> = ({
       estimatedDurationMin: t.estimated_duration_minutes,
       currency: t.currency,
     });
-    const phone = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP) || ADMIN_WHATSAPP.replace(/\D/g, '');
-    const url = buildWhatsAppUrl(phone, message);
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-      setShowModal(false);
-    }
+    const phone = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP || undefined) || ADMIN_DIGITS;
+    const url = buildWhatsAppUrl(phone, message) || `https://wa.me/${ADMIN_DIGITS}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setShowModal(false);
   };
 
   if (!showModal) return null;

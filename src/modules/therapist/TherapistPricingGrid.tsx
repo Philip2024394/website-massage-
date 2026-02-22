@@ -103,11 +103,11 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                 </div>
             )}
 
-            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-4 px-4">
+            <div className="grid grid-cols-3 gap-2 text-center mt-4 px-4 min-w-0">
                 {/* 60 min pricing */}
                 <div 
                     onClick={onPriceClick}
-                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-w-0 ${
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 0
@@ -116,28 +116,30 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                         ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
-                    <p className="text-gray-600 text-xs mb-1 font-semibold">60 min</p>
-                    {isDiscountActive(therapist) ? (
+                    <p className="text-gray-600 text-xs mb-0.5 font-semibold truncate">60 min</p>
+                    {Number(pricing["60"]) <= 0 ? (
+                        <p className="font-bold text-gray-700 text-xs leading-tight">Contact</p>
+                    ) : isDiscountActive(therapist) ? (
                         <>
-                            <p className="text-[11px] text-gray-500 line-through mb-0.5">
+                            <p className="text-[10px] text-gray-500 line-through mb-0.5 truncate">
                                 IDR {formatPrice(Number(pricing["60"]))}
                             </p>
-                            <p className="font-bold text-gray-800 text-sm leading-tight animate-pulse">
+                            <p className="font-bold text-gray-800 text-xs leading-tight animate-pulse truncate">
                                 IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
+                        <p className="font-bold text-gray-800 text-xs leading-tight truncate">
                             IDR {formatPrice(Number(pricing["60"]))}
                         </p>
                     )}
-                    <p className="text-[10px] text-slate-600 mt-1">Basic</p>
+                    <p className="text-[10px] text-slate-600 mt-0.5 truncate">Basic</p>
                 </div>
 
                 {/* 90 min pricing */}
                 <div 
                     onClick={onPriceClick}
-                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-w-0 ${
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 1
@@ -146,28 +148,30 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                         ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
-                    <p className="text-gray-600 text-xs mb-1 font-semibold">90 min</p>
-                    {isDiscountActive(therapist) ? (
+                    <p className="text-gray-600 text-xs mb-0.5 font-semibold truncate">90 min</p>
+                    {Number(pricing["90"]) <= 0 ? (
+                        <p className="font-bold text-gray-700 text-xs leading-tight">Contact</p>
+                    ) : isDiscountActive(therapist) ? (
                         <>
-                            <p className="text-[11px] text-gray-500 line-through mb-0.5">
+                            <p className="text-[10px] text-gray-500 line-through mb-0.5 truncate">
                                 IDR {formatPrice(Number(pricing["90"]))}
                             </p>
-                            <p className="font-bold text-gray-800 text-sm leading-tight animate-pulse">
+                            <p className="font-bold text-gray-800 text-xs leading-tight animate-pulse truncate">
                                 IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
+                        <p className="font-bold text-gray-800 text-xs leading-tight truncate">
                             IDR {formatPrice(Number(pricing["90"]))}
                         </p>
                     )}
-                    <p className="text-[10px] text-slate-600 mt-1">Premium</p>
+                    <p className="text-[10px] text-slate-600 mt-0.5 truncate">Premium</p>
                 </div>
                 
                 {/* 120 min pricing */}
                 <div 
                     onClick={onPriceClick}
-                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-w-0 ${
                     isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
                 } flex flex-col justify-center ${
                     animatedPriceIndex === 2
@@ -176,22 +180,24 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                         ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
-                    <p className="text-gray-600 text-xs mb-1 font-semibold">120 min</p>
-                    {isDiscountActive(therapist) ? (
+                    <p className="text-gray-600 text-xs mb-0.5 font-semibold truncate">120 min</p>
+                    {Number(pricing["120"]) <= 0 ? (
+                        <p className="font-bold text-gray-700 text-xs leading-tight">Contact</p>
+                    ) : isDiscountActive(therapist) ? (
                         <>
-                            <p className="text-[11px] text-gray-500 line-through mb-0.5">
+                            <p className="text-[10px] text-gray-500 line-through mb-0.5 truncate">
                                 IDR {formatPrice(Number(pricing["120"]))}
                             </p>
-                            <p className="font-bold text-gray-800 text-sm leading-tight animate-pulse">
+                            <p className="font-bold text-gray-800 text-xs leading-tight animate-pulse truncate">
                                 IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
+                        <p className="font-bold text-gray-800 text-xs leading-tight truncate">
                             IDR {formatPrice(Number(pricing["120"]))}
                         </p>
                     )}
-                    <p className="text-[10px] text-slate-600 mt-1">Luxury</p>
+                    <p className="text-[10px] text-slate-600 mt-0.5 truncate">Luxury</p>
                 </div>
             </div>
         </>

@@ -1401,10 +1401,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                             onClick={() => setActiveTab('home')}
                                             title={t?.home?.massage ?? 'Home massage & massage places'}
                                             aria-label="Massage"
-                                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${!isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                                            className={`flex-1 min-w-0 max-w-[50%] h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border overflow-hidden ${!isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                                         >
                                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap">{t?.home?.massage ?? 'Massage'}</span>
+                                            <span className="whitespace-nowrap truncate min-w-0 -ml-0.5">{t?.home?.massage ?? 'Massage'}</span>
                                         </button>
                                         <div className="flex-shrink-0 w-[120px] sm:w-[140px] max-w-[140px] h-[46px] flex items-center gap-1.5 bg-orange-50 rounded-lg px-2 sm:px-3 border border-orange-200">
                                             <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -1426,7 +1426,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                             onClick={() => setActiveTab('facials')}
                                             title={t?.home?.facialHomeService ?? 'Facial & Skin Clinic'}
                                             aria-label="Facial"
-                                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                                            className={`flex-1 min-w-0 max-w-[50%] h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border overflow-hidden ${isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                                         >
                                             <Sparkles className="w-4 h-4 flex-shrink-0" />
                                             <span className="whitespace-nowrap truncate min-w-0">{t?.home?.facialHomeService || t?.home?.facial || 'Facial'}</span>

@@ -1,6 +1,10 @@
 /**
  * WhatsApp country dial prefixes for therapist, facial, and place dashboards.
  * Ensures saved numbers always have country prefix so tourists can contact from any country.
+ *
+ * BOOKING RULE (Book Now / Order Now / Scheduled booking):
+ * - Indonesia (ID): All WhatsApp booking goes to ADMIN. Providers do not use their own number for booking.
+ * - Other countries: Use the provider's own WhatsApp number (uploaded in their dashboard).
  */
 
 export const WHATSAPP_COUNTRY_PREFIXES: Record<string, { dial: string; label: string }> = {

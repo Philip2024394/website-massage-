@@ -9,6 +9,7 @@ import { Share2 } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { VERIFIED_BADGE_IMAGE_URL, APP_CONSTANTS } from '../constants/appConstants';
 import { APP_CONFIG } from '../config';
+import { getBookingWhatsAppNumber } from '../utils/whatsappBookingMessages';
 import { useAuth } from '../context/AuthContext';
 
 interface PlaceCardProps {
@@ -111,7 +112,12 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                 'Requested time: To be arranged.',
             ];
             const text = encodeURIComponent(parts.join(' '));
-            window.open(`https://wa.me/${APP_CONSTANTS.DEFAULT_CONTACT_NUMBER}?text=${text}`, '_blank', 'noopener,noreferrer');
+            const adminNumber = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER ?? '';
+            const bookingPhone = getBookingWhatsAppNumber(
+                { country: (place as any).country, countryCode: (place as any).countryCode, whatsappNumber: (place as any).whatsappNumber || (place as any).whatsapp, contactNumber: (place as any).contactNumber },
+                adminNumber
+            );
+            window.open(`https://wa.me/${bookingPhone}?text=${text}`, '_blank', 'noopener,noreferrer');
             return;
         }
 

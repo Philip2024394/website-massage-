@@ -100,6 +100,7 @@ const ALIASES: Record<string, DrawerPageId> = {
   'agent-portal': 'admin',
   'adminDashboard': 'admin',
   'country-indonesia': 'indonesia',
+  'ID': 'indonesia',
 };
 
 /**

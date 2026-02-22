@@ -42,6 +42,7 @@ export function BookNowButton({
         aria-label={ariaLabel}
         title={title ?? ariaLabel}
         className={`${baseClass} ${className}`}
+        onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
       >
         {image}
       </a>

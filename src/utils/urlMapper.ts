@@ -10,6 +10,7 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     // Public routes
     'landing': '/',
     'home': '/home',
+    'indonesia': '/indonesia',
     'about': '/about',
     'contact': '/contact',
     'partner-contact': '/partner-contact',

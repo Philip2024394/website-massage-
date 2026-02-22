@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { getBookingWhatsAppNumber } from '../utils/whatsappBookingMessages';
+import { APP_CONSTANTS } from '../constants/appConstants';
 
 interface GalleryImage {
     imageUrl: string;
@@ -166,11 +168,20 @@ export const useMassagePlaceProfile = (place: Place | null): UseMassagePlaceProf
         ];
     }, [place?.galleryImages, place?.mainImage, place?.name]);
 
-    // Handler for WhatsApp click
+    // Handler for WhatsApp click (Book/Order/Schedule: Indonesia → admin, other countries → place number from dashboard)
     const handleWhatsAppClick = () => {
-        const whatsappNumber = place?.whatsappNumber || '';
-        if (whatsappNumber) {
-            window.open(`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`, '_blank');
+        const adminNumber = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER ?? '';
+        const bookingPhone = getBookingWhatsAppNumber(
+            {
+                country: (place as any).country,
+                countryCode: (place as any).countryCode,
+                whatsappNumber: place?.whatsappNumber,
+                contactNumber: place?.whatsappNumber,
+            },
+            adminNumber
+        );
+        if (bookingPhone) {
+            window.open(`https://wa.me/${bookingPhone.replace(/[^0-9]/g, '')}`, '_blank');
         }
     };
 

@@ -64,8 +64,9 @@ import {
 import { logWaClickEvent } from '../services/waClickEventService';
 import TherapistBusyPopup from './TherapistBusyPopup';
 
-/** Admin WhatsApp (used when therapist has no number). */
-const ADMIN_WHATSAPP = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER;
+/** Admin WhatsApp (used when therapist has no number). Never empty for Indonesia booking. */
+const ADMIN_WHATSAPP = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER ?? '';
+const ADMIN_WHATSAPP_DIGITS = (ADMIN_WHATSAPP && String(ADMIN_WHATSAPP).replace(/\D/g, '')) || '6281392000050';
 const IN_APP_BOOKING_DISABLED = APP_CONFIG.IN_APP_BOOKING_DISABLED === true;
 
 import BookingPopup from './BookingPopup';
@@ -213,15 +214,15 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
 
     return (
         <div className={`relative z-10 flex items-center gap-2 px-4 ${dynamicSpacing}`} style={{ touchAction: 'manipulation' }}>
-            {/* Book Now + Scheduled beside each other, no containers / no infill */}
-            <div className="flex flex-1 items-center justify-center gap-1 min-h-[63px]">
+            {/* Book Now + Scheduled beside each other, same height as Menu Prices button */}
+            <div className="flex flex-1 items-center justify-center gap-1 min-h-[48px]">
                 <button
                     type="button"
                     onClick={runBookNow}
                     onPointerUp={runBookNow}
                     disabled={bookScheduleDisabled}
                     title={disabledTitle}
-                    className={`flex items-center justify-center gap-1 font-bold py-1 px-1 min-h-[63px] min-w-[44px] select-none bg-transparent border-0 shadow-none rounded-none transition-all duration-300 transform touch-manipulation ${
+                    className={`flex items-center justify-center gap-1 font-bold py-1 px-1 min-h-[48px] min-w-[44px] select-none bg-transparent border-0 shadow-none rounded-none transition-all duration-300 transform touch-manipulation ${
                         bookScheduleDisabled
                             ? 'text-gray-400 cursor-not-allowed opacity-60'
                             : activeButton === 'book'
@@ -238,7 +239,7 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                     onPointerUp={runSchedule}
                     disabled={bookScheduleDisabled}
                     title={disabledTitle}
-                    className="flex items-center justify-center min-h-[63px] min-w-[44px] touch-manipulation"
+                    className="flex items-center justify-center min-h-[48px] min-w-[44px] touch-manipulation"
                     ariaLabel="Scheduled bookings"
                 />
             </div>
@@ -270,8 +271,8 @@ interface BookViaWhatsAppRowProps {
 
 function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, onPriceSlider, dynamicSpacing, isBusy = false, busyUntil, bookButtonFlash = false }: BookViaWhatsAppRowProps) {
     const [showBusyPopup, setShowBusyPopup] = useState(false);
-    const adminDigits = ADMIN_WHATSAPP.replace(/\D/g, '');
-    const phoneForUrl = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP) || adminDigits;
+    const adminDigits = ADMIN_WHATSAPP_DIGITS;
+    const phoneForUrl = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP || undefined) || adminDigits;
     const { durationMin, price } = getDefaultDurationAndPrice(therapist);
     const massageType = getFirstMassageType(therapist);
     const message = buildBookNowMessage({
@@ -285,22 +286,19 @@ function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, 
     const whatsappHref = buildWhatsAppUrl(phoneForUrl, message) || `https://wa.me/${adminDigits}?text=${encodeURIComponent(message)}`;
 
     const handleBookClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
         if (isBusy) {
+            e.preventDefault();
+            e.stopPropagation();
             setShowBusyPopup(true);
             return;
         }
-        if (whatsappHref) {
-            logWaClickEvent({
-                profileId: String(therapist.$id || therapist.id || ''),
-                therapistName: therapist.name || 'Therapist',
-                city: locationAreaDisplayName || selectedCity || '',
-                country: therapist.country || '',
-                source: 'slider_booking',
-            });
-            window.open(whatsappHref, '_blank', 'noopener,noreferrer');
-        }
+        logWaClickEvent({
+            profileId: String(therapist.$id || therapist.id || ''),
+            therapistName: therapist.name || 'Therapist',
+            city: locationAreaDisplayName || selectedCity || '',
+            country: therapist.country || '',
+            source: 'slider_booking',
+        });
     };
 
     return (
@@ -311,19 +309,28 @@ function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, 
                 busyUntil={busyUntil}
                 providerName={therapist.name || undefined}
             />
-            <BookNowButton
-                onClick={handleBookClick}
-                disabled={isBusy}
-                className={`flex-1 flex items-center justify-center min-h-[59px] min-w-[44px] py-2 px-2 rounded-full touch-manipulation ${bookButtonFlash && !isBusy ? 'book-button-flash' : ''}`}
-                ariaLabel="Book via WhatsApp"
-            />
+            {isBusy ? (
+                <BookNowButton
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowBusyPopup(true); }}
+                    disabled
+                    className="flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 rounded-full touch-manipulation"
+                    ariaLabel="Book via WhatsApp"
+                />
+            ) : (
+                <BookNowButton
+                    href={whatsappHref}
+                    onClick={handleBookClick}
+                    className={`flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 rounded-full touch-manipulation ${bookButtonFlash ? 'book-button-flash' : ''}`}
+                    ariaLabel="Book via WhatsApp"
+                />
+            )}
             <PricesButton
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     onPriceSlider();
                 }}
-                className="flex-1 flex items-center justify-center min-h-[52px] min-w-[44px] py-2 px-2 rounded-full"
+                className="flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 rounded-full touch-manipulation"
                 ariaLabel="Menu Prices"
             />
         </div>
@@ -459,12 +466,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             durationMin,
             price,
         });
-        const phone = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP);
-        const url = buildWhatsAppUrl(phone, message);
-        if (url) {
-            logWaClickEvent?.({ therapistId, type: 'book-now' });
-            window.open(url, '_blank', 'noopener,noreferrer');
-        }
+        const adminDigits = ADMIN_WHATSAPP_DIGITS;
+        const phone = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP || undefined) || adminDigits;
+        const url = buildWhatsAppUrl(phone, message) || `https://wa.me/${adminDigits}?text=${encodeURIComponent(message)}`;
+        logWaClickEvent?.({ therapistId, type: 'book-now' });
+        window.open(url, '_blank', 'noopener,noreferrer');
         onIncrementAnalytics('bookings');
         setBookingsCount(prev => prev + 1);
     }, [therapist, onIncrementAnalytics, setBookingsCount]);
@@ -485,12 +491,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             massageType,
             price,
         });
-        const phone = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP);
-        const url = buildWhatsAppUrl(phone, message);
-        if (url) {
-            logWaClickEvent?.({ therapistId, type: 'scheduled' });
-            window.open(url, '_blank', 'noopener,noreferrer');
-        }
+        const adminDigits = ADMIN_WHATSAPP_DIGITS;
+        const phone = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP || undefined) || adminDigits;
+        const url = buildWhatsAppUrl(phone, message) || `https://wa.me/${adminDigits}?text=${encodeURIComponent(message)}`;
+        logWaClickEvent?.({ therapistId, type: 'scheduled' });
+        window.open(url, '_blank', 'noopener,noreferrer');
         onIncrementAnalytics('bookings');
         setBookingsCount(prev => prev + 1);
     }, [therapist, onIncrementAnalytics, setBookingsCount]);
@@ -1362,7 +1367,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     />
                     <div className="mt-4 px-4 w-full">
                         <a
-                            href={`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(`Hi Indastreet, I would like to book a massage with ${therapist.name || 'this therapist'} (ID: ${therapist.$id || therapist.id || 'N/A'}).`)}`}
+                            href={`https://wa.me/${ADMIN_WHATSAPP_DIGITS}?text=${encodeURIComponent(`Hi Indastreet, I would like to book a massage with ${therapist.name || 'this therapist'} (ID: ${therapist.$id || therapist.id || 'N/A'}).`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex w-full items-center justify-center gap-2 font-bold py-3 px-4 rounded-full transition-colors duration-300 bg-[#25D366] text-white hover:bg-[#20BD5A] active:bg-[#1DA851] shadow-md min-h-[48px]"

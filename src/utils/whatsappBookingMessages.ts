@@ -21,18 +21,25 @@ export function buildWhatsAppUrl(phone: string, text: string): string {
   return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
 }
 
+/** Fallback admin WhatsApp digits when none configured (Indonesia booking). */
+const FALLBACK_ADMIN_DIGITS = '6281392000050';
+
 /**
- * For booking: Indonesia (ID) → use admin WhatsApp; other countries → use provider's saved number.
+ * For booking (Book Now, Order Now, Scheduled booking):
+ * - Indonesia (ID) → always use admin WhatsApp.
+ * - Other countries → use provider's own WhatsApp number (saved in dashboard).
+ * Safe when adminNumber is undefined/empty (returns fallback for Indonesia).
  */
 export function getBookingWhatsAppNumber(
   provider: { country?: string; countryCode?: string; whatsappNumber?: string; contactNumber?: string },
-  adminNumber: string
+  adminNumber: string | undefined
 ): string {
   const country = provider.country ?? (provider as any).countryCode ?? '';
-  if (isBookingUseAdminCountry(country)) return normalizePhone(adminNumber) || adminNumber.replace(/\D/g, '');
+  const adminDigits = adminNumber ? normalizePhone(adminNumber) || String(adminNumber).replace(/\D/g, '') : '';
+  if (isBookingUseAdminCountry(country)) return adminDigits || FALLBACK_ADMIN_DIGITS;
   const raw = provider.whatsappNumber ?? (provider as any).contactNumber ?? '';
   const num = normalizePhone(raw);
-  return num || normalizePhone(adminNumber);
+  return num || adminDigits || FALLBACK_ADMIN_DIGITS;
 }
 
 /**

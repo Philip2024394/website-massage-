@@ -245,8 +245,8 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 </div>
             )}
 
-            {/* Hero Section - Same as Home: Home Service | City Places, Massage | Facial | Beauty, Filter (no location container) */}
-            <div className="bg-white border-b border-gray-100 pt-16">
+            {/* Hero Section - Same as Home: Home Service | City Places, Massage | Facial | Beauty, Filter. Clear fixed header + safe-area on notched mobile. */}
+            <div className="bg-white border-b border-gray-100" style={{ paddingTop: 'max(4rem, calc(4rem + env(safe-area-inset-top, 0px)))' }}>
                 <div className="px-3 sm:px-4 pb-3 max-w-2xl mx-auto">
                     {/* Two tabs – Home Service | City Places (label is City Places, not Massage Places) */}
                     <div className="flex bg-gray-200 rounded-full p-1 overflow-x-auto">
@@ -274,7 +274,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'massage' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                         >
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap">Massage</span>
+                            <span className="whitespace-nowrap -ml-0.5">Massage</span>
                         </button>
                         <button
                             onClick={() => { setServiceButton('facial'); goToHomeWithTab('facials'); }}

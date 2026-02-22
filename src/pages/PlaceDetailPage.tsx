@@ -5,6 +5,8 @@ import Button from '../components/Button';
 import ReviewSystem from '../components/ReviewSystem';
 import { analyticsService } from '../services/analyticsService';
 import { notificationService } from '../lib/appwriteService';
+import { getBookingWhatsAppNumber } from '../utils/whatsappBookingMessages';
+import { APP_CONSTANTS } from '../constants/appConstants';
 // REMOVED: BookingConfirmationPopup - using original booking system
 
 interface PlaceDetailPageProps {
@@ -104,7 +106,12 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
         
         // Keep legacy tracking
         onIncrementAnalytics('whatsapp_clicks');
-        window.open(`https://wa.me/${place.whatsappNumber}`, '_blank');
+        const adminNumber = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER ?? '';
+        const bookingPhone = getBookingWhatsAppNumber(
+            { country: (place as any).country, countryCode: (place as any).countryCode, whatsappNumber: place.whatsappNumber, contactNumber: place.whatsappNumber },
+            adminNumber
+        );
+        window.open(`https://wa.me/${bookingPhone}`, '_blank');
     };
 
     const getStatus = (): { text: string; color: string } => {

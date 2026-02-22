@@ -442,7 +442,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       {drawerCountries.map((country) => {
                         const label = language === 'id' && country.nameId ? country.nameId : country.name;
                         const hasCountryPage = COUNTRY_PAGE_IDS.has(country.id);
-                        const navigateTo = hasCountryPage ? (country.id as Page) : 'home';
+                        const rawPage = hasCountryPage ? country.id : 'home';
+                        const navigateTo = getSafeDrawerPage(rawPage) as Page;
                         // Countries with a dedicated in-app page (e.g. Indonesia) always open that page; use linkedWebsite only for others
                         const useExternalLink = country.linkedWebsite && !hasCountryPage;
                         if (useExternalLink) {
@@ -466,7 +467,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         return (
                           <button
                             key={country.id}
-                            onClick={() => handleItemClick(onNavigate ? () => onNavigate(navigateTo) : undefined, hasCountryPage ? country.id : 'home')}
+                            onClick={() => handleItemClick(onNavigate ? () => onNavigate(navigateTo) : undefined, hasCountryPage ? navigateTo : 'home')}
                             className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left border border-transparent hover:border-orange-100"
                           >
                             <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-orange-50 text-lg leading-none" aria-hidden="true">

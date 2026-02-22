@@ -54,15 +54,25 @@ function slugFromCode(code: string): string {
     AU: 'australia',
     DE: 'germany',
   };
-  return map[code] || code.toLowerCase();
+  const c = (code || '').trim().toUpperCase();
+  return map[c] || (code ? String(code).toLowerCase().replace(/\s+/g, '-') : '');
 }
 
 function mapDocToItem(doc: CountryDoc): DrawerCountryItem {
+  const code = (doc.code || '').trim();
+  const name = (doc.name || '').trim();
+  let id = slugFromCode(code);
+  if (!id && name) {
+    const nameLower = name.toLowerCase();
+    if (nameLower.includes('indonesia')) id = 'indonesia';
+    else id = nameLower.replace(/\s+/g, '-');
+  }
+  if (!id) id = code ? code.toLowerCase() : (doc.$id || 'other');
   return {
-    id: slugFromCode(doc.code),
-    code: doc.code || '',
-    name: doc.name || '',
-    nameId: doc.name || '',
+    id,
+    code: code || (doc as any).countryCode || '',
+    name: name || doc.code || '',
+    nameId: name || doc.code || '',
     flag: doc.flag || '',
     linkedWebsite: doc.linkedWebsite && doc.linkedWebsite.trim() ? doc.linkedWebsite.trim() : undefined,
   };
