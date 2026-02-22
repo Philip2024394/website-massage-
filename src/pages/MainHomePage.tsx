@@ -1343,14 +1343,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                     <>
                                         <button
                                             onClick={() => setActiveTab('home')}
-                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'home' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                                         >
                                             <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Massage</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('places')}
-                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'places' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                                         >
                                             <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">Massage Places</span>
@@ -1360,14 +1360,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                     <>
                                         <button
                                             onClick={() => setActiveTab('facials')}
-                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'facials' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'facials' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                                         >
                                             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Facial</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('facial-places')}
-                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'facial-places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${activeTab === 'facial-places' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                                         >
                                             <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">Facial Places</span>
@@ -1401,13 +1401,13 @@ const HomePage: React.FC<HomePageProps> = ({
                                             onClick={() => setActiveTab('home')}
                                             title={t?.home?.massage ?? 'Home massage & massage places'}
                                             aria-label="Massage"
-                                            className={`flex-1 min-w-0 max-w-[50%] h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border overflow-hidden ${!isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                                            className={`flex-1 min-w-0 max-w-[50%] h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border overflow-hidden ${!isFacialMode ? 'bg-amber-500 text-white border-amber-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                                         >
                                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
                                             <span className="whitespace-nowrap truncate min-w-0 -ml-0.5">{t?.home?.massage ?? 'Massage'}</span>
                                         </button>
-                                        <div className="flex-shrink-0 w-[120px] sm:w-[140px] max-w-[140px] h-[46px] flex items-center gap-1.5 bg-orange-50 rounded-lg px-2 sm:px-3 border border-orange-200">
-                                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                        <div className="flex-shrink-0 w-[120px] sm:w-[140px] max-w-[140px] h-[46px] flex items-center gap-1.5 bg-amber-50 rounded-lg px-2 sm:px-3 border border-amber-200">
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                                                 <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                                             </svg>
                                             <span className="font-semibold text-xs sm:text-sm text-gray-800 truncate flex-1 min-w-0">
@@ -1415,7 +1415,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                             </span>
                                             <button
                                                 onClick={() => onNavigate?.('advanced-search')}
-                                                className="p-0.5 rounded flex-shrink-0 text-gray-500 hover:text-orange-600 hover:bg-orange-100 transition-colors"
+                                                className="p-0.5 rounded flex-shrink-0 text-gray-500 hover:text-amber-600 hover:bg-amber-100 transition-colors"
                                                 title={t?.home?.changeCity || 'Change City'}
                                                 aria-label={t?.home?.changeCity || 'Change City'}
                                             >
@@ -1426,7 +1426,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                             onClick={() => setActiveTab('facials')}
                                             title={t?.home?.facialHomeService ?? 'Facial & Skin Clinic'}
                                             aria-label="Facial"
-                                            className={`flex-1 min-w-0 max-w-[50%] h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border overflow-hidden ${isFacialMode ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                                            className={`flex-1 min-w-0 max-w-[50%] h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border overflow-hidden ${isFacialMode ? 'bg-amber-500 text-white border-amber-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                                         >
                                             <Sparkles className="w-4 h-4 flex-shrink-0" />
                                             <span className="whitespace-nowrap truncate min-w-0">{t?.home?.facialHomeService || t?.home?.facial || 'Facial'}</span>

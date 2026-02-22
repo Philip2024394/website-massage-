@@ -282,7 +282,7 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                     Orders: {bookingsCount}
                 </span>
             </div>
-            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative active:shadow-lg transition-shadow touch-manipulation pb-8">
+            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative active:shadow-lg transition-shadow touch-manipulation pb-8 border-t-4 border-t-amber-400">
                 {/* Main Image Banner + Lazy Loading (full-width cover) */}
                 <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl">
                     <img 

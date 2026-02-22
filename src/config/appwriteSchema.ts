@@ -266,6 +266,57 @@ export const COLLECTIONS = {
       totalBookings: { type: 'integer', required: false },
       linkedWebsite: { type: 'string', required: false, size: 500 }
     }
+  } as CollectionSchema,
+
+  /**
+   * SEO_POSTS COLLECTION
+   * Auto-published SEO posts (3–5 daily). Used by /post/:slug and sitemap-posts.xml.
+   * Create in Appwrite Console with collection ID: seo_posts.
+   */
+  SEO_POSTS: {
+    name: 'seo_posts',
+    collectionId: 'seo_posts',
+    attributes: {
+      title: { type: 'string', required: true, size: 500 },
+      slug: { type: 'string', required: true, size: 255 },
+      description: { type: 'string', required: true, size: 500 },
+      body: { type: 'string', required: true, size: 100000 },
+      hashtags: { type: 'string', required: false, size: 1000 },
+      imagePrompt: { type: 'string', required: false, size: 1000 },
+      imageUrl: { type: 'string', required: false, size: 2000 },
+      imageAlt: { type: 'string', required: false, size: 500 },
+      authorId: { type: 'string', required: true, size: 100 },
+      originCountry: { type: 'string', required: true, size: 10 },
+      published: { type: 'boolean', required: true },
+      city: { type: 'string', required: false, size: 255 },
+      topic: { type: 'string', required: false, size: 500 },
+      category: { type: 'string', required: false, size: 100 },
+      service: { type: 'string', required: false, size: 255 },
+    }
+  } as CollectionSchema,
+
+  /**
+   * AUTO_POST_JOBS COLLECTION
+   * Queue for scheduled auto-post jobs. Scheduler writes here; runner processes and updates status.
+   * Create in Appwrite Console with collection ID: auto_post_jobs.
+   */
+  AUTO_POST_JOBS: {
+    name: 'auto_post_jobs',
+    collectionId: 'auto_post_jobs',
+    attributes: {
+      runAt: { type: 'datetime', required: true },
+      topic: { type: 'string', required: true, size: 500 },
+      city: { type: 'string', required: true, size: 255 },
+      category: { type: 'string', required: true, size: 100 },
+      service: { type: 'string', required: false, size: 255 },
+      status: {
+        type: 'enum',
+        required: true,
+        enumValues: ['pending', 'processing', 'done', 'failed']
+      },
+      resultPostId: { type: 'string', required: false, size: 100 },
+      errorMessage: { type: 'string', required: false, size: 2000 },
+    }
   } as CollectionSchema
 
 } as const;

@@ -450,7 +450,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
             <div 
                 onClick={handleViewDetails}
-                className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative active:shadow-xl transition-all touch-manipulation pb-8 cursor-pointer hover:shadow-xl"
+                className="w-full bg-white rounded-xl shadow-lg border border-gray-200 border-t-4 border-t-amber-400 overflow-hidden relative active:shadow-xl transition-all touch-manipulation pb-8 cursor-pointer hover:shadow-xl"
             >
                 {/* Header Section - Extracted to PlaceHeader Component */}
                 <PlaceHeader 

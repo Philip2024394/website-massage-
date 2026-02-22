@@ -582,7 +582,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     onClick(therapist);
                     onIncrementAnalytics('views');
                 }}
-                className={`bg-white rounded-2xl overflow-visible border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''} relative ${isBeauticianWithTreatments ? 'border-t-4 border-t-orange-400 shadow-md' : ''}`}
+                className={`bg-white rounded-2xl overflow-visible border border-gray-200 border-t-4 border-t-amber-400 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''} relative shadow-md`}
             >
             {/* Image Container - Fixed height for mobile stability */}
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
@@ -832,24 +832,50 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </div>
             ) : pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 ? (
                 <div className="mx-4 mb-4">
-                    <h4 className="text-sm font-semibold text-slate-800 mb-3">Service packages</h4>
-                    <div className="grid grid-cols-3 gap-2">
-                        <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
-                            <div className="text-xs font-medium text-pink-700 mb-1">60 min</div>
-                            <div className="text-sm font-bold text-slate-900">{pricing["60"] > 0 ? formatPrice(pricing["60"]) : 'Call'}</div>
-                            <div className="text-[10px] text-slate-600 mt-1">Basic</div>
-                        </div>
-                        <div className="bg-pink-50 border border-pink-300 rounded-lg p-3 text-center">
-                            <div className="text-xs font-medium text-pink-700 mb-1">90 min</div>
-                            <div className="text-sm font-bold text-slate-900">{pricing["90"] > 0 ? formatPrice(pricing["90"]) : 'Call'}</div>
-                            <div className="text-[10px] text-slate-600 mt-1">Premium</div>
-                        </div>
-                        <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
-                            <div className="text-xs font-medium text-pink-700 mb-1">120 min</div>
-                            <div className="text-sm font-bold text-slate-900">{pricing["120"] > 0 ? formatPrice(pricing["120"]) : 'Call'}</div>
-                            <div className="text-[10px] text-slate-600 mt-1">Full</div>
-                        </div>
+                    <style>{`
+                        @keyframes beautician-glow-card {
+                          0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
+                          50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
+                        }
+                        .beautician-card-container-highlight {
+                          border-color: rgb(249 115 22);
+                          box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
+                          animation: beautician-glow-card 2.5s ease-in-out infinite;
+                        }
+                    `}</style>
+                    <div className="text-center mb-3">
+                        <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
+                            <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
+                            Treatments Trending
+                        </h3>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • View profile to book</p>
                     </div>
+                    <div className="space-y-2">
+                        {[
+                            { label: '60 min', minutes: 60, key: '60' as const },
+                            { label: '90 min', minutes: 90, key: '90' as const },
+                            { label: '120 min', minutes: 120, key: '120' as const },
+                        ].map(({ label, minutes, key }) => (
+                            <div
+                                key={key}
+                                className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400"
+                                role="presentation"
+                            >
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">{serviceName} · {label}</h4>
+                                    <p className="text-[10px] text-gray-600">
+                                        Estimated time: {minutes} minutes
+                                    </p>
+                                    <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                        Price: {pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])} (fixed)` : 'Call'}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <p className="text-center text-[10px] text-gray-500 mt-2">
+                        Professional rates • Verified profile
+                    </p>
                 </div>
             ) : null}
 

@@ -185,7 +185,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     <p className="text-gray-600 mb-4">Failed to load page component. The component file may be missing or have a syntax error.</p>
                     <button
                         onClick={onBack}
-                        className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                        className="bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 transition-colors"
                     >
                         Go Back
                     </button>
@@ -252,14 +252,14 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     <div className="flex bg-gray-200 rounded-full p-1 overflow-x-auto">
                         <button
                             onClick={() => { setMainTab('home-service'); goToHomeWithTab('home'); }}
-                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'home-service' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'home-service' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                         >
                             <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Service</span>
                         </button>
                         <button
                             onClick={() => { setMainTab('places'); goToHomeWithTab('places'); }}
-                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'places' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                         >
                             <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">City Places</span>
@@ -271,7 +271,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                         <button
                             onClick={() => { setServiceButton('massage'); goToHomeWithTab('home'); }}
                             title="Massage"
-                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'massage' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'massage' ? 'bg-amber-500 text-white border-amber-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                         >
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap -ml-0.5">Massage</span>
@@ -279,7 +279,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                         <button
                             onClick={() => { setServiceButton('facial'); goToHomeWithTab('facials'); }}
                             title="Facial"
-                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'facial' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'facial' ? 'bg-amber-500 text-white border-amber-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                         >
                             <Sparkles className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap truncate min-w-0">Facial</span>
@@ -287,7 +287,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                         <button
                             onClick={() => { setServiceButton('beautician'); goToHomeWithTab('beautician'); }}
                             title="Beauty"
-                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'beautician' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'beautician' ? 'bg-amber-500 text-white border-amber-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                         >
                             <Scissors className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap truncate min-w-0">Beauty</span>
@@ -331,7 +331,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     <div className="mt-12 mb-6 flex flex-col items-center gap-2">
                         <div className="font-bold text-lg">
                             <span className="text-black">Inda</span>
-                            <span className="text-orange-500">Street</span>
+                            <span className="text-amber-500">Street</span>
                         </div>
 
                         <div className="mt-8 pt-6 border-t border-gray-200 w-full">
@@ -339,43 +339,43 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
                                 <button
                                 onClick={() => onNavigate?.('home')}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                             >
                                 Home
                             </button>
                             <button
                                 onClick={() => onNavigate?.('massage-types')}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                             >
                                 Massage Types
                             </button>
                             <button
                                 onClick={() => onNavigate?.('facial-types')}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                             >
                                 Facial Types
                             </button>
                             <button
                                 onClick={() => onNavigate?.('therapist-signup')}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                             >
                                 Join as a Therapist Today
                             </button>
                             <button
                                 onClick={() => onNavigate?.('place-signup')}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                             >
                                 Join Massage Place
                             </button>
                             <button
                                 onClick={() => onNavigate?.('about-us')}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                             >
                                 About Us
                             </button>
                             <button
                                 onClick={() => onNavigate?.('contact-us')}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                             >
                                 Contact Us
                             </button>

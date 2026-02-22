@@ -245,7 +245,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="inline-block w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
+                    <div className="inline-block w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
                     <p className="text-gray-600">Loading clinic profile...</p>
                 </div>
             </div>
@@ -257,7 +257,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl shadow-lg p-6 max-w-sm text-center">
                     <p className="text-gray-700 mb-4">Clinic not found.</p>
-                    <button type="button" onClick={onBack} className="px-4 py-2 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600">Go back</button>
+                    <button type="button" onClick={onBack} className="px-4 py-2 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-600">Go back</button>
                 </div>
             </div>
         );
@@ -297,7 +297,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
 
             <div className="pt-[60px] max-w-4xl mx-auto pb-28">
                 {/* Hero slider */}
-                <div className="relative h-56 sm:h-64 overflow-hidden rounded-b-2xl bg-slate-200">
+                <div className="relative h-56 sm:h-64 overflow-hidden rounded-b-2xl bg-slate-200 border-t-4 border-t-amber-400">
                     {heroImages.map((src, i) => (
                         <div
                             key={i}
@@ -329,7 +329,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                                         key={i}
                                         type="button"
                                         onClick={() => setHeroIndex(i)}
-                                        className={`w-2 h-2 rounded-full transition-colors ${heroIndex === i ? 'bg-orange-500' : 'bg-white/70'}`}
+                                        className={`w-2 h-2 rounded-full transition-colors ${heroIndex === i ? 'bg-amber-500' : 'bg-white/70'}`}
                                     />
                                 ))}
                             </div>
@@ -348,7 +348,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                                     )}
                                     <h1 className="text-xl font-bold text-slate-900 uppercase truncate">{place.name}</h1>
                                 </div>
-                                <p className="text-xs text-orange-600 font-medium mt-1.5">
+                                <p className="text-xs text-amber-600 font-medium mt-1.5">
                                     {language === 'id' ? 'Fokus: Facial treatment massage & perawatan kulit' : 'Our focus: Facial treatment massage & skin care'}
                                 </p>
                                 <div className="flex items-center gap-3 mt-2 text-sm">
@@ -358,7 +358,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                                         <span className="text-slate-500">({reviewCount})</span>
                                     </div>
                                     {place.status && (
-                                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700">
+                                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
                                             {String(place.status)}
                                         </span>
                                     )}
@@ -383,7 +383,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                                     key={`hero-${i}`}
                                     type="button"
                                     onClick={() => setSelectedImage({ imageUrl: src, header: place.name, description: '' })}
-                                    className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-orange-400 focus:border-orange-400"
+                                    className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-amber-400 focus:border-amber-400"
                                 >
                                     <img src={src} alt="" className="w-full h-full object-cover" />
                                 </button>
@@ -393,7 +393,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                                     key={`gallery-${index}`}
                                     type="button"
                                     onClick={() => setSelectedImage(block)}
-                                    className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-orange-400 focus:border-orange-400"
+                                    className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-amber-400 focus:border-amber-400"
                                 >
                                     <img src={block.imageUrl} alt={block.header} className="w-full h-full object-cover" />
                                 </button>
@@ -405,7 +405,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                 {/* Gallery blocks – clinic photos with captions (home service: team, treatments, equipment) */}
                 <section className="mt-6 px-4 space-y-6">
                     <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-orange-500" />
+                        <Sparkles className="w-5 h-5 text-amber-500" />
                         {language === 'id' ? 'Galeri foto klinik' : 'Clinic photos'}
                     </h2>
                     <p className="text-xs text-slate-500 -mt-1">
@@ -450,7 +450,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                             <ul className="space-y-2">
                                 {facialTypesList.map((name, i) => (
                                     <li key={i} className="flex items-center gap-2 text-gray-800">
-                                        <CheckCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                                        <CheckCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
                                         <span className="text-sm font-medium text-gray-900">{name}</span>
                                     </li>
                                 ))}
@@ -542,13 +542,13 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                     <div className="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3">
                         {(place.location || place.address) && (
                             <div className="flex items-start gap-2 text-sm">
-                                <MapPin className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                                <MapPin className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                                 <span className="text-gray-800 font-medium">{place.location || place.address}</span>
                             </div>
                         )}
                         {place.operatingHours && (
                             <div className="flex items-start gap-2 text-sm">
-                                <Clock className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                                <Clock className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                                 <span className="text-gray-800 font-medium">{place.operatingHours}</span>
                             </div>
                         )}
@@ -560,7 +560,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                     <button
                         type="button"
                         onClick={handleBookNow}
-                        className="flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full bg-orange-500 text-white hover:bg-orange-600 active:scale-95 shadow-md min-h-[48px]"
+                        className="flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full bg-amber-500 text-white hover:bg-amber-600 active:scale-95 shadow-md min-h-[48px]"
                     >
                         <MessageCircle className="w-4 h-4" />
                         <span className="text-sm">Book</span>
@@ -572,7 +572,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                         title={!hasBankAndKtp ? (language === 'id' ? 'Jadwal butuh verifikasi klinik' : 'Schedule requires clinic verification') : undefined}
                         className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full min-h-[48px] shadow-md ${
                             hasBankAndKtp
-                                ? 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95'
+                                ? 'bg-amber-500 text-white hover:bg-amber-600 active:scale-95'
                                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                         }`}
                     >
@@ -604,7 +604,7 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                     <button
                         type="button"
                         onClick={handleBookNow}
-                        className="flex-1 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 flex items-center justify-center gap-2"
+                        className="flex-1 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 flex items-center justify-center gap-2"
                     >
                         <Calendar className="w-5 h-5" />
                         {language === 'id' ? 'Pesan Sekarang' : 'Book Now'}

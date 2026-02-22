@@ -16,5 +16,14 @@ export const DRAWER_COUNTRIES_LIST = [
   { id: 'germany' as const, code: 'DE', name: 'Germany', nameId: 'Germany', flag: '🇩🇪' },
 ] as const;
 
-/** Country ids that have a dedicated social/landing page (same experience, hero + language per country). */
-export const COUNTRY_PAGE_IDS: Set<string> = new Set(['indonesia', 'united-kingdom']);
+/**
+ * All country ids that have an in-app social page. Used by the side drawer:
+ * when a country is in this set, clicking it opens the country social page (IndonesiaLandingPage with that country name).
+ * When fetched from Appwrite, country id is derived from code in countries.service (e.g. GB → united-kingdom);
+ * drawerConfig ALIASES map united-kingdom → uk for navigation. Ensure Appwrite country documents use
+ * code: ID, MY, SG, TH, PH, VN, GB, US, AU, DE and active: true. Run scripts/seed-drawer-countries.ts to seed.
+ */
+export const COUNTRY_PAGE_IDS: Set<string> = new Set([
+  'indonesia', 'malaysia', 'singapore', 'thailand', 'philippines', 'vietnam',
+  'united-kingdom', 'united-states', 'australia', 'germany',
+]);

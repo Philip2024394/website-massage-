@@ -294,7 +294,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                         <button
                             type="button"
                             onClick={() => { setActiveTab('home'); onNavigate?.('home'); }}
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'home' ? 'bg-amber-500 text-white shadow' : 'text-gray-600'}`}
                         >
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">{language === 'id' ? 'Layanan Rumah' : 'Home Service'}</span>
@@ -302,7 +302,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                         <button
                             type="button"
                             onClick={() => { setActiveTab('facial-places'); onNavigate?.('facial-places'); }}
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'facial-places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'facial-places' ? 'bg-amber-500 text-white shadow' : 'text-gray-600'}`}
                         >
                             <Building className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">{language === 'id' ? 'Tempat Facial' : 'Facial Places'}</span>
@@ -341,7 +341,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                             }}
                             title={language === 'id' ? 'Facial layanan rumah' : 'Home page – Home service facials & Facial places tab'}
                             aria-label="Facial"
-                            className="flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border bg-orange-500 text-white border-orange-500 shadow"
+                            className="flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border bg-amber-500 text-white border-amber-500 shadow"
                         >
                             <Sparkles className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap truncate">{language === 'id' ? 'Facial' : 'Facial'}</span>
@@ -353,7 +353,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
             {/* Luxury skin clinic profile – soft neutral, mobile-first, conversion-focused */}
             <div className="bg-[#faf8f5] min-h-screen">
                 {/* 1️⃣ Hero – full-width main image, top corners rounded; badges (star, orders, share); Joined over image left */}
-                <div className="w-full overflow-hidden rounded-t-2xl">
+                <div className="w-full overflow-hidden rounded-t-2xl border-t-4 border-t-amber-400">
                     <div className="h-48 w-full overflow-visible relative sm:h-52">
                         <div className="absolute inset-0 overflow-hidden rounded-t-2xl bg-gradient-to-r from-stone-200 to-stone-300" style={{ minHeight: '192px' }}>
                             <img
@@ -497,7 +497,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setMenuSliderOpen(true)}
-                                    className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold text-sm hover:from-orange-600 hover:to-orange-700 shadow-md transition"
+                                    className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold text-sm hover:from-amber-600 hover:to-amber-700 shadow-md transition"
                                 >
                                     View Menu
                                 </button>
@@ -791,8 +791,8 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                         style={{ animation: 'slideUp 0.3s ease-out forwards' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Header – orange gradient with logo, name, rating (same as therapist) */}
-                        <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 sticky top-0 z-10">
+                        {/* Header – amber gradient with logo, name, rating (same as therapist) */}
+                        <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-amber-500 to-amber-600 sticky top-0 z-10">
                             <div className="flex items-center gap-3 flex-1">
                                 <img
                                     src={(clinic.logo || '').trim() || DEFAULT_HERO_IMAGE}
@@ -825,8 +825,8 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
 
                         {/* Price list content – card layout like therapist */}
                         <div className="flex-1 p-4 max-h-[70vh] overflow-y-auto">
-                            <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                                <div className="text-center p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
+                            <div className="bg-white rounded-lg border border-amber-200 overflow-hidden shadow-lg">
+                                <div className="text-center p-6 bg-gradient-to-r from-amber-50 to-amber-50 border-b border-amber-200">
                                     <h2 className="text-xl font-bold text-gray-900 mb-2">
                                         {language === 'id' ? 'Menu Facial' : 'Facial Menu'}
                                     </h2>
@@ -844,7 +844,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                             <div
                                                 key={t.id}
                                                 className={`relative bg-white rounded-xl border-2 p-4 transition-all ${
-                                                    isRowSelected ? 'border-orange-400 shadow-lg bg-orange-50' : 'border-gray-200 hover:border-orange-300'
+                                                    isRowSelected ? 'border-amber-400 shadow-lg bg-amber-50' : 'border-gray-200 hover:border-amber-300'
                                                 }`}
                                             >
                                                 <div className="mb-4 text-center">
@@ -865,8 +865,8 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                                                     onClick={() => handleMenuSliderSelectService(index, d)}
                                                                     className={`flex-1 min-w-[100px] max-w-[140px] px-4 py-3 rounded-xl border-2 transition-all ${
                                                                         isSelected
-                                                                            ? 'border-orange-500 bg-orange-500 text-white shadow-lg transform scale-105'
-                                                                            : 'border-orange-200 bg-white text-gray-800 hover:border-orange-400 hover:bg-orange-50'
+                                                                            ? 'border-amber-500 bg-amber-500 text-white shadow-lg transform scale-105'
+                                                                            : 'border-amber-200 bg-white text-gray-800 hover:border-amber-400 hover:bg-amber-50'
                                                                     }`}
                                                                 >
                                                                     <div className="text-center">
@@ -893,7 +893,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                                         <button
                                                             type="button"
                                                             onClick={() => { setMenuSliderOpen(false); setMenuSliderServiceIndex(null); setMenuSliderDuration(null); handleScheduleAppointment(t); }}
-                                                            className="px-6 py-3 font-semibold rounded-lg border-2 border-orange-500 bg-orange-500 text-white hover:bg-orange-600 transition-all duration-200 flex items-center justify-center gap-2"
+                                                            className="px-6 py-3 font-semibold rounded-lg border-2 border-amber-500 bg-amber-500 text-white hover:bg-amber-600 transition-all duration-200 flex items-center justify-center gap-2"
                                                         >
                                                             <Calendar className="w-5 h-5" />
                                                             {language === 'id' ? 'Schedule' : 'Schedule'}
@@ -973,7 +973,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
             {showBookingModal && selectedTreatment && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] ">
-                        <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 flex items-center justify-between">
+                        <div className="sticky top-0 bg-gradient-to-r from-amber-500 to-amber-600 text-white p-6 flex items-center justify-between">
                             <h3 className="text-xl font-bold">Book Treatment</h3>
                             <button
                                 onClick={() => setShowBookingModal(false)}
@@ -1008,12 +1008,12 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                             onClick={() => setSelectedDuration(duration as 60 | 90 | 120)}
                                             className={`p-4 rounded-xl border-2 transition-all ${
                                                 selectedDuration === duration
-                                                    ? 'border-orange-500 bg-orange-50'
-                                                    : 'border-gray-200 hover:border-orange-300'
+                                                    ? 'border-amber-500 bg-amber-50'
+                                                    : 'border-gray-200 hover:border-amber-300'
                                             }`}
                                         >
                                             <div className="text-sm text-gray-600 mb-1">{duration} Min</div>
-                                            <div className="font-bold text-orange-600">
+                                            <div className="font-bold text-amber-600">
                                                 Rp {selectedTreatment.prices[`min${duration}` as keyof typeof selectedTreatment.prices].toLocaleString()}
                                             </div>
                                         </button>
@@ -1025,7 +1025,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                             <div className="space-y-3">
                                 <button
                                     onClick={confirmBooking}
-                                    className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all"
+                                    className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-bold hover:from-amber-600 hover:to-amber-700 transition-all"
                                 >
                                     Confirm Booking
                                 </button>

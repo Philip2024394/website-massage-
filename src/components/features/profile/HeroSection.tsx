@@ -1,6 +1,6 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState, useEffect } from 'react';
-import { Star, MapPin, Clock, Calendar, ShieldCheck, Share2 } from 'lucide-react';
+import { Star, MapPin, Clock, Calendar, ShieldCheck, Share2, Sparkles } from 'lucide-react';
 import { BookNowButton } from '../../BookNowButton';
 import AnonymousReviewModal from '../../AnonymousReviewModal';
 import SocialSharePopup from '../../SocialSharePopup';
@@ -157,7 +157,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     50% { opacity: 0.7; }
                 }
             `}</style>
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden max-w-full">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden max-w-full border-t-4 border-t-amber-400">
             {/* Main Banner Image - Increased height by 10% */}
             <div className="relative h-48 md:h-72">
                 {(() => {
@@ -180,7 +180,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {isDiscountActive(place) && (
                     <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
                         <div 
-                            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg"
+                            className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-4 py-2 shadow-lg"
                             style={{
                                 animation: 'discountFade 2s ease-in-out infinite',
                                 filter: 'drop-shadow(0 0 8px rgba(249, 115, 22, 0.6))'
@@ -189,7 +189,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             <span className="font-bold text-white text-xl">{(place as any).discountPercentage}% OFF</span>
                         </div>
                         <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
-                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span className="text-xs text-white font-semibold">
@@ -212,11 +212,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {/* Active Discount Badge - External discount prop (fallback) */}
                 {!isDiscountActive(place) && activeDiscount && discountTimeLeft !== 'EXPIRED' && (
                     <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
+                        <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
                             <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
                         </div>
                         <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
-                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span className="text-xs text-white font-semibold">{discountTimeLeft}</span>
@@ -258,7 +258,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         e.stopPropagation();
                         setShowSharePopup(true);
                     }}
-                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
+                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
                     title="Share this place"
                     aria-label="Share this place"
                 >
@@ -331,7 +331,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                     {types.slice(0, 6).map((type, index) => (
-                                        <span key={index} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">
+                                        <span key={index} className="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-medium rounded-full border border-amber-200">
                                             {type}
                                         </span>
                                     ))}
@@ -405,104 +405,76 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         href="#verification-standards"
                         className="text-sm font-medium hover:underline inline-block"
                     >
-                        <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
+                        <span className="text-black">Massage Therapist </span><span className="text-amber-500">Standards</span>
                     </a>
                 </div>
 
-                {/* Pricing Grid - Same as Therapist Card */}
+                {/* Pricing – same as home page: 3 stacked full-width containers, massage type with time and price */}
                 {place.pricing && (() => {
                     const pricing = typeof place.pricing === 'string' ? JSON.parse(place.pricing) : place.pricing;
+                    const hasDiscount = (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED');
+                    const discountPct = place.discountPercentage || activeDiscount?.percentage || 0;
+                    const formatShort = (val: number) => (val >= 1000 ? `${(val / 1000).toFixed(0)}K` : String(val));
+                    const rows = [
+                        { label: '60 min', minutes: 60, key: '60' as const },
+                        { label: '90 min', minutes: 90, key: '90' as const },
+                        { label: '120 min', minutes: 120, key: '120' as const },
+                    ];
                     return (
-                        <div className="grid grid-cols-3 gap-2 text-center text-sm max-w-full mt-4">
-                            {/* 60 min pricing */}
-                            <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-w-0 ${
-                                (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                                    ? 'bg-gradient-to-br from-orange-50 to-orange-100' 
-                                    : ''
-                            }`}>
-                                <p className="text-gray-600">60 min</p>
-                                {place.discountPercentage && place.discountPercentage > 0 ? (
-                                    <>
-                                        <p className="font-bold text-gray-800">
-                                            Rp {Math.round(Number(pricing["60"]) * (1 - place.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                        </p>
-                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                            -{place.discountPercentage}%
-                                        </span>
-                                    </>
-                                ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
-                                    <>
-                                        <p className="font-bold text-gray-800">
-                                            Rp {Math.round(Number(pricing["60"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                        </p>
-                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                            -{activeDiscount.percentage}%
-                                        </span>
-                                    </>
-                                ) : (
-                                    <p className="font-bold text-gray-800">Rp {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
-                                )}
+                        <div className="mt-4">
+                            <style>{`
+                                @keyframes beautician-glow-card {
+                                  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
+                                  50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
+                                }
+                                .beautician-card-container-highlight {
+                                  border-color: rgb(249 115 22);
+                                  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
+                                  animation: beautician-glow-card 2.5s ease-in-out infinite;
+                                }
+                            `}</style>
+                            <div className="text-center mb-3">
+                                <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-500" aria-hidden />
+                                    Treatments Trending
+                                </h3>
+                                <p className="text-[10px] text-gray-500 mt-0.5">
+                                    Massage · Fixed prices
+                                    {hasDiscount && (
+                                        <span className="block mt-1 text-amber-600 font-semibold">🔥 Discounted prices displayed</span>
+                                    )}
+                                </p>
                             </div>
-                            
-                            {/* 90 min pricing */}
-                            <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
-                                (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                                    ? 'bg-gradient-to-br from-orange-50 to-orange-100' 
-                                    : ''
-                            }`}>
-                                <p className="text-gray-600">90 min</p>
-                                {place.discountPercentage && place.discountPercentage > 0 ? (
-                                    <>
-                                        <p className="font-bold text-gray-800">
-                                            Rp {Math.round(Number(pricing["90"]) * (1 - place.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                        </p>
-                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                            -{place.discountPercentage}%
-                                        </span>
-                                    </>
-                                ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
-                                    <>
-                                        <p className="font-bold text-gray-800">
-                                            Rp {Math.round(Number(pricing["90"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                        </p>
-                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                            -{activeDiscount.percentage}%
-                                        </span>
-                                    </>
-                                ) : (
-                                    <p className="font-bold text-gray-800">Rp {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
-                                )}
+                            <div className="space-y-2">
+                                {rows.map(({ label, minutes, key }) => {
+                                    const val = Number(pricing[key] ?? 0);
+                                    const displayPrice = val <= 0 ? null : hasDiscount
+                                        ? formatShort(Math.round(val * (1 - discountPct / 100)))
+                                        : formatShort(val);
+                                    return (
+                                        <div
+                                            key={key}
+                                            className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-amber-50/80 border-amber-400 relative"
+                                        >
+                                            {hasDiscount && (
+                                                <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-7 h-7 flex items-center justify-center shadow">
+                                                    -{discountPct}%
+                                                </span>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">Massage · {label}</h4>
+                                                <p className="text-[10px] text-gray-600">Estimated time: {minutes} minutes</p>
+                                                <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                                    Price: {displayPrice == null ? 'Contact' : `IDR ${displayPrice} (fixed)`}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                            
-                            {/* 120 min pricing */}
-                            <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
-                                (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                                    ? 'bg-gradient-to-br from-orange-50 to-orange-100' 
-                                    : ''
-                            }`}>
-                                <p className="text-gray-600">120 min</p>
-                                {place.discountPercentage && place.discountPercentage > 0 ? (
-                                    <>
-                                        <p className="font-bold text-gray-800">
-                                            Rp {Math.round(Number(pricing["120"]) * (1 - place.discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                        </p>
-                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                            -{place.discountPercentage}%
-                                        </span>
-                                    </>
-                                ) : activeDiscount && discountTimeLeft !== 'EXPIRED' ? (
-                                    <>
-                                        <p className="font-bold text-gray-800">
-                                            Rp {Math.round(Number(pricing["120"]) * (1 - activeDiscount.percentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
-                                        </p>
-                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg animate-bounce">
-                                            -{activeDiscount.percentage}%
-                                        </span>
-                                    </>
-                                ) : (
-                                    <p className="font-bold text-gray-800">Rp {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
-                                )}
-                            </div>
+                            <p className="text-center text-[10px] text-gray-500 mt-2">
+                                Professional rates • Verified profile
+                            </p>
                         </div>
                     );
                 })()}
@@ -561,7 +533,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 }
                             }));
                         }}
-                        className="flex items-center justify-center gap-2 py-2.5 px-4 bg-orange-500 text-white font-semibold text-sm rounded-lg hover:bg-orange-600 transition-colors shadow-lg"
+                        className="flex items-center justify-center gap-2 py-2.5 px-4 bg-amber-500 text-white font-semibold text-sm rounded-lg hover:bg-amber-600 transition-colors shadow-lg"
                     >
                         <Calendar className="w-4 h-4" />
                         <span>Schedule</span>
@@ -601,7 +573,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[78vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 animate-fadeIn " onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden relative">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden relative">
                                 {/* Main coin image */}
                                 <img 
                                     src="https://ik.imagekit.io/7grri5v7d/INDASTREET_coins_new-removebg-preview.png?updatedAt=1762338892035"
@@ -644,13 +616,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
                             <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends and earn coins! 🎁</p>
                             
-                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
+                            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
                                 <div className="flex items-center justify-center gap-2 mb-2">
                                     <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
                                     </svg>
-                                    <span className="text-2xl font-bold text-orange-600">50 Coins</span>
+                                    <span className="text-2xl font-bold text-amber-600">50 Coins</span>
                                 </div>
                                 <p className="text-sm text-gray-700">For each friend who signs up!</p>
                             </div>
@@ -671,7 +643,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                             navigator.clipboard.writeText('https://indastreet.com/ref/USER123');
                                             alert('Link copied to clipboard!');
                                         }}
-                                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold text-sm"
+                                        className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-semibold text-sm"
                                     >
                                         Copy
                                     </button>
@@ -740,7 +712,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             
                             <button
                                 onClick={() => setShowReferModal(false)}
-                                className="w-full px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+                                className="w-full px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors"
                             >
                                 Close
                             </button>
@@ -754,8 +726,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowLoginRequiredModal(false)}>
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-8 h-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                             </div>
@@ -772,11 +744,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 </h4>
                                 <ul className="text-sm text-gray-700 space-y-2 ml-7">
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500">✓</span>
+                                        <span className="text-amber-500">✓</span>
                                         <span>All reviews are verified by our admin team before posting live</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500">✓</span>
+                                        <span className="text-amber-500">✓</span>
                                         <span>This ensures authentic, helpful reviews for our community</span>
                                     </li>
                                 </ul>
@@ -785,7 +757,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             <div className="space-y-3">
                                 <button
                                     onClick={() => setShowLoginRequiredModal(false)}
-                                    className="w-full px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+                                    className="w-full px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors"
                                 >
                                     Login / Sign Up
                                 </button>

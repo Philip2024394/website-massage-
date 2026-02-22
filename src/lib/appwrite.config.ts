@@ -101,6 +101,8 @@ export const APPWRITE_CONFIG = {
         contactInquiries: 'contact_inquiries', // Contact/support form submissions
         indastreetNews: 'indastreet_news', // Indastreet News – massage & skin clinic headlines
         indastreetBlog: 'indastreet_blog', // Indastreet Blog – articles for blog index & view post
+        seoPosts: SchemaValidator.getCollectionId('SEO_POSTS'), // Auto-published SEO posts (/post/:slug)
+        autoPostJobs: SchemaValidator.getCollectionId('AUTO_POST_JOBS'), // Auto-post scheduler queue
         countries: '699a58950004864d1bf2', // Appwrite collection: countries (side drawer + linked websites)
         coins: 'Coins',
         referrals: 'Referrals',

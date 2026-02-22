@@ -144,6 +144,8 @@ interface FeedPost {
     likes?: number;
     dislikes?: number;
     replies?: { author: string; text: string }[];
+    /** Star rating (1–5) from posts liked or selling; shown beside author when present */
+    authorRating?: number;
   }[];
   /** Timestamp (ms) for sorting feed: latest first */
   createdAt?: number;
@@ -151,6 +153,26 @@ interface FeedPost {
   postType?: 'video' | 'news' | 'article' | 'buy-sell' | 'job-offered' | 'job-wanted' | 'post';
   /** Job post badge label: "Job Offered" (employer) or "Position Required" (seeker). */
   jobBadge?: 'Job Offered' | 'Position Required';
+  /** When jobBadge is "Job Offered", owner can add these details. */
+  jobSalary?: string;
+  jobHoursPerWeek?: string;
+  jobAccommodationIncluded?: boolean;
+  jobDailyMeals?: string;
+  jobHolidayPay?: string;
+  jobStartDate?: string;
+  jobPositionAvailable?: string;
+  jobExperienceRequired?: string;
+  jobCvRequired?: boolean;
+  /** When jobBadge is "Position Required", seeker can add these details. */
+  positionSalary?: string;
+  positionHoursPerWeek?: string;
+  positionAccommodationRequired?: boolean;
+  positionDailyMeals?: string;
+  positionHolidayPay?: string;
+  positionStartDate?: string;
+  positionSought?: string;
+  positionExperience?: string;
+  positionCvAvailable?: boolean;
 }
 /** Derive postType for filtering when not explicitly set. */
 function getPostType(p: FeedPost): 'video' | 'news' | 'article' | 'buy-sell' | 'job-offered' | 'job-wanted' | 'post' {
@@ -208,7 +230,7 @@ function getMockFeedPosts(therapists: any[], language: string): FeedPost[] {
       authorHobbyInterest: t('Skincare, aromatherapy', 'Skincare, aromaterapi'),
       authorBio: t('Facial and massage therapist. Passionate about holistic wellness.', 'Terapis facial dan pijat. Tertarik pada wellness holistik.'),
       commentPreview: [
-        { author: 'Budi', text: t('Great tip!', 'Tip bagus!'), active: true, country: 'Indonesia', dateJoined: t('Mar 2024', 'Mar 2024'), divisionOfEmployment: t('Freelance', 'Freelance'), hobbyInterest: t('Massage', 'Pijat'), likes: 2, dislikes: 0, replies: [] },
+        { author: 'Budi', text: t('Great tip!', 'Tip bagus!'), active: true, country: 'Indonesia', dateJoined: t('Mar 2024', 'Mar 2024'), divisionOfEmployment: t('Freelance', 'Freelance'), hobbyInterest: t('Massage', 'Pijat'), likes: 2, dislikes: 0, replies: [], authorRating: 5 },
       ],
       createdAt: now - 2 * 60 * 60 * 1000,
     },
@@ -832,7 +854,7 @@ const SearchResultsView: React.FC<{
   );
 };
 
-// —— Quick links under hero: Feed, Video, Articles, News, Buy/Sell, Jobs
+// —— Quick links under hero: Feed, Video, Articles, News, Buy/Sell
 const HeroQuickLinks: React.FC<{
   onFeed?: () => void;
   feedUnviewedCount?: number;
@@ -840,9 +862,8 @@ const HeroQuickLinks: React.FC<{
   onArticles?: () => void;
   onNews?: () => void;
   onBuySell?: () => void;
-  onJobs?: () => void;
   language: string;
-}> = ({ onFeed, feedUnviewedCount = 0, onVideo, onArticles, onNews, onBuySell, onJobs, language }) => {
+}> = ({ onFeed, feedUnviewedCount = 0, onVideo, onArticles, onNews, onBuySell, language }) => {
   const isId = language === 'id';
   const links = [
     ...(onFeed ? [{ id: 'feed' as const, icon: Home, label: isId ? 'Feed' : 'Feed', onClick: onFeed, badge: feedUnviewedCount }] : []),
@@ -850,7 +871,6 @@ const HeroQuickLinks: React.FC<{
     ...(onArticles ? [{ id: 'articles', icon: FileText, label: isId ? 'Artikel' : 'Articles', onClick: onArticles, badge: 0 }] : []),
     ...(onNews ? [{ id: 'news', icon: Bell, label: isId ? 'Berita' : 'News', onClick: onNews, badge: 0 }] : []),
     ...(onBuySell ? [{ id: 'buy-sell', icon: ShoppingBagIcon, label: isId ? 'Jual/Beli' : 'Buy/Sell', onClick: onBuySell, badge: 0 }] : []),
-    ...(onJobs ? [{ id: 'jobs', icon: Briefcase, label: isId ? 'Lowongan' : 'Jobs', onClick: onJobs, badge: 0 }] : []),
   ];
   return (
     <nav className="bg-white/90 backdrop-blur-xl border-b border-stone-200 shadow-sm -mt-1 relative z-10">
@@ -878,6 +898,54 @@ const HeroQuickLinks: React.FC<{
   );
 };
 
+// —— Job offer form fields (when owner selects "Job Offered")
+export interface JobOfferFields {
+  salary: string;
+  hoursPerWeek: string;
+  accommodationIncluded: boolean;
+  dailyMeals: string;
+  holidayPay: string;
+  startDate: string;
+  positionAvailable: string;
+  experienceRequired: string;
+  cvRequired: boolean;
+}
+const initialJobOfferFields: JobOfferFields = {
+  salary: '',
+  hoursPerWeek: '',
+  accommodationIncluded: false,
+  dailyMeals: '',
+  holidayPay: '',
+  startDate: '',
+  positionAvailable: '',
+  experienceRequired: '',
+  cvRequired: false,
+};
+
+// —— Position Required form fields (when user selects "Position Required" — job seeker)
+export interface PositionRequiredFields {
+  salary: string;
+  hoursPerWeek: string;
+  accommodationRequired: boolean;
+  dailyMeals: string;
+  holidayPay: string;
+  startDate: string;
+  positionSought: string;
+  experience: string;
+  cvAvailable: boolean;
+}
+const initialPositionRequiredFields: PositionRequiredFields = {
+  salary: '',
+  hoursPerWeek: '',
+  accommodationRequired: false,
+  dailyMeals: '',
+  holidayPay: '',
+  startDate: '',
+  positionSought: '',
+  experience: '',
+  cvAvailable: false,
+};
+
 // —— Post composer: premium social UI (glass card, toolbar, images up to 5, video link, char count)
 const MAX_CHARS = 2000;
 const MAX_IMAGES = 5;
@@ -889,6 +957,12 @@ const PostComposer: React.FC<{
   attachment: { name: string; dataUrl: string } | null;
   /** When set, post is a job listing (Job Offered or Position Required). Job posts can be text-only. */
   jobBadge?: null | 'Job Offered' | 'Position Required';
+  /** When jobBadge is "Job Offered", owner fills these. */
+  jobOfferFields?: JobOfferFields;
+  onJobOfferFieldsChange?: (fields: JobOfferFields) => void;
+  /** When jobBadge is "Position Required", seeker fills these. */
+  positionRequiredFields?: PositionRequiredFields;
+  onPositionRequiredFieldsChange?: (fields: PositionRequiredFields) => void;
   onTextChange: (v: string) => void;
   onVideoLinkChange: (v: string) => void;
   onImageUrlsChange: (urls: string[]) => void;
@@ -898,7 +972,7 @@ const PostComposer: React.FC<{
   postLabel: string;
   videoLinkPlaceholder: string;
   language: string;
-}> = ({ placeholder, textValue, videoLinkValue, imageUrls, attachment, jobBadge = null, onTextChange, onVideoLinkChange, onImageUrlsChange, onAttachmentChange, onJobBadgeChange, onPost, postLabel, videoLinkPlaceholder, language }) => {
+}> = ({ placeholder, textValue, videoLinkValue, imageUrls, attachment, jobBadge = null, jobOfferFields = initialJobOfferFields, onJobOfferFieldsChange, positionRequiredFields = initialPositionRequiredFields, onPositionRequiredFieldsChange, onTextChange, onVideoLinkChange, onImageUrlsChange, onAttachmentChange, onJobBadgeChange, onPost, postLabel, videoLinkPlaceholder, language }) => {
   const isId = language === 'id';
   const [showLinkSection, setShowLinkSection] = useState(!!videoLinkValue);
   const [focused, setFocused] = useState(false);
@@ -909,7 +983,7 @@ const PostComposer: React.FC<{
   const hasMedia = imageUrls.length >= 1 || !!videoLinkValue.trim();
   const jobBadgeVal = jobBadge ?? null;
   const isJobPost = jobBadgeVal != null;
-  const canPost = (hasMedia || isJobPost) && !(textValue.length > MAX_CHARS) && (hasMedia || isJobPost || textValue.trim().length > 0);
+  const canPost = hasMedia && !(textValue.length > MAX_CHARS) && (!isJobPost || textValue.trim().length > 0);
   const charCount = textValue.length;
   const nearLimit = charCount > MAX_CHARS * 0.9;
   const overLimit = charCount > MAX_CHARS;
@@ -994,18 +1068,18 @@ const PostComposer: React.FC<{
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-stone-900 text-sm">{isId ? 'Buat postingan' : 'Create post'}</p>
-            <p className="text-xs text-stone-500">{isId ? 'Hingga 5 foto + 1 link video — atau posting lowongan (gratis)' : 'Up to 5 images + 1 video link — or post a job (free)'}</p>
+            <p className="text-xs text-stone-500">{isId ? 'Wajib ada foto atau video. Hingga 5 foto + 1 link video — atau posting lowongan (gratis)' : 'Photo or video required. Up to 5 images + 1 video link — or post a job (free)'}</p>
           </div>
         </div>
 
         {/* Job post badge: Job Offered (employer) / Position Required (seeker) — free */}
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-stone-500">{isId ? 'Posting sebagai:' : 'Post as:'}</span>
-          <button type="button" onClick={() => onJobBadgeChange?.(jobBadgeVal === 'Job Offered' ? null : 'Job Offered')} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${jobBadgeVal === 'Job Offered' ? 'bg-emerald-100 text-emerald-800 ring-2 ring-emerald-400' : 'bg-stone-100 text-stone-600 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+          <button type="button" onClick={() => onJobBadgeChange?.(jobBadgeVal === 'Job Offered' ? null : 'Job Offered')} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${jobBadgeVal === 'Job Offered' ? 'bg-black text-amber-400 ring-2 ring-amber-400 [&_svg]:text-amber-400' : 'bg-stone-100 text-stone-600 hover:bg-black hover:text-amber-400 [&_svg]:hover:text-amber-400'}`}>
             <Briefcase className="w-3.5 h-3.5" />
             {isId ? 'Lowongan Ditawarkan' : 'Job Offered'}
           </button>
-          <button type="button" onClick={() => onJobBadgeChange?.(jobBadgeVal === 'Position Required' ? null : 'Position Required')} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${jobBadgeVal === 'Position Required' ? 'bg-amber-100 text-amber-800 ring-2 ring-amber-400' : 'bg-stone-100 text-stone-600 hover:bg-amber-50 hover:text-amber-700'}`}>
+          <button type="button" onClick={() => onJobBadgeChange?.(jobBadgeVal === 'Position Required' ? null : 'Position Required')} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${jobBadgeVal === 'Position Required' ? 'bg-black text-amber-400 ring-2 ring-amber-400 [&_svg]:text-amber-400' : 'bg-stone-100 text-stone-600 hover:bg-black hover:text-amber-400 [&_svg]:hover:text-amber-400'}`}>
             <Briefcase className="w-3.5 h-3.5" />
             {isId ? 'Posisi Dibutuhkan' : 'Position Required'}
           </button>
@@ -1015,6 +1089,96 @@ const PostComposer: React.FC<{
             </button>
           )}
         </div>
+
+        {/* Job Offered details — owner fills when posting a job offer */}
+        {jobBadgeVal === 'Job Offered' && onJobOfferFieldsChange && (
+          <div className="mb-4 p-4 rounded-xl bg-amber-50/80 border border-amber-200/80 space-y-3">
+            <p className="text-xs font-semibold text-amber-800">{isId ? 'Detail lowongan (opsional)' : 'Job details (optional)'}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Gaji' : 'Salary'}</label>
+                <input type="text" value={jobOfferFields.salary} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, salary: e.target.value })} placeholder={isId ? 'Contoh: Rp 4–6 jt' : 'e.g. Rp 4–6M'} className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Jam/minggu' : 'Hours per week'}</label>
+                <input type="text" value={jobOfferFields.hoursPerWeek} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, hoursPerWeek: e.target.value })} placeholder="e.g. 40" className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400" />
+              </div>
+              <div className="sm:col-span-2 flex items-center gap-2">
+                <input type="checkbox" id="job-acc" checked={jobOfferFields.accommodationIncluded} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, accommodationIncluded: e.target.checked })} className="rounded border-stone-300 text-amber-600 focus:ring-amber-500" />
+                <label htmlFor="job-acc" className="text-xs font-medium text-stone-700">{isId ? 'Akomodasi disediakan' : 'Accommodation included'}</label>
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Makan sehari-hari' : 'Daily meals'}</label>
+                <input type="text" value={jobOfferFields.dailyMeals} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, dailyMeals: e.target.value })} placeholder={isId ? 'Ya / Tidak / Sebagian' : 'Yes / No / Partial'} className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Bayaran libur' : 'Holiday pay'}</label>
+                <input type="text" value={jobOfferFields.holidayPay} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, holidayPay: e.target.value })} placeholder={isId ? 'Opsional' : 'Optional'} className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Tanggal mulai' : 'Start date'}</label>
+                <input type="text" value={jobOfferFields.startDate} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, startDate: e.target.value })} placeholder="e.g. ASAP / Jan 2026" className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Posisi tersedia' : 'Position available'}</label>
+                <input type="text" value={jobOfferFields.positionAvailable} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, positionAvailable: e.target.value })} placeholder={isId ? 'Contoh: Terapis pijat' : 'e.g. Massage therapist'} className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Pengalaman dibutuhkan' : 'Experience required'}</label>
+                <input type="text" value={jobOfferFields.experienceRequired} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, experienceRequired: e.target.value })} placeholder="e.g. 2+ years" className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400" />
+              </div>
+              <div className="sm:col-span-2 flex items-center gap-2">
+                <input type="checkbox" id="job-cv" checked={jobOfferFields.cvRequired} onChange={(e) => onJobOfferFieldsChange({ ...jobOfferFields, cvRequired: e.target.checked })} className="rounded border-stone-300 text-amber-600 focus:ring-amber-500" />
+                <label htmlFor="job-cv" className="text-xs font-medium text-stone-700">{isId ? 'CV wajib' : 'CV required'}</label>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Position Required details — seeker fills when looking for a job */}
+        {jobBadgeVal === 'Position Required' && onPositionRequiredFieldsChange && (
+          <div className="mb-4 p-4 rounded-xl bg-emerald-50/80 border border-emerald-200/80 space-y-3">
+            <p className="text-xs font-semibold text-emerald-800">{isId ? 'Detail posisi yang dicari (opsional)' : 'Position details (optional)'}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Posisi dicari' : 'Position sought'}</label>
+                <input type="text" value={positionRequiredFields.positionSought} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, positionSought: e.target.value })} placeholder={isId ? 'Contoh: Terapis pijat' : 'e.g. Massage therapist'} className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Gaji yang diharapkan' : 'Expected salary'}</label>
+                <input type="text" value={positionRequiredFields.salary} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, salary: e.target.value })} placeholder={isId ? 'Contoh: Rp 4–6 jt' : 'e.g. Rp 4–6M'} className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Jam/minggu' : 'Hours per week'}</label>
+                <input type="text" value={positionRequiredFields.hoursPerWeek} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, hoursPerWeek: e.target.value })} placeholder="e.g. 40" className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Tersedia mulai' : 'Available from'}</label>
+                <input type="text" value={positionRequiredFields.startDate} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, startDate: e.target.value })} placeholder="e.g. ASAP / Jan 2026" className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+              </div>
+              <div className="sm:col-span-2 flex items-center gap-2">
+                <input type="checkbox" id="pos-acc" checked={positionRequiredFields.accommodationRequired} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, accommodationRequired: e.target.checked })} className="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500" />
+                <label htmlFor="pos-acc" className="text-xs font-medium text-stone-700">{isId ? 'Akomodasi dibutuhkan' : 'Accommodation required'}</label>
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Makan sehari-hari' : 'Daily meals'}</label>
+                <input type="text" value={positionRequiredFields.dailyMeals} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, dailyMeals: e.target.value })} placeholder={isId ? 'Ya / Tidak / Opsional' : 'Yes / No / Optional'} className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Bayaran libur' : 'Holiday pay'}</label>
+                <input type="text" value={positionRequiredFields.holidayPay} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, holidayPay: e.target.value })} placeholder={isId ? 'Opsional' : 'Optional'} className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-stone-500 mb-0.5">{isId ? 'Pengalaman' : 'Experience'}</label>
+                <input type="text" value={positionRequiredFields.experience} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, experience: e.target.value })} placeholder="e.g. 2+ years" className="w-full py-2 px-3 rounded-lg border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+              </div>
+              <div className="sm:col-span-2 flex items-center gap-2">
+                <input type="checkbox" id="pos-cv" checked={positionRequiredFields.cvAvailable} onChange={(e) => onPositionRequiredFieldsChange({ ...positionRequiredFields, cvAvailable: e.target.checked })} className="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500" />
+                <label htmlFor="pos-cv" className="text-xs font-medium text-stone-700">{isId ? 'CV tersedia' : 'CV available'}</label>
+              </div>
+            </div>
+          </div>
+        )}
 
         <input
           ref={fileInputRef}
@@ -1036,7 +1200,7 @@ const PostComposer: React.FC<{
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="mb-4 flex items-center gap-2 py-2.5 px-3 rounded-xl border border-dashed border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-50/50 transition-all duration-200 text-sm font-medium w-full justify-center"
+            className="mb-4 flex items-center gap-2 py-2.5 px-3 rounded-xl border border-amber-500 bg-amber-500 text-white hover:bg-amber-600 hover:border-amber-600 transition-all duration-200 text-sm font-medium w-full justify-center"
           >
             <ImageIcon className="w-4 h-4" />
             {isId ? 'Tambah foto (hingga 5)' : 'Add photos (up to 5)'}
@@ -1073,7 +1237,7 @@ const PostComposer: React.FC<{
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-14 h-14 rounded-lg border-2 border-dashed border-stone-300 text-stone-400 hover:border-amber-400 hover:text-amber-600 flex items-center justify-center text-2xl font-light flex-shrink-0"
+                  className="w-14 h-14 rounded-lg border-2 border-amber-500 bg-amber-500 text-white hover:bg-amber-600 flex items-center justify-center text-2xl font-light flex-shrink-0"
                   aria-label={isId ? 'Tambah foto' : 'Add photo'}
                 >
                   +
@@ -1119,14 +1283,14 @@ const PostComposer: React.FC<{
 
         {/* Expandable video/link section */}
         {showLinkSection ? (
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-gradient-to-r from-stone-50 to-amber-50/50 border border-stone-200/80 p-2.5">
-            <Play className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-50/80 border border-red-200/80 p-2.5">
+            <Play className="w-4 h-4 text-red-600 flex-shrink-0" />
             <input
               type="url"
               value={videoLinkValue}
               onChange={(e) => onVideoLinkChange(e.target.value)}
               placeholder={videoLinkPlaceholder}
-              className="flex-1 min-w-0 py-2 px-3 rounded-lg bg-white/80 border border-stone-200 text-stone-800 placeholder-stone-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400"
+              className="flex-1 min-w-0 py-2 px-3 rounded-lg bg-white/80 border border-stone-200 text-stone-800 placeholder-stone-400 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-400"
             />
             <button
               type="button"
@@ -1141,7 +1305,7 @@ const PostComposer: React.FC<{
           <button
             type="button"
             onClick={() => setShowLinkSection(true)}
-            className="mb-4 flex items-center gap-2 py-2.5 px-3 rounded-xl border border-dashed border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-50/50 transition-all duration-200 text-sm font-medium w-full justify-center"
+            className="mb-4 flex items-center gap-2 py-2.5 px-3 rounded-xl border border-red-600 bg-red-600 text-white hover:bg-red-700 hover:border-red-700 transition-all duration-200 text-sm font-medium w-full justify-center"
           >
             <Play className="w-4 h-4" />
             {isId ? 'Tambah 1 link video (opsional)' : 'Add 1 video link (optional)'}
@@ -1156,16 +1320,16 @@ const PostComposer: React.FC<{
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={imageUrls.length >= MAX_IMAGES}
-                className="flex items-center gap-1.5 py-2 px-3 rounded-lg text-stone-500 hover:bg-amber-50 hover:text-amber-700 transition-colors text-xs font-medium disabled:opacity-50"
+                className="flex items-center gap-1.5 py-2 px-3 rounded-lg text-white bg-amber-500 hover:bg-amber-600 transition-colors text-xs font-medium disabled:opacity-50"
               >
                 <ImageIcon className="w-4 h-4" />
                 <span className="hidden sm:inline">{isId ? 'Foto' : 'Photo'}</span>
-                {imageUrls.length > 0 && <span className="text-amber-600">({imageUrls.length}/{MAX_IMAGES})</span>}
+                {imageUrls.length > 0 && <span>({imageUrls.length}/{MAX_IMAGES})</span>}
               </button>
               <button
                 type="button"
                 onClick={() => setShowLinkSection(true)}
-                className="flex items-center gap-1.5 py-2 px-3 rounded-lg text-stone-500 hover:bg-amber-50 hover:text-amber-700 transition-colors text-xs font-medium"
+                className="flex items-center gap-1.5 py-2 px-3 rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors text-xs font-medium"
               >
                 <Play className="w-4 h-4" />
                 <span className="hidden sm:inline">{isId ? 'Video' : 'Video'}</span>
@@ -1197,7 +1361,7 @@ const PostComposer: React.FC<{
               <ChevronRightIcon className="w-4 h-4 rotate-[-90deg]" />
             </button>
           </div>
-          <p className="text-[10px] text-stone-400 mt-2.5">{isId ? 'Postingan tampil di feed setelah Anda masuk atau punya akun.' : 'Posts go live in the feed once you\'re signed in or have an account.'}</p>
+          <p className="text-[10px] text-stone-400 mt-2.5">{!hasMedia ? (isId ? 'Tambahkan foto atau video untuk mengirim.' : 'Add a photo or video to post.') : (isId ? 'Postingan tampil di feed setelah Anda masuk atau punya akun.' : 'Posts go live in the feed once you\'re signed in or have an account.')}</p>
         </div>
       </div>
     </div>
@@ -1331,9 +1495,35 @@ const PostCard: React.FC<{
             </button>
             <p className={COLORS.mutedLight + ' text-xs mt-0.5'}>{post.authorRole} · {post.timeAgo}</p>
             {post.jobBadge && (
-              <span className={`inline-flex items-center w-fit mt-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${post.jobBadge === 'Job Offered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+              <span className="inline-flex items-center w-fit mt-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black text-amber-400">
                 {post.jobBadge}
               </span>
+            )}
+            {post.jobBadge === 'Job Offered' && (post.jobSalary || post.jobHoursPerWeek || post.jobPositionAvailable || post.jobStartDate || post.jobAccommodationIncluded || post.jobDailyMeals || post.jobHolidayPay || post.jobExperienceRequired || post.jobCvRequired) && (
+              <div className="mt-2 p-2.5 rounded-lg bg-amber-50/90 border border-amber-200/80 text-left space-y-1">
+                {post.jobPositionAvailable && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Posisi:' : 'Position:'}</span> {post.jobPositionAvailable}</p>}
+                {post.jobSalary && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Gaji:' : 'Salary:'}</span> {post.jobSalary}</p>}
+                {post.jobHoursPerWeek && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Jam/minggu:' : 'Hours/week:'}</span> {post.jobHoursPerWeek}</p>}
+                {post.jobStartDate && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Mulai:' : 'Start:'}</span> {post.jobStartDate}</p>}
+                {post.jobAccommodationIncluded && <p className="text-[10px] text-stone-700">{language === 'id' ? '✓ Akomodasi disediakan' : '✓ Accommodation included'}</p>}
+                {post.jobDailyMeals && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Makan:' : 'Meals:'}</span> {post.jobDailyMeals}</p>}
+                {post.jobHolidayPay && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Bayaran libur:' : 'Holiday pay:'}</span> {post.jobHolidayPay}</p>}
+                {post.jobExperienceRequired && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Pengalaman:' : 'Experience:'}</span> {post.jobExperienceRequired}</p>}
+                {post.jobCvRequired && <p className="text-[10px] text-stone-700">{language === 'id' ? '✓ CV wajib' : '✓ CV required'}</p>}
+              </div>
+            )}
+            {post.jobBadge === 'Position Required' && (post.positionSalary || post.positionHoursPerWeek || post.positionSought || post.positionStartDate || post.positionAccommodationRequired || post.positionDailyMeals || post.positionHolidayPay || post.positionExperience || post.positionCvAvailable) && (
+              <div className="mt-2 p-2.5 rounded-lg bg-emerald-50/90 border border-emerald-200/80 text-left space-y-1">
+                {post.positionSought && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Posisi dicari:' : 'Position sought:'}</span> {post.positionSought}</p>}
+                {post.positionSalary && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Gaji diharapkan:' : 'Expected salary:'}</span> {post.positionSalary}</p>}
+                {post.positionHoursPerWeek && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Jam/minggu:' : 'Hours/week:'}</span> {post.positionHoursPerWeek}</p>}
+                {post.positionStartDate && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Tersedia:' : 'Available:'}</span> {post.positionStartDate}</p>}
+                {post.positionAccommodationRequired && <p className="text-[10px] text-stone-700">{language === 'id' ? '✓ Akomodasi dibutuhkan' : '✓ Accommodation required'}</p>}
+                {post.positionDailyMeals && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Makan:' : 'Meals:'}</span> {post.positionDailyMeals}</p>}
+                {post.positionHolidayPay && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Bayaran libur:' : 'Holiday pay:'}</span> {post.positionHolidayPay}</p>}
+                {post.positionExperience && <p className="text-[10px] text-stone-700"><span className="font-medium text-stone-600">{language === 'id' ? 'Pengalaman:' : 'Experience:'}</span> {post.positionExperience}</p>}
+                {post.positionCvAvailable && <p className="text-[10px] text-stone-700">{language === 'id' ? '✓ CV tersedia' : '✓ CV available'}</p>}
+              </div>
             )}
             {(post.authorActive || post.authorBusy) && (
               <span className={`inline-flex items-center w-fit mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${post.authorBusy ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
@@ -1486,7 +1676,7 @@ const PostCard: React.FC<{
           </div>
         ) : null}
         {post.commentPreview && post.commentPreview.length > 0 && (
-          <div className="pt-2 border-t border-stone-100 space-y-1.5">
+          <div className="pt-1.5 border-t border-stone-100 space-y-0.5">
             {post.commentPreview.map((c, i) => {
               const commentProfile: SocialProfilePreview = {
                 name: c.author,
@@ -1507,21 +1697,29 @@ const PostCard: React.FC<{
                   return next;
                 });
               };
+              const starRating = typeof c.authorRating === 'number' ? Math.min(5, Math.max(1, Math.round(c.authorRating))) : 0;
               return (
-                <div key={i} className="py-1.5 px-2 rounded-lg bg-stone-50/80 border border-stone-100">
-                  <div className="flex items-start gap-1.5">
-                    <button type="button" onClick={() => onProfileClick?.(commentProfile)} className="relative flex-shrink-0 rounded-full overflow-hidden w-6 h-6 ring-1 ring-stone-200">
+                <div key={i} className="py-1 px-1.5 rounded-lg bg-stone-50/80 border border-stone-100">
+                  <div className="flex items-start gap-1">
+                    <button type="button" onClick={() => onProfileClick?.(commentProfile)} className="relative flex-shrink-0 rounded-full overflow-hidden w-5 h-5 ring-1 ring-stone-200">
                       <img src={commentProfile.avatar} alt={c.author} className="w-full h-full object-cover" />
-                      {c.active && <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-emerald-500 border border-white" aria-hidden />}
+                      {c.active && <span className="absolute bottom-0 right-0 w-1 h-1 rounded-full bg-emerald-500 border border-white" aria-hidden />}
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-stone-700 leading-snug">
+                      <p className="text-[11px] text-stone-700 leading-tight">
                         <button type="button" onClick={() => onProfileClick?.(commentProfile)} className="font-semibold text-stone-800 hover:text-amber-700">
                           {c.author}
                         </button>
+                        {starRating > 0 && (
+                          <span className="inline-flex items-center gap-0.5 ml-1 align-middle">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star key={s} className={`w-3 h-3 ${s <= starRating ? 'fill-amber-500 text-amber-500' : 'text-stone-300'}`} aria-hidden />
+                            ))}
+                          </span>
+                        )}
                         <span className="text-stone-600">{' '}{c.text}</span>
                       </p>
-                      <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-2 mt-0.5">
                         <button type="button" onClick={() => toggleReaction('liked')} className={`flex items-center gap-0.5 text-[10px] font-medium ${commentReactions[i] === 'liked' ? 'text-amber-600' : 'text-stone-500 hover:text-amber-600'}`} aria-label="Like">
                           <ThumbsUp className={`w-3.5 h-3.5 ${commentReactions[i] === 'liked' ? 'fill-current' : ''}`} />
                           <span>{likeCountC}</span>
@@ -1539,9 +1737,9 @@ const PostCard: React.FC<{
                     </div>
                   </div>
                   {(c.replies?.length ?? 0) > 0 && (
-                    <div className="ml-8 mt-1 space-y-0.5 border-l-2 border-stone-200 pl-2">
+                    <div className="ml-6 mt-0.5 space-y-0.5 border-l-2 border-stone-200 pl-1.5">
                       {c.replies!.map((r, ri) => (
-                        <p key={ri} className="text-[11px] text-stone-600 leading-snug">
+                        <p key={ri} className="text-[10px] text-stone-600 leading-tight">
                           <span className="font-semibold text-stone-700">{r.author}</span>
                           <span>{' '}{r.text}</span>
                         </p>
@@ -2811,6 +3009,8 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
   const [composerImages, setComposerImages] = useState<string[]>([]);
   const [composerAttachment, setComposerAttachment] = useState<{ name: string; dataUrl: string } | null>(null);
   const [composerJobBadge, setComposerJobBadge] = useState<null | 'Job Offered' | 'Position Required'>(null);
+  const [composerJobOfferFields, setComposerJobOfferFields] = useState<JobOfferFields>(() => ({ ...initialJobOfferFields }));
+  const [composerPositionRequiredFields, setComposerPositionRequiredFields] = useState<PositionRequiredFields>(() => ({ ...initialPositionRequiredFields }));
   const [products, setProducts] = useState<ProductListing[]>(() => getMockProducts(lang));
   const [searchQuery, setSearchQuery] = useState('');
   const [heroVariant, setHeroVariant] = useState<'default' | 'news'>('default');
@@ -2920,7 +3120,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
     const hasVideo = !!videoLink;
     const isJobPost = composerJobBadge != null;
     const hasMedia = hasImages || hasVideo;
-    if (!hasMedia && !isJobPost) return; // require at least one image, video, or job badge
+    if (!hasMedia) return; // all posts must have either a photo or video
     if (isJobPost && !text) return; // job posts need at least title/description
     const newPost: FeedPost = {
       id: `user-${Date.now()}`,
@@ -2934,6 +3134,28 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
       attachment: composerAttachment ? { name: composerAttachment.name, dataUrl: composerAttachment.dataUrl } : undefined,
       postType: isJobPost ? (composerJobBadge === 'Job Offered' ? 'job-offered' : 'job-wanted') : undefined,
       jobBadge: composerJobBadge ?? undefined,
+      ...(composerJobBadge === 'Job Offered' && {
+        jobSalary: composerJobOfferFields.salary || undefined,
+        jobHoursPerWeek: composerJobOfferFields.hoursPerWeek || undefined,
+        jobAccommodationIncluded: composerJobOfferFields.accommodationIncluded,
+        jobDailyMeals: composerJobOfferFields.dailyMeals || undefined,
+        jobHolidayPay: composerJobOfferFields.holidayPay || undefined,
+        jobStartDate: composerJobOfferFields.startDate || undefined,
+        jobPositionAvailable: composerJobOfferFields.positionAvailable || undefined,
+        jobExperienceRequired: composerJobOfferFields.experienceRequired || undefined,
+        jobCvRequired: composerJobOfferFields.cvRequired,
+      }),
+      ...(composerJobBadge === 'Position Required' && {
+        positionSalary: composerPositionRequiredFields.salary || undefined,
+        positionHoursPerWeek: composerPositionRequiredFields.hoursPerWeek || undefined,
+        positionAccommodationRequired: composerPositionRequiredFields.accommodationRequired,
+        positionDailyMeals: composerPositionRequiredFields.dailyMeals || undefined,
+        positionHolidayPay: composerPositionRequiredFields.holidayPay || undefined,
+        positionStartDate: composerPositionRequiredFields.startDate || undefined,
+        positionSought: composerPositionRequiredFields.positionSought || undefined,
+        positionExperience: composerPositionRequiredFields.experience || undefined,
+        positionCvAvailable: composerPositionRequiredFields.cvAvailable,
+      }),
       likes: 0,
       comments: 0,
       shares: 0,
@@ -2947,6 +3169,8 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
       setComposerImages([]);
       setComposerAttachment(null);
       setComposerJobBadge(null);
+      setComposerJobOfferFields({ ...initialJobOfferFields });
+      setComposerPositionRequiredFields({ ...initialPositionRequiredFields });
     } else {
       newPost.pending = true;
       setPendingPost(newPost);
@@ -3060,7 +3284,8 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
 
   const displayPosts = (() => {
     const combined = pendingPost ? [pendingPost, ...feedPosts] : feedPosts;
-    return [...combined].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+    const sorted = [...combined].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+    return sorted.filter((p) => p.videoLink || (p.mediaUrls && p.mediaUrls.length > 0));
   })();
 
   const filteredDisplayPosts = (() => {
@@ -3186,7 +3411,6 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
         onArticles={() => { setHeroVariant('default'); setFeedFilter('articles'); setTimeout(() => scrollToSection('section-news'), 0); }}
         onNews={() => { setHeroVariant('default'); setFeedFilter('news'); setTimeout(() => scrollToSection('section-news'), 0); }}
         onBuySell={() => { setHeroVariant('default'); setFeedFilter('buy-sell'); setTimeout(() => scrollToSection('section-news'), 0); }}
-        onJobs={() => { setHeroVariant('default'); setFeedFilter('jobs'); setTimeout(() => scrollToSection('section-news'), 0); }}
         language={lang}
       />
 
@@ -3243,6 +3467,10 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                   imageUrls={composerImages}
                   attachment={composerAttachment}
                   jobBadge={composerJobBadge}
+                  jobOfferFields={composerJobOfferFields}
+                  onJobOfferFieldsChange={setComposerJobOfferFields}
+                  positionRequiredFields={composerPositionRequiredFields}
+                  onPositionRequiredFieldsChange={setComposerPositionRequiredFields}
                   onTextChange={setComposerText}
                   onVideoLinkChange={setComposerVideoLink}
                   onImageUrlsChange={setComposerImages}
@@ -3291,6 +3519,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                     />
                   ))}
                 </section>
+                {feedFilter !== 'buy-sell' && (
                 <section id="section-indastreet-news" className="scroll-mt-24">
                   <div className="bg-white/90 backdrop-blur-xl rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
                     <div className="px-4 pt-4 pb-2">
@@ -3313,6 +3542,8 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                     />
                   </div>
                 </section>
+                )}
+                {feedFilter !== 'buy-sell' && (
                 <section id="section-articles" className="scroll-mt-24">
                   <div className="bg-white/90 backdrop-blur-xl rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
                     <div className="px-4 pt-4 pb-2">
@@ -3336,6 +3567,8 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                     />
                   </div>
                 </section>
+                )}
+                {feedFilter !== 'buy-sell' && (
                 <section id="section-video" className="scroll-mt-24">
                   <div className="bg-white/90 backdrop-blur-xl rounded-2xl border border-stone-200 shadow-sm p-6">
                     <h2 className="font-serif text-xl font-semibold text-stone-900 flex items-center gap-2">
@@ -3348,6 +3581,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                     <p className="text-stone-600 text-sm">{isId ? 'Konten video komunitas akan tampil di sini.' : 'Community video content will appear here.'}</p>
                   </div>
                 </section>
+                )}
                 <BuySellSection
                   products={products}
                   onContact={handleContactProduct}

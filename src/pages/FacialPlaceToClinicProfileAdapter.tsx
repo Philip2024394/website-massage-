@@ -234,7 +234,7 @@ const FacialPlaceToClinicProfileAdapter: React.FC<FacialPlaceToClinicAdapterProp
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <p className="text-gray-500">Clinic not found.</p>
-                <button type="button" onClick={onBack} className="ml-4 px-4 py-2 bg-orange-500 text-white rounded-lg">Back</button>
+                <button type="button" onClick={onBack} className="ml-4 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">Back</button>
             </div>
         );
     }

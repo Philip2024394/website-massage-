@@ -1215,7 +1215,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
-            <div className={`w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8 ${isBeauticianWithTreatments ? 'border-t-4 border-t-amber-400 shadow-md' : ''}`}>
+            <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 border-t-4 border-t-amber-400 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8 shadow-md">
                 <TherapistCardHeader
                     therapist={therapist}
                     displayImage={displayImage}

@@ -3,6 +3,23 @@
 ## Overview
 Implemented a comprehensive country-specific app system where each country gets its own localized experience with country-specific massage types, sidebar menus, and cultural elements.
 
+## Side drawer and Appwrite (country social pages)
+
+All countries in the home page side drawer under **IndaStreet Countries** are connected so that selecting a country opens that country’s social page (same experience as Indonesia, with hero and country name).
+
+**Connection chain**
+1. **useDrawerCountries()** – Loads countries from Appwrite (`fetchDrawerCountries`) or falls back to `DRAWER_COUNTRIES_LIST` in `src/constants/drawerCountries.ts`.
+2. **COUNTRY_PAGE_IDS** – Set of country ids that have an in-app social page (indonesia, malaysia, singapore, thailand, philippines, vietnam, united-kingdom, united-states, australia, germany). Drawer uses this to decide “open in-app page” vs “open linkedWebsite”.
+3. **getSafeDrawerPage(country.id)** – Maps drawer country id to a valid `Page` (e.g. `united-kingdom` → `uk`). See `src/config/drawerConfig.ts` ALIASES.
+4. **onNavigate(page)** – Calls `state.setPage(page)`; AppRouter renders the matching country social page.
+
+**Appwrite**
+- Collection: `countries` (id in app: `src/lib/appwrite.config.ts` → `collections.countries`).
+- Required attributes: `code`, `name`, `flag`, `active` (boolean). Optional: `linkedWebsite`.
+- Country id in the app is derived from `code` in `src/lib/appwrite/services/countries.service.ts` (e.g. GB → united-kingdom, ID → indonesia). All 10 codes (ID, MY, SG, TH, PH, VN, GB, US, AU, DE) must exist with `active: true` for the drawer to show them from Appwrite.
+- **Seed script**: `APPWRITE_API_KEY=your_key npx ts-node scripts/seed-drawer-countries.ts` – creates the 10 country documents if missing.
+- **Verification**: In dev, `useDrawerCountries` runs `verifyDrawerCountriesConnection()` and logs warnings if any drawer country does not resolve to a valid social page. Unit test: `src/utils/__tests__/drawerCountriesVerification.test.ts`.
+
 ## Architecture
 
 ### 1. Configuration System

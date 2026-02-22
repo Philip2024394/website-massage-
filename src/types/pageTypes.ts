@@ -98,8 +98,9 @@ export type Page =
     | 'about' 
     | 'about-us'
     | 'how-it-works' 
-    | 'indonesia' // Country hub: social media page for Indonesia (same experience for all countries)
-    | 'uk' // Country hub: social media page for United Kingdom (same experience for all countries)
+    | 'indonesia' // Country hub: social media page (same experience for all countries)
+    | 'uk' // Country hub: social media page for United Kingdom
+    | 'malaysia' | 'singapore' | 'thailand' | 'philippines' | 'vietnam' | 'united-states' | 'australia' | 'germany' // Country hubs: social media page per country
     | 'massage-bali' 
     | 'blog'
     | 'indastreet-news' 

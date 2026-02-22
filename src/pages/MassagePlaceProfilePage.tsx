@@ -137,7 +137,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     <p className="text-gray-600 mb-4">Place not found</p>
                     <button 
                         onClick={onBack}
-                        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                        className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
                     >
                         Go Back
                     </button>
@@ -440,7 +440,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Place not found</h2>
-                    <button onClick={onBack} className="px-6 py-3 bg-orange-500 text-white rounded-lg">
+                    <button onClick={onBack} className="px-6 py-3 bg-amber-500 text-white rounded-lg">
                         Go Back
                     </button>
                 </div>
@@ -498,7 +498,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                         <div className="flex justify-end flex-shrink-0">
                             <button
                                 onClick={() => onNavigate?.('facialProviders')}
-                                className="px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
+                                className="px-4 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
                                 title="Facials Indonesia"
                             >
                                 <Sparkles className="w-5 h-5" />

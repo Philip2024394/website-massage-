@@ -7,7 +7,7 @@ import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
-import { Share2 } from 'lucide-react';
+import { Share2, Sparkles } from 'lucide-react';
 import SafePassModal from './modals/SafePassModal';
 import { logger } from '../utils/logger';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
@@ -200,7 +200,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                     onClick(place);
                     onIncrementAnalytics('views');
                 }}
-                className={`bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''}`}
+                className={`bg-white rounded-2xl overflow-hidden border border-gray-200 border-t-4 border-t-amber-400 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''}`}
             >
             {/* Image Container */}
             <div className="relative h-48 sm:h-56 overflow-hidden">
@@ -501,26 +501,52 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
 
             {/* Content */}
             <div className="px-4 pb-4">
-                {/* Pricing — same design as beauty profile price containers */}
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                    <div className="rounded-xl border-2 border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200">
-                        <p className="text-xs text-gray-600 mb-1">60 min</p>
-                        <p className="text-sm font-bold text-gray-800 break-words">
-                            {pricing["60"] > 0 ? `IDR ${formatPrice(pricing["60"])}` : 'Contact'}
-                        </p>
+                {/* Pricing — same design as beautician home service: Treatments Trending, fixed prices, list layout */}
+                <div className="mb-4">
+                    <style>{`
+                        @keyframes beautician-glow-card {
+                          0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
+                          50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
+                        }
+                        .beautician-card-container-highlight {
+                          border-color: rgb(249 115 22);
+                          box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
+                          animation: beautician-glow-card 2.5s ease-in-out infinite;
+                        }
+                    `}</style>
+                    <div className="text-center mb-3">
+                        <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
+                            <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
+                            Treatments Trending
+                        </h3>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • View profile to book</p>
                     </div>
-                    <div className="rounded-xl border-2 border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200">
-                        <p className="text-xs text-gray-600 mb-1">90 min</p>
-                        <p className="text-sm font-bold text-gray-800 break-words">
-                            {pricing["90"] > 0 ? `IDR ${formatPrice(pricing["90"])}` : 'Contact'}
-                        </p>
+                    <div className="space-y-2">
+                        {[
+                            { label: '60 min', minutes: 60, key: '60' as const },
+                            { label: '90 min', minutes: 90, key: '90' as const },
+                            { label: '120 min', minutes: 120, key: '120' as const },
+                        ].map(({ label, minutes, key }) => (
+                            <div
+                                key={key}
+                                className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400"
+                                role="presentation"
+                            >
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">Massage · {label}</h4>
+                                    <p className="text-[10px] text-gray-600">
+                                        Estimated time: {minutes} minutes
+                                    </p>
+                                    <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                        Price: {pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])} (fixed)` : 'Call'}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div className="rounded-xl border-2 border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200">
-                        <p className="text-xs text-gray-600 mb-1">120 min</p>
-                        <p className="text-sm font-bold text-gray-800 break-words">
-                            {pricing["120"] > 0 ? `IDR ${formatPrice(pricing["120"])}` : 'Contact'}
-                        </p>
-                    </div>
+                    <p className="text-center text-[10px] text-gray-500 mt-2">
+                        Professional rates • Verified profile
+                    </p>
                 </div>
 
                 {/* View Profile Button */}

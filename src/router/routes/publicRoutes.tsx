@@ -72,6 +72,46 @@ export const publicRoutes = {
     component: IndonesiaLandingPage,
     name: 'uk'
   },
+  malaysia: {
+    path: '/malaysia',
+    component: IndonesiaLandingPage,
+    name: 'malaysia'
+  },
+  singapore: {
+    path: '/singapore',
+    component: IndonesiaLandingPage,
+    name: 'singapore'
+  },
+  thailand: {
+    path: '/thailand',
+    component: IndonesiaLandingPage,
+    name: 'thailand'
+  },
+  philippines: {
+    path: '/philippines',
+    component: IndonesiaLandingPage,
+    name: 'philippines'
+  },
+  vietnam: {
+    path: '/vietnam',
+    component: IndonesiaLandingPage,
+    name: 'vietnam'
+  },
+  'united-states': {
+    path: '/united-states',
+    component: IndonesiaLandingPage,
+    name: 'united-states'
+  },
+  australia: {
+    path: '/australia',
+    component: IndonesiaLandingPage,
+    name: 'australia'
+  },
+  germany: {
+    path: '/germany',
+    component: IndonesiaLandingPage,
+    name: 'germany'
+  },
   faq: {
     path: '/faq',
     component: FAQPage,
