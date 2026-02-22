@@ -1,8 +1,14 @@
 /**
  * Mock facial clinic for home card and profile when Appwrite collection is empty or fails.
  * Same shape as Place / mapped facial place (id, name, mainImage, price60/90/120, etc.).
+ * Main image from placeMainImages.ts; profile image from placeProfileImages.ts (no confusion).
  */
+import { PLACE_MAIN_IMAGES } from './placeMainImages';
+import { PLACE_PROFILE_IMAGES } from './placeProfileImages';
+
 export const MOCK_FACIAL_PLACE_ID = 'mock-facial-clinic-1';
+
+const FACIAL_MAIN = PLACE_MAIN_IMAGES.facial;
 
 export const MOCK_FACIAL_PLACE = {
   $id: MOCK_FACIAL_PLACE_ID,
@@ -10,8 +16,8 @@ export const MOCK_FACIAL_PLACE = {
   type: 'facial' as const,
   name: 'Glow Skin Clinic',
   description: 'Premium facial and skin care in a relaxing environment. Expert treatments for all skin types.',
-  mainImage: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328',
-  profilePicture: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328',
+  mainImage: FACIAL_MAIN,
+  profilePicture: PLACE_PROFILE_IMAGES.facial,
   location: 'Seminyak, Bali',
   address: 'Seminyak, Bali',
   city: 'Bali',
@@ -29,15 +35,15 @@ export const MOCK_FACIAL_PLACE = {
   facialTypes: ['Deep Cleansing', 'Hydrating', 'Anti-Aging', 'Acne Treatment', 'Brightening'],
   amenities: ['Consultation', 'Skin Analysis', 'Aftercare'],
   galleryImages: [
-    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328', header: 'Our Space', description: 'A welcoming environment for premium facial and skin treatments.' },
-    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328', header: 'Treatment Room', description: 'Clean, professional setup for your comfort and safety.' },
-    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328', header: 'Reception', description: 'Comfortable waiting area with refreshments.' },
-    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328', header: 'Skincare Products', description: 'Premium products used in our treatments.' },
-    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328', header: 'Relaxation Zone', description: 'Post-treatment rest and hydration area.' },
+    { imageUrl: FACIAL_MAIN, header: 'Our Space', description: 'A welcoming environment for premium facial and skin treatments.' },
+    { imageUrl: FACIAL_MAIN, header: 'Treatment Room', description: 'Clean, professional setup for your comfort and safety.' },
+    { imageUrl: FACIAL_MAIN, header: 'Reception', description: 'Comfortable waiting area with refreshments.' },
+    { imageUrl: FACIAL_MAIN, header: 'Skincare Products', description: 'Premium products used in our treatments.' },
+    { imageUrl: FACIAL_MAIN, header: 'Relaxation Zone', description: 'Post-treatment rest and hydration area.' },
   ],
   licenseCertImages: [
-    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328', header: 'Skincare Specialist Certificate', description: 'Certified in advanced facial treatments and skin analysis. Valid through 2026.' },
-    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328', header: 'Health & Hygiene License', description: 'Clinic meets local health and safety standards for beauty services.' },
+    { imageUrl: FACIAL_MAIN, header: 'Skincare Specialist Certificate', description: 'Certified in advanced facial treatments and skin analysis. Valid through 2026.' },
+    { imageUrl: FACIAL_MAIN, header: 'Health & Hygiene License', description: 'Clinic meets local health and safety standards for beauty services.' },
   ],
   coordinates: '-8.6705,115.2126',
   lat: -8.6705,

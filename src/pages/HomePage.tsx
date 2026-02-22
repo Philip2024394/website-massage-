@@ -208,14 +208,6 @@ const HomePage: React.FC<HomePageProps> = ({
     const { city: contextCity, countryCode, country, hasConfirmedCity, confirmedLocation, setCity: setContextCity } = useCityContext();
     const [initializingCityGuard, setInitializingCityGuard] = useState(true);
     
-    // 🚨 CRITICAL ROUTE GUARD - HomePage must ONLY render on home page
-    // Use the page prop from the routing system instead of React Router DOM
-    // This prevents HomePage from rendering on therapist profile routes and causing permission errors
-    if (page !== 'home' && page !== 'landing') {
-        logger.warn('HomePage: Blocked render outside home route. Current page:', { page });
-        return null;
-    }
-    
     // 🔓 UNLOCK LoadingGate - Clear the lock when reaching home page
     useEffect(() => {
         const locked = sessionStorage.getItem("LOADING_LOCKED");
@@ -1904,6 +1896,12 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Removed unused renderPlaces
 
+    // 🚨 ROUTE GUARD: must run after all hooks (Rules of Hooks)
+    if (page !== 'home' && page !== 'landing') {
+        logger.warn('HomePage: Blocked render outside home route. Current page:', { page });
+        return null;
+    }
+
     if (!hasConfirmedCity) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -1981,26 +1979,36 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-            {/* Fixed Hero Section - Same for all: Home Service | City Places, Massage | Facial | Beauty, Filter (no location container) */}
+            {/* Fixed Hero Section – Row 1 labels match selected service so mapping is clear for AI and users */}
             <div className="bg-white sticky top-[60px] z-10">
                 <PageContainer className="px-0 sm:px-0 pt-0 pb-3">
-                    {/* Hero: Two tabs – Home Service (default) | City Places – label is "City Places" not Massage Places */}
-                    <div className="flex bg-gray-200 rounded-full p-1 max-w-2xl mx-auto overflow-x-auto">
-                        <button
-                            onClick={() => setMainTab('home-service')}
-                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'home-service' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
-                        >
-                            <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Service</span>
-                        </button>
-                        <button
-                            onClick={() => setMainTab('places')}
-                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'places' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
-                        >
-                            <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">City Places</span>
-                        </button>
-                    </div>
+                    {/* Hero row 1: Left = home for this service, Right = city places for this service. Labels change with serviceButton. */}
+                    {(() => {
+                        const row1Labels: Record<typeof serviceButton, { home: string; places: string }> = {
+                            massage: { home: translationsObject?.home?.homeMassage ?? 'Home Massage', places: translationsObject?.home?.massagePlaces ?? 'Massage Places' },
+                            facial: { home: translationsObject?.home?.homeFacial ?? 'Home Facial', places: translationsObject?.home?.facialPlaces ?? 'Facial Places' },
+                            beautician: { home: translationsObject?.home?.homeBeauty ?? 'Home Beauty', places: translationsObject?.home?.beautyPlaces ?? 'Beauty Places' },
+                        };
+                        const { home: homeLabel, places: placesLabel } = row1Labels[serviceButton];
+                        return (
+                            <div className="flex bg-gray-200 rounded-full p-1 max-w-2xl mx-auto overflow-x-auto">
+                                <button
+                                    onClick={() => setMainTab('home-service')}
+                                    className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'home-service' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                >
+                                    <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                                    <span className="whitespace-nowrap overflow-hidden text-ellipsis">{homeLabel}</span>
+                                </button>
+                                <button
+                                    onClick={() => setMainTab('places')}
+                                    className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'places' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                                >
+                                    <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                                    <span className="whitespace-nowrap overflow-hidden text-ellipsis">{placesLabel}</span>
+                                </button>
+                            </div>
+                        );
+                    })()}
 
                     {/* Service buttons: Massage | Facial | Beauty | Filter */}
                     <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 sm:gap-3 items-center min-h-[54px]">
@@ -2438,7 +2446,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 {activeTab === 'facial-places' && (
                     <div className="max-w-full ">
                         <div className="mb-3 text-center mt-[26px]">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialTherapistsTitle || 'Home Service Facial'}</h3>
+                            {/* No title when Facial City Places is selected – avoid "Home Service Facial" for city places */}
                             <p className="text-xs text-gray-500 mt-1">
                                 {t?.home?.browseRegionNote || 'Browse Region By Filtering Location'}
                             </p>

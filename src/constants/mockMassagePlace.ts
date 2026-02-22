@@ -1,10 +1,12 @@
 /**
  * Mock massage place (spa) for City Places tab when Appwrite collection is empty or for demo.
  * Same shape as Place (id, name, mainImage, price60/90/120, etc.).
+ * Main image from placeMainImages.ts; profile image from placeProfileImages.ts (no confusion).
  */
-export const MOCK_MASSAGE_PLACE_ID = 'mock-massage-place-1';
+import { PLACE_MAIN_IMAGES } from './placeMainImages';
+import { PLACE_PROFILE_IMAGES } from './placeProfileImages';
 
-const MASSAGE_IMG = 'https://ik.imagekit.io/7grri5v7d/massage%20room%202.png';
+export const MOCK_MASSAGE_PLACE_ID = 'mock-massage-place-1';
 
 export const MOCK_MASSAGE_PLACE = {
   $id: MOCK_MASSAGE_PLACE_ID,
@@ -12,8 +14,8 @@ export const MOCK_MASSAGE_PLACE = {
   type: 'place' as const,
   name: 'Serenity Massage Spa',
   description: 'Traditional and wellness massage in a calm setting. Experienced therapists for relaxation and recovery.',
-  mainImage: MASSAGE_IMG,
-  profilePicture: MASSAGE_IMG,
+  mainImage: PLACE_MAIN_IMAGES.massage,
+  profilePicture: PLACE_PROFILE_IMAGES.massage,
   location: 'Seminyak, Bali',
   address: 'Seminyak, Bali',
   city: 'Bali',
@@ -34,7 +36,10 @@ export const MOCK_MASSAGE_PLACE = {
   lng: 115.2126,
   isVerified: true,
   galleryImages: [
-    { imageUrl: MASSAGE_IMG, header: 'Spa Space', description: 'Relaxing environment for massage.' },
-    { imageUrl: MASSAGE_IMG, header: 'Treatment Room', description: 'Private room for your session.' },
+    { imageUrl: PLACE_MAIN_IMAGES.massage, header: 'Spa Space', description: 'Relaxing environment for massage.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/ma%201.png', header: 'Gallery', description: 'Massage space.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/ma%202.png', header: 'Gallery', description: 'Massage space.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/ma%203.png', header: 'Gallery', description: 'Massage space.' },
+    { imageUrl: 'https://ik.imagekit.io/7grri5v7d/ma%204.png', header: 'Gallery', description: 'Massage space.' },
   ],
 };

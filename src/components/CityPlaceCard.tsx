@@ -33,13 +33,27 @@ const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
-function getPlaceDisplayImage(place: any): string {
+/** Main/hero image for banner and gallery. Use for card top image and photo strip. */
+function getPlaceMainImage(place: any): string {
     return (
         place?.mainImage ||
-        place?.profilePicture ||
         place?.image ||
         place?.main_image ||
+        place?.profilePicture ||
         place?.profile_image ||
+        DEFAULT_PLACE_IMAGE
+    );
+}
+
+/** Profile/avatar image for the round profile circle. Do not use for hero banner. */
+function getPlaceProfileImage(place: any): string {
+    return (
+        place?.profilePicture ||
+        place?.profile_image ||
+        place?.logo ||
+        place?.mainImage ||
+        place?.image ||
+        place?.main_image ||
         DEFAULT_PLACE_IMAGE
     );
 }
@@ -89,7 +103,8 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
     onIncrementAnalytics,
     userLocation,
 }) => {
-    const displayImage = getPlaceDisplayImage(place);
+    const mainImage = getPlaceMainImage(place);
+    const profileImage = getPlaceProfileImage(place);
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
             if ((place as any).analytics) {
@@ -102,6 +117,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
 
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
+    const [selectedPhoto, setSelectedPhoto] = useState<{ imageUrl: string; title: string; description: string } | null>(null);
 
     const handleShareClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -232,7 +248,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                 {/* Image Container – same height/ratio as Beauty Home Service card */}
                 <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                     <img
-                        src={displayImage}
+                        src={mainImage}
                         alt={placeName}
                         className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl group-hover:scale-105"
                         style={{ aspectRatio: '400/224', minHeight: '224px' }}
@@ -292,7 +308,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                             <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden relative">
                                 <img
                                     className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full"
-                                    src={displayImage}
+                                    src={profileImage}
                                     alt={placeName}
                                     loading="lazy"
                                     onError={(e) => {
@@ -348,24 +364,47 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                     </p>
                 </div>
 
-                {/* Clinic photos strip – same as Beauty Home Service card */}
+                {/* Clinic photos strip – click thumbnail to open popup with image, title, description */}
                 {(() => {
-                    const main = displayImage;
-                    const extraImages: string[] = [];
-                    if (Array.isArray((place as any).images)) (place as any).images.forEach((u: string) => u && extraImages.push(u));
+                    const placeName = (place as any).name || getMetaBarLabel(category);
+                    const defaultDescription = (place as any).description ? String((place as any).description).slice(0, 80) + ((place as any).description?.length > 80 ? '…' : '') : `${getMetaBarLabel(category)} – Visit our location.`;
+                    const photoItems: { imageUrl: string; title: string; description: string }[] = [];
+                    const seen = new Set<string>();
+                    const add = (imageUrl: string, title: string, description: string) => {
+                        if (!imageUrl || seen.has(imageUrl)) return;
+                        seen.add(imageUrl);
+                        photoItems.push({ imageUrl, title, description });
+                    };
+                    add(mainImage, placeName, defaultDescription);
                     const gallery = (place as any).galleryImages;
-                    if (Array.isArray(gallery)) gallery.forEach((g: any) => (g?.imageUrl || g?.url) && extraImages.push(g.imageUrl || g.url));
-                    const allPhotos = [main, ...extraImages].filter(Boolean) as string[];
-                    const unique = Array.from(new Set(allPhotos)).slice(0, 4);
+                    if (Array.isArray(gallery)) {
+                        gallery.forEach((g: any) => {
+                            const url = g?.imageUrl || g?.url;
+                            if (!url) return;
+                            add(url, g?.header || g?.title || placeName, g?.description || defaultDescription);
+                        });
+                    }
+                    if (Array.isArray((place as any).images)) {
+                        (place as any).images.forEach((u: string) => u && add(u, placeName, defaultDescription));
+                    }
+                    const unique = photoItems.slice(0, 5);
                     if (unique.length === 0) return null;
                     return (
                         <div className="mx-4 mb-2">
                             <p className="text-[10px] font-semibold text-slate-600 mb-1.5">Photos</p>
                             <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
-                                {unique.map((src, i) => (
-                                    <div key={i} className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
-                                        <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                                    </div>
+                                {unique.map((item, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedPhoto(item);
+                                        }}
+                                        className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 hover:border-amber-400 focus:border-amber-400 focus:outline-none"
+                                    >
+                                        <img src={item.imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                    </button>
                                 ))}
                             </div>
                         </div>
@@ -486,6 +525,55 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Thumbnail popup – only back page blurred; popup image and content sharp */}
+            {selectedPhoto && (
+                <div
+                    className="fixed inset-0 z-[10000] bg-black/40 backdrop-blur-xl flex items-center justify-center p-4"
+                    onClick={() => setSelectedPhoto(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Photo view"
+                >
+                    <div
+                        className="relative max-w-lg w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gray-900"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => setSelectedPhoto(null)}
+                            className="absolute top-3 right-3 z-10 w-10 h-10 bg-amber-500 hover:bg-amber-600 rounded-full flex items-center justify-center transition-colors border border-amber-400/50"
+                            aria-label="Close"
+                        >
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <div className="relative w-full bg-black/40">
+                            <img
+                                src={selectedPhoto.imageUrl}
+                                alt={selectedPhoto.title}
+                                className="w-full max-h-[60vh] object-contain"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = DEFAULT_PLACE_IMAGE;
+                                }}
+                            />
+                        </div>
+                        <div className="p-4 border-t border-white/10">
+                            <div className="flex items-center gap-3 mb-2">
+                                <img
+                                    src={profileImage}
+                                    alt=""
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-white/30 flex-shrink-0"
+                                    onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PLACE_IMAGE; }}
+                                />
+                                <h3 className="text-lg font-bold text-white truncate min-w-0">{selectedPhoto.title}</h3>
+                            </div>
+                            <p className="text-sm text-gray-300 line-clamp-3">{selectedPhoto.description}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <SocialSharePopup
                 isOpen={showSharePopup}
