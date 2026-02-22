@@ -54,7 +54,6 @@ export const DRAWER_NAV_ITEMS: ReadonlyArray<{
 }> = [
   { id: 'indastreet-partners', labelKey: 'partners', icon: 'Home' },
   { id: 'partnership-application', labelKey: 'joinIndaStreet', icon: 'Users' },
-  { id: 'massage-jobs', labelKey: 'massageJobs', icon: 'Briefcase' },
   { id: 'how-it-works', labelKey: 'howItWorks', icon: 'HelpCircle' },
   { id: 'about', labelKey: 'aboutUs', icon: 'Info' },
   { id: 'company', labelKey: 'companyProfile', icon: 'Building' },

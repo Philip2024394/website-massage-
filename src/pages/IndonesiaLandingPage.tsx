@@ -42,13 +42,10 @@ import {
   Clock,
   CreditCard,
   MapPin,
-  Smile,
-  MoreVertical,
-  Pencil,
+  Briefcase,
   Trash2,
 } from 'lucide-react';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
-import { EmojiPicker } from '../components/EmojiPicker';
 
 const ChevronRightIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,6 +113,8 @@ interface FeedPost {
   /** Up to 5 images; first is main. When set, PostCard shows main + thumbnails. */
   mediaUrls?: string[];
   videoLink?: string; // YouTube or other video URL
+  /** Optional file attachment (e.g. PDF, doc) to display in post. */
+  attachment?: { name: string; dataUrl: string };
   likes: number;
   comments: number;
   shares?: number; // how many times shared to social / copy link
@@ -148,11 +147,13 @@ interface FeedPost {
   }[];
   /** Timestamp (ms) for sorting feed: latest first */
   createdAt?: number;
-  /** Optional type for feed filtering: video, news, article, buy-sell, or general post. Derived from videoLink / id when not set. */
-  postType?: 'video' | 'news' | 'article' | 'buy-sell' | 'post';
+  /** Optional type for feed filtering: video, news, article, buy-sell, job, or general post. */
+  postType?: 'video' | 'news' | 'article' | 'buy-sell' | 'job-offered' | 'job-wanted' | 'post';
+  /** Job post badge label: "Job Offered" (employer) or "Position Required" (seeker). */
+  jobBadge?: 'Job Offered' | 'Position Required';
 }
 /** Derive postType for filtering when not explicitly set. */
-function getPostType(p: FeedPost): 'video' | 'news' | 'article' | 'buy-sell' | 'post' {
+function getPostType(p: FeedPost): 'video' | 'news' | 'article' | 'buy-sell' | 'job-offered' | 'job-wanted' | 'post' {
   if (p.postType) return p.postType;
   if (p.videoLink) return 'video';
   if (p.id.startsWith('news-')) return 'news';
@@ -352,7 +353,7 @@ function newsToFeedPosts(news: { id: string; headline: string; excerpt: string; 
   });
 }
 
-// —— Top nav: logo, search (controlled), icons + notification dropdown when signed in
+// —— Top nav: logo, location row, icons + notification dropdown when signed in
 const TopNav: React.FC<{
   onMenuClick: () => void;
   onProfileClick?: () => void;
@@ -361,7 +362,9 @@ const TopNav: React.FC<{
   notifications?: FeedNotification[];
   onMarkNotificationRead?: (id: string) => void;
   onNotificationClick?: (n: FeedNotification) => void;
-}> = ({ onMenuClick, onProfileClick, language, isLoggedIn, notifications = [], onMarkNotificationRead, onNotificationClick }) => {
+  /** Location text shown under the main nav row (e.g. "Location: Indonesia") */
+  locationText?: string;
+}> = ({ onMenuClick, onProfileClick, language, isLoggedIn, notifications = [], onMarkNotificationRead, onNotificationClick, locationText }) => {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const isId = language === 'id';
@@ -457,6 +460,12 @@ const TopNav: React.FC<{
           </button>
         </div>
       </div>
+      {locationText != null && locationText !== '' && (
+        <div className="bg-stone-100/95 border-t border-stone-200/80 px-3 sm:px-6 py-1.5 flex items-center justify-center gap-2">
+          <MapPin className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" aria-hidden />
+          <span className="text-xs font-medium text-stone-700">{locationText}</span>
+        </div>
+      )}
     </header>
   );
 };
@@ -503,41 +512,53 @@ const HeroSection: React.FC<{
   </section>
 );
 
-// —— Search bar under hero (controlled)
+// —— Search bar under hero (controlled); placeholder can rotate through options (running text)
 const HeroSearchBar: React.FC<{
   placeholder: string;
+  /** When set, placeholder cycles through these for a "running text" effect. */
+  placeholderOptions?: string[];
   value: string;
   onChange: (v: string) => void;
   onSubmit: () => void;
   onClear?: () => void;
   searchButtonLabel: string;
-}> = ({ placeholder, value, onChange, onSubmit, onClear, searchButtonLabel }) => (
-  <div className="bg-white/90 backdrop-blur-xl border-b border-stone-200 shadow-sm -mt-1 relative z-10">
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-      <form className="relative" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
-        <input
-          type="search"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full pl-12 pr-24 py-3 rounded-xl bg-stone-100/80 border border-stone-200 text-stone-800 placeholder-stone-400 text-base focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400 transition-all"
-          aria-label="Search"
-        />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          {value.trim() && onClear && (
-            <button type="button" onClick={onClear} className="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-200/80" aria-label="Clear search">
-              <span className="text-lg leading-none">&times;</span>
+}> = ({ placeholder, placeholderOptions, value, onChange, onSubmit, onClear, searchButtonLabel }) => {
+  const options = placeholderOptions?.length ? placeholderOptions : [placeholder];
+  const [runningIndex, setRunningIndex] = useState(0);
+  useEffect(() => {
+    if (options.length <= 1) return;
+    const t = setInterval(() => setRunningIndex((i) => (i + 1) % options.length), 2000);
+    return () => clearInterval(t);
+  }, [options.length]);
+  const displayPlaceholder = options[runningIndex % options.length] ?? placeholder;
+  return (
+    <div className="bg-white/90 backdrop-blur-xl border-b border-stone-200 shadow-sm -mt-1 relative z-10">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <form className="relative" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 pointer-events-none" />
+          <input
+            type="search"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={displayPlaceholder}
+            className="w-full pl-12 pr-24 py-3 rounded-xl bg-stone-100/80 border border-stone-200 text-stone-800 placeholder-stone-500 placeholder:transition-opacity duration-300 text-base focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400 transition-all"
+            aria-label="Search"
+          />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {value.trim() && onClear && (
+              <button type="button" onClick={onClear} className="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-200/80" aria-label="Clear search">
+                <span className="text-lg leading-none">&times;</span>
+              </button>
+            )}
+            <button type="submit" className="px-4 py-2 rounded-lg bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600">
+              {searchButtonLabel}
             </button>
-          )}
-          <button type="submit" className="px-4 py-2 rounded-lg bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600">
-            {searchButtonLabel}
-          </button>
-        </div>
-      </form>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // —— Profile preview for post/comment authors (professional popup)
 export interface SocialProfilePreview {
@@ -811,23 +832,25 @@ const SearchResultsView: React.FC<{
   );
 };
 
-// —— Quick links under hero: Feed, Video, Articles, News, Buy/Sell
+// —— Quick links under hero: Feed, Video, Articles, News, Buy/Sell, Jobs
 const HeroQuickLinks: React.FC<{
   onFeed?: () => void;
   feedUnviewedCount?: number;
-  onVideo: () => void;
-  onArticles: () => void;
-  onNews: () => void;
-  onBuySell: () => void;
+  onVideo?: () => void;
+  onArticles?: () => void;
+  onNews?: () => void;
+  onBuySell?: () => void;
+  onJobs?: () => void;
   language: string;
-}> = ({ onFeed, feedUnviewedCount = 0, onVideo, onArticles, onNews, onBuySell, language }) => {
+}> = ({ onFeed, feedUnviewedCount = 0, onVideo, onArticles, onNews, onBuySell, onJobs, language }) => {
   const isId = language === 'id';
   const links = [
     ...(onFeed ? [{ id: 'feed' as const, icon: Home, label: isId ? 'Feed' : 'Feed', onClick: onFeed, badge: feedUnviewedCount }] : []),
-    { id: 'video' as const, icon: Play, label: isId ? 'Video' : 'Video', onClick: onVideo, badge: 0 },
-    { id: 'articles', icon: FileText, label: isId ? 'Artikel' : 'Articles', onClick: onArticles, badge: 0 },
-    { id: 'news', icon: Bell, label: isId ? 'Berita' : 'News', onClick: onNews, badge: 0 },
-    { id: 'buy-sell', icon: ShoppingBagIcon, label: isId ? 'Jual/Beli' : 'Buy/Sell', onClick: onBuySell, badge: 0 },
+    ...(onVideo ? [{ id: 'video' as const, icon: Play, label: isId ? 'Video' : 'Video', onClick: onVideo, badge: 0 }] : []),
+    ...(onArticles ? [{ id: 'articles', icon: FileText, label: isId ? 'Artikel' : 'Articles', onClick: onArticles, badge: 0 }] : []),
+    ...(onNews ? [{ id: 'news', icon: Bell, label: isId ? 'Berita' : 'News', onClick: onNews, badge: 0 }] : []),
+    ...(onBuySell ? [{ id: 'buy-sell', icon: ShoppingBagIcon, label: isId ? 'Jual/Beli' : 'Buy/Sell', onClick: onBuySell, badge: 0 }] : []),
+    ...(onJobs ? [{ id: 'jobs', icon: Briefcase, label: isId ? 'Lowongan' : 'Jobs', onClick: onJobs, badge: 0 }] : []),
   ];
   return (
     <nav className="bg-white/90 backdrop-blur-xl border-b border-stone-200 shadow-sm -mt-1 relative z-10">
@@ -863,22 +886,30 @@ const PostComposer: React.FC<{
   textValue: string;
   videoLinkValue: string;
   imageUrls: string[];
+  attachment: { name: string; dataUrl: string } | null;
+  /** When set, post is a job listing (Job Offered or Position Required). Job posts can be text-only. */
+  jobBadge?: null | 'Job Offered' | 'Position Required';
   onTextChange: (v: string) => void;
   onVideoLinkChange: (v: string) => void;
   onImageUrlsChange: (urls: string[]) => void;
+  onAttachmentChange: (att: { name: string; dataUrl: string } | null) => void;
+  onJobBadgeChange?: (v: null | 'Job Offered' | 'Position Required') => void;
   onPost: () => void;
   postLabel: string;
   videoLinkPlaceholder: string;
   language: string;
-}> = ({ placeholder, textValue, videoLinkValue, imageUrls, onTextChange, onVideoLinkChange, onImageUrlsChange, onPost, postLabel, videoLinkPlaceholder, language }) => {
+}> = ({ placeholder, textValue, videoLinkValue, imageUrls, attachment, jobBadge = null, onTextChange, onVideoLinkChange, onImageUrlsChange, onAttachmentChange, onJobBadgeChange, onPost, postLabel, videoLinkPlaceholder, language }) => {
   const isId = language === 'id';
   const [showLinkSection, setShowLinkSection] = useState(!!videoLinkValue);
   const [focused, setFocused] = useState(false);
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
   const hasMedia = imageUrls.length >= 1 || !!videoLinkValue.trim();
-  const canPost = hasMedia && !(textValue.length > MAX_CHARS);
+  const jobBadgeVal = jobBadge ?? null;
+  const isJobPost = jobBadgeVal != null;
+  const canPost = (hasMedia || isJobPost) && !(textValue.length > MAX_CHARS) && (hasMedia || isJobPost || textValue.trim().length > 0);
   const charCount = textValue.length;
   const nearLimit = charCount > MAX_CHARS * 0.9;
   const overLimit = charCount > MAX_CHARS;
@@ -927,6 +958,17 @@ const PostComposer: React.FC<{
     else if (mainImageIndex > index) setMainImageIndex(mainImageIndex - 1);
   };
 
+  const handleAttachmentSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') onAttachmentChange({ name: file.name, dataUrl: reader.result });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   return (
     <div
       className={`
@@ -952,8 +994,26 @@ const PostComposer: React.FC<{
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-stone-900 text-sm">{isId ? 'Buat postingan' : 'Create post'}</p>
-            <p className="text-xs text-stone-500">{isId ? 'Tambahkan foto (hingga 5) atau video — wajib' : 'Add photos (up to 5) or video — required'}</p>
+            <p className="text-xs text-stone-500">{isId ? 'Hingga 5 foto + 1 link video — atau posting lowongan (gratis)' : 'Up to 5 images + 1 video link — or post a job (free)'}</p>
           </div>
+        </div>
+
+        {/* Job post badge: Job Offered (employer) / Position Required (seeker) — free */}
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-stone-500">{isId ? 'Posting sebagai:' : 'Post as:'}</span>
+          <button type="button" onClick={() => onJobBadgeChange?.(jobBadgeVal === 'Job Offered' ? null : 'Job Offered')} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${jobBadgeVal === 'Job Offered' ? 'bg-emerald-100 text-emerald-800 ring-2 ring-emerald-400' : 'bg-stone-100 text-stone-600 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+            <Briefcase className="w-3.5 h-3.5" />
+            {isId ? 'Lowongan Ditawarkan' : 'Job Offered'}
+          </button>
+          <button type="button" onClick={() => onJobBadgeChange?.(jobBadgeVal === 'Position Required' ? null : 'Position Required')} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${jobBadgeVal === 'Position Required' ? 'bg-amber-100 text-amber-800 ring-2 ring-amber-400' : 'bg-stone-100 text-stone-600 hover:bg-amber-50 hover:text-amber-700'}`}>
+            <Briefcase className="w-3.5 h-3.5" />
+            {isId ? 'Posisi Dibutuhkan' : 'Position Required'}
+          </button>
+          {jobBadgeVal && (
+            <button type="button" onClick={() => onJobBadgeChange?.(null)} className="text-[10px] text-stone-400 hover:text-stone-600 font-medium">
+              {isId ? 'Batal' : 'Clear'}
+            </button>
+          )}
         </div>
 
         <input
@@ -964,6 +1024,13 @@ const PostComposer: React.FC<{
           className="hidden"
           onChange={handleImageSelect}
         />
+        <input
+          ref={attachmentInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+          className="hidden"
+          onChange={handleAttachmentSelect}
+        />
 
         {imageUrls.length === 0 && (
           <button
@@ -972,7 +1039,7 @@ const PostComposer: React.FC<{
             className="mb-4 flex items-center gap-2 py-2.5 px-3 rounded-xl border border-dashed border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-50/50 transition-all duration-200 text-sm font-medium w-full justify-center"
           >
             <ImageIcon className="w-4 h-4" />
-            {isId ? 'Tambah foto (wajib, hingga 5)' : 'Add photos (required, up to 5)'}
+            {isId ? 'Tambah foto (hingga 5)' : 'Add photos (up to 5)'}
           </button>
         )}
 
@@ -1013,6 +1080,16 @@ const PostComposer: React.FC<{
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Optional file attachment (1 file) */}
+        {attachment && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl bg-stone-50 border border-stone-200 p-2.5">
+            <FileText className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <span className="flex-1 min-w-0 text-sm text-stone-700 truncate" title={attachment.name}>{attachment.name}</span>
+            <a href={attachment.dataUrl} download={attachment.name} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-amber-600 hover:text-amber-700">{isId ? 'Lihat' : 'View'}</a>
+            <button type="button" onClick={() => onAttachmentChange(null)} className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100" aria-label={isId ? 'Hapus lampiran' : 'Remove attachment'}>×</button>
           </div>
         )}
 
@@ -1067,7 +1144,7 @@ const PostComposer: React.FC<{
             className="mb-4 flex items-center gap-2 py-2.5 px-3 rounded-xl border border-dashed border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-50/50 transition-all duration-200 text-sm font-medium w-full justify-center"
           >
             <Play className="w-4 h-4" />
-            {isId ? 'Tambah link video atau URL' : 'Add video or link'}
+            {isId ? 'Tambah 1 link video (opsional)' : 'Add 1 video link (optional)'}
           </button>
         )}
 
@@ -1095,11 +1172,12 @@ const PostComposer: React.FC<{
               </button>
               <button
                 type="button"
-                onClick={() => setShowLinkSection(true)}
-                className="flex items-center gap-1.5 py-2 px-3 rounded-lg text-stone-500 hover:bg-amber-50 hover:text-amber-700 transition-colors text-xs font-medium"
+                onClick={() => attachmentInputRef.current?.click()}
+                disabled={!!attachment}
+                className="flex items-center gap-1.5 py-2 px-3 rounded-lg text-stone-500 hover:bg-amber-50 hover:text-amber-700 transition-colors text-xs font-medium disabled:opacity-50"
               >
                 <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">{isId ? 'Link' : 'Link'}</span>
+                <span className="hidden sm:inline">{isId ? 'Lampiran' : 'Attach file'}</span>
               </button>
             </div>
             <button
@@ -1149,13 +1227,11 @@ const PostCard: React.FC<{
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [replyingToCommentIndex, setReplyingToCommentIndex] = useState<number | null>(null);
   const [commentReactions, setCommentReactions] = useState<Record<number, 'liked' | 'disliked'>>({});
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showPostMenu, setShowPostMenu] = useState(false);
   const [isEditingPost, setIsEditingPost] = useState(false);
   const [editDraftText, setEditDraftText] = useState(post.text ?? '');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const commentInputRef = useRef<HTMLInputElement>(null);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
   const postMenuRef = useRef<HTMLDivElement>(null);
   const isId = language === 'id';
   const isOwnPost = hasAccount && (post.authorName === currentUserName || post.authorName === 'You' || post.authorName === 'Anda');
@@ -1176,18 +1252,6 @@ const PostCard: React.FC<{
     }
     setCommentText('');
   };
-  const handleEmojiSelect = (emoji: string) => {
-    setCommentText((prev) => prev + emoji);
-    commentInputRef.current?.focus();
-  };
-  useEffect(() => {
-    if (!showEmojiPicker) return;
-    const close = (e: MouseEvent) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) setShowEmojiPicker(false);
-    };
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
-  }, [showEmojiPicker]);
   useEffect(() => {
     if (!showPostMenu) return;
     const close = (e: MouseEvent) => {
@@ -1266,6 +1330,11 @@ const PostCard: React.FC<{
               {post.authorName}
             </button>
             <p className={COLORS.mutedLight + ' text-xs mt-0.5'}>{post.authorRole} · {post.timeAgo}</p>
+            {post.jobBadge && (
+              <span className={`inline-flex items-center w-fit mt-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${post.jobBadge === 'Job Offered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                {post.jobBadge}
+              </span>
+            )}
             {(post.authorActive || post.authorBusy) && (
               <span className={`inline-flex items-center w-fit mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${post.authorBusy ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
                 {post.authorBusy ? (language === 'id' ? 'Sibuk' : 'Busy') : (language === 'id' ? 'Online' : 'Online')}
@@ -1294,13 +1363,13 @@ const PostCard: React.FC<{
                 className="p-1.5 rounded-full text-stone-500 hover:bg-stone-100 hover:text-stone-700"
                 aria-label={isId ? 'Menu postingan' : 'Post menu'}
               >
-                <MoreVertical className="w-5 h-5" />
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
               </button>
               {showPostMenu && (
                 <div className="absolute right-0 top-full mt-1 py-1 bg-white rounded-xl border border-stone-200 shadow-lg z-20 min-w-[120px]">
                   {onEditPost && (
                     <button type="button" onClick={() => { setEditDraftText(post.text ?? ''); setIsEditingPost(true); setShowPostMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50">
-                      <Pencil className="w-4 h-4" /> {isId ? 'Edit' : 'Edit'}
+                      <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> {isId ? 'Edit' : 'Edit'}
                     </button>
                   )}
                   {onDeletePost && (
@@ -1376,21 +1445,30 @@ const PostCard: React.FC<{
             </div>
           );
         })()}
+        {post.attachment && (
+          <div className="rounded-xl border border-stone-200 bg-stone-50 p-3 flex items-center gap-3">
+            <FileText className="w-8 h-8 text-amber-600 flex-shrink-0" />
+            <span className="flex-1 min-w-0 text-sm font-medium text-stone-800 truncate" title={post.attachment.name}>{post.attachment.name}</span>
+            <a href={post.attachment.dataUrl} download={post.attachment.name} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600">
+              {language === 'id' ? 'Unduh' : 'Download'}
+            </a>
+          </div>
+        )}
         <div className="flex items-center gap-4 pt-2 border-t border-stone-100">
-          <button type="button" onClick={() => { setLiked(!liked); onLike(post.id); }} className={`flex items-center gap-1.5 ${liked ? 'text-rose-500' : COLORS.muted} hover:text-rose-500 transition-colors`}>
-            <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} />
+          <button type="button" onClick={() => { setLiked(!liked); onLike(post.id); }} className={`flex items-center gap-1.5 ${liked ? 'text-rose-700' : COLORS.muted} hover:text-rose-500 transition-colors`}>
+            <Heart className={`w-4 h-4 ${liked ? 'fill-rose-700 text-rose-700' : ''}`} />
             <span className="text-xs font-medium">{likeCount}</span>
           </button>
           <button type="button" onClick={() => onComment(post.id)} className={`flex items-center gap-1.5 ${COLORS.muted} hover:text-amber-600 transition-colors`}>
             <MessageCircle className="w-4 h-4" />
             <span className="text-xs font-medium">{commentCount}</span>
           </button>
-          <button type="button" onClick={() => onShare(post.id)} className={`flex items-center gap-1.5 ${COLORS.muted} hover:text-amber-600 transition-colors`}>
+          <button type="button" onClick={() => onShare(post.id)} className="flex items-center gap-1.5 text-green-600 hover:text-green-700 transition-colors">
             <Share2 className="w-4 h-4" />
             <span className="text-xs font-medium">{post.shares ?? 0}</span>
           </button>
-          <button type="button" onClick={() => { setSaved(!saved); onSave(post.id); }} className={`ml-auto flex items-center gap-1.5 ${saved ? 'text-amber-600' : COLORS.muted} hover:text-amber-600 transition-colors`}>
-            <Star className={`w-4 h-4 ${saved ? 'fill-current' : ''}`} />
+          <button type="button" onClick={() => { setSaved(!saved); onSave(post.id); }} className={`ml-auto flex items-center gap-1.5 ${saved ? 'text-yellow-500' : 'text-stone-500'} hover:text-yellow-500 transition-colors`}>
+            <Star className={`w-4 h-4 ${saved ? 'fill-yellow-500 text-yellow-500' : ''}`} />
           </button>
         </div>
         {text ? (
@@ -1478,7 +1556,7 @@ const PostCard: React.FC<{
         {onAddComment && (
           <div className="pt-2 border-t border-stone-100">
             <div className="flex gap-2 items-center">
-              <div className="relative flex-1 min-w-0 flex items-center gap-1">
+              <div className="flex-1 min-w-0">
                 <input
                   ref={commentInputRef}
                   type="text"
@@ -1487,22 +1565,8 @@ const PostCard: React.FC<{
                   placeholder={replyingToCommentIndex !== null && post.commentPreview?.[replyingToCommentIndex]
                     ? (isId ? `Balas ke ${post.commentPreview[replyingToCommentIndex].author}…` : `Reply to ${post.commentPreview[replyingToCommentIndex].author}…`)
                     : (isId ? 'Tulis komentar…' : 'Write a comment…')}
-                  className="flex-1 min-w-0 py-1.5 px-2.5 rounded-lg bg-stone-100/80 border border-stone-200 text-stone-800 placeholder-stone-500 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400"
+                  className="w-full min-w-0 py-1.5 px-2.5 rounded-lg bg-stone-100/80 border border-stone-200 text-stone-800 placeholder-stone-500 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400"
                 />
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setShowEmojiPicker((v) => !v); }}
-                  className={`flex-shrink-0 p-1.5 rounded-lg transition-colors ${showEmojiPicker ? 'bg-amber-100 text-amber-600' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'}`}
-                  title={isId ? 'Emoji' : 'Emoji'}
-                  aria-label={isId ? 'Pilih emoji' : 'Pick emoji'}
-                >
-                  <Smile className="w-4 h-4" />
-                </button>
-                {showEmojiPicker && (
-                  <div ref={emojiPickerRef} className="absolute bottom-full left-0 mb-1 z-50">
-                    <EmojiPicker onEmojiSelect={handleEmojiSelect} onClose={() => setShowEmojiPicker(false)} />
-                  </div>
-                )}
               </div>
               {replyingToCommentIndex !== null && (
                 <button type="button" onClick={() => setReplyingToCommentIndex(null)} className="text-[10px] text-stone-500 hover:text-stone-700 flex-shrink-0" aria-label="Cancel reply">
@@ -2745,6 +2809,8 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
   const [composerText, setComposerText] = useState('');
   const [composerVideoLink, setComposerVideoLink] = useState('');
   const [composerImages, setComposerImages] = useState<string[]>([]);
+  const [composerAttachment, setComposerAttachment] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [composerJobBadge, setComposerJobBadge] = useState<null | 'Job Offered' | 'Position Required'>(null);
   const [products, setProducts] = useState<ProductListing[]>(() => getMockProducts(lang));
   const [searchQuery, setSearchQuery] = useState('');
   const [heroVariant, setHeroVariant] = useState<'default' | 'news'>('default');
@@ -2777,6 +2843,9 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
 
   const copy = {
     searchPlaceholder: isId ? 'Cari topik, video, berita, acara…' : 'Search topics, video, news, events…',
+    searchPlaceholders: isId
+      ? ['Cari topik…', 'Cari video…', 'Cari berita…', 'Cari acara…', 'Cari terapis…', 'Cari perawatan…']
+      : ['Search topics…', 'Search video…', 'Search news…', 'Search events…', 'Search therapists…', 'Search treatments…'],
     searchButton: isId ? 'Cari' : 'Search',
     heroLabel: isId ? 'IndaStreet Social Media' : 'IndaStreet Social Media',
     heroHeadline: isId ? `${countryName} · Pijat, facial & kecantikan` : `${countryName} · Massage, facial & beauty`,
@@ -2823,7 +2892,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>(() => getMockFeedPosts(therapists, lang));
   const [feedLastViewedCount, setFeedLastViewedCount] = useState<number | null>(null);
   /** When set, feed shows only this type. null = mixed live feed (all posts). */
-  const [feedFilter, setFeedFilter] = useState<null | 'video' | 'articles' | 'news' | 'buy-sell'>(null);
+  const [feedFilter, setFeedFilter] = useState<null | 'video' | 'articles' | 'news' | 'buy-sell' | 'jobs'>(null);
   const [profilePreview, setProfilePreview] = useState<SocialProfilePreview | null>(null);
   const [verifiedBadgeAuthor, setVerifiedBadgeAuthor] = useState<{ name: string; avatar: string; role: string } | null>(null);
   const [notifications, setNotifications] = useState<FeedNotification[]>([]);
@@ -2849,16 +2918,22 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
     const videoLink = composerVideoLink.trim();
     const hasImages = composerImages.length >= 1;
     const hasVideo = !!videoLink;
-    if (!hasImages && !hasVideo) return; // require at least one image or video
+    const isJobPost = composerJobBadge != null;
+    const hasMedia = hasImages || hasVideo;
+    if (!hasMedia && !isJobPost) return; // require at least one image, video, or job badge
+    if (isJobPost && !text) return; // job posts need at least title/description
     const newPost: FeedPost = {
       id: `user-${Date.now()}`,
       authorName: hasAccount ? (loggedInCustomer?.name ?? loggedInProvider?.name ?? 'You') : (isId ? 'Anda' : 'You'),
       authorAvatar: 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?v=2026',
       authorRole: isId ? 'Anggota' : 'Member',
       timeAgo: isId ? 'Baru saja' : 'Just now',
-      text: text || (hasVideo ? (isId ? '(link video)' : '(video link)') : (isId ? '(gambar)' : '(image)')),
+      text: text || (hasVideo ? (isId ? '(link video)' : '(video link)') : hasImages ? (isId ? '(gambar)' : '(image)') : (isId ? '(lowongan)' : '(job)')),
       mediaUrls: hasImages ? [...composerImages] : undefined,
       videoLink: videoLink || undefined,
+      attachment: composerAttachment ? { name: composerAttachment.name, dataUrl: composerAttachment.dataUrl } : undefined,
+      postType: isJobPost ? (composerJobBadge === 'Job Offered' ? 'job-offered' : 'job-wanted') : undefined,
+      jobBadge: composerJobBadge ?? undefined,
       likes: 0,
       comments: 0,
       shares: 0,
@@ -2870,6 +2945,8 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
       setComposerText('');
       setComposerVideoLink('');
       setComposerImages([]);
+      setComposerAttachment(null);
+      setComposerJobBadge(null);
     } else {
       newPost.pending = true;
       setPendingPost(newPost);
@@ -2994,6 +3071,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
       if (feedFilter === 'news') return type === 'news';
       if (feedFilter === 'articles') return type === 'article';
       if (feedFilter === 'buy-sell') return type === 'buy-sell';
+      if (feedFilter === 'jobs') return type === 'job-offered' || type === 'job-wanted';
       return true;
     });
   })();
@@ -3058,6 +3136,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
         onNotificationClick={(n) => {
           document.getElementById(`post-${n.postId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }}
+        locationText={isId ? `Lokasi: ${countryName}` : `Location: ${countryName}`}
       />
       <React19SafeWrapper condition={isMenuOpen}>
         <AppDrawer
@@ -3081,13 +3160,6 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
         />
       </React19SafeWrapper>
 
-      <div className="bg-stone-100/90 border-b border-stone-200 px-3 sm:px-6 py-2 flex items-center justify-center gap-2">
-        <MapPin className="w-4 h-4 text-amber-600 flex-shrink-0" aria-hidden />
-        <span className="text-sm font-medium text-stone-700">
-          {isId ? 'Lokasi' : 'Location'}: <span className="text-amber-700 font-semibold">{countryName}</span>
-        </span>
-      </div>
-
       <HeroSection
         heroImageSrc={heroVariant === 'news' ? NEWS_HERO_IMAGE : HERO_IMAGE_SRC}
         label={heroVariant === 'news' ? copy.heroNewsLabel : copy.heroLabel}
@@ -3100,6 +3172,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
       />
       <HeroSearchBar
         placeholder={copy.searchPlaceholder}
+        placeholderOptions={copy.searchPlaceholders}
         value={searchQuery}
         onChange={setSearchQuery}
         onSubmit={() => {}}
@@ -3113,6 +3186,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
         onArticles={() => { setHeroVariant('default'); setFeedFilter('articles'); setTimeout(() => scrollToSection('section-news'), 0); }}
         onNews={() => { setHeroVariant('default'); setFeedFilter('news'); setTimeout(() => scrollToSection('section-news'), 0); }}
         onBuySell={() => { setHeroVariant('default'); setFeedFilter('buy-sell'); setTimeout(() => scrollToSection('section-news'), 0); }}
+        onJobs={() => { setHeroVariant('default'); setFeedFilter('jobs'); setTimeout(() => scrollToSection('section-news'), 0); }}
         language={lang}
       />
 
@@ -3167,9 +3241,13 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                   textValue={composerText}
                   videoLinkValue={composerVideoLink}
                   imageUrls={composerImages}
+                  attachment={composerAttachment}
+                  jobBadge={composerJobBadge}
                   onTextChange={setComposerText}
                   onVideoLinkChange={setComposerVideoLink}
                   onImageUrlsChange={setComposerImages}
+                  onAttachmentChange={setComposerAttachment}
+                  onJobBadgeChange={setComposerJobBadge}
                   onPost={handlePost}
                   postLabel={copy.postLabel}
                   videoLinkPlaceholder={copy.videoLinkPlaceholder}
@@ -3182,7 +3260,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                       <span className="text-sm text-stone-600">
                         {isId ? 'Menampilkan:' : 'Showing:'}
                         {' '}
-                        {feedFilter === 'video' ? (isId ? 'Video' : 'Video') : feedFilter === 'news' ? (isId ? 'Berita' : 'News') : feedFilter === 'articles' ? (isId ? 'Artikel' : 'Articles') : (isId ? 'Jual/Beli' : 'Buy/Sell')}
+                        {feedFilter === 'video' ? (isId ? 'Video' : 'Video') : feedFilter === 'news' ? (isId ? 'Berita' : 'News') : feedFilter === 'articles' ? (isId ? 'Artikel' : 'Articles') : feedFilter === 'jobs' ? (isId ? 'Lowongan' : 'Jobs') : (isId ? 'Jual/Beli' : 'Buy/Sell')}
                       </span>
                       <button
                         type="button"

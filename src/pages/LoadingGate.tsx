@@ -24,7 +24,7 @@
 /**
  * LoadingGate - First-paint loading screen (matches index.html pwa-splash)
  * 
- * Displays orange screen while app loads. Parent coordinator switches to landing
+ * Displays amber screen (main app color) while app loads. Parent coordinator switches to landing
  * after 300ms or when critical data ready. No self-redirect - coordinator handles transition.
  * 
  * Usage: setPage('loading') on fresh load → coordinator → setPage('landing')
@@ -39,8 +39,8 @@ export default function LoadingGate() {
         inset: 0,
         overflow: "hidden",
         zIndex: 9999,
-        // Visual styling
-        backgroundColor: "#FF7A00",
+        // Visual styling – amber to match main app (Tailwind amber-500)
+        backgroundColor: "#f59e0b",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

@@ -470,9 +470,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   const renderItem = (item: (typeof DRAWER_NAV_ITEMS)[number]) => {
                     const IconComp = DRAWER_ICON_MAP[item?.icon] ?? Home;
                     const callback =
-                      item.id === 'massage-jobs'
-                        ? onMassageJobsClick
-                        : item.id === 'facial-types'
+                      item.id === 'facial-types'
                           ? (onNavigate
                               ? () => {
                                   try { sessionStorage.setItem('home_initial_tab', 'facials'); } catch (_) {}

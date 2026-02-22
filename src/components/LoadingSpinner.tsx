@@ -41,7 +41,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
             id="react-loading-spinner"
             data-loading-state={stage}
             style={{ 
-                background: '#f97316', /* Solid orange - no gradient to prevent transition artifacts */
+                background: '#f59e0b', /* Amber (main app color) - no gradient to prevent transition artifacts */
                 transition: 'none' /* Remove transition to prevent intermediate colors */
             }}
         >
