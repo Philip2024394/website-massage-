@@ -99,7 +99,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             key={index}
             onClick={() => handleQuickAction(action.text)}
             disabled={disabled || sending}
-            className="flex-shrink-0 text-xs px-2 py-1 bg-orange-50 text-orange-600 rounded-full hover:bg-orange-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-shrink-0 text-xs px-2 py-1 bg-amber-50 text-amber-600 rounded-full hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title={action.text}
           >
             <span className="mr-1">{action.emoji}</span>
@@ -120,7 +120,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               disabled={disabled || sending}
-              className="w-full p-3 pr-16 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
+              className="w-full p-3 pr-16 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
               rows={1}
               style={{ minHeight: '44px', maxHeight: '120px' }}
             />
@@ -139,7 +139,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           <button
             onClick={handleSend}
             disabled={!message.trim() || disabled || sending}
-            className="flex-shrink-0 w-11 h-11 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-sm"
+            className="flex-shrink-0 w-11 h-11 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-sm"
             title="Send message"
           >
             {sending ? (

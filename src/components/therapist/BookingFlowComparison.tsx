@@ -331,12 +331,12 @@ export const BookingFlowComparison: React.FC<BookingFlowComparisonProps> = ({
               </div>
             </div>
 
-            <div className="bg-orange-50 rounded-xl p-4">
+            <div className="bg-amber-50 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Users className="w-5 h-5 text-orange-500" />
-                <h4 className="font-semibold text-orange-900">Drop-off Rate</h4>
+                <Users className="w-5 h-5 text-amber-500" />
+                <h4 className="font-semibold text-amber-900">Drop-off Rate</h4>
               </div>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-amber-600">
                 {metrics[activeDemo].dropOffRate}
               </div>
               {activeDemo !== 'old' && (

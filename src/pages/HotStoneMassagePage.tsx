@@ -130,7 +130,7 @@ const HotStoneMassagePage: React.FC<HotStoneMassagePageProps> = ({
                 <div className="flex gap-4 pb-20">
                     <button 
                         onClick={() => onNavigate && onNavigate('home')}
-                        className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                        className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
                     >
                         Book Hot Stone Massage
                     </button>

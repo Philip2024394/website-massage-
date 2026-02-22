@@ -463,7 +463,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   basicInfo: { ...settings.profile.basicInfo, firstName: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -478,7 +478,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   basicInfo: { ...settings.profile.basicInfo, lastName: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -493,7 +493,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   basicInfo: { ...settings.profile.basicInfo, email: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -508,7 +508,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   basicInfo: { ...settings.profile.basicInfo, phone: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -522,7 +522,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   basicInfo: { ...settings.profile.basicInfo, timezone: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             >
               <option value="America/New_York">Eastern Time (ET)</option>
               <option value="America/Chicago">Central Time (CT)</option>
@@ -541,7 +541,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   basicInfo: { ...settings.profile.basicInfo, language: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             >
               <option value="en-US">English (US)</option>
               <option value="en-GB">English (UK)</option>
@@ -568,7 +568,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   businessInfo: { ...settings.profile.businessInfo, businessName: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -582,7 +582,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   businessInfo: { ...settings.profile.businessInfo, businessType: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             >
               <option value="Massage Therapy">Massage Therapy</option>
               <option value="Spa & Wellness">Spa & Wellness</option>
@@ -603,7 +603,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   businessInfo: { ...settings.profile.businessInfo, website: e.target.value }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -618,7 +618,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                 }
               })}
               rows={3}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
         </div>
@@ -642,7 +642,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -660,7 +660,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -678,7 +678,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -696,7 +696,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           
@@ -713,7 +713,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   }
                 }
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             >
               <option value="United States">United States</option>
               <option value="Canada">Canada</option>
@@ -747,15 +747,15 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   })}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     settings.appearance.theme === value
-                      ? 'border-orange-500 bg-orange-50'
+                      ? 'border-amber-500 bg-amber-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <Icon className={`w-6 h-6 mx-auto mb-2 ${
-                    settings.appearance.theme === value ? 'text-orange-600' : 'text-gray-600'
+                    settings.appearance.theme === value ? 'text-amber-600' : 'text-gray-600'
                   }`} />
                   <span className={`text-sm font-medium ${
-                    settings.appearance.theme === value ? 'text-orange-600' : 'text-gray-700'
+                    settings.appearance.theme === value ? 'text-amber-600' : 'text-gray-700'
                   }`}>
                     {label}
                   </span>
@@ -779,7 +779,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   })}
                   className={`p-3 rounded-lg border-2 transition-all ${
                     settings.appearance.fontSize === value
-                      ? 'border-orange-500 bg-orange-50 text-orange-600'
+                      ? 'border-amber-500 bg-amber-50 text-amber-600'
                       : 'border-gray-200 hover:border-gray-300 text-gray-700'
                   }`}
                 >
@@ -809,7 +809,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
               })}
               className="sr-only peer"
             />
-            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
           </label>
         </div>
         
@@ -827,7 +827,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
               })}
               className="sr-only peer"
             />
-            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
           </label>
         </div>
       </div>
@@ -853,7 +853,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                 onChange={(e) => updateSettings({
                   appearance: { ...settings.appearance, primaryColor: e.target.value }
                 })}
-                className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 placeholder="#F97316"
               />
             </div>
@@ -876,7 +876,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                 onChange={(e) => updateSettings({
                   appearance: { ...settings.appearance, secondaryColor: e.target.value }
                 })}
-                className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 placeholder="#64748B"
               />
             </div>
@@ -890,7 +890,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
             onChange={(e) => updateSettings({
               appearance: { ...settings.appearance, fontFamily: e.target.value }
             })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
           >
             <option value="Inter">Inter</option>
             <option value="Roboto">Roboto</option>
@@ -936,7 +936,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   })}
                   className="sr-only peer"
                 />
-                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
               </label>
             </div>
           ))}
@@ -959,7 +959,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   checked={settings.notifications.schedule.quietHours.enabled}
                   className="sr-only peer"
                 />
-                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
               </label>
             </div>
             
@@ -970,7 +970,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   <input
                     type="time"
                     value={settings.notifications.schedule.quietHours.start}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
                 <div>
@@ -978,7 +978,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                   <input
                     type="time"
                     value={settings.notifications.schedule.quietHours.end}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
               </div>
@@ -1049,7 +1049,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Settings className="w-7 h-7 text-orange-600" />
+              <Settings className="w-7 h-7 text-amber-600" />
               Settings & Configuration
             </h1>
             <p className="text-gray-600 mt-1">
@@ -1065,7 +1065,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                 placeholder="Search settings..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               />
             </div>
             
@@ -1074,7 +1074,7 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
               disabled={!hasChanges || saving}
               className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                 hasChanges && !saving
-                  ? 'bg-orange-600 text-white hover:bg-orange-700'
+                  ? 'bg-amber-600 text-white hover:bg-amber-700'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
@@ -1107,19 +1107,19 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                       activeTab === tab.id
-                        ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     <Icon className={`w-5 h-5 ${
-                      activeTab === tab.id ? 'text-orange-600' : 'text-gray-500'
+                      activeTab === tab.id ? 'text-amber-600' : 'text-gray-500'
                     }`} />
                     <div>
                       <div className="font-medium">{tab.label}</div>
                       <div className="text-sm text-gray-500">{tab.description}</div>
                     </div>
                     <ChevronRight className={`w-4 h-4 ml-auto ${
-                      activeTab === tab.id ? 'text-orange-600' : 'text-gray-400'
+                      activeTab === tab.id ? 'text-amber-600' : 'text-gray-400'
                     }`} />
                   </button>
                 );
@@ -1136,13 +1136,13 @@ export const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
 
       {/* Changes indicator */}
       {hasChanges && (
-        <div className="fixed bottom-6 right-6 bg-orange-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+        <div className="fixed bottom-6 right-6 bg-amber-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
           <Info className="w-5 h-5" />
           <span>You have unsaved changes</span>
           <button
             onClick={saveSettings}
             disabled={saving}
-            className="bg-white text-orange-600 px-3 py-1 rounded text-sm font-medium hover:bg-orange-50 transition-colors"
+            className="bg-white text-amber-600 px-3 py-1 rounded text-sm font-medium hover:bg-amber-50 transition-colors"
           >
             Save
           </button>

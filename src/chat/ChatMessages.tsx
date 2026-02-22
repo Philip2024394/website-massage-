@@ -80,7 +80,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     if (message.senderType === 'therapist' && therapistImage) {
       return (
-        <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-orange-200 shadow-sm">
+        <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-amber-200 shadow-sm">
           <img 
             src={therapistImage} 
             alt={therapistName || 'Therapist'}
@@ -110,7 +110,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     // Fallback avatar
     const initials = (message.senderName || 'U').charAt(0).toUpperCase();
-    const bgColor = message.senderType === 'therapist' ? 'bg-orange-500' : 'bg-orange-500';
+    const bgColor = message.senderType === 'therapist' ? 'bg-amber-500' : 'bg-amber-500';
     
     return (
       <div className={`w-8 h-8 rounded-full ${bgColor} text-white flex items-center justify-center text-sm font-semibold shadow-sm`}>
@@ -133,7 +133,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     if (isOwnMessage(message)) {
       return {
         container: 'justify-end flex-row-reverse',
-        bubble: 'bg-orange-500 text-white shadow-lg',
+        bubble: 'bg-amber-500 text-white shadow-lg',
         alignment: 'text-right',
         showAvatar: true,
         avatarMargin: 'mr-0 ml-2' // Avatar on right side
@@ -142,7 +142,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     return {
       container: 'justify-start',
-      bubble: 'bg-orange-50 text-orange-900 border border-orange-200 shadow-sm',
+      bubble: 'bg-amber-50 text-amber-900 border border-amber-200 shadow-sm',
       alignment: 'text-left',
       showAvatar: true,
       avatarMargin: 'ml-0 mr-2' // Avatar on left side
@@ -153,7 +153,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
+          <div className="inline-block w-8 h-8 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mb-2"></div>
           <p className="text-gray-500 text-sm">Loading messages...</p>
         </div>
       </div>
@@ -248,7 +248,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                 {/* Special rendering for discount/voucher messages */}
                 {message.content && /discount code|voucher code|discount/i.test(message.content) && /code[:\s]/i.test(message.content) ? (
                   <div className="flex flex-col items-center gap-2">
-                    <span className="text-lg font-bold text-orange-600">🎁 Voucher Code</span>
+                    <span className="text-lg font-bold text-amber-600">🎁 Voucher Code</span>
                     <span className="text-2xl font-mono font-bold text-green-700 bg-green-50 px-4 py-2 rounded-lg border border-green-200 mb-2 shadow-sm">
                       {(() => {
                         // Extract code from message.content
@@ -257,7 +257,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                       })()}
                     </span>
                     <button
-                      className="mt-2 px-6 py-2 bg-gradient-to-r from-orange-400 via-orange-500 to-amber-400 text-white font-bold rounded-full shadow-lg animate-pulse focus:outline-none focus:ring-2 focus:ring-orange-300 transition-all text-lg"
+                      className="mt-2 px-6 py-2 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 text-white font-bold rounded-full shadow-lg animate-pulse focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all text-lg"
                       onClick={() => {
                         // Custom event to open order page and activate discount
                         const code = (() => {

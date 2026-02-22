@@ -100,7 +100,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, postType, initi
         <div className="px-6 pb-4">
           {/* Add Comment */}
           <div className="flex items-start gap-3 py-4">
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-white text-sm font-medium">Y</span>
             </div>
             <div className="flex-1">
@@ -110,7 +110,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, postType, initi
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder={`Write a comment about this ${postType}...`}
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     rows={1}
                     onInput={(e) => {
                       const target = e.target as HTMLTextAreaElement;
@@ -122,7 +122,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, postType, initi
                 <button
                   onClick={handleAddComment}
                   disabled={!newComment.trim() || isLoading}
-                  className="p-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="p-2 bg-amber-500 text-white rounded-full hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -150,10 +150,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, postType, initi
                   
                   {/* Comment Actions */}
                   <div className="flex items-center gap-4 mt-2 px-4">
-                    <button className="text-xs text-gray-600 hover:text-orange-600 font-medium">
+                    <button className="text-xs text-gray-600 hover:text-amber-600 font-medium">
                       Like
                     </button>
-                    <button className="text-xs text-gray-600 hover:text-orange-600 font-medium">
+                    <button className="text-xs text-gray-600 hover:text-amber-600 font-medium">
                       Reply
                     </button>
                     <span className="text-xs text-gray-500">{comment.likes} likes</span>

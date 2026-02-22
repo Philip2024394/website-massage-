@@ -281,7 +281,7 @@ export function ModernChatWindow({
   return (
     <div className={`fixed bottom-0 right-4 w-80 bg-white rounded-t-lg shadow-2xl border border-gray-200 z-50 ${className}`}>
       {/* Header */}
-      <div className="bg-orange-500 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+      <div className="bg-amber-500 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {/* Connection Status */}
           <div className="flex items-center space-x-1">
@@ -295,7 +295,7 @@ export function ModernChatWindow({
           {/* Recipient Info */}
           <div>
             <h3 className="font-semibold text-sm">{recipientName}</h3>
-            <p className="text-orange-200 text-xs capitalize">{recipientRole}</p>
+            <p className="text-amber-200 text-xs capitalize">{recipientRole}</p>
           </div>
         </div>
         
@@ -304,7 +304,7 @@ export function ModernChatWindow({
           {onMinus && (
             <button
               onClick={onMinus}
-              className="p-1 rounded hover:bg-orange-600 transition-colors"
+              className="p-1 rounded hover:bg-amber-600 transition-colors"
             >
               {isMinusd ? <Plus className="w-4 h-4" /> : <span className="text-lg">−</span>}
             </button>
@@ -312,7 +312,7 @@ export function ModernChatWindow({
           
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-orange-600 transition-colors"
+            className="p-1 rounded hover:bg-amber-600 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -329,7 +329,7 @@ export function ModernChatWindow({
           >
             {loading ? (
               <div className="flex items-center justify-center h-full">
-                <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : error ? (
               <div className="flex items-center justify-center h-full">

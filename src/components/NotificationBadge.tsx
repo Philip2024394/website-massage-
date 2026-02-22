@@ -92,7 +92,7 @@ export const NotificationBadge: React.FC<NotificationBadgeProps> = ({
       case 'green':
         return 'bg-green-500 text-white';
       case 'orange':
-        return 'bg-orange-500 text-white';
+        return 'bg-amber-500 text-white';
       default:
         return 'bg-red-500 text-white';
     }

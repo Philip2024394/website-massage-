@@ -51,99 +51,96 @@ const PlacePricing: React.FC<PlacePricingProps> = ({
                 </div>
             )}
 
-            {/* Pricing */}
+            {/* Pricing — same design as beauty profile price containers */}
             <div className="grid grid-cols-3 gap-2 mb-3 px-1">
                 {pricing["60"] > 0 && (
-                    <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-col justify-center ${
                         isDiscountActive(place)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
+                            ? 'bg-amber-50/80 border-amber-400 price-rim-fade'
+                            : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
                     }`}>
-                        {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
                         {displayRating && (
-                            <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                            <div className="absolute -top-2.5 left-2 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                                 <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                                 {displayRating}
                             </div>
                         )}
-                        <p className="text-gray-600 text-xs mb-1">60 min</p>
+                        <p className="text-xs text-gray-600 mb-1">60 min</p>
                         {isDiscountActive(place) ? (
                             <>
-                                <p className="font-bold text-gray-800 text-sm leading-tight">
+                                <p className="text-sm font-bold text-gray-800 leading-tight">
                                     Rp {formatPrice(Math.round(pricing["60"] * (1 - (place as any).discountPercentage / 100)))}
                                 </p>
-                                <p className="text-[11px] text-gray-500 line-through">
+                                <p className="text-[10px] text-gray-500 line-through">
                                     Rp {formatPrice(pricing["60"])}
                                 </p>
                             </>
                         ) : (
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
+                            <p className="text-sm font-bold text-gray-800 leading-tight">
                                 Rp {formatPrice(pricing["60"])}
                             </p>
                         )}
                     </div>
                 )}
                 {pricing["90"] > 0 && (
-                    <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-col justify-center ${
                         isDiscountActive(place)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
+                            ? 'bg-amber-50/80 border-amber-400 price-rim-fade'
+                            : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
                     }`}>
-                        {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
                         {displayRating && (
-                            <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                            <div className="absolute -top-2.5 left-2 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                                 <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                                 {displayRating}
                             </div>
                         )}
-                        <p className="text-gray-600 text-xs mb-1">90 min</p>
+                        <p className="text-xs text-gray-600 mb-1">90 min</p>
                         {isDiscountActive(place) ? (
                             <>
-                                <p className="font-bold text-gray-800 text-sm leading-tight">
+                                <p className="text-sm font-bold text-gray-800 leading-tight">
                                     Rp {formatPrice(Math.round(pricing["90"] * (1 - (place as any).discountPercentage / 100)))}
                                 </p>
-                                <p className="text-[11px] text-gray-500 line-through">
+                                <p className="text-[10px] text-gray-500 line-through">
                                     Rp {formatPrice(pricing["90"])}
                                 </p>
                             </>
                         ) : (
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
+                            <p className="text-sm font-bold text-gray-800 leading-tight">
                                 Rp {formatPrice(pricing["90"])}
                             </p>
                         )}
                     </div>
                 )}
                 {pricing["120"] > 0 && (
-                    <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-col justify-center ${
                         isDiscountActive(place)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
+                            ? 'bg-amber-50/80 border-amber-400 price-rim-fade'
+                            : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
                     }`}>
-                        {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
                         {displayRating && (
-                            <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                            <div className="absolute -top-2.5 left-2 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                                 <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                                 {displayRating}
                             </div>
                         )}
-                        <p className="text-gray-600 text-xs mb-1">120 min</p>
+                        <p className="text-xs text-gray-600 mb-1">120 min</p>
                         {isDiscountActive(place) ? (
                             <>
-                                <p className="font-bold text-gray-800 text-sm leading-tight">
+                                <p className="text-sm font-bold text-gray-800 leading-tight">
                                     Rp {formatPrice(Math.round(pricing["120"] * (1 - (place as any).discountPercentage / 100)))}
                                 </p>
-                                <p className="text-[11px] text-gray-500 line-through">
+                                <p className="text-[10px] text-gray-500 line-through">
                                     Rp {formatPrice(pricing["120"])}
                                 </p>
                             </>
                         ) : (
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
+                            <p className="text-sm font-bold text-gray-800 leading-tight">
                                 Rp {formatPrice(pricing["120"])}
                             </p>
                         )}

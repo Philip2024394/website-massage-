@@ -458,9 +458,9 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
                     <div className="flex flex-wrap items-center gap-4">
                         <button
                             onClick={onBack}
-                            className="p-2 rounded-xl border border-orange-200 hover:bg-orange-50 transition-colors"
+                            className="p-2 rounded-xl border border-amber-200 hover:bg-amber-50 transition-colors"
                         >
-                            <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
@@ -472,7 +472,7 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
                         <div className="ml-auto">
                             <button
                                 onClick={onPostJob}
-                                className="px-4 py-2 rounded-xl border border-orange-200 text-sm font-semibold text-orange-600 hover:bg-orange-50"
+                                className="px-4 py-2 rounded-xl border border-amber-200 text-sm font-semibold text-amber-600 hover:bg-amber-50"
                             >
                                 Open Advanced Posting Form
                             </button>
@@ -484,7 +484,7 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
                             onClick={() => setViewMode('jobOffers')}
                             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${
                                 isJobOfferMode
-                                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20'
+                                    ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
                                     : 'bg-gray-100 text-gray-600 hover:text-black'
                             }`}
                         >
@@ -494,7 +494,7 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
                             onClick={() => setViewMode('jobWanted')}
                             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${
                                 !isJobOfferMode
-                                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20'
+                                    ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
                                     : 'bg-gray-100 text-gray-600 hover:text-black'
                             }`}
                         >

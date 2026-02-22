@@ -16,5 +16,5 @@ export const DRAWER_COUNTRIES_LIST = [
   { id: 'germany' as const, code: 'DE', name: 'Germany', nameId: 'Germany', flag: '🇩🇪' },
 ] as const;
 
-/** Country ids that have a dedicated landing page (e.g. indonesia). Others navigate to home. */
-export const COUNTRY_PAGE_IDS: Set<string> = new Set(['indonesia']);
+/** Country ids that have a dedicated social/landing page (same experience, hero + language per country). */
+export const COUNTRY_PAGE_IDS: Set<string> = new Set(['indonesia', 'united-kingdom']);

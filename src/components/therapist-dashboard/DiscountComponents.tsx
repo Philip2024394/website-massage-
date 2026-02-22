@@ -88,18 +88,18 @@ const LiveDiscountCountdown: React.FC<LiveDiscountCountdownProps> = ({
     if (isExpired) return null;
 
     return (
-        <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-orange-50 border-2 border-green-300 rounded-xl">
+        <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-amber-50 border-2 border-green-300 rounded-xl">
             <div className="text-center">
                 <div className="flex items-center justify-center space-x-2 mb-2">
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     <p className="text-lg font-bold text-green-800">
                         🎊 {percentage}% Discount LIVE!
                     </p>
-                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
                 </div>
                 <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
                     <p className="text-sm text-gray-600">Time Remaining:</p>
-                    <p className="text-xl font-mono font-bold text-orange-600">
+                    <p className="text-xl font-mono font-bold text-amber-600">
                         ⏰ {timeLeft}
                     </p>
                 </div>

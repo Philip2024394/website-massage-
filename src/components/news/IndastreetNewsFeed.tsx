@@ -10,11 +10,10 @@
  * admin dashboard for approve/reject before going live.
  */
 import React, { useState, useEffect } from 'react';
-import { ThumbsUp, MessageCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, BadgeCheck, Share2 } from 'lucide-react';
+import { ThumbsUp, MessageCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { listIndastreetNews, type IndastreetNewsItem, type NewsCategory } from '../../lib/appwrite/services/indastreetNews.service';
 import { SAMPLE_NEWS } from '../../data/indastreetNewsSample';
 import SocialSharePopup from '../modals/SocialSharePopup';
-import { GetInvolvedButton } from '../GetInvolvedButton';
 import { REAL_PEOPLE_AVATARS } from '../../constants/realPeopleAvatars';
 
 const POSTS_PER_PAGE = 10;
@@ -72,7 +71,27 @@ interface NewsComment {
   dateTime: string;
   avatarUrl?: string;
   adminApproved?: boolean;
+  /** Show active indicator on avatar when true */
+  active?: boolean;
+  country?: string;
+  dateJoined?: string;
+  hobbyInterest?: string;
+  divisionOfEmployment?: string;
+  bio?: string;
   replies?: NewsComment[];
+}
+
+/** Profile shape for opening the profile popup from a comment author */
+export interface NewsCommentProfilePreview {
+  name: string;
+  avatar: string;
+  role?: string;
+  country?: string;
+  dateJoined?: string;
+  hobbyInterest?: string;
+  divisionOfEmployment?: string;
+  bio?: string;
+  active?: boolean;
 }
 
 const CATEGORY_LABELS: Record<NewsCategory, { en: string; id: string }> = {
@@ -104,14 +123,20 @@ function generateMockComments(count: number, postId: string): NewsComment[] {
     usedTexts.add(text);
     usedLengths.add(len);
     const d = new Date(now.getTime() - (added + 1) * 3600000 * 24 * (1 + Math.floor(Math.random() * 5)));
+    const authorName = MOCK_COMMENT_AUTHORS[authorIndices[added % authorIndices.length]];
     comments.push({
       id: `mock-${postId}-${added}-${Date.now()}`,
-      authorName: MOCK_COMMENT_AUTHORS[authorIndices[added % authorIndices.length]],
+      authorName,
       text,
       date: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
       dateTime: d.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }),
       avatarUrl: REAL_PEOPLE_AVATARS[avatarIndices[added % avatarIndices.length]],
       adminApproved: true,
+      active: added % 3 === 0,
+      country: added % 2 === 0 ? 'Indonesia' : 'UK',
+      dateJoined: '2024',
+      divisionOfEmployment: added % 2 === 0 ? 'Therapist' : 'Freelance',
+      hobbyInterest: 'Wellness, massage',
       replies: [],
     });
     added++;
@@ -141,6 +166,8 @@ export interface IndastreetNewsFeedProps {
   userId?: string;
   /** When true, do not render the section heading (parent provides it). */
   hideSectionTitle?: boolean;
+  /** When user clicks a comment author avatar/name, open profile popup with this data */
+  onProfileClick?: (profile: NewsCommentProfilePreview) => void;
 }
 
 const IndastreetNewsFeed: React.FC<IndastreetNewsFeedProps> = ({
@@ -150,6 +177,7 @@ const IndastreetNewsFeed: React.FC<IndastreetNewsFeedProps> = ({
   userProfilePhoto = '',
   userId = '',
   hideSectionTitle = false,
+  onProfileClick,
 }) => {
   const [newsItems, setNewsItems] = useState<IndastreetNewsItem[]>(SAMPLE_NEWS);
   const [loading, setLoading] = useState(true);
@@ -273,27 +301,60 @@ const IndastreetNewsFeed: React.FC<IndastreetNewsFeedProps> = ({
     setReplyToId(null);
   };
 
+  const commentToProfile = (c: NewsComment): NewsCommentProfilePreview => ({
+    name: c.authorName,
+    avatar: c.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(c.authorName)}&size=96`,
+    country: c.country,
+    dateJoined: c.dateJoined,
+    hobbyInterest: c.hobbyInterest,
+    divisionOfEmployment: c.divisionOfEmployment,
+    bio: c.bio,
+    active: c.active,
+  });
+
   const renderComment = (c: NewsComment, postId: string, isReply: boolean) => (
     <div key={c.id} className={isReply ? 'ml-8 sm:ml-10 mt-3 pl-3 border-l-2 border-gray-200' : ''}>
       <div className="flex gap-3">
-        <div className="flex-shrink-0 w-9 h-9 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-          {c.avatarUrl ? (
-            <img src={c.avatarUrl} alt={c.authorName} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-gray-600 font-semibold text-sm">{c.authorName.charAt(0).toUpperCase()}</span>
-          )}
-        </div>
+        {onProfileClick ? (
+          <button
+            type="button"
+            onClick={() => onProfileClick(commentToProfile(c))}
+            className="relative flex-shrink-0 w-9 h-9 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center ring-1 ring-gray-200 hover:ring-orange-300 transition-all"
+          >
+            {c.avatarUrl ? (
+              <img src={c.avatarUrl} alt={c.authorName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-gray-600 font-semibold text-sm">{c.authorName.charAt(0).toUpperCase()}</span>
+            )}
+            {c.active && (
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" title={language === 'id' ? 'Aktif' : 'Active'} aria-hidden />
+            )}
+          </button>
+        ) : (
+          <div className="relative flex-shrink-0 w-9 h-9 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+            {c.avatarUrl ? (
+              <img src={c.avatarUrl} alt={c.authorName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-gray-600 font-semibold text-sm">{c.authorName.charAt(0).toUpperCase()}</span>
+            )}
+            {c.active && (
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" aria-hidden />
+            )}
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="bg-gray-50 rounded-lg px-3 py-2 relative">
-            {(c.adminApproved !== false) && (
-              <div className="absolute top-2 right-2 flex items-center gap-1 text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-1.5 py-0.5">
-                <BadgeCheck className="w-3 h-3 flex-shrink-0" aria-hidden />
-                <span className="text-[10px] font-medium">Admin Approved</span>
-              </div>
+            {(c.dateTime || c.date) && (
+              <p className="absolute top-2 right-2 text-[10px] text-gray-500 font-medium">{c.dateTime || c.date}</p>
             )}
-            <p className="text-sm font-medium text-gray-900 pr-24">{c.authorName}</p>
+            {onProfileClick ? (
+              <button type="button" onClick={() => onProfileClick(commentToProfile(c))} className="text-sm font-medium text-gray-900 pr-20 hover:text-orange-600 transition-colors text-left">
+                {c.authorName}
+              </button>
+            ) : (
+              <p className="text-sm font-medium text-gray-900 pr-20">{c.authorName}</p>
+            )}
             <p className="text-sm text-gray-700 mt-0.5">{c.text}</p>
-            <p className="text-xs text-gray-500 mt-1">{c.dateTime || c.date}</p>
           </div>
           {isLoggedIn && (
             <button
@@ -420,9 +481,11 @@ const IndastreetNewsFeed: React.FC<IndastreetNewsFeedProps> = ({
                       const hasMore = remainingCount > 0 && !expanded;
                       return (
                         <>
-                          <ul className="space-y-4 mb-4">
-                            {visibleComments.map((c) => (
-                              <li key={c.id}>{renderComment(c, item.id, false)}</li>
+                          <ul className="space-y-0 mb-4">
+                            {visibleComments.map((c, idx) => (
+                              <li key={c.id} className={idx > 0 ? 'pt-4 mt-4 border-t border-dashed border-gray-200' : ''}>
+                                {renderComment(c, item.id, false)}
+                              </li>
                             ))}
                           </ul>
                           {hasMore && (
@@ -437,15 +500,7 @@ const IndastreetNewsFeed: React.FC<IndastreetNewsFeedProps> = ({
                         </>
                       );
                     })()}
-                    {!isLoggedIn ? (
-                      <div className="flex justify-center py-2">
-                        <GetInvolvedButton
-                          href="/signin"
-                          className="max-h-12 w-auto h-12 [&_img]:max-h-12 [&_img]:h-12 [&_img]:w-auto"
-                          ariaLabel={isId ? 'Daftar atau masuk untuk mengirim komentar' : 'Sign in to post or comment'}
-                        />
-                      </div>
-                    ) : !userProfilePhoto || userProfilePhoto.trim() === '' ? (
+                    {!isLoggedIn ? null : !userProfilePhoto || userProfilePhoto.trim() === '' ? (
                       <p className="text-sm text-amber-700 bg-amber-50 rounded-xl px-4 py-3 border border-amber-200">
                         {isId ? 'Tambahkan foto profil di pengaturan akun Anda untuk mengirim komentar.' : 'Add a profile image in your account settings to post comments.'}
                       </p>

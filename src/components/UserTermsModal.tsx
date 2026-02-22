@@ -12,7 +12,7 @@ interface UserTermsModalProps {
 
 const Section: React.FC<{ title: string; content: string | React.ReactNode }> = ({ title, content }) => (
   <div className="space-y-2 mb-6">
-    <h3 className="text-base font-semibold text-orange-400">{title}</h3>
+    <h3 className="text-base font-semibold text-amber-400">{title}</h3>
     {typeof content === 'string' ? (
       <p className="text-sm text-gray-300 leading-relaxed">{content}</p>
     ) : (
@@ -42,10 +42,10 @@ export const UserTermsModal: React.FC<UserTermsModalProps> = ({ t, onAccept }) =
     <>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black p-4">
         {/* Container: orange border, dark background */}
-        <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-lg border-2 border-orange-500 bg-gray-900 shadow-2xl overflow-hidden">
+        <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-lg border-2 border-amber-500 bg-gray-900 shadow-2xl overflow-hidden">
           {/* Header - fixed at top of container (user/client terms only) */}
-          <div className="flex-shrink-0 px-6 py-4 border-b border-orange-500/50 bg-gray-900">
-            <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-orange-500/20 text-orange-400 border border-orange-500/50 mb-2">{safeU.modalBadge}</span>
+          <div className="flex-shrink-0 px-6 py-4 border-b border-amber-500/50 bg-gray-900">
+            <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/50 mb-2">{safeU.modalBadge}</span>
             <h1 className="text-xl font-bold text-white">
               {safeU.modalTitle}
             </h1>
@@ -64,7 +64,7 @@ export const UserTermsModal: React.FC<UserTermsModalProps> = ({ t, onAccept }) =
           >
             <div className="pr-2 user-terms-modal-scroll-content">
               {/* ═══ Terms & Conditions ═══ */}
-              <h2 className="text-lg font-bold text-orange-400 mb-4 pt-2 border-t border-gray-700 first:border-t-0 first:pt-0">
+              <h2 className="text-lg font-bold text-amber-400 mb-4 pt-2 border-t border-gray-700 first:border-t-0 first:pt-0">
                 {safeU.title}
               </h2>
               <p className="text-sm text-gray-300 leading-relaxed mb-4">{safeU.intro}</p>
@@ -72,7 +72,7 @@ export const UserTermsModal: React.FC<UserTermsModalProps> = ({ t, onAccept }) =
               <Section title={safeU.locationTrackingTitle} content={safeU.locationTrackingContent} />
 
               {/* ═══ Privacy Policy ═══ */}
-              <h2 className="text-lg font-bold text-orange-400 mb-4 pt-4 border-t border-gray-700">
+              <h2 className="text-lg font-bold text-amber-400 mb-4 pt-4 border-t border-gray-700">
                 {pp.title || 'Privacy Policy'}
               </h2>
               {pp.lastUpdated && (
@@ -163,11 +163,11 @@ export const UserTermsModal: React.FC<UserTermsModalProps> = ({ t, onAccept }) =
           </div>
 
           {/* Footer - Accept button OUTSIDE scroll, fixed at bottom of container */}
-          <div className="flex-shrink-0 px-6 py-4 border-t border-orange-500/50 bg-gray-900">
+          <div className="flex-shrink-0 px-6 py-4 border-t border-amber-500/50 bg-gray-900">
             <button
               type="button"
               onClick={onAccept}
-              className="w-full py-3.5 rounded-lg font-semibold text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors shadow-md border border-orange-400/50"
+              className="w-full py-3.5 rounded-lg font-semibold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 transition-colors shadow-md border border-amber-400/50"
             >
               {safeU.agreeButton}
             </button>

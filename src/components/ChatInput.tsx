@@ -268,7 +268,7 @@ export function ChatInput({
             disabled 
               ? 'text-gray-400 cursor-not-allowed' 
               : showEmojiPicker
-              ? 'bg-orange-100 text-orange-600'
+              ? 'bg-amber-100 text-amber-600'
               : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
           }`}
           title="Add emoji"
@@ -287,7 +287,7 @@ export function ChatInput({
             onCompositionEnd={handleCompositionEnd}
             disabled={disabled || sending}
             placeholder={sending ? 'Sending...' : placeholder}
-            className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors text-sm leading-5 ${
+            className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors text-sm leading-5 ${
               disabled || sending ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             style={{
@@ -313,7 +313,7 @@ export function ChatInput({
           className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
             !message.trim() || disabled || sending
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-orange-500 text-white hover:bg-orange-600 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95'
+              : 'bg-amber-500 text-white hover:bg-amber-600 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95'
           }`}
           title={sending ? 'Sending...' : 'Send message'}
         >

@@ -41,7 +41,7 @@ export const ServiceItem: React.FC<ServiceItemProps> = ({
 }) => {
     return (
         <div className={`flex items-center justify-between py-4 px-3 border-b border-gray-200 last:border-0 rounded-lg transition-all duration-300 ${
-            isDiscountActive ? 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-300' : 'bg-white'
+            isDiscountActive ? 'bg-gradient-to-r from-amber-50 to-amber-100 border-amber-300' : 'bg-white'
         }`}
         style={isDiscountActive ? {
             animation: 'priceGlow 3s ease-in-out infinite',
@@ -62,12 +62,12 @@ export const ServiceItem: React.FC<ServiceItemProps> = ({
                         <div className="text-sm text-gray-800 line-through opacity-60">
                             {service.originalPrice}
                         </div>
-                        <div className="text-orange-600 font-bold text-lg">
+                        <div className="text-amber-600 font-bold text-lg">
                             {service.price}
                         </div>
                     </>
                 ) : (
-                    <div className={`font-bold text-lg ${isDiscountActive ? 'text-orange-600' : 'text-orange-600'}`}>
+                    <div className={`font-bold text-lg ${isDiscountActive ? 'text-amber-600' : 'text-amber-600'}`}>
                         {service.price}
                     </div>
                 )}

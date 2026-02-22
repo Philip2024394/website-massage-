@@ -95,7 +95,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
   const SettingsOverview: React.FC = () => (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-8 border border-orange-200">
+      <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl p-8 border border-amber-200">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Settings</h2>
@@ -119,8 +119,8 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
           <div className="text-right">
             <div className="text-sm text-gray-600 mb-2">Setup Progress</div>
             <div className="flex items-center gap-3">
-              <div className="w-16 h-16 rounded-full bg-white border-4 border-orange-500 flex items-center justify-center">
-                <span className="text-lg font-bold text-orange-600">{completionPercentage}%</span>
+              <div className="w-16 h-16 rounded-full bg-white border-4 border-amber-500 flex items-center justify-center">
+                <span className="text-lg font-bold text-amber-600">{completionPercentage}%</span>
               </div>
               <div className="text-sm text-gray-600">
                 {stats.completedSections} of {stats.totalSections} sections complete
@@ -134,11 +134,11 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <button
           onClick={() => setActiveMode('settings')}
-          className="bg-white p-6 rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-left group"
+          className="bg-white p-6 rounded-xl border border-gray-200 hover:border-amber-300 hover:shadow-md transition-all text-left group"
         >
           <div className="flex items-center justify-between mb-4">
-            <Settings className="w-8 h-8 text-orange-600" />
-            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-orange-600 transition-colors" />
+            <Settings className="w-8 h-8 text-amber-600" />
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-amber-600 transition-colors" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Advanced Settings</h3>
           <p className="text-gray-600 text-sm">
@@ -152,7 +152,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
 
         <button
           onClick={() => setActiveMode('theme')}
-          className="bg-white p-6 rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-left group"
+          className="bg-white p-6 rounded-xl border border-gray-200 hover:border-amber-300 hover:shadow-md transition-all text-left group"
         >
           <div className="flex items-center justify-between mb-4">
             <Brush className="w-8 h-8 text-purple-600" />
@@ -170,7 +170,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
 
         <button
           onClick={() => setActiveMode('preferences')}
-          className="bg-white p-6 rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-left group"
+          className="bg-white p-6 rounded-xl border border-gray-200 hover:border-amber-300 hover:shadow-md transition-all text-left group"
         >
           <div className="flex items-center justify-between mb-4">
             <Target className="w-8 h-8 text-blue-600" />
@@ -277,7 +277,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Settings className="w-7 h-7 text-orange-600" />
+                <Settings className="w-7 h-7 text-amber-600" />
                 Settings & Configuration
               </h1>
               <p className="text-gray-600 mt-1">
@@ -291,7 +291,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
             {activeMode !== 'overview' && (
               <button
                 onClick={() => setActiveMode('overview')}
-                className="px-3 py-1 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                className="px-3 py-1 text-sm text-gray-600 hover:text-amber-600 transition-colors"
               >
                 ← Back to Overview
               </button>
@@ -307,7 +307,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
                   placeholder="Search settings..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 w-64"
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 w-64"
                 />
               </div>
             )}
@@ -317,7 +317,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
                 onClick={() => setShowPreview(!showPreview)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                   showPreview 
-                    ? 'bg-orange-100 text-orange-600' 
+                    ? 'bg-amber-100 text-amber-600' 
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -337,7 +337,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
               
               <button
                 onClick={handleExportAll}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Export All
@@ -361,7 +361,7 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
                   onClick={() => setActiveMode(id as SettingsMode)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     activeMode === id
-                      ? 'bg-orange-100 text-orange-700'
+                      ? 'bg-amber-100 text-amber-700'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
                   }`}
                 >
@@ -409,12 +409,12 @@ export const SettingsConfigurationPage: React.FC<SettingsConfigurationPageProps>
 
       {/* Unsaved Changes Notification */}
       {hasUnsavedChanges && (
-        <div className="fixed bottom-6 right-6 bg-orange-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50">
+        <div className="fixed bottom-6 right-6 bg-amber-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50">
           <Info className="w-5 h-5" />
           <span>You have unsaved changes</span>
           <button
             onClick={() => setHasUnsavedChanges(false)}
-            className="bg-white text-orange-600 px-3 py-1 rounded text-sm font-medium hover:bg-orange-50 transition-colors"
+            className="bg-white text-amber-600 px-3 py-1 rounded text-sm font-medium hover:bg-amber-50 transition-colors"
           >
             Save All
           </button>

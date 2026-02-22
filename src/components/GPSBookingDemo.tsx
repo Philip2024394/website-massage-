@@ -252,7 +252,7 @@ const GPSBookingDemo: React.FC = () => {
           {/* Available Therapists */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-              <Navigation className="w-5 h-5 text-orange-500" />
+              <Navigation className="w-5 h-5 text-amber-500" />
               Nearby Therapists {nearbyTherapists.length > 0 && `(${nearbyTherapists.length})`}
             </h3>
             
@@ -278,7 +278,7 @@ const GPSBookingDemo: React.FC = () => {
                         <p className="text-sm text-gray-600">{therapist.location}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-orange-600">
+                        <p className="font-bold text-amber-600">
                           IDR {therapist.pricing.toLocaleString()}
                         </p>
                         <p className="text-sm text-gray-500">⭐ {therapist.rating}</p>
@@ -294,7 +294,7 @@ const GPSBookingDemo: React.FC = () => {
                         <span className={`text-xs px-2 py-1 rounded-full ${
                           therapist.proximityScore >= 90 ? 'bg-green-100 text-green-700' :
                           therapist.proximityScore >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-orange-100 text-orange-700'
+                          'bg-amber-100 text-amber-700'
                         }`}>
                           {therapist.proximityScore >= 90 ? 'Very Close' :
                            therapist.proximityScore >= 50 ? 'Nearby' : 'Available'}
@@ -304,7 +304,7 @@ const GPSBookingDemo: React.FC = () => {
                     
                     <button
                       onClick={() => handleBookNow(therapist)}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                     >
                       <Zap className="w-4 h-4" />
                       Book Now (GPS Enhanced)

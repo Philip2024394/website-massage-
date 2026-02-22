@@ -30,8 +30,7 @@ import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModa
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 import { ViewProfileButton } from './ViewProfileButton';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
-import { Share2, Sparkles, FingerprintPattern } from 'lucide-react';
-import { BookNowButton } from './BookNowButton';
+import { Share2, Sparkles } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import SafePassModal from './modals/SafePassModal';
@@ -833,70 +832,24 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </div>
             ) : pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 ? (
                 <div className="mx-4 mb-4">
-                    <style>{`
-                        @keyframes massage-container-glow {
-                          0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
-                          50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
-                        }
-                        .massage-container-selected {
-                          border-color: rgb(249 115 22);
-                          box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
-                          animation: massage-container-glow 2.5s ease-in-out infinite;
-                        }
-                        @keyframes book-button-flash {
-                          0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(37, 211, 102, 0.4); }
-                          50% { transform: scale(1.02); box-shadow: 0 3px 10px rgba(37, 211, 102, 0.5); }
-                        }
-                        .book-button-flash {
-                          animation: book-button-flash 1.2s ease-in-out infinite;
-                        }
-                    `}</style>
-                    <h4 className="text-sm font-semibold text-slate-800 mb-3 truncate">{serviceName}</h4>
-                    <div className="grid grid-cols-3 gap-2 min-w-0">
-                        {(['60', '90', '120'] as const).map((dur) => {
-                            const isSelected = selectedDuration === dur;
-                            const labels = { '60': 'Relaxation', '90': 'Deep Tissue', '120': 'Full Body' };
-                            const borders = { '60': 'border-orange-200', '90': 'border-orange-300', '120': 'border-orange-200' };
-                            return (
-                                <button
-                                    type="button"
-                                    key={dur}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedDuration(isSelected ? null : dur);
-                                    }}
-                                    className={`rounded-lg p-2 min-w-0 text-center transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 border ${
-                                        isSelected ? 'massage-container-selected bg-orange-50 border-orange-400' : `bg-orange-50 ${borders[dur]} hover:border-orange-300`
-                                    }`}
-                                    aria-pressed={isSelected}
-                                    aria-label={`${dur} min, ${labels[dur]}, ${pricing[dur] > 0 ? formatPrice(pricing[dur]) : 'Call'}. ${isSelected ? 'Selected' : 'Select'}`}
-                                >
-                                    <div className="text-[11px] font-medium text-orange-700 mb-0.5 truncate">{dur} min</div>
-                                    <div className="text-xs font-bold text-slate-900 truncate">
-                                        {pricing[dur] > 0 ? formatPrice(pricing[dur]) : 'Call'}
-                                    </div>
-                                    <div className="text-[10px] text-slate-600 mt-0.5 truncate">{labels[dur]}</div>
-                                    {isSelected && (
-                                        <div className="flex justify-center mt-1" aria-hidden>
-                                            <FingerprintPattern className="w-5 h-5 text-orange-600 flex-shrink-0" strokeWidth={1.8} />
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                    {selectedDuration && (
-                        <div className="mt-3 h-11 max-h-11 flex items-center">
-                            <BookNowButton
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onClick(therapist);
-                                }}
-                                className={`w-full h-full max-h-11 flex items-center justify-center rounded-lg shadow-md book-button-flash ${readOnly ? 'opacity-70 pointer-events-none' : ''}`}
-                                ariaLabel={t?.home?.bookNow || 'Book Now'}
-                            />
+                    <h4 className="text-sm font-semibold text-slate-800 mb-3">Service packages</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                        <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
+                            <div className="text-xs font-medium text-pink-700 mb-1">60 min</div>
+                            <div className="text-sm font-bold text-slate-900">{pricing["60"] > 0 ? formatPrice(pricing["60"]) : 'Call'}</div>
+                            <div className="text-[10px] text-slate-600 mt-1">Basic</div>
                         </div>
-                    )}
+                        <div className="bg-pink-50 border border-pink-300 rounded-lg p-3 text-center">
+                            <div className="text-xs font-medium text-pink-700 mb-1">90 min</div>
+                            <div className="text-sm font-bold text-slate-900">{pricing["90"] > 0 ? formatPrice(pricing["90"]) : 'Call'}</div>
+                            <div className="text-[10px] text-slate-600 mt-1">Premium</div>
+                        </div>
+                        <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
+                            <div className="text-xs font-medium text-pink-700 mb-1">120 min</div>
+                            <div className="text-sm font-bold text-slate-900">{pricing["120"] > 0 ? formatPrice(pricing["120"]) : 'Call'}</div>
+                            <div className="text-[10px] text-slate-600 mt-1">Full</div>
+                        </div>
+                    </div>
                 </div>
             ) : null}
 

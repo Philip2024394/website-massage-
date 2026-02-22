@@ -14,6 +14,7 @@ export const DRAWER_PAGE_IDS = [
   'createAccount',
   'login',
   'indonesia',
+  'uk',
   'indastreet-partners',
   'partnership-application',
   'massage-jobs',
@@ -101,6 +102,8 @@ const ALIASES: Record<string, DrawerPageId> = {
   'adminDashboard': 'admin',
   'country-indonesia': 'indonesia',
   'ID': 'indonesia',
+  'united-kingdom': 'uk',
+  'GB': 'uk',
 };
 
 /**

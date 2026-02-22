@@ -59,11 +59,11 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
             </button>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               <span className="text-black">Inda</span>
-              <span className="text-orange-500">Street</span>
+              <span className="text-amber-500">Street</span>
             </h1>
             <button
               onClick={() => onNavigate?.('home')}
-              className="hover:bg-orange-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 flex items-center justify-center"
+              className="hover:bg-amber-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 flex items-center justify-center"
               title="Go to Home"
             >
               <Home className="w-5 h-5" />
@@ -77,7 +77,7 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
         <p className="text-sm text-gray-500 mb-2">
           {isPro ? 'Pro Plan' : 'Plus Plan'}
           <span className="mx-2">•</span>
-          <span className="text-orange-600 font-medium">{isPro ? 'Pay Per Lead' : '0% Commission'}</span>
+          <span className="text-amber-600 font-medium">{isPro ? 'Pay Per Lead' : '0% Commission'}</span>
         </p>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">Terms &amp; Conditions</h1>
         <p className="text-gray-600 text-sm max-w-md mx-auto">
@@ -101,7 +101,7 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
           </p>
           <button
             onClick={() => onNavigate?.('simpleSignup')}
-            className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors flex items-center justify-center gap-2"
+            className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-medium rounded-lg hover:from-amber-600 hover:to-amber-700 transition-colors flex items-center justify-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Create Account
@@ -129,19 +129,19 @@ const ProTerms: React.FC = () => (
       <h2 className="font-semibold text-gray-900 text-base mb-4">Commission Framework</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>30% commission fee per completed booking — pay within 3 hours of receiving each lead</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Customer pays you directly — IndaStreet does not handle or process any payments</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Late or missing payments trigger instant account freeze</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Consistent late payments lead to permanent removal</span>
         </li>
       </ul>
@@ -152,11 +152,11 @@ const ProTerms: React.FC = () => (
       <h2 className="font-semibold text-gray-900 text-base mb-4">Included Features</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">✓</span>
+          <span className="text-amber-500 mt-0.5">✓</span>
           <span>Full profile with photos, services, chat, and booking</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">✓</span>
+          <span className="text-amber-500 mt-0.5">✓</span>
           <span>Price menu slider displayed on your card (also included in Plus)</span>
         </li>
       </ul>
@@ -190,15 +190,15 @@ const ProTerms: React.FC = () => (
       <h2 className="font-semibold text-gray-900 text-base mb-4">Payment Timing</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Confirm commission payment within 3 hours of lead notification</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Have funds ready before appointments — frozen accounts cannot accept bookings</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Keep payment receipts for audits</span>
         </li>
       </ul>
@@ -217,15 +217,15 @@ const ProTerms: React.FC = () => (
       <h2 className="font-semibold text-gray-900 text-base mb-4">Account &amp; Plan Changes</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Clear all debts before activating or upgrading</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Accounts under investigation cannot change tiers</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Changes take effect next billing cycle</span>
         </li>
       </ul>
@@ -238,7 +238,7 @@ const ProTerms: React.FC = () => (
         <div className="text-gray-500">Monthly Fee</div>
         <div className="text-gray-900 font-medium">Rp 0</div>
         <div className="text-gray-500">Commission</div>
-        <div className="text-orange-600 font-medium">30% per booking</div>
+        <div className="text-amber-600 font-medium">30% per booking</div>
         <div className="text-gray-500">Payment Window</div>
         <div className="text-gray-900 font-medium">3 hours</div>
         <div className="text-gray-500">Support SLA</div>
@@ -255,32 +255,32 @@ const PlusTerms: React.FC = () => (
       <h2 className="font-semibold text-gray-900 text-base mb-4">Core Inclusions</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">✓</span>
-          <span>Rp 250,000/month with <span className="text-orange-600 font-medium">0% commission</span> on every booking</span>
+          <span className="text-amber-500 mt-0.5">✓</span>
+          <span>Rp 250,000/month with <span className="text-amber-600 font-medium">0% commission</span> on every booking</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">✓</span>
+          <span className="text-amber-500 mt-0.5">✓</span>
           <span>Customer pays you directly — IndaStreet does not handle or process any payments</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">✓</span>
+          <span className="text-amber-500 mt-0.5">✓</span>
           <span>Verified badge and premium search placement</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">✓</span>
+          <span className="text-amber-500 mt-0.5">✓</span>
           <span>Advanced analytics and shareable profile links</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">✓</span>
+          <span className="text-amber-500 mt-0.5">✓</span>
           <span>Priority customer support</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-600 mt-0.5 font-bold">★</span>
-          <span className="text-orange-700 font-medium">Priority access to Hotels, Villas &amp; Private Spa Resort service requests</span>
+          <span className="text-amber-600 mt-0.5 font-bold">★</span>
+          <span className="text-amber-700 font-medium">Priority access to Hotels, Villas &amp; Private Spa Resort service requests</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-600 mt-0.5 font-bold">★</span>
-          <span className="text-orange-700 font-medium">Add your full price menu slider with unlimited services</span>
+          <span className="text-amber-600 mt-0.5 font-bold">★</span>
+          <span className="text-amber-700 font-medium">Add your full price menu slider with unlimited services</span>
         </li>
       </ul>
     </section>
@@ -290,15 +290,15 @@ const PlusTerms: React.FC = () => (
       <h2 className="font-semibold text-gray-900 text-base mb-4">Payment Schedule</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>No contract commitment</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Due on the 1st, grace period until the 5th</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Rp 25,000 late fee applies (administration)</span>
         </li>
       </ul>
@@ -325,15 +325,15 @@ const PlusTerms: React.FC = () => (
       <h2 className="font-semibold text-gray-900 text-base mb-4">Account Readiness</h2>
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Clear all outstanding invoices before activating</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Maintain healthy compliance record</span>
         </li>
         <li className="flex items-start gap-3">
-          <span className="text-orange-500 mt-0.5">•</span>
+          <span className="text-amber-500 mt-0.5">•</span>
           <span>Complete profile with services, pricing, and photos</span>
         </li>
       </ul>
@@ -346,13 +346,13 @@ const PlusTerms: React.FC = () => (
         <div className="text-gray-500">Monthly Fee</div>
         <div className="text-gray-900 font-medium">Rp 250,000</div>
         <div className="text-gray-500">Commission</div>
-        <div className="text-orange-600 font-medium">0% — Keep 100%</div>
+        <div className="text-amber-600 font-medium">0% — Keep 100%</div>
         <div className="text-gray-500">Commitment</div>
         <div className="text-gray-900 font-medium">No contract</div>
         <div className="text-gray-500">Late Fee</div>
         <div className="text-gray-900 font-medium">Rp 25,000</div>
         <div className="text-gray-500">Priority</div>
-        <div className="text-orange-600 font-medium">Hotels, Villas, Spas</div>
+        <div className="text-amber-600 font-medium">Hotels, Villas, Spas</div>
       </div>
     </section>
   </div>

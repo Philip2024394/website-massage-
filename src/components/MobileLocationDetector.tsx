@@ -111,8 +111,8 @@ const MobileLocationDetector: React.FC<MobileLocationDetectorProps> = ({
       case 'detecting':
         return (
           <div className="w-6 h-6 relative">
-            <div className="absolute inset-0 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            <div className="absolute inset-1 bg-orange-500 rounded-full"></div>
+            <div className="absolute inset-0 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-1 bg-amber-500 rounded-full"></div>
           </div>
         );
       case 'success':
@@ -150,8 +150,8 @@ const MobileLocationDetector: React.FC<MobileLocationDetectorProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-auto">
             <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 </svg>
               </div>
@@ -160,7 +160,7 @@ const MobileLocationDetector: React.FC<MobileLocationDetectorProps> = ({
                 Allow location access to find massage therapists and spas near you with accurate distances.
               </p>
               <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
                 <span>Detecting your location...</span>
               </div>
             </div>
@@ -202,7 +202,7 @@ const MobileLocationDetector: React.FC<MobileLocationDetectorProps> = ({
           <button
             onClick={handleLocationDetection}
             disabled={isDetecting}
-            className="px-3 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-xs font-medium rounded-lg transition-colors"
+            className="px-3 py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400 text-white text-xs font-medium rounded-lg transition-colors"
           >
             {isDetecting ? 'Detecting...' : 'Get Location'}
           </button>

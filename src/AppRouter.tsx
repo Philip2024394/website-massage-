@@ -351,7 +351,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
                     )}
                     <button
                         onClick={() => props.onNavigate?.('home')}
-                        className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                        className="bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 transition-colors"
                     >
                         Back to Home
                     </button>
@@ -364,7 +364,7 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
     const TherapistProfilePage = profileRoutes.therapistProfile.component;
     
     return (
-        <React.Suspense fallback={<div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto my-8"></div>}> 
+        <React.Suspense fallback={<div className="w-8 h-8 border-3 border-amber-200 border-t-amber-500 rounded-full animate-spin mx-auto my-8"></div>}> 
             <TherapistProfilePage
                 therapist={therapist}
                 onBack={() => props.onNavigate?.('home')}
@@ -478,7 +478,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                                 window.location.reload();
                             }
                         }}
-                        className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors mr-2"
+                        className="bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 transition-colors mr-2"
                     >
                         Reload Page
                     </button>
@@ -623,6 +623,33 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onNavigate: props.onNavigate,
                 handleSetSelectedTherapist: props.handleSetSelectedTherapist,
                 language: props.language,
+                countryName: 'Indonesia',
+                loggedInCustomer: props.loggedInCustomer,
+                loggedInProvider: props.loggedInProvider,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onHotelPortalClick: props.onHotelPortalClick,
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                therapists: props.therapists,
+                places: props.places,
+                facialPlaces: props.facialPlaces ?? [],
+            }));
+
+        case 'uk':
+            return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.uk.component, {
+                onNavigate: props.onNavigate,
+                handleSetSelectedTherapist: props.handleSetSelectedTherapist,
+                language: props.language === 'id' ? 'en' : (props.language ?? 'gb'),
+                countryName: 'United Kingdom',
+                loggedInCustomer: props.loggedInCustomer,
+                loggedInProvider: props.loggedInProvider,
                 onMassageJobsClick: props.onMassageJobsClick,
                 onHotelPortalClick: props.onHotelPortalClick,
                 onVillaPortalClick: props.onVillaPortalClick,
@@ -1283,7 +1310,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     }, 500);
                     return <div className="flex items-center justify-center min-h-screen">
                         <div className="text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500 mx-auto mb-2"></div>
                             <p className="text-gray-600">Redirecting to your dashboard...</p>
                         </div>
                     </div>;
@@ -1487,7 +1514,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         </div>
                         <button
                             onClick={() => props.onNavigate?.('home')}
-                            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                            className="bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 transition-colors"
                         >
                             Back to Home
                         </button>

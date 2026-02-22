@@ -93,7 +93,7 @@ const TherapistListingPaymentPage: React.FC<TherapistListingPaymentPageProps> = 
         return (
             <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4" />
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4" />
                     <p className="text-gray-600">Loading...</p>
                 </div>
             </div>
@@ -110,7 +110,7 @@ const TherapistListingPaymentPage: React.FC<TherapistListingPaymentPageProps> = 
                             className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity"
                         >
                             <span className="text-black">Inda</span>
-                            <span className="text-orange-500">Street</span>
+                            <span className="text-amber-500">Street</span>
                         </button>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
@@ -136,7 +136,7 @@ const TherapistListingPaymentPage: React.FC<TherapistListingPaymentPageProps> = 
             <div className="flex-1 max-w-4xl mx-auto px-4 py-8 space-y-6 w-full">
                 <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">Listing Fee</h2>
-                    <div className="text-2xl font-bold text-orange-500 mb-4">{formatCurrency(PRICE)}</div>
+                    <div className="text-2xl font-bold text-amber-500 mb-4">{formatCurrency(PRICE)}</div>
                     <p className="text-gray-600 text-sm mb-4">
                         One-time fee to list your profile in Find Professionals for 90 days.
                     </p>
@@ -167,7 +167,7 @@ const TherapistListingPaymentPage: React.FC<TherapistListingPaymentPageProps> = 
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t">
                             <span className="text-gray-600">Amount</span>
-                            <span className="font-bold text-orange-500">{formatCurrency(PRICE)}</span>
+                            <span className="font-bold text-amber-500">{formatCurrency(PRICE)}</span>
                         </div>
                     </div>
                 </div>

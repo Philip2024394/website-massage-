@@ -152,7 +152,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
                 <span className="ml-2 text-gray-600">Loading review requests...</span>
             </div>
         );
@@ -174,7 +174,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
                 <h2 className="text-2xl font-bold text-gray-900">
                     Live Massage Place Review Requests
                 </h2>
-                <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
+                <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
                     {notifications.length} for review
                 </span>
             </div>
@@ -187,7 +187,7 @@ const PlaceActivationRequests: React.FC<PlaceActivationRequestsProps> = ({ onRef
                     <div className="flex items-start justify-between">
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                                <Clock className="w-5 h-5 text-orange-500" />
+                                <Clock className="w-5 h-5 text-amber-500" />
                                 <h3 className="text-lg font-semibold text-gray-900">
                                     {notification.data.placeName}
                                 </h3>

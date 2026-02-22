@@ -58,9 +58,9 @@ const PackageOnboarding: React.FC<PackageOnboardingProps> = ({ onNavigate }) => 
         'Customer support'
       ],
       badge: 'Pay Per Lead',
-      badgeColor: 'bg-orange-500',
-      color: 'from-orange-500 to-orange-600',
-      borderColor: 'border-orange-500',
+      badgeColor: 'bg-amber-500',
+      color: 'from-amber-500 to-amber-600',
+      borderColor: 'border-amber-500',
       popular: false
     },
     {
@@ -123,7 +123,7 @@ const PackageOnboarding: React.FC<PackageOnboardingProps> = ({ onNavigate }) => 
   };
 
   return (
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 to-white py-12 px-4">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-amber-50 to-white py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
@@ -145,12 +145,12 @@ const PackageOnboarding: React.FC<PackageOnboardingProps> = ({ onNavigate }) => 
               className={`relative bg-white rounded-2xl shadow-lg border-2 ${
                 selectedPlan === plan.id ? plan.borderColor : 'border-gray-200'
               } transition-all duration-300 hover:shadow-xl ${
-                plan.popular ? 'ring-4 ring-orange-100' : ''
+                plan.popular ? 'ring-4 ring-amber-100' : ''
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2 rounded-full text-sm font-bold">
+                  <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-2 rounded-full text-sm font-bold">
                     <Star className="w-4 h-4 inline mr-1" />
                     Recommended
                   </div>
@@ -174,7 +174,7 @@ const PackageOnboarding: React.FC<PackageOnboardingProps> = ({ onNavigate }) => 
                 </div>
 
                 <div className="mb-6">
-                  <div className={`text-sm font-medium ${plan.id === 'plus' ? 'text-green-600' : 'text-orange-600'}`}>
+                  <div className={`text-sm font-medium ${plan.id === 'plus' ? 'text-green-600' : 'text-amber-600'}`}>
                     {plan.commission}
                   </div>
                 </div>

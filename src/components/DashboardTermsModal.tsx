@@ -35,14 +35,14 @@ const DashboardTermsModal: React.FC<DashboardTermsModalProps> = ({ t, onAccept, 
         <button
           type="button"
           onClick={() => setLang('en')}
-          className={`px-3 py-1.5 rounded text-sm font-medium ${lang === 'en' ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+          className={`px-3 py-1.5 rounded text-sm font-medium ${lang === 'en' ? 'bg-amber-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
         >
           English
         </button>
         <button
           type="button"
           onClick={() => setLang('id')}
-          className={`px-3 py-1.5 rounded text-sm font-medium ${lang === 'id' ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+          className={`px-3 py-1.5 rounded text-sm font-medium ${lang === 'id' ? 'bg-amber-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
         >
           Bahasa Indonesia
         </button>
@@ -50,7 +50,7 @@ const DashboardTermsModal: React.FC<DashboardTermsModalProps> = ({ t, onAccept, 
 
       <div className="flex-1 overflow-y-auto px-4 py-6 max-w-2xl mx-auto w-full">
         <div className="mb-4">
-          <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-orange-500/20 text-orange-400 border border-orange-500/50 mb-2">
+          <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/50 mb-2">
             Therapist &amp; Facial Services
           </span>
           <h1 className="text-xl font-bold text-white">{title}</h1>
@@ -60,22 +60,22 @@ const DashboardTermsModal: React.FC<DashboardTermsModalProps> = ({ t, onAccept, 
 
         <div className="space-y-5 text-sm">
           <section>
-            <h2 className="font-bold text-orange-400 text-base mb-2">{accountSetup.title ?? 'Account Setup and Edits'}</h2>
+            <h2 className="font-bold text-amber-400 text-base mb-2">{accountSetup.title ?? 'Account Setup and Edits'}</h2>
             <p className="leading-relaxed text-gray-300">{accountSetup.content ?? ''}</p>
           </section>
 
           <section>
-            <h2 className="font-bold text-orange-400 text-base mb-2">{profileVerification.title ?? 'Profile Verification'}</h2>
+            <h2 className="font-bold text-amber-400 text-base mb-2">{profileVerification.title ?? 'Profile Verification'}</h2>
             <p className="leading-relaxed text-gray-300">{profileVerification.content ?? ''}</p>
           </section>
 
           <section>
-            <h2 className="font-bold text-orange-400 text-base mb-2">{accountDeletion.title ?? 'Account Deletion'}</h2>
+            <h2 className="font-bold text-amber-400 text-base mb-2">{accountDeletion.title ?? 'Account Deletion'}</h2>
             <p className="leading-relaxed text-gray-300">{accountDeletion.content ?? ''}</p>
           </section>
 
           <section>
-            <h2 className="font-bold text-orange-400 text-base mb-2">{userConduct.title ?? 'User Conduct'}</h2>
+            <h2 className="font-bold text-amber-400 text-base mb-2">{userConduct.title ?? 'User Conduct'}</h2>
             <p className="leading-relaxed text-gray-300">{userConduct.content ?? ''}</p>
           </section>
         </div>
@@ -86,7 +86,7 @@ const DashboardTermsModal: React.FC<DashboardTermsModalProps> = ({ t, onAccept, 
           type="button"
           onClick={onAccept}
           disabled={loading}
-          className="w-full py-3.5 rounded-lg font-semibold text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 transition-colors shadow-md border border-orange-400/50"
+          className="w-full py-3.5 rounded-lg font-semibold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 disabled:opacity-50 transition-colors shadow-md border border-amber-400/50"
         >
           {loading ? (lang === 'id' ? 'Memproses...' : 'Processing...') : (lang === 'id' ? 'Saya Setuju' : agreeBtn)}
         </button>

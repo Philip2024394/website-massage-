@@ -1642,7 +1642,7 @@ export function PersistentChatWindow() {
     return (
       <button
         onClick={maximizeChat}
-        className="fixed bottom-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+        className="fixed bottom-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
       >
         <div className="relative">
@@ -1663,7 +1663,7 @@ export function PersistentChatWindow() {
         </div>
         <div className="text-left">
           <div className="font-semibold text-sm">{hasActiveChat ? getTherapistDisplayName(therapist.name) : 'Continue Booking'}</div>
-          <div className="text-xs text-orange-100">{hasActiveChat ? 'Tap to continue chat' : 'Tap to continue'}</div>
+          <div className="text-xs text-amber-100">{hasActiveChat ? 'Tap to continue chat' : 'Tap to continue'}</div>
         </div>
       </button>
     );
@@ -1867,7 +1867,7 @@ export function PersistentChatWindow() {
         }}
       >
       {/* Header - Align with price modal: profilePicture (avatar) first, then mainImage */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
+      <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-4 flex items-center gap-3">
         
         <img 
           src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '')}
@@ -1996,9 +1996,9 @@ export function PersistentChatWindow() {
                     <p className="text-gray-700 font-semibold mb-2">🔍 Detailed Error Information:</p>
                     
                     {bookingError.errorDetails.appwriteDetails && (
-                      <div className="mb-3 p-3 bg-orange-50 rounded border border-orange-200">
-                        <p className="font-semibold text-orange-800 mb-1">📊 Appwrite Service Details:</p>
-                        <div className="text-sm text-orange-700 space-y-1">
+                      <div className="mb-3 p-3 bg-amber-50 rounded border border-amber-200">
+                        <p className="font-semibold text-amber-800 mb-1">📊 Appwrite Service Details:</p>
+                        <div className="text-sm text-amber-700 space-y-1">
                           <p><strong>Issue:</strong> {bookingError.errorDetails.appwriteDetails.issue}</p>
                           <p><strong>Solution:</strong> {bookingError.errorDetails.appwriteDetails.solution}</p>
                           {bookingError.errorDetails.appwriteDetails.currentConfig && (
@@ -2123,12 +2123,12 @@ export function PersistentChatWindow() {
       <>
       {/* Therapist Booking Notifications */}
       {chatState.isTherapistView && bookingNotifications.length > 0 && (
-        <div className="p-4 bg-gradient-to-r from-orange-400 to-red-500">
+        <div className="p-4 bg-gradient-to-r from-amber-400 to-red-500">
           {bookingNotifications.map((notification) => (
             <div key={notification.bookingId} className="bg-white rounded-lg p-4 mb-3 last:mb-0 shadow-lg">
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center animate-pulse">
-                  <div className="w-6 h-6 bg-orange-500 rounded-full"></div>
+                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center animate-pulse">
+                  <div className="w-6 h-6 bg-amber-500 rounded-full"></div>
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-lg text-gray-800 mb-1" id="new-booking-title" data-gb="Permintaan Booking Baru|New Booking Request">
@@ -2255,20 +2255,20 @@ export function PersistentChatWindow() {
                     <div key={option.minutes} className="w-full">
                       <button
                         onClick={() => handleDurationSelect(option.minutes)}
-                        className={`w-full p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-orange-400 hover:bg-orange-50 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 text-left group cursor-pointer duration-container ${animationClass}`}
+                        className={`w-full p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-amber-400 hover:bg-amber-50 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 text-left group cursor-pointer duration-container ${animationClass}`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-semibold text-gray-800 group-hover:text-orange-600">
+                            <div className="font-semibold text-gray-800 group-hover:text-amber-600">
                               {option.label}
                             </div>
                             <div className="text-sm text-gray-500">{option.minutes} minutes</div>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold text-orange-500 text-lg">
+                            <div className="font-bold text-amber-500 text-lg">
                               {(Math.round(price / 1000))}k
                             </div>
-                            <div className="text-xs text-gray-400 group-hover:text-orange-400">Book Now →</div>
+                            <div className="text-xs text-gray-400 group-hover:text-amber-400">Book Now →</div>
                           </div>
                         </div>
                       </button>
@@ -2285,7 +2285,7 @@ export function PersistentChatWindow() {
                 setMassageTypesExpandedCards({});
                 setIsMassageTypesModalOpen(true);
               }}
-                className="text-sm text-orange-600 font-medium hover:text-orange-700 underline-offset-2 hover:underline"
+                className="text-sm text-amber-600 font-medium hover:text-amber-700 underline-offset-2 hover:underline"
               >
                 Not sure? View massage types
               </button>
@@ -2301,8 +2301,8 @@ export function PersistentChatWindow() {
         {bookingStep === 'datetime' && (
           <div key="datetime-step" className="p-4">
             <div className="text-center mb-4">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
-                <Calendar className="w-8 h-8 text-orange-500" />
+              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center">
+                <Calendar className="w-8 h-8 text-amber-500" />
               </div>
               <h4 className="font-semibold text-gray-800">Schedule Appointment</h4>
               <p className="text-sm text-gray-500 mt-1">
@@ -2333,8 +2333,8 @@ export function PersistentChatWindow() {
                       onClick={() => setSelectedTime(time)}
                       className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                         selectedTime === time
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400'
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-amber-400'
                       }`}
                     >
                       {time}
@@ -2345,8 +2345,8 @@ export function PersistentChatWindow() {
               
               {/* Selected Summary */}
               {selectedDate && selectedTime && (
-                <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
-                  <div className="text-sm text-orange-800">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                  <div className="text-sm text-amber-800">
                     <strong>Selected:</strong> {new Date(selectedDate).toLocaleDateString('en-US', { 
                       weekday: 'short', 
                       month: 'short', 
@@ -2359,7 +2359,7 @@ export function PersistentChatWindow() {
               <button
                 onClick={handleDateTimeSubmit}
                 disabled={!selectedDate || !selectedTime}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <Check className="w-5 h-5" />
                 Continue to Details
@@ -2372,14 +2372,14 @@ export function PersistentChatWindow() {
         {bookingStep === 'confirmation' && chatState.selectedService && (
           <div key="confirmation-step" className="p-4">
             {/* Service Card with Arrival Countdown */}
-            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4 border border-orange-200 shadow-sm mb-4">
+            <div className="bg-gradient-to-br from-amber-50 to-amber-50 rounded-2xl p-4 border border-amber-200 shadow-sm mb-4">
               {/* Header with therapist */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="relative">
                   <img 
                     src={(therapist as any).profilePicture || (therapist as any).mainImage || (therapist as any).profileImageUrl || (therapist as any).heroImageUrl || (therapist as any).image || (therapist as any).profileImage || getRandomTherapistImage((therapist as any).appwriteId || therapist.id || therapist.$id || '')} 
                     alt={getTherapistDisplayName(therapist.name)}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-orange-400 shadow-md"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-amber-400 shadow-md"
                   />
                   <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
@@ -2397,10 +2397,10 @@ export function PersistentChatWindow() {
               </div>
 
               {/* Selected Service Details */}
-              <div className="bg-white rounded-xl p-3 border border-orange-200 mb-3">
+              <div className="bg-white rounded-xl p-3 border border-amber-200 mb-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">Selected Service</span>
-                  <Sparkles className="w-4 h-4 text-orange-400" />
+                  <span className="text-xs font-semibold text-amber-600 uppercase tracking-wide">Selected Service</span>
+                  <Sparkles className="w-4 h-4 text-amber-400" />
                 </div>
                 <div className="font-bold text-lg text-gray-900 mb-1">
                   {chatState.selectedService.serviceName}
@@ -2410,14 +2410,14 @@ export function PersistentChatWindow() {
                     <Clock className="w-4 h-4" />
                     <span className="font-medium">{chatState.selectedService.duration} min</span>
                   </div>
-                  <div className="text-xl font-bold text-orange-600">
+                  <div className="text-xl font-bold text-amber-600">
                     {formatPrice(chatState.selectedService.price)}
                   </div>
                 </div>
               </div>
 
               {/* Arrival Time Countdown */}
-              <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-3 text-white">
+              <div className="bg-gradient-to-r from-amber-500 to-amber-500 rounded-xl p-3 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -2450,7 +2450,7 @@ export function PersistentChatWindow() {
             {/* Change Selection Link */}
             <button
               onClick={() => setBookingStep('duration')}
-              className="w-full mt-3 py-2 text-sm text-orange-600 hover:text-orange-700 font-medium"
+              className="w-full mt-3 py-2 text-sm text-amber-600 hover:text-amber-700 font-medium"
             >
               ← Change selection
             </button>
@@ -2473,7 +2473,7 @@ export function PersistentChatWindow() {
             <div className="text-center mb-4">
               {chatState.selectedService ? (
                 <div className="mt-2 space-y-1">
-                  <p className="text-lg font-medium text-orange-600">{chatState.selectedService.serviceName}</p>
+                  <p className="text-lg font-medium text-amber-600">{chatState.selectedService.serviceName}</p>
                   <p className="text-base text-gray-700">
                     <span className="font-bold">{chatState.selectedService.duration} min</span> • <span className="font-bold">IDR {chatState.selectedService.price.toLocaleString('id-ID')}</span>
                   </p>
@@ -2484,12 +2484,12 @@ export function PersistentChatWindow() {
                 </p>
               )}
               {isScheduleMode && selectedDate && selectedTime && (
-                <p className="text-sm text-orange-600 mt-1">
+                <p className="text-sm text-amber-600 mt-1">
                   📅 {new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedTime}
                 </p>
               )}
               {isScheduleMode ? (
-                <p className="text-sm text-orange-600 mt-2 font-medium">
+                <p className="text-sm text-amber-600 mt-2 font-medium">
                   ⏰ Required 20 Minute Before Therapy
                 </p>
               ) : (
@@ -2528,7 +2528,7 @@ export function PersistentChatWindow() {
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 outline-none transition-all text-base ${
                     !customerForm.name.trim() 
                       ? 'border-red-300 focus:border-red-500 focus:ring-red-200 bg-red-50 animate-pulse' 
-                      : 'border-gray-200 focus:border-orange-400 focus:ring-orange-100'
+                      : 'border-gray-200 focus:border-amber-400 focus:ring-amber-100'
                   }`}
                   style={{ fontSize: '16px' }}
                   required
@@ -2552,7 +2552,7 @@ export function PersistentChatWindow() {
                     name="country_code"
                     value={customerForm.countryCode}
                     onChange={(e) => setCustomerForm(prev => ({ ...prev, countryCode: e.target.value }))}
-                    className="px-2 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all bg-white text-base accent-orange-500"
+                    className="px-2 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-white text-base accent-amber-500"
                     style={{ fontSize: '16px', accentColor: '#f97316' }}
                   >
                     <option value="+62">🇮🇩 +62</option>
@@ -2587,7 +2587,7 @@ export function PersistentChatWindow() {
                     className={`flex-1 px-4 py-3 border-2 rounded-xl focus:ring-2 outline-none transition-all text-base ${
                       !customerForm.whatsApp.trim() || customerForm.whatsApp.length < 8 || customerForm.whatsApp.length > 15
                         ? 'border-red-300 focus:border-red-500 focus:ring-red-200 bg-red-50 animate-pulse' 
-                        : 'border-gray-200 focus:border-orange-400 focus:ring-orange-100'
+                        : 'border-gray-200 focus:border-amber-400 focus:ring-amber-100'
                     }`}
                     style={{ fontSize: '16px' }}
                     required
@@ -2650,16 +2650,16 @@ export function PersistentChatWindow() {
                               : ''
                             : `py-3 px-2 rounded-xl ${customerForm.massageFor === option.value
                               ? isCompatible
-                                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
+                                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg scale-105'
                                 : 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
-                              : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'}`
+                              : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-amber-400 hover:bg-amber-50'}`
                         }`}
                       >
                         {option.isImage ? (
                           <div className="relative -mt-[10px]">
                             <img src={option.icon} alt={option.label} className="w-[100px] h-[100px] object-cover" />
                             <span className={`absolute bottom-6 left-1/2 -translate-x-1/2 font-bold text-sm drop-shadow-lg ${
-                              customerForm.massageFor === option.value ? 'text-orange-500' : 'text-white'
+                              customerForm.massageFor === option.value ? 'text-amber-500' : 'text-white'
                             }`}>{option.label}</span>
                           </div>
                         ) : (
@@ -2682,7 +2682,7 @@ export function PersistentChatWindow() {
                 )}
                 {/* Required field - therapist service compatibility */}
                 {!customerForm.massageFor && (
-                  <p className="text-xs text-orange-600 mt-2 text-center flex items-center justify-center gap-1 font-medium">
+                  <p className="text-xs text-amber-600 mt-2 text-center flex items-center justify-center gap-1 font-medium">
                     <span>⚠️</span> Please select who the treatment is for (some therapists only serve specific clients)
                   </p>
                 )}
@@ -2694,10 +2694,10 @@ export function PersistentChatWindow() {
                   <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
                     Treatment Center Address
                   </label>
-                  <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4 text-center">
+                  <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 text-center">
                     <div className="flex items-center justify-center mb-2">
-                      <MapPin className="w-5 h-5 text-orange-600 mr-2" />
-                      <span className="text-sm font-semibold text-orange-800">Treatment Location</span>
+                      <MapPin className="w-5 h-5 text-amber-600 mr-2" />
+                      <span className="text-sm font-semibold text-amber-800">Treatment Location</span>
                     </div>
                     <p className="text-gray-800 font-medium">
                       {chatState.therapist?.location || 'Professional Treatment Center'}
@@ -2728,15 +2728,15 @@ export function PersistentChatWindow() {
                               ? 'scale-105'
                               : ''
                             : `py-3 px-2 rounded-xl ${customerForm.locationType === option.value
-                              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
-                              : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'}`
+                              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg scale-105'
+                              : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-amber-400 hover:bg-amber-50'}`
                         }`}
                       >
                         {option.isImage ? (
                           <div className="relative -mt-[10px]">
                             <img src={option.icon} alt={option.label} className="w-[100px] h-[100px] object-cover" />
                             <span className={`absolute bottom-6 left-1/2 -translate-x-1/2 font-bold text-sm drop-shadow-lg ${
-                              customerForm.locationType === option.value ? 'text-orange-500' : 'text-white'
+                              customerForm.locationType === option.value ? 'text-amber-500' : 'text-white'
                             }`}>{option.label}</span>
                           </div>
                         ) : (
@@ -2782,7 +2782,7 @@ export function PersistentChatWindow() {
                         setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
                       }}
                       placeholder="Street address, building name"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-base"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-base"
                       style={{ fontSize: '16px' }}
                       required
                     />
@@ -2803,7 +2803,7 @@ export function PersistentChatWindow() {
                         setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
                       }}
                       placeholder="e.g. Seminyak, Kuta, Ubud"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-base"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-base"
                       style={{ fontSize: '16px' }}
                       required
                     />
@@ -2832,7 +2832,7 @@ export function PersistentChatWindow() {
                         setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
                       }}
                       placeholder={customerForm.locationType === 'hotel' ? 'e.g. Grand Hyatt Bali' : 'e.g. Villa Seminyak Estate'}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-base"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-base"
                       style={{ fontSize: '16px' }}
                       required
                     />
@@ -2855,7 +2855,7 @@ export function PersistentChatWindow() {
                         setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
                       }}
                       placeholder="e.g. Room 1205"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-base"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-base"
                       style={{ fontSize: '16px' }}
                       required
                     />
@@ -2888,7 +2888,7 @@ export function PersistentChatWindow() {
                       discountValidation?.valid
                         ? 'border-green-400 bg-green-50 text-green-700'
                         : discountValidation === null
-                        ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100'
+                        ? 'border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100'
                         : 'border-red-300 bg-red-50'
                     }`}
                     style={{ fontSize: '16px' }}
@@ -2898,7 +2898,7 @@ export function PersistentChatWindow() {
                       type="button"
                       onClick={handleValidateDiscount}
                       disabled={isValidatingDiscount || !discountCode.trim()}
-                      className="px-4 py-3 bg-orange-500 text-white font-medium rounded-xl hover:bg-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-4 py-3 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {isValidatingDiscount ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -2981,7 +2981,7 @@ export function PersistentChatWindow() {
                   className={`w-full py-3 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                   (!isSending && customerForm.name.trim() && customerForm.whatsApp && customerForm.whatsApp.length >= 8 && customerForm.whatsApp.length <= 15 && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))
                     ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
+                    : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700'
                 }`}
               >
                 {isSending ? (
@@ -3032,7 +3032,7 @@ export function PersistentChatWindow() {
               {messages.length === 0 && !chatState.currentBooking && (
               <div className="text-center py-12 px-4">
                 <div className="relative mb-6">
-                  <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                  <div className="w-20 h-20 mx-auto bg-gradient-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
                     <MessageCircle className="w-10 h-10 text-white" />
                   </div>
                 </div>
@@ -3088,12 +3088,12 @@ export function PersistentChatWindow() {
                       <div
                         className={`max-w-[75%] px-4 py-3 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md chat-bubble-hover ${
                           isOwn
-                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-br-md'
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-br-md'
                             : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md hover:border-gray-300'
                         }`}
                       >
                         {!isOwn && (
-                          <div className="text-xs font-medium text-orange-500 mb-1">
+                          <div className="text-xs font-medium text-amber-500 mb-1">
                             {msg.senderName}
                           </div>
                         )}
@@ -3106,7 +3106,7 @@ export function PersistentChatWindow() {
                         ) : (
                           <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
                         )}
-                        <div className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? 'text-orange-100 justify-end' : 'text-gray-400'}`}>
+                        <div className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? 'text-amber-100 justify-end' : 'text-gray-400'}`}>
                           {formatTime(msg.createdAt)}
                           {isOwn && msg.read && <Check className="w-3 h-3" />}
                         </div>
@@ -3168,7 +3168,7 @@ export function PersistentChatWindow() {
 
                 {/* Suggested therapists & places after timeout or reject (spec 1.1 & 1.2: only active/open) */}
                 {bookingExpiredOrDeclined && (
-                  <div className="mx-4 mb-4 p-4 rounded-xl border-2 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                  <div className="mx-4 mb-4 p-4 rounded-xl border-2 bg-gradient-to-br from-amber-50 to-amber-50 border-amber-200">
                     <h4 className="font-bold text-amber-900 mb-2 flex items-center gap-2">
                       <Sparkles className="w-5 h-5" />
                       Suggested therapists & places
@@ -3225,10 +3225,10 @@ export function PersistentChatWindow() {
                       {/* Response Countdown Timer */}
                       <div className="bg-white/70 rounded-lg p-4 mb-4">
                         <div className="flex items-center justify-center gap-2 mb-2">
-                          <Clock className="w-5 h-5 text-orange-600" />
+                          <Clock className="w-5 h-5 text-amber-600" />
                           <span className="font-semibold text-gray-700">Response Timer</span>
                         </div>
-                        <div className="text-3xl font-mono font-bold text-orange-600 mb-2">
+                        <div className="text-3xl font-mono font-bold text-amber-600 mb-2">
                           {Math.floor(therapistResponseCountdown / 60)}:{(therapistResponseCountdown % 60).toString().padStart(2, '0')}
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
@@ -3514,7 +3514,7 @@ export function PersistentChatWindow() {
                 }, 300);
               }}
               placeholder={`💬 Message ${getTherapistDisplayName(therapist.name)}... (Press Enter to send)`}
-              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none text-base transition-all duration-200 placeholder-gray-400 hover:bg-gray-100"
+              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none text-base transition-all duration-200 placeholder-gray-400 hover:bg-gray-100"
               style={{ fontSize: '16px' }}
               disabled={isSending}
               onKeyPress={(e) => {
@@ -3527,7 +3527,7 @@ export function PersistentChatWindow() {
             <button
               type="submit"
               disabled={!messageInput.trim() || isSending}
-              className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+              className="p-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full hover:from-amber-600 hover:to-amber-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
             >
               {isSending ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -3559,7 +3559,7 @@ export function PersistentChatWindow() {
         className="fixed inset-0 bg-white z-[9999] overflow-y-auto animate-slideUp"
       >
         <button
-          className="fixed top-4 right-4 z-10 p-2 bg-orange-500 rounded-full shadow-lg hover:bg-orange-600 transition-colors"
+          className="fixed top-4 right-4 z-10 p-2 bg-amber-500 rounded-full shadow-lg hover:bg-amber-600 transition-colors"
           onClick={() => {
             setIsMassageTypesModalOpen(false);
             setMassageTypesExpandedCards({});

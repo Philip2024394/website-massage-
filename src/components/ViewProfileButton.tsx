@@ -30,7 +30,7 @@ export function ViewProfileButton({
       disabled={disabled}
       aria-label={ariaLabel}
       title={title ?? ariaLabel}
-      className={`inline-flex items-center justify-center overflow-hidden rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70 ${className}`}
+      className={`inline-flex items-center justify-center overflow-hidden rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70 ${className}`}
     >
       <img
         src={VIEW_PROFILE_IMAGE}

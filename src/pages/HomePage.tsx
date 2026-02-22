@@ -41,7 +41,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService, bookingService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawerClean';
-import { Users, Building, Sparkles, X, Scissors, SlidersHorizontal } from 'lucide-react';
+import { Users, Building, Sparkles, X, Scissors, SlidersHorizontal, Globe } from 'lucide-react';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
@@ -1145,7 +1145,7 @@ const HomePage: React.FC<HomePageProps> = ({
         onRequest,
         onTherapistPortalClick
     }) => (
-        <div className="rounded-2xl border border-dashed border-orange-300 bg-white px-5 py-6 text-center shadow-sm">
+        <div className="rounded-2xl border border-dashed border-amber-300 bg-white px-5 py-6 text-center shadow-sm">
             <p className="text-lg font-semibold text-gray-900">Therapists Coming Soon</p>
             <p className="text-sm text-gray-600 mt-1">
                 {description || `We are onboarding certified therapists for ${cityName}.`}
@@ -1153,13 +1153,13 @@ const HomePage: React.FC<HomePageProps> = ({
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
                 <button
                     onClick={() => onRequest?.()}
-                    className="inline-flex items-center justify-center rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-orange-600 transition-colors"
+                    className="inline-flex items-center justify-center rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-amber-600 transition-colors"
                 >
                     Request Therapist
                 </button>
                 <button
                     onClick={() => onTherapistPortalClick?.()}
-                    className="inline-flex items-center justify-center rounded-full border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-600 shadow-sm hover:bg-orange-100 transition-colors"
+                    className="inline-flex items-center justify-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-600 shadow-sm hover:bg-amber-100 transition-colors"
                 >
                     Become a Therapist
                 </button>
@@ -1919,7 +1919,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 (window as any).setPage('landing');
                             }
                         }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500 text-white font-semibold hover:bg-orange-600 transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors"
                     >
                         Set Location
                     </button>
@@ -1985,14 +1985,14 @@ const HomePage: React.FC<HomePageProps> = ({
                     <div className="flex bg-gray-200 rounded-full p-1 max-w-2xl mx-auto overflow-x-auto">
                         <button
                             onClick={() => setMainTab('home-service')}
-                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'home-service' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'home-service' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                         >
                             <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">Home Service</span>
                         </button>
                         <button
                             onClick={() => setMainTab('places')}
-                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                            className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold transition-colors duration-300 min-h-[42px] ${mainTab === 'places' ? 'bg-amber-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                         >
                             <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">City Places</span>
@@ -2005,7 +2005,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             onClick={() => setServiceButton('massage')}
                             title={t?.home?.massage ?? 'Massage'}
                             aria-label="Massage"
-                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'massage' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'massage' ? 'bg-amber-500 text-white border-amber-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                         >
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap -ml-0.5">{t?.home?.massage ?? 'Massage'}</span>
@@ -2014,7 +2014,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             onClick={() => setServiceButton('facial')}
                             title={t?.home?.facialHomeService ?? 'Facial'}
                             aria-label="Facial"
-                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'facial' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'facial' ? 'bg-amber-500 text-white border-amber-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                         >
                             <Sparkles className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap truncate min-w-0">{t?.home?.facialHomeService || t?.home?.facial || 'Facial'}</span>
@@ -2023,7 +2023,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             onClick={() => setServiceButton('beautician')}
                             title="Beauty"
                             aria-label="Beauty"
-                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'beautician' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
+                            className={`flex-1 min-w-0 h-[42px] px-2 rounded-full font-semibold text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors border ${serviceButton === 'beautician' ? 'bg-amber-500 text-white border-amber-500 shadow' : 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300'}`}
                         >
                             <Scissors className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap truncate min-w-0">Beauty</span>
@@ -2167,16 +2167,15 @@ const HomePage: React.FC<HomePageProps> = ({
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                 />
                                 </div>
-                                {/* Accommodation Massage Service Link */}
+                                {/* IndaStreet Social link */}
                                 <div className="mt-2 mb-8 flex justify-center">
                                     <button
-                                        onClick={() => onNavigate?.('indastreet-partners')}
-                                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                        onClick={() => onNavigate?.('indonesia')}
+                                        className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
                                     >
-                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                        </svg>
-                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
                                     </button>
                                 </div>
                                 </div>
@@ -2337,16 +2336,15 @@ const HomePage: React.FC<HomePageProps> = ({
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
-                                                {/* Accommodation Massage Service Link */}
+                                                {/* IndaStreet Social link */}
                                                 <div className="mt-2 mb-4 flex justify-center">
                                                     <button
-                                                        onClick={() => onNavigate?.('indastreet-partners')}
-                                                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                        onClick={() => onNavigate?.('indonesia')}
+                                                        className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
                                                     >
-                                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                                        </svg>
-                                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
                                                     </button>
                                                 </div>
                                                 </React.Fragment>
@@ -2402,9 +2400,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(MOCK_FACIAL_THERAPIST.id, 'therapist', metric)}
                                 />
                                 <div className="mt-2 mb-8 flex justify-center">
-                                    <button onClick={() => onNavigate?.('indastreet-partners')} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors">
-                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                    <button onClick={() => onNavigate?.('indonesia')} className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors">
+                                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -2437,13 +2436,12 @@ const HomePage: React.FC<HomePageProps> = ({
                                                     />
                                                     <div className="mt-2 mb-8 flex justify-center">
                                                         <button
-                                                            onClick={() => onNavigate?.('indastreet-partners')}
-                                                            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                            onClick={() => onNavigate?.('indonesia')}
+                                                            className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
                                                         >
-                                                            <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                                            </svg>
-                                                            <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                                            <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                                            <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                                            <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -2565,9 +2563,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(MOCK_BEAUTY_THERAPIST.id, 'therapist', metric)}
                                 />
                                 <div className="mt-2 mb-8 flex justify-center">
-                                    <button onClick={() => onNavigate?.('indastreet-partners')} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors">
-                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                    <button onClick={() => onNavigate?.('indonesia')} className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors">
+                                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -2600,13 +2599,12 @@ const HomePage: React.FC<HomePageProps> = ({
                                                 />
                                                 <div className="mt-2 mb-8 flex justify-center">
                                                     <button
-                                                        onClick={() => onNavigate?.('indastreet-partners')}
-                                                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                        onClick={() => onNavigate?.('indonesia')}
+                                                        className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
                                                     >
-                                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                                        </svg>
-                                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -2714,7 +2712,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
                 <div className="font-bold text-lg">
                     <span className="text-black">Inda</span>
-                    <span className="text-orange-500">Street</span>
+                    <span className="text-amber-500">Street</span>
                 </div>
                 {/* Social Media Icons */}
                 <SocialMediaLinks className="mt-2" />
@@ -2725,31 +2723,31 @@ const HomePage: React.FC<HomePageProps> = ({
                     <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
                         <button
                             onClick={() => onNavigate?.('massage-types')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                         >
                             Massage Types
                         </button>
                         <button
                             onClick={() => onNavigate?.('facial-types')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                         >
                             Facial Types
                         </button>
                         <button
                             onClick={() => onNavigate?.('therapist-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                         >
                             Join as a Therapist Today
                         </button>
                         <button
                             onClick={() => onNavigate?.('place-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                         >
                             Join Massage Place Today
                         </button>
                         <button
                             onClick={() => onNavigate?.('facial-place-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
                         >
                             Join Facial Place Today
                         </button>
@@ -2821,7 +2819,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     id={`filter-female-only-${serviceKey}`}
                                     checked={currentFilters.showFemaleOnly}
                                     onChange={(e) => setFiltersByService(prev => ({ ...prev, [serviceKey]: { ...prev[serviceKey], showFemaleOnly: e.target.checked } }))}
-                                    className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                                    className="rounded border-gray-300 text-amber-500 focus:ring-amber-500"
                                 />
                                 <label htmlFor={`filter-female-only-${serviceKey}`} className="text-sm font-medium text-gray-700">Female therapists only</label>
                             </div>
@@ -2850,7 +2848,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setShowFilterDrawer(false)}
-                                className="w-full py-3 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600"
+                                className="w-full py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600"
                             >
                                 Apply
                             </button>
@@ -2865,7 +2863,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full">
                         {/* Modal Header */}
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5 rounded-t-2xl">
+                        <div className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-5 rounded-t-2xl">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-white text-xl font-bold">Coming Soon!</h2>
                                 <button
@@ -2881,8 +2879,8 @@ const HomePage: React.FC<HomePageProps> = ({
 
                         {/* Modal Content */}
                         <div className="p-6 text-center space-y-4">
-                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
-                                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+                                <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
@@ -2894,14 +2892,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                 <p className="text-gray-600 mb-4">
                                     We are currently updating this section. Check back soon for amazing {comingSoonSection.toLowerCase()} near you!
                                 </p>
-                                <p className="text-sm text-orange-600 font-semibold">
+                                <p className="text-sm text-amber-600 font-semibold">
                                     🚧 Under Development - Live Site
                                 </p>
                             </div>
 
                             <button
                                 onClick={() => setShowComingSoonModal(false)}
-                                className="w-full px-6 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors"
+                                className="w-full px-6 py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-colors"
                             >
                                 Got It!
                             </button>
@@ -3014,8 +3012,8 @@ const HomePage: React.FC<HomePageProps> = ({
                         }}
                         className={`w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 will-change-transform ${
                             fabMenuOpen 
-                                ? 'bg-orange-600 hover:bg-orange-700' 
-                                : 'bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 scale-100 hover:scale-110'
+                                ? 'bg-amber-600 hover:bg-amber-700' 
+                                : 'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 scale-100 hover:scale-110'
                         }`}
                         title={fabMenuOpen 
                             ? (translationsObject?.home?.fabMenu?.close || 'Close') 
@@ -3038,25 +3036,25 @@ const HomePage: React.FC<HomePageProps> = ({
             {/* Location select popup - round hero button opens this; select city then closes and updates location */}
             {showLocationSelectPopup && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowLocationSelectPopup(false)} role="dialog" aria-modal="true" aria-label={t?.home?.changeCity || 'Select location'}>
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col overflow-hidden border border-orange-100 ring-1 ring-orange-200/50" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col overflow-hidden border border-amber-100 ring-1 ring-amber-200/50" onClick={e => e.stopPropagation()}>
                         {/* Header with orange accent bar */}
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-orange-50/50 to-white">
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-amber-50/50 to-white">
                             <div className="flex items-center gap-3">
-                                <div className="w-1 h-8 rounded-full bg-orange-500 flex-shrink-0" aria-hidden />
+                                <div className="w-1 h-8 rounded-full bg-amber-500 flex-shrink-0" aria-hidden />
                                 <h3 className="text-lg font-semibold text-gray-900">{t?.home?.changeCity || 'Select location'}</h3>
                             </div>
-                            <button type="button" onClick={() => setShowLocationSelectPopup(false)} className="p-2 rounded-full text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-colors" aria-label="Close">
+                            <button type="button" onClick={() => setShowLocationSelectPopup(false)} className="p-2 rounded-full text-gray-500 hover:bg-amber-50 hover:text-amber-600 transition-colors" aria-label="Close">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="overflow-y-auto flex-1 p-3 sm:p-4">
                             {/* You are viewing - current location */}
-                            <div className="mb-4 p-4 rounded-xl bg-orange-50 border border-orange-200 ring-1 ring-orange-100">
-                                <p className="text-xs font-semibold text-orange-600/90 uppercase tracking-wider mb-1">{t?.home?.youAreViewing ?? 'You are viewing'}</p>
+                            <div className="mb-4 p-4 rounded-xl bg-amber-50 border border-amber-200 ring-1 ring-amber-100">
+                                <p className="text-xs font-semibold text-amber-600/90 uppercase tracking-wider mb-1">{t?.home?.youAreViewing ?? 'You are viewing'}</p>
                                 <p className="text-base font-semibold text-gray-900">{getLocationDisplayName(contextCity ?? null, t?.home?.allAreas ?? 'All areas')}</p>
                             </div>
                             {/* Change location - options list */}
-                            <p className="text-xs font-semibold text-orange-600/90 uppercase tracking-wider mb-3 px-1">{t?.home?.changeLocation ?? 'Change location'}</p>
+                            <p className="text-xs font-semibold text-amber-600/90 uppercase tracking-wider mb-3 px-1">{t?.home?.changeLocation ?? 'Change location'}</p>
                             <button
                                 type="button"
                                 onClick={() => {
@@ -3068,13 +3066,13 @@ const HomePage: React.FC<HomePageProps> = ({
                                     setSelectedCity('all');
                                     setShowLocationSelectPopup(false);
                                 }}
-                                className={`w-full text-left px-4 py-3.5 rounded-xl font-medium transition-all ${(contextCity === 'all' || !contextCity) ? 'bg-orange-50 text-orange-800 ring-1 ring-orange-200 shadow-sm' : 'text-gray-700 hover:bg-orange-50/50 hover:ring-1 hover:ring-orange-100'}`}
+                                className={`w-full text-left px-4 py-3.5 rounded-xl font-medium transition-all ${(contextCity === 'all' || !contextCity) ? 'bg-amber-50 text-amber-800 ring-1 ring-amber-200 shadow-sm' : 'text-gray-700 hover:bg-amber-50/50 hover:ring-1 hover:ring-amber-100'}`}
                             >
                                 {t?.home?.allAreas ?? 'All areas'}
                             </button>
                             {INDONESIAN_CITIES_CATEGORIZED.map((cat) => (
                                 <div key={cat.category} className="mt-4">
-                                    <div className="px-3 py-1.5 text-xs font-semibold text-orange-600/90 uppercase tracking-wider border-l-2 border-orange-400 mb-1">{cat.category}</div>
+                                    <div className="px-3 py-1.5 text-xs font-semibold text-amber-600/90 uppercase tracking-wider border-l-2 border-amber-400 mb-1">{cat.category}</div>
                                     {cat.cities.map((city) => (
                                         <button
                                             key={city.locationId}
@@ -3088,7 +3086,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                                 setSelectedCity(city.locationId);
                                                 setShowLocationSelectPopup(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${contextCity === city.locationId ? 'bg-orange-50 text-orange-800 ring-1 ring-orange-200 shadow-sm' : 'text-gray-700 hover:bg-orange-50/50 hover:ring-1 hover:ring-orange-100'}`}
+                                            className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${contextCity === city.locationId ? 'bg-amber-50 text-amber-800 ring-1 ring-amber-200 shadow-sm' : 'text-gray-700 hover:bg-amber-50/50 hover:ring-1 hover:ring-amber-100'}`}
                                         >
                                             {city.name}
                                         </button>

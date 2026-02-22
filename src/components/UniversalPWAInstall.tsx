@@ -114,7 +114,7 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
             ${status.isInstalled 
               ? 'bg-green-500 text-white cursor-default' 
               : status.canInstall
-                ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                ? 'bg-amber-500 hover:bg-amber-600 text-white'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }
             ${getSizeClasses()}
@@ -157,7 +157,7 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
             ${status.isInstalled 
               ? 'bg-green-100 text-green-600' 
               : status.canInstall
-                ? 'bg-orange-100 text-orange-600'
+                ? 'bg-amber-100 text-amber-600'
                 : 'bg-gray-100 text-gray-400'
             }
             ${size === 'sm' ? 'w-10 h-10' : size === 'lg' ? 'w-14 h-14' : 'w-12 h-12'}
@@ -188,7 +188,7 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
                   mt-3 inline-flex items-center gap-2 font-semibold rounded-lg transition-all
                   min-h-[44px] touch-manipulation
                   ${status.canInstall
-                    ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white shadow-md hover:shadow-lg active:scale-95'
+                    ? 'bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white shadow-md hover:shadow-lg active:scale-95'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }
                   ${getSizeClasses()}
@@ -217,7 +217,7 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
 
   if (variant === 'banner') {
     return (
-      <div className={`bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-4 shadow-lg ${className}`}>
+      <div className={`bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl p-4 shadow-lg ${className}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Smartphone className="w-8 h-8" />
@@ -225,7 +225,7 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
               <h3 className="font-semibold text-lg">
                 {status.isInstalled ? 'App Ready!' : 'Get the App'}
               </h3>
-              <p className="text-orange-100 text-sm">
+              <p className="text-amber-100 text-sm">
                 {status.isInstalled 
                   ? 'Notifications enabled and ready'
                   : 'Install for better experience'
@@ -239,8 +239,8 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
               onClick={handleInstall}
               disabled={installing || !status.canInstall}
               className={`
-                bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold
-                hover:bg-orange-50 active:bg-orange-100 transition-all flex items-center gap-2
+                bg-white text-amber-600 px-4 py-2 rounded-lg font-semibold
+                hover:bg-amber-50 active:bg-amber-100 transition-all flex items-center gap-2
                 min-h-[44px] touch-manipulation
                 ${installing ? 'opacity-50 cursor-wait' : ''}
                 ${!status.canInstall ? 'opacity-50 cursor-not-allowed' : ''}
@@ -252,7 +252,7 @@ export const UniversalPWAInstall: React.FC<UniversalPWAInstallProps> = ({
               }}
             >
               {installing ? (
-                <div className="animate-spin rounded-full border-2 border-orange-500 border-t-transparent w-4 h-4" />
+                <div className="animate-spin rounded-full border-2 border-amber-500 border-t-transparent w-4 h-4" />
               ) : (
                 <Download className="w-4 h-4" />
               )}
@@ -309,7 +309,7 @@ const InstructionsModal: React.FC<{
         
         <button
           onClick={onClose}
-          className="w-full mt-4 bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+          className="w-full mt-4 bg-amber-500 text-white py-2 rounded-lg font-semibold hover:bg-amber-600 transition-colors"
         >
           Got it!
         </button>

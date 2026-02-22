@@ -36,6 +36,7 @@ export const useURLRouting = (
         'about-us': '/about',
         'company': '/company',
         'contact': '/contact',
+        'indonesia': '/indonesia',
         'partner-contact': '/partner-contact',
         'hotels-and-villas': '/hotels-and-villas',
         'blog': '/blog',
@@ -548,6 +549,12 @@ export const useURLRouting = (
                 setPage('therapist-dashboard');
                 return () => window.removeEventListener('popstate', handlePopState);
             }
+            // Indonesia country hub – side drawer "IndaStreet Countries" → Indonesia
+            if (hashPath === 'indonesia' || hashPathWithSlash === '/indonesia') {
+                console.log('✅ Hash route matched: indonesia');
+                setPage('indonesia');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
             // Massage Directory from side drawer – keep massage types page when hash is #/massage-types
             if (hashPath === 'massage-types' || hashPathWithSlash === '/massage-types') {
                 console.log('✅ Hash route matched: massage-types');
@@ -673,19 +680,27 @@ export const useURLRouting = (
                 }
             }
         } else {
-            // Root path (pathname === '/') – only treat as landing if hash is empty or landing/home
-            // Do NOT force landing when hash is #/therapist-profile/... (View Profile from job listings)
-            const hashForRoot = (window.location.hash || '').replace('#', '');
-            const isProfileOrShareHash = hashForRoot.startsWith('/therapist-profile/') || hashForRoot.startsWith('/share/therapist/') || hashForRoot.startsWith('therapist-profile/');
-            const isMassageTypesHash = hashForRoot === '/massage-types' || hashForRoot.replace(/^\/+/, '') === 'massage-types';
-            if (isProfileOrShareHash) {
-                console.log('🔗 Root path but hash is therapist profile – keeping shared-therapist-profile');
-                setPage('shared-therapist-profile');
-            } else if (isMassageTypesHash) {
-                console.log('🔗 Root path but hash is massage-types – keeping massage-types');
-                setPage('massage-types');
+            // No hash: use pathname to set page (e.g. /indonesia → indonesia, /massage-types → massage-types)
+            const pathPage = pathToPage[initialPath];
+            if (pathPage) {
+                console.log(`🎯 Path URL: ${initialPath} → ${pathPage}`);
+                setPage(pathPage);
+            } else if (initialPath === '/' || !initialPath) {
+                // Root path (pathname === '/') – only treat as landing if hash is empty or landing/home
+                const hashForRoot = (window.location.hash || '').replace('#', '');
+                const isProfileOrShareHash = hashForRoot.startsWith('/therapist-profile/') || hashForRoot.startsWith('/share/therapist/') || hashForRoot.startsWith('therapist-profile/');
+                const isMassageTypesHash = hashForRoot === '/massage-types' || hashForRoot.replace(/^\/+/, '') === 'massage-types';
+                if (isProfileOrShareHash) {
+                    console.log('🔗 Root path but hash is therapist profile – keeping shared-therapist-profile');
+                    setPage('shared-therapist-profile');
+                } else if (isMassageTypesHash) {
+                    console.log('🔗 Root path but hash is massage-types – keeping massage-types');
+                    setPage('massage-types');
+                } else if (page !== 'landing' && page !== 'home') {
+                    console.log(`🎯 Root URL detected → landing (current page: ${page})`);
+                    setPage('landing');
+                }
             } else if (page !== 'landing' && page !== 'home') {
-                console.log(`🎯 Root URL detected → landing (current page: ${page})`);
                 setPage('landing');
             }
         }

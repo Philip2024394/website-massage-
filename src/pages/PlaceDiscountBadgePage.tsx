@@ -37,7 +37,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
     const discountOptions = [
         { percentage: 5, color: 'from-blue-400 to-blue-600', borderColor: 'border-blue-500' },
         { percentage: 10, color: 'from-green-400 to-green-600', borderColor: 'border-green-500' },
-        { percentage: 15, color: 'from-orange-400 to-orange-600', borderColor: 'border-orange-500' },
+        { percentage: 15, color: 'from-amber-400 to-amber-600', borderColor: 'border-amber-500' },
         { percentage: 20, color: 'from-red-400 to-red-600', borderColor: 'border-red-500' }
     ];
 
@@ -144,7 +144,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold">
                         <span className="text-gray-900">Inda</span>
-                        <span className="text-orange-500">Street</span>
+                        <span className="text-amber-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-2">
                         {onNavigateToNotifications && (
@@ -152,9 +152,9 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                         )}
                         <button
                             onClick={() => setIsSideDrawerOpen(true)}
-                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-700 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors"
                         >
-                            <Menu className="w-5 h-5 text-orange-600" />
+                            <Menu className="w-5 h-5 text-amber-600" />
                         </button>
                     </div>
                 </div>
@@ -170,14 +170,14 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                     />
                     
                     {/* Drawer */}
-                    <div className="absolute right-0 top-0 h-full w-80 bg-gradient-to-br from-orange-500 to-red-500 shadow-xl">
+                    <div className="absolute right-0 top-0 h-full w-80 bg-gradient-to-br from-amber-500 to-red-500 shadow-xl">
                         {/* Drawer Header */}
-                        <div className="p-6 border-b border-orange-400">
+                        <div className="p-6 border-b border-amber-400">
                             <div className="flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-white">Menu</h2>
                                 <button
                                     onClick={() => setIsSideDrawerOpen(false)}
-                                    className="p-2 text-white hover:bg-orange-600 rounded-lg transition-colors"
+                                    className="p-2 text-white hover:bg-amber-600 rounded-lg transition-colors"
                                 >
                                     <ArrowLeft className="w-5 h-5" />
                                 </button>
@@ -192,7 +192,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                                         setIsSideDrawerOpen(false);
                                         onBack();
                                     }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-orange-600 rounded-lg transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-amber-600 rounded-lg transition-colors text-left"
                                 >
                                     <ArrowLeft className="w-5 h-5" />
                                     <span>Back to Dashboard</span>
@@ -207,7 +207,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                 {/* Page Title */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
                     <div className="flex items-center gap-3 mb-2">
-                        <Badge className="w-8 h-8 text-orange-500" />
+                        <Badge className="w-8 h-8 text-amber-500" />
                         <div>
                             <h1 className="text-xl font-bold text-gray-800">Discount Badge Manager</h1>
                             <p className="text-sm text-gray-600">{placeName}</p>
@@ -285,9 +285,9 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                         ))}
                     </div>
 
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 pb-20">
-                        <h3 className="font-semibold text-orange-900 mb-2">💡 Tips for Maximum Impact:</h3>
-                        <ul className="text-sm text-orange-800 space-y-1">
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 pb-20">
+                        <h3 className="font-semibold text-amber-900 mb-2">💡 Tips for Maximum Impact:</h3>
+                        <ul className="text-sm text-amber-800 space-y-1">
                             <li>• Activate badges during peak hours (evening/weekend) for better visibility</li>
                             <li>• Higher percentages attract more bookings but reduce profit margins</li>
                             <li>• Use shorter durations for flash sales, longer for sustained promotion</li>
@@ -329,7 +329,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
             {showConfirmModal && selectedBadge && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 pb-20">
                     <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+                        <div className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-4">
                             <h3 className="text-xl font-bold text-white">Confirm Discount Badge Activation</h3>
                         </div>
                         
@@ -359,7 +359,7 @@ const PlaceDiscountBadgePage: React.FC<PlaceDiscountBadgePageProps> = ({
                             </button>
                             <button
                                 onClick={confirmActivation}
-                                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-orange-600 to-orange-700 rounded-lg hover:from-orange-700 hover:to-orange-800 shadow-md transition-all"
+                                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-amber-600 to-amber-700 rounded-lg hover:from-amber-700 hover:to-amber-800 shadow-md transition-all"
                             >
                                 Activate Badge
                             </button>

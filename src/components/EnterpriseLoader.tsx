@@ -96,7 +96,7 @@ export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
           <div className="space-y-3">
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-600 transition"
+              className="w-full bg-amber-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-amber-600 transition"
             >
               🔄 Reload Page
             </button>
@@ -126,7 +126,7 @@ export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
   if (variant === 'global' && isLoading) {
     return (
       <div 
-        className="fixed inset-0 flex flex-col items-center justify-center z-50 bg-orange-500"
+        className="fixed inset-0 flex flex-col items-center justify-center z-50 bg-amber-500"
         role="status"
         aria-live="polite"
         aria-label={progress.message || "Application is loading"}
@@ -245,7 +245,7 @@ export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
   if (variant === 'inline' && isLoading) {
     return (
       <div className={`flex items-center justify-center ${className}`}>
-        <div className="animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-amber-500 border-t-transparent"></div>
         <span className="ml-2 text-gray-600">Loading...</span>
       </div>
     );

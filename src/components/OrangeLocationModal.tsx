@@ -78,7 +78,7 @@ const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4 animate-fadeIn">
             <div className={`bg-white rounded-3xl shadow-2xl ${containerMaxWidth} w-full mx-4 relative overflow-hidden animate-slideUp`}>
                 {/* Orange gradient header */}
-                <div className={`bg-gradient-to-r from-orange-500 to-orange-600 ${headerPadding} text-white relative`}>
+                <div className={`bg-gradient-to-r from-amber-500 to-amber-600 ${headerPadding} text-white relative`}>
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -mr-16 -mt-16"></div>
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-10 rounded-full -ml-12 -mb-12"></div>
                     
@@ -87,7 +87,7 @@ const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
                             <MapPin className={`${headerIconSize} text-white`} />
                         </div>
                         <h2 className={`${titleText} font-bold mb-2`}>{t.title}</h2>
-                        <p className="text-orange-100 text-sm">{t.subtitle}</p>
+                        <p className="text-amber-100 text-sm">{t.subtitle}</p>
                     </div>
                 </div>
 
@@ -101,8 +101,8 @@ const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
                     <div className="space-y-3 mb-6">
                         {t.benefits.map((benefit, index) => (
                             <div key={index} className="flex items-center space-x-3 group">
-                                <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-orange-200 transition-colors">
-                                    <CheckCircle2 className="w-4 h-4 text-orange-600" />
+                                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-amber-200 transition-colors">
+                                    <CheckCircle2 className="w-4 h-4 text-amber-600" />
                                 </div>
                                 <span className="text-gray-700 text-sm">{benefit}</span>
                             </div>
@@ -114,7 +114,7 @@ const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
                         <button
                             onClick={handleAllow}
                             disabled={isLoading}
-                            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold ${allowBtnPadding} rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:transform-none shadow-lg flex items-center justify-center space-x-2`}
+                            className={`w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold ${allowBtnPadding} rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:transform-none shadow-lg flex items-center justify-center space-x-2`}
                         >
                             {isLoading ? (
                                 <>
@@ -139,8 +139,8 @@ const OrangeLocationModal: React.FC<OrangeLocationModalProps> = ({
                     </div>
 
                     {/* Privacy note */}
-                    <div className="flex items-start space-x-2 p-3 bg-orange-50 rounded-lg">
-                        <Shield className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start space-x-2 p-3 bg-amber-50 rounded-lg">
+                        <Shield className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                         <p className="text-xs text-gray-600 leading-relaxed">
                             {t.privacyNote}
                         </p>

@@ -104,7 +104,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             }}
           >
             <span className="text-black">Inda</span>
-            <span className="text-orange-500">street</span>
+            <span className="text-amber-500">street</span>
           </button>
         </div>
         <div className="flex items-center gap-3">

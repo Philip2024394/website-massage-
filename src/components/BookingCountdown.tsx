@@ -113,7 +113,7 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
 
   return (
     <div 
-      className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm countdown-container"
+      className="bg-gradient-to-r from-amber-100 to-amber-50 border-b border-amber-200 p-4 shadow-sm countdown-container"
       style={{ 
         display: 'block',
         opacity: 1,
@@ -129,14 +129,14 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center animate-pulse">
+          <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center animate-pulse">
             <Clock className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-orange-800">
+            <div className="text-sm font-semibold text-amber-800">
               {isExpired ? 'Booking Expired' : 'Waiting for Response'}
             </div>
-            <div className="text-xs text-orange-600">
+            <div className="text-xs text-amber-600">
               {role === 'therapist' 
                 ? (isExpired ? 'Response time exceeded' : 'Please respond to this booking request')
                 : (isExpired ? 'No response received' : `Waiting for ${therapistName || 'therapist'} to respond`)
@@ -145,20 +145,20 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
           </div>
         </div>
         <div className="text-right">
-          <div className={`text-2xl font-bold mb-1 ${isExpired ? 'text-red-600' : 'text-orange-600'}`}>
+          <div className={`text-2xl font-bold mb-1 ${isExpired ? 'text-red-600' : 'text-amber-600'}`}>
             {formatTime(remaining)}
           </div>
-          <div className="text-xs text-orange-500">
+          <div className="text-xs text-amber-500">
             {isExpired ? 'expired' : 'remaining'}
           </div>
         </div>
       </div>
       
       {/* Progress bar */}
-      <div className="w-full bg-orange-200 rounded-full h-2 mt-3 mb-3">
+      <div className="w-full bg-amber-200 rounded-full h-2 mt-3 mb-3">
         <div 
           className={`h-2 rounded-full transition-all duration-1000 ease-linear ${
-            isExpired ? 'bg-red-500' : 'bg-orange-500'
+            isExpired ? 'bg-red-500' : 'bg-amber-500'
           }`}
           style={{width: `${progressPercentage}%`}}
         ></div>

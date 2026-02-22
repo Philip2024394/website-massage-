@@ -119,7 +119,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
 
                         </div>
                         <span className={`text-xs mt-1 font-medium transition-colors ${
-                            isActive(item.key) ? 'text-orange-600' : 'text-gray-500 group-hover:text-gray-700'
+                            isActive(item.key) ? 'text-amber-600' : 'text-gray-500 group-hover:text-gray-700'
                         }`}>
                             {item.label}
                         </span>
@@ -128,7 +128,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
             </div>
             
             {/* Orange active indicator line */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-orange-600 opacity-20"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-600 opacity-20"></div>
         </footer>
     );
 };

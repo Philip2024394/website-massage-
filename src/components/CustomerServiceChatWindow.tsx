@@ -123,16 +123,16 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
 
     return (
         <div className="fixed bottom-24 right-6 z-[9998]">
-            <div className="bg-white rounded-lg shadow-2xl border-2 border-orange-200 w-80 sm:w-96 max-h-[600px] flex flex-col animate-in fade-in zoom-in duration-300">
+            <div className="bg-white rounded-lg shadow-2xl border-2 border-amber-200 w-80 sm:w-96 max-h-[600px] flex flex-col animate-in fade-in zoom-in duration-300">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 rounded-t-lg flex items-center justify-between">
+                <div className="bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 rounded-t-lg flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
                             <span className="text-2xl">💬</span>
                         </div>
                         <div>
                             <h2 className="text-white font-bold text-base">Customer Service</h2>
-                            <p className="text-orange-100 text-xs">We're here to help</p>
+                            <p className="text-amber-100 text-xs">We're here to help</p>
                         </div>
                     </div>
                     <button
@@ -161,7 +161,7 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
                     {!submitted ? (
                         <>
                             {/* Instruction Text */}
-                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
                                 <p className="text-xs text-gray-700 text-center leading-relaxed">
                                     To chat with customer service, please provide your <strong>name</strong>, <strong>WhatsApp number</strong>, and <strong>set your location</strong>.
                                 </p>
@@ -179,7 +179,7 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
                                         placeholder="Enter your name"
-                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                                         required
                                     />
                                 </div>
@@ -194,7 +194,7 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
                                         value={whatsappNumber}
                                         onChange={(e) => setWhatsappNumber(e.target.value)}
                                         placeholder="+62 812 3456 7890"
-                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                                         required
                                     />
                                 </div>
@@ -210,14 +210,14 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
                                             value={location}
                                             onChange={(e) => setLocation(e.target.value)}
                                             placeholder="City or coordinates"
-                                            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                                            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                                             required
                                         />
                                         <button
                                             type="button"
                                             onClick={handleGetLocation}
                                             disabled={gettingLocation}
-                                            className="px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                            className="px-3 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                             title="Get current location"
                                         >
                                             <MapPin className="w-4 h-4" />
@@ -235,7 +235,7 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
                                         onChange={(e) => setMessage(e.target.value)}
                                         placeholder="How can we help you today?"
                                         rows={3}
-                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all resize-none"
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all resize-none"
                                         required
                                     />
                                 </div>
@@ -243,7 +243,7 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
                                 {/* Submit Button */}
                                 <button
                                     type="submit"
-                                    className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-sm rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-sm rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                                 >
                                     <Send className="w-4 h-4" />
                                     <span>Send Message</span>

@@ -155,7 +155,7 @@ export function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
             onClick={() => setSelectedCategory(-1)}
             className={`px-3 py-2 text-xs font-medium transition-colors ${
               selectedCategory === -1
-                ? 'bg-orange-100 text-orange-600 border-b-2 border-orange-500'
+                ? 'bg-amber-100 text-amber-600 border-b-2 border-amber-500'
                 : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
             }`}
           >
@@ -167,7 +167,7 @@ export function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
               onClick={() => setSelectedCategory(index)}
               className={`px-3 py-2 text-xs font-medium transition-colors ${
                 selectedCategory === index
-                  ? 'bg-orange-100 text-orange-600 border-b-2 border-orange-500'
+                  ? 'bg-amber-100 text-amber-600 border-b-2 border-amber-500'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
               }`}
             >

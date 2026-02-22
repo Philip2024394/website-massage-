@@ -54,14 +54,14 @@ export const TermsPage: React.FC<TermsPageProps> = ({
       <div className="max-w-4xl mx-auto px-4 py-8">
         
         {/* Important Notice */}
-        <div className="bg-orange-50 border-l-4 border-orange-500 p-4 mb-8 rounded-lg">
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-8 rounded-lg">
           <div className="flex items-start">
-            <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" />
+            <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 mr-3 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-orange-800 mb-1">
+              <p className="font-semibold text-amber-800 mb-1">
                 {language === 'id' ? 'Pemberitahuan Penting' : 'Important Notice'}
               </p>
-              <p className="text-sm text-orange-700">
+              <p className="text-sm text-amber-700">
                 {language === 'id' 
                   ? 'Semua anggota IndaStreetMassage bergabung sebagai kontraktor independen (wiraswasta). Platform ini hanya menyediakan layanan pemesanan dan komunikasi. Anda bertanggung jawab penuh atas pajak, lisensi, dan kepatuhan hukum Anda.'
                   : 'All IndaStreetMassage members join as independent contractors (self-employed). This platform only provides booking and communication services. You are fully responsible for your taxes, licenses, and legal compliance.'
@@ -102,7 +102,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({
               ? 'Pertanyaan tentang syarat ini? Hubungi kami di' 
               : 'Questions about these terms? Contact us at'
             }{' '}
-            <a href="mailto:indastreet.id@gmail.com" className="text-orange-600 hover:text-orange-700 font-medium">
+            <a href="mailto:indastreet.id@gmail.com" className="text-amber-600 hover:text-amber-700 font-medium">
               indastreet.id@gmail.com
             </a>
           </p>
@@ -112,7 +112,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({
         <div className="mt-8 text-center">
           <button
             onClick={handleBack}
-            className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors"
           >
             {language === 'id' ? '← Kembali' : '← Go Back'}
           </button>

@@ -501,25 +501,25 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
 
             {/* Content */}
             <div className="px-4 pb-4">
-                {/* Pricing - Always show all 3 containers */}
+                {/* Pricing — same design as beauty profile price containers */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
-                    <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
-                        <div className="text-xs text-gray-600 mb-1">60 min</div>
-                        <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
+                    <div className="rounded-xl border-2 border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200">
+                        <p className="text-xs text-gray-600 mb-1">60 min</p>
+                        <p className="text-sm font-bold text-gray-800 break-words">
                             {pricing["60"] > 0 ? `IDR ${formatPrice(pricing["60"])}` : 'Contact'}
-                        </div>
+                        </p>
                     </div>
-                    <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
-                        <div className="text-xs text-gray-600 mb-1">90 min</div>
-                        <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
+                    <div className="rounded-xl border-2 border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200">
+                        <p className="text-xs text-gray-600 mb-1">90 min</p>
+                        <p className="text-sm font-bold text-gray-800 break-words">
                             {pricing["90"] > 0 ? `IDR ${formatPrice(pricing["90"])}` : 'Contact'}
-                        </div>
+                        </p>
                     </div>
-                    <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
-                        <div className="text-xs text-gray-600 mb-1">120 min</div>
-                        <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
+                    <div className="rounded-xl border-2 border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200">
+                        <p className="text-xs text-gray-600 mb-1">120 min</p>
+                        <p className="text-sm font-bold text-gray-800 break-words">
                             {pricing["120"] > 0 ? `IDR ${formatPrice(pricing["120"])}` : 'Contact'}
-                        </div>
+                        </p>
                     </div>
                 </div>
 

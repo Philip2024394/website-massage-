@@ -21,7 +21,7 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
             <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black p-4">
                 <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-lg bg-gray-900 shadow-2xl overflow-hidden">
                     <div className="flex-shrink-0 px-6 py-4 bg-gray-900">
-                        <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-orange-500/20 text-orange-400 border border-orange-500/50 mb-2">Therapist And Facial Services</span>
+                        <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/50 mb-2">Therapist And Facial Services</span>
                         <h1 className="text-xl font-bold text-white">{modalTitle}</h1>
                         <p className="text-xs text-gray-400 mt-0.5">{modalSubtitle}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{safeT.effectiveDate}</p>
@@ -38,7 +38,7 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                         <button
                             type="button"
                             onClick={onAccept}
-                            className="w-full py-3.5 rounded-lg font-semibold text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors shadow-md border border-orange-400/50"
+                            className="w-full py-3.5 rounded-lg font-semibold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 transition-colors shadow-md border border-amber-400/50"
                         >
                             {safeT.serviceProviderTerms?.agreeButton ?? 'Agree to terms and conditions'}
                         </button>
@@ -52,8 +52,8 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                     .service-terms-modal-dark h3 { color: rgb(251 146 60); }
                     .service-terms-modal-dark h4 { color: rgb(253 186 116); }
                     .service-terms-modal-dark p, .service-terms-modal-dark li { color: rgb(209 213 219); }
-                    .service-terms-modal-dark .bg-orange-100 { background: rgba(251,146,60,0.2); }
-                    .service-terms-modal-dark .text-orange-900 { color: rgb(253 186 116); }
+                    .service-terms-modal-dark .bg-amber-100 { background: rgba(251,146,60,0.2); }
+                    .service-terms-modal-dark .text-amber-900 { color: rgb(253 186 116); }
                     .service-terms-modal-dark .bg-amber-50\\/80 { background: rgba(251,191,36,0.2); }
                     .service-terms-modal-dark .bg-red-50\\/80 { background: rgba(239,68,68,0.2); }
                     .service-terms-modal-dark .bg-green-50 { background: rgba(34,197,94,0.2); }
@@ -68,7 +68,7 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                     .service-terms-modal-dark .bg-blue-50 { background: rgba(59,130,246,0.2); }
                     .service-terms-modal-dark .border-blue-200 { border-color: rgba(59,130,246,0.5); }
                     .service-terms-modal-dark .bg-gray-100 { background: rgb(55 65 81); }
-                    .service-terms-modal-dark .border-orange-200 { border-color: rgba(251,146,60,0.5); }
+                    .service-terms-modal-dark .border-amber-200 { border-color: rgba(251,146,60,0.5); }
                     .service-terms-modal-dark .bg-black { background: rgb(17 24 39); }
                     .service-terms-modal-dark .bg-black .text-gray-300 { color: rgb(209 213 219); }
                     .service-terms-modal-dark .bg-red-900\\/90 { background: rgba(127, 29, 29, 0.9); }
@@ -85,10 +85,10 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        <span className="text-amber-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     {!acceptMode && onBack && (
-                        <button onClick={onBack} className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500" aria-label="Close">
+                        <button onClick={onBack} className="p-2 hover:bg-amber-50 rounded-full transition-colors text-amber-500" aria-label="Close">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -104,7 +104,7 @@ const ServiceTermsPage: React.FC<ServiceTermsPageProps> = ({ onBack, t, contactN
                         <button
                             type="button"
                             onClick={onAccept}
-                            className="w-full py-4 rounded-xl font-semibold text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors shadow-md"
+                            className="w-full py-4 rounded-xl font-semibold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 transition-colors shadow-md"
                         >
                             Agree to terms and conditions
                         </button>

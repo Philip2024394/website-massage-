@@ -104,100 +104,79 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
             )}
 
             <div className="grid grid-cols-3 gap-2 text-center mt-4 px-4 min-w-0">
-                {/* 60 min pricing */}
-                <div 
+                {/* 60 min — same design as beauty profile price containers */}
+                <div
+                    role={onPriceClick ? 'button' : undefined}
                     onClick={onPriceClick}
-                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-w-0 ${
-                    isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
-                } flex flex-col justify-center ${
-                    animatedPriceIndex === 0
-                        ? 'bg-gray-100 border-gray-400 border-[3px] shadow-lg scale-[1.02]'
-                        : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
-                    <p className="text-gray-600 text-xs mb-0.5 font-semibold truncate">60 min</p>
+                    className={`rounded-xl border-2 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200 ${
+                        isDiscountActive(therapist)
+                            ? 'bg-amber-50/80 border-amber-400'
+                            : animatedPriceIndex === 0
+                                ? 'bg-amber-50/80 border-amber-400'
+                                : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
+                    } ${onPriceClick ? 'cursor-pointer' : ''}`}
+                >
+                    <p className="text-xs text-gray-600 mb-1">60 min</p>
                     {Number(pricing["60"]) <= 0 ? (
-                        <p className="font-bold text-gray-700 text-xs leading-tight">Contact</p>
+                        <p className="text-sm font-bold text-gray-800">Contact</p>
                     ) : isDiscountActive(therapist) ? (
                         <>
-                            <p className="text-[10px] text-gray-500 line-through mb-0.5 truncate">
-                                IDR {formatPrice(Number(pricing["60"]))}
-                            </p>
-                            <p className="font-bold text-gray-800 text-xs leading-tight animate-pulse truncate">
-                                IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                            </p>
+                            <p className="text-[10px] text-gray-500 line-through mb-0.5">{formatPrice(Number(pricing["60"]))}</p>
+                            <p className="text-sm font-bold text-gray-800">{formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}</p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-xs leading-tight truncate">
-                            IDR {formatPrice(Number(pricing["60"]))}
-                        </p>
+                        <p className="text-sm font-bold text-gray-800">{formatPrice(Number(pricing["60"]))}</p>
                     )}
-                    <p className="text-[10px] text-slate-600 mt-0.5 truncate">Basic</p>
                 </div>
 
-                {/* 90 min pricing */}
-                <div 
+                {/* 90 min */}
+                <div
+                    role={onPriceClick ? 'button' : undefined}
                     onClick={onPriceClick}
-                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-w-0 ${
-                    isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
-                } flex flex-col justify-center ${
-                    animatedPriceIndex === 1
-                        ? 'bg-gray-100 border-gray-400 border-[3px] shadow-lg scale-[1.02]'
-                        : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
-                    <p className="text-gray-600 text-xs mb-0.5 font-semibold truncate">90 min</p>
+                    className={`rounded-xl border-2 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200 ${
+                        isDiscountActive(therapist)
+                            ? 'bg-amber-50/80 border-amber-400'
+                            : animatedPriceIndex === 1
+                                ? 'bg-amber-50/80 border-amber-400'
+                                : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
+                    } ${onPriceClick ? 'cursor-pointer' : ''}`}
+                >
+                    <p className="text-xs text-gray-600 mb-1">90 min</p>
                     {Number(pricing["90"]) <= 0 ? (
-                        <p className="font-bold text-gray-700 text-xs leading-tight">Contact</p>
+                        <p className="text-sm font-bold text-gray-800">Contact</p>
                     ) : isDiscountActive(therapist) ? (
                         <>
-                            <p className="text-[10px] text-gray-500 line-through mb-0.5 truncate">
-                                IDR {formatPrice(Number(pricing["90"]))}
-                            </p>
-                            <p className="font-bold text-gray-800 text-xs leading-tight animate-pulse truncate">
-                                IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                            </p>
+                            <p className="text-[10px] text-gray-500 line-through mb-0.5">{formatPrice(Number(pricing["90"]))}</p>
+                            <p className="text-sm font-bold text-gray-800">{formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}</p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-xs leading-tight truncate">
-                            IDR {formatPrice(Number(pricing["90"]))}
-                        </p>
+                        <p className="text-sm font-bold text-gray-800">{formatPrice(Number(pricing["90"]))}</p>
                     )}
-                    <p className="text-[10px] text-slate-600 mt-0.5 truncate">Premium</p>
                 </div>
-                
-                {/* 120 min pricing */}
-                <div 
+
+                {/* 120 min */}
+                <div
+                    role={onPriceClick ? 'button' : undefined}
                     onClick={onPriceClick}
-                    className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-w-0 ${
-                    isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
-                } flex flex-col justify-center ${
-                    animatedPriceIndex === 2
-                        ? 'bg-gray-100 border-gray-400 border-[3px] shadow-lg scale-[1.02]'
-                        : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-gray-300 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                } ${onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-105 active:scale-95' : ''}`}>
-                    <p className="text-gray-600 text-xs mb-0.5 font-semibold truncate">120 min</p>
+                    className={`rounded-xl border-2 p-3 text-center min-w-0 flex flex-col justify-center transition-all duration-200 ${
+                        isDiscountActive(therapist)
+                            ? 'bg-amber-50/80 border-amber-400'
+                            : animatedPriceIndex === 2
+                                ? 'bg-amber-50/80 border-amber-400'
+                                : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
+                    } ${onPriceClick ? 'cursor-pointer' : ''}`}
+                >
+                    <p className="text-xs text-gray-600 mb-1">120 min</p>
                     {Number(pricing["120"]) <= 0 ? (
-                        <p className="font-bold text-gray-700 text-xs leading-tight">Contact</p>
+                        <p className="text-sm font-bold text-gray-800">Contact</p>
                     ) : isDiscountActive(therapist) ? (
                         <>
-                            <p className="text-[10px] text-gray-500 line-through mb-0.5 truncate">
-                                IDR {formatPrice(Number(pricing["120"]))}
-                            </p>
-                            <p className="font-bold text-gray-800 text-xs leading-tight animate-pulse truncate">
-                                IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                            </p>
+                            <p className="text-[10px] text-gray-500 line-through mb-0.5">{formatPrice(Number(pricing["120"]))}</p>
+                            <p className="text-sm font-bold text-gray-800">{formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}</p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-xs leading-tight truncate">
-                            IDR {formatPrice(Number(pricing["120"]))}
-                        </p>
+                        <p className="text-sm font-bold text-gray-800">{formatPrice(Number(pricing["120"]))}</p>
                     )}
-                    <p className="text-[10px] text-slate-600 mt-0.5 truncate">Luxury</p>
                 </div>
             </div>
         </>

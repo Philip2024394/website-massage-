@@ -1017,7 +1017,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             }}>
                 <div className="flex-1 flex flex-col justify-center w-full max-w-sm sm:max-w-lg">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4">
-                    <span className="text-white">Inda</span><span className="text-orange-400">street</span>
+                    <span className="text-white">Inda</span><span className="text-amber-400">street</span>
                 </h1>
                 <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-5 sm:mb-8">
                     {currentCountryData?.name === 'Philippines' 
@@ -1030,7 +1030,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 <div className="w-full max-w-sm sm:max-w-lg px-1 sm:px-4">
                     <div className="bg-gray-900 rounded-xl p-2.5 sm:p-6 border border-gray-700 shadow-xl" style={{ backgroundColor: 'rgba(17, 24, 39, 0.95)' }}>
                         {/* Auto-detected Country Header */}
-                        <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
+                        <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg">
                             <div className="flex items-center justify-between flex-wrap gap-2">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <span className="text-xl sm:text-2xl">{currentCountryData?.flag}</span>
@@ -1043,12 +1043,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-xs text-orange-100 mt-1">Select your city to continue</p>
+                                        <p className="text-xs text-amber-100 mt-1">Select your city to continue</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setShowCountryModal(true)}
-                                    className="text-xs text-white hover:text-orange-200 underline font-medium whitespace-nowrap"
+                                    className="text-xs text-white hover:text-amber-200 underline font-medium whitespace-nowrap"
                                 >
                                     Change country
                                 </button>
@@ -1076,7 +1076,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         <button
                             onClick={handleCityNotListed}
                             disabled={isDetectingLocation}
-                            className="w-full mb-3 rounded-lg border-2 border-orange-500 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                            className="w-full mb-3 rounded-lg border-2 border-amber-500 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                         >
                             <div className="flex items-center gap-3 pl-4 pr-3 py-4">
                                 <div className="w-6 h-6 flex-shrink-0">
@@ -1088,7 +1088,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                             ? 'Detecting your location...' 
                                             : 'Use My GPS Location'}
                                     </div>
-                                    <div className="text-xs text-orange-100 leading-tight mt-1">
+                                    <div className="text-xs text-amber-100 leading-tight mt-1">
                                         {isDetectingLocation && cityNotListed
                                             ? 'Please allow location access'
                                             : 'Find therapists & places closest to you'}
@@ -1112,7 +1112,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         </div>
 
                         {/* Cities List - Scrollable container */}
-                        <div className="flex flex-col gap-2  scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '35vh' }}>
+                        <div className="flex flex-col gap-2  scrollbar-thin scrollbar-thumb-amber-500 scrollbar-track-gray-700" style={{ maxHeight: '35vh' }}>
                             {availableCities.length > 0 ? (
                                 <>
                                     {availableCities.map((city, index) => (
@@ -1121,18 +1121,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                             onClick={() => handleCitySelectNew(city)}
                                             className={`w-full rounded-lg border-2 transition-all flex-shrink-0 ${
                                                 selectedCity === city.name
-                                                    ? "border-orange-500 bg-orange-500 text-white shadow-lg"
-                                                    : "border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-white"
+                                                    ? "border-amber-500 bg-amber-500 text-white shadow-lg"
+                                                    : "border-gray-600 bg-gray-800 hover:border-amber-400 hover:bg-gray-700 text-white"
                                             }`}
                                         >
                                             <div className="flex items-center gap-3 p-3">
                                                 <MapPin className={`w-4 h-4 flex-shrink-0 ${
-                                                    selectedCity === city.name ? "text-white" : "text-orange-400"
+                                                    selectedCity === city.name ? "text-white" : "text-amber-400"
                                                 }`} />
                                                 <div className="flex-1 text-left min-w-0">
                                                     <div className="font-medium text-sm leading-tight truncate">{city.name}</div>
                                                     <div className={`text-xs leading-tight mt-0.5 truncate ${
-                                                        selectedCity === city.name ? "text-orange-100" : "text-gray-400"
+                                                        selectedCity === city.name ? "text-amber-100" : "text-gray-400"
                                                     }`}>{city.region} • {city.description}</div>
                                                 </div>
                                             </div>
@@ -1189,8 +1189,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                     onClick={() => handleManualCountrySelect(country.code)}
                                     className={`p-3 rounded-lg transition-all text-left ${
                                         countryCode === country.code
-                                            ? 'bg-orange-500 border-2 border-orange-400'
-                                            : 'bg-gray-800 border-2 border-gray-700 hover:border-orange-400 hover:bg-gray-700'
+                                            ? 'bg-amber-500 border-2 border-amber-400'
+                                            : 'bg-gray-800 border-2 border-gray-700 hover:border-amber-400 hover:bg-gray-700'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -1201,7 +1201,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                                     countryCode === country.code ? 'text-white' : 'text-white'
                                                 }`}>{country.name}</div>
                                                 <div className={`text-xs ${
-                                                    countryCode === country.code ? 'text-orange-100' : 'text-gray-300'
+                                                    countryCode === country.code ? 'text-amber-100' : 'text-gray-300'
                                                 }`}>{country.description}</div>
                                             </div>
                                         </div>

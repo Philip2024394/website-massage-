@@ -25,7 +25,7 @@ const PlaceTermsPage: React.FC<PlaceTermsPageProps> = ({
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold">
                         <span className="text-gray-900">Inda</span>
-                        <span className="text-orange-500">Street</span>
+                        <span className="text-amber-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-2">
                         {onNavigateToNotifications && (
@@ -33,9 +33,9 @@ const PlaceTermsPage: React.FC<PlaceTermsPageProps> = ({
                         )}
                         <button
                             onClick={() => setIsSideDrawerOpen(true)}
-                            className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-700 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors"
                         >
-                            <Menu className="w-5 h-5 text-orange-600" />
+                            <Menu className="w-5 h-5 text-amber-600" />
                         </button>
                     </div>
                 </div>
@@ -51,14 +51,14 @@ const PlaceTermsPage: React.FC<PlaceTermsPageProps> = ({
                     />
                     
                     {/* Drawer */}
-                    <div className="absolute right-0 top-0 h-full w-80 bg-gradient-to-br from-orange-500 to-red-500 shadow-xl">
+                    <div className="absolute right-0 top-0 h-full w-80 bg-gradient-to-br from-amber-500 to-red-500 shadow-xl">
                         {/* Drawer Header */}
-                        <div className="p-6 border-b border-orange-400">
+                        <div className="p-6 border-b border-amber-400">
                             <div className="flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-white">Menu</h2>
                                 <button
                                     onClick={() => setIsSideDrawerOpen(false)}
-                                    className="p-2 text-white hover:bg-orange-600 rounded-lg transition-colors"
+                                    className="p-2 text-white hover:bg-amber-600 rounded-lg transition-colors"
                                 >
                                     <ArrowLeft className="w-5 h-5" />
                                 </button>
@@ -73,7 +73,7 @@ const PlaceTermsPage: React.FC<PlaceTermsPageProps> = ({
                                         setIsSideDrawerOpen(false);
                                         onBack();
                                     }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-orange-600 rounded-lg transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-amber-600 rounded-lg transition-colors text-left"
                                 >
                                     <ArrowLeft className="w-5 h-5" />
                                     <span>Back to Dashboard</span>
@@ -85,9 +85,9 @@ const PlaceTermsPage: React.FC<PlaceTermsPageProps> = ({
             )}
 
             <main className="p-6 space-y-6 text-gray-700 pb-24 max-w-4xl mx-auto">
-                <div className="bg-orange-100 border-l-4 border-orange-500 p-4 mb-6">
-                    <h2 className="text-xl font-bold text-orange-900 mb-2">Terms and Conditions for Massage Places</h2>
-                    <p className="text-sm font-semibold text-orange-900">Effective Date: November 5, 2025</p>
+                <div className="bg-amber-100 border-l-4 border-amber-500 p-4 mb-6">
+                    <h2 className="text-xl font-bold text-amber-900 mb-2">Terms and Conditions for Massage Places</h2>
+                    <p className="text-sm font-semibold text-amber-900">Effective Date: November 5, 2025</p>
                 </div>
 
                 <p className="text-sm leading-relaxed">
@@ -234,7 +234,7 @@ const PlaceTermsPage: React.FC<PlaceTermsPageProps> = ({
                 <div className="text-center py-8">
                     <button 
                         onClick={onBack}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+                        className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-lg font-medium transition-colors"
                     >
                         Back to Dashboard
                     </button>

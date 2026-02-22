@@ -279,7 +279,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
           <div className="p-6 flex justify-between items-center border-b border-black">
             <h2 id="drawer-title" className="font-bold text-2xl">
               <span className="text-black">Inda</span>
-              <span className="text-orange-500">Street</span>
+              <span className="text-amber-500">Street</span>
             </h2>
             <button 
               onClick={() => {
@@ -320,7 +320,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 onClick={() => handleItemClick(onNavigate ? () => onNavigate('home') : undefined, 'home')}
                 className="
                   flex items-center gap-3 w-full rounded-xl text-left
-                  bg-slate-100 hover:bg-primary-50 border border-slate-200/80
+                  bg-amber-50/80 hover:bg-amber-100 border border-amber-200/80
                   transition-all duration-200 touch-manipulation
                   py-3 px-4 min-h-[48px]
                 "
@@ -329,67 +329,48 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 style={{ touchAction: 'manipulation' } as React.CSSProperties}
               >
                 <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-white border border-slate-200/80" aria-hidden="true">
-                  <Home className="w-5 h-5 text-primary-600" />
+                  <Home className="w-5 h-5 text-amber-600 fill-amber-600" />
                 </span>
                 <span className="flex-1 min-w-0 text-sm font-semibold text-slate-800 pl-2">
                   {language === 'id' ? 'Beranda' : 'Home'}
                 </span>
               </button>
 
-              {/* Authentication Section - Separate Buttons */}
+              {/* Authentication Section - Sign Up & Sign In side by side */}
               <div className="border-b border-gray-200 pb-4 mb-4">
-                <div className="space-y-3">
-                  {/* Create Account Button */}
-                  <button 
-                    onClick={() => handleItemClick(undefined, 'createAccount')} 
+                <div className="flex gap-2">
+                  {/* Sign Up Button */}
+                  <button
+                    onClick={() => handleItemClick(undefined, 'createAccount')}
                     className="
-                      flex items-center gap-3 w-full rounded-xl text-left
-                      bg-gradient-to-r from-orange-500 to-orange-600 
-                      hover:from-orange-600 hover:to-orange-700 
-                      shadow-lg hover:shadow-xl transform hover:scale-105 
-                      transition-all duration-200 touch-manipulation
-                      /* Mobile: 56px minimum height for touch */
-                      py-4 px-4 min-h-[56px]
-                      /* Tablet: 48px minimum height */
-                      md:py-3 md:min-h-[48px] 
-                      /* Desktop: 44px minimum height */
-                      lg:py-3 lg:min-h-[44px]
-                      will-change-transform
+                      flex-1 flex items-center justify-center gap-2 rounded-xl
+                      bg-gradient-to-r from-amber-500 to-amber-600
+                      hover:from-amber-600 hover:to-amber-700
+                      shadow-lg hover:shadow-xl transition-all duration-200 touch-manipulation
+                      py-3 px-3 min-h-[48px] md:min-h-[44px]
                     "
                     type="button"
-                    aria-label="Create new account"
+                    aria-label="Sign up"
                     style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
-                    <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
-                      <UserPlus className="w-5 h-5 text-white" />
-                    </span>
-                    <span className="flex-1 min-w-0 text-left text-sm text-white font-bold pl-2">Create Account</span>
+                    <UserPlus className="w-5 h-5 text-white flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sm text-white font-bold whitespace-nowrap">Sign Up</span>
                   </button>
-                  
                   {/* Sign In Button */}
-                  <button 
-                    onClick={() => handleItemClick(onLoginClick, 'login')} 
+                  <button
+                    onClick={() => handleItemClick(onLoginClick, 'login')}
                     className="
-                      flex items-center gap-3 w-full rounded-xl text-left
-                      border-2 border-orange-500 bg-white hover:bg-orange-50 
-                      shadow-md hover:shadow-lg transform hover:scale-105 
-                      transition-all duration-200 touch-manipulation
-                      /* Mobile: 56px minimum height for touch */
-                      py-4 px-4 min-h-[56px]
-                      /* Tablet: 48px minimum height */
-                      md:py-3 md:min-h-[48px]
-                      /* Desktop: 44px minimum height */
-                      lg:py-3 lg:min-h-[44px]
-                      will-change-transform
+                      flex-1 flex items-center justify-center gap-2 rounded-xl
+                      border-2 border-amber-500 bg-white hover:bg-amber-50
+                      shadow-md hover:shadow-lg transition-all duration-200 touch-manipulation
+                      py-3 px-3 min-h-[48px] md:min-h-[44px]
                     "
                     type="button"
-                    aria-label="Sign in to your account"
+                    aria-label="Sign In"
                     style={{ touchAction: 'manipulation' } as React.CSSProperties}
                   >
-                    <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
-                      <Users className="w-5 h-5 text-orange-500" />
-                    </span>
-                    <span className="flex-1 min-w-0 text-left text-sm text-orange-500 font-bold pl-2">Sign In</span>
+                    <Users className="w-5 h-5 text-amber-500 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sm text-amber-500 font-bold whitespace-nowrap">Sign In</span>
                   </button>
                 </div>
               </div>
@@ -399,8 +380,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 <button 
                   onClick={() => setShowCitySwitcher(!showCitySwitcher)} 
                   className="
-                    flex items-center gap-3 w-full rounded-lg bg-teal-50 
-                    hover:bg-teal-100 transition-colors border-2 border-teal-200
+                    flex items-center gap-3 w-full rounded-lg bg-amber-50 
+                    hover:bg-amber-100 transition-colors border-2 border-amber-200
                     touch-manipulation text-left
                     /* Mobile: 56px minimum height */
                     py-3 px-3 min-h-[56px]
@@ -415,13 +396,13 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   style={{ touchAction: 'manipulation' } as React.CSSProperties}
                 >
                   <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
-                    <MapPin className="w-5 h-5 text-teal-600" />
+                    <MapPin className="w-5 h-5 text-amber-600" />
                   </span>
                   <div className="flex-1 min-w-0 text-left pl-2">
                     <span className="text-sm text-gray-700 font-medium block">
                       {language === 'id' ? 'Kota Saat Ini' : 'Current City'}
                     </span>
-                    <span className="text-xs text-teal-600 font-semibold">{city || (language === 'id' ? 'Semua Indonesia' : 'All Indonesia')}</span>
+                    <span className="text-xs text-amber-600 font-semibold">{city || (language === 'id' ? 'Semua Indonesia' : 'All Indonesia')}</span>
                   </div>
                 </button>
                 
@@ -454,9 +435,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={() => onClose?.()}
-                              className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left border border-transparent hover:border-orange-100"
+                              className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-amber-50 transition-colors text-left border border-transparent hover:border-amber-100"
                             >
-                              <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-orange-50 text-lg leading-none" aria-hidden="true">
+                              <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-amber-50 text-lg leading-none" aria-hidden="true">
                                 {country.flag}
                               </span>
                               <span className="flex-1 min-w-0 text-left text-sm text-gray-700 font-medium pl-2">{label}</span>
@@ -468,9 +449,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                           <button
                             key={country.id}
                             onClick={() => handleItemClick(onNavigate ? () => onNavigate(navigateTo) : undefined, hasCountryPage ? navigateTo : 'home')}
-                            className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left border border-transparent hover:border-orange-100"
+                            className="flex items-center gap-3 w-full py-2.5 px-3 rounded-lg hover:bg-amber-50 transition-colors text-left border border-transparent hover:border-amber-100"
                           >
-                            <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-orange-50 text-lg leading-none" aria-hidden="true">
+                            <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-amber-50 text-lg leading-none" aria-hidden="true">
                               {country.flag}
                             </span>
                             <span className="flex-1 min-w-0 text-left text-sm text-gray-700 font-medium pl-2">{label}</span>
@@ -508,10 +489,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       <button
                         key={item.id}
                         onClick={() => handleItemClick(callback, item.id)}
-                        className="flex items-center w-full py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors text-left"
+                        className="flex items-center w-full py-2.5 px-3 rounded-lg hover:bg-amber-50 transition-colors text-left"
                       >
                         <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg" aria-hidden="true">
-                          <IconComp className="w-5 h-5 text-orange-500" />
+                          <IconComp className="w-5 h-5 text-amber-500" />
                         </span>
                         <span className="flex-1 min-w-0 text-left text-sm text-gray-700 font-medium pl-2">{label}</span>
                       </button>
@@ -537,13 +518,13 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 <div className="flex flex-col items-center gap-2">
                   <span className="text-xs font-medium text-gray-500">{dt.followUs}</span>
                   <div className="flex items-center justify-center gap-4">
-                    <a href="https://www.tiktok.com/@indastreet.team?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-orange-50 transition-colors" aria-label="TikTok">
+                    <a href="https://www.tiktok.com/@indastreet.team?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-amber-50 transition-colors" aria-label="TikTok">
                       <img src="https://ik.imagekit.io/7grri5v7d/tik%20tok.png" alt="" className="w-8 h-8 object-contain" />
                     </a>
-                    <a href="https://www.facebook.com/share/g/1C2QCPTp62/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-orange-50 transition-colors" aria-label="Facebook">
+                    <a href="https://www.facebook.com/share/g/1C2QCPTp62/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-amber-50 transition-colors" aria-label="Facebook">
                       <img src="https://ik.imagekit.io/7grri5v7d/facebook.png" alt="" className="w-8 h-8 object-contain" />
                     </a>
-                    <a href="https://www.instagram.com/indastreet.id/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-orange-50 transition-colors" aria-label="Instagram">
+                    <a href="https://www.instagram.com/indastreet.id/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-amber-50 transition-colors" aria-label="Instagram">
                       <img src="https://ik.imagekit.io/7grri5v7d/instagrame.png" alt="" className="w-8 h-8 object-contain" />
                     </a>
                   </div>

@@ -227,7 +227,7 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
                             ? 'text-gray-400 cursor-not-allowed opacity-60'
                             : activeButton === 'book'
                             ? 'text-green-500 hover:text-green-600 active:text-green-700'
-                            : 'text-orange-500 hover:text-orange-600 active:text-orange-700'
+                            : 'text-amber-500 hover:text-amber-600 active:text-amber-700'
                     } active:scale-95 cursor-pointer ${bookButtonFlash && !bookScheduleDisabled ? 'book-button-flash' : ''}`}
                 >
                     <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" />
@@ -1215,7 +1215,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
-            <div className={`w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8 ${isBeauticianWithTreatments ? 'border-t-4 border-t-orange-400 shadow-md' : ''}`}>
+            <div className={`w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8 ${isBeauticianWithTreatments ? 'border-t-4 border-t-amber-400 shadow-md' : ''}`}>
                 <TherapistCardHeader
                     therapist={therapist}
                     displayImage={displayImage}
@@ -1238,7 +1238,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </svg>
                     {locationAreaDisplayName}
                 </div>
-                <div className="text-xs text-orange-500 mt-1 font-medium uppercase">
+                <div className="text-xs text-amber-500 mt-1 font-medium uppercase">
                     Serves {locationAreaDisplayName} area
                 </div>
             </div>
@@ -1397,19 +1397,19 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 onNavigate('indastreet-partners');
                             }
                         }}
-                        className="w-full bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-200 rounded-lg p-2.5 hover:from-amber-100 hover:to-orange-100 transition-all"
+                        className="w-full bg-gradient-to-r from-amber-50 to-amber-50 border border-amber-200 rounded-lg p-2.5 hover:from-amber-100 hover:to-amber-100 transition-all"
                     >
                         <div className="flex items-center gap-2">
                             <div className="flex-shrink-0">
-                                <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
                                 </svg>
                             </div>
                             <div className="flex-1 text-left min-w-0">
-                                <p className="text-xs font-bold text-orange-900 truncate">
+                                <p className="text-xs font-bold text-amber-900 truncate">
                                     Partnered with {(therapist as any).partneredHotelVilla}
                                 </p>
-                                <p className="text-[10px] text-orange-700">
+                                <p className="text-[10px] text-amber-700">
                                     View partner hotels & villas →
                                 </p>
                             </div>

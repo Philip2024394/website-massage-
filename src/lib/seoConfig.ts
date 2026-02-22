@@ -164,6 +164,24 @@ export const COUNTRY_SEO = {
 };
 
 /**
+ * IndaStreet Social Media page (Indonesia hub) – SEO so posts and hashtags connect back to this page
+ * Canonical URL used for all shared posts; hashtags and keywords help discovery from social platforms.
+ */
+export const SOCIAL_PAGE_SEO = {
+  canonicalUrl: 'https://www.indastreetmassage.com/indonesia',
+  title: 'IndaStreet Social Media | Indonesia · Massage, Facial & Wellness Community',
+  titleId: 'IndaStreet Social Media | Indonesia · Pijat, Facial & Komunitas Wellness',
+  description: 'Join the IndaStreet Social community. Share wellness tips, discover therapists, buy/sell products, and connect with massage & facial professionals across Indonesia. Posts, videos, articles, and marketplace in one place.',
+  descriptionId: 'Bergabung dengan komunitas IndaStreet Social. Bagikan tip wellness, temukan terapis, jual/beli produk, dan terhubung dengan profesional pijat & facial di Indonesia. Postingan, video, artikel, dan marketplace dalam satu tempat.',
+  keywords: 'IndaStreet Social, IndaStreet Social Media, massage community Indonesia, wellness community Bali, pijat komunitas, facial Indonesia community, IndaStreet posts, wellness feed Indonesia, #IndaStreetSocial, #MassageIndonesia, #PijatBali, #WellnessIndonesia, #IndaStreet, #MassageCommunity, #WellnessCommunity, social massage directory',
+  keywordsId: 'IndaStreet Social, media sosial IndaStreet, komunitas pijat Indonesia, komunitas wellness Bali, komunitas facial Indonesia, feed wellness Indonesia, #IndaStreetSocial, #PijatIndonesia, #PijatBali, #WellnessIndonesia, #IndaStreet, #KomunitasPijat',
+  ogImage: 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?v=2026',
+  ogType: 'website' as const,
+  ogSiteName: 'IndaStreet Social',
+  twitterCard: 'summary_large_image' as const,
+};
+
+/**
  * Generate country-specific structured data for Google
  */
 export const generateCountryStructuredData = (countryCode: string) => {

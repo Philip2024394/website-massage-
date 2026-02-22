@@ -46,7 +46,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
           {/* View All Reviews Button */}
           <button
             onClick={onNavigateToReviews}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl"
           >
             <MessageSquare className="w-5 h-5" />
             View All Reviews
@@ -65,7 +65,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
             </p>
             <button
               onClick={onNavigateToReviews}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl"
             >
               <MessageSquare className="w-5 h-5" />
               Write First Review
@@ -80,7 +80,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
               <div className="text-center">
                 <button
                   onClick={onNavigateToReviews}
-                  className="text-orange-600 hover:text-orange-700 font-semibold text-sm"
+                  className="text-amber-600 hover:text-amber-700 font-semibold text-sm"
                 >
                   View all {reviews.length} reviews →
                 </button>

@@ -670,7 +670,7 @@ ${
           className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] "
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl">
+          <div className="bg-gradient-to-r from-amber-500 to-red-500 p-5 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="text-white" size={28} />
@@ -683,16 +683,16 @@ ${
           </div>
 
           <div className="p-5 space-y-3">
-            <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded">
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded">
               <div className="flex items-start gap-2">
-                <Clock className="text-orange-600 flex-shrink-0 mt-0.5" size={20} />
+                <Clock className="text-amber-600 flex-shrink-0 mt-0.5" size={20} />
                 <div>
                   <h3 className="font-bold text-gray-800 mb-1 text-sm">Booking Requirements</h3>
                   <p className="text-gray-700 text-xs leading-relaxed">
-                    <span className="font-bold text-orange-600">⏰ 1-Hour Advance Notice:</span> All bookings must be made at least 1 hour in advance to allow the therapist time for preparation and travel.
+                    <span className="font-bold text-amber-600">⏰ 1-Hour Advance Notice:</span> All bookings must be made at least 1 hour in advance to allow the therapist time for preparation and travel.
                   </p>
                   <p className="text-gray-700 text-xs leading-relaxed mt-2">
-                    <span className="font-bold text-orange-600">⏱️ 5-Minute Response:</span> The therapist has 5 minutes to accept your booking.
+                    <span className="font-bold text-amber-600">⏱️ 5-Minute Response:</span> The therapist has 5 minutes to accept your booking.
                   </p>
                   <p className="text-gray-700 text-xs leading-relaxed mt-1">
                     If they don't respond within 5 minutes, your booking will be automatically sent to all available therapists.
@@ -738,7 +738,7 @@ ${
         className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] "
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-t-2xl">
+        <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Profile Picture */}
@@ -749,13 +749,13 @@ ${
                   className="w-12 h-12 rounded-full object-cover border-2 border-white"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-orange-300 flex items-center justify-center border-2 border-white">
+                <div className="w-12 h-12 rounded-full bg-amber-300 flex items-center justify-center border-2 border-white">
                   <User className="text-white" size={24} />
                 </div>
               )}
               <div>
                 <h2 className="text-xl font-bold text-white">{language === 'id' ? 'Pilih Durasi' : 'Select Duration'}</h2>
-                <p className="text-orange-100 text-xs">Indastreet • {therapistName}</p>
+                <p className="text-amber-100 text-xs">Indastreet • {therapistName}</p>
               </div>
             </div>
             <button onClick={onClose} className="text-white hover:bg-white/20 rounded-full p-1">
@@ -779,7 +779,7 @@ ${
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder={language === 'id' ? 'Masukkan nama lengkap' : 'Enter your full name'}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm text-gray-900"
               />
             </div>
 
@@ -792,7 +792,7 @@ ${
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900 bg-white"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm text-gray-900 bg-white"
                   style={{ width: '110px' }}
                 >
                   <option value="+62">🇮🇩 +62</option>
@@ -815,7 +815,7 @@ ${
                   onChange={(e) => setCustomerWhatsApp(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="812 3456 7890"
                   maxLength={15}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm text-gray-900"
                 />
               </div>
             </div>
@@ -831,8 +831,8 @@ ${
                   onClick={() => setLocationType('hotel')}
                   className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                     locationType === 'hotel'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:border-orange-300'
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:border-amber-300'
                   }`}
                 >
                   Hotel
@@ -842,8 +842,8 @@ ${
                   onClick={() => setLocationType('villa')}
                   className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                     locationType === 'villa'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:border-orange-300'
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:border-amber-300'
                   }`}
                 >
                   Villa
@@ -853,8 +853,8 @@ ${
                   onClick={() => setLocationType('home')}
                   className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                     locationType === 'home'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:border-orange-300'
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:border-amber-300'
                   }`}
                 >
                   {language === 'id' ? 'Rumah' : 'Home'}
@@ -874,7 +874,7 @@ ${
                     value={hotelVillaNameInput}
                     onChange={(e) => setHotelVillaNameInput(e.target.value)}
                     placeholder={language === 'id' ? `Masukkan nama ${locationType === 'hotel' ? 'hotel' : 'villa'}` : `Enter ${locationType} name`}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm text-gray-900"
                   />
                 </div>
                 <div>
@@ -886,7 +886,7 @@ ${
                     value={roomNumber}
                     onChange={(e) => setRoomNumber(e.target.value)}
                     placeholder="e.g., 205"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm text-gray-900"
                   />
                 </div>
               </>
@@ -903,7 +903,7 @@ ${
                   onChange={(e) => setHomeAddress(e.target.value)}
                   placeholder={language === 'id' ? 'Masukkan alamat lengkap dengan patokan' : 'Enter your complete address with landmarks'}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm text-gray-900"
                 />
               </div>
             )}
@@ -918,13 +918,13 @@ ${
               onClick={() => setSelectedDuration(option.duration)}
               className={`w-full p-2 rounded-xl border-2 transition-all ${
                 selectedDuration === option.duration
-                  ? 'border-orange-500 bg-orange-50'
-                  : 'border-gray-200 hover:border-orange-300 bg-white'
+                  ? 'border-amber-500 bg-amber-50'
+                  : 'border-gray-200 hover:border-amber-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="text-left flex items-center gap-2">
-                  <Clock className="text-orange-500" size={18} />
+                  <Clock className="text-amber-500" size={18} />
                   <div>
                     <div className="font-bold text-gray-800 text-sm">{option.duration} {language === 'id' ? 'menit' : 'minutes'}</div>
                     <div className="text-xs text-gray-500">{language === 'id' ? 'Pijat profesional' : 'Professional massage'}</div>
@@ -936,7 +936,7 @@ ${
                       IDR {Math.round((pricing[option.duration.toString()]) / 1000)}K
                     </div>
                   )}
-                  <div className="text-lg font-bold text-orange-600">
+                  <div className="text-lg font-bold text-amber-600">
                     IDR {Math.round(option.price / 1000)}K
                   </div>
                 </div>

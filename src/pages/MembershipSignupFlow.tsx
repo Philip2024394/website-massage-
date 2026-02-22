@@ -318,7 +318,7 @@ const MembershipSignupFlow: React.FC = () => {
                     </button>
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-black text-white font-bold flex items-center justify-center text-sm">I</div>
-                        <span className="font-light text-lg">Inda<span className="text-orange-500 font-medium">Street</span></span>
+                        <span className="font-light text-lg">Inda<span className="text-amber-500 font-medium">Street</span></span>
                     </div>
                 </div>
             </header>
@@ -332,7 +332,7 @@ const MembershipSignupFlow: React.FC = () => {
                                 <div key={step.id} className="flex items-center">
                                     <div className="flex flex-col items-center">
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                                            index < stepIndex ? 'bg-orange-500 text-white' :
+                                            index < stepIndex ? 'bg-amber-500 text-white' :
                                             index === stepIndex ? 'bg-black text-white' :
                                             'bg-gray-200 text-gray-400'
                                         }`}>
@@ -345,7 +345,7 @@ const MembershipSignupFlow: React.FC = () => {
                                         </div>
                                     </div>
                                     {index < STEPS.length - 1 && (
-                                        <div className={`w-12 h-px mx-4 ${index < stepIndex ? 'bg-orange-300' : 'bg-gray-200'}`} />
+                                        <div className={`w-12 h-px mx-4 ${index < stepIndex ? 'bg-amber-300' : 'bg-gray-200'}`} />
                                     )}
                                 </div>
                             ))}
@@ -367,14 +367,14 @@ const MembershipSignupFlow: React.FC = () => {
 
             {/* Payment Deadline Banner */}
             {paymentDeadline && currentStep === 'payment' && !countdown.expired && (
-                <div className="bg-orange-50 border-b border-orange-200">
-                    <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2 text-orange-700 text-sm">
+                <div className="bg-amber-50 border-b border-amber-200">
+                    <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2 text-amber-700 text-sm">
                         <Clock className="w-4 h-4" />
                         <span className="font-medium">Payment deadline:</span>
                         <span className="font-mono font-bold">
                             {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
                         </span>
-                        <span className="text-orange-600">remaining</span>
+                        <span className="text-amber-600">remaining</span>
                     </div>
                 </div>
             )}
@@ -470,18 +470,18 @@ const PlanSelectionStep: React.FC<{
             <div
                 className={`relative border rounded-xl transition-all cursor-pointer ${
                     selectedPlan === 'pro' 
-                        ? 'border-orange-500 bg-white shadow-lg' 
-                        : 'border-gray-200 bg-white hover:border-orange-200 hover:shadow-md'
+                        ? 'border-amber-500 bg-white shadow-lg' 
+                        : 'border-gray-200 bg-white hover:border-amber-200 hover:shadow-md'
                 }`}
                 onClick={() => onSelect('pro')}
             >
                 <div className="p-8">
                     <div className="flex items-center justify-between mb-6">
-                        <div className="text-sm font-medium text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
+                        <div className="text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
                             Pay Per Lead
                         </div>
                         {selectedPlan === 'pro' && (
-                            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                            <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
                                 <Check className="w-4 h-4 text-white" />
                             </div>
                         )}
@@ -497,7 +497,7 @@ const PlanSelectionStep: React.FC<{
                             <span className="text-5xl font-light text-black">Rp 0</span>
                             <span className="text-gray-400 ml-2">/month</span>
                         </div>
-                        <div className="text-orange-600 font-medium mt-1">+ 30% commission per booking</div>
+                        <div className="text-amber-600 font-medium mt-1">+ 30% commission per booking</div>
                     </div>
 
                     <div className="space-y-3 text-sm">
@@ -521,8 +521,8 @@ const PlanSelectionStep: React.FC<{
             <div
                 className={`relative border rounded-xl transition-all cursor-pointer ${
                     selectedPlan === 'plus' 
-                        ? 'border-orange-500 bg-white shadow-lg' 
-                        : 'border-gray-200 bg-white hover:border-orange-200 hover:shadow-md'
+                        ? 'border-amber-500 bg-white shadow-lg' 
+                        : 'border-gray-200 bg-white hover:border-amber-200 hover:shadow-md'
                 }`}
                 onClick={() => onSelect('plus')}
             >
@@ -538,7 +538,7 @@ const PlanSelectionStep: React.FC<{
                             Monthly Fee
                         </div>
                         {selectedPlan === 'plus' && (
-                            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                            <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
                                 <Check className="w-4 h-4 text-white" />
                             </div>
                         )}
@@ -559,15 +559,15 @@ const PlanSelectionStep: React.FC<{
 
                     <div className="space-y-3 text-sm">
                         <div className="flex items-center gap-3 text-gray-600">
-                            <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
+                            <div className="w-1 h-1 bg-amber-500 rounded-full"></div>
                             <span>Zero commission fees</span>
                         </div>
                         <div className="flex items-center gap-3 text-gray-600">
-                            <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
+                            <div className="w-1 h-1 bg-amber-500 rounded-full"></div>
                             <span>Priority hotel requests</span>
                         </div>
                         <div className="flex items-center gap-3 text-gray-600">
-                            <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
+                            <div className="w-1 h-1 bg-amber-500 rounded-full"></div>
                             <span>Verified badge</span>
                         </div>
                     </div>
@@ -624,8 +624,8 @@ const TermsStep: React.FC<{
                             <li>Rp 250,000/month with 0% commission</li>
                             <li>Verified badge and premium placement</li>
                             <li>Advanced analytics and priority support</li>
-                            <li className="font-medium text-orange-700">Priority access to Hotels, Villas & Private Spa Resort service requests</li>
-                            <li className="font-medium text-orange-700">Add your full price menu slider with unlimited services</li>
+                            <li className="font-medium text-amber-700">Priority access to Hotels, Villas & Private Spa Resort service requests</li>
+                            <li className="font-medium text-amber-700">Add your full price menu slider with unlimited services</li>
                         </ul>
 
                         <h4 className="font-semibold text-gray-900 mt-4">Payment Schedule</h4>
@@ -646,7 +646,7 @@ const TermsStep: React.FC<{
                     type="checkbox"
                     checked={checked}
                     onChange={(e) => setChecked(e.target.checked)}
-                    className="mt-0.5 w-5 h-5 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
+                    className="mt-0.5 w-5 h-5 text-amber-600 rounded border-gray-300 focus:ring-amber-500"
                 />
                 <span className="text-sm text-gray-700">
                     I have read and agree to all terms and conditions, including the 5-hour payment deadline policy.
@@ -691,11 +691,11 @@ const PortalSelectionStep: React.FC<{
                 disabled={loading}
                 className={`p-6 rounded-2xl border-2 text-left transition-all ${
                     selectedPortal === 'massage_therapist' 
-                        ? 'border-orange-500 bg-orange-50' 
+                        ? 'border-amber-500 bg-amber-50' 
                         : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
-                <User className={`w-10 h-10 mb-4 ${selectedPortal === 'massage_therapist' ? 'text-orange-600' : 'text-gray-400'}`} />
+                <User className={`w-10 h-10 mb-4 ${selectedPortal === 'massage_therapist' ? 'text-amber-600' : 'text-gray-400'}`} />
                 <h3 className="font-bold text-gray-900 mb-1">Therapist</h3>
                 <p className="text-sm text-gray-600">Individual massage therapist providing mobile or home services</p>
             </button>
@@ -705,11 +705,11 @@ const PortalSelectionStep: React.FC<{
                 disabled={loading}
                 className={`p-6 rounded-2xl border-2 text-left transition-all ${
                     selectedPortal === 'massage_place' 
-                        ? 'border-orange-500 bg-orange-50' 
+                        ? 'border-amber-500 bg-amber-50' 
                         : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
-                <Building2 className={`w-10 h-10 mb-4 ${selectedPortal === 'massage_place' ? 'text-orange-600' : 'text-gray-400'}`} />
+                <Building2 className={`w-10 h-10 mb-4 ${selectedPortal === 'massage_place' ? 'text-amber-600' : 'text-gray-400'}`} />
                 <h3 className="font-bold text-gray-900 mb-1">Massage Place</h3>
                 <p className="text-sm text-gray-600">Spa, salon, or massage center with fixed location</p>
             </button>
@@ -719,11 +719,11 @@ const PortalSelectionStep: React.FC<{
                 disabled={loading}
                 className={`p-6 rounded-2xl border-2 text-left transition-all ${
                     selectedPortal === 'facial_place' 
-                        ? 'border-orange-500 bg-orange-50' 
+                        ? 'border-amber-500 bg-amber-50' 
                         : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
-                <Sparkles className={`w-10 h-10 mb-4 ${selectedPortal === 'facial_place' ? 'text-orange-600' : 'text-gray-400'}`} />
+                <Sparkles className={`w-10 h-10 mb-4 ${selectedPortal === 'facial_place' ? 'text-amber-600' : 'text-gray-400'}`} />
                 <h3 className="font-bold text-gray-900 mb-1">Facial Place</h3>
                 <p className="text-sm text-gray-600">Beauty clinic or facial treatment center</p>
             </button>
@@ -764,10 +764,10 @@ const AccountCreationStep: React.FC<{
                     onChange={(e) => onFieldChange('name', e.target.value)}
                     onBlur={() => onFieldBlur('name')}
                     required
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 ${
                         touchedFields.name && validationErrors.name
                             ? 'border-red-500 focus:border-red-500'
-                            : 'border-gray-200 focus:border-orange-500'
+                            : 'border-gray-200 focus:border-amber-500'
                     }`}
                     placeholder="Your full name"
                 />
@@ -784,10 +784,10 @@ const AccountCreationStep: React.FC<{
                     onChange={(e) => onFieldChange('email', e.target.value)}
                     onBlur={() => onFieldBlur('email')}
                     required
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 ${
                         touchedFields.email && validationErrors.email
                             ? 'border-red-500 focus:border-red-500'
-                            : 'border-gray-200 focus:border-orange-500'
+                            : 'border-gray-200 focus:border-amber-500'
                     }`}
                     placeholder="your@email.com"
                 />
@@ -804,10 +804,10 @@ const AccountCreationStep: React.FC<{
                     onChange={(e) => onFieldChange('whatsapp', e.target.value)}
                     onBlur={() => onFieldBlur('whatsapp')}
                     required
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 ${
                         touchedFields.whatsapp && validationErrors.whatsapp
                             ? 'border-red-500 focus:border-red-500'
-                            : 'border-gray-200 focus:border-orange-500'
+                            : 'border-gray-200 focus:border-amber-500'
                     }`}
                     placeholder="+62 812 3456 7890"
                 />
@@ -825,10 +825,10 @@ const AccountCreationStep: React.FC<{
                     onBlur={() => onFieldBlur('password')}
                     required
                     minLength={8}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 ${
                         touchedFields.password && validationErrors.password
                             ? 'border-red-500 focus:border-red-500'
-                            : 'border-gray-200 focus:border-orange-500'
+                            : 'border-gray-200 focus:border-amber-500'
                     }`}
                     placeholder="Min. 8 characters"
                 />
@@ -845,10 +845,10 @@ const AccountCreationStep: React.FC<{
                     onChange={(e) => onFieldChange('confirmPassword', e.target.value)}
                     onBlur={() => onFieldBlur('confirmPassword')}
                     required
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 ${
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 ${
                         touchedFields.confirmPassword && validationErrors.confirmPassword
                             ? 'border-red-500 focus:border-red-500'
-                            : 'border-gray-200 focus:border-orange-500'
+                            : 'border-gray-200 focus:border-amber-500'
                     }`}
                     placeholder="Confirm password"
                 />
@@ -916,7 +916,7 @@ const ProfileUploadStep: React.FC<{
                             <Upload className="w-8 h-8 text-gray-400" />
                         )}
                     </div>
-                    <label className="cursor-pointer text-sm text-orange-600 hover:text-orange-700 font-medium">
+                    <label className="cursor-pointer text-sm text-amber-600 hover:text-amber-700 font-medium">
                         Upload Profile Photo
                         <input
                             type="file"
@@ -927,7 +927,7 @@ const ProfileUploadStep: React.FC<{
                     </label>
                 </div>
 
-                <div className="bg-orange-50 rounded-xl p-4 text-sm text-orange-800">
+                <div className="bg-amber-50 rounded-xl p-4 text-sm text-amber-800">
                     <p className="font-medium mb-2">📝 Complete your profile in the dashboard</p>
                     <p>After this step, you'll be redirected to your dashboard where you can:</p>
                     <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -998,15 +998,15 @@ const PaymentStep: React.FC<{
 
             {/* Countdown Warning */}
             {!countdown.expired && (
-                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-orange-700 mb-2">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-amber-700 mb-2">
                         <Clock className="w-5 h-5" />
                         <span className="font-semibold">Payment Deadline</span>
                     </div>
-                    <div className="text-3xl font-mono font-bold text-orange-600">
+                    <div className="text-3xl font-mono font-bold text-amber-600">
                         {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
                     </div>
-                    <p className="text-sm text-orange-600 mt-2">
+                    <p className="text-sm text-amber-600 mt-2">
                         Upload payment proof within 5 hours or your account will be deactivated.
                     </p>
                 </div>
@@ -1027,7 +1027,7 @@ const PaymentStep: React.FC<{
                     <p><span className="text-gray-500">Bank:</span> <span className="font-medium">BCA</span></p>
                     <p><span className="text-gray-500">Account:</span> <span className="font-medium">1234567890</span></p>
                     <p><span className="text-gray-500">Name:</span> <span className="font-medium">PT IndaStreet Indonesia</span></p>
-                    <p><span className="text-gray-500">Amount:</span> <span className="font-bold text-orange-600">{amount}</span></p>
+                    <p><span className="text-gray-500">Amount:</span> <span className="font-bold text-amber-600">{amount}</span></p>
                 </div>
             </div>
 
@@ -1039,7 +1039,7 @@ const PaymentStep: React.FC<{
                         type="text"
                         value={bankName}
                         onChange={(e) => setBankName(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500"
                         placeholder="e.g., BCA, Mandiri, BNI"
                     />
                 </div>
@@ -1050,20 +1050,20 @@ const PaymentStep: React.FC<{
                         type="text"
                         value={accountName}
                         onChange={(e) => setAccountName(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500"
                         placeholder="Name on your bank account"
                     />
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Payment Proof</label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-400 transition-colors">
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-amber-400 transition-colors">
                         {previewUrl ? (
                             <img src={previewUrl} alt="Proof" className="max-h-48 mx-auto mb-2 rounded" />
                         ) : (
                             <Upload className="w-10 h-10 text-gray-400 mx-auto mb-2" />
                         )}
-                        <label className="cursor-pointer text-sm text-orange-600 hover:text-orange-700 font-medium">
+                        <label className="cursor-pointer text-sm text-amber-600 hover:text-amber-700 font-medium">
                             {previewUrl ? 'Change Image' : 'Upload Screenshot'}
                             <input
                                 type="file"

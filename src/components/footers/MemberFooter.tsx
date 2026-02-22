@@ -51,7 +51,7 @@ const MemberFooter: React.FC<MemberFooterProps> = ({
                     onClick={onHomeClick}
                     className="flex flex-col items-center justify-center flex-1 h-full hover:bg-gray-50 transition-colors"
                 >
-                    <HomeIcon className="w-6 h-6 text-orange-500" />
+                    <HomeIcon className="w-6 h-6 text-amber-500" />
                     <span className="text-xs mt-1 text-gray-700 font-medium">Home</span>
                 </button>
 
@@ -61,7 +61,7 @@ const MemberFooter: React.FC<MemberFooterProps> = ({
                     className="flex flex-col items-center justify-center flex-1 h-full hover:bg-gray-50 transition-colors relative"
                 >
                     <div className="relative">
-                        <ChatIcon className="w-6 h-6 text-orange-500" />
+                        <ChatIcon className="w-6 h-6 text-amber-500" />
                         {unreadChats > 0 && (
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
                                 {unreadChats > 9 ? '9+' : unreadChats}
@@ -77,7 +77,7 @@ const MemberFooter: React.FC<MemberFooterProps> = ({
                     className="flex flex-col items-center justify-center flex-1 h-full hover:bg-gray-50 transition-colors relative"
                 >
                     <div className="relative">
-                        <BellIcon className="w-6 h-6 text-orange-500" />
+                        <BellIcon className="w-6 h-6 text-amber-500" />
                         {unreadNotifications > 0 && (
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
                                 {unreadNotifications > 9 ? '9+' : unreadNotifications}
@@ -92,7 +92,7 @@ const MemberFooter: React.FC<MemberFooterProps> = ({
                     onClick={onProfileClick}
                     className="flex flex-col items-center justify-center flex-1 h-full hover:bg-gray-50 transition-colors"
                 >
-                    <UserIcon className="w-6 h-6 text-orange-500" />
+                    <UserIcon className="w-6 h-6 text-amber-500" />
                     <span className="text-xs mt-1 text-gray-700 font-medium">Profile</span>
                 </button>
             </div>

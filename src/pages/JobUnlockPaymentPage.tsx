@@ -129,15 +129,15 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                     <div className="flex justify-between items-center max-w-full">
                         <h1 className="text-2xl font-bold text-gray-800">
                             <span className="text-black">Inda</span>
-                            <span className="text-orange-500">Street</span>
+                            <span className="text-amber-500">Street</span>
                         </h1>
                         <div className="flex items-center gap-3 text-gray-600">
-                            <button onClick={() => onNavigate?.('home')} title="Home" className="hover:text-orange-500 transition-colors">
+                            <button onClick={() => onNavigate?.('home')} title="Home" className="hover:text-amber-500 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                 </svg>
                             </button>
-                            <button onClick={() => setIsMenuOpen(true)} title="Menu" className="hover:text-orange-500 transition-colors">
+                            <button onClick={() => setIsMenuOpen(true)} title="Menu" className="hover:text-amber-500 transition-colors">
                                <BurgerMenuIcon className="w-6 h-6" />
                             </button>
                         </div>
@@ -165,7 +165,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                         <div className="mt-6">
                             <button
                                 onClick={() => window.location.href = '/massage-jobs'}
-                                className="text-orange-600 hover:text-orange-700 font-semibold"
+                                className="text-amber-600 hover:text-amber-700 font-semibold"
                             >
                                 Back to Job Listings
                             </button>
@@ -177,15 +177,15 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                 <footer className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 py-6 z-50 w-full max-w-full overflow-hidden">
                     <div className="mx-auto px-4 max-w-full">
                         <div className="flex justify-center gap-2 mb-3">
-                            <button onClick={() => onNavigate?.('join-indastreet')} className="text-xs text-orange-500 font-medium hover:underline">
+                            <button onClick={() => onNavigate?.('join-indastreet')} className="text-xs text-amber-500 font-medium hover:underline">
                                 Become Agent
                             </button>
                             <span className="text-gray-400">|</span>
-                            <button onClick={onTermsClick} className="text-xs text-orange-500 font-medium hover:underline">
+                            <button onClick={onTermsClick} className="text-xs text-amber-500 font-medium hover:underline">
                                 Terms
                             </button>
                             <span className="text-gray-400">|</span>
-                            <button onClick={onPrivacyClick} className="text-xs text-orange-500 font-medium hover:underline">
+                            <button onClick={onPrivacyClick} className="text-xs text-amber-500 font-medium hover:underline">
                                 Privacy
                             </button>
                         </div>
@@ -205,15 +205,15 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                 <div className="flex justify-between items-center max-w-full">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
+                        <span className="text-amber-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-3 text-gray-600">
-                        <button onClick={() => onNavigate?.('home')} title="Home" className="hover:text-orange-500 transition-colors">
+                        <button onClick={() => onNavigate?.('home')} title="Home" className="hover:text-amber-500 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
                         </button>
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu" className="hover:text-orange-500 transition-colors">
+                        <button onClick={() => setIsMenuOpen(true)} title="Menu" className="hover:text-amber-500 transition-colors">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
@@ -234,7 +234,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                         <div className="p-6 flex justify-between items-center">
                             <h2 className="font-bold text-2xl">
                                 <span className="text-black">inda</span>
-                                <span className="text-orange-500">Street</span>
+                                <span className="text-amber-500">Street</span>
                             </h2>
                             <button 
                                 onClick={() => setIsMenuOpen(false)} 
@@ -252,7 +252,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                                     onClick={() => { window.location.href = '/'; setIsMenuOpen(false); }} 
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200 group"
                                 >
-                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-amber-400 to-amber-600">
                                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                         </svg>
@@ -268,15 +268,15 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                         {/* Footer with Links */}
                         <div className="p-4 pb-20 bg-gray-50 border-t border-gray-200 space-y-3">
                             <div className="flex justify-center gap-2">
-                                <button className="text-xs text-orange-500 font-medium hover:underline">
+                                <button className="text-xs text-amber-500 font-medium hover:underline">
                                     Become Agent
                                 </button>
                                 <span className="text-gray-400">|</span>
-                                <button className="text-xs text-orange-500 font-medium hover:underline">
+                                <button className="text-xs text-amber-500 font-medium hover:underline">
                                     Terms
                                 </button>
                                 <span className="text-gray-400">|</span>
-                                <button className="text-xs text-orange-500 font-medium hover:underline">
+                                <button className="text-xs text-amber-500 font-medium hover:underline">
                                     Privacy
                                 </button>
                             </div>
@@ -300,8 +300,8 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                             <p className="text-gray-600 text-lg md:text-xl mb-4">
                                 Complete payment to access exclusive contact information
                             </p>
-                            <div className="inline-block bg-orange-50 px-4 py-2 rounded-lg border border-orange-200">
-                                <p className="text-orange-600 font-semibold">💼 Get Direct Access to Employers</p>
+                            <div className="inline-block bg-amber-50 px-4 py-2 rounded-lg border border-amber-200">
+                                <p className="text-amber-600 font-semibold">💼 Get Direct Access to Employers</p>
                             </div>
                         </div>
                         
@@ -326,8 +326,8 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                     {/* Personal Touch Message */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-200 max-w-full">
                         <div className="flex items-start gap-4 pb-20">
-                            <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
                             </div>
@@ -345,8 +345,8 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                                     your account needs. This personal approach is what makes indaStreet different – we keep our commitment to process 
                                     all payments as quickly as possible while maintaining that <strong>human touch</strong> you deserve.
                                 </p>
-                                <div className="bg-orange-50 rounded-lg p-4 pb-20 border border-orange-200">
-                                    <p className="text-orange-600 font-semibold flex items-center gap-2">
+                                <div className="bg-amber-50 rounded-lg p-4 pb-20 border border-amber-200">
+                                    <p className="text-amber-600 font-semibold flex items-center gap-2">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
@@ -370,8 +370,8 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                     </div>
 
                     {loadingBanks ? (
-                        <div className="bg-orange-50 rounded-xl p-8 border-2 border-orange-200 text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                        <div className="bg-amber-50 rounded-xl p-8 border-2 border-amber-200 text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
                             <p className="text-gray-600 mt-4">Loading bank details...</p>
                         </div>
                     ) : banks.length === 0 ? (
@@ -391,14 +391,14 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                                                 onClick={() => setSelectedBank(bank)}
                                                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                                                     selectedBank?.$id === bank.$id
-                                                        ? 'border-orange-500 bg-orange-50 shadow-lg'
-                                                        : 'border-gray-200 hover:border-orange-300 bg-white'
+                                                        ? 'border-amber-500 bg-amber-50 shadow-lg'
+                                                        : 'border-gray-200 hover:border-amber-300 bg-white'
                                                 }`}
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-bold text-gray-900">{bank.bankName}</span>
                                                     {selectedBank?.$id === bank.$id && (
-                                                        <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg className="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                         </svg>
                                                     )}
@@ -411,20 +411,20 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
 
                             {/* Selected Bank Details */}
                             {selectedBank && (
-                                <div className="bg-orange-50 rounded-xl p-6 border-2 border-orange-200">
+                                <div className="bg-amber-50 rounded-xl p-6 border-2 border-amber-200">
                                     <div className="space-y-4">
-                                        <div className="flex justify-between items-center pb-3 border-b border-orange-200">
+                                        <div className="flex justify-between items-center pb-3 border-b border-amber-200">
                                             <span className="text-gray-600 font-semibold">Bank Name:</span>
                                             <span className="text-gray-900 font-bold">{selectedBank.bankName}</span>
                                         </div>
                                         
-                                        <div className="flex justify-between items-center pb-3 border-b border-orange-200">
+                                        <div className="flex justify-between items-center pb-3 border-b border-amber-200">
                                             <span className="text-gray-600 font-semibold">Account Number:</span>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-gray-900 font-bold text-lg">{selectedBank.accountNumber}</span>
                                                 <button
                                                     onClick={() => copyToClipboard(selectedBank.accountNumber)}
-                                                    className="text-orange-600 hover:text-orange-700 p-2 hover:bg-orange-100 rounded"
+                                                    className="text-amber-600 hover:text-amber-700 p-2 hover:bg-amber-100 rounded"
                                                 >
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -433,7 +433,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-between items-center pb-3 border-b border-orange-200">
+                                        <div className="flex justify-between items-center pb-3 border-b border-amber-200">
                                             <span className="text-gray-600 font-semibold">Account Name:</span>
                                             <span className="text-gray-900 font-bold">{selectedBank.accountName}</span>
                                         </div>
@@ -444,7 +444,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                                                 <span className="text-green-600 font-bold text-2xl">{paymentAmount}</span>
                                                 <button
                                                     onClick={() => copyToClipboard(paymentAmount.replace('Rp ', '').replace(',', ''))}
-                                                    className="text-orange-600 hover:text-orange-700 p-2 hover:bg-orange-100 rounded"
+                                                    className="text-amber-600 hover:text-amber-700 p-2 hover:bg-amber-100 rounded"
                                                 >
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -478,7 +478,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                                 type="text"
                                 value={userName}
                                 onChange={(e) => setUserName(e.target.value)}
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all"
                                 placeholder="Enter your full name"
                             />
                         </div>
@@ -489,7 +489,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                                 type="tel"
                                 value={userPhone}
                                 onChange={(e) => setUserPhone(e.target.value)}
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all"
                                 placeholder="e.g., 628123456789"
                             />
                             <p className="text-sm text-gray-500 mt-1">Job details will be sent to this number</p>
@@ -497,7 +497,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
 
                         <div>
                             <label className="block text-gray-700 font-semibold mb-2">Upload Payment Screenshot *</label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-500 transition-all">
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-amber-500 transition-all">
                                 {previewUrl ? (
                                     <div className="space-y-4">
                                         <img src={previewUrl} alt="Payment proof" className="max-w-full h-auto mx-auto rounded-lg shadow-lg max-h-96" />
@@ -525,7 +525,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                                         />
                                         <label
                                             htmlFor="payment-proof"
-                                            className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-lg inline-block transition-all"
+                                            className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-6 rounded-lg inline-block transition-all"
                                         >
                                             Choose File
                                         </label>
@@ -543,7 +543,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                         <h2 className="text-xl font-bold text-gray-900">Terms & Conditions</h2>
                         <button
                             onClick={() => setShowTerms(!showTerms)}
-                            className="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-2"
+                            className="text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-2"
                         >
                             {showTerms ? 'Hide' : 'Show'}
                             <svg className={`w-5 h-5 transition-transform ${showTerms ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -555,12 +555,12 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                     {showTerms && (
                         <div className="bg-gray-50 rounded-lg p-6 space-y-4 text-gray-700 mb-4">
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">1</div>
+                                <div className="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">1</div>
                                 <p><strong>Single Job Access:</strong> This payment allows you to unlock contact details for ONE (1) job posting of your choice.</p>
                             </div>
                             
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">2</div>
+                                <div className="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">2</div>
                                 <p><strong>Details Delivery:</strong> Upon verification of payment, complete job details including:</p>
                             </div>
                             <ul className="ml-12 space-y-2 list-disc text-gray-600">
@@ -571,17 +571,17 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                             </ul>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">3</div>
+                                <div className="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">3</div>
                                 <p><strong>Activation Time:</strong> Your access will be activated within <strong>24 hours</strong> after payment verification. Details will be sent to your registered WhatsApp number.</p>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">4</div>
+                                <div className="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">4</div>
                                 <p><strong>Listing Validity:</strong> The job posting will remain active as listed by the employer.</p>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">5</div>
+                                <div className="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">5</div>
                                 <p><strong>Closed Listing Policy:</strong> In the event your selected job listing has been closed or filled:</p>
                             </div>
                             <ul className="ml-12 space-y-2 list-disc text-gray-600">
@@ -591,12 +591,12 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                             </ul>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">6</div>
+                                <div className="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">6</div>
                                 <p><strong>Non-Refundable:</strong> All payments are non-refundable once verification is complete.</p>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">7</div>
+                                <div className="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">7</div>
                                 <p><strong>Support:</strong> For any questions or issues, contact our support team via WhatsApp at any time.</p>
                             </div>
                         </div>
@@ -607,7 +607,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                             type="checkbox"
                             checked={acceptedTerms}
                             onChange={(e) => setAcceptedTerms(e.target.checked)}
-                            className="w-5 h-5 text-orange-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-orange-500 mt-1"
+                            className="w-5 h-5 text-amber-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-amber-500 mt-1"
                         />
                         <span className="text-gray-700 group-hover:text-gray-900">
                             I have read and agree to the Terms & Conditions *
@@ -654,7 +654,7 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
                     <p className="text-center text-gray-600 mt-4 text-sm leading-relaxed">
                         After clicking, you'll be connected directly with our team via WhatsApp.
                         <br />
-                        <strong className="text-orange-600">Personal service • 24/7 support • Fast processing</strong>
+                        <strong className="text-amber-600">Personal service • 24/7 support • Fast processing</strong>
                     </p>
                 </div>
                 </div>
@@ -664,15 +664,15 @@ const JobUnlockPaymentPage: React.FC<JobUnlockPaymentPageProps> = ({ onNavigate,
             <footer className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 py-6 z-50 w-full max-w-full overflow-hidden">
                 <div className="mx-auto px-4 max-w-full">
                     <div className="flex justify-center gap-2 mb-3">
-                        <button onClick={() => onNavigate?.('join-indastreet')} className="text-xs text-orange-500 font-medium hover:underline">
+                        <button onClick={() => onNavigate?.('join-indastreet')} className="text-xs text-amber-500 font-medium hover:underline">
                             Become Agent
                         </button>
                         <span className="text-gray-400">|</span>
-                        <button onClick={onTermsClick} className="text-xs text-orange-500 font-medium hover:underline">
+                        <button onClick={onTermsClick} className="text-xs text-amber-500 font-medium hover:underline">
                             Terms
                         </button>
                         <span className="text-gray-400">|</span>
-                        <button onClick={onPrivacyClick} className="text-xs text-orange-500 font-medium hover:underline">
+                        <button onClick={onPrivacyClick} className="text-xs text-amber-500 font-medium hover:underline">
                             Privacy
                         </button>
                     </div>

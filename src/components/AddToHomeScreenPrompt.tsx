@@ -65,7 +65,7 @@ const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ t: _t, ha
         <div className="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-50">
             <div 
                 id="a2hs-prompt"
-                className="bg-white p-5 rounded-2xl shadow-2xl border-2 border-orange-200 animate-fade-in-up"
+                className="bg-white p-5 rounded-2xl shadow-2xl border-2 border-amber-200 animate-fade-in-up"
             >
                 <div className="flex items-start gap-3">
                     {/* Fingerprint Icon */}
@@ -78,7 +78,7 @@ const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ t: _t, ha
                         <h3 className="font-bold text-gray-800 text-lg mb-2">Add to Home Screen</h3>
                         <div className="text-sm text-gray-600">
                             <p className="mb-1">Tap the menu button and select</p>
-                            <p className="font-semibold text-orange-600">"Add to Home Screen"</p>
+                            <p className="font-semibold text-amber-600">"Add to Home Screen"</p>
                         </div>
                     </div>
                     <button 
@@ -94,7 +94,7 @@ const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ t: _t, ha
                 
                 {/* Progress bar for 15 second countdown */}
                 <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-orange-500 animate-countdown"></div>
+                    <div className="h-full bg-amber-500 animate-countdown"></div>
                 </div>
             </div>
             

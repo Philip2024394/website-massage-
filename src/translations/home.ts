@@ -2,8 +2,10 @@
 export const homeTranslations = {
   en: {
     home: {
-      // Quick link label used in HomePage
+      // Quick link label used in HomePage (link to IndaStreet Social)
       accommodationMassageService: 'Accommodation With Massage Service',
+      socialLinkTitle: 'IndaStreet Social',
+      socialLinkSubtext: 'Connecting wellness communities across the globe',
       homeServiceTab: 'Home Service',
       massagePlacesTab: 'Massage Places',
       therapistsTitle: 'Home Service Therapists',
@@ -127,6 +129,8 @@ export const homeTranslations = {
         privacyDesc: 'Privacy information',
         // Partners quick link
         accommodationMassageService: 'Accommodation With Massage Service',
+        socialLinkTitle: 'IndaStreet Social',
+        socialLinkSubtext: 'Connecting wellness communities across the globe',
         // Massage services submenu
         traditionalBalineseMassage: 'Traditional Balinese Massage',
         deepTissueMassage: 'Deep Tissue Massage',
@@ -266,6 +270,8 @@ export const homeTranslations = {
     home: {
       // Quick link label used in HomePage
       accommodationMassageService: 'Akomodasi dengan Layanan Pijat',
+      socialLinkTitle: 'IndaStreet Social',
+      socialLinkSubtext: 'Menghubungkan komunitas wellness di seluruh dunia',
       homeServiceTab: 'Layanan Rumah',
       massagePlacesTab: 'Tempat Pijat',
       therapistsTitle: 'Terapis Pijat Rumahan',
@@ -380,6 +386,8 @@ export const homeTranslations = {
         privacyDesc: 'Informasi privasi',
         // Tautan mitra cepat
         accommodationMassageService: 'Akomodasi dengan Layanan Pijat',
+        socialLinkTitle: 'IndaStreet Social',
+        socialLinkSubtext: 'Menghubungkan komunitas wellness di seluruh dunia',
         // Submenu layanan pijat
         traditionalBalineseMassage: 'Pijat Bali Tradisional',
         deepTissueMassage: 'Pijat Jaringan Dalam',

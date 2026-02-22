@@ -232,11 +232,11 @@ const AppDownloadPrompt: React.FC<AppDownloadPromptProps> = ({
         className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50
                    bg-white rounded-2xl shadow-2xl max-w-sm mx-4 transition-all duration-300 ${
           isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-        } ${urgency === 'urgent' ? 'ring-4 ring-orange-400 ring-opacity-75' : ''}`}
+        } ${urgency === 'urgent' ? 'ring-4 ring-amber-400 ring-opacity-75' : ''}`}
       >
         {/* Header */}
         <div className={`p-6 rounded-t-2xl ${
-          urgency === 'urgent' ? 'bg-gradient-to-r from-orange-500 to-red-500' : 'bg-gradient-to-r from-blue-500 to-purple-600'
+          urgency === 'urgent' ? 'bg-gradient-to-r from-amber-500 to-red-500' : 'bg-gradient-to-r from-blue-500 to-purple-600'
         } text-white relative`}>
           <button
             onClick={handleDismiss}

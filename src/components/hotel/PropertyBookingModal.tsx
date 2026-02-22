@@ -107,8 +107,8 @@ const PropertyBookingModal: React.FC<PropertyBookingModalProps> = ({
                                             onClick={() => onDurationChange(duration)}
                                             className={`p-3 rounded-lg border-2 transition-colors text-center ${
                                                 selectedDuration === duration
-                                                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                                                    : 'border-gray-200 hover:border-orange-300'
+                                                    ? 'border-amber-500 bg-amber-50 text-amber-700'
+                                                    : 'border-gray-200 hover:border-amber-300'
                                             }`}
                                         >
                                             <div className="text-sm font-semibold">{duration} min</div>
@@ -121,15 +121,15 @@ const PropertyBookingModal: React.FC<PropertyBookingModalProps> = ({
                             </div>
 
                             {/* Selected Service Summary */}
-                            <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                            <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <p className="text-sm text-gray-600">Duration</p>
-                                        <p className="font-bold text-lg text-orange-600">{selectedDuration} minutes</p>
+                                        <p className="font-bold text-lg text-amber-600">{selectedDuration} minutes</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm text-gray-600">Price</p>
-                                        <p className="font-bold text-lg text-orange-600">
+                                        <p className="font-bold text-lg text-amber-600">
                                             Rp {(selectedProvider.pricing[selectedDuration] / 1000).toFixed(0)}K
                                         </p>
                                     </div>
@@ -147,7 +147,7 @@ const PropertyBookingModal: React.FC<PropertyBookingModalProps> = ({
                                         value={guestName}
                                         onChange={(e) => onGuestNameChange(e.target.value)}
                                         placeholder="Enter your name"
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                                     />
                                 </div>
 
@@ -160,7 +160,7 @@ const PropertyBookingModal: React.FC<PropertyBookingModalProps> = ({
                                         value={roomNumber}
                                         onChange={(e) => onRoomNumberChange(e.target.value)}
                                         placeholder="Enter your room number"
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -169,7 +169,7 @@ const PropertyBookingModal: React.FC<PropertyBookingModalProps> = ({
                             <button 
                                 onClick={onProceedBooking}
                                 disabled={!guestName || !roomNumber || isProcessing}
-                                className="w-full bg-orange-500 text-white font-bold py-4 rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full bg-amber-500 text-white font-bold py-4 rounded-lg hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isProcessing ? (
                                     <>
@@ -217,7 +217,7 @@ const PropertyBookingModal: React.FC<PropertyBookingModalProps> = ({
 
                             <button 
                                 onClick={onCloseBookingModal}
-                                className="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors"
+                                className="w-full bg-amber-500 text-white font-bold py-3 rounded-lg hover:bg-amber-600 transition-colors"
                             >
                                 Done
                             </button>

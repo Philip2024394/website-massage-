@@ -98,7 +98,8 @@ export type Page =
     | 'about' 
     | 'about-us'
     | 'how-it-works' 
-    | 'indonesia' // Country hub: landing page for Indonesia (massage, facial, beauty)
+    | 'indonesia' // Country hub: social media page for Indonesia (same experience for all countries)
+    | 'uk' // Country hub: social media page for United Kingdom (same experience for all countries)
     | 'massage-bali' 
     | 'blog'
     | 'indastreet-news' 

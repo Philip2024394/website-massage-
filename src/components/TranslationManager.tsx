@@ -121,9 +121,9 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ onClose }) => {
                             <div className="text-purple-600 text-sm font-medium">Completed</div>
                             <div className="text-2xl font-bold text-purple-800">{stats.completedTranslations}</div>
                         </div>
-                        <div className="bg-orange-50 rounded-lg p-4">
-                            <div className="text-orange-600 text-sm font-medium">Progress</div>
-                            <div className="text-2xl font-bold text-orange-800">{stats.completionPercentage}%</div>
+                        <div className="bg-amber-50 rounded-lg p-4">
+                            <div className="text-amber-600 text-sm font-medium">Progress</div>
+                            <div className="text-2xl font-bold text-amber-800">{stats.completionPercentage}%</div>
                         </div>
                     </div>
 

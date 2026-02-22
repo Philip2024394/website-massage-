@@ -283,7 +283,7 @@ export const AntiSpamBookingComponent: React.FC<AntiSpamBookingProps> = ({
   // Get risk level display
   const getRiskLevelDisplay = (score: number) => {
     if (score < 25) return { level: labels.low, color: 'text-green-600 bg-green-50 border-green-200' };
-    if (score < 50) return { level: labels.medium, color: 'text-orange-600 bg-orange-50 border-orange-200' };
+    if (score < 50) return { level: labels.medium, color: 'text-amber-600 bg-amber-50 border-amber-200' };
     return { level: labels.high, color: 'text-red-600 bg-red-50 border-red-200' };
   };
 
@@ -384,12 +384,12 @@ export const AntiSpamBookingComponent: React.FC<AntiSpamBookingProps> = ({
 
           {/* Warnings */}
           {warnings.length > 0 && (
-            <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5" />
+                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5" />
                 <div>
-                  <div className="text-sm font-medium text-orange-800">Warnings</div>
-                  <ul className="text-xs text-orange-700 mt-1 space-y-1">
+                  <div className="text-sm font-medium text-amber-800">Warnings</div>
+                  <ul className="text-xs text-amber-700 mt-1 space-y-1">
                     {warnings.map((warning, i) => (
                       <li key={i}>• {warning}</li>
                     ))}

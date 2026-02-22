@@ -126,12 +126,12 @@ export function BookingNotificationBanner({
       shadow: 'shadow-red-500/50'
     },
     warning: {
-      bg: 'bg-orange-500',
+      bg: 'bg-amber-500',
       text: 'text-white', 
-      border: 'border-orange-600',
+      border: 'border-amber-600',
       pulse: 'animate-bounce',
-      timerBg: 'bg-orange-600',
-      shadow: 'shadow-orange-500/50'
+      timerBg: 'bg-amber-600',
+      shadow: 'shadow-amber-500/50'
     },
     normal: {
       bg: 'bg-blue-500',

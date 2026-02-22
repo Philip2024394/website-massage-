@@ -11,6 +11,7 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'landing': '/',
     'home': '/home',
     'indonesia': '/indonesia',
+    'uk': '/uk',
     'about': '/about',
     'contact': '/contact',
     'partner-contact': '/partner-contact',

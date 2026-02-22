@@ -202,3 +202,75 @@ export function setupBlogArticleSEO(options: {
         cleanupCanonical();
     };
 }
+
+/**
+ * Inject WebPage Schema.org structured data (e.g. for IndaStreet Social page)
+ */
+export function injectWebPageSchema(options: { name: string; description: string; url: string; image?: string }, scriptId: string = 'webpage-schema'): () => void {
+    const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: options.name,
+        description: options.description,
+        url: options.url,
+        ...(options.image && { image: options.image }),
+        publisher: {
+            '@type': 'Organization',
+            name: 'IndaStreet Massage',
+            url: 'https://www.indastreetmassage.com',
+            logo: { '@type': 'ImageObject', url: 'https://ik.imagekit.io/7grri5v7d/Massage%20hub%20indastreet.png' },
+        },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': options.url },
+    };
+    let scriptTag = document.getElementById(scriptId) as HTMLScriptElement;
+    if (!scriptTag) {
+        scriptTag = document.createElement('script');
+        scriptTag.id = scriptId;
+        scriptTag.type = 'application/ld+json';
+        document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(schema);
+    return () => {
+        const tag = document.getElementById(scriptId);
+        if (tag) tag.remove();
+    };
+}
+
+/**
+ * Set up SEO for IndaStreet Social (or any social/feed page) so shared posts and hashtags connect back to canonical URL
+ */
+export function setupSocialPageSEO(options: {
+    title: string;
+    description: string;
+    keywords: string;
+    url: string;
+    ogImage: string;
+    ogSiteName: string;
+    twitterCard: string;
+    pageName?: string;
+}): () => void {
+    document.title = options.title;
+    setMetaTag('description', options.description);
+    setMetaTag('keywords', options.keywords);
+    setMetaTag('og:title', options.title, true);
+    setMetaTag('og:description', options.description, true);
+    setMetaTag('og:image', options.ogImage, true);
+    setMetaTag('og:url', options.url, true);
+    setMetaTag('og:type', 'website', true);
+    setMetaTag('og:site_name', options.ogSiteName, true);
+    setMetaTag('twitter:card', options.twitterCard);
+    setMetaTag('twitter:title', options.title);
+    setMetaTag('twitter:description', options.description);
+    setMetaTag('twitter:image', options.ogImage);
+    const cleanupCanonical = setCanonicalUrl(options.url);
+    const cleanupSchema = options.pageName
+        ? injectWebPageSchema(
+            { name: options.pageName, description: options.description, url: options.url, image: options.ogImage },
+            'social-page-schema'
+        )
+        : () => {};
+    return () => {
+        cleanupCanonical();
+        cleanupSchema();
+    };
+}

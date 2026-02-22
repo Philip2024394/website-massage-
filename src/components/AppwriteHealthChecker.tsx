@@ -637,11 +637,11 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
                 </div>
                 <div className="text-sm text-purple-600">Total Checks</div>
               </div>
-              <div className="bg-orange-50 rounded-lg p-4">
-                <div className="text-2xl font-bold text-orange-600">
+              <div className="bg-amber-50 rounded-lg p-4">
+                <div className="text-2xl font-bold text-amber-600">
                   {healthStatus.metrics.errorCount}
                 </div>
-                <div className="text-sm text-orange-600">Errors</div>
+                <div className="text-sm text-amber-600">Errors</div>
               </div>
             </div>
           </div>
@@ -654,13 +654,13 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
                 {healthStatus.errors.slice(0, 5).map((error) => (
                   <div key={error.id} className={`flex items-start gap-3 p-4 rounded-lg border ${
                     error.severity === 'critical' ? 'bg-red-50 border-red-200' :
-                    error.severity === 'high' ? 'bg-orange-50 border-orange-200' :
+                    error.severity === 'high' ? 'bg-amber-50 border-amber-200' :
                     error.severity === 'medium' ? 'bg-yellow-50 border-yellow-200' :
                     'bg-blue-50 border-blue-200'
                   }`}>
                     <XCircle className={`w-5 h-5 mt-0.5 ${
                       error.severity === 'critical' ? 'text-red-600' :
-                      error.severity === 'high' ? 'text-orange-600' :
+                      error.severity === 'high' ? 'text-amber-600' :
                       error.severity === 'medium' ? 'text-yellow-600' :
                       'text-blue-600'
                     }`} />
@@ -672,7 +672,7 @@ export const AppwriteHealthChecker: React.FC<AppwriteHealthCheckProps> = ({
                     </div>
                     <div className={`px-2 py-1 rounded text-xs font-medium ${
                       error.severity === 'critical' ? 'bg-red-100 text-red-800' :
-                      error.severity === 'high' ? 'bg-orange-100 text-orange-800' :
+                      error.severity === 'high' ? 'bg-amber-100 text-amber-800' :
                       error.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-blue-100 text-blue-800'
                     }`}>

@@ -44,7 +44,7 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                         <div className="flex justify-between items-center max-w-full">
                             <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
                                 <span className="text-black">Inda</span>
-                                <span className="text-orange-500">Street</span>
+                                <span className="text-amber-500">Street</span>
                             </h1>
                             <div className="flex items-center gap-2 sm:gap-3 text-gray-600 flex-shrink-0">
                                 {/* Language Selector - Flag Icon */}
@@ -54,7 +54,7 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                                         setLanguage(newLanguage);
                                         console.log('🌐 Language changed to:', newLanguage);
                                     }} 
-                                    className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
+                                    className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-amber-50 rounded-full transition-colors flex-shrink-0" 
                                     title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
                                 >
                                     <span className="text-xl sm:text-2xl">
@@ -69,7 +69,7 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                                         setIsMenuOpen(true);
                                     }} 
                                     title="Menu" 
-                                    className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
+                                    className="hover:bg-amber-50 rounded-full transition-colors text-amber-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
                                 >
                                     <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                                 </button>
@@ -122,7 +122,7 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                 <div className={isSharedProfileContext ? "bg-white p-6" : "bg-white rounded-lg shadow-sm border p-6"}>
                     {!isSharedProfileContext && (
                         <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-orange-500" />
+                            <Shield className="w-5 h-5 text-amber-500" />
                             Booking Terms and Conditions
                         </h2>
                     )}
@@ -153,7 +153,7 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                         {/* Therapist Professional Standards */}
                         <div className="bg-white rounded-lg shadow-sm border p-6">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-orange-500" />
+                                <Shield className="w-5 h-5 text-amber-500" />
                                 Massage Therapist Professional Standards
                             </h3>
                             <div className="space-y-5">
@@ -245,20 +245,20 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                         {/* Booking Policy */}
                         <div className="bg-white rounded-lg shadow-sm border p-6">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-orange-500" />
+                                <Clock className="w-5 h-5 text-amber-500" />
                                 Booking Policy
                             </h3>
                             <ul className="space-y-3 text-gray-600">
                                 <li className="flex items-start gap-2">
-                                    <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
                                     <span><strong>Booking Confirmation:</strong> All bookings require confirmation from the massage therapist. You will receive notification via in-app chat.</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
                                     <span><strong>Response Time:</strong> Therapists have up to 15 minutes to respond to immediate booking requests.</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
                                     <span><strong>Scheduling:</strong> Scheduled bookings can be made up to 7 days in advance, subject to therapist availability.</span>
                                 </li>
                             </ul>
@@ -267,20 +267,20 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                 {/* Payment Terms */}
                 <div className="bg-white rounded-lg shadow-sm border p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <CreditCard className="w-5 h-5 text-orange-500" />
+                        <CreditCard className="w-5 h-5 text-amber-500" />
                         Payment Terms
                     </h3>
                     <ul className="space-y-3 text-gray-600">
                         <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                            <span className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
                             <span><strong>Payment Method:</strong> Payment is made directly to the massage therapist in cash upon service completion.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                            <span className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
                             <span><strong>Pricing:</strong> Prices displayed are final and include all applicable fees. No hidden charges.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                            <span className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
                             <span><strong>Discounts:</strong> Any promotional discounts will be applied automatically and honored by the therapist.</span>
                         </li>
                     </ul>
@@ -419,9 +419,9 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                 </div>
 
                 {/* Agreement */}
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-orange-800 mb-3">Agreement</h3>
-                    <p className="text-orange-700 leading-relaxed">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-amber-800 mb-3">Agreement</h3>
+                    <p className="text-amber-700 leading-relaxed">
                         By checking the terms and conditions checkbox and proceeding with your booking, you acknowledge that you have read, understood, and agree to be bound by these terms and conditions. These terms may be updated periodically, and continued use of the platform constitutes acceptance of any changes.
                     </p>
                 </div>

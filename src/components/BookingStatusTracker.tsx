@@ -269,16 +269,16 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
         {status === 'waiting' && (
           <>
             {/* Waiting State - Orange Indastreet Branding */}
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-4 rounded-t-2xl">
               <h2 className="text-xl font-bold text-white text-center">Waiting for Confirmation</h2>
             </div>
 
             <div className="p-4 space-y-4">
               {/* Countdown Timer - Compact */}
-              <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4">
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <Clock className="text-orange-600 animate-pulse" size={28} />
-                  <div className="text-4xl font-bold text-orange-600">
+                  <Clock className="text-amber-600 animate-pulse" size={28} />
+                  <div className="text-4xl font-bold text-amber-600">
                     {formatTime(timeRemaining)}
                   </div>
                 </div>
@@ -306,15 +306,15 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
 
                 <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                   <span className="text-gray-600 text-sm">Reference</span>
-                  <span className="font-mono text-xs text-orange-600 font-bold">Indastreet-{bookingId.slice(0, 5)}</span>
+                  <span className="font-mono text-xs text-amber-600 font-bold">Indastreet-{bookingId.slice(0, 5)}</span>
                 </div>
               </div>
 
               {/* Status Message - New Text */}
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="text-orange-600 flex-shrink-0 mt-0.5" size={18} />
-                  <p className="text-xs text-orange-900 leading-relaxed">
+                  <AlertTriangle className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
+                  <p className="text-xs text-amber-900 leading-relaxed">
                     <strong>{therapistName}</strong> HAS RECEIVED YOUR BOOKING NOTIFICATION AND WILL REPLY WITHIN THE COUNTER TIME DURATION ABOVE. 
                     WE THANK YOU FOR YOUR PATIENCE WHILE WE CONFIRM YOUR BOOKING.
                     <br />
@@ -325,16 +325,16 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
 
               {/* Loading Animation - Orange */}
               <div className="flex justify-center items-center gap-2">
-                <div className="w-2.5 h-2.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2.5 h-2.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2.5 h-2.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
             </div>
 
             <div className="p-4 pt-0">
               <button
                 onClick={handleContinueBrowsing}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg text-sm"
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-bold hover:from-amber-600 hover:to-amber-700 transition-all shadow-lg text-sm"
               >
                 Continue Browsing
               </button>
@@ -346,22 +346,22 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
           <>
             {/* Searching State */}
             <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search size={48} className="text-orange-600 animate-pulse" />
+              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search size={48} className="text-amber-600 animate-pulse" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Finding Therapist</h2>
               <p className="text-gray-600 mb-4">
                 Looking for next suitable therapist{searchingDots}
               </p>
-              <p className="text-sm text-orange-600 font-semibold">
+              <p className="text-sm text-amber-600 font-semibold">
                 Broadcasting to all available therapists...
               </p>
             </div>
 
             <div className="flex justify-center items-center gap-2 py-4">
-              <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
-              <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
+              <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
+              <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
             </div>
 
             <div className="p-6 pt-0">
@@ -392,8 +392,8 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
               {/* Therapist Profile */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-                    <User size={32} className="text-orange-600" />
+                  <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center">
+                    <User size={32} className="text-amber-600" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-800">{acceptedTherapist.therapistName}</h3>
@@ -476,14 +476,14 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
           <>
             {/* Expired State */}
             <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <XCircle size={48} className="text-orange-600" />
+              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <XCircle size={48} className="text-amber-600" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">No Response Yet</h2>
               <p className="text-gray-600 mb-4">
                 {therapistName} hasn't responded within 5 minutes.
               </p>
-              <p className="text-sm text-orange-600 font-semibold">
+              <p className="text-sm text-amber-600 font-semibold">
                 We're now broadcasting your request to all available therapists!
               </p>
             </div>
@@ -491,7 +491,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
             <div className="p-6 pt-0 space-y-3">
               <button
                 onClick={onFindNewTherapist}
-                className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+                className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-bold hover:from-amber-600 hover:to-amber-700 transition-all shadow-lg"
               >
                 Find Another Therapist
               </button>
@@ -537,7 +537,7 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
                 </button>
                 <button
                   onClick={handleKeepBooking}
-                  className="w-full py-3 border-2 border-orange-500 text-orange-600 rounded-lg font-bold hover:bg-orange-50 transition-colors"
+                  className="w-full py-3 border-2 border-amber-500 text-amber-600 rounded-lg font-bold hover:bg-amber-50 transition-colors"
                 >
                   No, Keep Waiting
                 </button>

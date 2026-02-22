@@ -377,14 +377,14 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                 <div className="flex justify-between items-center">
                     <button 
                         onClick={() => setIsDrawerOpen(true)}
-                        className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500"
+                        className="p-2 hover:bg-amber-50 rounded-full transition-colors text-amber-500"
                         aria-label="Open menu"
                     >
                         <Menu className="w-6 h-6" />
                     </button>
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                        <span className="text-amber-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <div className="w-10" />
                 </div>
@@ -417,7 +417,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     {/* Let's Find A Team Member */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Briefcase className="w-5 h-5 text-orange-500" />
+                            <Briefcase className="w-5 h-5 text-amber-500" />
                             Let's Find A Team Member
                         </h2>
 
@@ -429,7 +429,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 required
                                 value={formData.jobTitle}
                                 onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
                             >
                                 <option value="">Select a therapist specialty...</option>
                                 <option value="Traditional Massage Therapist">Traditional Massage Therapist</option>
@@ -467,7 +467,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 placeholder="Describe the role, responsibilities, and requirements..."
                                 rows={6}
                                 maxLength={1000}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                             />
                             <p className="text-xs text-gray-500 mt-1">{formData.jobDescription.length}/1000 characters</p>
                         </div>
@@ -487,7 +487,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         onClick={() => setFormData({ ...formData, employmentType: type })}
                                         className={`px-4 py-3 rounded-lg font-medium transition-all capitalize ${
                                             formData.employmentType === type
-                                                ? 'bg-orange-500 text-white'
+                                                ? 'bg-amber-500 text-white'
                                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                         }`}
                                     >
@@ -510,7 +510,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     <select
                                         value={formData.salaryRangeMin || ''}
                                         onChange={(e) => setFormData({ ...formData, salaryRangeMin: parseInt(e.target.value) || 0 })}
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     >
                                         <option value="">Select minimum salary</option>
                                         <option value="0">To be discussed</option>
@@ -533,7 +533,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     <select
                                         value={formData.salaryRangeMax || ''}
                                         onChange={(e) => setFormData({ ...formData, salaryRangeMax: parseInt(e.target.value) || 0 })}
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     >
                                         <option value="">Select maximum salary</option>
                                         <option value="0">To be discussed</option>
@@ -560,7 +560,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 type="date"
                                 value={formData.applicationDeadline}
                                 onChange={(e) => setFormData({ ...formData, applicationDeadline: e.target.value })}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                             />
                         </div>
 
@@ -575,7 +575,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         name="cvRequired"
                                         checked={formData.cvRequired === true}
                                         onChange={() => setFormData({ ...formData, cvRequired: true })}
-                                        className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                                        className="w-4 h-4 text-amber-500 focus:ring-amber-500"
                                     />
                                     <span className="text-gray-700 font-medium">Yes</span>
                                 </label>
@@ -585,7 +585,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         name="cvRequired"
                                         checked={formData.cvRequired === false}
                                         onChange={() => setFormData({ ...formData, cvRequired: false })}
-                                        className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                                        className="w-4 h-4 text-amber-500 focus:ring-amber-500"
                                     />
                                     <span className="text-gray-700 font-medium">No</span>
                                 </label>
@@ -596,7 +596,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     {/* Business Information */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Building2 className="w-5 h-5 text-orange-500" />
+                            <Building2 className="w-5 h-5 text-amber-500" />
                             Business Information
                         </h2>
 
@@ -611,7 +611,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 value={formData.businessName}
                                 onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                                 placeholder="e.g., Paradise Resort"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                             />
                             <p className="text-xs text-gray-500 mt-1">{formData.businessName.length}/23 characters</p>
                         </div>
@@ -628,7 +628,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         onClick={() => setFormData({ ...formData, businessType: type.value as any, customBusinessType: '' })}
                                         className={`px-4 py-3 rounded-lg font-medium transition-all ${
                                             formData.businessType === type.value
-                                                ? 'bg-orange-500 text-white'
+                                                ? 'bg-amber-500 text-white'
                                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                         }`}
                                     >
@@ -645,7 +645,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         onChange={(e) => setFormData({ ...formData, customBusinessType: e.target.value })}
                                         placeholder="Enter your business type..."
                                         maxLength={50}
-                                        className="w-full px-4 py-3 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        className="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     />
                                 </div>
                             )}
@@ -655,7 +655,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     {/* Business Images */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             Business Images
@@ -663,7 +663,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                         <p className="text-sm text-gray-600">
                             Upload images to showcase your business. Main image is displayed on job cards.
                             <br />
-                            <span className="text-orange-600 font-medium">💡 If no main image is uploaded, we'll use professional massage imagery.</span>
+                            <span className="text-amber-600 font-medium">💡 If no main image is uploaded, we'll use professional massage imagery.</span>
                         </p>
 
                         {/* Main Image Upload */}
@@ -687,7 +687,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     </button>
                                 </div>
                             ) : (
-                                <label className="block w-full h-48 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-400 transition-colors cursor-pointer">
+                                <label className="block w-full h-48 border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-400 transition-colors cursor-pointer">
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -728,7 +728,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     </div>
                                 ))}
                                 {thumbnailPreviews.length < 5 && (
-                                    <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-400 transition-colors cursor-pointer">
+                                    <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-400 transition-colors cursor-pointer">
                                         <input
                                             type="file"
                                             accept="image/*"
@@ -754,7 +754,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     {/* Contact Information */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Phone className="w-5 h-5 text-orange-500" />
+                            <Phone className="w-5 h-5 text-amber-500" />
                             Contact Information
                         </h2>
 
@@ -768,7 +768,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 value={formData.contactPerson}
                                 onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
                                 placeholder="HR Manager name"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                             />
                         </div>
 
@@ -791,7 +791,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     }}
                                     placeholder="812 3456 7890"
                                     maxLength={15}
-                                    className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 />
                             </div>
                             <p className="text-xs text-gray-500 mt-1">Enter number without country code (e.g., 812 3456 7890)</p>
@@ -808,7 +808,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 value={formData.contactEmail}
                                 onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
                                 placeholder="hr@company.com"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                             />
                         </div>
                     </div>
@@ -816,7 +816,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     {/* Location */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-orange-500" />
+                            <MapPin className="w-5 h-5 text-amber-500" />
                             Location
                         </h2>
 
@@ -826,7 +826,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 required
                                 value={formData.country}
                                 onChange={(e) => setFormData({ ...formData, country: e.target.value, city: '' })}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                             >
                                 <option value="Indonesia">Indonesia</option>
                                 <option value="Singapore">Singapore</option>
@@ -865,7 +865,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 <select
                                     value={formData.city}
                                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                                     required
                                 >
                                     <option value="">Select a city</option>
@@ -883,7 +883,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                     placeholder="Enter city name (e.g., Bangkok, Dubai, Singapore)"
                                     maxLength={85}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 />
                             )}
                             <p className="text-xs text-gray-500 mt-1">
@@ -897,7 +897,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     {/* Position Details */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Briefcase className="w-5 h-5 text-orange-500" />
+                            <Briefcase className="w-5 h-5 text-amber-500" />
                             Position Details
                         </h2>
 
@@ -909,7 +909,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 <select
                                     value={formData.positionTitle}
                                     onChange={(e) => setFormData({ ...formData, positionTitle: e.target.value })}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 >
                                     <option value="">Select position type</option>
                                     <optgroup label="General Positions">
@@ -939,7 +939,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     min="1"
                                     value={formData.numberOfPositions}
                                     onChange={(e) => setFormData({ ...formData, numberOfPositions: parseInt(e.target.value) })}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 />
                             </div>
                         </div>
@@ -954,7 +954,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         onClick={() => setFormData({ ...formData, workType: type })}
                                         className={`px-4 py-3 rounded-lg font-medium transition-all ${
                                             formData.workType === type
-                                                ? 'bg-orange-500 text-white'
+                                                ? 'bg-amber-500 text-white'
                                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                         }`}
                                     >
@@ -970,7 +970,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 Salary Range (Monthly in Indonesian Rupiah)
                             </label>
                             {formData.country !== 'Indonesia' && (
-                                <p className="text-sm text-orange-600 mb-2 font-medium">
+                                <p className="text-sm text-amber-600 mb-2 font-medium">
                                     ⚠️ Please convert your currency to Indonesian Rupiah using Google Currency Converter
                                 </p>
                             )}
@@ -982,7 +982,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         value={formData.salaryMin}
                                         onChange={(e) => setFormData({ ...formData, salaryMin: e.target.value })}
                                         placeholder="Min"
-                                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     />
                                 </div>
                                 <div className="relative">
@@ -992,7 +992,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         value={formData.salaryMax}
                                         onChange={(e) => setFormData({ ...formData, salaryMax: e.target.value })}
                                         placeholder="Max"
-                                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     />
                                 </div>
                             </div>
@@ -1002,16 +1002,16 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     {/* Accommodation */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Home className="w-5 h-5 text-orange-500" />
+                            <Home className="w-5 h-5 text-amber-500" />
                             Accommodation
                         </h2>
 
-                        <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-300 cursor-pointer transition-colors">
+                        <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-amber-300 cursor-pointer transition-colors">
                             <input
                                 type="checkbox"
                                 checked={formData.accommodationProvided}
                                 onChange={(e) => setFormData({ ...formData, accommodationProvided: e.target.checked })}
-                                className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                                className="w-5 h-5 text-amber-500 rounded focus:ring-amber-500"
                             />
                             <span className="font-medium text-gray-900">Accommodation Provided</span>
                         </label>
@@ -1022,7 +1022,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                 onChange={(e) => setFormData({ ...formData, accommodationDetails: e.target.value })}
                                 placeholder="Describe accommodation details (e.g., shared room, meals included, etc.)"
                                 rows={3}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                             />
                         )}
 
@@ -1070,7 +1070,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                     onClick={() => setFormData({ ...formData, transportationProvided: 'both' })}
                                     className={`px-4 py-3 rounded-lg font-medium transition-all ${
                                         formData.transportationProvided === 'both'
-                                            ? 'bg-orange-500 text-white'
+                                            ? 'bg-amber-500 text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                                 >
@@ -1087,22 +1087,22 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             <div className="space-y-3 pt-4 border-t-2 border-gray-200">
                                 <p className="text-sm font-semibold text-gray-700 mb-3">International Benefits</p>
                                 
-                                <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-300 cursor-pointer transition-colors">
+                                <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-amber-300 cursor-pointer transition-colors">
                                     <input
                                         type="checkbox"
                                         checked={formData.flightsPaidByEmployer}
                                         onChange={(e) => setFormData({ ...formData, flightsPaidByEmployer: e.target.checked })}
-                                        className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                                        className="w-5 h-5 text-amber-500 rounded focus:ring-amber-500"
                                     />
                                     <span className="font-medium text-gray-900">Flights Paid By Employer</span>
                                 </label>
 
-                                <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-300 cursor-pointer transition-colors">
+                                <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-amber-300 cursor-pointer transition-colors">
                                     <input
                                         type="checkbox"
                                         checked={formData.visaArrangedByEmployer}
                                         onChange={(e) => setFormData({ ...formData, visaArrangedByEmployer: e.target.checked })}
-                                        className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                                        className="w-5 h-5 text-amber-500 rounded focus:ring-amber-500"
                                     />
                                     <span className="font-medium text-gray-900">Visa Arranged By Employer</span>
                                 </label>
@@ -1118,7 +1118,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                         {formData.requirements.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-3">
                                 {formData.requirements.map((req) => (
-                                    <div key={req} className="flex items-center gap-1 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-sm">
+                                    <div key={req} className="flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white rounded-lg text-sm">
                                         <span>{req}</span>
                                         <button
                                             type="button"
@@ -1128,7 +1128,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                                     requirements: formData.requirements.filter(r => r !== req) 
                                                 });
                                             }}
-                                            className="ml-1 hover:bg-orange-600 rounded-full p-0.5"
+                                            className="ml-1 hover:bg-amber-600 rounded-full p-0.5"
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
@@ -1142,7 +1142,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setShowRequirementsDropdown(!showRequirementsDropdown)}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-orange-400"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-amber-400"
                             >
                                 <span className="text-gray-700">Select Requirements</span>
                                 <svg className={`w-5 h-5 transition-transform ${showRequirementsDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1157,7 +1157,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => setShowRequirementsDropdown(false)}
-                                            className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                            className="w-6 h-6 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center transition-colors"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -1172,13 +1172,13 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                                     : [...formData.requirements, req];
                                                 setFormData({ ...formData, requirements: newReqs });
                                             }}
-                                            className={`w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between ${
-                                                formData.requirements.includes(req) ? 'bg-orange-100' : ''
+                                            className={`w-full px-4 py-3 text-left hover:bg-amber-50 flex items-center justify-between ${
+                                                formData.requirements.includes(req) ? 'bg-amber-100' : ''
                                             }`}
                                         >
                                             <span className="text-sm">{req}</span>
                                             {formData.requirements.includes(req) && (
-                                                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                 </svg>
                                             )}
@@ -1194,7 +1194,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                         {formData.benefits.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-3">
                                 {formData.benefits.map((benefit) => (
-                                    <div key={benefit} className="flex items-center gap-1 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-sm">
+                                    <div key={benefit} className="flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white rounded-lg text-sm">
                                         <span>{benefit}</span>
                                         <button
                                             type="button"
@@ -1204,7 +1204,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                                     benefits: formData.benefits.filter(b => b !== benefit) 
                                                 });
                                             }}
-                                            className="ml-1 hover:bg-orange-600 rounded-full p-0.5"
+                                            className="ml-1 hover:bg-amber-600 rounded-full p-0.5"
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
@@ -1218,7 +1218,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setShowBenefitsDropdown(!showBenefitsDropdown)}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-orange-400"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-amber-400"
                             >
                                 <span className="text-gray-700">Select Benefits</span>
                                 <svg className={`w-5 h-5 transition-transform ${showBenefitsDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1233,7 +1233,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => setShowBenefitsDropdown(false)}
-                                            className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                            className="w-6 h-6 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center transition-colors"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -1248,13 +1248,13 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                                     : [...formData.benefits, benefit];
                                                 setFormData({ ...formData, benefits: newBenefits });
                                             }}
-                                            className={`w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between ${
-                                                formData.benefits.includes(benefit) ? 'bg-orange-100' : ''
+                                            className={`w-full px-4 py-3 text-left hover:bg-amber-50 flex items-center justify-between ${
+                                                formData.benefits.includes(benefit) ? 'bg-amber-100' : ''
                                             }`}
                                         >
                                             <span className="text-sm">{benefit}</span>
                                             {formData.benefits.includes(benefit) && (
-                                                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                 </svg>
                                             )}
@@ -1298,7 +1298,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setShowMassageTypesDropdown(!showMassageTypesDropdown)}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-orange-400"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-amber-400"
                             >
                                 <span className="text-gray-700">Select Massage Types</span>
                                 <svg className={`w-5 h-5 transition-transform ${showMassageTypesDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1313,7 +1313,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => setShowMassageTypesDropdown(false)}
-                                            className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                            className="w-6 h-6 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center transition-colors"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -1328,13 +1328,13 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                                     : [...formData.massageTypes, type];
                                                 setFormData({ ...formData, massageTypes: newTypes });
                                             }}
-                                            className={`w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between ${
-                                                formData.massageTypes.includes(type) ? 'bg-orange-100' : ''
+                                            className={`w-full px-4 py-3 text-left hover:bg-amber-50 flex items-center justify-between ${
+                                                formData.massageTypes.includes(type) ? 'bg-amber-100' : ''
                                             }`}
                                         >
                                             <span className="text-sm">{type}</span>
                                             {formData.massageTypes.includes(type) && (
-                                                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                 </svg>
                                             )}
@@ -1378,7 +1378,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setShowLanguagesDropdown(!showLanguagesDropdown)}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-orange-400"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-amber-400"
                             >
                                 <span className="text-gray-700">Select Languages</span>
                                 <svg className={`w-5 h-5 transition-transform ${showLanguagesDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1393,7 +1393,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => setShowLanguagesDropdown(false)}
-                                            className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                            className="w-6 h-6 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center transition-colors"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -1408,13 +1408,13 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                                                     : [...formData.requiredLanguages, lang];
                                                 setFormData({ ...formData, requiredLanguages: newLangs });
                                             }}
-                                            className={`w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between ${
-                                                formData.requiredLanguages.includes(lang) ? 'bg-orange-100' : ''
+                                            className={`w-full px-4 py-3 text-left hover:bg-amber-50 flex items-center justify-between ${
+                                                formData.requiredLanguages.includes(lang) ? 'bg-amber-100' : ''
                                             }`}
                                         >
                                             <span className="text-sm">{lang}</span>
                                             {formData.requiredLanguages.includes(lang) && (
-                                                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                 </svg>
                                             )}
@@ -1436,14 +1436,14 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                     {/* Payment proof upload */}
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-3">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Upload className="w-5 h-5 text-orange-500" />
+                            <Upload className="w-5 h-5 text-amber-500" />
                             Payment proof (screenshot or file)
                         </h2>
                         <p className="text-sm text-gray-600">
                             Upload proof of payment. Accepted formats: image (PNG, JPG, JPEG, WebP) or PDF. Max size: {PAYMENT_PROOF_MAX_MB} MB.
                         </p>
                         <div className="flex flex-col gap-2">
-                            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-400 hover:bg-orange-50/50 cursor-pointer transition-colors">
+                            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50/50 cursor-pointer transition-colors">
                                 <FileImage className="w-5 h-5 text-gray-500" />
                                 <span className="text-sm font-medium text-gray-700">
                                     {paymentProofFile ? paymentProofFile.name : 'Choose file...'}
@@ -1482,7 +1482,7 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                         className={`w-full py-4 rounded-xl font-bold text-white transition-all ${
                             isSubmitting
                                 ? 'bg-gray-300 cursor-not-allowed'
-                                : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl'
+                                : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg hover:shadow-xl'
                         }`}
                     >
                         {isSubmitting ? 'Submitting...' : 'Post Job'}

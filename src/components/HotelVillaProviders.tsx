@@ -123,7 +123,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                     </div>
                     <div className="text-right">
                         <div className="text-sm text-gray-600">Available Partners</div>
-                        <div className="text-3xl font-bold text-orange-500">{filteredProviders.length}</div>
+                        <div className="text-3xl font-bold text-amber-500">{filteredProviders.length}</div>
                     </div>
                 </div>
 
@@ -134,7 +134,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                             onClick={() => setSelectedFilter('all')}
                             className={`px-4 py-2 rounded-md text-sm font-medium ${
                                 selectedFilter === 'all'
-                                    ? 'bg-orange-500 text-white'
+                                    ? 'bg-amber-500 text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
@@ -144,7 +144,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                             onClick={() => setSelectedFilter('therapist')}
                             className={`px-4 py-2 rounded-md text-sm font-medium ${
                                 selectedFilter === 'therapist'
-                                    ? 'bg-orange-500 text-white'
+                                    ? 'bg-amber-500 text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
@@ -154,7 +154,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                             onClick={() => setSelectedFilter('place')}
                             className={`px-4 py-2 rounded-md text-sm font-medium ${
                                 selectedFilter === 'place'
-                                    ? 'bg-orange-500 text-white'
+                                    ? 'bg-amber-500 text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
@@ -191,7 +191,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                                     className="w-full h-48 object-cover"
                                 />
                                 <div className="absolute top-2 right-2">
-                                    <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                    <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                                         {discount}% OFF
                                     </span>
                                 </div>
@@ -235,7 +235,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                                             <div className="line-through text-gray-400 text-xs">
                                                 Rp {provider.originalPricing["60"].toLocaleString()}
                                             </div>
-                                            <div className="font-bold text-orange-600">
+                                            <div className="font-bold text-amber-600">
                                                 Rp {calculateDiscountedPrice(provider.originalPricing["60"], discount).toLocaleString()}
                                             </div>
                                             <div className="text-xs text-gray-600">ID: {provider.id}01</div>
@@ -245,7 +245,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                                             <div className="line-through text-gray-400 text-xs">
                                                 Rp {provider.originalPricing["90"].toLocaleString()}
                                             </div>
-                                            <div className="font-bold text-orange-600">
+                                            <div className="font-bold text-amber-600">
                                                 Rp {calculateDiscountedPrice(provider.originalPricing["90"], discount).toLocaleString()}
                                             </div>
                                             <div className="text-xs text-gray-600">ID: {provider.id}02</div>
@@ -255,7 +255,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                                             <div className="line-through text-gray-400 text-xs">
                                                 Rp {provider.originalPricing["120"].toLocaleString()}
                                             </div>
-                                            <div className="font-bold text-orange-600">
+                                            <div className="font-bold text-amber-600">
                                                 Rp {calculateDiscountedPrice(provider.originalPricing["120"], discount).toLocaleString()}
                                             </div>
                                             <div className="text-xs text-gray-600">ID: {provider.id}03</div>
@@ -266,7 +266,7 @@ const HotelVillaProviders: React.FC<HotelVillaProvidersProps> = ({
                                 {/* Contact Button */}
                                 <button
                                     onClick={() => onContactProvider(provider.id, provider.type)}
-                                    className="w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition-colors font-medium"
+                                    className="w-full bg-amber-500 text-white py-2 px-4 rounded-md hover:bg-amber-600 transition-colors font-medium"
                                 >
                                     Contact Provider
                                 </button>

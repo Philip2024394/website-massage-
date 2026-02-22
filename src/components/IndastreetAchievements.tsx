@@ -92,11 +92,11 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
             <Award className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-orange-800">
+            <h3 className="text-lg font-semibold text-amber-800">
               {language === 'id' ? 'Pencapaian Indastreet' : 'Indastreet Achievements'}
             </h3>
             {isVerified && (
@@ -116,7 +116,7 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
         {achievementsByCategory.length > 3 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
+            className="flex items-center gap-1 px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
           >
             {isExpanded ? 'Show Less' : `View All`}
             <Plus className={`w-4 h-4 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-45' : ''}`} />
@@ -190,16 +190,16 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
           <div key={category.key} className="border border-gray-100 rounded-lg p-3 bg-gray-50">
             {/* Category Header */}
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white">
+              <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center text-white">
                 {getCategoryIcon(category.key as Achievement['category'])}
               </div>
-              <h4 className="text-sm font-semibold text-orange-800">{category.name}</h4>
+              <h4 className="text-sm font-semibold text-amber-800">{category.name}</h4>
               <div className="flex items-center gap-1 ml-auto">
                 <span className="text-xs text-green-600 font-medium">
                   {category.achievements.filter(a => a.isAchieved).length}
                 </span>
-                <span className="text-xs text-orange-400">/</span>
-                <span className="text-xs text-orange-600">
+                <span className="text-xs text-amber-400">/</span>
+                <span className="text-xs text-amber-600">
                   {category.achievements.length}
                 </span>
               </div>
@@ -261,14 +261,14 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
               <span className="text-gray-600">Pending: {achievementsWithStatus.filter(a => !a.isAchieved).length}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Shield className="w-3 h-3 text-orange-500" />
+              <Shield className="w-3 h-3 text-amber-500" />
               <span className="text-gray-600">Total: {allAchievements.length} standards</span>
             </div>
           </div>
           {mode === 'authenticated' && onViewAll && (
             <button
               onClick={onViewAll}
-              className="text-orange-600 hover:text-orange-700 font-medium"
+              className="text-amber-600 hover:text-amber-700 font-medium"
             >
               Manage →
             </button>

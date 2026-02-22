@@ -78,7 +78,7 @@ const ShiatsuMassagePage: React.FC<ShiatsuMassagePageProps> = ({ onBack, onNavig
                 <div className="flex gap-4 pb-20">
                     <button 
                         onClick={() => onNavigate('home')}
-                        className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                        className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
                     >
                         Book Shiatsu Massage
                     </button>

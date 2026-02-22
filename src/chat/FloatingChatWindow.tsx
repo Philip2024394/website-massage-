@@ -618,7 +618,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
           >
             {/* Header */}
             <div 
-              className="bg-orange-500 text-white p-4 rounded-t-2xl cursor-move flex items-center justify-between"
+              className="bg-amber-500 text-white p-4 rounded-t-2xl cursor-move flex items-center justify-between"
               onMouseDown={isSelected ? handleMouseDown : undefined}
             >
               <div className="flex items-center gap-3">
@@ -632,7 +632,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                   {isSelected && !messagesError && <span className="absolute inline-flex h-full w-full rounded-full bg-green-300 animate-ping opacity-75" />}
                 </span>
                 {/* Profile Image */}
-                <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-orange-400 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-amber-400 flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {(chatRoom as any).providerProfilePicture || (chatRoom as any).profilePicture ? (
                     <img 
                       src={(chatRoom as any).providerProfilePicture || (chatRoom as any).profilePicture} 
@@ -660,14 +660,14 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                     {/* Lock Indicator for Booking in Progress */}
                     {chatRoom.status === 'booking-in-progress' && (
                       <span 
-                        className="text-sm bg-orange-400 px-2 py-1 rounded-full flex items-center gap-1 animate-pulse"
+                        className="text-sm bg-amber-400 px-2 py-1 rounded-full flex items-center gap-1 animate-pulse"
                         title="Complete booking to unlock full chat"
                       >
                         🔒
                       </span>
                     )}
                   </h3>
-                  <p className="text-orange-100 text-sm">
+                  <p className="text-amber-100 text-sm">
                     {chatRoom.status === 'booking-in-progress' ? '📋 Complete Booking Form' : '📍 Service Location'}
                   </p>
                 </div>
@@ -686,7 +686,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         { duration: 3000 }
                       );
                     }}
-                    className="p-2 hover:bg-orange-600 rounded-full transition-colors text-white animate-pulse"
+                    className="p-2 hover:bg-amber-600 rounded-full transition-colors text-white animate-pulse"
                     title="Chat locked until booking is complete"
                   >
                     🔒
@@ -697,7 +697,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                 {userRole === 'therapist' && (
                   <button
                     onClick={() => handleShareBankDetails(chatRoom.$id)}
-                    className="p-2 hover:bg-orange-600 rounded-full transition-colors text-white"
+                    className="p-2 hover:bg-amber-600 rounded-full transition-colors text-white"
                     title="Share Bank Details"
                   >
                     💳
@@ -710,7 +710,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                     onClick={() => setSelectedChatId(chatRoom.$id)}
                     className={`
                       p-2 rounded-full transition-colors text-sm font-bold
-                      ${isSelected ? 'bg-orange-400' : 'bg-orange-600 hover:bg-orange-400'}
+                      ${isSelected ? 'bg-amber-400' : 'bg-amber-600 hover:bg-amber-400'}
                     `}
                   >
                     {index + 1}
@@ -720,7 +720,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                 {/* Minimize/Maximize */}
                 <button
                   onClick={() => isMinimized ? openChatRoom(chatRoom.$id) : minimizeChatRoom(chatRoom.$id)}
-                  className="p-2 hover:bg-orange-600 rounded-full transition-colors"
+                  className="p-2 hover:bg-amber-600 rounded-full transition-colors"
                 >
                   {isMinimized ? '⬆️' : '⬇️'}
                 </button>
@@ -728,7 +728,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                 {/* Close */}
                 <button
                   onClick={() => closeChatRoom(chatRoom.$id)}
-                  className="p-2 hover:bg-orange-600 rounded-full transition-colors"
+                  className="p-2 hover:bg-amber-600 rounded-full transition-colors"
                 >
                   ✕
                 </button>
@@ -751,21 +751,21 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                   <div className="flex-1 flex flex-col p-4 relative">
                     
                     {/* Lock Overlay floating over the booking form */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-50/95 to-white/95 backdrop-blur-md z-20 flex items-center justify-center">
-                      <div className="text-center px-6 py-8 max-w-sm bg-white/90 rounded-2xl shadow-2xl border-2 border-orange-200">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-50/95 to-white/95 backdrop-blur-md z-20 flex items-center justify-center">
+                      <div className="text-center px-6 py-8 max-w-sm bg-white/90 rounded-2xl shadow-2xl border-2 border-amber-200">
                         <div className="mb-6 relative">
                           <div className="inline-block text-7xl drop-shadow-2xl lock-bounce filter">
                             🔒
                           </div>
                           <div className="absolute inset-0 flex items-center justify-center -z-10">
-                            <div className="w-24 h-24 bg-orange-200 rounded-full opacity-20 animate-ping"></div>
+                            <div className="w-24 h-24 bg-amber-200 rounded-full opacity-20 animate-ping"></div>
                           </div>
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-3 drop-shadow">Chat Locked</h3>
                         <p className="text-sm text-gray-700 leading-relaxed mb-4 font-medium">
-                          Complete the booking form below to unlock the full chat experience with <span className="text-orange-600 font-bold">{chatRoom.providerName}</span>
+                          Complete the booking form below to unlock the full chat experience with <span className="text-amber-600 font-bold">{chatRoom.providerName}</span>
                         </p>
-                        <div className="flex items-center justify-center gap-2 text-xs text-orange-700 font-bold bg-orange-100 rounded-full px-4 py-2 animate-pulse shadow-inner">
+                        <div className="flex items-center justify-center gap-2 text-xs text-amber-700 font-bold bg-amber-100 rounded-full px-4 py-2 animate-pulse shadow-inner">
                           <span className="text-base">⬇️</span>
                           <span>Scroll down to fill the form</span>
                           <span className="text-base">⬇️</span>
@@ -775,9 +775,9 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         </div>\n                      </div>\n                    </div>
 
                     {/* Booking Details Banner */}
-                    <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4 mb-4">
+                    <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 mb-4">
                       <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                        <span className="text-orange-600">📋</span>
+                        <span className="text-amber-600">📋</span>
                         Booking Details
                       </h3>
                       <div className="space-y-2 text-sm">
@@ -791,11 +791,11 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Total Price:</span>
-                          <span className="font-bold text-orange-600">
+                          <span className="font-bold text-amber-600">
                             IDR {Math.round((chatRoom.pricing[String(chatRoom.duration)] || 0) / 1000)}K
                           </span>
                         </div>
-                        <div className="flex justify-between border-t border-orange-200 pt-2 mt-2">
+                        <div className="flex justify-between border-t border-amber-200 pt-2 mt-2">
                           <span className="text-gray-500 text-xs">Admin Fee (30%):</span>
                           <span className="text-gray-700 text-xs font-medium">
                             IDR {Math.round((chatRoom.pricing[String(chatRoom.duration)] || 0) * 0.30 / 1000)}K
@@ -820,7 +820,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           type="text"
                           value={bookingFormData.customerName}
                           onChange={(e) => setBookingFormData(prev => ({ ...prev, customerName: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                           placeholder="Enter your full name"
                           required
                         />
@@ -838,7 +838,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                             type="tel"
                             value={bookingFormData.customerWhatsApp}
                             onChange={(e) => setBookingFormData(prev => ({ ...prev, customerWhatsApp: e.target.value.replace(/\D/g, '') }))}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                             placeholder="812345678"
                             required
                           />
@@ -857,7 +857,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           onClick={() => setBookingFormData(prev => ({ ...prev, gender: 'male' }))}
                           className={`px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
                             bookingFormData.gender === 'male'
-                              ? 'border-orange-500 bg-orange-500 text-white'
+                              ? 'border-amber-500 bg-amber-500 text-white'
                               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -873,7 +873,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           onClick={() => setBookingFormData(prev => ({ ...prev, gender: 'female' }))}
                           className={`px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
                             bookingFormData.gender === 'female'
-                              ? 'border-orange-500 bg-orange-500 text-white'
+                              ? 'border-amber-500 bg-amber-500 text-white'
                               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -889,7 +889,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           onClick={() => setBookingFormData(prev => ({ ...prev, gender: 'children' }))}
                           className={`px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
                             bookingFormData.gender === 'children'
-                              ? 'border-orange-500 bg-orange-500 text-white'
+                              ? 'border-amber-500 bg-amber-500 text-white'
                               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -914,7 +914,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           onClick={() => setBookingFormData(prev => ({ ...prev, serviceVenueType: 'home' }))}
                           className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-all ${
                             bookingFormData.serviceVenueType === 'home'
-                              ? 'border-orange-500 bg-orange-500 text-white'
+                              ? 'border-amber-500 bg-amber-500 text-white'
                               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -925,7 +925,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           onClick={() => setBookingFormData(prev => ({ ...prev, serviceVenueType: 'villa' }))}
                           className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-all ${
                             bookingFormData.serviceVenueType === 'villa'
-                              ? 'border-orange-500 bg-orange-500 text-white'
+                              ? 'border-amber-500 bg-amber-500 text-white'
                               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -936,7 +936,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           onClick={() => setBookingFormData(prev => ({ ...prev, serviceVenueType: 'hotel' }))}
                           className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-all ${
                             bookingFormData.serviceVenueType === 'hotel'
-                              ? 'border-orange-500 bg-orange-500 text-white'
+                              ? 'border-amber-500 bg-amber-500 text-white'
                               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -954,7 +954,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         type="text"
                         value={bookingFormData.manualAddress1 || ''}
                         onChange={(e) => setBookingFormData(prev => ({ ...prev, manualAddress1: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                         placeholder="e.g., Jl. Sunset Road No. 123 or Villa Seminyak"
                       />
                     </div>
@@ -967,7 +967,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         type="text"
                         value={bookingFormData.manualAddress2 || ''}
                         onChange={(e) => setBookingFormData(prev => ({ ...prev, manualAddress2: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                         placeholder="e.g., Seminyak, Badung 80361"
                       />
                     </div>
@@ -981,7 +981,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           disabled={gettingLocation}
                           className={`w-full px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
                             bookingFormData.coordinates
-                              ? 'border-orange-500 bg-orange-500 text-white'
+                              ? 'border-amber-500 bg-amber-500 text-white'
                               : 'border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100'
                           } ${gettingLocation ? 'opacity-50 cursor-wait' : ''}`}
                         >
@@ -1001,7 +1001,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                     <button
                       onClick={() => handleConfirmBooking(chatRoom.$id)}
                         disabled={!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.coordinates || (!bookingFormData.manualAddress1 && !bookingFormData.manualAddress2)}
-                      className="w-full mt-4 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors"
+                      className="w-full mt-4 bg-amber-500 hover:bg-amber-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors"
                     >
                       Confirm Booking
                     </button>
@@ -1044,7 +1044,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                     {isLoading && (
                       <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
-                          <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
+                          <div className="inline-block w-8 h-8 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mb-2"></div>
                           <p className="text-gray-500 text-sm">Loading messages...</p>
                         </div>
                       </div>
@@ -1075,7 +1075,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                               <p className="text-sm text-gray-600 leading-relaxed mb-3">
                                 Complete the booking form to unlock chat with {chatRoom.providerName}
                               </p>
-                              <div className="flex items-center justify-center gap-2 text-xs text-orange-600 font-medium">
+                              <div className="flex items-center justify-center gap-2 text-xs text-amber-600 font-medium">
                                 <span className="animate-pulse">⬇️</span>
                                 <span>Fill out the form below</span>
                                 <span className="animate-pulse">⬇️</span>

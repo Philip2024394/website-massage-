@@ -136,9 +136,9 @@ export const EnhancedBookingTimeout: React.FC<EnhancedBookingTimeoutProps> = ({
 
   if (isProcessing) {
     return (
-      <div className="bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-6 mb-4">
+      <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-xl p-6 mb-4">
         <div className="flex items-center justify-center mb-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
         </div>
         <div className="text-center">
           <h3 className="font-semibold text-lg text-gray-800 mb-2">
@@ -236,7 +236,7 @@ export const EnhancedBookingTimeout: React.FC<EnhancedBookingTimeoutProps> = ({
           
           {timeoutResult.action === 'broadcasted' && timeoutResult.success && (
             <button
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
               disabled
             >
               <Clock className="w-4 h-4 mr-2" />

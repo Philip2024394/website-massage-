@@ -17,7 +17,7 @@ const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t: _t }) 
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
-                        <span className="text-orange-500">
+                        <span className="text-amber-500">
                             <span className="inline-block animate-float">S</span>treet
                         </span>
                     </h1>
@@ -79,28 +79,28 @@ const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t: _t }) 
                         <h3 className="text-xl font-bold text-gray-900 mb-4">Types of cookies we use</h3>
                         
                         <div className="space-y-4">
-                            <div className="border-l-4 border-orange-500 pl-4">
+                            <div className="border-l-4 border-amber-500 pl-4">
                                 <h4 className="font-bold text-gray-900 mb-2">Essential Cookies</h4>
                                 <p className="text-gray-700 leading-relaxed">
                                     These cookies are strictly necessary to provide you with services available through our platform and to use some of its features, such as access to secure areas. These include authentication cookies, session management, and security cookies.
                                 </p>
                             </div>
 
-                            <div className="border-l-4 border-orange-500 pl-4">
+                            <div className="border-l-4 border-amber-500 pl-4">
                                 <h4 className="font-bold text-gray-900 mb-2">Performance and Analytics Cookies</h4>
                                 <p className="text-gray-700 leading-relaxed">
                                     These cookies allow us to count visits and traffic sources so we can measure and improve the performance of our platform. They help us understand which pages are the most and least popular and see how visitors move around the platform. All information these cookies collect is aggregated and therefore anonymous.
                                 </p>
                             </div>
 
-                            <div className="border-l-4 border-orange-500 pl-4">
+                            <div className="border-l-4 border-amber-500 pl-4">
                                 <h4 className="font-bold text-gray-900 mb-2">Functionality Cookies</h4>
                                 <p className="text-gray-700 leading-relaxed">
                                     These cookies enable the platform to provide enhanced functionality and personalization. They may be set by us or by third party providers whose services we have added to our pages. If you do not allow these cookies, some or all of these services may not function properly.
                                 </p>
                             </div>
 
-                            <div className="border-l-4 border-orange-500 pl-4">
+                            <div className="border-l-4 border-amber-500 pl-4">
                                 <h4 className="font-bold text-gray-900 mb-2">Targeting Cookies</h4>
                                 <p className="text-gray-700 leading-relaxed">
                                     These cookies may be set through our site by our advertising partners. They may be used by those companies to build a profile of your interests and show you relevant adverts on other sites. They work by uniquely identifying your browser and device.
@@ -152,7 +152,7 @@ const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t: _t }) 
                         <div className="flex gap-4 text-sm">
                             <button
                                 onClick={onBack}
-                                className="text-gray-600 hover:text-orange-500 transition-colors"
+                                className="text-gray-600 hover:text-amber-500 transition-colors"
                             >
                                 Back to Home
                             </button>

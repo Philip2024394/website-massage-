@@ -52,8 +52,8 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
       type: 'massage_place' as AccountType,
       title: 'Massage Place',
       icon: Building,
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-50 border-orange-200',
+      color: 'text-amber-500',
+      bgColor: 'bg-amber-50 border-amber-200',
       description: 'Massage spa or wellness center'
     },
     {
@@ -197,7 +197,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
   const selectedAccountType = accountTypes.find(type => type.type === formData.accountType);
 
   return (
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-400 via-orange-500 to-red-600 relative overflow-hidden">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-amber-400 via-amber-500 to-red-600 relative overflow-hidden">
       <PageNumberBadge pageNumber={999} pageName="CreateAccountPage" isLocked={false} />
       
       {/* Background Pattern */}
@@ -221,7 +221,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
             </button>
           )}
           <h1 className="text-2xl font-bold text-white">
-            <span>Inda</span><span className="text-orange-200">Street</span>
+            <span>Inda</span><span className="text-amber-200">Street</span>
           </h1>
         </div>
         
@@ -275,7 +275,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="your@email.com"
                     required
                   />
@@ -296,7 +296,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="Your full name"
                     required
                   />
@@ -320,7 +320,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                       const value = e.target.value.replace(/\D/g, ''); // Only allow digits
                       setFormData({ ...formData, whatsappNumber: value });
                     }}
-                    className="block w-full pl-14 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="block w-full pl-14 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="812345678"
                     required
                     maxLength={13}
@@ -341,7 +341,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                   type="text"
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  className="block w-full pl-3 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="block w-full pl-3 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   placeholder="e.g. Indonesia, Singapore"
                   required
                 />
@@ -402,7 +402,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="Enter your password"
                     required
                   />
@@ -429,7 +429,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                     type="checkbox"
                     checked={formData.profilePhotoAgreed}
                     onChange={(e) => setFormData({ ...formData, profilePhotoAgreed: e.target.checked })}
-                    className="mt-1 h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                    className="mt-1 h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                     required
                   />
                   <label htmlFor="profilePhoto" className="ml-3 block text-sm text-gray-900">
@@ -437,7 +437,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowPhotoModal(true)}
-                      className="ml-2 text-orange-600 hover:text-orange-700 underline font-medium"
+                      className="ml-2 text-amber-600 hover:text-amber-700 underline font-medium"
                     >
                       Read Full Policy
                     </button>
@@ -452,7 +452,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                   type="checkbox"
                   checked={formData.termsAccepted}
                   onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
-                  className="mt-1 h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  className="mt-1 h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                   required
                 />
                 <label htmlFor="terms" className="ml-3 block text-sm text-gray-700">
@@ -460,7 +460,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate?.('terms')}
-                    className="text-orange-600 hover:text-orange-700 underline font-medium"
+                    className="text-amber-600 hover:text-amber-700 underline font-medium"
                   >
                     Terms and Conditions
                   </button>
@@ -468,7 +468,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate?.('privacy')}
-                    className="text-orange-600 hover:text-orange-700 underline font-medium"
+                    className="text-amber-600 hover:text-amber-700 underline font-medium"
                   >
                     Privacy Policy
                   </button>
@@ -480,7 +480,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-3 px-4 rounded-lg font-semibold text-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-3 px-4 rounded-lg font-semibold text-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
@@ -503,7 +503,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate?.('sign-in')}
-                  className="text-orange-600 hover:text-orange-700 underline font-medium"
+                  className="text-amber-600 hover:text-amber-700 underline font-medium"
                 >
                   Sign In
                 </button>
@@ -517,9 +517,9 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
       {showPhotoModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] ">
-            <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-red-600 text-white p-6 rounded-t-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-amber-500 to-red-600 text-white p-6 rounded-t-2xl">
               <h2 className="text-2xl font-bold">⚠️ Profile Photo Policy</h2>
-              <p className="text-orange-100 mt-1">Important Account Security Notice</p>
+              <p className="text-amber-100 mt-1">Important Account Security Notice</p>
             </div>
             
             <div className="p-6 space-y-6">
@@ -636,7 +636,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
             <div className="sticky bottom-0 bg-white border-t p-4 rounded-b-2xl">
               <button
                 onClick={() => setShowPhotoModal(false)}
-                className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+                className="w-full bg-amber-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-amber-600 transition-colors"
               >
                 I Understand - Close
               </button>

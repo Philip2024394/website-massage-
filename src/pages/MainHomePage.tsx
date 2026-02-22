@@ -11,7 +11,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService, bookingService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawerClean';
-import { Users, Building, Sparkles } from 'lucide-react';
+import { Users, Building, Sparkles, Globe } from 'lucide-react';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
@@ -1970,16 +1970,15 @@ const HomePage: React.FC<HomePageProps> = ({
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                 />
                                 </div>
-                                {/* Accommodation Massage Service Link */}
+                                {/* IndaStreet Social link */}
                                 <div className="mt-2 mb-8 flex justify-center">
                                     <button
-                                        onClick={() => onNavigate?.('indastreet-partners')}
-                                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                        onClick={() => onNavigate?.('indonesia')}
+                                        className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-orange-600 transition-colors"
                                     >
-                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                        </svg>
-                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
                                     </button>
                                 </div>
                                 </div>
@@ -2134,16 +2133,15 @@ const HomePage: React.FC<HomePageProps> = ({
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
-                                                {/* Accommodation Massage Service Link */}
+                                                {/* IndaStreet Social link */}
                                                 <div className="mt-2 mb-4 flex justify-center">
                                                     <button
-                                                        onClick={() => onNavigate?.('indastreet-partners')}
-                                                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                        onClick={() => onNavigate?.('indonesia')}
+                                                        className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-orange-600 transition-colors"
                                                     >
-                                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                                        </svg>
-                                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
+                                                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
+                                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
                                                     </button>
                                                 </div>
                                                 </React.Fragment>

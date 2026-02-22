@@ -127,14 +127,14 @@ export const CitySelectionPage: React.FC = () => {
   const selectedCountryData = COUNTRIES.find(c => c.code === selectedCountry);
 
   return (
-    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-orange-50 via-white to-orange-50">
+    <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gradient-to-br from-amber-50 via-white to-amber-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold">
               <span className="text-gray-900">Inda</span>
-              <span className="text-orange-500">Street</span>
+              <span className="text-amber-500">Street</span>
             </h1>
             <p className="mt-2 text-gray-600">
               Massage & Wellness Platform
@@ -147,8 +147,8 @@ export const CitySelectionPage: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Welcome Message */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-            <Globe className="w-8 h-8 text-orange-500" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4">
+            <Globe className="w-8 h-8 text-amber-500" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Welcome to IndaStreet
@@ -170,7 +170,7 @@ export const CitySelectionPage: React.FC = () => {
                 <button
                   key={country.code}
                   onClick={() => handleCountrySelect(country.code)}
-                  className="p-4 rounded-lg border-2 border-gray-200 bg-white hover:border-orange-300 hover:bg-orange-50 transition-all text-left"
+                  className="p-4 rounded-lg border-2 border-gray-200 bg-white hover:border-amber-300 hover:bg-amber-50 transition-all text-left"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -192,7 +192,7 @@ export const CitySelectionPage: React.FC = () => {
         {selectedCountry && (
           <div>
             {/* Country Header */}
-            <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+            <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{selectedCountryData?.flag}</span>
@@ -203,7 +203,7 @@ export const CitySelectionPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setSelectedCountry(null)}
-                  className="text-sm text-orange-600 hover:text-orange-700 underline"
+                  className="text-sm text-amber-600 hover:text-amber-700 underline"
                 >
                   Change Country
                 </button>
@@ -217,7 +217,7 @@ export const CitySelectionPage: React.FC = () => {
                 placeholder={`Search locations in ${selectedCountryData?.name}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               />
             </div>
 
@@ -229,13 +229,13 @@ export const CitySelectionPage: React.FC = () => {
                   onClick={() => handleCitySelect(city)}
                   className={`p-4 rounded-lg border-2 text-left transition-all ${
                     selectedCity === city.name
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
+                      ? "border-amber-500 bg-amber-50 text-amber-700"
                       : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <MapPin className={`w-5 h-5 ${
-                      selectedCity === city.name ? "text-orange-500" : "text-gray-400"
+                      selectedCity === city.name ? "text-amber-500" : "text-gray-400"
                     }`} />
                     <div>
                       <div className="font-medium">{city.name}</div>
@@ -256,7 +256,7 @@ export const CitySelectionPage: React.FC = () => {
               disabled={!selectedCity || !selectedCountry}
               className={`w-full py-3 px-6 rounded-lg font-semibold transition-all ${
                 selectedCity && selectedCountry
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg'
+                  ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-lg'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >

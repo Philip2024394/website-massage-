@@ -131,7 +131,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                 <div className="space-y-3">
                     {sortedNotifications.length > 0 ? (
                         sortedNotifications.map((n: any) => (
-                            <div key={n.id} className={`p-4 rounded-lg shadow-sm flex items-start gap-4 ${n.isRead ? 'bg-white' : 'bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-orange-500'}`}>
+                            <div key={n.id} className={`p-4 rounded-lg shadow-sm flex items-start gap-4 ${n.isRead ? 'bg-white' : 'bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-amber-500'}`}>
                                 <div className="flex-shrink-0">{getIcon(n.type)}</div>
                                 <div className="flex-grow">
                                     <p className={`text-sm ${n.isRead ? 'text-gray-600' : 'text-gray-800 font-semibold'}`}>
@@ -144,13 +144,13 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                                     {!n.isRead && (
                                         <button 
                                             onClick={() => handleMarkAsRead(n.id)} 
-                                            className="text-xs text-orange-500 font-bold mt-2 hover:underline bg-orange-50 px-2 py-1 rounded"
+                                            className="text-xs text-amber-500 font-bold mt-2 hover:underline bg-amber-50 px-2 py-1 rounded"
                                         >
                                             {t.markAsRead || 'Mark as Read'}
                                         </button>
                                     )}
                                 </div>
-                                {!n.isRead && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full flex-shrink-0 mt-1 animate-pulse"></div>}
+                                {!n.isRead && <div className="w-2.5 h-2.5 bg-amber-500 rounded-full flex-shrink-0 mt-1 animate-pulse"></div>}
                             </div>
                         ))
                     ) : (

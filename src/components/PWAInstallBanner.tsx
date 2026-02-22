@@ -258,7 +258,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
   console.log('PWA Install Banner: Rendering banner! isIOS =', isIOS, 'deferredPrompt =', !!deferredPrompt);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-2xl transition-transform duration-500 ease-out transform translate-y-0" style={{
+    <div className="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-2xl transition-transform duration-500 ease-out transform translate-y-0" style={{
       animation: 'slideDown 0.5s ease-out'
     }}>
       <style {...({} as any)}>{`
@@ -275,7 +275,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-sm sm:text-lg leading-tight">APP INSTALLATION</h3>
-              <p className="text-xs sm:text-sm text-orange-100 mt-0.5 sm:mt-1 leading-tight">
+              <p className="text-xs sm:text-sm text-amber-100 mt-0.5 sm:mt-1 leading-tight">
                 {isIOS 
                   ? 'Tap Share (⬆️) → "Add to Home Screen"'
                   : 'Install for notifications & offline access'
@@ -291,7 +291,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
                 onClick={() => {
                   alert('To install this app:\n\n📱 Tap the Share button (⬆️)\n➕ Select "Add to Home Screen"\n✅ Confirm installation');
                 }}
-                className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-orange-600 font-bold rounded-lg sm:rounded-xl hover:bg-orange-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
+                className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-amber-600 font-bold rounded-lg sm:rounded-xl hover:bg-amber-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
               >
                 <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="hidden sm:inline">Instructions</span>
@@ -300,7 +300,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
             ) : (
               <button
                 onClick={handleInstall}
-                className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-orange-600 font-bold rounded-lg sm:rounded-xl hover:bg-orange-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
+                className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-amber-600 font-bold rounded-lg sm:rounded-xl hover:bg-amber-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
               >
                 <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="hidden sm:inline">Install</span>
@@ -311,7 +311,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
             {/* Close button */}
             <button
               onClick={handleDismiss}
-              className="p-2 sm:p-3 hover:bg-orange-400 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-2 sm:p-3 hover:bg-amber-400 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Dismiss"
             >
               <X className="w-5 h-5 sm:w-6 sm:h-6" />

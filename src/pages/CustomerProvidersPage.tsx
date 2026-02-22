@@ -40,7 +40,7 @@ const CustomerProvidersPage: React.FC<CustomerProvidersPageProps> = ({ user, onB
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 pb-20">
       <PageNumberBadge pageNumber={301} pageName="CustomerProviders" isLocked={false} />
       <header className="bg-white p-4 shadow-md sticky top-0 z-40 flex items-center justify-between">
-        <button onClick={onBack} className="text-gray-700 hover:text-orange-600 font-semibold">← Back</button>
+        <button onClick={onBack} className="text-gray-700 hover:text-amber-600 font-semibold">← Back</button>
         <h1 className="text-xl font-bold text-gray-800">Your Providers</h1>
         <div />
       </header>

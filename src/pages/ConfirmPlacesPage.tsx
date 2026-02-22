@@ -430,17 +430,17 @@ const ConfirmPlacesPage: React.FC = () => {
                               const hotelPricing = JSON.parse(place.hotelVillaPricing);
                               return (
                                 <div className="grid grid-cols-3 gap-2 text-xs">
-                                  <div className="bg-orange-50 p-2 rounded text-center">
+                                  <div className="bg-amber-50 p-2 rounded text-center">
                                     <div className="font-medium">60min</div>
-                                    <div className="text-orange-600">{hotelPricing['60'] || 0}k</div>
+                                    <div className="text-amber-600">{hotelPricing['60'] || 0}k</div>
                                   </div>
-                                  <div className="bg-orange-50 p-2 rounded text-center">
+                                  <div className="bg-amber-50 p-2 rounded text-center">
                                     <div className="font-medium">90min</div>
-                                    <div className="text-orange-600">{hotelPricing['90'] || 0}k</div>
+                                    <div className="text-amber-600">{hotelPricing['90'] || 0}k</div>
                                   </div>
-                                  <div className="bg-orange-50 p-2 rounded text-center">
+                                  <div className="bg-amber-50 p-2 rounded text-center">
                                     <div className="font-medium">120min</div>
-                                    <div className="text-orange-600">{hotelPricing['120'] || 0}k</div>
+                                    <div className="text-amber-600">{hotelPricing['120'] || 0}k</div>
                                   </div>
                                 </div>
                               );

@@ -127,10 +127,10 @@ const BankDetailsRequestButton: React.FC<BankDetailsRequestButtonProps> = ({
 
     // Show request button if no bank details
     return (
-        <div className={`bg-white rounded-xl border-2 border-orange-200 ${className}`}>
+        <div className={`bg-white rounded-xl border-2 border-amber-200 ${className}`}>
             <div className="p-4 text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CreditCard className="w-8 h-8 text-orange-600" />
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CreditCard className="w-8 h-8 text-amber-600" />
                 </div>
                 
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
@@ -145,7 +145,7 @@ const BankDetailsRequestButton: React.FC<BankDetailsRequestButtonProps> = ({
                 <button
                     onClick={onRequestBankDetails}
                     disabled={isLoading}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

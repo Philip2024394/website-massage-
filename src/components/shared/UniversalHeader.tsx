@@ -157,7 +157,7 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                         <div className="flex items-center gap-2">
                             <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
                                 <span className="text-black">Inda</span>
-                                <span className="text-orange-500">Street</span>
+                                <span className="text-amber-500">Street</span>
                             </h1>
                             
                             {/* City Display */}
@@ -191,7 +191,7 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                             <button 
                                 onClick={onHomeClick}
                                 title="Home" 
-                                className="hover:bg-orange-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
+                                className="hover:bg-amber-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
                             >
                                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -206,7 +206,7 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                                 {/* Simple flag toggle version */}
                                 <button 
                                     onClick={handleLanguageToggle}
-                                    className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0 border-0 outline-none" 
+                                    className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-amber-50 rounded-full transition-colors flex-shrink-0 border-0 outline-none" 
                                     style={{ border: 'none', textDecoration: 'none' }}
                                     title={toggleTooltip}
                                 >
@@ -263,8 +263,8 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                                 role="button"
                                 type="button"
                                 className="
-                                    hover:bg-orange-50 active:bg-orange-100 rounded-full 
-                                    transition-all duration-200 text-orange-500 flex-shrink-0 
+                                    hover:bg-amber-50 active:bg-amber-100 rounded-full 
+                                    transition-all duration-200 text-amber-500 flex-shrink-0 
                                     flex items-center justify-center touch-manipulation
                                     /* Mobile: 56px touch targets for optimal thumb interaction */
                                     min-w-[56px] min-h-[56px] w-14 h-14

@@ -67,6 +67,11 @@ export const publicRoutes = {
     component: IndonesiaLandingPage,
     name: 'indonesia'
   },
+  uk: {
+    path: '/uk',
+    component: IndonesiaLandingPage,
+    name: 'uk'
+  },
   faq: {
     path: '/faq',
     component: FAQPage,

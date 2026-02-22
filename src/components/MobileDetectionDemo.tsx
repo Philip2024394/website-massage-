@@ -129,7 +129,7 @@ export default function MobileDetectionDemo() {
               {mobile.isLandscape && <div>• landscape</div>}
               {mobile.hasTouch && <div>• has-touch</div>}
               {mobile.hasHover && <div>• has-hover</div>}
-              <div className="text-orange-600 mt-2">• mobile-lock (if mobile detected)</div>
+              <div className="text-amber-600 mt-2">• mobile-lock (if mobile detected)</div>
             </div>
           </div>
         </div>
@@ -193,9 +193,9 @@ export default function MobileDetectionDemo() {
         </div>
 
         {/* Instructions */}
-        <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
-          <h4 className="font-semibold text-orange-800 mb-2">Testing Instructions</h4>
-          <ul className="text-sm text-orange-700 space-y-1">
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+          <h4 className="font-semibold text-amber-800 mb-2">Testing Instructions</h4>
+          <ul className="text-sm text-amber-700 space-y-1">
             <li>• Resize your browser window to see responsive breakpoints</li>
             <li>• Rotate your device to see orientation changes</li>
             <li>• Open developer tools and toggle device simulation</li>
@@ -206,7 +206,7 @@ export default function MobileDetectionDemo() {
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               onClick={() => mobile.debug.log('Manual Debug from Demo')}
-              className="px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
+              className="px-3 py-1 bg-amber-500 text-white rounded text-sm hover:bg-amber-600"
             >
               📝 Log Device Info
             </button>
