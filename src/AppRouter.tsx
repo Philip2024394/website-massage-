@@ -1781,6 +1781,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return renderRoute(profileRoutes.massagePlace.component, {
                         place: resolvedMassagePlace,
                         onBack: () => props.setPage?.('home'),
+                        userLocation: props.userLocation,
                         onLanguageChange: props.onLanguageChange,
                         language: props.language,
                         selectedCity: props.selectedCity,
@@ -1805,6 +1806,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(profileRoutes.massagePlace.component, {
                 place: props.selectedPlace,
                 onBack: () => props.setPage?.('home'),
+                userLocation: props.userLocation,
                 onLanguageChange: props.onLanguageChange,
                 language: props.language,
                 selectedCity: props.selectedCity,

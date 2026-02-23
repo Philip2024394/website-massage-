@@ -5,7 +5,7 @@ import { FloatingChatWindow } from '../chat';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { Globe } from 'lucide-react';
 import { customLinksService } from '../lib/appwrite/services/customLinks.service';
-import { useChatProvider } from '../hooks/useChatProvider';
+import { useChatProviderOptional } from '../hooks/useChatProvider';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 
@@ -130,7 +130,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [calculatedDistance, setCalculatedDistance] = useState<number | undefined>(place?.distance);
 
-    const { addNotification } = useChatProvider();
+    const { addNotification } = useChatProviderOptional();
 
     useEffect(() => {
         customLinksService.getAll()
@@ -140,9 +140,14 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
     useEffect(() => {
         if (!userLocation || !place?.coordinates) return;
-        const coords = typeof place.coordinates === 'string'
-            ? JSON.parse(place.coordinates)
-            : place.coordinates;
+        let coords: { lat?: number; lng?: number } | null = null;
+        try {
+            coords = typeof place.coordinates === 'string'
+                ? JSON.parse(place.coordinates)
+                : place.coordinates;
+        } catch {
+            return;
+        }
         if (!coords?.lat || !coords?.lng) return;
         const R = 6371;
         const dLat = (coords.lat - userLocation.lat) * Math.PI / 180;

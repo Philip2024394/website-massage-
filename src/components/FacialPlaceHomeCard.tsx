@@ -60,6 +60,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
     // Share functionality state
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
+    const [showMenuSlider, setShowMenuSlider] = useState(false);
 
     // Handle share functionality
     const handleShareClick = (e: React.MouseEvent) => {
@@ -552,7 +553,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                     type="button"
                     onClick={(e) => {
                         e.stopPropagation();
-                        if (typeof onClick === 'function') onClick(place);
+                        setShowMenuSlider(true);
                     }}
                     className="flex-1 py-2.5 rounded-lg font-semibold text-sm border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors"
                     aria-label="Menu prices"
@@ -560,6 +561,30 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                     Menu prices
                 </button>
             </div>
+
+            {/* Menu slider – slide-up panel to view place menu (60/90/120) */}
+            {showMenuSlider && (
+                <div className="fixed inset-0 z-[10001] flex flex-col justify-end" role="dialog" aria-modal="true" aria-label="Menu prices">
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenuSlider(false)} aria-hidden />
+                    <div className="relative bg-white rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-2xl z-10">
+                            <h3 className="text-lg font-bold text-gray-900">{place.name} – Menu</h3>
+                            <button type="button" onClick={() => setShowMenuSlider(false)} className="w-10 h-10 rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center" aria-label="Close">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <div className="p-4 space-y-3">
+                            <p className="text-sm text-gray-600">{(place as any).treatments || 'Facial & Beauty Services'}</p>
+                            {[{ label: '60 min', key: '60' as const }, { label: '90 min', key: '90' as const }, { label: '120 min', key: '120' as const }].map(({ label, key }) => (
+                                <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-orange-50 border border-orange-200">
+                                    <span className="font-medium text-gray-900">{label}</span>
+                                    <span className="text-sm font-semibold text-gray-800">{pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])}` : 'Contact'}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Footer: distance only */}
             <div className="mx-4 pb-4 flex items-center">

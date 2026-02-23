@@ -169,3 +169,60 @@ export function useChatProvider() {
     handleBookingSuccess
   };
 }
+
+const noop = () => {};
+const noopAsync = () => Promise.resolve(false);
+
+const optionalFallback = {
+  activeChatRooms: [],
+  selectedChatId: null,
+  subscriptionActive: false,
+  isLoading: false,
+  chatError: null,
+  currentChatRoom: null,
+  messages: [],
+  messagesLoading: false,
+  messagesError: null,
+  openChatRoom: noop,
+  closeChatRoom: noop,
+  minimizeChatRoom: noop,
+  isChatMinimized: false,
+  setSelectedChatId: noop,
+  sendMessage: noopAsync,
+  sending: false,
+  notifications: [],
+  addNotification: noop,
+  removeNotification: noop,
+  openBookingChat: noopAsync,
+  handleBookingSuccess: noopAsync
+};
+
+/** Same as useChatProvider but never throws. Returns no-op functions when outside ChatProvider (e.g. lazy-loaded profile pages). */
+export function useChatProviderOptional() {
+  const context = useContext(ChatContext);
+  if (!context) return optionalFallback;
+  const ctx = context as any;
+  return {
+    activeChatRooms: ctx.activeChatRooms ?? [],
+    selectedChatId: ctx.selectedChatId ?? null,
+    subscriptionActive: ctx.subscriptionActive ?? false,
+    isLoading: ctx.isLoading ?? false,
+    chatError: ctx.error ?? ctx.chatError ?? null,
+    currentChatRoom: ctx.currentChatRoom ?? null,
+    messages: ctx.messages ?? [],
+    messagesLoading: ctx.messagesLoading ?? false,
+    messagesError: ctx.messagesError ?? null,
+    openChatRoom: ctx.openChatRoom ?? noop,
+    closeChatRoom: ctx.closeChatRoom ?? noop,
+    minimizeChatRoom: ctx.minimizeChatRoom ?? noop,
+    isChatMinimized: ctx.isChatMinimized ?? false,
+    setSelectedChatId: ctx.setSelectedChatId ?? noop,
+    sendMessage: ctx.sendMessage ?? noopAsync,
+    sending: ctx.sending ?? false,
+    notifications: ctx.notifications ?? [],
+    addNotification: ctx.addNotification ?? noop,
+    removeNotification: ctx.removeNotification ?? noop,
+    openBookingChat: ctx.openBookingChat ?? noopAsync,
+    handleBookingSuccess: ctx.handleBookingSuccess ?? noopAsync
+  };
+}

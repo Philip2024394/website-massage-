@@ -891,7 +891,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </button>
                 <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); if (!readOnly) { onClick(therapist); onIncrementAnalytics('views'); } }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (readOnly) return;
+                        setShowPriceModal(true);
+                    }}
                     disabled={readOnly}
                     className={`flex-1 py-3 rounded-lg font-semibold text-sm border-2 transition-colors ${readOnly ? 'border-gray-300 text-gray-500 cursor-not-allowed' : 'border-amber-500 text-amber-600 hover:bg-amber-50'}`}
                     aria-label="Menu prices"
@@ -920,10 +924,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 onNavigate={onNavigate}
             />
 
-            {/* 🔒 LOCKED BEHAVIOR: Price List Modal
-                This modal component exists for technical reasons but has NO triggers on home page.
-                Menu slider entry point = PROFILE PAGE ONLY.
-                Home page cards, search results, and listings are FORBIDDEN from opening this modal. */}
+            {/* Menu slider: opened when user clicks "Menu prices" to view therapist menu */}
             <TherapistPriceListModal
                 showPriceListModal={showPriceModal}
                 setShowPriceListModal={setShowPriceModal}
