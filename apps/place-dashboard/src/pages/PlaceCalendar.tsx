@@ -4,52 +4,55 @@ import { Calendar, Clock, Plus, Eye, Edit3, Trash2, Users, MapPin } from 'lucide
 interface PlaceCalendarProps {
   placeId: string;
   onBack?: () => void;
+  /** Optional: real bookings from dashboard (startTime, customerName, etc.); used instead of mock data when provided. */
+  bookingsFromDashboard?: Array<{ startTime?: string; bookingDate?: string; bookingTime?: string; customerName?: string; duration?: number; massageType?: string; status?: string; [key: string]: any }>;
 }
 
-const PlaceCalendar: React.FC<PlaceCalendarProps> = ({ placeId, onBack }) => {
+const PlaceCalendar: React.FC<PlaceCalendarProps> = ({ placeId, onBack, bookingsFromDashboard }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>(() => {
+    if (bookingsFromDashboard && bookingsFromDashboard.length > 0) {
+      return bookingsFromDashboard.map((b: any) => {
+        const start = b.startTime ? new Date(b.startTime) : (b.bookingDate && b.bookingTime ? new Date(`${b.bookingDate}T${b.bookingTime}`) : new Date());
+        const dateStr = start.toISOString().split('T')[0];
+        const timeStr = start.toTimeString().slice(0, 5);
+        return {
+          id: b.$id || b.id || dateStr + timeStr,
+          date: dateStr,
+          time: b.bookingTime || timeStr,
+          duration: b.duration || 60,
+          customer: b.customerName || b.userName || 'Customer',
+          service: b.massageType || b.service || 'Massage',
+          therapist: '',
+          status: (b.status || 'confirmed').toLowerCase(),
+          amount: b.amount || 0
+        };
+      });
+    }
+    return [];
+  });
   const [view, setView] = useState<'month' | 'week' | 'day'>('month');
 
   useEffect(() => {
-    // Simulate bookings data
-    setBookings([
-      {
-        id: 1,
-        date: '2025-01-15',
-        time: '10:00',
-        duration: 90,
-        customer: 'Sarah Martinez',
-        service: 'Traditional Massage',
-        therapist: 'Budi Santoso',
-        status: 'confirmed',
-        amount: 350000
-      },
-      {
-        id: 2,
-        date: '2025-01-15',
-        time: '14:00',
-        duration: 60,
-        customer: 'John Davidson',
-        service: 'Balinese Massage',
-        therapist: 'Sari Dewi',
-        status: 'pending',
-        amount: 250000
-      },
-      {
-        id: 3,
-        date: '2025-01-16',
-        time: '11:30',
-        duration: 120,
-        customer: 'Maria Kristina',
-        service: 'Deep Tissue Massage',
-        therapist: 'Wayan Putra',
-        status: 'confirmed',
-        amount: 450000
-      }
-    ]);
-  }, [placeId]);
+    if (!bookingsFromDashboard || bookingsFromDashboard.length === 0) return;
+    setBookings(bookingsFromDashboard.map((b: any) => {
+      const start = b.startTime ? new Date(b.startTime) : (b.bookingDate && b.bookingTime ? new Date(`${b.bookingDate}T${b.bookingTime}`) : new Date());
+      const dateStr = start.toISOString().split('T')[0];
+      const timeStr = start.toTimeString().slice(0, 5);
+      return {
+        id: b.$id || b.id || dateStr + timeStr,
+        date: dateStr,
+        time: b.bookingTime || timeStr,
+        duration: b.duration || 60,
+        customer: b.customerName || b.userName || 'Customer',
+        service: b.massageType || b.service || 'Massage',
+        therapist: '',
+        status: (b.status || 'confirmed').toLowerCase(),
+        amount: b.amount || 0
+      };
+    }));
+  }, [bookingsFromDashboard]);
 
   const formatCurrency = (amount: number) => {
     return `Rp ${amount.toLocaleString('id-ID')}`;
@@ -104,14 +107,25 @@ const PlaceCalendar: React.FC<PlaceCalendarProps> = ({ placeId, onBack }) => {
       {/* Header */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-orange-600" />
-              </div>
-              Booking Calendar
-            </h1>
-            <p className="text-gray-600 mt-1">Manage your massage place bookings and schedule</p>
+          <div className="flex items-center gap-3">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+                aria-label="Back"
+              >
+                ← Back
+              </button>
+            )}
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-orange-600" />
+                </div>
+                Booking Calendar
+              </h1>
+              <p className="text-gray-600 mt-1">Scheduled massage bookings – 30% deposit required (Indonesia). Payable to admin for confirmation.</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <select

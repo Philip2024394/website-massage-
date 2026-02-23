@@ -107,8 +107,8 @@ export const useNavigation = ({
 
     // Simple page navigation handlers
     const handleNavigateToAuth = useCallback(() => setPage('profile'), [setPage]);
-    // Sign In - goes to multi-portal selection page
-    const handleNavigateToTherapistLogin = useCallback(() => setPage('signIn'), [setPage]);
+    // Sign In – send therapists to dedicated therapist login (not generic signIn) so they reach the correct dashboard
+    const handleNavigateToTherapistLogin = useCallback(() => setPage('therapistLogin'), [setPage]);
     const handleNavigateToMassagePlaceLogin = useCallback(() => setPage('massagePlaceLogin'), [setPage]);
     // Redirect to simpleSignup instead of redundant registrationChoice page
     const handleNavigateToRegistrationChoice = useCallback(() => setPage('simpleSignup'), [setPage]);

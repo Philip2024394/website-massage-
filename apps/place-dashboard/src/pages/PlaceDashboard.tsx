@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../src/types';
 import { BookingStatus, HotelVillaServiceStatus } from '../../../../src/types';
-import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, MapPin } from 'lucide-react';
+import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, MapPin, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../../../../src/hooks/useLanguage';
 
 // PWA Install interface
@@ -43,6 +43,8 @@ import {
 } from '../../../../src/components/ColoredIcons';
 // Modular tab components
 import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVillaTab } from '../components/dashboard-tabs';
+import PlaceCalendar from './PlaceCalendar';
+import PlaceVerifiedPage from './PlaceVerifiedPage';
 
 
 interface PlaceDashboardPageProps {
@@ -1138,6 +1140,25 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 return <HotelVillaTab />;
             case 'notifications':
                 return <NotificationsTab placeId={placeId!} PushNotificationSettings={null as any} />;
+            case 'calendar':
+                return (
+                    <PlaceCalendar
+                        placeId={String(placeId || '')}
+                        onBack={() => setActiveTab('profile')}
+                        bookingsFromDashboard={bookings as any}
+                    />
+                );
+            case 'verified':
+                return (
+                    <PlaceVerifiedPage
+                        placeId={String(placeId || '')}
+                        onBack={() => setActiveTab('profile')}
+                        onUpload={async (docType, imageUrl) => {
+                            // TODO: call placeService or verification API to save doc
+                            console.log('Place verification upload:', { placeId, docType, imageUrlLength: imageUrl?.length });
+                        }}
+                    />
+                );
             case 'profile':
             default:
                 return (
@@ -1146,6 +1167,22 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         <div className="flex items-center gap-3 mb-6">
                             <h1 className="text-2xl font-bold text-gray-900">Massage Spa</h1>
                         </div>
+
+                        {/* Get Verified – link to verification documents page */}
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('verified')}
+                            className="w-full text-left bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4 hover:border-amber-400 hover:shadow-md transition-all flex items-center gap-4"
+                        >
+                            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <ShieldCheck className="w-6 h-6 text-amber-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-gray-900">Get Verified</h3>
+                                <p className="text-sm text-gray-600 mt-0.5">Upload ID, business registration, bank header or government letter to get your verified badge</p>
+                            </div>
+                            <span className="text-amber-600 font-semibold">Go →</span>
+                        </button>
                         
                         <ImageUpload
                             id="main-image-upload"
@@ -2013,14 +2050,26 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-2xl font-bold text-gray-900">Bookings & Notifications</h2>
-                            <button
-                                onClick={() => onNavigate && onNavigate('home')}
-                                className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
-                                title="Go to Home"
-                                aria-label="Go to Home"
-                            >
-                                <Home className="w-6 h-6" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        setShowNotificationsView(false);
+                                        setActiveTab('calendar');
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg"
+                                >
+                                    <Calendar className="w-5 h-5" />
+                                    View Calendar
+                                </button>
+                                <button
+                                    onClick={() => onNavigate && onNavigate('home')}
+                                    className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
+                                    title="Go to Home"
+                                    aria-label="Go to Home"
+                                >
+                                    <Home className="w-6 h-6" />
+                                </button>
+                            </div>
                         </div>
                         
                         {/* Upcoming Bookings Section */}

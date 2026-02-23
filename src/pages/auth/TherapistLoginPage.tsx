@@ -123,9 +123,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
             
             if (response.success && response.userId) {
                 // Note: Daily sign-in tracking for coin rewards has been disabled
-                
-                // Clear any cached data
-                sessionStorage.clear();
+                // Do NOT sessionStorage.clear() – it wipes has_entered_app and causes redirect to landing
                 localStorage.removeItem('therapist-cache');
                 
                 const therapistId = response.documentId || response.userId;

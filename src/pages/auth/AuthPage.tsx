@@ -63,7 +63,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
         { value: 'therapist', label: t?.massageTherapist || 'Massage Therapist', Icon: UserCircle },
         { value: 'facial-therapist', label: t?.facialTherapist || 'Facial (Home Service)', Icon: Sparkles },
         { value: 'beauty-therapist', label: t?.beautyTherapist || 'Beauty (Home Service)', Icon: Sparkles },
-        { value: 'massage-place', label: t?.massageSpa || 'Massage Place', Icon: Building2 },
+        { value: 'massage-place', label: t?.massageSpa || 'Massage City Place', Icon: Building2 },
         { value: 'facial-place', label: t?.facialClinic || 'Facial Place', Icon: Sparkles },
         { value: 'employer', label: t?.postJob || 'Post Job', Icon: Briefcase },
     ];
@@ -645,7 +645,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                                     setEmail(e.target.value);
                                     if (error) setError(''); // Clear error when user starts typing
                                 }} 
-                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all ${
                                     error && error.toLowerCase().includes('email') 
                                         ? 'border-red-300 bg-red-50' 
                                         : 'border-gray-300'
@@ -675,13 +675,13 @@ const AuthPage: React.FC<AuthPageProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setShowDropdown(!showDropdown)}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all flex justify-between items-center"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all flex justify-between items-center"
                                     >
                                         <span className={`flex items-center gap-2 ${accountType ? 'text-gray-900' : 'text-gray-500'}`}>
                                             {accountType ? (() => {
                                                 const selected = accountTypes.find(x => x.value === accountType);
                                                 const Icon = selected?.Icon;
-                                                return Icon ? <><Icon className="w-5 h-5 text-orange-500 flex-shrink-0" /><span>{selected?.label}</span></> : selected?.label;
+                                                return Icon ? <><Icon className="w-5 h-5 text-amber-500 flex-shrink-0" /><span>{selected?.label}</span></> : selected?.label;
                                             })() : (t?.selectPortalType || 'Select account type')}
                                         </span>
                                         <span>▼</span>
@@ -699,9 +699,9 @@ const AuthPage: React.FC<AuthPageProps> = ({
                                                             setAccountType(type.value);
                                                             setShowDropdown(false);
                                                         }}
-                                                        className="w-full px-4 py-3 text-left hover:bg-orange-50 focus:outline-none focus:bg-orange-50 transition-colors flex items-center gap-2"
+                                                        className="w-full px-4 py-3 text-left hover:bg-amber-50 focus:outline-none focus:bg-amber-50 transition-colors flex items-center gap-2"
                                                     >
-                                                        {Icon && <Icon className="w-5 h-5 text-orange-500 flex-shrink-0" />}
+                                                        {Icon && <Icon className="w-5 h-5 text-amber-500 flex-shrink-0" />}
                                                         <span>{type.label}</span>
                                                     </button>
                                                 );
@@ -727,7 +727,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                                     setPassword(e.target.value.trim());
                                     if (error) setError(''); // Clear error when user starts typing
                                 }} 
-                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all ${
                                     error && error.toLowerCase().includes('password') 
                                         ? 'border-red-300 bg-red-50' 
                                         : 'border-gray-300'
@@ -768,7 +768,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
                         <button
                             type="submit"
                             disabled={isLoading || !email || !password || (mode === 'signup' && !accountType) || (mode === 'unified' && !accountType)}
-                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-4 px-6 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
+                            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-4 px-6 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
                         >
                             {isLoading ? (
                                 <div className="flex items-center justify-center">
@@ -787,12 +787,12 @@ const AuthPage: React.FC<AuthPageProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => onNavigate('create-account')}
-                                    className="text-orange-600 hover:text-orange-700 font-medium underline"
+                                    className="text-amber-600 hover:text-amber-700 font-medium underline"
                                 >
                                     {t?.createAccount || 'Create account'}
                                 </button>
                             ) : (
-                                <a href="/signup" className="text-orange-600 hover:text-orange-700 font-medium underline">
+                                <a href="/signup" className="text-amber-600 hover:text-amber-700 font-medium underline">
                                     {t?.createAccount || 'Create account'}
                                 </a>
                             )}

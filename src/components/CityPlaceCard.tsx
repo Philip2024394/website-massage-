@@ -12,12 +12,16 @@ import { bookingService } from '../lib/bookingService';
 import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { shareLinkService } from '../lib/services/shareLinkService';
-import { Share2, Sparkles } from 'lucide-react';
+import { Share2, Sparkles, FingerprintPattern, Calendar, Clock } from 'lucide-react';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+import { isBookingUseAdminCountry, normalizeWhatsAppToDigits } from '../config/whatsappCountryPrefix';
 
 const DEFAULT_PLACE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
 
 export type CityPlaceCategory = 'massage' | 'facial' | 'beauty';
+
+/** Admin WhatsApp for Indonesia booking flow (send to admin; admin coordinates). */
+const ADMIN_WHATSAPP_DIGITS = '6281392000050';
 
 interface CityPlaceCardProps {
     place: Place | Record<string, any>;
@@ -25,6 +29,10 @@ interface CityPlaceCardProps {
     onClick: (place: Place | Record<string, any>) => void;
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     userLocation?: { lat: number; lng: number } | null;
+    /** When 'profile', card shows Book Now + Menu prices; container tap shows fingerprint and Book Now heartbeat. */
+    variant?: 'listing' | 'profile';
+    /** User/country code for booking: Indonesia (ID) → WhatsApp to admin; others → direct to place WhatsApp. */
+    userCountryCode?: string;
 }
 
 const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -102,6 +110,8 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
     onClick,
     onIncrementAnalytics,
     userLocation,
+    variant = 'listing',
+    userCountryCode = 'ID',
 }) => {
     const mainImage = getPlaceMainImage(place);
     const profileImage = getPlaceProfileImage(place);
@@ -119,6 +129,13 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
     const [selectedPhoto, setSelectedPhoto] = useState<{ imageUrl: string; title: string; description: string } | null>(null);
     const [showMenuSlider, setShowMenuSlider] = useState(false);
+    /** Which price container is selected (massage profile): '60' | '90' | '120' | null. Fingerprint shows inside that container, Book Now heartbeat when set. */
+    const [selectedPriceKey, setSelectedPriceKey] = useState<'60' | '90' | '120' | null>(null);
+    /** Menu slider step: 'menu' = prices + Scheduled/Book Now; 'scheduled' = date/time picker for scheduled booking (massage only). */
+    const [menuSliderStep, setMenuSliderStep] = useState<'menu' | 'scheduled'>('menu');
+    const [scheduledDate, setScheduledDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
+    const [scheduledTime, setScheduledTime] = useState<string>('10:00');
+    const [showDepositNotice, setShowDepositNotice] = useState(false);
 
     const handleShareClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -430,7 +447,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                     </div>
                 )}
 
-                {/* Price containers – same design as Beauty Home Service: Treatments Trending, 3 containers */}
+                {/* Price containers – same design as Beauty Home Service: Treatments Trending, 3 containers. On profile variant, selecting a container shows fingerprint here and Book Now heartbeat. */}
                 <div className="mx-4 mb-4">
                     <style>{`
                         @keyframes beautician-glow-card {
@@ -442,72 +459,150 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                           box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
                           animation: beautician-glow-card 2.5s ease-in-out infinite;
                         }
+                        @keyframes book-now-heartbeat {
+                          0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+                          50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.25), 0 0 16px 4px rgba(245, 158, 11, 0.3); }
+                        }
+                        .book-now-heartbeat {
+                          animation: book-now-heartbeat 1.2s ease-in-out infinite;
+                        }
                     `}</style>
                     <div className="text-center mb-3">
                         <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
                             <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
                             Treatments Trending
                         </h3>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • View profile to book</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • Select container and press Book Now</p>
                     </div>
                     <div className="space-y-2">
                         {[
                             { label: '60 min', minutes: 60, key: '60' as const },
                             { label: '90 min', minutes: 90, key: '90' as const },
                             { label: '120 min', minutes: 120, key: '120' as const },
-                        ].map(({ label, minutes, key }) => (
-                            <div
-                                key={key}
-                                className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400"
-                                role="presentation"
-                            >
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">{getTreatmentRowTitle(category, label, key)}</h4>
-                                    <p className="text-[10px] text-gray-600">
-                                        Estimated time: {minutes} minutes
-                                    </p>
-                                    <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                        Price: {pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])} (fixed)` : 'Call'}
-                                    </p>
+                        ].map(({ label, minutes, key }) => {
+                            const isSelected = variant === 'profile' && category === 'massage' && selectedPriceKey === key;
+                            return (
+                                <div
+                                    key={key}
+                                    role={variant === 'profile' && category === 'massage' ? 'button' : undefined}
+                                    tabIndex={variant === 'profile' && category === 'massage' ? 0 : undefined}
+                                    onClick={(e) => {
+                                        if (variant === 'profile' && category === 'massage') {
+                                            e.stopPropagation();
+                                            setSelectedPriceKey(isSelected ? null : key);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (variant === 'profile' && category === 'massage' && (e.key === 'Enter' || e.key === ' ')) {
+                                            e.preventDefault();
+                                            setSelectedPriceKey(isSelected ? null : key);
+                                        }
+                                    }}
+                                    className={`beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400 ${variant === 'profile' && category === 'massage' ? 'cursor-pointer select-none' : ''}`}
+                                >
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">{getTreatmentRowTitle(category, label, key)}</h4>
+                                        <p className="text-[10px] text-gray-600">
+                                            Estimated time: {minutes} minutes
+                                        </p>
+                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                            Price: {pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])} (fixed)` : 'Call'}
+                                        </p>
+                                    </div>
+                                    {isSelected && (
+                                        <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
+                                            <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
+                                        </span>
+                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                     <p className="text-center text-[10px] text-gray-500 mt-2">
                         Professional rates • Verified profile
                     </p>
                 </div>
 
-                {/* View Profile + Menu prices – same two buttons side by side */}
+                {/* Book Now + Menu prices (profile) or View Profile + Menu prices (listing) */}
                 <div className="mx-4 mb-3 flex gap-2">
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (typeof onClick === 'function') {
-                                const placeWithType = (place as any).type ? place : { ...(place as any), type: category };
-                                onClick(placeWithType);
-                            }
-                        }}
-                        className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors"
-                        aria-label="View profile"
-                    >
-                        View Profile
-                    </button>
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setShowMenuSlider(true);
-                        }}
-                        className="flex-1 py-2.5 rounded-lg font-semibold text-sm border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors"
-                        aria-label="Menu prices"
-                    >
-                        Menu prices
-                    </button>
+                    {variant === 'profile' ? (
+                        <>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const placeName = (place as any).name || getMetaBarLabel(category);
+                                    const placeId = String((place as any).id ?? (place as any).$id ?? '');
+                                    const useAdmin = isBookingUseAdminCountry(userCountryCode);
+                                    let waNumber: string;
+                                    let text: string;
+                                    if (useAdmin) {
+                                        waNumber = ADMIN_WHATSAPP_DIGITS;
+                                        text = `Hi IndaStreet Admin, I would like to book at ${placeName}. Please coordinate my visit. Thank you.`;
+                                    } else {
+                                        const raw = (place as any).whatsappNumber ?? (place as any).whatsappnumber ?? '';
+                                        const digits = normalizeWhatsAppToDigits(raw);
+                                        if (!digits) {
+                                            window.alert('This place has no WhatsApp number saved.');
+                                            return;
+                                        }
+                                        waNumber = digits;
+                                        text = `Hi, I would like to book at ${placeName}. Thank you.`;
+                                    }
+                                    const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+                                    window.open(url, '_blank');
+                                }}
+                                className={`flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors ${selectedPriceKey ? 'book-now-heartbeat' : ''}`}
+                                aria-label="Book Now"
+                            >
+                                Book Now
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setMenuSliderStep('menu');
+                                    setShowMenuSlider(true);
+                                }}
+                                className="flex-1 py-2.5 rounded-lg font-semibold text-sm border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors"
+                                aria-label="Menu prices"
+                            >
+                                Menu prices
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (typeof onClick === 'function') {
+                                        const placeWithType = (place as any).type ? place : { ...(place as any), type: category };
+                                        onClick(placeWithType);
+                                    }
+                                }}
+                                className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors"
+                                aria-label="View profile"
+                            >
+                                View Profile
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setMenuSliderStep('menu');
+                                    setShowMenuSlider(true);
+                                }}
+                                className="flex-1 py-2.5 rounded-lg font-semibold text-sm border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors"
+                                aria-label="Menu prices"
+                            >
+                                Menu prices
+                            </button>
+                        </>
+                    )}
                 </div>
 
-                {/* Menu slider – slide-up panel to view place menu (60/90/120) */}
+                {/* Menu slider – slide-up panel: Scheduled / Book Now (massage) + place menu (60/90/120) */}
                 {showMenuSlider && (
                     <div
                         className="fixed inset-0 z-[10001] flex flex-col justify-end"
@@ -515,13 +610,15 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                         aria-modal="true"
                         aria-label="Menu prices"
                     >
-                        <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenuSlider(false)} aria-hidden />
+                        <div className="absolute inset-0 bg-black/50" onClick={() => { setShowMenuSlider(false); setMenuSliderStep('menu'); setShowDepositNotice(false); }} aria-hidden />
                         <div className="relative bg-white rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-300">
                             <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-2xl z-10">
-                                <h3 className="text-lg font-bold text-gray-900">{(place as any).name || getMetaBarLabel(category)} – Menu</h3>
+                                <h3 className="text-lg font-bold text-gray-900">
+                                    {menuSliderStep === 'scheduled' ? 'Select date & time' : `${(place as any).name || getMetaBarLabel(category)} – Menu`}
+                                </h3>
                                 <button
                                     type="button"
-                                    onClick={() => setShowMenuSlider(false)}
+                                    onClick={() => { setShowMenuSlider(false); setMenuSliderStep('menu'); setShowDepositNotice(false); }}
                                     className="w-10 h-10 rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center"
                                     aria-label="Close"
                                 >
@@ -529,17 +626,149 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                                 </button>
                             </div>
                             <div className="p-4 space-y-3">
-                                <p className="text-sm text-gray-600">{getTreatmentsLabel(place as any, category)}</p>
-                                {[
-                                    { label: '60 min', key: '60' as const },
-                                    { label: '90 min', key: '90' as const },
-                                    { label: '120 min', key: '120' as const },
-                                ].map(({ label, key }) => (
-                                    <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-orange-50 border border-orange-200">
-                                        <span className="font-medium text-gray-900">{getTreatmentRowTitle(category, label, key)}</span>
-                                        <span className="text-sm font-semibold text-gray-800">{pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])}` : 'Contact'}</span>
-                                    </div>
-                                ))}
+                                {menuSliderStep === 'scheduled' ? (
+                                    /* Scheduled: date + time picker, then 30% deposit notice for Indonesia */
+                                    <>
+                                        <p className="text-sm text-gray-600">Choose your preferred date and time for the massage.</p>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                                <input
+                                                    type="date"
+                                                    value={scheduledDate}
+                                                    min={new Date().toISOString().slice(0, 10)}
+                                                    onChange={(e) => setScheduledDate(e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                                <input
+                                                    type="time"
+                                                    value={scheduledTime}
+                                                    onChange={(e) => setScheduledTime(e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                                />
+                                            </div>
+                                        </div>
+                                        {isBookingUseAdminCountry(userCountryCode) && (
+                                            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4">
+                                                <p className="text-sm font-semibold text-amber-900">⚠️ 30% deposit required</p>
+                                                <p className="text-xs text-amber-800 mt-1">A 30% deposit is required for all scheduled massage. Payable to admin for confirmation of booking. (Indonesia only)</p>
+                                            </div>
+                                        )}
+                                        {showDepositNotice ? (
+                                            <div className="bg-amber-100 border-2 border-amber-400 rounded-xl p-4">
+                                                <p className="text-sm font-bold text-amber-900">30% deposit is required for all scheduled massage. Payable to admin for confirmation of booking.</p>
+                                                <p className="text-xs text-amber-800 mt-2">You will be redirected to WhatsApp to confirm your booking.</p>
+                                            </div>
+                                        ) : null}
+                                        <div className="flex gap-2 pt-2">
+                                            {!showDepositNotice && isBookingUseAdminCountry(userCountryCode) ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowDepositNotice(true)}
+                                                    className="flex-1 py-3 rounded-lg font-semibold bg-amber-500 hover:bg-amber-600 text-white"
+                                                >
+                                                    I understand, continue
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const placeName = (place as any).name || getMetaBarLabel(category);
+                                                        const useAdmin = isBookingUseAdminCountry(userCountryCode);
+                                                        let waNumber: string;
+                                                        let text: string;
+                                                        const dateStr = new Date(scheduledDate + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                        if (useAdmin) {
+                                                            waNumber = ADMIN_WHATSAPP_DIGITS;
+                                                            text = `Hi IndaStreet Admin, I would like to schedule a massage at ${placeName} on ${dateStr} at ${scheduledTime}. I understand 30% deposit is required, payable to admin for confirmation of booking. Thank you.`;
+                                                        } else {
+                                                            const raw = (place as any).whatsappNumber ?? (place as any).whatsappnumber ?? '';
+                                                            const digits = normalizeWhatsAppToDigits(raw);
+                                                            if (!digits) {
+                                                                window.alert('This place has no WhatsApp number saved.');
+                                                                return;
+                                                            }
+                                                            waNumber = digits;
+                                                            text = `Hi, I would like to schedule a massage at ${placeName} on ${dateStr} at ${scheduledTime}. Thank you.`;
+                                                        }
+                                                        window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`, '_blank');
+                                                        setShowMenuSlider(false);
+                                                        setMenuSliderStep('menu');
+                                                        setShowDepositNotice(false);
+                                                    }}
+                                                    className="flex-1 py-3 rounded-lg font-semibold bg-amber-500 hover:bg-amber-600 text-white"
+                                                >
+                                                    Confirm & open WhatsApp
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => { setMenuSliderStep('menu'); setShowDepositNotice(false); }}
+                                                className="py-3 px-4 rounded-lg font-semibold border-2 border-gray-300 text-gray-700"
+                                            >
+                                                Back
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* For massage city places: Scheduled and Book Now at top */}
+                                        {category === 'massage' && (
+                                            <div className="grid grid-cols-2 gap-3 pb-3 border-b border-gray-200">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setMenuSliderStep('scheduled')}
+                                                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-50 border-2 border-amber-400 text-amber-800 font-semibold hover:bg-amber-100"
+                                                >
+                                                    <Calendar className="w-5 h-5" />
+                                                    Scheduled
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setShowMenuSlider(false);
+                                                        const placeName = (place as any).name || getMetaBarLabel(category);
+                                                        const useAdmin = isBookingUseAdminCountry(userCountryCode);
+                                                        let waNumber: string;
+                                                        let text: string;
+                                                        if (useAdmin) {
+                                                            waNumber = ADMIN_WHATSAPP_DIGITS;
+                                                            text = `Hi IndaStreet Admin, I would like to book at ${placeName}. Please coordinate my visit. Thank you.`;
+                                                        } else {
+                                                            const raw = (place as any).whatsappNumber ?? (place as any).whatsappnumber ?? '';
+                                                            const digits = normalizeWhatsAppToDigits(raw);
+                                                            if (!digits) {
+                                                                window.alert('This place has no WhatsApp number saved.');
+                                                                return;
+                                                            }
+                                                            waNumber = digits;
+                                                            text = `Hi, I would like to book at ${placeName}. Thank you.`;
+                                                        }
+                                                        window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`, '_blank');
+                                                    }}
+                                                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold"
+                                                >
+                                                    <Clock className="w-5 h-5" />
+                                                    Book Now
+                                                </button>
+                                            </div>
+                                        )}
+                                        <p className="text-sm text-gray-600">{getTreatmentsLabel(place as any, category)}</p>
+                                        {[
+                                            { label: '60 min', key: '60' as const },
+                                            { label: '90 min', key: '90' as const },
+                                            { label: '120 min', key: '120' as const },
+                                        ].map(({ label, key }) => (
+                                            <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-orange-50 border border-orange-200">
+                                                <span className="font-medium text-gray-900">{getTreatmentRowTitle(category, label, key)}</span>
+                                                <span className="text-sm font-semibold text-gray-800">{pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])}` : 'Contact'}</span>
+                                            </div>
+                                        ))}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

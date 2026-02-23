@@ -453,13 +453,14 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                     {isPlaceVerified() && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1.5">
                             <img
                                 src={VERIFIED_BADGE_IMAGE_URL}
                                 alt="Verified"
                                 className="w-10 h-10 sm:w-12 sm:h-12 object-contain drop-shadow-md"
                                 title="Verified"
                             />
+                            <span className="text-white text-xs sm:text-sm font-semibold drop-shadow-lg bg-black/30 px-2 py-0.5 rounded">Verified</span>
                         </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
@@ -512,6 +513,8 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             onClick={() => {}}
                             onIncrementAnalytics={() => {}}
                             userLocation={userLocation ?? undefined}
+                            variant="profile"
+                            userCountryCode={language === 'id' ? 'ID' : undefined}
                         />
                         <a
                             href="https://www.indastreet.com/social"

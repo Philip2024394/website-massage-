@@ -50,7 +50,7 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
     },
     {
       type: 'massage_place' as AccountType,
-      title: 'Massage Place',
+      title: 'Massage City Place',
       icon: Building,
       color: 'text-amber-500',
       bgColor: 'bg-amber-50 border-amber-200',
