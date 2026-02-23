@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import CityPlaceCard from '../components/CityPlaceCard';
 import { FloatingChatWindow } from '../chat';
 import { AppDrawer } from '../components/AppDrawerClean';
-import { Globe } from 'lucide-react';
+import { Globe, LayoutGrid } from 'lucide-react';
 import { customLinksService } from '../lib/appwrite/services/customLinks.service';
 import { useChatProviderOptional } from '../hooks/useChatProvider';
 import UniversalHeader from '../components/shared/UniversalHeader';
-import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+import SocialMediaLinks from '../components/SocialMediaLinks';
+import AdditionalServiceCard, { type AdditionalService } from '../components/AdditionalServiceCard';
+import { VERIFIED_BADGE_IMAGE_URL, ADDITIONAL_SERVICES_TIERS, type AdditionalServicesTierLimit } from '../constants/appConstants';
 
 // Helper functions for location and taxi booking
 const getUserLocation = () => ({ lat: 0, lng: 0 });
@@ -516,18 +518,116 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             variant="profile"
                             userCountryCode={language === 'id' ? 'ID' : undefined}
                         />
+
+                        {/* Additional services – 3 included; upgrade to 10 (200K IDR/year) or 15 (250K IDR/year).
+                            Schema: place.additionalServices = array of { id, name, description, imageUrl?, details: [{ label, price, duration? }], bookLabel? }.
+                            place.additionalServicesLimit = 3 | 10 | 15 (default 3). */}
+                        {(() => {
+                            const raw = (place as any).additionalServices;
+                            const tierLimit = ((): AdditionalServicesTierLimit => {
+                                const v = (place as any).additionalServicesLimit;
+                                if (v === 10 || v === 15) return v;
+                                return ADDITIONAL_SERVICES_TIERS.DEFAULT_LIMIT;
+                            })();
+                            let list: AdditionalService[] = Array.isArray(raw)
+                                ? raw.filter((s: any) => s && (s.name || s.id))
+                                : [];
+                            list = list.map((s: any) => ({
+                                id: String(s.id ?? s.name ?? ''),
+                                name: s.name || 'Service',
+                                description: s.description || '',
+                                imageUrl: s.imageUrl,
+                                details: Array.isArray(s.details)
+                                    ? s.details.map((d: any) => ({
+                                        label: d.label || d.name || 'Option',
+                                        price: d.price || 'Contact for price',
+                                        duration: d.duration,
+                                    }))
+                                    : [],
+                                bookLabel: s.bookLabel === 'Schedule' ? 'Schedule' as const : 'Book' as const,
+                            }));
+                            // Mock 3 additional services when place has none (for demo)
+                            if (list.length === 0) {
+                                const mockImage = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
+                                list = [
+                                    {
+                                        id: 'mock-hair',
+                                        name: 'Hair Salon',
+                                        description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.',
+                                        imageUrl: mockImage,
+                                        details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }],
+                                        bookLabel: 'Book',
+                                    },
+                                    {
+                                        id: 'mock-beauty',
+                                        name: 'Beautician',
+                                        description: 'Nails, lashes and skin treatments. Manicure, pedicure, lash extensions and facials available by appointment.',
+                                        imageUrl: mockImage,
+                                        details: [{ label: 'Manicure & pedicure', price: 'IDR 200K', duration: '60 min' }],
+                                        bookLabel: 'Schedule',
+                                    },
+                                    {
+                                        id: 'mock-spa',
+                                        name: 'Spa & Wellness',
+                                        description: 'Body scrubs, wraps and aromatherapy. Relax and recharge with our signature treatments in a calm environment.',
+                                        imageUrl: mockImage,
+                                        details: [{ label: 'Body scrub & wrap', price: 'IDR 350K', duration: '90 min' }],
+                                        bookLabel: 'Book',
+                                    },
+                                ];
+                            }
+                            const displayList = list.slice(0, tierLimit);
+                            const hasAnyServices = displayList.length > 0;
+                            if (!hasAnyServices) return null;
+                            return (
+                                <div className="mt-6">
+                                    <div className="text-center mb-4">
+                                        <div className="flex items-center justify-center gap-2 mb-1">
+                                            <LayoutGrid className="w-3.5 h-3.5 text-orange-500" aria-hidden />
+                                            <h3 className="text-lg font-bold text-gray-900">Additional services</h3>
+                                        </div>
+                                        <p className="text-xs text-gray-500">Services Trending This Month</p>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {displayList.map((svc) => (
+                                            <AdditionalServiceCard
+                                                key={svc.id}
+                                                service={svc}
+                                                placeName={place.name || 'Massage Place'}
+                                                placeWhatsApp={(place as any).whatsappNumber ?? (place as any).whatsappnumber}
+                                                userCountryCode={language === 'id' ? 'ID' : undefined}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </div>
+            </main>
+
+            {/* Footer: same social as home page */}
+            <footer className="w-full mt-8 py-6 px-4 border-t border-gray-200 bg-gray-50/80">
+                <div className="max-w-full flex flex-col items-center gap-2">
+                    <div className="font-bold text-lg">
+                        <span className="text-black">Inda</span>
+                        <span className="text-amber-500">Street</span>
+                    </div>
+                    <SocialMediaLinks className="mt-2" />
+                    <div className="mt-2 flex justify-center">
                         <a
                             href="https://www.indastreet.com/social"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+                            className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
                         >
-                            <Globe className="w-5 h-5 text-amber-500" />
-                            <span>IndaStreet Social</span>
+                            <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                            <span className="font-medium text-sm">IndaStreet Social</span>
+                            <span className="text-xs text-gray-500">Connecting wellness communities across the globe</span>
                         </a>
                     </div>
                 </div>
-            </main>
+            </footer>
             </div>
             <FloatingChatWindow userId="guest" userName="Guest User" userRole="customer" />
         </div>

@@ -11,6 +11,18 @@ export const APP_CONSTANTS = {
 
 export const PAGES_WITH_FOOTER = ['home', 'detail', 'agent', 'serviceTerms', 'privacy'] as const;
 
+/** Massage city places: additional services listing tiers (per year). */
+export const ADDITIONAL_SERVICES_TIERS = {
+    /** Default: up to 3 additional services included. */
+    DEFAULT_LIMIT: 3,
+    /** Upgrade: up to 10 services for 200.000 IDR/year. */
+    TIER_10: { limit: 10, priceIdr: 200_000, label: '200.000 IDR/year' },
+    /** Upgrade: up to 15 services for 250.000 IDR/year. */
+    TIER_15: { limit: 15, priceIdr: 250_000, label: '250.000 IDR/year' },
+} as const;
+
+export type AdditionalServicesTierLimit = 3 | 10 | 15;
+
 export const STORAGE_KEYS = {
   USER_LOCATION: 'userLocation',
   LANGUAGE: 'language',

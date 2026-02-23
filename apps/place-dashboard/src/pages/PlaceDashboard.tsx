@@ -45,6 +45,7 @@ import {
 import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVillaTab } from '../components/dashboard-tabs';
 import PlaceCalendar from './PlaceCalendar';
 import PlaceVerifiedPage from './PlaceVerifiedPage';
+import PlaceAdditionalServicesUpgrade from './PlaceAdditionalServicesUpgrade';
 
 
 interface PlaceDashboardPageProps {
@@ -1159,6 +1160,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         }}
                     />
                 );
+            case 'additional-services-upgrade':
+                return (
+                    <PlaceAdditionalServicesUpgrade
+                        place={place}
+                        onBack={() => setActiveTab('profile')}
+                    />
+                );
             case 'profile':
             default:
                 return (
@@ -1180,6 +1188,22 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-gray-900">Get Verified</h3>
                                 <p className="text-sm text-gray-600 mt-0.5">Upload ID, business registration, bank header or government letter to get your verified badge</p>
+                            </div>
+                            <span className="text-amber-600 font-semibold">Go →</span>
+                        </button>
+
+                        {/* List more services – upgrade additional services (dashboard only) */}
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('additional-services-upgrade')}
+                            className="w-full text-left bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4 hover:border-amber-400 hover:shadow-md transition-all flex items-center gap-4"
+                        >
+                            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <ColoredTagIcon className="w-6 h-6 text-amber-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-gray-900">List more services</h3>
+                                <p className="text-sm text-gray-600 mt-0.5">Massage city places can list up to 3 additional services included. Upgrade to list 10 (200.000 IDR/year) or 15 (250.000 IDR/year). Transfer to admin, upload proof — activation is immediate.</p>
                             </div>
                             <span className="text-amber-600 font-semibold">Go →</span>
                         </button>
