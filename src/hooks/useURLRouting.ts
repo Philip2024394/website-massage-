@@ -94,6 +94,7 @@ export const useURLRouting = (
         'therapist-payment-status': '/dashboard/therapist/payment-status',
         'therapist-commission-payment': '/dashboard/therapist/commission',
         'therapist-premium-upgrade': '/dashboard/therapist/premium',
+        'therapist-membership-plans': '/dashboard/therapist/membership-plans',
         'therapist-menu': '/dashboard/therapist/menu',
         'therapist-chat': '/dashboard/therapist/chat',
         'therapist-notifications': '/dashboard/therapist/notifications',
@@ -338,6 +339,10 @@ export const useURLRouting = (
                 }
                 if (path === '/dashboard/therapist/premium') {
                     setPage('therapist-premium-upgrade');
+                    return;
+                }
+                if (path === '/dashboard/therapist/membership-plans') {
+                    setPage('therapist-membership-plans');
                     return;
                 }
                 if (path === '/dashboard/therapist/menu') {

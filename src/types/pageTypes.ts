@@ -46,6 +46,7 @@ export type Page =
     | 'therapist-payment-status'
     | 'therapist-commission-payment'
     | 'therapist-premium-upgrade'
+    | 'therapist-membership-plans'
     | 'therapist-menu'
     | 'therapist-chat'
     | 'therapist-notifications'

@@ -212,43 +212,35 @@ const RoundButtonRow: React.FC<RoundButtonRowProps> = ({
         onPriceSlider();
     }, [onPriceSlider]);
 
+    /* Same design as Massage City Places profile card: flex gap-2, Book Now + Scheduled filled amber, Menu prices outline amber */
+    const filledClass = 'flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60';
+    const outlineClass = 'flex-1 py-2.5 rounded-lg font-semibold text-sm bg-white border-2 border-amber-500 text-amber-600 hover:bg-amber-50 transition-colors';
+
     return (
-        <div className={`relative z-10 flex items-center gap-2 px-4 ${dynamicSpacing}`} style={{ touchAction: 'manipulation' }}>
-            {/* Book Now + Scheduled beside each other, same height as Menu Prices button */}
-            <div className="flex flex-1 items-center justify-center gap-1 min-h-[48px]">
-                <button
-                    type="button"
-                    onClick={runBookNow}
-                    onPointerUp={runBookNow}
-                    disabled={bookScheduleDisabled}
-                    title={disabledTitle}
-                    className={`flex items-center justify-center gap-1 font-bold py-1 px-1 min-h-[48px] min-w-[44px] select-none bg-transparent border-0 shadow-none rounded-none transition-all duration-300 transform touch-manipulation ${
-                        bookScheduleDisabled
-                            ? 'text-gray-400 cursor-not-allowed opacity-60'
-                            : activeButton === 'book'
-                            ? 'text-green-500 hover:text-green-600 active:text-green-700'
-                            : 'text-amber-500 hover:text-amber-600 active:text-amber-700'
-                    } active:scale-95 cursor-pointer ${bookButtonFlash && !bookScheduleDisabled ? 'book-button-flash' : ''}`}
-                >
-                    <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none" />
-                    <span className="text-xs sm:text-sm font-semibold pointer-events-none">Book</span>
-                </button>
-
-                <ScheduledBookingButton
-                    onClick={runSchedule}
-                    onPointerUp={runSchedule}
-                    disabled={bookScheduleDisabled}
-                    title={disabledTitle}
-                    className="flex items-center justify-center min-h-[48px] min-w-[44px] touch-manipulation"
-                    ariaLabel="Scheduled bookings"
-                />
-            </div>
-
-            {/* Prices Button */}
+        <div className={`relative z-10 flex gap-2 px-4 ${dynamicSpacing}`} style={{ touchAction: 'manipulation' }}>
+            <button
+                type="button"
+                onClick={runBookNow}
+                onPointerUp={runBookNow}
+                disabled={bookScheduleDisabled}
+                title={disabledTitle}
+                className={`${filledClass} ${bookButtonFlash && !bookScheduleDisabled ? 'book-now-heartbeat' : ''}`}
+                aria-label="Book Now"
+            >
+                Book Now
+            </button>
+            <ScheduledBookingButton
+                onClick={runSchedule}
+                onPointerUp={runSchedule}
+                disabled={bookScheduleDisabled}
+                title={disabledTitle}
+                className={filledClass}
+                ariaLabel="Scheduled bookings"
+            />
             <PricesButton
                 onClick={(e) => { runPriceSlider(e as any); }}
-                className="flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 rounded-full touch-manipulation"
-                ariaLabel="Menu Prices"
+                className={outlineClass}
+                ariaLabel="Menu prices"
             />
         </div>
     );
@@ -404,6 +396,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [showSafePassModal, setShowSafePassModal] = useState(false);
     // Beautician: when user selects a treatment container, Book button flashes
     const [selectedBeauticianTreatmentIndex, setSelectedBeauticianTreatmentIndex] = useState<number | null>(null);
+    // Massage price container selection: fingerprint in container, Book Now heartbeat (same as massage city places)
+    const [selectedPriceKey, setSelectedPriceKey] = useState<'60' | '90' | '120' | null>(null);
 
     const {
         menuData,
@@ -1188,31 +1182,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     animation: priceRimFade 2s ease-in-out infinite;
                 }
 
+                @keyframes book-now-heartbeat {
+                    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+                    50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.25), 0 0 16px 4px rgba(245, 158, 11, 0.3); }
+                }
+                .book-now-heartbeat {
+                    animation: book-now-heartbeat 1.2s ease-in-out infinite;
+                }
             `}</style>
-            
-            {/* External meta bar (Joined Date / Free / Orders) */}
-            <div className="flex justify-between items-center mb-2 px-2">
-                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {joinedDisplay}
-                </span>
-                {!hideJoinButton && (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setShowJoinPopup(true);
-                    }}
-                    className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
-                >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Therapist Join Free
-                </button>
-                )}
-            </div>
             
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
             <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 border-t-4 border-t-amber-400 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8 shadow-md">
@@ -1320,6 +1297,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     getDynamicSpacing={getDynamicSpacing}
                     translatedDescriptionLength={translatedDescription.length}
                     menuData={combinedMenu}
+                    selectedPriceKey={selectedPriceKey}
+                    onSelectPriceKey={setSelectedPriceKey}
                     onPriceClick={() => {
                         logger.debug('💰 Price grid clicked - opening price modal');
                         setShowPriceListModal(true);
@@ -1340,7 +1319,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
                     isBusy={displayStatus === AvailabilityStatus.Busy}
                     busyUntil={(therapist as any).busyUntil ?? (therapist as any).bookedUntil ?? undefined}
-                    bookButtonFlash={isBeauticianWithTreatments && selectedBeauticianTreatmentIndex !== null}
+                    bookButtonFlash={isBeauticianWithTreatments && selectedBeauticianTreatmentIndex !== null || !!selectedPriceKey}
                 />
             ) : (
                 <>
@@ -1363,24 +1342,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         bookNowText={bookNowText}
                         scheduleText={scheduleText}
                         dynamicSpacing={getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}
-                        bookButtonFlash={isBeauticianWithTreatments && selectedBeauticianTreatmentIndex !== null}
+                        bookButtonFlash={isBeauticianWithTreatments && selectedBeauticianTreatmentIndex !== null || !!selectedPriceKey}
                     />
-                    <div className="mt-4 px-4 w-full">
-                        <a
-                            href={`https://wa.me/${ADMIN_WHATSAPP_DIGITS}?text=${encodeURIComponent(`Hi Indastreet, I would like to book a massage with ${therapist.name || 'this therapist'} (ID: ${therapist.$id || therapist.id || 'N/A'}).`)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex w-full items-center justify-center gap-2 font-bold py-3 px-4 rounded-full transition-colors duration-300 bg-[#25D366] text-white hover:bg-[#20BD5A] active:bg-[#1DA851] shadow-md min-h-[48px]"
-                        >
-                            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                            </svg>
-                            Chat on WhatsApp
-                        </a>
-                        <p className="text-xs text-gray-500 text-center mt-2">
-                            Chat directly with Indastreet to arrange your booking.
-                        </p>
-                    </div>
                 </>
             )}
 

@@ -56,6 +56,7 @@ import TherapistAnalyticsPage from '../../pages/therapist/TherapistAnalyticsPage
 import BannerDiscountPage from '../../pages/therapist/BannerDiscountPage.tsx';
 import TherapistSafePassWrapper from '../../pages/therapist/TherapistSafePassWrapper';
 import TherapistJobApplicationsPage from '../../pages/therapist/TherapistJobApplicationsPage';
+import TherapistMembershipPlansPage from '../../pages/therapist/TherapistMembershipPlansPage';
 
 export const therapistRoutes = {
   dashboard: {
@@ -140,6 +141,12 @@ export const therapistRoutes = {
     path: '/therapist/premium',
     component: PremiumUpgrade,
     name: 'therapist-premium',
+    requiresAuth: true
+  },
+  membershipPlans: {
+    path: '/therapist/membership-plans',
+    component: TherapistMembershipPlansPage,
+    name: 'therapist-membership-plans',
     requiresAuth: true
   },
   commission: {

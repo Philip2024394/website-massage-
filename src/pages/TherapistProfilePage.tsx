@@ -8,12 +8,14 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import TherapistProfileBase from '../components/TherapistProfileBase';
+import TherapistProfilePlaceStyle from '../components/TherapistProfilePlaceStyle';
 import { therapistOffersService, SERVICE_TYPES } from '../constants/serviceTypes';
 import { FloatingChatWindow } from '../chat';
 import HomeIcon from '../components/icons/HomeIcon';
-import { Building, Sparkles, Scissors, SlidersHorizontal } from 'lucide-react';
+import { Building, Sparkles, Scissors, SlidersHorizontal, Globe } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
+import SocialMediaLinks from '../components/SocialMediaLinks';
 import { logger } from '../utils/logger';
 
 interface TherapistProfilePageProps {
@@ -50,6 +52,8 @@ interface TherapistProfilePageProps {
     onAdminPortalClick?: () => void;
     onTermsClick?: () => void;
     onPrivacyClick?: () => void;
+    /** Use Massage City Places–matching profile layout (hero, tabs, sticky BOOK NOW). Default true. */
+    usePlaceStyleProfile?: boolean;
 }
 
 const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
@@ -82,7 +86,8 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     onCustomerPortalClick,
     onAdminPortalClick,
     onTermsClick,
-    onPrivacyClick
+    onPrivacyClick,
+    usePlaceStyleProfile = true
 }) => {
     // Initial state: prefer source from navigation (so the button/tab user came from is highlighted)
     const [mainTab, setMainTab] = useState<'home-service' | 'places'>(() => {
@@ -203,6 +208,8 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     language={language}
                     onLanguageChange={onLanguageChange}
                     onMenuClick={() => setIsMenuOpen(true)}
+                    showHomeButton={true}
+                    onHomeClick={() => onNavigate?.('home')}
                 />
             )}
 
@@ -245,6 +252,28 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 </div>
             )}
 
+            {/* Place-style profile: same UI as Massage City Places (hero, tabs, sticky BOOK NOW – WhatsApp) */}
+            {usePlaceStyleProfile ? (
+                <div className="pt-[60px] sm:pt-[64px]">
+                    <TherapistProfilePlaceStyle
+                        therapist={therapist}
+                        language={(language || 'id') as 'en' | 'id' | 'gb'}
+                        userLocation={userLocation}
+                        onBack={onBack}
+                        onNavigate={(page) => onNavigate?.(page)}
+                        therapists={therapists}
+                        isProfileOwner={loggedInProvider?.type === 'therapist' && String(loggedInProvider?.id) === String(therapist?.$id ?? therapist?.id)}
+                        onNavigateToTherapist={(selectedTherapist) => {
+                            const therapistId = selectedTherapist.$id ?? selectedTherapist.id;
+                            const slug = (selectedTherapist.name || 'therapist').toString().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                            const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
+                            window.history.pushState({}, '', profileUrl);
+                            onNavigate?.('therapist-profile');
+                        }}
+                    />
+                </div>
+            ) : (
+            <>
             {/* Hero Section - Same as Home: Home Service | City Places, Massage | Facial | Beauty, Filter. Clear fixed header + safe-area on notched mobile. */}
             <div className="bg-white border-b border-gray-100" style={{ paddingTop: 'max(4rem, calc(4rem + env(safe-area-inset-top, 0px)))' }}>
                 <div className="px-3 sm:px-4 pb-3 max-w-2xl mx-auto">
@@ -325,7 +354,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 language={language}
             />
 
-            {/* Quick Links Footer - Only for authenticated view */}
+            {/* Footer: IndaStreet Social + social media icons – same style as home page */}
             {!isSharedView && (
                 <div className="max-w-4xl mx-auto px-4">
                     <div className="mt-12 mb-6 flex flex-col items-center gap-2">
@@ -333,56 +362,22 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             <span className="text-black">Inda</span>
                             <span className="text-amber-500">Street</span>
                         </div>
-
-                        <div className="mt-8 pt-6 border-t border-gray-200 w-full">
-                            <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
-                            <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
-                                <button
-                                onClick={() => onNavigate?.('home')}
-                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                            >
-                                Home
-                            </button>
+                        <div className="mt-8 pt-6 border-t border-gray-200 w-full flex flex-col items-center">
                             <button
-                                onClick={() => onNavigate?.('massage-types')}
-                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
+                                type="button"
+                                onClick={() => onNavigate?.('indonesia')}
+                                className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
                             >
-                                Massage Types
+                                <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                                <span className="font-medium text-sm">IndaStreet Social</span>
+                                <span className="text-xs text-gray-500">Connecting wellness communities across the globe</span>
                             </button>
-                            <button
-                                onClick={() => onNavigate?.('facial-types')}
-                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                            >
-                                Facial Types
-                            </button>
-                            <button
-                                onClick={() => onNavigate?.('therapist-signup')}
-                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                            >
-                                Join as a Therapist Today
-                            </button>
-                            <button
-                                onClick={() => onNavigate?.('place-signup')}
-                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                            >
-                                Join Massage Place
-                            </button>
-                            <button
-                                onClick={() => onNavigate?.('about-us')}
-                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                            >
-                                About Us
-                            </button>
-                            <button
-                                onClick={() => onNavigate?.('contact-us')}
-                                className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                            >
-                                Contact Us
-                            </button>
-                            </div>
+                            <SocialMediaLinks className="mt-2" />
                         </div>
                     </div>
                 </div>
+            )}
+            </>
             )}
         </div>
         {/* Floating Chat Window */}

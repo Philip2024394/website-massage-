@@ -313,7 +313,15 @@ export function getCombinedMenuForDisplay(
   therapist: { price60?: string | number; price90?: string | number; price120?: string | number; $id?: string; id?: string }
 ): CombinedMenuItem[] {
   const therapistId = String(therapist?.$id ?? therapist?.id ?? '');
-  const realItems: CombinedMenuItem[] = (menuData || [])
+  const normalizedMenuData = Array.isArray(menuData)
+    ? menuData
+    : Array.isArray((menuData as any)?.items)
+      ? (menuData as any).items
+      : Array.isArray((menuData as any)?.menuData)
+        ? (menuData as any).menuData
+        : [];
+
+  const realItems: CombinedMenuItem[] = normalizedMenuData
     .filter((item: any) => {
       const p60 = Number(item?.price60);
       const p90 = Number(item?.price90);

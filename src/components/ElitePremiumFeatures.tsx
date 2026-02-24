@@ -65,10 +65,11 @@ export interface ElitePremiumFeaturesProps {
 }
 
 const DEFAULT_SAFETY_FEATURES = [
-  'Female therapists available',
-  'Private treatment rooms',
+  'Verified safe environment for guests',
+  'Professional service standards',
   'Licensed & registered',
   'Hygiene certified',
+  'CCTV in public areas',
 ];
 
 const DEFAULT_TESTIMONIALS: Testimonial[] = [

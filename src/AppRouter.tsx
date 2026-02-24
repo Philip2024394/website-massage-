@@ -2682,6 +2682,24 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
             logger.debug('[ROUTER OK] therapist-menu component bound successfully');
             return menuComponent;
+
+        // 🚫 DO NOT REDIRECT — Membership plans (post profile-save live)
+        case 'therapist-membership-plans':
+            logger.debug('[ROUTE RESOLVE] therapist-membership-plans → TherapistMembershipPlansPage');
+            return renderRoute(therapistRoutes.membershipPlans.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language || 'id'
+            });
+
+        // 🚫 DO NOT REDIRECT — Premium upgrade (payment proof)
+        case 'therapist-premium-upgrade':
+            logger.debug('[ROUTE RESOLVE] therapist-premium-upgrade → PremiumUpgrade');
+            return renderRoute(therapistRoutes.premium.component, {
+                therapist: props.user,
+                onNavigate: props.onNavigate
+            });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE (Dedicated Analytics Page)
         case 'analytics':

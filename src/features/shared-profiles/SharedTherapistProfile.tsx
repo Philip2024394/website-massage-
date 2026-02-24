@@ -38,6 +38,7 @@ import { getNonRepeatingMainImage } from '../../lib/appwrite/image.service';
 import { shareTrackingService } from '../../services/shareTrackingService';
 import { getTherapistDisplayName } from '../../utils/therapistCardHelpers';
 import { getSafeErrorMessage, APPWRITE_CRASH_ERROR_CODE } from '../../utils/appwriteHelpers';
+import TherapistFloatingActions from '../../components/TherapistFloatingActions';
 
 interface SharedTherapistProfileProps {
     // NO LONGER REQUIRED - we fetch directly
@@ -913,6 +914,10 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 language={language}
                 customVerifiedBadge={VERIFIED_BADGE_IMAGE_URL}
                 shareCount={shareCount}
+            />
+            <TherapistFloatingActions
+                therapist={therapist}
+                language={language}
             />
             {/* PWA Install Banner - Critical for mobile app promotion */}
             <PWAInstallBanner />

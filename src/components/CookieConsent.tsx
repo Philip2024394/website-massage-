@@ -95,10 +95,10 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, on
       >
         <div className="flex items-center gap-3 mb-4">
           <span className="text-4xl">🍪</span>
-          <h3 className="text-xl font-bold text-gray-900">{t.title}</h3>
+          <h3 className="text-xl font-bold text-amber-700">{t.title}</h3>
         </div>
         
-        <p className="text-sm text-gray-700 leading-relaxed mb-1">
+        <p className="text-sm text-amber-900/90 leading-relaxed mb-1">
           {t.message}
         </p>
         
@@ -109,7 +109,7 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, on
               onNavigateToCookiesPolicy();
             }
           }}
-          className="text-sm text-orange-500 hover:text-orange-600 underline font-semibold inline-block mb-6"
+          className="text-sm text-amber-600 hover:text-amber-700 underline font-semibold inline-block mb-6"
         >
           {t.learnMore}
         </button>
@@ -123,7 +123,7 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, on
           </button>
           <button
             onClick={acceptCookies}
-            className="flex-1 bg-orange-500 px-4 py-2 rounded-lg hover:bg-orange-600 text-white transition-all duration-300 font-semibold shadow-lg hover:shadow-xl text-sm"
+            className="flex-1 bg-amber-500 px-4 py-2 rounded-lg hover:bg-amber-600 text-white transition-all duration-300 font-semibold shadow-lg hover:shadow-xl text-sm"
           >
             {t.accept}
           </button>

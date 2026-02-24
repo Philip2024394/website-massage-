@@ -176,6 +176,8 @@ interface FeedPost {
   positionCvAvailable?: boolean;
   /** When set, post is a "like" from a massage place profile; clicking name/image opens that place profile. */
   placeId?: string;
+  /** When set, post is a "like" from a therapist profile; clicking name/image opens that therapist profile. */
+  therapistId?: string;
   /** Premium like-post: optional rich fields for feed display & share text */
   placeDescription?: string;
   placeLocation?: string;
@@ -358,19 +360,56 @@ function getMockEvents(language: string): SearchEvent[] {
   ];
 }
 
-/** Map "like" events from massage place profile into feed posts. Latest first, one per place. Premium presentation: description, location, rating, booked this month. */
+/** Map "like" events from massage place and therapist profiles into feed posts. Latest first. */
 function likeEventsToFeedPosts(language: string): FeedPost[] {
   const isId = language === 'id';
   const events = getEliteLikeEvents();
   const defaultImage = HERO_IMAGE_SRC;
   const t = (en: string, id: string) => (isId ? id : en);
   const now = Date.now();
+
   return events.map((e) => {
     const timeAgo = now - e.timestamp < 60_000
       ? t('Just now', 'Baru saja')
       : now - e.timestamp < 3600_000
         ? t('A few minutes ago', 'Beberapa menit lalu')
         : t('Recently', 'Baru saja');
+
+    if (e.entityType === 'therapist') {
+      const ratingStr =
+        e.rating != null
+          ? (isId ? `${e.rating.toFixed(1).replace('.', ',')}` : e.rating.toFixed(1))
+          : '';
+      const reviewStr =
+        e.reviewCount != null && e.reviewCount > 0
+          ? (isId ? `${e.reviewCount} ulasan` : `${e.reviewCount} reviews`)
+          : '';
+      const statsLine = [ratingStr, reviewStr].filter(Boolean).join(' · ');
+      const text = isId
+        ? `${e.therapistName} dapat like — profil mereka sedang dapat perhatian!${statsLine ? `\n\n${statsLine}` : ''}${e.location ? `\n📍 ${e.location}` : ''}`
+        : `${e.therapistName} is getting love! Their profile is getting attention.${statsLine ? `\n\n${statsLine}` : ''}${e.location ? `\n📍 ${e.location}` : ''}`;
+      return {
+        id: `like-therapist-${e.therapistId}-${e.timestamp}`,
+        authorName: e.therapistName,
+        authorAvatar: e.therapistImageUrl || defaultImage,
+        authorRole: isId ? 'Terapis pijat' : 'Massage therapist',
+        timeAgo,
+        text,
+        mediaUrl: e.therapistImageUrl || defaultImage,
+        mediaUrls: [e.therapistImageUrl || defaultImage],
+        mediaAlt: e.therapistName,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        commentPreview: [],
+        createdAt: e.timestamp,
+        postType: 'post' as const,
+        therapistId: e.therapistId,
+        placeLocation: e.location,
+        placeRating: e.rating,
+        placeReviewCount: e.reviewCount,
+      };
+    }
 
     const descSnippet = e.description
       ? (e.description.length > 180 ? e.description.slice(0, 180).trim() + '…' : e.description)
@@ -1461,6 +1500,8 @@ const PostCard: React.FC<{
   onProfileClick?: (profile: SocialProfilePreview) => void;
   /** When post.placeId is set (like-post), clicking name/avatar/image opens that place profile. */
   onPlaceProfileClick?: (placeId: string, placeName: string) => void;
+  /** When post.therapistId is set (therapist like-post), clicking name/avatar/image opens that therapist profile. */
+  onTherapistProfileClick?: (therapistId: string, therapistName: string) => void;
   onVerifiedBadgeClick?: (author: { name: string; avatar: string; role: string }) => void;
   onAddComment?: (postId: string, text: string) => void;
   onAddReply?: (postId: string, commentIndex: number, text: string) => void;
@@ -1469,7 +1510,7 @@ const PostCard: React.FC<{
   currentUserName?: string;
   hasAccount: boolean;
   language: string;
-}> = ({ post, onLike, onComment, onShare, onSave, onProfileClick, onPlaceProfileClick, onVerifiedBadgeClick, onAddComment, onAddReply, onEditPost, onDeletePost, currentUserName = '', hasAccount, language }) => {
+}> = ({ post, onLike, onComment, onShare, onSave, onProfileClick, onPlaceProfileClick, onTherapistProfileClick, onVerifiedBadgeClick, onAddComment, onAddReply, onEditPost, onDeletePost, currentUserName = '', hasAccount, language }) => {
   const [liked, setLiked] = useState(!!post.liked);
   const [saved, setSaved] = useState(!!post.saved);
   const [commentText, setCommentText] = useState('');
@@ -1524,9 +1565,10 @@ const PostCard: React.FC<{
       setShowPostMenu(false);
     }
   };
-  const isLikePost = !!post.placeId && !!onPlaceProfileClick;
+  const isLikePost = (!!post.placeId && !!onPlaceProfileClick) || (!!post.therapistId && !!onTherapistProfileClick);
   const handleAuthorOrImageClick = () => {
-    if (isLikePost) onPlaceProfileClick!(post.placeId!, post.authorName);
+    if (post.therapistId && onTherapistProfileClick) onTherapistProfileClick(post.therapistId, post.authorName);
+    else if (post.placeId && onPlaceProfileClick) onPlaceProfileClick(post.placeId, post.authorName);
     else onProfileClick?.({
       name: post.authorName,
       avatar: post.authorAvatar,
@@ -1796,26 +1838,38 @@ const PostCard: React.FC<{
                 )}
               </>
             )}
-            {isLikePost && onPlaceProfileClick && (
+            {isLikePost && (onPlaceProfileClick || onTherapistProfileClick) && (
               <button
                 type="button"
-                onClick={() => onPlaceProfileClick(post.placeId!, post.authorName)}
+                onClick={() =>
+                  post.therapistId && onTherapistProfileClick
+                    ? onTherapistProfileClick(post.therapistId, post.authorName)
+                    : post.placeId && onPlaceProfileClick
+                    ? onPlaceProfileClick(post.placeId, post.authorName)
+                    : undefined
+                }
                 className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
               >
-                {language === 'id' ? 'Lihat profil tempat' : 'View place profile'}
+                {post.therapistId ? (language === 'id' ? 'Lihat profil terapis' : 'View therapist profile') : (language === 'id' ? 'Lihat profil tempat' : 'View place profile')}
                 <ChevronRightIcon className="w-4 h-4" />
               </button>
             )}
           </div>
         ) : null}
-        {isLikePost && onPlaceProfileClick && !text && (
+        {isLikePost && (onPlaceProfileClick || onTherapistProfileClick) && !text && (
           <div className="pt-2 border-t border-stone-100">
             <button
               type="button"
-              onClick={() => onPlaceProfileClick(post.placeId!, post.authorName)}
+              onClick={() =>
+                post.therapistId && onTherapistProfileClick
+                  ? onTherapistProfileClick(post.therapistId, post.authorName)
+                  : post.placeId && onPlaceProfileClick
+                  ? onPlaceProfileClick(post.placeId, post.authorName)
+                  : undefined
+              }
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
             >
-              {language === 'id' ? 'Lihat profil tempat' : 'View place profile'}
+              {post.therapistId ? (language === 'id' ? 'Lihat profil terapis' : 'View therapist profile') : (language === 'id' ? 'Lihat profil tempat' : 'View place profile')}
               <ChevronRightIcon className="w-4 h-4" />
             </button>
           </div>
@@ -2146,7 +2200,7 @@ const SharePostPopup: React.FC<{
   const baseUrl = canonicalBaseUrl || (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '');
   const shareUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}#post-${post.id}` : '';
 
-  const isLikePost = Boolean(post.placeId && post.authorName);
+  const isLikePost = Boolean((post.placeId || post.therapistId) && post.authorName);
   const hasPremiumLikeData =
     isLikePost &&
     (Boolean(post.placeDescription) ||
@@ -3236,6 +3290,13 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
     handleSetSelectedPlace(place);
   };
 
+  const handleTherapistProfileClick = (therapistId: string, _therapistName: string) => {
+    if (typeof window === 'undefined') return;
+    const hash = `#/therapist-profile/${therapistId}`;
+    window.location.hash = hash;
+    onNavigate?.('shared-therapist-profile');
+  };
+
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -3663,6 +3724,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                   onSave={() => {}}
                   onProfileClick={(profile) => setProfilePreview(profile)}
                   onPlaceProfileClick={handlePlaceProfileClick}
+                  onTherapistProfileClick={handleTherapistProfileClick}
                   onVerifiedBadgeClick={(author) => setVerifiedBadgeAuthor(author)}
                   onAddComment={handleAddComment}
                   onAddReply={handleAddReply}
@@ -3726,6 +3788,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                       onSave={() => {}}
                       onProfileClick={(profile) => setProfilePreview(profile)}
                       onPlaceProfileClick={handlePlaceProfileClick}
+                      onTherapistProfileClick={handleTherapistProfileClick}
                       onVerifiedBadgeClick={(author) => setVerifiedBadgeAuthor(author)}
                       onAddComment={handleAddComment}
                       onAddReply={handleAddReply}

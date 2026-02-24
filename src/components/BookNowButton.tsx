@@ -1,7 +1,5 @@
 import React from 'react';
 
-const BOOK_NOW_IMAGE = 'https://ik.imagekit.io/7grri5v7d/book%20now.png?updatedAt=1771703410098';
-
 export interface BookNowButtonProps {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   href?: string;
@@ -12,7 +10,7 @@ export interface BookNowButtonProps {
 }
 
 /**
- * Book Now button that displays the shared button image (no container/frame).
+ * Book Now button rendered as standard design-system button.
  * Use for all "Book Now" / Book via WhatsApp actions across the app.
  * Pass onClick for button behavior, or href for direct link (e.g. wa.me).
  */
@@ -24,14 +22,8 @@ export function BookNowButton({
   ariaLabel = 'Book Now',
   title,
 }: BookNowButtonProps) {
-  const image = (
-    <img
-      src={BOOK_NOW_IMAGE}
-      alt=""
-      className="w-full h-full min-h-0 object-contain object-center"
-    />
-  );
-  const baseClass = 'inline-flex items-center justify-center overflow-hidden transition-all focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70';
+  const baseClass =
+    'inline-flex items-center justify-center rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-amber-600 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70';
 
   if (href) {
     return (
@@ -44,7 +36,7 @@ export function BookNowButton({
         className={`${baseClass} ${className}`}
         onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
       >
-        {image}
+        Book Now
       </a>
     );
   }
@@ -58,7 +50,7 @@ export function BookNowButton({
       title={title ?? ariaLabel}
       className={`${baseClass} ${className}`}
     >
-      {image}
+      Book Now
     </button>
   );
 }

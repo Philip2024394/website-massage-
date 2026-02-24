@@ -702,25 +702,22 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             })()}
                             
                             <div className="flex items-center gap-2">
-                                {/* Verified Badge - Show if therapist has both bank details and KTP */}
-                                {(() => {
-                                    const hasVerifiedBadge = (therapist as any).verifiedBadge || therapist.isVerified;
-                                    const hasBankDetails = therapist.bankName && therapist.accountName && therapist.accountNumber;
-                                    const hasKtpUploaded = therapist.ktpPhotoUrl;
-                                    const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
-                                    
-                                    return shouldShowBadge && (
-                                        <img 
-                                            src={VERIFIED_BADGE_IMAGE_URL}
-                                            alt="Verified"
-                                            className="w-5 h-5 flex-shrink-0"
-                                            title="Verified Therapist - Complete Profile"
-                                        />
-                                    );
-                                })()}
-                                
-                                <h3 className="text-lg font-bold text-gray-900">
+                                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-1.5">
                                     {getTherapistDisplayName(therapist.name)}
+                                    {(() => {
+                                        const hasVerifiedBadge = (therapist as any).verifiedBadge || therapist.isVerified;
+                                        const hasBankDetails = therapist.bankName && therapist.accountName && therapist.accountNumber;
+                                        const hasKtpUploaded = therapist.ktpPhotoUrl;
+                                        const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
+                                        return shouldShowBadge && (
+                                            <img 
+                                                src={VERIFIED_BADGE_IMAGE_URL}
+                                                alt="Verified"
+                                                className="w-4 h-4 flex-shrink-0"
+                                                title="Verified Therapist - Complete Profile"
+                                            />
+                                        );
+                                    })()}
                                 </h3>
                             </div>
                         </div>

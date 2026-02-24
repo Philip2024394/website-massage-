@@ -57,6 +57,7 @@ import TherapistSimplePageLayout from '../../components/therapist/TherapistSimpl
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Clock } from 'lucide-react';
 import TherapistDocumentsSection, { type DocumentItem } from '../../components/therapist/TherapistDocumentsSection';
 import HelpTooltip from '../../components/therapist/HelpTooltip';
+import OtherServicesOfferedSection, { parseSelectedIds as parseOtherServicesIds } from '../../components/therapist/OtherServicesOfferedSection';
 import { profileEditHelp } from './constants/helpContent';
 import { client, databases, DATABASE_ID } from '../../lib/appwrite';
 import { APPWRITE_CONFIG } from '../../lib/appwrite.config';
@@ -162,6 +163,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     } catch {}
     return [];
   });
+  const [selectedOtherServicesOffered, setSelectedOtherServicesOffered] = useState<string[]>(() =>
+    parseOtherServicesIds((therapist as any)?.otherServicesOffered)
+  );
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
   
   // Get country from context (selected on landing page) – dashboard city list is per country
@@ -425,6 +429,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             logger.warn('Failed to parse massage types:', e);
           }
         }
+
+        // Other Services Offered
+        if ((latestData as any).otherServicesOffered != null) {
+          setSelectedOtherServicesOffered(parseOtherServicesIds((latestData as any).otherServicesOffered));
+        }
         
         // Handle city (location from dropdown; no GPS)
         const cityRaw = latestData.locationId || latestData.city || latestData.location || '';
@@ -628,6 +637,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         clientPreferences: clientPreferences,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
+        otherServicesOffered: JSON.stringify(selectedOtherServicesOffered),
         serviceAreas: JSON.stringify(selectedServiceAreas),
         country: country || 'Indonesia', // Save country from context
         
@@ -729,6 +739,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         showToast('✅ Profile saved and LIVE! Visit the main homepage and select your city to see your card.', 'success');
         setLocationJustUpdated(true);
         setTimeout(() => setLocationJustUpdated(false), 6000);
+        // Show membership plans after profile goes live (skip/dashboard keeps profile live with admin WhatsApp until upgrade)
+        setTimeout(() => onNavigate?.('therapist-membership-plans'), 1500);
       } else {
         showToast('✅ Profile saved. Select a service city to go live.', 'success');
       }
@@ -1461,6 +1473,17 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* Other Services Offered – same UI as Massage City Places; Free 3, Middle 8, Premium unlimited */}
+            {therapist && (
+              <OtherServicesOfferedSection
+                therapist={therapist}
+                selectedIds={selectedOtherServicesOffered}
+                onChange={setSelectedOtherServicesOffered}
+                language={language === 'en' ? 'en' : 'id'}
+                onNavigate={onNavigate}
+              />
+            )}
 
             {/* Pricing - Traditional Massage is the standard default; these 3 prices appear in the price slider and on profile when lowest */}
             <div>

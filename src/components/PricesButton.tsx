@@ -1,7 +1,5 @@
 import React from 'react';
 
-const PRICES_IMAGE = 'https://ik.imagekit.io/7grri5v7d/book%20nows.png';
-
 export interface PricesButtonProps {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   href?: string;
@@ -12,7 +10,7 @@ export interface PricesButtonProps {
 }
 
 /**
- * Prices button that displays the shared "prices" button image.
+ * Prices button rendered as standard design-system button.
  * Use for all "Menu Prices" / "Prices" / price list actions across the app.
  */
 export function PricesButton({
@@ -23,14 +21,8 @@ export function PricesButton({
   ariaLabel = 'Menu Prices',
   title,
 }: PricesButtonProps) {
-  const image = (
-    <img
-      src={PRICES_IMAGE}
-      alt=""
-      className="w-full h-full min-h-0 object-contain object-center"
-    />
-  );
-  const baseClass = 'inline-flex items-center justify-center overflow-hidden rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70';
+  const baseClass =
+    'inline-flex items-center justify-center rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-amber-600 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70';
 
   if (href) {
     return (
@@ -42,7 +34,7 @@ export function PricesButton({
         title={title ?? ariaLabel}
         className={`${baseClass} ${className}`}
       >
-        {image}
+        Menu Prices
       </a>
     );
   }
@@ -56,7 +48,7 @@ export function PricesButton({
       title={title ?? ariaLabel}
       className={`${baseClass} ${className}`}
     >
-      {image}
+      Menu Prices
     </button>
   );
 }

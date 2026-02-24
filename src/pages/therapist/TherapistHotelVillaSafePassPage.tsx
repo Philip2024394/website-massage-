@@ -68,6 +68,16 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
       return;
     }
 
+    if (!isPaidAccount) {
+      showToast(language === 'id' ? '⚠️ Upgrade ke akun berbayar (Rp 200.000/bulan) untuk mengunggah surat dari rumah/villa.' : '⚠️ Upgrade to a paid account (Rp 200,000/month) to upload letters from homes or villas.', 'error');
+      return;
+    }
+
+    if (!isTherapistVerifiedForSafePass) {
+      showToast(language === 'id' ? '⚠️ Anda harus terverifikasi dulu.' : '⚠️ You must be verified first.', 'error');
+      return;
+    }
+
     // Validate file type
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
@@ -155,6 +165,11 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
       return;
     }
 
+    if (!isTherapistVerifiedForSafePass) {
+      showToast(language === 'id' ? '⚠️ Anda harus terverifikasi dulu untuk mengajukan Hotel & Villa Safe Pass.' : '⚠️ You must be verified before you can apply for Hotel & Villa Safe Pass.', 'error');
+      return;
+    }
+
     setSaving(true);
     try {
       logger.info('Safe Pass application submitted for review', { therapistName: therapist?.name, therapistId: String(therapist?.$id || therapist?.id), letterCount: letters.length });
@@ -223,6 +238,16 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
       therapist?.accountNumber
     );
   };
+
+  /** Verified = same details as Massage City Places: ID (KTP) + bank details verified by admin. Required before applying for Hotel & Villa Safe Pass. */
+  const isTherapistVerifiedForSafePass = !!((therapist as any).verifiedBadge || (therapist as any).isVerified);
+
+  /** Paid account (e.g. Rp 200,000/month) required to request & upload letters from homes/villas where therapist has offered and completed service. */
+  const isPaidAccount = (() => {
+    const p = (therapist as any).plan ?? (therapist as any).membershipPlan ?? (therapist as any).membershipTier ?? '';
+    const v = String(p).toLowerCase();
+    return v === 'premium' || v === 'elite' || v === 'pro' || v === 'middle' || v === 'plus' || v === 'trusted';
+  })();
 
   const generateSafePassCard = () => {
     // Generate a placeholder Safe Pass card URL
@@ -353,11 +378,38 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Must be verified before applying – same details as Massage City Places */}
+            {!isTherapistVerifiedForSafePass && currentStatus !== 'active' && (
+              <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-amber-900">
+                      {language === 'id' ? 'Anda harus terverifikasi dulu' : 'You must be verified first'}
+                    </p>
+                    <p className="text-amber-800 text-sm mt-1">
+                      {language === 'id'
+                        ? 'Verifikasi memakai syarat yang sama dengan Massage City Places: KTP dan detail rekening bank. Lengkapi verifikasi di Dashboard Anda sebelum mengajukan Hotel & Villa Safe Pass.'
+                        : 'Verification requires the same details as Massage City Places: ID (KTP) and bank details. Complete verification in your Dashboard before applying for Hotel & Villa Safe Pass.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Requirements Grid - Clean Layout */}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <h3 className="font-semibold text-gray-900 text-lg mb-4">Requirements</h3>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm text-gray-700">
+                    {language === 'id' ? 'Terverifikasi (sama seperti Massage City Places: KTP + rekening bank)' : 'Verified (same as Massage City Places: KTP + bank details)'}
+                  </span>
+                </div>
                 <div className="flex items-start gap-3">
                   <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <CheckCircle2 className="w-3 h-3 text-white" />
@@ -545,9 +597,30 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
                 size="md"
               />
             </div>
+
+            {/* Paid account (Rp 200,000/month) required to request letters from home/villa */}
+            {!isPaidAccount && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                <p className="text-amber-900 text-sm font-medium mb-1">
+                  {language === 'id' ? 'Akun berbayar diperlukan' : 'Paid account required'}
+                </p>
+                <p className="text-amber-800 text-sm">
+                  {language === 'id'
+                    ? 'Upgrade ke akun berbayar (Rp 200.000/bulan) untuk meminta dan mengunggah surat dari rumah atau villa tempat Anda telah menawarkan dan menyelesaikan layanan. Surat-surat ini diperlukan untuk mengajukan Hotel & Villa Safe Pass.'
+                    : 'Upgrade to a paid account (Rp 200,000/month) to request and upload letters from homes or villas where you have offered and completed service. These letters are required to apply for Hotel & Villa Safe Pass.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.('premium-upgrade')}
+                  className="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  {language === 'id' ? 'Naikkan paket' : 'Upgrade plan'}
+                </button>
+              </div>
+            )}
             
             {/* Upload Form - Minimal Design */}
-            {letters.length < 3 && currentStatus !== 'approved' && (
+            {letters.length < 3 && currentStatus !== 'approved' && isPaidAccount && (
               <div className="border-2 border-dashed border-orange-200 rounded-xl p-6 mb-6 bg-orange-50/30">
                 <div className="space-y-4">
                   <div>
@@ -646,7 +719,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
               <div className="pt-6 mt-6 border-t border-gray-200">
                 <button
                   onClick={handleSubmitApplication}
-                  disabled={saving || !isProfileComplete()}
+                  disabled={saving || !isProfileComplete() || !isTherapistVerifiedForSafePass}
                   className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 rounded-xl hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2 shadow-lg transition-all"
                 >
                   {saving ? (
