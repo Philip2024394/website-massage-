@@ -277,10 +277,10 @@ export const useURLRouting = (
                     }
                 }
                 
-                // Handle customer-facing profile URLs
+                // Handle customer-facing profile URLs – use shared-therapist-profile so profile is loaded from URL
                 if (path.startsWith('/profile/therapist/')) {
-                    console.log('🎯 URL ROUTING: Customer therapist profile URL detected → therapist-profile');
-                    setPage('therapist-profile');
+                    console.log('🎯 URL ROUTING: Customer therapist profile URL detected → shared-therapist-profile');
+                    setPage('shared-therapist-profile');
                     return;
                 }
                 

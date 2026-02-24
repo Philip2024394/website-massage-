@@ -1470,6 +1470,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         }
                         setShowPriceListModal(false);
                     }}
+                    bookingNumber={(getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP || undefined) || ADMIN_WHATSAPP_DIGITS).replace(/\D/g, '').replace(/^0/, '62')}
+                    userCountryCode="ID"
                 />
             )}
             

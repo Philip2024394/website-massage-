@@ -268,7 +268,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             const slug = (selectedTherapist.name || 'therapist').toString().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
                             const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
                             window.history.pushState({}, '', profileUrl);
-                            onNavigate?.('therapist-profile');
+                            onNavigate?.('shared-therapist-profile');
                         }}
                     />
                 </div>

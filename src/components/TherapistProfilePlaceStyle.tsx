@@ -17,6 +17,7 @@ import { APP_CONSTANTS } from '../constants/appConstants';
 import AdditionalServiceCard, { type AdditionalService } from './AdditionalServiceCard';
 import { getOtherServiceLabel } from '../constants/otherServicesOffered';
 import SocialMediaLinks from './SocialMediaLinks';
+import GiftVoucherSlider from './GiftVoucherSlider';
 
 // Design tokens – same as MassagePlaceProfilePage
 const HERO_ASPECT = 'aspect-[21/9] min-h-[160px] max-h-[280px]';
@@ -77,19 +78,29 @@ function getRandomLastBookedAt(): Date {
   return new Date(pick);
 }
 
-/** Format "last booked" relative to now: X min ago, X hours ago, yesterday, 1 day ago, 2 days ago. */
+/** Start of day in local timezone (for calendar-day comparison). */
+function startOfDay(d: Date): Date {
+  const out = new Date(d);
+  out.setHours(0, 0, 0, 0);
+  return out;
+}
+
+/** Format "last booked" relative to device now: correct time distance; "yesterday" only when booked on previous calendar day (after midnight). */
 function formatLastBooked(bookedAt: Date, now: Date, isId: boolean): string {
   const diffMs = now.getTime() - bookedAt.getTime();
   const diffMin = Math.floor(diffMs / (60 * 1000));
   const diffHours = Math.floor(diffMs / (60 * 60 * 1000));
-  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+
+  const todayStart = startOfDay(now);
+  const bookedDayStart = startOfDay(bookedAt);
+  const diffCalendarDays = Math.round((todayStart.getTime() - bookedDayStart.getTime()) / (24 * 60 * 60 * 1000));
 
   if (diffMin < 1) return isId ? 'Baru saja dipesan' : 'Just booked';
   if (diffMin < 60) return isId ? `Terakhir dipesan ${diffMin} menit lalu` : `Last booked ${diffMin} min ago`;
-  if (diffHours < 24) return isId ? `Terakhir dipesan ${diffHours} jam lalu` : `Last booked ${diffHours} hours ago`;
-  if (diffDays === 1) return isId ? 'Terakhir dipesan kemarin' : 'Last booked yesterday';
-  if (diffDays === 2) return isId ? 'Terakhir dipesan 2 hari lalu' : 'Last booked 2 days ago';
-  return isId ? `Terakhir dipesan ${diffDays} hari lalu` : `Last booked ${diffDays} days ago`;
+  if (diffCalendarDays === 0) return isId ? `Terakhir dipesan ${diffHours} jam lalu` : `Last booked ${diffHours} hours ago`;
+  if (diffCalendarDays === 1) return isId ? 'Terakhir dipesan kemarin' : 'Last booked yesterday';
+  if (diffCalendarDays === 2) return isId ? 'Terakhir dipesan 2 hari lalu' : 'Last booked 2 days ago';
+  return isId ? `Terakhir dipesan ${diffCalendarDays} hari lalu` : `Last booked ${diffCalendarDays} days ago`;
 }
 
 export type TherapistPlan = 'free' | 'middle' | 'premium';
@@ -153,6 +164,7 @@ export default function TherapistProfilePlaceStyle({
 }: TherapistProfilePlaceStyleProps) {
   const [selectedTreatment, setSelectedTreatment] = useState<{ name: string; duration: number; price: number } | null>(null);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [showGiftVoucherSlider, setShowGiftVoucherSlider] = useState(false);
 
   /** Selected certification/license image URL for lightbox (same system as massage city places). */
   const [selectedCertImage, setSelectedCertImage] = useState<string | null>(null);
@@ -211,6 +223,32 @@ export default function TherapistProfilePlaceStyle({
       .filter((t: any) => t.price > 0);
     return items.slice(0, limits.treatments);
   }, [combinedMenu, limits.treatments]);
+
+  /** Gift voucher data for GiftVoucherSlider – same shape as MassagePlaceProfilePage */
+  const giftVoucherData = useMemo(() => {
+    const treatments = treatmentList.map((t) => ({
+      id: String(t.id),
+      name: t.name,
+      duration: t.duration,
+      price: t.price,
+      priceLabel: `IDR ${(t.price / 1000).toFixed(0)}K`,
+    }));
+    const raw = (therapist as any).otherServicesOffered;
+    let list: string[] = [];
+    if (Array.isArray(raw)) list = raw.filter((x: unknown) => typeof x === 'string');
+    else if (typeof raw === 'string' && raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) list = parsed.filter((x: unknown) => typeof x === 'string');
+      } catch (_) {}
+    }
+    const additionalServices = list.map((id) => ({
+      id,
+      name: getOtherServiceLabel(id, isId ? 'id' : 'en'),
+      details: [] as { label?: string; price?: string }[],
+    }));
+    return { treatments, additionalServices };
+  }, [treatmentList, therapist, isId]);
 
   const galleryImages = useMemo(() => {
     const raw = (therapist as any).galleryImages ?? (therapist as any).gallery ?? [];
@@ -658,7 +696,7 @@ export default function TherapistProfilePlaceStyle({
                     </div>
                     <button
                       type="button"
-                      onClick={() => onNavigate?.('gift-voucher')}
+                      onClick={() => setShowGiftVoucherSlider(true)}
                       className="w-full py-3.5 rounded-xl bg-amber-500 text-white font-semibold flex items-center justify-center gap-2 hover:bg-amber-600 active:scale-[0.98] transition-all border-2 border-amber-600 shadow-md"
                     >
                       <Gift className="w-5 h-5" />
@@ -705,6 +743,20 @@ export default function TherapistProfilePlaceStyle({
           <SocialMediaLinks className="mt-2" />
         </div>
       </div>
+
+      {/* Super Elite Gift Voucher Slider – same style and layout as Massage City Places */}
+      <GiftVoucherSlider
+        isOpen={showGiftVoucherSlider}
+        onClose={() => setShowGiftVoucherSlider(false)}
+        placeName={getTherapistDisplayName(therapist.name)}
+        placeId={String(therapist.$id ?? therapist.id ?? '')}
+        whatsappNumber={bookingNumber || undefined}
+        treatments={giftVoucherData.treatments}
+        additionalServices={giftVoucherData.additionalServices}
+        language={language}
+        giftTitle={isId ? 'Hadiahkan ke Terapis' : 'Gift This Therapist'}
+        variant="therapist"
+      />
 
       {/* Certification / license image lightbox – same system and blur as massage city places thumbnail window */}
       {selectedCertImage && (

@@ -56,6 +56,7 @@ interface SharedTherapistProfileProps {
 /**
  * Extract therapist ID from URL
  * Supports:
+ * - /profile/therapist/12345-name-slug (SEO-friendly customer-facing profile URL)
  * - /share/therapist/12345
  * - /share/therapist/12345-name-slug
  * - /therapist-profile/12345
@@ -80,8 +81,8 @@ const extractTherapistIdFromUrl = (): string | null => {
         console.log('🔗 [HASH URL] Parsed path from hash:', path);
     }
     
-    // Match patterns: /share/therapist/:id, /shared/therapist/:id, or /therapist-profile/:id
-    let match = path.match(/\/(share\/therapist|shared\/therapist|therapist-profile)\/([^\/]+)/);
+    // Match patterns: /profile/therapist/:id, /share/therapist/:id, /shared/therapist/:id, or /therapist-profile/:id
+    let match = path.match(/\/(profile\/therapist|share\/therapist|shared\/therapist|therapist-profile)\/([^\/]+)/);
     
     // Special handling for /shared/therapist without ID - try to get ID from query params or hash
     if (!match && (path === '/shared/therapist' || path.startsWith('/shared/therapist'))) {
@@ -110,7 +111,7 @@ const extractTherapistIdFromUrl = (): string | null => {
     
     if (!match) {
         console.error('❌ [LINK VALIDATION] Invalid URL pattern - does not match expected routes');
-        console.error('❌ Expected patterns: /share/therapist/:id, /shared/therapist/:id, OR /therapist-profile/:id');
+        console.error('❌ Expected patterns: /profile/therapist/:id, /share/therapist/:id, /shared/therapist/:id, OR /therapist-profile/:id');
         console.error('❌ Received path:', path);
         return null;
     }

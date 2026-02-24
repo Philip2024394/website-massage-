@@ -27,6 +27,10 @@ export interface GiftVoucherSliderProps {
   /** Additional services (e.g. Hair Salon, Beautician) for gifting */
   additionalServices?: { id: string; name: string; details?: { label?: string; price?: string }[] }[];
   language?: string;
+  /** Optional title for step 'select' (e.g. "Gift This Therapist" on therapist profile) */
+  giftTitle?: string;
+  /** When 'therapist', all copy says "Therapist" and confirmation is sent to therapist (home service). */
+  variant?: 'spa' | 'therapist';
 }
 
 function formatPrice(price: number): string {
@@ -65,8 +69,12 @@ export default function GiftVoucherSlider({
   treatments = [],
   additionalServices = [],
   language = 'id',
+  giftTitle,
+  variant = 'spa',
 }: GiftVoucherSliderProps) {
   const isId = language === 'id';
+  const isTherapist = variant === 'therapist';
+  const selectStepTitle = giftTitle ?? (isId ? 'Gift This Spa' : 'Gift This Spa');
   const [step, setStep] = useState<Step>('select');
   const [selectedItem, setSelectedItem] = useState<{
     type: 'treatment' | 'service';
@@ -121,22 +129,36 @@ export default function GiftVoucherSlider({
     else if (step === 'share') setStep('send');
   };
 
-  const handleSendToSpa = () => {
+  const handleSendToProvider = () => {
     if (!whatsappNumber) return;
     const cleanNumber = whatsappNumber.replace(/\D/g, '').replace(/^0/, '62');
-    const text = isId
-      ? `Halo, saya ingin memesan *Voucher Hadiah* untuk spa ini.\n\n` +
-        `📋 Layanan: ${selectedItem?.name}\n` +
-        `👤 Penerima: ${recipientName || '-'}\n` +
-        `🎟️ No. Voucher: ${voucherNumber}\n` +
-        `📅 Berlaku hingga: ${formatExpiry(expiryDate, language)}\n\n` +
-        `Mohon konfirmasi ketersediaan dan pembayaran. Terima kasih.`
-      : `Hi, I would like to purchase a *Gift Voucher* for this spa.\n\n` +
-        `📋 Service: ${selectedItem?.name}\n` +
-        `👤 Recipient: ${recipientName || '-'}\n` +
-        `🎟️ Voucher No: ${voucherNumber}\n` +
-        `📅 Valid until: ${formatExpiry(expiryDate, language)}\n\n` +
-        `Please confirm availability and payment. Thank you.`;
+    const text = isTherapist
+      ? (isId
+          ? `Halo, saya ingin memesan *Voucher Hadiah* untuk terapis ini.\n\n` +
+            `📋 Layanan: ${selectedItem?.name}\n` +
+            `👤 Penerima: ${recipientName || '-'}\n` +
+            `🎟️ No. Voucher: ${voucherNumber}\n` +
+            `📅 Berlaku hingga: ${formatExpiry(expiryDate, language)}\n\n` +
+            `Mohon konfirmasi ketersediaan dan pembayaran. Terima kasih.`
+          : `Hi, I would like to purchase a *Gift Voucher* for this therapist.\n\n` +
+            `📋 Service: ${selectedItem?.name}\n` +
+            `👤 Recipient: ${recipientName || '-'}\n` +
+            `🎟️ Voucher No: ${voucherNumber}\n` +
+            `📅 Valid until: ${formatExpiry(expiryDate, language)}\n\n` +
+            `Please confirm availability and payment. Thank you.`)
+      : (isId
+          ? `Halo, saya ingin memesan *Voucher Hadiah* untuk spa ini.\n\n` +
+            `📋 Layanan: ${selectedItem?.name}\n` +
+            `👤 Penerima: ${recipientName || '-'}\n` +
+            `🎟️ No. Voucher: ${voucherNumber}\n` +
+            `📅 Berlaku hingga: ${formatExpiry(expiryDate, language)}\n\n` +
+            `Mohon konfirmasi ketersediaan dan pembayaran. Terima kasih.`
+          : `Hi, I would like to purchase a *Gift Voucher* for this spa.\n\n` +
+            `📋 Service: ${selectedItem?.name}\n` +
+            `👤 Recipient: ${recipientName || '-'}\n` +
+            `🎟️ Voucher No: ${voucherNumber}\n` +
+            `📅 Valid until: ${formatExpiry(expiryDate, language)}\n\n` +
+            `Please confirm availability and payment. Thank you.`);
     window.open(`https://wa.me/${cleanNumber}?text=${encodeURIComponent(text)}`, '_blank');
     setStep('send');
   };
@@ -147,21 +169,37 @@ export default function GiftVoucherSlider({
   };
 
   const handleShareViaWhatsApp = () => {
-    const cardText = isId
-      ? `🎁 *Voucher Hadiah Spa* – ${placeName}\n\n` +
-        `Untuk: *${recipientName || 'Teman Anda'}*\n` +
-        `Layanan: ${selectedItem?.name}\n` +
-        `No. Voucher: ${voucherNumber}\n` +
-        `Berlaku hingga: ${formatExpiry(expiryDate, language)}\n\n` +
-        (personalMessage ? `${personalMessage}\n\n` : '') +
-        `Tukarkan voucher ini di ${placeName}.`
-      : `🎁 *Spa Gift Voucher* – ${placeName}\n\n` +
-        `To: *${recipientName || 'Your friend'}*\n` +
-        `Service: ${selectedItem?.name}\n` +
-        `Voucher No: ${voucherNumber}\n` +
-        `Valid until: ${formatExpiry(expiryDate, language)}\n\n` +
-        (personalMessage ? `${personalMessage}\n\n` : '') +
-        `Redeem this voucher at ${placeName}.`;
+    const cardText = isTherapist
+      ? (isId
+          ? `🎁 *Voucher Hadiah Terapis* – ${placeName}\n\n` +
+            `Untuk: *${recipientName || 'Teman Anda'}*\n` +
+            `Layanan: ${selectedItem?.name}\n` +
+            `No. Voucher: ${voucherNumber}\n` +
+            `Berlaku hingga: ${formatExpiry(expiryDate, language)}\n\n` +
+            (personalMessage ? `${personalMessage}\n\n` : '') +
+            `Tukarkan voucher ini dengan ${placeName}.`
+          : `🎁 *Therapist Gift Voucher* – ${placeName}\n\n` +
+            `To: *${recipientName || 'Your friend'}*\n` +
+            `Service: ${selectedItem?.name}\n` +
+            `Voucher No: ${voucherNumber}\n` +
+            `Valid until: ${formatExpiry(expiryDate, language)}\n\n` +
+            (personalMessage ? `${personalMessage}\n\n` : '') +
+            `Redeem this voucher with ${placeName}.`)
+      : (isId
+          ? `🎁 *Voucher Hadiah Spa* – ${placeName}\n\n` +
+            `Untuk: *${recipientName || 'Teman Anda'}*\n` +
+            `Layanan: ${selectedItem?.name}\n` +
+            `No. Voucher: ${voucherNumber}\n` +
+            `Berlaku hingga: ${formatExpiry(expiryDate, language)}\n\n` +
+            (personalMessage ? `${personalMessage}\n\n` : '') +
+            `Tukarkan voucher ini di ${placeName}.`
+          : `🎁 *Spa Gift Voucher* – ${placeName}\n\n` +
+            `To: *${recipientName || 'Your friend'}*\n` +
+            `Service: ${selectedItem?.name}\n` +
+            `Voucher No: ${voucherNumber}\n` +
+            `Valid until: ${formatExpiry(expiryDate, language)}\n\n` +
+            (personalMessage ? `${personalMessage}\n\n` : '') +
+            `Redeem this voucher at ${placeName}.`);
     window.open(`https://wa.me/?text=${encodeURIComponent(cardText)}`, '_blank');
     onClose();
     setStep('select');
@@ -189,9 +227,9 @@ export default function GiftVoucherSlider({
           <div>
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               <Gift className="w-5 h-5 text-amber-500" />
-              {step === 'select' && (isId ? 'Gift This Spa' : 'Gift This Spa')}
+              {step === 'select' && selectStepTitle}
               {step === 'details' && (isId ? 'Detail Voucher' : 'Voucher Details')}
-              {step === 'send' && (isId ? 'Konfirmasi ke Spa' : 'Confirm with Spa')}
+              {step === 'send' && (isTherapist ? (isId ? 'Konfirmasi ke Terapis' : 'Confirm with Therapist') : (isId ? 'Konfirmasi ke Spa' : 'Confirm with Spa'))}
               {step === 'share' && (isId ? 'Bagikan Kartu Hadiah' : 'Share Gift Card')}
             </h3>
             <p className="text-xs text-gray-500">{placeName}</p>
@@ -215,7 +253,9 @@ export default function GiftVoucherSlider({
               </p>
               {giftOptions.length === 0 ? (
                 <div className="py-8 text-center text-gray-500 text-sm">
-                  {isId ? 'Tidak ada layanan tersedia. Hubungi spa untuk voucher custom.' : 'No services available. Contact spa for custom voucher.'}
+                  {isTherapist
+                    ? (isId ? 'Tidak ada layanan tersedia. Hubungi terapis untuk voucher custom.' : 'No services available. Contact therapist for custom voucher.')
+                    : (isId ? 'Tidak ada layanan tersedia. Hubungi spa untuk voucher custom.' : 'No services available. Contact spa for custom voucher.')}
                 </div>
               ) : (
                 giftOptions.map((item) => (
@@ -302,13 +342,13 @@ export default function GiftVoucherSlider({
               <button
                 type="button"
                 onClick={() => {
-                  handleSendToSpa();
+                  handleSendToProvider();
                   setStep('send');
                 }}
                 disabled={!recipientName.trim()}
                 className="w-full py-3 rounded-xl bg-amber-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
               >
-                {isId ? 'Kirim ke Spa untuk Konfirmasi' : 'Send to Spa for Confirmation'}
+                {isTherapist ? (isId ? 'Kirim ke Terapis untuk Konfirmasi' : 'Send to Therapist for Confirmation') : (isId ? 'Kirim ke Spa untuk Konfirmasi' : 'Send to Spa for Confirmation')}
               </button>
               <button type="button" onClick={handleBack} className="w-full py-2 text-sm text-gray-500 hover:text-gray-700">
                 {isId ? '← Kembali' : '← Back'}
@@ -316,17 +356,21 @@ export default function GiftVoucherSlider({
             </div>
           )}
 
-          {/* Step 3: Send to spa – user has opened WhatsApp; mark when spa confirmed */}
+          {/* Step 3: Send to provider – user has opened WhatsApp; mark when provider confirmed */}
           {step === 'send' && selectedItem && (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                {isId
-                  ? 'Permintaan voucher telah dikirim ke spa via WhatsApp. Setelah spa mengonfirmasi, Anda dapat membagikan kartu hadiah ke penerima.'
-                  : 'Your voucher request was sent to the spa via WhatsApp. Once the spa confirms, you can share the gift card with the recipient.'}
+                {isTherapist
+                  ? (isId
+                      ? 'Permintaan voucher telah dikirim ke terapis via WhatsApp. Setelah terapis mengonfirmasi, Anda dapat membagikan kartu hadiah ke penerima.'
+                      : 'Your voucher request was sent to the therapist via WhatsApp. Once the therapist confirms, you can share the gift card with the recipient.')
+                  : (isId
+                      ? 'Permintaan voucher telah dikirim ke spa via WhatsApp. Setelah spa mengonfirmasi, Anda dapat membagikan kartu hadiah ke penerima.'
+                      : 'Your voucher request was sent to the spa via WhatsApp. Once the spa confirms, you can share the gift card with the recipient.')}
               </p>
               <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
                 <p className="text-xs text-gray-600 mb-2">
-                  {isId ? 'Sudah dapat konfirmasi dari spa?' : 'Did the spa confirm?'}
+                  {isTherapist ? (isId ? 'Sudah dapat konfirmasi dari terapis?' : 'Did the therapist confirm?') : (isId ? 'Sudah dapat konfirmasi dari spa?' : 'Did the spa confirm?')}
                 </p>
                 <button
                   type="button"
@@ -334,16 +378,16 @@ export default function GiftVoucherSlider({
                   className="w-full py-3 rounded-xl bg-green-500 text-white font-semibold flex items-center justify-center gap-2 hover:bg-green-600"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  {isId ? 'Ya, spa sudah konfirmasi' : "Yes, spa confirmed"}
+                  {isTherapist ? (isId ? 'Ya, terapis sudah konfirmasi' : 'Yes, therapist confirmed') : (isId ? 'Ya, spa sudah konfirmasi' : "Yes, spa confirmed")}
                 </button>
               </div>
               <button
                 type="button"
-                onClick={handleSendToSpa}
+                onClick={handleSendToProvider}
                 className="w-full py-3 rounded-xl border-2 border-amber-500 text-amber-600 font-semibold flex items-center justify-center gap-2 hover:bg-amber-50"
               >
                 <MessageCircle className="w-5 h-5" />
-                {isId ? 'Kirim ulang ke WhatsApp Spa' : 'Resend to Spa WhatsApp'}
+                {isTherapist ? (isId ? 'Kirim ulang ke WhatsApp Terapis' : 'Resend to Therapist WhatsApp') : (isId ? 'Kirim ulang ke WhatsApp Spa' : 'Resend to Spa WhatsApp')}
               </button>
               <button type="button" onClick={handleBack} className="w-full py-2 text-sm text-gray-500 hover:text-gray-700">
                 {isId ? '← Kembali' : '← Back'}
@@ -355,9 +399,13 @@ export default function GiftVoucherSlider({
           {step === 'share' && selectedItem && (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                {isId
-                  ? 'Bagikan kartu hadiah ini ke penerima via WhatsApp. Mereka dapat menukarkan voucher di spa.'
-                  : 'Share this gift card with the recipient via WhatsApp. They can redeem the voucher at the spa.'}
+                {isTherapist
+                  ? (isId
+                      ? 'Bagikan kartu hadiah ini ke penerima via WhatsApp. Mereka dapat menukarkan voucher dengan terapis.'
+                      : 'Share this gift card with the recipient via WhatsApp. They can redeem the voucher with the therapist.')
+                  : (isId
+                      ? 'Bagikan kartu hadiah ini ke penerima via WhatsApp. Mereka dapat menukarkan voucher di spa.'
+                      : 'Share this gift card with the recipient via WhatsApp. They can redeem the voucher at the spa.')}
               </p>
               <button
                 type="button"
