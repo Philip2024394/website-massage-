@@ -626,6 +626,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.indonesia.component, {
                 onNavigate: props.onNavigate,
                 handleSetSelectedTherapist: props.handleSetSelectedTherapist,
+                handleSetSelectedPlace: props.handleSetSelectedPlace,
                 language: props.language,
                 countryName: 'Indonesia',
                 loggedInCustomer: props.loggedInCustomer,
@@ -1804,6 +1805,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return renderRoute(profileRoutes.massagePlace.component, {
                         place: resolvedMassagePlace,
                         onBack: () => props.setPage?.('home'),
+                        onSelectPlace: props.handleSetSelectedPlace,
                         userLocation: props.userLocation,
                         loggedInCustomer: props.loggedInCustomer,
                         onLanguageChange: props.onLanguageChange,

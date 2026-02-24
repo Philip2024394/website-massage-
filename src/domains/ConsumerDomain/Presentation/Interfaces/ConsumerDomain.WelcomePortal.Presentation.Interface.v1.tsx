@@ -2085,15 +2085,14 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                 />
                                 </div>
-                                {/* IndaStreet Social link */}
+                                {/* Social link – text only in card */}
                                 <div className="mt-2 mb-8 flex justify-center">
                                     <button
                                         onClick={() => onNavigate?.('indonesia')}
                                         className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-orange-600 transition-colors"
                                     >
                                         <Globe className="w-5 h-5 text-amber-500" aria-hidden />
-                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
-                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
+                                        <span className="text-sm text-gray-700">Social – Connecting wellness communities across the globe</span>
                                     </button>
                                 </div>
                                 </div>
@@ -2248,15 +2247,14 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
-                                                {/* IndaStreet Social link */}
+                                                {/* Social link – text only in card */}
                                                 <div className="mt-2 mb-4 flex justify-center">
                                                     <button
                                                         onClick={() => onNavigate?.('indonesia')}
                                                         className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-orange-600 transition-colors"
                                                     >
                                                         <Globe className="w-5 h-5 text-amber-500" aria-hidden />
-                                                        <span className="font-medium text-sm">{translationsObject?.home?.socialLinkTitle || 'IndaStreet Social'}</span>
-                                                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext || 'Connecting wellness communities across the globe'}</span>
+                                                        <span className="text-sm text-gray-700">Social – Connecting wellness communities across the globe</span>
                                                     </button>
                                                 </div>
                                                 </React.Fragment>
@@ -2461,10 +2459,19 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 }
             `}</style>
             
-            {/* Directory footer: Brand */}
+            {/* Directory footer: social text then icons */}
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
-                {/* Social Media Icons */}
-                <SocialMediaLinks className="mt-2" />
+                <div className="flex flex-col items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => onNavigate?.('indonesia')}
+                        className="inline-flex flex-col items-center gap-1.5 text-gray-700 hover:text-orange-600 transition-colors"
+                    >
+                        <Globe className="w-6 h-6 text-orange-500" aria-hidden />
+                        <span className="text-sm text-gray-700">Social – Connecting wellness communities across the globe</span>
+                    </button>
+                    <SocialMediaLinks className="mt-2" />
+                </div>
 
                 {/* Quick Links for SEO */}
                 <div className="mt-8 pt-6 border-t border-gray-200">

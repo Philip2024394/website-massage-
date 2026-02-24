@@ -970,13 +970,8 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 )}
             </div>
 
-            {/* Footer - same as Home: brand, social, link to social section */}
+            {/* Footer – social text then icons */}
             <footer className="mt-10 sm:mt-12 mb-6 pb-6 flex flex-col items-center gap-2 px-3 sm:px-4">
-                <div className="font-bold text-lg">
-                    <span className="text-black">Inda</span>
-                    <span className="text-orange-500">Street</span>
-                </div>
-                <SocialMediaLinks className="mt-2" />
                 <div className="mt-8 pt-6 border-t border-gray-200 w-full max-w-2xl flex flex-col items-center gap-2">
                     <button
                         type="button"
@@ -984,9 +979,9 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                         className="inline-flex flex-col items-center gap-1.5 text-gray-700 hover:text-orange-600 transition-colors"
                     >
                         <Globe className="w-6 h-6 text-orange-500" aria-hidden />
-                        <span className="font-semibold text-sm">IndaStreet Social</span>
-                        <span className="text-xs text-gray-500">Connecting wellness communities across the globe</span>
+                        <span className="text-sm text-gray-700">Social – Connecting wellness communities across the globe – Indastreet Social</span>
                     </button>
+                    <SocialMediaLinks className="mt-2" />
                 </div>
             </footer>
         </div>

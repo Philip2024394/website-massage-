@@ -15,10 +15,11 @@ import { shareLinkService } from '../lib/services/shareLinkService';
 import { Share2, Sparkles, FingerprintPattern, Calendar, Clock } from 'lucide-react';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import { isBookingUseAdminCountry, normalizeWhatsAppToDigits } from '../config/whatsappCountryPrefix';
+import { getMassagePlaceCardImage } from '../constants/massagePlaceCardImages';
 
 const DEFAULT_PLACE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
 
-/** App-set image for massage city place cards on the home page listing. Profile hero/main image uses member-uploaded image from dashboard. */
+/** Fallback when pool is empty (profile always uses place.mainImage). */
 const MASSAGE_PLACE_LISTING_CARD_IMAGE = 'https://ik.imagekit.io/7grri5v7d/ma%201.png';
 
 /** Branch icon shown to the right of the Open button on massage city places home card. */
@@ -147,7 +148,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
 }) => {
     const mainImage =
         category === 'massage' && variant === 'listing'
-            ? MASSAGE_PLACE_LISTING_CARD_IMAGE
+            ? getMassagePlaceCardImage(String((place as any).$id ?? (place as any).id ?? ''))
             : getPlaceMainImage(place);
     const profileImage = getPlaceProfileImage(place);
     const [bookingsCount, setBookingsCount] = useState<number>(() => {

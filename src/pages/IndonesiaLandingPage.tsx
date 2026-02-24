@@ -64,6 +64,7 @@ const ShieldCheckIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
 );
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
+import { getEliteLikeEvents } from '../utils/eliteLikeFeedStorage';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import { listIndastreetNews } from '../lib/appwrite/services/indastreetNews.service';
@@ -173,6 +174,8 @@ interface FeedPost {
   positionSought?: string;
   positionExperience?: string;
   positionCvAvailable?: boolean;
+  /** When set, post is a "like" from a massage place profile; clicking name/image opens that place profile. */
+  placeId?: string;
 }
 /** Derive postType for filtering when not explicitly set. */
 function getPostType(p: FeedPost): 'video' | 'news' | 'article' | 'buy-sell' | 'job-offered' | 'job-wanted' | 'post' {
@@ -347,6 +350,41 @@ function getMockEvents(language: string): SearchEvent[] {
     { id: 'ev2', title: isId ? 'Wellness Weekend Jakarta' : 'Wellness Weekend Jakarta', date: '2025-02-20', description: isId ? 'Acara wellness dan spa di Jakarta.' : 'Wellness and spa event in Jakarta.' },
     { id: 'ev3', title: isId ? 'Sesi Facial Gratis' : 'Free Facial Session', date: '2025-03-01', description: isId ? 'Demo perawatan wajah dan konsultasi.' : 'Facial treatment demo and consultation.' },
   ];
+}
+
+/** Map "like" events from massage place profile into feed posts. Latest first, one per place. */
+function likeEventsToFeedPosts(language: string): FeedPost[] {
+  const isId = language === 'id';
+  const events = getEliteLikeEvents();
+  const defaultImage = HERO_IMAGE_SRC;
+  const t = (en: string, id: string) => (isId ? id : en);
+  const now = Date.now();
+  return events.map((e) => {
+    const timeAgo = now - e.timestamp < 60_000
+      ? t('Just now', 'Baru saja')
+      : now - e.timestamp < 3600_000
+        ? t('A few minutes ago', 'Beberapa menit lalu')
+        : t('Recently', 'Baru saja');
+    return {
+      id: `like-${e.placeId}-${e.timestamp}`,
+      authorName: e.placeName,
+      authorAvatar: e.placeImageUrl || defaultImage,
+      authorRole: isId ? 'Tempat pijat' : 'Massage place',
+      timeAgo,
+      text: isId
+        ? `${e.placeName} dapat like — profil mereka sedang dapat perhatian!`
+        : `${e.placeName} is getting love! Their profile is getting attention.`,
+      mediaUrl: e.placeImageUrl || defaultImage,
+      mediaAlt: e.placeName,
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      commentPreview: [],
+      createdAt: e.timestamp,
+      postType: 'post' as const,
+      placeId: e.placeId,
+    };
+  });
 }
 
 /** Map main-app news items to feed post shape so they auto-appear in the IndaStreet Social feed. Uses date for createdAt so latest news appears first. */
@@ -1376,6 +1414,8 @@ const PostCard: React.FC<{
   onShare: (id: string) => void;
   onSave: (id: string) => void;
   onProfileClick?: (profile: SocialProfilePreview) => void;
+  /** When post.placeId is set (like-post), clicking name/avatar/image opens that place profile. */
+  onPlaceProfileClick?: (placeId: string, placeName: string) => void;
   onVerifiedBadgeClick?: (author: { name: string; avatar: string; role: string }) => void;
   onAddComment?: (postId: string, text: string) => void;
   onAddReply?: (postId: string, commentIndex: number, text: string) => void;
@@ -1384,7 +1424,7 @@ const PostCard: React.FC<{
   currentUserName?: string;
   hasAccount: boolean;
   language: string;
-}> = ({ post, onLike, onComment, onShare, onSave, onProfileClick, onVerifiedBadgeClick, onAddComment, onAddReply, onEditPost, onDeletePost, currentUserName = '', hasAccount, language }) => {
+}> = ({ post, onLike, onComment, onShare, onSave, onProfileClick, onPlaceProfileClick, onVerifiedBadgeClick, onAddComment, onAddReply, onEditPost, onDeletePost, currentUserName = '', hasAccount, language }) => {
   const [liked, setLiked] = useState(!!post.liked);
   const [saved, setSaved] = useState(!!post.saved);
   const [commentText, setCommentText] = useState('');
@@ -1439,6 +1479,21 @@ const PostCard: React.FC<{
       setShowPostMenu(false);
     }
   };
+  const isLikePost = !!post.placeId && !!onPlaceProfileClick;
+  const handleAuthorOrImageClick = () => {
+    if (isLikePost) onPlaceProfileClick!(post.placeId!, post.authorName);
+    else onProfileClick?.({
+      name: post.authorName,
+      avatar: post.authorAvatar,
+      role: post.authorRole,
+      country: post.authorCountry,
+      dateJoined: post.authorDateJoined,
+      hobbyInterest: post.authorHobbyInterest,
+      divisionOfEmployment: post.authorDivisionOfEmployment,
+      bio: post.authorBio,
+      active: post.authorActive,
+    });
+  };
   return (
     <article id={`post-${post.id}`} className={`relative ${COLORS.bgCard} rounded-2xl ${COLORS.border} border shadow-sm overflow-hidden ${COLORS.hoverGlow} transition-all duration-300 hover:border-stone-300 ${post.pending ? 'opacity-75' : ''}`}>
       {post.pending && (
@@ -1452,17 +1507,7 @@ const PostCard: React.FC<{
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => onProfileClick?.({
-              name: post.authorName,
-              avatar: post.authorAvatar,
-              role: post.authorRole,
-              country: post.authorCountry,
-              dateJoined: post.authorDateJoined,
-              hobbyInterest: post.authorHobbyInterest,
-              divisionOfEmployment: post.authorDivisionOfEmployment,
-              bio: post.authorBio,
-              active: post.authorActive,
-            })}
+            onClick={handleAuthorOrImageClick}
             className="relative flex-shrink-0 w-10 h-10 rounded-full ring-2 ring-stone-100 overflow-visible"
           >
             <span className="block w-full h-full rounded-full overflow-hidden">
@@ -1478,17 +1523,7 @@ const PostCard: React.FC<{
           <div className="flex-1 min-w-0 flex flex-col">
             <button
               type="button"
-              onClick={() => onProfileClick?.({
-                name: post.authorName,
-                avatar: post.authorAvatar,
-                role: post.authorRole,
-                country: post.authorCountry,
-                dateJoined: post.authorDateJoined,
-                hobbyInterest: post.authorHobbyInterest,
-                divisionOfEmployment: post.authorDivisionOfEmployment,
-                bio: post.authorBio,
-                active: post.authorActive,
-              })}
+              onClick={handleAuthorOrImageClick}
               className="font-semibold text-stone-900 hover:text-amber-700 transition-colors text-sm text-left truncate block w-full"
             >
               {post.authorName}
@@ -1596,7 +1631,18 @@ const PostCard: React.FC<{
           return (
             <div className="space-y-2">
               <div className="rounded-xl overflow-hidden bg-stone-100 aspect-video max-h-72 group">
-                <img src={urls[idx]} alt={post.mediaAlt || ''} className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" />
+                {isLikePost ? (
+                  <button
+                    type="button"
+                    onClick={handleAuthorOrImageClick}
+                    className="w-full h-full block text-left focus:outline-none focus:ring-2 focus:ring-amber-500/50 rounded-xl"
+                    aria-label={language === 'id' ? `Buka profil ${post.authorName}` : `Open ${post.authorName} profile`}
+                  >
+                    <img src={urls[idx]} alt={post.mediaAlt || ''} className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" />
+                  </button>
+                ) : (
+                  <img src={urls[idx]} alt={post.mediaAlt || ''} className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" />
+                )}
               </div>
               {urls.length > 1 && (
                 <div className="flex gap-2 flex-wrap">
@@ -2972,6 +3018,8 @@ interface IndonesiaLandingPageProps {
   places?: any[];
   facialPlaces?: any[];
   handleSetSelectedTherapist?: (therapist: any) => void;
+  /** When user clicks a like-post (place) name/image, open that massage place profile. */
+  handleSetSelectedPlace?: (place: { $id?: string; id?: string; name: string; mainImage?: string } | null) => void;
 }
 
 const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
@@ -2996,6 +3044,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
   therapists = [],
   places = [],
   facialPlaces = [],
+  handleSetSelectedPlace,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
@@ -3020,6 +3069,13 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
   const providerProfilePhoto = (loggedInProvider as unknown as { profilePhoto?: string } | undefined)?.profilePhoto ?? '';
   const providerUserId = (loggedInProvider as unknown as { $id?: string } | undefined)?.$id ?? '';
   const isId = lang === 'id';
+
+  const handlePlaceProfileClick = (placeId: string, placeName: string) => {
+    if (!handleSetSelectedPlace) return;
+    const found = (places as any[]).find((p: any) => (p.$id || p.id || '').toString() === placeId);
+    const place = found ?? { $id: placeId, id: placeId, name: placeName };
+    handleSetSelectedPlace(place);
+  };
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3253,7 +3309,8 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
       if (cancelled) return;
       const fromNews = newsToFeedPosts(news, lang);
       const fromMock = getMockFeedPosts(therapists, lang);
-      const merged = [...fromNews, ...fromMock];
+      const fromLikes = likeEventsToFeedPosts(lang);
+      const merged = [...fromLikes, ...fromNews, ...fromMock];
       merged.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
       setFeedPosts(merged);
       setFeedLastViewedCount((prev) => (prev === null ? merged.length : prev));
@@ -3446,6 +3503,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                   onShare={handleSharePost}
                   onSave={() => {}}
                   onProfileClick={(profile) => setProfilePreview(profile)}
+                  onPlaceProfileClick={handlePlaceProfileClick}
                   onVerifiedBadgeClick={(author) => setVerifiedBadgeAuthor(author)}
                   onAddComment={handleAddComment}
                   onAddReply={handleAddReply}
@@ -3508,6 +3566,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
                       onShare={handleSharePost}
                       onSave={() => {}}
                       onProfileClick={(profile) => setProfilePreview(profile)}
+                      onPlaceProfileClick={handlePlaceProfileClick}
                       onVerifiedBadgeClick={(author) => setVerifiedBadgeAuthor(author)}
                       onAddComment={handleAddComment}
                       onAddReply={handleAddReply}

@@ -1,11 +1,11 @@
 /**
- * ELITE Floating Action Buttons – WhatsApp Quick Chat & Save to Favorites.
- * Fixed position floating buttons for premium spa profile pages.
- * Favorites: amber infill, white heart, floating white hearts animation.
+ * ELITE Floating Action Buttons – WhatsApp Quick Chat & Like.
+ * Like: adds the place to the social feed as "getting attention". Amber + white heart, floating hearts.
  */
 
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, X } from 'lucide-react';
+import { addEliteLikeEvent, removeEliteLikeEvent } from '../utils/eliteLikeFeedStorage';
 
 /* Scoped keyframes so floating hearts always work (no Tailwind purge risk) */
 const floatHeartStyles = `
@@ -23,23 +23,25 @@ export interface EliteFloatingActionsProps {
   placeName: string;
   whatsappNumber?: string;
   language?: string;
+  /** Optional image URL for the place (used when posting to social feed). */
+  placeImageUrl?: string;
   onSaveToggle?: (isSaved: boolean) => void;
 }
 
-const FAVORITES_STORAGE_KEY = 'elite_spa_favorites';
+const LIKES_STORAGE_KEY = 'elite_spa_likes';
 
-function getFavorites(): string[] {
+function getLikes(): string[] {
   try {
-    const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    const stored = localStorage.getItem(LIKES_STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
   }
 }
 
-function saveFavorites(favorites: string[]) {
+function saveLikes(likes: string[]) {
   try {
-    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+    localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(likes));
   } catch {}
 }
 
@@ -48,35 +50,40 @@ export default function EliteFloatingActions({
   placeName,
   whatsappNumber,
   language = 'id',
+  placeImageUrl,
   onSaveToggle,
 }: EliteFloatingActionsProps) {
-  const [isSaved, setIsSaved] = useState(false);
-  const [showSavedToast, setShowSavedToast] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [showLikedToast, setShowLikedToast] = useState(false);
+  const [likedToastAddedToFeed, setLikedToastAddedToFeed] = useState(true);
   const isId = language === 'id';
 
   useEffect(() => {
-    const favorites = getFavorites();
-    setIsSaved(favorites.includes(placeId));
+    const likes = getLikes();
+    setIsLiked(likes.includes(placeId));
   }, [placeId]);
 
-  const handleSaveToggle = () => {
-    const favorites = getFavorites();
-    let newFavorites: string[];
-    let newSavedState: boolean;
+  const handleLikeToggle = () => {
+    const likes = getLikes();
+    let newLikes: string[];
+    let newLikedState: boolean;
 
-    if (favorites.includes(placeId)) {
-      newFavorites = favorites.filter((id) => id !== placeId);
-      newSavedState = false;
+    if (likes.includes(placeId)) {
+      newLikes = likes.filter((id) => id !== placeId);
+      newLikedState = false;
+      removeEliteLikeEvent(placeId);
     } else {
-      newFavorites = [...favorites, placeId];
-      newSavedState = true;
-      setShowSavedToast(true);
-      setTimeout(() => setShowSavedToast(false), 2000);
+      newLikes = [...likes, placeId];
+      newLikedState = true;
+      const addedToFeed = addEliteLikeEvent({ placeId, placeName, placeImageUrl });
+      setShowLikedToast(true);
+      setLikedToastAddedToFeed(addedToFeed);
+      setTimeout(() => setShowLikedToast(false), 2000);
     }
 
-    saveFavorites(newFavorites);
-    setIsSaved(newSavedState);
-    onSaveToggle?.(newSavedState);
+    saveLikes(newLikes);
+    setIsLiked(newLikedState);
+    onSaveToggle?.(newLikedState);
   };
 
   const handleWhatsAppClick = () => {
@@ -94,13 +101,13 @@ export default function EliteFloatingActions({
       <style dangerouslySetInnerHTML={{ __html: floatHeartStyles }} />
       {/* Floating buttons container - fixed bottom right */}
       <div className="fixed bottom-24 right-4 z-[9999] flex flex-col gap-3 overflow-visible">
-        {/* Save to Favorites – amber infill, white heart, floating hearts on top */}
+        {/* Like – amber infill, white heart, floating hearts; posts to social feed when liked */}
         <div className="relative w-12 h-12 overflow-visible">
           <button
             type="button"
-            onClick={handleSaveToggle}
+            onClick={handleLikeToggle}
             className="relative w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-95 bg-amber-500 hover:bg-amber-600 text-white overflow-visible"
-            aria-label={isSaved ? 'Remove from favorites' : 'Save to favorites'}
+            aria-label={isLiked ? 'Unlike' : 'Like'}
           >
             <Heart className="w-5 h-5 flex-shrink-0 fill-white text-white" />
           </button>
@@ -135,7 +142,7 @@ export default function EliteFloatingActions({
           <button
             type="button"
             onClick={handleWhatsAppClick}
-            className="w-12 h-12 rounded-full bg-green-500 text-white shadow-lg flex items-center justify-center hover:bg-green-600 active:scale-95 transition-all"
+            className="w-12 h-12 rounded-full bg-amber-500 text-white shadow-lg flex items-center justify-center hover:bg-amber-600 active:scale-95 transition-all"
             aria-label="WhatsApp Quick Chat"
           >
             <MessageCircle className="w-5 h-5" />
@@ -143,11 +150,13 @@ export default function EliteFloatingActions({
         )}
       </div>
 
-      {/* Saved Toast */}
-      {showSavedToast && (
+      {/* Liked toast – post is live on social feed (or already posted in last hour) */}
+      {showLikedToast && (
         <div className="fixed bottom-40 left-1/2 -translate-x-1/2 z-[10000] px-4 py-2 rounded-full bg-gray-900 text-white text-sm font-medium shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <Heart className="w-4 h-4 text-red-400 fill-red-400" />
-          {isId ? 'Disimpan ke Favorit' : 'Saved to Favorites'}
+          <Heart className="w-4 h-4 text-amber-400 fill-amber-400" />
+          {likedToastAddedToFeed
+            ? (isId ? 'Disukai — muncul di feed sosial' : 'Liked — now on the social feed')
+            : (isId ? 'Disukai — satu posting per jam untuk tempat ini' : 'Liked — one post per hour for this place')}
         </div>
       )}
     </>

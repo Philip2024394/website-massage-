@@ -2003,6 +2003,11 @@ const HomePage: React.FC<HomePageProps> = ({
                             </div>
                         )}
                         </div>
+
+                        {/* Header under therapist section */}
+                        <div className="mt-8 mb-3 text-center">
+                            <h3 className="text-xl font-bold text-gray-900">Services trending Now</h3>
+                        </div>
                     </div>
                 )}
 
@@ -2312,7 +2317,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             {/* Directory footer: Brand */}
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
-                {/* Social Media – link to app social section (IndaStreet Social) */}
+                {/* Social Media – text then icons */}
                 <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col items-center gap-2">
                     <button
                         type="button"
@@ -2320,10 +2325,8 @@ const HomePage: React.FC<HomePageProps> = ({
                         className="inline-flex flex-col items-center gap-1.5 text-gray-700 hover:text-orange-600 transition-colors"
                     >
                         <Globe className="w-6 h-6 text-orange-500" aria-hidden />
-                        <span className="font-semibold text-sm">{translationsObject?.home?.socialLinkTitle ?? 'IndaStreet Social'}</span>
-                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext ?? 'Connecting wellness communities across the globe'}</span>
+                        <span className="text-sm text-gray-700">Social – Connecting wellness communities across the globe – Indastreet Social</span>
                     </button>
-                    {/* Social Media Icons – under IndaStreet Social */}
                     <SocialMediaLinks className="mt-2" />
                 </div>
             </div>

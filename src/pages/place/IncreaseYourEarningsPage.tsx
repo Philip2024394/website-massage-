@@ -52,6 +52,8 @@ const IncreaseYourEarningsPage: React.FC<IncreaseYourEarningsPageProps> = ({
             const isCurrent = plan.id === currentPlanId;
             const isPro = plan.id === 'pro';
             const isElite = plan.id === 'elite';
+            const outcome = isId ? plan.outcomeStatementId : plan.outcomeStatement;
+            const yearlyLabel = isId ? plan.priceYearlyLabelId : plan.priceYearlyLabel;
             return (
               <div
                 key={plan.id}
@@ -66,6 +68,11 @@ const IncreaseYourEarningsPage: React.FC<IncreaseYourEarningsPageProps> = ({
                 {plan.badge && (
                   <div className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-amber-900">
                     {isId ? plan.badgeId : plan.badge}
+                  </div>
+                )}
+                {plan.trialDays && plan.trialDays > 0 && !isCurrent && (
+                  <div className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500 text-white">
+                    {plan.trialDays}-day trial
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-3 mb-3">
@@ -96,9 +103,19 @@ const IncreaseYourEarningsPage: React.FC<IncreaseYourEarningsPageProps> = ({
                     )}
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
+                {outcome && (
+                  <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mb-3 border border-amber-100">
+                    {outcome}
+                  </p>
+                )}
+                <p className="text-sm text-gray-600 mb-2">
                   {isId ? 'Komisi:' : 'Commission:'} {plan.commissionLabel}
                 </p>
+                {plan.priceYearlyIdr && plan.priceYearlyIdr > 0 && (
+                  <p className="text-sm text-gray-600 mb-4">
+                    {yearlyLabel}: {plan.priceYearlyIdr.toLocaleString('id-ID')} IDR
+                  </p>
+                )}
                 <ul className="space-y-2 mb-5">
                   {(isId ? plan.featuresId : plan.features)?.map((f, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-gray-700">

@@ -5,7 +5,7 @@ export const homeTranslations = {
       // Quick link label used in HomePage (link to IndaStreet Social)
       accommodationMassageService: 'Accommodation With Massage Service',
       socialLinkTitle: 'IndaStreet Social',
-      socialLinkSubtext: 'Connecting wellness communities across the globe',
+      socialLinkSubtext: 'Connecting wellness communities across the globe – Indastreet Social',
       homeServiceTab: 'Home Service',
       massagePlacesTab: 'Massage Places',
       therapistsTitle: 'Home Service Therapists',
@@ -130,7 +130,7 @@ export const homeTranslations = {
         // Partners quick link
         accommodationMassageService: 'Accommodation With Massage Service',
         socialLinkTitle: 'IndaStreet Social',
-        socialLinkSubtext: 'Connecting wellness communities across the globe',
+        socialLinkSubtext: 'Connecting wellness communities across the globe – Indastreet Social',
         // Massage services submenu
         traditionalBalineseMassage: 'Traditional Balinese Massage',
         deepTissueMassage: 'Deep Tissue Massage',
@@ -271,7 +271,7 @@ export const homeTranslations = {
       // Quick link label used in HomePage
       accommodationMassageService: 'Akomodasi dengan Layanan Pijat',
       socialLinkTitle: 'IndaStreet Social',
-      socialLinkSubtext: 'Menghubungkan komunitas wellness di seluruh dunia',
+      socialLinkSubtext: 'Menghubungkan komunitas wellness di seluruh dunia – Indastreet Social',
       homeServiceTab: 'Layanan Rumah',
       massagePlacesTab: 'Tempat Pijat',
       therapistsTitle: 'Terapis Pijat Rumahan',
@@ -387,7 +387,7 @@ export const homeTranslations = {
         // Tautan mitra cepat
         accommodationMassageService: 'Akomodasi dengan Layanan Pijat',
         socialLinkTitle: 'IndaStreet Social',
-        socialLinkSubtext: 'Menghubungkan komunitas wellness di seluruh dunia',
+        socialLinkSubtext: 'Menghubungkan komunitas wellness di seluruh dunia – Indastreet Social',
         // Submenu layanan pijat
         traditionalBalineseMassage: 'Pijat Bali Tradisional',
         deepTissueMassage: 'Pijat Jaringan Dalam',

@@ -17,6 +17,7 @@ import VisitUsElite from '../components/VisitUsElite';
 import ElitePremiumFeatures from '../components/ElitePremiumFeatures';
 import EliteFloatingActions from '../components/EliteFloatingActions';
 import EliteBookingSheet from '../components/EliteBookingSheet';
+import GiftVoucherSlider from '../components/GiftVoucherSlider';
 
 // Helper functions for location and taxi booking
 const getUserLocation = () => ({ lat: 0, lng: 0 });
@@ -69,6 +70,8 @@ interface MassagePlaceProfilePageProps {
     place: Place | null;
     onBack?: () => void;
     onBook?: () => void;
+    /** When user selects another place (e.g. from "Nearby spas"), open that profile. */
+    onSelectPlace?: (place: Place | Record<string, unknown>) => void;
     userLocation?: { lat: number; lng: number } | null;
     loggedInCustomer?: any; // Customer user object
     // Header controls
@@ -103,6 +106,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     place, 
     onBack, 
     onBook, 
+    onSelectPlace,
     userLocation, 
     loggedInCustomer,
     onLanguageChange,
@@ -139,6 +143,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [calculatedDistance, setCalculatedDistance] = useState<number | undefined>(place?.distance);
     const [showBookingSheet, setShowBookingSheet] = useState(false);
+    const [showGiftVoucherSlider, setShowGiftVoucherSlider] = useState(false);
 
     const { addNotification } = useChatProviderOptional();
     const hasChatContext = useContext(ChatContext) != null;
@@ -170,6 +175,39 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         setCalculatedDistance(R * c);
     }, [userLocation, place, place?.coordinates]);
+
+    /** Build gift voucher treatments from place pricing + additional services for GiftVoucherSlider */
+    const giftVoucherData = React.useMemo(() => {
+        const p = place as any;
+        const parsePricing = (pricingData: any) => {
+            if (!pricingData) return { 60: 200000, 90: 300000, 120: 400000 };
+            if (typeof pricingData === 'object' && pricingData !== null) return pricingData;
+            try {
+                const parsed = JSON.parse(pricingData);
+                return {
+                    60: (parsed['60'] && parsed['60'] < 1000 ? parsed['60'] * 1000 : parsed['60']) || 200000,
+                    90: (parsed['90'] && parsed['90'] < 1000 ? parsed['90'] * 1000 : parsed['90']) || 300000,
+                    120: (parsed['120'] && parsed['120'] < 1000 ? parsed['120'] * 1000 : parsed['120']) || 400000,
+                };
+            } catch {
+                return { 60: 200000, 90: 300000, 120: 400000 };
+            }
+        };
+        const pricing = parsePricing(p?.pricing);
+        const treatments = [
+            { id: '60', name: language === 'id' ? 'Pijat Relaksasi 60 menit' : '60 min Relaxation Massage', duration: 60, price: pricing[60] },
+            { id: '90', name: language === 'id' ? 'Pijat Balinese 90 menit' : '90 min Balinese Massage', duration: 90, price: pricing[90] },
+            { id: '120', name: language === 'id' ? 'Pijat Deep Tissue 120 menit' : '120 min Deep Tissue', duration: 120, price: pricing[120] },
+        ];
+        const raw = p?.additionalServices;
+        const list = Array.isArray(raw) ? raw.filter((s: any) => s && (s.name || s.id)) : [];
+        const additionalServices = list.map((s: any) => ({
+            id: String(s.id ?? s.name ?? ''),
+            name: s.name || 'Service',
+            details: Array.isArray(s.details) ? s.details.map((d: any) => ({ label: d.label || d.name, price: d.price })) : [],
+        }));
+        return { treatments, additionalServices };
+    }, [place, language]);
 
     const isPlaceVerified = () => {
         if (!place) return false;
@@ -635,10 +673,48 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                         <ElitePremiumFeatures
                             place={place}
                             language={language}
-                            onGiftCardClick={() => {
-                                alert(language === 'id' ? 'Fitur voucher hadiah segera hadir!' : 'Gift voucher feature coming soon!');
-                            }}
+                            onGiftCardClick={() => setShowGiftVoucherSlider(true)}
                         />
+
+                        {/* Nearby spas / More like this – discovery row */}
+                        {Array.isArray(places) && places.length > 1 && onSelectPlace && (
+                            <div className="mt-8">
+                                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                    <LayoutGrid className="w-5 h-5 text-amber-500" aria-hidden />
+                                    {language === 'id' ? 'Spa serupa & terdekat' : 'Nearby & similar spas'}
+                                </h3>
+                                <p className="text-sm text-gray-500 mb-3">
+                                    {language === 'id' ? 'Jelajahi tempat pijat lain' : 'Explore more massage places'}
+                                </p>
+                                <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 snap-x snap-mandatory">
+                                    {places
+                                        .filter((p: any) => (p.$id || p.id) !== (place.$id || place.id))
+                                        .slice(0, 8)
+                                        .map((p: any) => (
+                                            <button
+                                                key={p.$id || p.id}
+                                                type="button"
+                                                onClick={() => onSelectPlace(p)}
+                                                className="flex-shrink-0 w-40 snap-start rounded-xl border-2 border-gray-100 bg-white overflow-hidden text-left hover:border-amber-300 hover:shadow-md transition-all"
+                                            >
+                                                <div className="aspect-[4/3] bg-gray-100">
+                                                    <img
+                                                        src={p.mainImage || p.profilePicture || p.image || 'https://ik.imagekit.io/7grri5v7d/ma%201.png'}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                <div className="p-2">
+                                                    <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
+                                                    {p.location && (
+                                                        <p className="text-xs text-gray-500 truncate">{p.location}</p>
+                                                    )}
+                                                </div>
+                                            </button>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
@@ -650,6 +726,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     placeName={place.name}
                     whatsappNumber={(place as any).whatsappNumber || (place as any).whatsappnumber}
                     language={language}
+                    placeImageUrl={place.mainImage || (place as any).profilePicture || (place as any).image}
                 />
             ) : null}
 
@@ -663,26 +740,31 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 language={language}
             />
 
-            {/* Footer: same social as home page */}
+            {/* Super Elite Gift Voucher Slider */}
+            <GiftVoucherSlider
+                isOpen={showGiftVoucherSlider}
+                onClose={() => setShowGiftVoucherSlider(false)}
+                placeName={place.name}
+                placeId={String(place.$id || place.id)}
+                whatsappNumber={(place as any).whatsappNumber || (place as any).whatsappnumber}
+                treatments={giftVoucherData.treatments}
+                additionalServices={giftVoucherData.additionalServices}
+                language={language}
+            />
+
+            {/* Footer: social text then icons */}
             <footer className="w-full mt-8 py-6 px-4 border-t border-gray-200 bg-gray-50/80">
                 <div className="max-w-full flex flex-col items-center gap-2">
-                    <div className="font-bold text-lg">
-                        <span className="text-black">Inda</span>
-                        <span className="text-amber-500">Street</span>
-                    </div>
+                    <a
+                        href="https://www.indastreet.com/social"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
+                    >
+                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
+                        <span className="font-medium text-sm">Social – Connecting wellness communities across the globe – Indastreet Social</span>
+                    </a>
                     <SocialMediaLinks className="mt-2" />
-                    <div className="mt-2 flex justify-center">
-                        <a
-                            href="https://www.indastreet.com/social"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
-                        >
-                            <Globe className="w-5 h-5 text-amber-500" aria-hidden />
-                            <span className="font-medium text-sm">IndaStreet Social</span>
-                            <span className="text-xs text-gray-500">Connecting wellness communities across the globe</span>
-                        </a>
-                    </div>
                 </div>
             </footer>
             </div>
