@@ -26,6 +26,9 @@ export const OTHER_SERVICES_OFFERED_MASTER: OtherServiceItem[] = [
   { id: 'reflexology', labelEn: 'Reflexology', labelId: 'Reflexology' },
   { id: 'prenatal', labelEn: 'Prenatal', labelId: 'Prenatal' },
   { id: 'sports_massage', labelEn: 'Sports Massage', labelId: 'Sports Massage' },
+  { id: 'coin_rube', labelEn: 'Coin Rub', labelId: 'Coin Rub' },
+  { id: 'sports_enjury', labelEn: 'Sports Injury', labelId: 'Sports Injury' },
+  { id: 'nerve_damage', labelEn: 'Nerve Damage', labelId: 'Nerve Damage' },
 ];
 
 /** Plan limits for Other Services Offered. */
@@ -54,3 +57,10 @@ export function getOtherServiceLabel(serviceId: string, language: 'en' | 'id' = 
   if (!item) return serviceId;
   return language === 'id' ? item.labelId : item.labelEn;
 }
+
+/** Default image URLs for Other Services when shown in the profile (e.g. dropdown cards). Used for any member who has that service selected. */
+export const OTHER_SERVICES_DEFAULT_IMAGES: Record<string, string> = {
+  coin_rube: 'https://ik.imagekit.io/7grri5v7d/coin%20rub.png',
+  sports_enjury: 'https://ik.imagekit.io/7grri5v7d/sports%20injurys.png',
+  nerve_damage: 'https://ik.imagekit.io/7grri5v7d/sports%20injuryss.png',
+};

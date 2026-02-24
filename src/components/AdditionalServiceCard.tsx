@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Calendar, Clock, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, Clock, Sparkles, FingerprintPattern, MessageCircle } from 'lucide-react';
 
 const DEFAULT_SERVICE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
 
@@ -39,6 +39,8 @@ interface AdditionalServiceCardProps {
     placeName: string;
     placeWhatsApp?: string;
     userCountryCode?: string;
+    /** When true (e.g. free-plan therapist), booking/schedule always goes to admin until member upgrades. */
+    useAdminForBooking?: boolean;
     onBook?: (service: AdditionalService) => void;
 }
 
@@ -55,11 +57,28 @@ function normalizeWhatsAppToDigits(raw: string): string {
     return digits;
 }
 
+/** True when all details show "Contact for price" (no fixed price). */
+function isContactForPrice(service: AdditionalService): boolean {
+    if (!service.details?.length) return true;
+    return service.details.every(
+        (d) => !d?.price || /contact\s*for\s*price/i.test(String(d.price).trim())
+    );
+}
+
+/** Build one-line or multi-line details string for WhatsApp (type, duration, price for each option). */
+function buildBookingDetailsLine(service: AdditionalService): string {
+    if (!service.details?.length) return '';
+    return service.details
+        .map((d) => [d.label || service.name, d.duration, d.price].filter(Boolean).join(' • '))
+        .join('\n');
+}
+
 const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
     service,
     placeName,
     placeWhatsApp,
     userCountryCode = 'ID',
+    useAdminForBooking = false,
     onBook,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -67,11 +86,14 @@ const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
     const [scheduledDate, setScheduledDate] = useState(() => new Date().toISOString().slice(0, 10));
     const [scheduledTime, setScheduledTime] = useState('10:00');
     const imageUrl = service.imageUrl || DEFAULT_SERVICE_IMAGE;
-    const useAdmin = isBookingUseAdminCountry(userCountryCode);
+    const useAdmin = useAdminForBooking || isBookingUseAdminCountry(userCountryCode);
 
     const detailLabel = service.details[0]?.label || service.name;
     const detailPrice = service.details[0]?.price || 'Contact for price';
     const detailDuration = service.details[0]?.duration;
+    const hasMultipleDetails = service.details && service.details.length > 1;
+    const bookingDetailsText = buildBookingDetailsLine(service);
+    const showInquireOnly = isContactForPrice(service);
 
     const bookingsThisMonth = useMemo(
         () => getBookingsThisMonth(service.id, service.name),
@@ -88,8 +110,8 @@ const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
             onBook(service);
             return;
         }
-        const details = [detailLabel, detailPrice, detailDuration ? `${detailDuration}` : ''].filter(Boolean).join(' • ');
-        const text = `Hi${useAdmin ? ' IndaStreet Admin' : ''}, I would like to book: ${service.name} at ${placeName}. ${details ? `(${details})` : ''} Thank you.`;
+        const details = bookingDetailsText || [detailLabel, detailPrice, detailDuration ? `${detailDuration}` : ''].filter(Boolean).join(' • ');
+        const text = `Hi${useAdmin ? ' IndaStreet Admin' : ''}, I would like to book: ${service.name} at ${placeName}.\n${details ? `Details:\n${details}` : ''}\nThank you.`;
         openWhatsApp(text);
     };
 
@@ -104,10 +126,19 @@ const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
             return;
         }
         const dateStr = new Date(scheduledDate + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-        const details = [detailLabel, detailPrice, detailDuration ? `${detailDuration}` : ''].filter(Boolean).join(' • ');
-        const text = `Hi${useAdmin ? ' IndaStreet Admin' : ''}, I would like to schedule: ${service.name} at ${placeName} on ${dateStr} at ${scheduledTime}. ${details ? `(${details})` : ''} Thank you.`;
+        const details = bookingDetailsText || [detailLabel, detailPrice, detailDuration ? `${detailDuration}` : ''].filter(Boolean).join(' • ');
+        const text = `Hi${useAdmin ? ' IndaStreet Admin' : ''}, I would like to schedule: ${service.name} at ${placeName} on ${dateStr} at ${scheduledTime}.\n${details ? `Details:\n${details}` : ''}\nThank you.`;
         openWhatsApp(text);
         setShowScheduleForm(false);
+    };
+
+    const handleInquire = () => {
+        if (typeof onBook === 'function') {
+            onBook(service);
+            return;
+        }
+        const text = `Hi${useAdmin ? ' IndaStreet Admin' : ''}, I would like to inquire about: ${service.name} at ${placeName}. Thank you.`;
+        openWhatsApp(text);
     };
 
     return (
@@ -169,52 +200,82 @@ const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
                               box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
                               animation: additional-service-glow-card 2.5s ease-in-out infinite;
                             }
+                            @keyframes book-now-heartbeat {
+                              0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+                              50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.25), 0 0 16px 4px rgba(245, 158, 11, 0.3); }
+                            }
+                            .additional-service-price-heartbeat {
+                              animation: book-now-heartbeat 1.2s ease-in-out infinite;
+                            }
                         `}</style>
-                        {/* Single price container – same style as profile price container (orange border, heartbeat rim glow) */}
-                        <div className="additional-service-price-glow w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400 mb-4">
-                            <div className="flex-1 min-w-0">
-                                <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2 flex items-center gap-1.5">
-                                    <Sparkles className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" aria-hidden />
-                                    {service.details[0]?.label || service.name}
-                                </h4>
-                                {service.details[0]?.duration && (
-                                    <p className="text-[10px] text-gray-600">Estimated: {service.details[0].duration}</p>
-                                )}
-                                <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                    {service.details[0]?.price || 'Contact for price'}
-                                </p>
-                            </div>
+                        {/* Price container(s) – fingerprint on all, heartbeat glow (Book Now below) */}
+                        <div className="space-y-2 mb-4">
+                            {(service.details?.length > 1 ? service.details : (service.details?.length ? [service.details[0]] : [])).map((d, i) => (
+                                <div key={i} className="additional-service-price-glow additional-service-price-heartbeat w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400">
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2 flex items-center gap-1.5">
+                                            <Sparkles className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" aria-hidden />
+                                            {d?.label || service.name}
+                                        </h4>
+                                        {d?.duration && (
+                                            <p className="text-[10px] text-gray-600">Duration: {d.duration}</p>
+                                        )}
+                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                            {d?.price || 'Contact for price'}
+                                        </p>
+                                    </div>
+                                    <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
+                                        <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
+                                    </span>
+                                </div>
+                            ))}
                         </div>
 
                         <p className="text-xs text-gray-600 mb-4 text-center">
                             {bookingsThisMonth} {bookingsThisMonth === 1 ? 'Booking' : 'Bookings'} This Month
                         </p>
 
-                        {/* Book Now (left) + Schedule (right) – both active for Indonesia, admin WhatsApp with auto-filled details */}
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={handleBookNow}
-                                className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors flex items-center justify-center gap-2"
-                                aria-label="Book Now"
-                            >
-                                <Clock className="w-4 h-4" />
-                                Book Now
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleScheduleClick}
-                                className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-gray-600 hover:bg-gray-700 text-white transition-colors flex items-center justify-center gap-2"
-                                aria-label="Schedule"
-                            >
-                                <Calendar className="w-4 h-4" />
-                                Schedule
-                            </button>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-2 text-center">Scheduled booking requires 30% booking deposit.</p>
+                        {/* Contact for price: single "Inquire Of Service" WhatsApp button; otherwise Book Now + Schedule */}
+                        {showInquireOnly ? (
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={handleInquire}
+                                    className="w-full py-2.5 rounded-lg font-semibold text-sm bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center justify-center gap-2"
+                                    aria-label="Inquire Of Service"
+                                >
+                                    <MessageCircle className="w-4 h-4" />
+                                    Inquire Of Service
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleBookNow}
+                                        className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors flex items-center justify-center gap-2"
+                                        aria-label="Book Now"
+                                    >
+                                        <Clock className="w-4 h-4" />
+                                        Book Now
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleScheduleClick}
+                                        className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-gray-600 hover:bg-gray-700 text-white transition-colors flex items-center justify-center gap-2"
+                                        aria-label="Schedule"
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        Schedule
+                                    </button>
+                                </div>
+                                <p className="text-xs text-gray-600 mt-2 text-center">Scheduled booking requires 30% booking deposit.</p>
+                            </>
+                        )}
 
                         {/* Schedule form: date & time, then Confirm & open WhatsApp */}
-                        {showScheduleForm && (
+                        {!showInquireOnly && showScheduleForm && (
                             <div className="mt-4 p-4 rounded-xl border-2 border-amber-300 bg-amber-50/80 space-y-3">
                                 <p className="text-sm font-semibold text-gray-900">Select date & time</p>
                                 <div className="grid grid-cols-2 gap-3">

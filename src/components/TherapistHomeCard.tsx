@@ -741,33 +741,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </div>
             </div>
 
-            {/* Client Preference - Menerima with Languages on same line (After profile section like profile card) */}
+            {/* Client Preference - Menerima (accepts males/females) – no image on right */}
             <div className="mx-4 mb-7">
-                <div className="flex justify-between items-center">
-                    <p className="text-xs text-gray-600 flex-shrink-0">
-                        <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
-                    </p>
-                    
-                    {/* SafePass Button - Show for Active SafePass holders */}
-                    {(therapist as any).hotelVillaSafePassStatus === 'active' && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowSafePassModal(true);
-                            }}
-                            className="p-0 bg-transparent hover:opacity-80 transition-opacity duration-200"
-                            title="View SafePass Certificate"
-                        >
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
-                                alt="SafePass"
-                                className="w-14 h-14 object-contain"
-                                loading="lazy"
-                                decoding="async"
-                            />
-                        </button>
-                    )}
-                </div>
+                <p className="text-xs text-gray-600">
+                    <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
+                </p>
             </div>
 
             {/* Description (After Menerima like profile card) */}

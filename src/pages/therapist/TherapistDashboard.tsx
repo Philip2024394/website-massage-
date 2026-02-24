@@ -163,9 +163,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     } catch {}
     return [];
   });
-  const [selectedOtherServicesOffered, setSelectedOtherServicesOffered] = useState<string[]>(() =>
-    parseOtherServicesIds((therapist as any)?.otherServicesOffered)
-  );
+  const [selectedOtherServicesOffered, setSelectedOtherServicesOffered] = useState<string[]>(() => {
+    const parsed = parseOtherServicesIds((therapist as any)?.otherServicesOffered);
+    const nameNorm = (therapist?.name ?? '').trim().toLowerCase();
+    if (nameNorm === 'wiwid' || nameNorm.startsWith('wiwid ')) return WIWID_OTHER_SERVICES;
+    return parsed;
+  });
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
   
   // Get country from context (selected on landing page) – dashboard city list is per country
@@ -198,6 +201,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   });
 
   // Achievements & Insurance documents (licenses, certs, insurance)
+  /** Certification "Certification Achieved" for therapist Winda – shown in dashboard and on profile. */
+  const WINDA_CERTIFICATION = { url: 'https://ik.imagekit.io/7grri5v7d/winda.png', name: 'Certification Achieved' };
+  /** Certification "Certification Achieved" for therapist Wiwid – shown in dashboard and on profile. */
+  const WIWID_CERTIFICATION = { url: 'https://ik.imagekit.io/7grri5v7d/windas.png', name: 'Certification Achieved' };
+  /** Other Services for Wiwid: Coin Rub, Sports Injury, Nerve Damage. */
+  const WIWID_OTHER_SERVICES = ['coin_rube', 'sports_enjury', 'nerve_damage'];
+
   const parseDocList = (raw: any): DocumentItem[] => {
     try {
       if (Array.isArray(raw)) return raw.filter((x: any) => x && typeof x.url === 'string');
@@ -208,9 +218,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     } catch (e) { logger.warn('Parse doc list failed', e); }
     return [];
   };
-  const [achievementsDocuments, setAchievementsDocuments] = useState<DocumentItem[]>(() =>
-    parseDocList((therapist as any)?.achievementsDocuments)
-  );
+
+  const initialAchievements = ((): DocumentItem[] => {
+    const list = parseDocList((therapist as any)?.achievementsDocuments);
+    const nameNorm = (therapist?.name ?? '').trim().toLowerCase();
+    const isWinda = nameNorm === 'winda' || nameNorm.startsWith('winda ');
+    const isWiwid = nameNorm === 'wiwid' || nameNorm.startsWith('wiwid ');
+    if (isWinda && !list.some((d) => d.url === WINDA_CERTIFICATION.url)) {
+      return [WINDA_CERTIFICATION, ...list];
+    }
+    if (isWiwid && !list.some((d) => d.url === WIWID_CERTIFICATION.url)) {
+      return [WIWID_CERTIFICATION, ...list];
+    }
+    return list;
+  })();
+
+  const [achievementsDocuments, setAchievementsDocuments] = useState<DocumentItem[]>(initialAchievements);
   const [insuranceDocuments, setInsuranceDocuments] = useState<DocumentItem[]>(() =>
     parseDocList((therapist as any)?.insuranceDocuments)
   );
@@ -430,8 +453,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           }
         }
 
-        // Other Services Offered
-        if ((latestData as any).otherServicesOffered != null) {
+        // Other Services Offered (Wiwid: fixed list Coin Rub, Sports Injury, Nerve Damage)
+        const nameNormLatest = (latestData.name ?? '').trim().toLowerCase();
+        if (nameNormLatest === 'wiwid' || nameNormLatest.startsWith('wiwid ')) {
+          setSelectedOtherServicesOffered(WIWID_OTHER_SERVICES);
+        } else if ((latestData as any).otherServicesOffered != null) {
           setSelectedOtherServicesOffered(parseOtherServicesIds((latestData as any).otherServicesOffered));
         }
         
@@ -440,8 +466,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         const cityStr = (typeof cityRaw === 'string' ? cityRaw : '').trim().toLowerCase();
         setSelectedCityId(cityStr || '');
 
-        // Achievements & Insurance documents
-        if ((latestData as any).achievementsDocuments) setAchievementsDocuments(parseDocList((latestData as any).achievementsDocuments));
+        // Achievements & Insurance documents (include Winda/Wiwid "Certification Achieved" when applicable)
+        if ((latestData as any).achievementsDocuments) {
+          let list = parseDocList((latestData as any).achievementsDocuments);
+          const nameNorm = (latestData.name ?? '').trim().toLowerCase();
+          if ((nameNorm === 'winda' || nameNorm.startsWith('winda ')) && !list.some((d) => d.url === WINDA_CERTIFICATION.url)) {
+            list = [WINDA_CERTIFICATION, ...list];
+          }
+          if ((nameNorm === 'wiwid' || nameNorm.startsWith('wiwid ')) && !list.some((d) => d.url === WIWID_CERTIFICATION.url)) {
+            list = [WIWID_CERTIFICATION, ...list];
+          }
+          setAchievementsDocuments(list);
+        }
         if ((latestData as any).insuranceDocuments) setInsuranceDocuments(parseDocList((latestData as any).insuranceDocuments));
         
       } catch (error) {

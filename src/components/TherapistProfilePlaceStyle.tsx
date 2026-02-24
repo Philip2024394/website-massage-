@@ -15,7 +15,7 @@ import { getBookingWhatsAppNumber, buildBookNowMessage, getFirstMassageType, get
 import { MessageCircle, Star, MapPin, LayoutGrid, Eye, ShieldCheck, Gift, Quote, X, Globe } from 'lucide-react';
 import { APP_CONSTANTS } from '../constants/appConstants';
 import AdditionalServiceCard, { type AdditionalService } from './AdditionalServiceCard';
-import { getOtherServiceLabel } from '../constants/otherServicesOffered';
+import { getOtherServiceLabel, OTHER_SERVICES_DEFAULT_IMAGES } from '../constants/otherServicesOffered';
 import SocialMediaLinks from './SocialMediaLinks';
 import GiftVoucherSlider from './GiftVoucherSlider';
 
@@ -190,6 +190,9 @@ export default function TherapistProfilePlaceStyle({
   const plan = getTherapistPlan(therapist);
   const limits = useMemo(() => getPlanLimits(plan), [plan]);
   const verified = isTherapistVerified(therapist);
+  const nameNormHero = (therapist?.name ?? '').trim().toLowerCase();
+  const isWiwidProfile = nameNormHero === 'wiwid' || nameNormHero.startsWith('wiwid ');
+  const showVerifiedOnHero = verified || isWiwidProfile;
   const isId = language === 'id';
 
   const locationStr = typeof therapist.location === 'string'
@@ -259,11 +262,36 @@ export default function TherapistProfilePlaceStyle({
     }));
   }, [therapist, limits.gallery]);
 
-  /** Up to 5 certification/license/achievement image URLs for Safety & Comfort. */
+  /** Certification image URL for Winda – "Certification Achieved" (shown on profile and in dashboard). */
+  const WINDA_CERTIFICATION_IMAGE = 'https://ik.imagekit.io/7grri5v7d/winda.png';
+  /** Certification image URL for Wiwid – "Certification Achieved" (shown on profile and in dashboard). */
+  const WIWID_CERTIFICATION_IMAGE = 'https://ik.imagekit.io/7grri5v7d/windas.png';
+
+  /** Up to 5 certification/license/achievement image URLs for Safety & Comfort. Includes achievementsDocuments from dashboard and Winda/Wiwid cert when applicable. */
   const certificationImages = useMemo(() => {
     const raw = (therapist as any).certificationImages ?? (therapist as any).licenseImages ?? (therapist as any).achievementImages ?? [];
     const list = Array.isArray(raw) ? raw : [];
-    return list.slice(0, 5).map((item: any) => (typeof item === 'string' ? item : item?.url ?? item?.imageUrl ?? '')).filter(Boolean) as string[];
+    let urls = list.map((item: any) => (typeof item === 'string' ? item : item?.url ?? item?.imageUrl ?? '')).filter(Boolean) as string[];
+    // Also include achievements from dashboard (Achievements & Insurance)
+    const achievementsRaw = (therapist as any).achievementsDocuments;
+    if (achievementsRaw) {
+      try {
+        const parsed = typeof achievementsRaw === 'string' ? JSON.parse(achievementsRaw) : achievementsRaw;
+        if (Array.isArray(parsed)) {
+          const fromAchievements = parsed.map((x: any) => (x && typeof x.url === 'string' ? x.url : '')).filter(Boolean);
+          urls = [...urls, ...fromAchievements];
+        }
+      } catch (_) { /* ignore */ }
+    }
+    // Therapist Winda / Wiwid: ensure "Certification Achieved" image is included
+    const nameNorm = (therapist?.name ?? '').trim().toLowerCase();
+    if (nameNorm === 'winda' || nameNorm.startsWith('winda ')) {
+      if (!urls.includes(WINDA_CERTIFICATION_IMAGE)) urls = [WINDA_CERTIFICATION_IMAGE, ...urls];
+    }
+    if (nameNorm === 'wiwid' || nameNorm.startsWith('wiwid ')) {
+      if (!urls.includes(WIWID_CERTIFICATION_IMAGE)) urls = [WIWID_CERTIFICATION_IMAGE, ...urls];
+    }
+    return [...new Set(urls)].slice(0, 5);
   }, [therapist]);
 
   /** Random therapists from same city for "Services & Therapist Trending Now" – new random set each mount/refresh. */
@@ -355,7 +383,7 @@ export default function TherapistProfilePlaceStyle({
                 {formatLastBooked(lastBookedAt, new Date(), isId)}
               </p>
             </div>
-            {verified && (
+            {showVerifiedOnHero && (
               <div className="absolute right-4 top-1/2 -translate-y-1/2 z-[2] flex flex-col items-center gap-1.5">
                 <img src={VERIFIED_BADGE_IMAGE_URL} alt="Verified" className="w-10 h-10 sm:w-12 sm:h-12 object-contain drop-shadow-md" />
                 <span className="text-white text-xs sm:text-sm font-semibold drop-shadow-lg bg-black/30 px-2 py-0.5 rounded">{isId ? 'Terverifikasi' : 'Verified'}</span>
@@ -366,20 +394,11 @@ export default function TherapistProfilePlaceStyle({
               <div className="relative p-4 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2 flex-wrap">
                   {getTherapistDisplayName(therapist.name)}
-                  {verified && (
-                    <img src={VERIFIED_BADGE_IMAGE_URL} alt="" className="w-6 h-6 sm:w-7 sm:h-7 object-contain drop-shadow-md" aria-hidden />
-                  )}
                 </h1>
                 <p className="text-sm text-white/95 mt-0.5 flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 flex-shrink-0" />
                   <span>{locationStr}</span>
                 </p>
-                {verified && (
-                  <p className="text-xs text-amber-200 font-medium mt-1 flex items-center gap-1.5">
-                    <img src={VERIFIED_BADGE_IMAGE_URL} alt="" className="w-4 h-4 object-contain" aria-hidden />
-                    {isId ? 'Terverifikasi' : 'Verified'}
-                  </p>
-                )}
                 <div className="flex items-center gap-3 mt-2">
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -409,8 +428,8 @@ export default function TherapistProfilePlaceStyle({
             animation: therapist-subtitle-slide-in 0.6s ease-out 0.25s both;
           }
           @keyframes online-dot-pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.45; }
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+            50% { opacity: 0.6; transform: scale(1.15); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2); }
           }
           .online-dot-flash {
             animation: online-dot-pulse 1.2s ease-in-out infinite;
@@ -418,9 +437,9 @@ export default function TherapistProfilePlaceStyle({
         `}</style>
         <div className="max-w-full space-y-4">
           <div className="mb-3 text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">Welcome to {getTherapistDisplayName(therapist.name)}</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-1">Hi I'm {getTherapistDisplayName(therapist.name)}</h3>
             <p className="text-sm text-gray-600 therapist-subtitle-slide-in">
-              {isId ? 'Silakan hubungi untuk layanan yang belum tercantum' : 'Please Reach Out For Services Not Listed'}
+              {isId ? 'Silakan hubungi untuk layanan yang belum tercantum' : 'Please reach out for any services not listed'}
             </p>
           </div>
 
@@ -455,6 +474,14 @@ export default function TherapistProfilePlaceStyle({
               { id: 'mock-beauty', name: 'Beautician', description: 'Nails, lashes and skin treatments. Manicure, pedicure, lash extensions and facials available by appointment.', imageUrl: mockImage, details: [{ label: 'Manicure & pedicure', price: 'IDR 200K', duration: '60 min' }], bookLabel: 'Schedule' as const },
               { id: 'mock-spa', name: 'Spa & Wellness', description: 'Body scrubs, wraps and aromatherapy. Relax and recharge with our signature treatments in a calm environment.', imageUrl: mockImage, details: [{ label: 'Body scrub & wrap', price: 'IDR 350K', duration: '90 min' }], bookLabel: 'Book' as const },
             ];
+            const nameNormForServices = (therapist?.name ?? '').trim().toLowerCase();
+            const isWiwidProfile = nameNormForServices === 'wiwid' || nameNormForServices.startsWith('wiwid ');
+            const wiwidDropdownServices: AdditionalService[] = [
+              { id: 'coin_rube', name: 'Coin Rub', description: 'Traditional coin rubbing (kerokan/guasha-style) to release tension and improve circulation. Available as an add-on or standalone service.', imageUrl: OTHER_SERVICES_DEFAULT_IMAGES.coin_rube, details: [{ label: 'Coin Rub 60 min', price: 'IDR 170.000', duration: '60 min' }, { label: 'Coin Rub 90 min', price: 'IDR 250.000', duration: '90 min' }], bookLabel: 'Book' as const },
+              { id: 'sports_enjury', name: 'Sports Injury', description: 'Therapeutic massage focused on sports-related injuries and recovery. Helps relieve muscle strain, improve flexibility and support rehabilitation.', imageUrl: OTHER_SERVICES_DEFAULT_IMAGES.sports_enjury, details: [{ label: 'Sports Injury', price: 'Contact for price', duration: 'varies' }], bookLabel: 'Book' as const },
+              { id: 'nerve_damage', name: 'Nerve Damage', description: 'Specialised massage techniques to support recovery and comfort where nerve sensitivity or damage is a concern. Gentle, targeted approach.', imageUrl: OTHER_SERVICES_DEFAULT_IMAGES.nerve_damage, details: [{ label: 'Nerve Damage', price: 'Contact for price', duration: 'varies' }], bookLabel: 'Book' as const },
+            ];
+            const displayDropdownServices = isWiwidProfile ? wiwidDropdownServices : defaultServices;
             const placeName = getTherapistDisplayName(therapist.name);
             const placeWhatsApp = (therapist as any).whatsappNumber ?? (therapist as any).contactNumber;
             const defaultAvatar = 'https://ik.imagekit.io/7grri5v7d/default-avatar.png';
@@ -488,21 +515,35 @@ export default function TherapistProfilePlaceStyle({
                               ? WAYAN_SINTA_PROFILE_IMAGE
                               : (t.photo || defaultAvatar);
                       const name = isRealTherapist ? (t.name || 'Therapist') : t.name;
-                      const specialty = isRealTherapist
-                        ? (Array.isArray(t.massageTypes) ? t.massageTypes.slice(0, 2).join(', ') : t.massageTypes || t.specialty || 'Massage')
-                        : t.specialty;
+                      // Never show raw JSON like [" on cards: parse massageTypes if it's a string that looks like an array
+                      const massageTypesForDisplay = ((): string => {
+                        if (!isRealTherapist) return t.specialty ?? 'Massage';
+                        const raw = t.massageTypes;
+                        if (Array.isArray(raw)) return raw.slice(0, 2).join(', ') || t.specialty || 'Massage';
+                        if (typeof raw === 'string' && raw.trim().startsWith('[')) {
+                          try {
+                            const parsed = JSON.parse(raw);
+                            if (Array.isArray(parsed)) return parsed.slice(0, 2).join(', ') || t.specialty || 'Massage';
+                          } catch (_) { /* ignore */ }
+                        }
+                        if (typeof raw === 'string' && raw.trim().length > 0) return raw;
+                        return t.specialty || 'Massage';
+                      })();
+                      const specialty = massageTypesForDisplay;
                       const yearsExperience = isRealTherapist ? (t.yearsOfExperience ?? t.yearsExperience ?? 0) : t.yearsExperience;
                       const rating = isRealTherapist ? (t.rating ?? 4.5) : t.rating;
                       const key = isRealTherapist ? (t.$id ?? t.id ?? `t-${index}`) : t.id;
+                      const statusStr = String((t as any).status ?? '').toLowerCase();
+                      const availStr = String(t.availability ?? '').toLowerCase();
                       const isOnline = isRealTherapist
-                        ? (t.isOnline ?? t.availability === 'Available' ?? (t as any).status === 'Available' ?? false)
+                        ? (t.isOnline === true || statusStr === 'online' || statusStr === 'available' || availStr === 'available' || t.availability === 'Available')
                         : true;
                       return (
                         <div
                           key={key}
                           className="flex-shrink-0 w-32 snap-start rounded-xl border-2 bg-orange-50/60 border-orange-300 p-4 text-center flex flex-col"
                         >
-                          <div className="relative w-16 h-16 mx-auto mb-2 flex-shrink-0">
+                          <div className="relative w-16 h-16 mx-auto mb-2 flex-shrink-0 overflow-visible">
                             <div className="absolute inset-0 rounded-full overflow-hidden border-2 border-amber-200 bg-white">
                               <img
                                 src={displayPhoto}
@@ -512,9 +553,9 @@ export default function TherapistProfilePlaceStyle({
                               />
                             </div>
                             <span
-                              className={`absolute bottom-0 right-0 w-3 h-3 flex-shrink-0 rounded-full border-2 border-white ${isOnline ? 'bg-green-500 online-dot-flash' : 'bg-gray-400'}`}
+                              className={`absolute bottom-0 right-0 flex-shrink-0 rounded-full border-2 border-white z-10 ${isOnline ? 'bg-green-500 online-dot-flash' : 'bg-orange-500'}`}
                               style={{ width: 12, height: 12, minWidth: 12, minHeight: 12 }}
-                              title={isOnline ? (isId ? 'Online' : 'Online') : (isId ? 'Offline' : 'Offline')}
+                              title={isOnline ? (isId ? 'Online' : 'Online') : (isId ? 'Sibuk' : 'Busy')}
                               aria-hidden
                             />
                           </div>
@@ -550,37 +591,6 @@ export default function TherapistProfilePlaceStyle({
                 </div>
                 )}
 
-                {/* Other Services Available – therapist's selected services from dashboard (same card style as Massage City Places) */}
-                {(() => {
-                  const raw = (therapist as any).otherServicesOffered;
-                  let list: string[] = [];
-                  if (Array.isArray(raw)) list = raw.filter((x: unknown) => typeof x === 'string');
-                  else if (typeof raw === 'string' && raw) {
-                    try {
-                      const parsed = JSON.parse(raw);
-                      if (Array.isArray(parsed)) list = parsed.filter((x: unknown) => typeof x === 'string');
-                    } catch (_) {}
-                  }
-                  if (list.length === 0) return null;
-                  return (
-                    <div className="mb-6">
-                      <h3 className="text-sm font-bold text-gray-900 mb-3">
-                        {isId ? 'Layanan Lain yang Tersedia' : 'Other Services Available'}
-                      </h3>
-                      <div className="space-y-2">
-                        {list.map((id) => (
-                          <div
-                            key={id}
-                            className="w-full text-left rounded-xl border-2 border-orange-200 bg-orange-50/80 p-4"
-                          >
-                            <p className="text-sm font-semibold text-gray-900">{getOtherServiceLabel(id, isId ? 'id' : 'en')}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-
                 {/* Additional services – same dropdown cards as city places */}
                 <h3 className="text-sm font-bold text-gray-900 mb-1">
                   {getTherapistDisplayName(therapist.name)} {isId ? 'Layanan Lain' : 'Other Services'}
@@ -589,13 +599,14 @@ export default function TherapistProfilePlaceStyle({
                   {isId ? 'Pilih panah dropdown untuk melihat' : 'Select the drop down arrow to view'}
                 </p>
                 <div className="space-y-3">
-                  {defaultServices.map((svc) => (
+                  {displayDropdownServices.map((svc) => (
                     <AdditionalServiceCard
                       key={svc.id}
                       service={svc}
                       placeName={placeName}
                       placeWhatsApp={placeWhatsApp}
                       userCountryCode={isId ? 'ID' : undefined}
+                      useAdminForBooking={plan === 'free'}
                     />
                   ))}
                 </div>
@@ -625,8 +636,17 @@ export default function TherapistProfilePlaceStyle({
                           </li>
                         ))}
                       </ul>
+                      {/* IndaStreet certification header and disclaimer – above Certification Achieved thumbnails */}
+                      <h5 className="text-sm font-bold text-gray-900 mt-4 mb-1">
+                        IndaStreet
+                      </h5>
+                      <p className="text-[10px] text-gray-600 leading-relaxed mb-3">
+                        {isId
+                          ? 'Terapis berikut telah menjalani pemeriksaan oleh terapis pijat IndaStreet yang berpengalaman, yang mengonfirmasi bahwa terapis mampu menawarkan pijat profesional serta memiliki kebersihan dan sikap profesional dalam karier mereka. Pemeriksaan latar belakang tidak menemukan aktivitas kriminal atau berbahaya, sehingga terapis ini diizinkan mengakses hotel, villa, atau rumah.'
+                          : 'The following therapist has undergone examination with an experienced IndaStreet massage therapist, that confirmed that the therapist is fully capable to offer professional massage and has hygiene and professional manner towards their career. Background check resulted in no criminal or dangerous activity, allowing this therapist access to hotels, villas or homes.'}
+                      </p>
                       {/* Certification Achieved – up to 5 thumbnails; click opens same lightbox/blur as massage city places */}
-                      <h5 className="text-xs font-bold text-gray-900 mt-4 mb-2">
+                      <h5 className="text-xs font-bold text-gray-900 mt-2 mb-2">
                         {isId ? 'Sertifikasi yang Dicapai' : 'Certification Achieved'}
                       </h5>
                       {certificationImages.length > 0 ? (
@@ -758,29 +778,42 @@ export default function TherapistProfilePlaceStyle({
         variant="therapist"
       />
 
-      {/* Certification / license image lightbox – same system and blur as massage city places thumbnail window */}
+      {/* Certification / license image lightbox – professional card with caption and close button */}
       {selectedCertImage && (
         <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[110] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[110] flex items-center justify-center p-4"
           onClick={() => setSelectedCertImage(null)}
           role="dialog"
           aria-modal="true"
           aria-label={isId ? 'Tampilan sertifikat' : 'Certification view'}
         >
-          <button
-            type="button"
-            onClick={() => setSelectedCertImage(null)}
-            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full z-10"
-            aria-label={isId ? 'Tutup' : 'Close'}
+          <div
+            className="relative max-w-2xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-6 h-6 text-white" />
-          </button>
-          <div className="max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={selectedCertImage}
-              alt=""
-              className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
-            />
+            <div className="flex-1 overflow-auto p-4 sm:p-6">
+              <img
+                src={selectedCertImage}
+                alt=""
+                className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+              />
+              <p className="mt-4 text-sm text-gray-600 leading-relaxed text-center">
+                {isId
+                  ? 'Terapis ini telah diverifikasi oleh IndaStreet. Sertifikasi mengonfirmasi kemampuan profesional, standar kebersihan, dan pemeriksaan latar belakang yang memenuhi syarat akses ke hotel, villa, dan rumah.'
+                  : 'This therapist has been verified by IndaStreet. Certification confirms professional capability, hygiene standards, and a background check qualifying access to hotels, villas and homes.'}
+              </p>
+            </div>
+            <div className="flex justify-center p-4 border-t border-gray-100 bg-gray-50/80">
+              <button
+                type="button"
+                onClick={() => setSelectedCertImage(null)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+                aria-label={isId ? 'Tutup' : 'Close'}
+              >
+                <X className="w-4 h-4 flex-shrink-0" aria-hidden />
+                {isId ? 'Tutup' : 'Close'}
+              </button>
+            </div>
           </div>
         </div>
       )}

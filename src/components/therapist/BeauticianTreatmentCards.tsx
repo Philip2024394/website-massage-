@@ -52,6 +52,13 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
           box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
           animation: beautician-glow 2.5s ease-in-out infinite;
         }
+        @keyframes book-now-heartbeat {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+          50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.25), 0 0 16px 4px rgba(245, 158, 11, 0.3); }
+        }
+        .beautician-container-heartbeat {
+          animation: book-now-heartbeat 1.2s ease-in-out infinite;
+        }
         @keyframes book-button-flash {
           0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45); }
           14% { transform: scale(1.06); box-shadow: 0 6px 20px rgba(37, 211, 102, 0.55); }
@@ -78,7 +85,7 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
               type="button"
               key={index}
               onClick={() => handleSelect(index)}
-              className={`w-full text-center rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 ${
+              className={`w-full text-center rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 beautician-container-heartbeat ${
                 isSelected
                   ? 'beautician-container-selected bg-orange-50/80 border-orange-400'
                   : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
@@ -97,11 +104,9 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
                   Price: {formatPrice(t)} (fixed)
                 </p>
               </div>
-              {isSelected && (
-                <span className="flex-shrink-0 flex items-center justify-center text-orange-600" aria-hidden>
-                  <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
-                </span>
-              )}
+              <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
+                <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
+              </span>
             </button>
           );
         })}

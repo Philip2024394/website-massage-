@@ -1228,37 +1228,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 customVerifiedBadge={customVerifiedBadge}
             />
             
-            {/* Client Preference Display - Left aligned */}
-            <div className="mx-4 mb-2 flex items-center justify-between">
+            {/* Client Preference Display - accepts males/females, no image on right */}
+            <div className="mx-4 mb-2">
                 <p className="text-xs text-gray-600 text-left">
                     <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
                 </p>
-                
-                {/* SafePass Button - Only if verified by admin */}
-                {(() => {
-                    const showSafePass = (therapist as any).hotelVillaSafePassStatus === 'active' || therapist.hasSafePassVerification;
-                    
-                    return showSafePass ? (
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                logger.debug('🛡️ Opening SafePass verification modal for:', therapist.name);
-                                setShowSafePassModal(true);
-                            }}
-                            className="hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer relative z-10"
-                        >
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/hotel%205.png?updatedAt=1770362023320" 
-                                alt="SafePass Verified"
-                                className="w-14 h-14 object-contain"
-                                loading="lazy"
-                                decoding="async"
-                            />
-                        </button>
-                    ) : null;
-                })()}
             </div>
 
             {/* Therapist Bio - Natural flow with proper margin */}
