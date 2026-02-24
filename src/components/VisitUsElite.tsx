@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { MapPin, Phone, ShieldCheck, Car, Navigation } from 'lucide-react';
+import { MapPin, Phone, ShieldCheck, Car, Navigation, Sparkles } from 'lucide-react';
 
 const INDONESIA_TZ = 'Asia/Jakarta';
 
@@ -136,12 +136,19 @@ export default function VisitUsElite({ place, language = 'id', userLocation }: V
       ? `https://www.google.com/maps?q=${lat},${lng}`
       : null;
 
-  // Calculate distance if user location is available
+  // Calculate distance if user location is available, or use place's estimatedDistance
   const distanceKm = useMemo(() => {
-    if (!userLocation || lat == null || lng == null) return null;
-    const d = getDistanceKm(userLocation.lat, userLocation.lng, lat, lng);
-    return d;
-  }, [userLocation, lat, lng]);
+    // First try to calculate from user location
+    if (userLocation && lat != null && lng != null) {
+      return getDistanceKm(userLocation.lat, userLocation.lng, lat, lng);
+    }
+    // Fallback to place's estimated distance if provided
+    const estimated = p.estimatedDistance || p.distanceKm || p.distance;
+    if (estimated != null && !isNaN(Number(estimated))) {
+      return Number(estimated);
+    }
+    return null;
+  }, [userLocation, lat, lng, p.estimatedDistance, p.distanceKm, p.distance]);
 
   const distanceLabel = distanceKm != null
     ? distanceKm < 1
@@ -231,6 +238,33 @@ export default function VisitUsElite({ place, language = 'id', userLocation }: V
           )}
         </div>
 
+        {/* What's Included – under address */}
+        {(() => {
+          const list = p.whatsIncluded || [
+            'Complimentary welcome drink',
+            'Hot towel service',
+            'Shower facilities',
+            'Locker & storage',
+            'Aromatherapy oils',
+            'Post-massage tea',
+          ];
+          return (
+            <div className="mb-4">
+              <h4 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-2">
+                <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" aria-hidden />
+                {isId ? 'Termasuk dalam Perawatan' : "What's Included"}
+              </h4>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {list.map((item: string, i: number) => (
+                  <li key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" aria-hidden />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
         {/* 3. Business Hours + Live Status – styled like price container */}
         <div className="mb-4 p-3 rounded-xl border-2 bg-orange-50/80 border-orange-400">
           <div className="flex items-start justify-between gap-3">
@@ -263,6 +297,10 @@ export default function VisitUsElite({ place, language = 'id', userLocation }: V
               </div>
             )}
           </div>
+          {/* Scheduled Booking note */}
+          <p className="text-[10px] text-gray-500 mt-2 text-center">
+            {isId ? 'Pemesanan Terjadwal Diterima 24/7' : 'Scheduled Booking Accepted 24/7'}
+          </p>
         </div>
 
         {/* 4. Buttons – Get Directions + Call Spa (side by side) */}

@@ -24,6 +24,32 @@ const MASSAGE_PLACE_LISTING_CARD_IMAGE = 'https://ik.imagekit.io/7grri5v7d/ma%20
 /** Branch icon shown to the right of the Open button on massage city places home card. */
 const BRANCH_ICON_URL = 'https://ik.imagekit.io/7grri5v7d/branch%206s.png';
 
+/** Map language name (from dashboard) to flag emoji. Only show when member selects languages in dashboard. */
+const LANGUAGE_FLAG_MAP: Record<string, string> = {
+  english: '🇬🇧', en: '🇬🇧',
+  indonesian: '🇮🇩', id: '🇮🇩', 'bahasa indonesia': '🇮🇩',
+  mandarin: '🇨🇳', chinese: '🇨🇳', zh: '🇨🇳',
+  japanese: '🇯🇵', ja: '🇯🇵',
+  korean: '🇰🇷', ko: '🇰🇷',
+  thai: '🇹🇭', th: '🇹🇭',
+  vietnamese: '🇻🇳', vi: '🇻🇳',
+  spanish: '🇪🇸', es: '🇪🇸',
+  french: '🇫🇷', fr: '🇫🇷',
+  german: '🇩🇪', de: '🇩🇪',
+  portuguese: '🇵🇹', pt: '🇵🇹',
+  italian: '🇮🇹', it: '🇮🇹',
+  russian: '🇷🇺', ru: '🇷🇺',
+  arabic: '🇸🇦', ar: '🇸🇦',
+  dutch: '🇳🇱', nl: '🇳🇱',
+  hindi: '🇮🇳', hi: '🇮🇳',
+  malay: '🇲🇾', ms: '🇲🇾',
+};
+function getLanguageFlag(lang: string): string {
+  if (!lang || typeof lang !== 'string') return '🌐';
+  const key = lang.trim().toLowerCase();
+  return LANGUAGE_FLAG_MAP[key] || '🌐';
+}
+
 export type CityPlaceCategory = 'massage' | 'facial' | 'beauty';
 
 /** Admin WhatsApp for Indonesia booking flow (send to admin; admin coordinates). */
@@ -247,7 +273,8 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
 
     return (
         <div className="relative">
-            {/* External meta bar – same as Beauty Home Service card */}
+            {/* External meta bar – hidden on profile; on listing show joined date + category label */}
+            {variant !== 'profile' && (
             <div className="flex justify-between items-center mb-2 px-2">
                 <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,6 +289,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                     {getMetaBarLabel(category)}
                 </span>
             </div>
+            )}
 
             <div
                 onClick={() => {
@@ -482,6 +510,21 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                     </div>
                 )}
 
+                {/* Languages spoken – only when member has selected in dashboard (profile only, with flags) */}
+                {variant === 'profile' && Array.isArray((place as any).languagesSpoken) && (place as any).languagesSpoken.length > 0 && (
+                    <div className="mx-4 mb-3">
+                        <p className="text-[10px] font-semibold text-slate-600 mb-1.5">Languages spoken</p>
+                        <div className="flex flex-wrap gap-2 items-center">
+                            {(place as any).languagesSpoken.map((lang: string, i: number) => (
+                                <span key={i} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
+                                    <span className="text-base leading-none" aria-hidden>{getLanguageFlag(lang)}</span>
+                                    <span>{lang}</span>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Price containers – same design as Beauty Home Service: Treatments Trending, 3 containers. On profile variant, selecting a container shows fingerprint here and Book Now heartbeat. */}
                 <div className="mx-4 mb-4">
                     <style>{`
@@ -511,11 +554,13 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                     </div>
                     <div className="space-y-2">
                         {[
-                            { label: '60 min', minutes: 60, key: '60' as const },
-                            { label: '90 min', minutes: 90, key: '90' as const },
-                            { label: '120 min', minutes: 120, key: '120' as const },
-                        ].map(({ label, minutes, key }) => {
+                            { label: '60 min', minutes: 60, key: '60' as const, isMostPopular: false, originalPriceMultiplier: null },
+                            { label: '90 min', minutes: 90, key: '90' as const, isMostPopular: true, originalPriceMultiplier: 1.15 },
+                            { label: '120 min', minutes: 120, key: '120' as const, isMostPopular: false, originalPriceMultiplier: null },
+                        ].map(({ label, minutes, key, isMostPopular, originalPriceMultiplier }) => {
                             const isSelected = variant === 'profile' && category === 'massage' && selectedPriceKey === key;
+                            const currentPrice = pricing[key];
+                            const originalPrice = originalPriceMultiplier && currentPrice > 0 ? Math.round(currentPrice * originalPriceMultiplier) : null;
                             return (
                                 <div
                                     key={key}
@@ -533,15 +578,28 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                                             setSelectedPriceKey(isSelected ? null : key);
                                         }
                                     }}
-                                    className={`beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400 ${variant === 'profile' && category === 'massage' ? 'cursor-pointer select-none' : ''}`}
+                                    className={`beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 ${isMostPopular ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-500 ring-1 ring-amber-200' : 'bg-orange-50/80 border-orange-400'} ${variant === 'profile' && category === 'massage' ? 'cursor-pointer select-none' : ''}`}
                                 >
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">{getTreatmentRowTitle(category, label, key)}</h4>
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <h4 className="text-xs font-bold text-gray-900 line-clamp-2">{getTreatmentRowTitle(category, label, key)}</h4>
+                                            {isMostPopular && (
+                                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold flex-shrink-0">
+                                                    <Sparkles className="w-2.5 h-2.5" />
+                                                    Most Booked
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-[10px] text-gray-600">
                                             Estimated time: {minutes} minutes
                                         </p>
-                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                            Price: {pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])} (fixed)` : 'Call'}
+                                        <p className="text-xs font-semibold text-gray-800 mt-0.5 flex items-center gap-2">
+                                            Price: {currentPrice > 0 ? `IDR ${formatPrice(currentPrice)} (fixed)` : 'Call'}
+                                            {originalPrice && currentPrice > 0 && (
+                                                <span className="text-[10px] text-gray-400 line-through font-normal">
+                                                    IDR {formatPrice(originalPrice)}
+                                                </span>
+                                            )}
                                         </p>
                                     </div>
                                     {isSelected && (

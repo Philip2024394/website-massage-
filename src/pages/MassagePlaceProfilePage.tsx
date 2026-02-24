@@ -14,6 +14,9 @@ const FloatingChatWindowLazy = lazy(() =>
 import AdditionalServiceCard, { type AdditionalService } from '../components/AdditionalServiceCard';
 import { VERIFIED_BADGE_IMAGE_URL, ADDITIONAL_SERVICES_TIERS, type AdditionalServicesTierLimit } from '../constants/appConstants';
 import VisitUsElite from '../components/VisitUsElite';
+import ElitePremiumFeatures from '../components/ElitePremiumFeatures';
+import EliteFloatingActions from '../components/EliteFloatingActions';
+import EliteBookingSheet from '../components/EliteBookingSheet';
 
 // Helper functions for location and taxi booking
 const getUserLocation = () => ({ lat: 0, lng: 0 });
@@ -135,6 +138,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     const [, setCustomLinks] = useState<any[]>([]);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [calculatedDistance, setCalculatedDistance] = useState<number | undefined>(place?.distance);
+    const [showBookingSheet, setShowBookingSheet] = useState(false);
 
     const { addNotification } = useChatProviderOptional();
     const hasChatContext = useContext(ChatContext) != null;
@@ -431,20 +435,29 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 <div className="relative w-full pt-2 bg-gray-200 rounded-t-2xl overflow-visible">
                     {/* Top amber line – same as home page massage city places card (CityPlaceCard): rounded-t-2xl to match container */}
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 opacity-90 pointer-events-none rounded-t-2xl" />
-                    <div className="relative w-full aspect-[21/9] min-h-[160px] max-h-[280px]">
+                    <div className="relative w-full aspect-[21/9] min-h-[160px] max-h-[280px] overflow-visible">
                     <img
                         src={(place as any).mainImage || (place as any).image || (place as any).profilePicture || 'https://ik.imagekit.io/7grri5v7d/ma%201.png'}
                         alt=""
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover z-0"
                         onError={(e) => {
                             (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/ma%201.png';
                         }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 z-[1] bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
                     {/* Amber line over main image – same as massage city home card */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-amber-500 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-amber-500 pointer-events-none z-[1]" />
+                    {/* Urgency over main image – no badge, plain text: left and right */}
+                    <div className="absolute top-4 left-0 right-0 flex justify-between items-start px-4 z-[2] pointer-events-none">
+                        <p className="text-white text-sm font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.6)' }}>
+                            {(place as any).viewingNow ?? 4} {language === 'id' ? 'orang melihat sekarang' : 'people viewing now'}
+                        </p>
+                        <p className="text-white text-sm font-medium text-right" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.6)' }}>
+                            {language === 'id' ? `Terakhir dipesan ${(place as any).lastBookedMinutesAgo ?? 12} menit lalu` : `Last booked ${(place as any).lastBookedMinutesAgo ?? 12} min ago`}
+                        </p>
+                    </div>
                     {isPlaceVerified() && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1.5">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-[2] flex flex-col items-center gap-1.5">
                             <img
                                 src={VERIFIED_BADGE_IMAGE_URL}
                                 alt="Verified"
@@ -454,14 +467,19 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             <span className="text-white text-xs sm:text-sm font-semibold drop-shadow-lg bg-black/30 px-2 py-0.5 rounded">Verified</span>
                         </div>
                     )}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <h1 className="text-xl sm:text-2xl font-bold drop-shadow-sm">{place.name}</h1>
-                        <p className="text-sm text-white/95 mt-0.5 flex items-center gap-1.5">
-                            <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
-                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                            </svg>
-                            <span>{(place as any).location || (place as any).address || (place as any).city || 'Indonesia'}</span>
-                        </p>
+                    {/* Name + address: above gradient so text stays sharp (z-[2]), no blur */}
+                    <div className="absolute bottom-0 left-0 right-0 z-[2]">
+                        {/* Subtle dark bar behind text so name/address stay readable and crisp */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                        <div className="relative p-4 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.5)' }}>
+                            <h1 className="text-xl sm:text-2xl font-bold tracking-tight antialiased">{place.name}</h1>
+                            <p className="text-sm text-white/95 mt-0.5 flex items-center gap-1.5 antialiased">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                </svg>
+                                <span>{(place as any).location || (place as any).address || (place as any).city || 'Indonesia'}</span>
+                            </p>
+                        </div>
                     </div>
                     </div>
                 </div>
@@ -595,9 +613,38 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
                         {/* ELITE "Visit Us" – only for membershipPlan === 'elite' */}
                         <VisitUsElite place={place} language={language} userLocation={userLocation} />
+
+                        {/* ELITE Premium Features – all premium sections */}
+                        <ElitePremiumFeatures
+                            place={place}
+                            language={language}
+                            onGiftCardClick={() => {
+                                alert(language === 'id' ? 'Fitur voucher hadiah segera hadir!' : 'Gift voucher feature coming soon!');
+                            }}
+                        />
                     </div>
                 </div>
             </main>
+
+            {/* ELITE Floating Actions – WhatsApp & Save to Favorites */}
+            {(place as any).membershipPlan === 'elite' || (place as any).plan === 'elite' ? (
+                <EliteFloatingActions
+                    placeId={String(place.$id || place.id)}
+                    placeName={place.name}
+                    whatsappNumber={(place as any).whatsappNumber || (place as any).whatsappnumber}
+                    language={language}
+                />
+            ) : null}
+
+            {/* ELITE Booking Sheet */}
+            <EliteBookingSheet
+                isOpen={showBookingSheet}
+                onClose={() => setShowBookingSheet(false)}
+                placeName={place.name}
+                placeId={String(place.$id || place.id)}
+                whatsappNumber={(place as any).whatsappNumber || (place as any).whatsappnumber}
+                language={language}
+            />
 
             {/* Footer: same social as home page */}
             <footer className="w-full mt-8 py-6 px-4 border-t border-gray-200 bg-gray-50/80">

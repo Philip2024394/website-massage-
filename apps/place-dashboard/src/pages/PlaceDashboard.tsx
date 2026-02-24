@@ -46,6 +46,7 @@ import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVilla
 import PlaceCalendar from './PlaceCalendar';
 import PlaceVerifiedPage from './PlaceVerifiedPage';
 import PlaceAdditionalServicesUpgrade from './PlaceAdditionalServicesUpgrade';
+import PlaceEliteProfileContent from './PlaceEliteProfileContent';
 import { STORAGE_MCP_ONBOARDING, MCP_DEFAULT_FREE_COMMISSION_PERCENT } from '../../../../src/config/massageCityPlacesPlans';
 
 
@@ -1286,6 +1287,22 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         onBack={() => setActiveTab('profile')}
                     />
                 );
+            case 'elite-profile':
+                return (
+                    <PlaceEliteProfileContent
+                        place={place}
+                        onBack={() => setActiveTab('profile')}
+                        onSave={async (data) => {
+                            if (place?.$id != null || place?.id != null) {
+                                try {
+                                    await placeService.update(String(place.$id || place.id), data as any);
+                                } catch (e) { console.error('Elite profile save error', e); }
+                                if (onSave) onSave({ ...place, ...data });
+                            }
+                        }}
+                        language={t?.language === 'id' ? 'id' : 'en'}
+                    />
+                );
             case 'profile':
             default:
                 return (
@@ -1326,6 +1343,24 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                             <span className="text-amber-600 font-semibold">Go →</span>
                         </button>
+
+                        {/* ELITE Plan: Edit profile content (What's Included, Amenities, Therapists, etc.) */}
+                        {(place?.membershipPlan === 'elite' || place?.plan === 'elite') && (
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('elite-profile')}
+                                className="w-full text-left bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-4 hover:border-amber-400 hover:shadow-md transition-all flex items-center gap-4"
+                            >
+                                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <ColoredCrownIcon className="w-6 h-6 text-amber-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-bold text-gray-900">ELITE Profile Content</h3>
+                                    <p className="text-sm text-gray-600 mt-0.5">Edit What&apos;s Included, Spa Amenities, Languages, Safety, Ambiance tags, Couple&apos;s Treatment, and Gift button for your public profile.</p>
+                                </div>
+                                <span className="text-amber-600 font-semibold">Edit →</span>
+                            </button>
+                        )}
                         
                         <ImageUpload
                             id="main-image-upload"
