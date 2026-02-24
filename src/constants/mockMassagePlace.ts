@@ -88,12 +88,12 @@ export const MOCK_MASSAGE_PLACE = {
     'Hygiene certified',
     'CCTV in public areas',
   ],
-  // Featured therapists
+  // Featured therapists (Dewi Sari uses shared profile image on profile page)
   therapists: [
     {
       id: '1',
-      name: 'Sari Dewi',
-      photo: 'https://ik.imagekit.io/7grri5v7d/therapist1.png',
+      name: 'Dewi Sari',
+      photo: 'https://ik.imagekit.io/7grri5v7d/therapist.png',
       specialty: 'Traditional Balinese',
       yearsExperience: 8,
       rating: 4.9,
@@ -101,7 +101,7 @@ export const MOCK_MASSAGE_PLACE = {
     {
       id: '2',
       name: 'Putu Ayu',
-      photo: 'https://ik.imagekit.io/7grri5v7d/therapist2.png',
+      photo: 'https://ik.imagekit.io/7grri5v7d/therapists.png',
       specialty: 'Deep Tissue & Sports',
       yearsExperience: 5,
       rating: 4.8,
@@ -109,7 +109,7 @@ export const MOCK_MASSAGE_PLACE = {
     {
       id: '3',
       name: 'Wayan Sinta',
-      photo: 'https://ik.imagekit.io/7grri5v7d/therapist3.png',
+      photo: 'https://ik.imagekit.io/7grri5v7d/therapistss.png',
       specialty: 'Aromatherapy & Relaxation',
       yearsExperience: 6,
       rating: 4.9,

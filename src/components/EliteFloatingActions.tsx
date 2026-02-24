@@ -25,6 +25,12 @@ export interface EliteFloatingActionsProps {
   language?: string;
   /** Optional image URL for the place (used when posting to social feed). */
   placeImageUrl?: string;
+  /** Optional rich data for premium like-post on social feed & share text */
+  description?: string;
+  location?: string;
+  starRating?: number;
+  reviewCount?: number;
+  bookedThisMonth?: number;
   onSaveToggle?: (isSaved: boolean) => void;
 }
 
@@ -51,6 +57,11 @@ export default function EliteFloatingActions({
   whatsappNumber,
   language = 'id',
   placeImageUrl,
+  description,
+  location,
+  starRating,
+  reviewCount,
+  bookedThisMonth,
   onSaveToggle,
 }: EliteFloatingActionsProps) {
   const [isLiked, setIsLiked] = useState(false);
@@ -75,7 +86,16 @@ export default function EliteFloatingActions({
     } else {
       newLikes = [...likes, placeId];
       newLikedState = true;
-      const addedToFeed = addEliteLikeEvent({ placeId, placeName, placeImageUrl });
+      const addedToFeed = addEliteLikeEvent({
+        placeId,
+        placeName,
+        placeImageUrl,
+        description,
+        location,
+        starRating,
+        reviewCount,
+        bookedThisMonth,
+      });
       setShowLikedToast(true);
       setLikedToastAddedToFeed(addedToFeed);
       setTimeout(() => setShowLikedToast(false), 2000);

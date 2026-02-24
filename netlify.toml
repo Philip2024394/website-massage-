@@ -57,7 +57,14 @@
   conditions = {path = ["!*.js", "!*.css", "!*.png", "!*.jpg", "!*.jpeg", "!*.svg", "!*.ico", "!*.woff", "!*.woff2", "!*.ttf", "!*.eot"]}
 
 # ✅ HTML Cache Control - Mobile-First Safety
-# Prevents CDN edge caching of HTML files to ensure users always get latest JS bundle references
+# Prevents CDN edge caching of HTML so users always get latest JS/CSS hashes (avoids 404 on old asset refs)
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
 [[headers]]
   for = "/index.html"
   [headers.values]

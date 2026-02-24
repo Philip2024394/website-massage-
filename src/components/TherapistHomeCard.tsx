@@ -20,7 +20,7 @@ import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { useTherapistDisplayImage } from '../utils/therapistImageUtils';
 import { bookingService } from '../lib/bookingService';
 import { therapistMenusService } from '../lib/appwriteService';
-import { isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay, getTherapistDisplayName } from '../utils/therapistCardHelpers';
+import { isDiscountActive, getCheapestServiceByTotalPrice, getCombinedMenuForDisplay, getTherapistDisplayName, getLanguageFlag, parseTherapistLanguages } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
@@ -781,6 +781,26 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </p>
                 </div>
             )}
+
+            {/* Languages spoken – under description (massage home service therapist cards) */}
+            {(() => {
+                const languages = parseTherapistLanguages(therapist);
+                if (languages.length === 0) return null;
+                const label = t?.home?.therapistCard?.languagesSpoken ?? t?.therapistCard?.languagesSpoken ?? 'Languages spoken';
+                return (
+                    <div className="mx-4 mb-3">
+                        <p className="text-[10px] font-semibold text-slate-600 mb-1.5">{label}</p>
+                        <div className="flex flex-wrap gap-2 items-center">
+                            {languages.map((lang: string, i: number) => (
+                                <span key={i} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
+                                    <span className="text-base leading-none" aria-hidden>{getLanguageFlag(lang)}</span>
+                                    <span>{lang}</span>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* Beautician: 3 containers with selected-style highlight (no booking here – view profile to book) */}
             {isBeauticianWithTreatments ? (

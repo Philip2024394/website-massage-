@@ -176,6 +176,12 @@ interface FeedPost {
   positionCvAvailable?: boolean;
   /** When set, post is a "like" from a massage place profile; clicking name/image opens that place profile. */
   placeId?: string;
+  /** Premium like-post: optional rich fields for feed display & share text */
+  placeDescription?: string;
+  placeLocation?: string;
+  placeRating?: number;
+  placeReviewCount?: number;
+  placeBookedThisMonth?: number;
 }
 /** Derive postType for filtering when not explicitly set. */
 function getPostType(p: FeedPost): 'video' | 'news' | 'article' | 'buy-sell' | 'job-offered' | 'job-wanted' | 'post' {
@@ -352,7 +358,7 @@ function getMockEvents(language: string): SearchEvent[] {
   ];
 }
 
-/** Map "like" events from massage place profile into feed posts. Latest first, one per place. */
+/** Map "like" events from massage place profile into feed posts. Latest first, one per place. Premium presentation: description, location, rating, booked this month. */
 function likeEventsToFeedPosts(language: string): FeedPost[] {
   const isId = language === 'id';
   const events = getEliteLikeEvents();
@@ -365,15 +371,48 @@ function likeEventsToFeedPosts(language: string): FeedPost[] {
       : now - e.timestamp < 3600_000
         ? t('A few minutes ago', 'Beberapa menit lalu')
         : t('Recently', 'Baru saja');
+
+    const descSnippet = e.description
+      ? (e.description.length > 180 ? e.description.slice(0, 180).trim() + '…' : e.description)
+      : '';
+    const ratingStr =
+      e.starRating != null
+        ? (isId ? `${e.starRating.toFixed(1).replace('.', ',')}` : e.starRating.toFixed(1))
+        : '';
+    const reviewStr =
+      e.reviewCount != null && e.reviewCount > 0
+        ? (isId ? `${e.reviewCount} ulasan` : `${e.reviewCount} reviews`)
+        : '';
+    const bookedStr =
+      e.bookedThisMonth != null && e.bookedThisMonth > 0
+        ? (isId ? `${e.bookedThisMonth} dipesan bulan ini` : `${e.bookedThisMonth} booked this month`)
+        : '';
+    const parts: string[] = [];
+    if (ratingStr) parts.push(`⭐ ${ratingStr}`);
+    if (reviewStr) parts.push(reviewStr);
+    if (bookedStr) parts.push(bookedStr);
+    const statsLine = parts.length ? parts.join(' · ') : '';
+
+    let text: string;
+    if (isId) {
+      text = `${e.placeName} dapat like — profil mereka sedang dapat perhatian!`;
+      if (statsLine) text += `\n\n${statsLine}`;
+      if (e.location) text += `\n📍 ${e.location}`;
+      if (descSnippet) text += `\n\n${descSnippet}`;
+    } else {
+      text = `${e.placeName} is getting love! Their profile is getting attention.`;
+      if (statsLine) text += `\n\n${statsLine}`;
+      if (e.location) text += `\n📍 ${e.location}`;
+      if (descSnippet) text += `\n\n${descSnippet}`;
+    }
+
     return {
       id: `like-${e.placeId}-${e.timestamp}`,
       authorName: e.placeName,
       authorAvatar: e.placeImageUrl || defaultImage,
       authorRole: isId ? 'Tempat pijat' : 'Massage place',
       timeAgo,
-      text: isId
-        ? `${e.placeName} dapat like — profil mereka sedang dapat perhatian!`
-        : `${e.placeName} is getting love! Their profile is getting attention.`,
+      text,
       mediaUrl: e.placeImageUrl || defaultImage,
       mediaUrls: [e.placeImageUrl || defaultImage],
       mediaAlt: e.placeName,
@@ -384,6 +423,11 @@ function likeEventsToFeedPosts(language: string): FeedPost[] {
       createdAt: e.timestamp,
       postType: 'post' as const,
       placeId: e.placeId,
+      placeDescription: e.description,
+      placeLocation: e.location,
+      placeRating: e.starRating,
+      placeReviewCount: e.reviewCount,
+      placeBookedThisMonth: e.bookedThisMonth,
     };
   });
 }
@@ -1529,7 +1573,17 @@ const PostCard: React.FC<{
             >
               {post.authorName}
             </button>
-            <p className={COLORS.mutedLight + ' text-xs mt-0.5'}>{post.authorRole} · {post.timeAgo}</p>
+            {isLikePost ? (
+              <button
+                type="button"
+                onClick={handleAuthorOrImageClick}
+                className={COLORS.mutedLight + ' text-xs mt-0.5 text-left block w-full hover:text-amber-600 transition-colors'}
+              >
+                {post.authorRole} · {post.timeAgo}
+              </button>
+            ) : (
+              <p className={COLORS.mutedLight + ' text-xs mt-0.5'}>{post.authorRole} · {post.timeAgo}</p>
+            )}
             {post.jobBadge && (
               <span className="inline-flex items-center w-fit mt-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black text-amber-400">
                 {post.jobBadge}
@@ -1710,18 +1764,62 @@ const PostCard: React.FC<{
         </div>
         {text ? (
           <div className="pt-2 border-t border-stone-100">
-            <p className={TYPO.body + ' whitespace-pre-wrap'}>{displayText}</p>
-            {isLong && (
+            {isLikePost ? (
               <button
                 type="button"
-                onClick={() => setDescriptionExpanded((e) => !e)}
-                className="mt-1 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+                onClick={handleAuthorOrImageClick}
+                className="w-full text-left focus:outline-none focus:ring-0 rounded-lg -m-1 p-1 hover:bg-amber-50/50 transition-colors cursor-pointer"
+                aria-label={language === 'id' ? `Buka profil ${post.authorName}` : `Open ${post.authorName} profile`}
               >
-                {descriptionExpanded ? (isId ? 'Tampilkan lebih sedikit' : 'Show less') : (isId ? 'Baca selengkapnya' : 'Read more')}
+                <p className={TYPO.body + ' whitespace-pre-wrap'}>{displayText}</p>
+                {isLong && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setDescriptionExpanded((e2) => !e2); }}
+                    className="mt-1 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+                  >
+                    {descriptionExpanded ? (isId ? 'Tampilkan lebih sedikit' : 'Show less') : (isId ? 'Baca selengkapnya' : 'Read more')}
+                  </button>
+                )}
+              </button>
+            ) : (
+              <>
+                <p className={TYPO.body + ' whitespace-pre-wrap'}>{displayText}</p>
+                {isLong && (
+                  <button
+                    type="button"
+                    onClick={() => setDescriptionExpanded((e) => !e)}
+                    className="mt-1 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+                  >
+                    {descriptionExpanded ? (isId ? 'Tampilkan lebih sedikit' : 'Show less') : (isId ? 'Baca selengkapnya' : 'Read more')}
+                  </button>
+                )}
+              </>
+            )}
+            {isLikePost && onPlaceProfileClick && (
+              <button
+                type="button"
+                onClick={() => onPlaceProfileClick(post.placeId!, post.authorName)}
+                className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+              >
+                {language === 'id' ? 'Lihat profil tempat' : 'View place profile'}
+                <ChevronRightIcon className="w-4 h-4" />
               </button>
             )}
           </div>
         ) : null}
+        {isLikePost && onPlaceProfileClick && !text && (
+          <div className="pt-2 border-t border-stone-100">
+            <button
+              type="button"
+              onClick={() => onPlaceProfileClick(post.placeId!, post.authorName)}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+            >
+              {language === 'id' ? 'Lihat profil tempat' : 'View place profile'}
+              <ChevronRightIcon className="w-4 h-4" />
+            </button>
+          </div>
+        )}
         {post.commentPreview && post.commentPreview.length > 0 && (
           <div className="pt-1.5 border-t border-stone-100 space-y-0.5">
             {post.commentPreview.map((c, i) => {
@@ -2040,13 +2138,47 @@ const SharePostPopup: React.FC<{
   canonicalBaseUrl?: string;
 }> = ({ isOpen, onClose, post, onShared, language, canonicalBaseUrl }) => {
   const [showCopySuccess, setShowCopySuccess] = useState(false);
+  const [copiedType, setCopiedType] = useState<'link' | 'text' | null>(null);
   const isId = language === 'id';
 
   if (!isOpen || !post) return null;
 
   const baseUrl = canonicalBaseUrl || (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '');
   const shareUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}#post-${post.id}` : '';
-  const shareText = `${post.text.slice(0, 200)}${post.text.length > 200 ? '…' : ''}\n\n🔗 ${shareUrl}`;
+
+  const isLikePost = Boolean(post.placeId && post.authorName);
+  const hasPremiumLikeData =
+    isLikePost &&
+    (Boolean(post.placeDescription) ||
+      Boolean(post.placeLocation) ||
+      post.placeRating != null ||
+      post.placeBookedThisMonth != null ||
+      post.placeReviewCount != null);
+
+  let shareText: string;
+  if (hasPremiumLikeData) {
+    const name = post.authorName;
+    const lines: string[] = [
+      `✨ ${name}`,
+      '',
+    ];
+    const stats: string[] = [];
+    if (post.placeRating != null) stats.push(isId ? `⭐ ${post.placeRating.toFixed(1).replace('.', ',')}` : `⭐ ${post.placeRating.toFixed(1)}`);
+    if (post.placeReviewCount != null && post.placeReviewCount > 0) stats.push(isId ? `${post.placeReviewCount} ulasan` : `${post.placeReviewCount} reviews`);
+    if (post.placeBookedThisMonth != null && post.placeBookedThisMonth > 0) stats.push(isId ? `${post.placeBookedThisMonth} dipesan bulan ini` : `${post.placeBookedThisMonth} booked this month`);
+    if (stats.length) lines.push(stats.join(' · '), '');
+    if (post.placeLocation) lines.push(`📍 ${post.placeLocation}`, '');
+    if (post.placeDescription) {
+      const desc = post.placeDescription.length > 220 ? post.placeDescription.slice(0, 220).trim() + '…' : post.placeDescription;
+      lines.push(desc, '');
+    }
+    lines.push(isId ? 'Dapat like di IndaStreet Social — cek profilnya!' : 'Getting love on IndaStreet Social — check their profile!', '');
+    lines.push('🔗 ' + shareUrl);
+    shareText = lines.join('\n');
+  } else {
+    shareText = `${post.text.slice(0, 200)}${post.text.length > 200 ? '…' : ''}\n\n🔗 ${shareUrl}`;
+  }
+
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedText = encodeURIComponent(shareText);
 
@@ -2055,8 +2187,21 @@ const SharePostPopup: React.FC<{
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
+      setCopiedType('link');
       setShowCopySuccess(true);
-      setTimeout(() => setShowCopySuccess(false), 2000);
+      setTimeout(() => { setShowCopySuccess(false); setCopiedType(null); }, 2000);
+      recordShare();
+    } catch {
+      alert(isId ? 'Gagal menyalin. Coba lagi.' : 'Failed to copy. Please try again.');
+    }
+  };
+
+  const handleCopyShareText = async () => {
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setCopiedType('text');
+      setShowCopySuccess(true);
+      setTimeout(() => { setShowCopySuccess(false); setCopiedType(null); }, 2000);
       recordShare();
     } catch {
       alert(isId ? 'Gagal menyalin. Coba lagi.' : 'Failed to copy. Please try again.');
@@ -2073,11 +2218,13 @@ const SharePostPopup: React.FC<{
   ];
 
   const copyLabel = isId ? 'Salin link' : 'Copy link';
+  const copyTextLabel = isId ? 'Salin teks' : 'Copy full message';
   const doneLabel = isId ? 'Berhasil' : 'Done';
   const headerTitle = isId ? 'Bagikan postingan' : 'Share this post';
   const chooseLabel = isId ? 'Pilih platform' : 'Choose your platform';
   const orCopyLabel = isId ? 'Atau salin link' : 'Or copy link';
   const copiedLabel = isId ? 'Link disalin ke clipboard!' : 'Link copied to clipboard!';
+  const copiedTextLabel = isId ? 'Teks disalin ke clipboard!' : 'Full message copied to clipboard!';
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm" style={{ animation: 'shareFadeIn 0.2s ease-out' }}>
@@ -2107,17 +2254,28 @@ const SharePostPopup: React.FC<{
           </div>
           <div className="border-t border-stone-200 pt-4 sm:pt-6">
             <p className="text-sm font-semibold text-stone-700 mb-3">{orCopyLabel}</p>
-            <div className="flex gap-2">
-              <input type="text" value={shareUrl} readOnly className="flex-1 px-3 sm:px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-0" />
-              <button type="button" onClick={handleCopyLink} className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-semibold hover:from-amber-600 hover:to-amber-700 transition-all hover:scale-105 active:scale-95 shadow-md hover:shadow-lg min-w-[72px] sm:min-w-[84px] flex-shrink-0">
-                {showCopySuccess ? (
-                  <><svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-xs sm:text-sm">{doneLabel}</span></>
-                ) : (
-                  <><svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg><span className="text-xs sm:text-sm">{copyLabel}</span></>
-                )}
-              </button>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <input type="text" value={shareUrl} readOnly className="flex-1 px-3 sm:px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-0" />
+                <button type="button" onClick={handleCopyLink} className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-semibold hover:from-amber-600 hover:to-amber-700 transition-all hover:scale-105 active:scale-95 shadow-md hover:shadow-lg min-w-[72px] sm:min-w-[84px] flex-shrink-0">
+                  {showCopySuccess && copiedType === 'link' ? (
+                    <><svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-xs sm:text-sm">{doneLabel}</span></>
+                  ) : (
+                    <><svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg><span className="text-xs sm:text-sm">{copyLabel}</span></>
+                  )}
+                </button>
+              </div>
+              {hasPremiumLikeData && (
+                <button type="button" onClick={handleCopyShareText} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-semibold transition-all active:scale-[0.98]">
+                  {showCopySuccess && copiedType === 'text' ? (
+                    <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-sm">{doneLabel}</span></>
+                  ) : (
+                    <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg><span className="text-sm">{copyTextLabel}</span></>
+                  )}
+                </button>
+              )}
             </div>
-            {showCopySuccess && <p className="text-sm text-emerald-600 mt-2 font-medium">{copiedLabel}</p>}
+            {showCopySuccess && <p className="text-sm text-emerald-600 mt-2 font-medium">{copiedType === 'text' ? copiedTextLabel : copiedLabel}</p>}
           </div>
         </div>
       </div>

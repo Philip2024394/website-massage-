@@ -44,7 +44,8 @@ export const homeTranslations = {
         massageTypes: 'Massage Types',
         experiencedArea: 'Experienced Area',
         yearsExperience: 'Years Experience',
-        genericBio: 'Professional massage therapist with experience in various massage techniques.'
+        genericBio: 'Professional massage therapist with experience in various massage techniques.',
+        languagesSpoken: 'Languages spoken',
       },
       // Massage Directory page UI
       pressure: 'Pressure',
@@ -310,7 +311,8 @@ export const homeTranslations = {
         massageTypes: 'Jenis Pijat',
         experiencedArea: 'Area Keahlian',
         yearsExperience: 'Tahun Pengalaman',
-        genericBio: 'Terapis pijat profesional dengan pengalaman dalam berbagai teknik pijat.'
+        genericBio: 'Terapis pijat profesional dengan pengalaman dalam berbagai teknik pijat.',
+        languagesSpoken: 'Bahasa yang ditekuni',
       },
       // Massage Directory page UI
       pressure: 'Tekanan',

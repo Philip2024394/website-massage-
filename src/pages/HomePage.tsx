@@ -2735,7 +2735,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         className="inline-flex flex-col items-center gap-1.5 text-gray-700 hover:text-amber-600 transition-colors"
                     >
                         <Globe className="w-6 h-6 text-amber-500" aria-hidden />
-                        <span className="text-sm text-gray-700">Social – Connecting wellness communities across the globe</span>
+                        <span className="text-sm text-gray-700">Social – Connecting wellness communities across the globe – Indastreet Social</span>
                     </button>
                     <SocialMediaLinks className="mt-2" />
                 </div>

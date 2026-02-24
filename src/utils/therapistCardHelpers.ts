@@ -3,6 +3,51 @@ import { AvailabilityStatus } from '../types';
 import { devLog } from './devMode';
 import { getSampleMenuItems } from './samplePriceUtils';
 
+/** Map language name to flag emoji for therapist/place cards. */
+export const LANGUAGE_FLAG_MAP: Record<string, string> = {
+  english: '🇬🇧', en: '🇬🇧',
+  indonesian: '🇮🇩', id: '🇮🇩', 'bahasa indonesia': '🇮🇩',
+  mandarin: '🇨🇳', chinese: '🇨🇳', zh: '🇨🇳',
+  japanese: '🇯🇵', ja: '🇯🇵',
+  korean: '🇰🇷', ko: '🇰🇷',
+  thai: '🇹🇭', th: '🇹🇭',
+  vietnamese: '🇻🇳', vi: '🇻🇳',
+  spanish: '🇪🇸', es: '🇪🇸',
+  french: '🇫🇷', fr: '🇫🇷',
+  german: '🇩🇪', de: '🇩🇪',
+  portuguese: '🇵🇹', pt: '🇵🇹',
+  italian: '🇮🇹', it: '🇮🇹',
+  russian: '🇷🇺', ru: '🇷🇺',
+  arabic: '🇸🇦', ar: '🇸🇦',
+  dutch: '🇳🇱', nl: '🇳🇱',
+  hindi: '🇮🇳', hi: '🇮🇳',
+  malay: '🇲🇾', ms: '🇲🇾',
+};
+
+export function getLanguageFlag(lang: string): string {
+  if (!lang || typeof lang !== 'string') return '🌐';
+  const key = lang.trim().toLowerCase();
+  return LANGUAGE_FLAG_MAP[key] || '🌐';
+}
+
+/**
+ * Parse therapist languages from API (array, JSON string, or comma-separated string).
+ */
+export function parseTherapistLanguages(therapist: Therapist | Record<string, any>): string[] {
+  const raw = (therapist as any).languagesSpoken ?? (therapist as any).languages;
+  if (Array.isArray(raw) && raw.length > 0) return raw.map((l: string) => String(l).trim()).filter(Boolean);
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map((l: string) => String(l).trim()).filter(Boolean);
+    } catch {
+      // comma-separated
+      return raw.split(',').map((l: string) => l.trim()).filter(Boolean);
+    }
+  }
+  return [];
+}
+
 /**
  * Therapist display name: only the first word (until first space).
  * Used on profiles and cards so "Philip francis o farrell" displays as "Philip".

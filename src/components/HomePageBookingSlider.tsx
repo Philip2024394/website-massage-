@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Zap, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Zap, Calendar, AlertTriangle } from 'lucide-react';
 import type { Therapist } from '../types';
 import { logger } from '../utils/logger';
 
@@ -85,140 +85,68 @@ export const HomePageBookingSlider: React.FC<HomePageBookingSliderProps> = ({
   disabled = false
 }) => {
   const [activeType, setActiveType] = useState<'book-now' | 'scheduled'>(selectedType);
-  const [isAnimating, setIsAnimating] = useState(false);
 
   // Get verification status
   const verificationStatus = checkTherapistVerification(therapist);
+  const isScheduledUnverified = !verificationStatus.isFullyVerified;
 
-  // Handle type selection with verification check
-  const handleTypeSelect = useCallback(async (type: HomePageBookingType) => {
-    if (disabled || isAnimating) return;
-
-    // If scheduled booking and not verified, show warning but still allow selection
-    if (type.id === 'scheduled' && !verificationStatus.isFullyVerified) {
+  const handleTypeSelect = useCallback((type: HomePageBookingType) => {
+    if (disabled) return;
+    if (type.id === 'scheduled' && isScheduledUnverified) {
       logger.debug('⚠️ Scheduled booking selected for unverified therapist:', {
         therapist: therapist.name,
         missing: verificationStatus.missingRequirements
       });
     }
-
-    setIsAnimating(true);
     setActiveType(type.id);
+    onBookingTypeSelect(type, therapist);
+  }, [onBookingTypeSelect, disabled, therapist, isScheduledUnverified, verificationStatus.missingRequirements]);
 
-    // Trigger selection callback after animation
-    setTimeout(() => {
-      onBookingTypeSelect(type, therapist);
-      setIsAnimating(false);
-    }, 200);
-  }, [onBookingTypeSelect, disabled, isAnimating, therapist, verificationStatus]);
-
-  // Get current selected booking type with verification styling
-  const getBookingTypeStyle = (type: HomePageBookingType) => {
-    const isActive = activeType === type.id;
-    const isScheduledUnverified = type.id === 'scheduled' && !verificationStatus.isFullyVerified;
-    
-    if (isScheduledUnverified && !isActive) {
-      return {
-        containerClass: 'opacity-60',
-        buttonClass: 'bg-gray-300 text-gray-600',
-        iconColor: 'text-gray-500'
-      };
-    }
-    
-    if (isActive) {
-      // Scheduled button turns orange when active (KTP + bank complete); Book Now stays orange/red
-      const activeColor = type.id === 'scheduled' && verificationStatus.isFullyVerified
-        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
-        : type.color + ' text-white shadow-lg';
-      return {
-        containerClass: 'opacity-100',
-        buttonClass: activeColor,
-        iconColor: 'text-white'
-      };
-    }
-    
-    return {
-      containerClass: 'opacity-100',
-      buttonClass: 'bg-white text-gray-700 hover:bg-gray-50',
-      iconColor: 'text-gray-600'
-    };
-  };
+  // Same style as massage city places (HeroSection): grid of two buttons, rounded-lg, min-h-[48px], shadow-lg, amber
+  const bookNowType = homePageBookingTypes[0];
+  const scheduledType = homePageBookingTypes[1];
 
   return (
     <div className={`home-page-booking-slider ${className}`}>
-      {/* Slider Container */}
-      <div className="relative bg-gray-100 rounded-lg p-1 shadow-inner">
-        {/* Background Slider */}
-        <div 
-          className={`
-            absolute top-1 left-1 w-1/2 h-[calc(100%-8px)] 
-            rounded-lg shadow-lg transition-transform duration-300 ease-in-out
-            ${activeType === 'scheduled' 
-              ? (verificationStatus.isFullyVerified 
-                ? 'bg-gradient-to-r from-orange-500 to-orange-600 translate-x-full' 
-                : 'bg-gray-300 translate-x-full'
-              )
-              : 'bg-gradient-to-r from-orange-500 to-red-500 translate-x-0'
-            }
-          `}
-        />
+      <div className="grid grid-cols-2 gap-3">
+        {/* Book Now - same style as city places Book Now button */}
+        <button
+          type="button"
+          onClick={() => handleTypeSelect(bookNowType)}
+          disabled={disabled}
+          className="flex items-center justify-center gap-2 min-h-[48px] py-2.5 px-4 rounded-lg shadow-lg bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 disabled:opacity-70 disabled:cursor-not-allowed"
+          title={bookNowType.description}
+        >
+          <Zap className="w-4 h-4 flex-shrink-0" />
+          <span>{bookNowType.title}</span>
+        </button>
 
-        {/* Booking Type Options */}
-        <div className="relative grid grid-cols-2 gap-1">
-          {homePageBookingTypes.map((type) => {
-            const style = getBookingTypeStyle(type);
-            const isScheduledUnverified = type.id === 'scheduled' && !verificationStatus.isFullyVerified;
-            
-            return (
-              <button
-                key={type.id}
-                onClick={() => handleTypeSelect(type)}
-                disabled={disabled}
-                className={`
-                  relative z-10 px-4 py-4 min-h-[48px] rounded-lg transition-all duration-300 will-change-transform transform-gpu
-                  ${style.containerClass}
-                  ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
-                  ${isAnimating ? 'pointer-events-none' : ''}
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
-                `}
-                title={
-                  isScheduledUnverified 
-                    ? `Requires: ${verificationStatus.missingRequirements.join(', ')}` 
-                    : type.description
-                }
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <span className={`transition-transform duration-300 ${style.iconColor}`}>
-                    {type.icon}
-                  </span>
-                  <div className="text-left">
-                    <div className="font-semibold text-sm leading-tight">
-                      {type.title}
-                    </div>
-                    <div className="text-xs opacity-75">
-                      {type.subtitle}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Verification Status Indicator */}
-                {type.id === 'scheduled' && (
-                  <div className="absolute -top-1 -right-1">
-                    {verificationStatus.isFullyVerified ? (
-                      <CheckCircle className="w-4 h-4 text-green-500 bg-white rounded-full" />
-                    ) : (
-                      <AlertTriangle className="w-4 h-4 text-orange-500 bg-white rounded-full" />
-                    )}
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        {/* Schedule - same style as city places Schedule button; disabled/gray when unverified */}
+        <button
+          type="button"
+          onClick={() => handleTypeSelect(scheduledType)}
+          disabled={disabled}
+          title={
+            isScheduledUnverified
+              ? `Requires: ${verificationStatus.missingRequirements.join(', ')}`
+              : scheduledType.description
+          }
+          className={`flex items-center justify-center gap-2 min-h-[48px] py-2.5 px-4 rounded-lg shadow-lg font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed ${
+            isScheduledUnverified
+              ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+              : 'bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-400'
+          }`}
+        >
+          <Calendar className="w-4 h-4 flex-shrink-0" />
+          <span>{scheduledType.title}</span>
+          {isScheduledUnverified && (
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 text-slate-500" aria-hidden />
+          )}
+        </button>
       </div>
 
-      {/* Verification Warning for Scheduled Bookings */}
-      {activeType === 'scheduled' && !verificationStatus.isFullyVerified && (
+      {/* Verification Warning for Scheduled Bookings - show when user clicked Schedule and is unverified */}
+      {activeType === 'scheduled' && isScheduledUnverified && (
         <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded-lg">
           <div className="flex items-start space-x-2">
             <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />

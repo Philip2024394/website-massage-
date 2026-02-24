@@ -19,6 +19,31 @@ import EliteFloatingActions from '../components/EliteFloatingActions';
 import EliteBookingSheet from '../components/EliteBookingSheet';
 import GiftVoucherSlider from '../components/GiftVoucherSlider';
 
+/** Profile image for Dewi Sari / Sari Dewi in Therapist Trending Now (massage city places profile). */
+const DEWI_SARI_PROFILE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/therapist.png';
+
+/** Profile image for Putu Ayu in Therapist Trending Now (massage city places profile). */
+const PUTU_AYU_PROFILE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/therapists.png';
+
+/** Profile image for Wayan Sinta in Therapist Trending Now (massage city places profile). */
+const WAYAN_SINTA_PROFILE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/therapistss.png';
+
+/** Normalized name for "Dewi Sari" / "Sari Dewi" / "Sar Dewi" – any of these use the shared profile image. */
+function isDewiSari(name: string): boolean {
+  const n = (name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  return n === 'dewi sari' || n === 'sari dewi' || n === 'sar dewi';
+}
+
+/** Normalized name for "Putu Ayu" – uses the therapists.png profile image. */
+function isPutuAyu(name: string): boolean {
+  return (name || '').trim().toLowerCase().replace(/\s+/g, ' ') === 'putu ayu';
+}
+
+/** Normalized name for "Wayan Sinta" – uses the therapistss.png profile image. */
+function isWayanSinta(name: string): boolean {
+  return (name || '').trim().toLowerCase().replace(/\s+/g, ' ') === 'wayan sinta';
+}
+
 // Helper functions for location and taxi booking
 const getUserLocation = () => ({ lat: 0, lng: 0 });
 const createTaxiBookingLink = (destination: any) => '#';
@@ -153,6 +178,16 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             .then(links => setCustomLinks(links))
             .catch(err => console.error('Failed to fetch custom links:', err));
     }, []);
+
+    /* Lock body scroll when side drawer is open so it opens reliably on profile page */
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        if (isMenuOpen) {
+            const prev = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            return () => { document.body.style.overflow = prev; };
+        }
+    }, [isMenuOpen]);
 
     useEffect(() => {
         if (!userLocation || !place?.coordinates) return;
@@ -459,11 +494,32 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full">
+            {/* Global App Drawer – render at root so it opens reliably when burger is clicked */}
+            <AppDrawer
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                onMassageJobsClick={onMassageJobsClick}
+                onTherapistPortalClick={_onTherapistPortalClick || (() => {})}
+                onVillaPortalClick={onVillaPortalClick || (() => {})}
+                onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}
+                onAgentPortalClick={onAgentPortalClick || (() => {})}
+                onCustomerPortalClick={onCustomerPortalClick}
+                onAdminPortalClick={onAdminPortalClick || (() => {})}
+                onNavigate={onNavigate}
+                onTermsClick={onTermsClick}
+                onPrivacyClick={onPrivacyClick}
+                therapists={therapists}
+                places={places}
+                language={language as 'en' | 'id' | 'gb'}
+            />
+
             {/* Universal Header */}
-            <UniversalHeader 
+            <UniversalHeader
                 language={language}
                 onLanguageChange={onLanguageChange}
                 onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={() => onNavigate?.('home')}
+                showHomeButton={true}
             />
 
             {/* Content below fixed header: top padding = header height so hero/location are not hidden */}
@@ -522,24 +578,6 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     </div>
                 </div>
             </section>
-
-            {/* Global App Drawer */}
-            <AppDrawer
-                isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
-                onMassageJobsClick={onMassageJobsClick}
-                onTherapistPortalClick={_onTherapistPortalClick || (() => {})}
-                onVillaPortalClick={onVillaPortalClick || (() => {})}
-                onMassagePlacePortalClick={onMassagePlacePortalClick || (() => {})}
-                onAgentPortalClick={onAgentPortalClick || (() => {})}
-                onCustomerPortalClick={onCustomerPortalClick}
-                onAdminPortalClick={onAdminPortalClick || (() => {})}
-                onNavigate={onNavigate}
-                onTermsClick={onTermsClick}
-                onPrivacyClick={onPrivacyClick}
-                therapists={therapists}
-                places={places}
-            />
 
             {/* Main Content - same layout as massage city places home */}
             <main className="w-full max-w-full mx-auto px-4 py-6 pb-24 ">
@@ -601,8 +639,13 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             const displayList = list.slice(0, tierLimit);
                             const therapists = (place as any).therapists;
                             const hasTherapists = Array.isArray(therapists) && therapists.length > 0;
+                            // Default featured therapist when place has none (so shared URL always shows "Services & Therapist Trending Now" with Dewi Sari)
+                            const defaultTherapists = [
+                                { id: 'dewi-sari', name: 'Dewi Sari', photo: DEWI_SARI_PROFILE_IMAGE, specialty: 'Traditional & Wellness', yearsExperience: 6, rating: 4.9 },
+                            ];
+                            const displayTherapists = hasTherapists ? therapists.slice(0, 3) : defaultTherapists;
                             const hasAnyServices = displayList.length > 0;
-                            if (!hasTherapists && !hasAnyServices) return null;
+                            if (displayTherapists.length === 0 && !hasAnyServices) return null;
                             const isId = language === 'id';
                             return (
                                 <div className="mt-6">
@@ -619,17 +662,25 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                                     </div>
 
                                     {/* Featured Therapists carousel – first */}
-                                    {hasTherapists && (
+                                    {(hasTherapists || displayTherapists.length > 0) && (
                                         <div className="mb-6">
                                             <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
-                                                {therapists.slice(0, 3).map((t: { id: string; name: string; photo: string; specialty: string; yearsExperience: number; rating?: number }) => (
+                                                {displayTherapists.map((t: { id: string; name: string; photo: string; specialty: string; yearsExperience: number; rating?: number }) => {
+                                                    const displayPhoto = isDewiSari(t.name)
+                                                        ? DEWI_SARI_PROFILE_IMAGE
+                                                        : isPutuAyu(t.name)
+                                                            ? PUTU_AYU_PROFILE_IMAGE
+                                                            : isWayanSinta(t.name)
+                                                                ? WAYAN_SINTA_PROFILE_IMAGE
+                                                                : (t.photo || '');
+                                                    return (
                                                     <div
                                                         key={t.id}
                                                         className="flex-shrink-0 w-32 snap-start rounded-xl border-2 bg-orange-50/60 border-orange-300 p-4 text-center"
                                                     >
                                                         <div className="w-16 h-16 mx-auto rounded-full bg-white border-2 border-amber-200 overflow-hidden mb-2">
                                                             <img
-                                                                src={t.photo}
+                                                                src={displayPhoto}
                                                                 alt={t.name}
                                                                 className="w-full h-full object-cover"
                                                                 onError={(e) => { (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/default-avatar.png'; }}
@@ -643,7 +694,8 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                                                             <span className="text-[10px] text-gray-500">• {t.yearsExperience}y</span>
                                                         </div>
                                                     </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     )}
@@ -721,12 +773,17 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
             {/* ELITE Floating Actions – WhatsApp & Save to Favorites */}
             {(place as any).membershipPlan === 'elite' || (place as any).plan === 'elite' ? (
-                <EliteFloatingActions
+            <EliteFloatingActions
                     placeId={String(place.$id || place.id)}
                     placeName={place.name}
                     whatsappNumber={(place as any).whatsappNumber || (place as any).whatsappnumber}
                     language={language}
                     placeImageUrl={place.mainImage || (place as any).profilePicture || (place as any).image}
+                    description={place.description}
+                    location={place.location}
+                    starRating={place.rating}
+                    reviewCount={place.reviewCount}
+                    bookedThisMonth={(place as any).bookedThisMonth}
                 />
             ) : null}
 
@@ -758,10 +815,10 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     <button
                         type="button"
                         onClick={() => onNavigate?.('indonesia')}
-                        className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
+                        className="inline-flex flex-col items-center gap-1.5 text-gray-700 hover:text-orange-600 transition-colors"
                     >
-                        <Globe className="w-5 h-5 text-amber-500" aria-hidden />
-                        <span className="font-medium text-sm">Social – Connecting wellness communities across the globe – Indastreet Social</span>
+                        <Globe className="w-6 h-6 text-orange-500" aria-hidden />
+                        <span className="text-sm text-gray-700">Social – Connecting wellness communities across the globe – Indastreet Social</span>
                     </button>
                     <SocialMediaLinks className="mt-2" />
                 </div>

@@ -11,6 +11,12 @@ export interface EliteLikeFeedEvent {
   placeName: string;
   placeImageUrl?: string;
   timestamp: number;
+  /** Optional rich data for premium social post & share text */
+  description?: string;
+  location?: string;
+  starRating?: number;
+  reviewCount?: number;
+  bookedThisMonth?: number;
 }
 
 export function getEliteLikeEvents(): EliteLikeFeedEvent[] {
