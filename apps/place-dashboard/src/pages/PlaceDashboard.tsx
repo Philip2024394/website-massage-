@@ -197,7 +197,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [openingTime, setOpeningTime] = useState('09:00');
     const [closingTime, setClosingTime] = useState('21:00');
     
-    // PWA Install states
+    // Parking (ELITE Visit Us – shown on profile when set)
+    const [parkingAvailability, setParkingAvailability] = useState('');
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [isAppInstalled, setIsAppInstalled] = useState(false);
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
@@ -437,6 +438,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setOpeningTime((placeData as any).openingtime || (placeData as any).openingTime || '09:00');
         setClosingTime((placeData as any).closingtime || (placeData as any).closingTime || '21:00');
         
+        setParkingAvailability((placeData as any).parkingAvailability || (placeData as any).parking || '');
+        
         // Initialize website information
         setWebsiteUrl((placeData as any).websiteUrl || (placeData as any).websiteurl || '');
         setWebsiteTitle((placeData as any).websiteTitle || (placeData as any).websitetitle || '');
@@ -465,6 +468,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setWebsiteUrl('');
         setWebsiteTitle('');
         setWebsiteDescription('');
+        setParkingAvailability('');
     };
 
     // Poll for WhatsApp contact notifications
@@ -684,6 +688,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             openingtime: openingTime,
             closingtime: closingTime,
             
+            // Parking (ELITE Visit Us)
+            parkingAvailability: parkingAvailability || '',
+            
             // Services
             massagetypes: JSON.stringify(massageTypes),
             languages: JSON.stringify(languages),
@@ -809,6 +816,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 locationId: coordinates?.lat && coordinates?.lng ? deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng }) : null,
                 openingtime: openingTime,
                 closingtime: closingTime,
+                parkingAvailability: parkingAvailability || '',
                 massagetypes: JSON.stringify(massageTypes),
                 languages: JSON.stringify(languages || []),
                 additionalServices: JSON.stringify(additionalServices || []),
@@ -1901,6 +1909,26 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 </div>
                             )}
                         </div>
+
+                        {/* Parking (ELITE Visit Us – shown on profile) */}
+                        <div className="mt-6">
+                            <label className="block text-sm font-medium text-gray-900 mb-2">Parking</label>
+                            <p className="text-xs text-gray-500 mb-2">Shown on your profile for customers (e.g. ELITE Visit Us section).</p>
+                            <select
+                                value={parkingAvailability}
+                                onChange={(e) => setParkingAvailability(e.target.value)}
+                                className="block w-full rounded-lg border border-gray-300 bg-white py-3 px-4 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
+                            >
+                                <option value="">No selection / Don&apos;t show</option>
+                                <option value="Parking available at the back.">Parking available at the back.</option>
+                                <option value="Parking available at front.">Parking available at front.</option>
+                                <option value="Parking available at side.">Parking available at side.</option>
+                                <option value="Parking available in parking area.">Parking available in parking area.</option>
+                                <option value="Street parking only.">Street parking only.</option>
+                                <option value="No parking.">No parking.</option>
+                            </select>
+                        </div>
+
                         <div>
                             <h3 className="text-md font-medium text-gray-800">{t?.pricingTitle || 'Pricing'}</h3>
                             <p className="text-xs text-gray-500 mt-1">Set your online massage prices</p>

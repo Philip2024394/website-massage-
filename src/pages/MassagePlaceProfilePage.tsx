@@ -13,6 +13,7 @@ const FloatingChatWindowLazy = lazy(() =>
 );
 import AdditionalServiceCard, { type AdditionalService } from '../components/AdditionalServiceCard';
 import { VERIFIED_BADGE_IMAGE_URL, ADDITIONAL_SERVICES_TIERS, type AdditionalServicesTierLimit } from '../constants/appConstants';
+import VisitUsElite from '../components/VisitUsElite';
 
 // Helper functions for location and taxi booking
 const getUserLocation = () => ({ lat: 0, lng: 0 });
@@ -591,6 +592,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                                 </div>
                             );
                         })()}
+
+                        {/* ELITE "Visit Us" – only for membershipPlan === 'elite' */}
+                        <VisitUsElite place={place} language={language} userLocation={userLocation} />
                     </div>
                 </div>
             </main>
