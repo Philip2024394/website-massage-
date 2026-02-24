@@ -332,12 +332,19 @@ export default function TherapistProfilePlaceStyle({
     };
   }, [allTherapists, therapist]);
 
-  /** Default testimonials for Safety & Comfort section (same as Massage City Places). */
+  /** Default testimonials: ~65% Indonesia (2 of 3); no city names in text so reviews match therapist’s location. */
   const SAFETY_COMFORT_TESTIMONIALS = useMemo(() => [
-    { id: '1', customerName: 'Michael R.', rating: 5, text: "The couple massage was amazing! Highly recommend for a romantic treat.", date: '1 week ago', treatment: "Couple's Traditional" },
-    { id: '2', customerName: 'Sarah M.', rating: 5, text: 'Best massage experience in Bali! The therapists are incredibly skilled and the ambiance is perfect.', date: '2 weeks ago', treatment: '90 min Traditional' },
-    { id: '3', customerName: 'John D.', rating: 5, text: 'Professional service from start to finish. Will definitely come back!', date: '1 month ago', treatment: '120 min Deep Tissue' },
+    { id: '1', customerName: 'Budi S.', rating: 5, text: "The couple massage was amazing! Highly recommend for a romantic treat.", date: '1 week ago', treatment: "Couple's Traditional", country: 'ID' },
+    { id: '2', customerName: 'Siti M.', rating: 5, text: 'Best massage experience! The therapist was incredibly skilled and the ambiance was perfect.', date: '2 weeks ago', treatment: '90 min Traditional', country: 'ID' },
+    { id: '3', customerName: 'James K.', rating: 5, text: 'Professional service from start to finish. Will definitely come back!', date: '1 month ago', treatment: '120 min Deep Tissue', country: 'AU' },
   ], []);
+
+  /** Two regional indicator letters → flag emoji (e.g. US → 🇺🇸). */
+  const getFlagEmoji = (countryCode: string) => {
+    const code = (countryCode || 'US').toUpperCase().slice(0, 2);
+    if (code.length < 2) return '🌍';
+    return String.fromCodePoint(...[...code].map((c) => 0x1f1e6 - 65 + c.charCodeAt(0)));
+  };
   useEffect(() => {
     const interval = setInterval(() => setTestimonialIndex((prev) => (prev + 1) % SAFETY_COMFORT_TESTIMONIALS.length), 5000);
     return () => clearInterval(interval);
@@ -692,6 +699,23 @@ export default function TherapistProfilePlaceStyle({
                         <Quote className="w-4 h-4 text-amber-500 flex-shrink-0" aria-hidden />
                         {isId ? 'Testimoni Pelanggan' : 'Customer Reviews'}
                       </h4>
+                      <style>{`
+                        @keyframes review-flag-float {
+                          0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4); }
+                          50% { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.5); }
+                        }
+                        .review-flag-circle {
+                          animation: review-flag-float 2.5s ease-in-out infinite;
+                        }
+                        .review-flag-circle:nth-child(1) { animation-delay: 0s; }
+                        .review-flag-circle:nth-child(2) { animation-delay: 0.3s; }
+                        .review-flag-circle:nth-child(3) { animation-delay: 0.6s; }
+                        .review-flag-circle.active {
+                          animation: none;
+                          transform: scale(1.08);
+                          box-shadow: 0 6px 16px rgba(245,158,11,0.4), 0 0 0 3px rgba(245,158,11,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
+                        }
+                      `}</style>
                       <div className="relative min-h-[88px]">
                         {SAFETY_COMFORT_TESTIMONIALS.map((testimonial, i) => (
                           <div
@@ -723,15 +747,19 @@ export default function TherapistProfilePlaceStyle({
                           </div>
                         ))}
                       </div>
+                      {/* 3 animated round 3D flag circles – country of reviewer; click to switch review (replaces dots) */}
                       <div className="flex justify-center gap-1.5 mt-3">
-                        {SAFETY_COMFORT_TESTIMONIALS.map((_, i) => (
+                        {SAFETY_COMFORT_TESTIMONIALS.map((testimonial, i) => (
                           <button
-                            key={i}
+                            key={testimonial.id}
                             type="button"
                             onClick={() => setTestimonialIndex(i)}
-                            className={`h-2 rounded-full transition-all ${i === testimonialIndex ? 'bg-amber-500 w-5' : 'bg-amber-200 w-2'}`}
-                            aria-label={isId ? `Testimoni ${i + 1}` : `Review ${i + 1}`}
-                          />
+                            className={`review-flag-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 border-2 border-amber-200 bg-white/90 shadow-md hover:scale-105 transition-transform ${i === testimonialIndex ? 'active ring-2 ring-amber-400' : 'opacity-80 hover:opacity-100'}`}
+                            aria-label={isId ? `Testimoni dari ${(testimonial as any).country || 'pelanggan'}` : `Review from ${(testimonial as any).country || 'customer'}`}
+                            title={(testimonial as any).country ? `${(testimonial as any).country} – ${testimonial.customerName}` : testimonial.customerName}
+                          >
+                            {(testimonial as any).country ? getFlagEmoji((testimonial as any).country) : '🌍'}
+                          </button>
                         ))}
                       </div>
                     </div>
