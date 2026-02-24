@@ -116,8 +116,10 @@ class ErrorBoundary extends Component<Props, State> {
             }
             const errAny = this.state.error as { code?: number | string; message?: string } | null;
             const is536870904 = errAny && (errAny.code === 536870904 || errAny.code === '536870904' || (typeof errAny.message === 'string' && errAny.message.includes('536870904')));
-            const title = is536870904 ? 'Connection issue' : 'Feature Temporarily Unavailable';
-            const message = is536870904 ? 'Connection or service error. Please try again or return to the homepage.' : "We're currently updating this feature to serve you better. Please try again in a moment or return to the homepage.";
+            const title = is536870904 ? 'Connection issue' : 'Something went wrong';
+            const message = is536870904
+                ? 'Connection or service error. Please try again or return to the homepage.'
+                : "This page ran into a problem. Use \"Try again\" to reload, or go to the homepage. If it keeps happening, try another browser or clear your cache.";
 
             // Professional user-friendly error display - NEVER show raw errors
             return (

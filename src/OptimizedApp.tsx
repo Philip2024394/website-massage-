@@ -5,11 +5,23 @@ import { AppShell, AppShellSkeleton } from './components/AppShell';
  * 🚀 OPTIMIZED APP ENTRY POINT
  *
  * Renders AppShell immediately, then lazy-loads the full App in one chunk.
- * Single React.lazy(import('./App')) avoids "Failed to fetch dynamically imported module"
- * that occurred with the two-stage DeferredApp → import('./App.tsx') flow in dev.
+ * Retries once on chunk load failure to fix "first visit shows error, reload works" (e.g. CDN/cache timing).
  */
 
-const App = React.lazy(() => import('./App'));
+function lazyWithRetry(
+  importFn: () => Promise<{ default: React.ComponentType<any> }>,
+  retries = 1
+): React.LazyExoticComponent<React.ComponentType<any>> {
+  return React.lazy(() =>
+    importFn().catch((err) => {
+      if (retries <= 0) throw err;
+      console.warn('[OptimizedApp] Chunk load failed, retrying once...', err?.message || err);
+      return importFn();
+    })
+  );
+}
+
+const App = lazyWithRetry(() => import('./App'));
 
 const OptimizedApp: React.FC = () => {
   return (

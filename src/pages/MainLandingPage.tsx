@@ -646,22 +646,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         detectCountry();
     }, []); // Empty deps - runs ONLY ONCE
 
-    // 🎯 SIMPLE GPS AUTO-COLLECTION ON ENTRY
-    useEffect(() => {
-        const initializeGPS = async () => {
-            try {
-                logger.debug('📍 Starting silent GPS collection on landing page...');
-                await customerGPSService.autoCollectOnEntry();
-                logger.debug('✅ GPS auto-collection completed');
-            } catch (error) {
-                logger.debug('📍 GPS auto-collection failed (this is normal):', error);
-            }
-        };
-        
-        // Small delay to let the page settle
-        const timer = setTimeout(initializeGPS, 1500);
-        return () => clearTimeout(timer);
-    }, []); // Run once on mount
+    // 🚫 GPS auto-collection DISABLED – location is set by city selection (landing + dashboard).
+    // No geolocation permission prompt on load; optional "Use my GPS" can request it when user clicks.
+    // useEffect(() => {
+    //     const initializeGPS = async () => {
+    //         try {
+    //             logger.debug('📍 Starting silent GPS collection on landing page...');
+    //             await customerGPSService.autoCollectOnEntry();
+    //             logger.debug('✅ GPS auto-collection completed');
+    //         } catch (error) {
+    //             logger.debug('📍 GPS auto-collection failed (this is normal):', error);
+    //         }
+    //     };
+    //     const timer = setTimeout(initializeGPS, 1500);
+    //     return () => clearTimeout(timer);
+    // }, []);
 
     // Removed image preload effect - not needed for background images
     // Background images load progressively and don't need preloading state

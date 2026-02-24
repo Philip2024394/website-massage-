@@ -39,6 +39,13 @@
   to = "/therapist/index.html"
   status = 200
 
+# ⚠️ CRITICAL: Serve /assets/* as static files BEFORE catch-all
+# Prevents SPA rewrite from returning index.html for JS/CSS (fixes 404 and wrong MIME type)
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
 # Main app SPA redirect - must handle all client-side routes (catch-all)
 # This ensures hard refresh works on any route (e.g., /therapist, /places, /jobs)
 # ⚠️ CRITICAL: Must NOT intercept static assets (JS, CSS, images)
@@ -82,3 +89,9 @@
   [headers.values]
     Content-Type = "application/xml; charset=utf-8"
     Cache-Control = "public, max-age=3600"
+
+# Assets (hashed JS/CSS) - cache aggressively; index.html is no-cache so users get fresh hashes
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
