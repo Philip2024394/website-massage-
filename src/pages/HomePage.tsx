@@ -1514,7 +1514,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     if (feat === 'verified-only' && !t.isVerified && !t.hasIndustryStandards) return false;
                     if (feat === 'with-facial' && !String(t.services || '').toLowerCase().includes('facial')) return false;
                     if (feat === 'highly-rated' && parseFloat(t.averageRating || '0') < 4.5) return false;
-                    if (feat === 'home-service' && !t.homeService && !t.mobileService) return false;
+                    if (feat === 'home-service' && t.homeService === false && t.mobileService === false) return false;
                     if (['coin-rub','body-scrub','hot-stones','aromatherapy','deep-pressure'].includes(feat)) {
                         const str = String(t.services || t.specialties || '').toLowerCase();
                         const key = feat === 'coin-rub' ? 'coin' : feat === 'body-scrub' ? 'scrub' : feat === 'hot-stones' ? 'hot stone' : feat === 'aromatherapy' ? 'aroma' : 'deep';
@@ -2727,48 +2727,19 @@ const HomePage: React.FC<HomePageProps> = ({
             
             {/* Directory footer: Brand */}
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
-                <div className="font-bold text-lg">
-                    <span className="text-black">Inda</span>
-                    <span className="text-amber-500">Street</span>
-                </div>
-                {/* Social Media Icons */}
-                <SocialMediaLinks className="mt-2" />
-
-                {/* Quick Links for SEO */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                    <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
-                    <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
-                        <button
-                            onClick={() => onNavigate?.('massage-types')}
-                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                        >
-                            Massage Types
-                        </button>
-                        <button
-                            onClick={() => onNavigate?.('facial-types')}
-                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                        >
-                            Facial Types
-                        </button>
-                        <button
-                            onClick={() => onNavigate?.('therapist-signup')}
-                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                        >
-                            Join as a Therapist Today
-                        </button>
-                        <button
-                            onClick={() => onNavigate?.('place-signup')}
-                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                        >
-                            Join Massage Place Today
-                        </button>
-                        <button
-                            onClick={() => onNavigate?.('facial-place-signup')}
-                            className="px-4 py-2 text-black hover:text-amber-600 transition-colors text-sm font-medium"
-                        >
-                            Join Facial Place Today
-                        </button>
-                    </div>
+                {/* Social Media – link to app social section (IndaStreet Social) */}
+                <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => onNavigate?.('indonesia')}
+                        className="inline-flex flex-col items-center gap-1.5 text-gray-700 hover:text-amber-600 transition-colors"
+                    >
+                        <Globe className="w-6 h-6 text-amber-500" aria-hidden />
+                        <span className="font-semibold text-sm">{translationsObject?.home?.socialLinkTitle ?? 'IndaStreet Social'}</span>
+                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext ?? 'Connecting wellness communities across the globe'}</span>
+                    </button>
+                    {/* Social Media Icons – under IndaStreet Social */}
+                    <SocialMediaLinks className="mt-2" />
                 </div>
             </div>
             

@@ -995,7 +995,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 if (foundPlace) {
                     return renderRoute(profileRoutes.massagePlace.component, {
                         place: foundPlace,
-                        // Header props
+                        onBack: () => props.setPage?.('home'),
                         onLanguageChange: props.onLanguageChange,
                         language: props.language,
                         selectedCity: props.selectedCity,
@@ -1019,7 +1019,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             }
             
             return renderRoute(profileRoutes.massagePlace.component, {
-                place: props.selectedPlace,
+                place: props.selectedPlace ?? null,
+                onBack: () => props.setPage?.('home'),
                 // Header props
                 onLanguageChange: props.onLanguageChange,
                 language: props.language,

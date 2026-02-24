@@ -5,8 +5,14 @@ import PlaceChat from './pages/PlaceChat';
 import PlacePaymentInfo from './pages/PlacePaymentInfo';
 import { LanguageProvider } from '../../../src/context/LanguageContext';
 
+interface PlaceAppProps {
+  place?: any;
+  onBack?: () => void;
+  onNavigate?: (page: string) => void;
+  language?: 'en' | 'id' | 'gb';
+}
 
-function App() {
+function App(props: PlaceAppProps = {}) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -90,10 +96,14 @@ function App() {
 
   return (
     <LanguageProvider value={{ language: language as any, setLanguage: handleLanguageChange as any }}>
-      <PlaceDashboard {...{} as any} onLogout={handleLogout}
+      <PlaceDashboard
+        place={props.place ?? user}
+        onBack={props.onBack}
+        onNavigate={props.onNavigate}
+        language={props.language ?? language}
+        onLogout={handleLogout}
         onNavigateToChat={() => setCurrentView('chat')}
         onNavigateToPayment={() => setCurrentView('payment')}
-        language={language}
         onLanguageChange={handleLanguageChange as any}
       />
     </LanguageProvider>

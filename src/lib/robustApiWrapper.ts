@@ -47,6 +47,13 @@ export async function robustApiCall<T>(
         if (!handled) {
             console.error(`❌ Unhandled error in ${context}:`, error);
         }
+        // Troubleshooting: when therapists fail to load, surface the real error so devs can fix collection ID/permissions
+        if (context.includes('therapists')) {
+            const msg = error instanceof Error ? error.message : String(error);
+            console.error(
+                `[Therapists] Fetch failed. If therapist profiles do not show: set VITE_THERAPISTS_COLLECTION_ID in .env to your Appwrite collection ID, and ensure the collection has Read permission for "Any". Error: ${msg}`
+            );
+        }
 
         // Return null instead of throwing to prevent unhandled promise rejections
         return null;
@@ -68,7 +75,9 @@ export async function robustCollectionQuery<T>(
             context: `${collectionName} collection query`
         }
     );
-
+    if (result == null) {
+        console.warn(`[robustCollectionQuery] ${collectionName} query returned null (error or timeout). Using fallback.`);
+    }
     // Return fallback if null (error occurred)
     return result ?? fallbackValue;
 }

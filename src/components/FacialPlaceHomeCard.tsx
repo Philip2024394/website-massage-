@@ -213,6 +213,8 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
             >
             {/* Image Container – same height/ratio as therapist card */}
             <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
+                {/* Top amber line – same design/shape as massage city places */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 opacity-90 pointer-events-none" />
                 <img
                     src={displayImage}
                     alt={place.name || "Facial Clinic"}

@@ -606,10 +606,6 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
 
             {/* Directory footer: Brand + Terms & Privacy */}
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
-                <div className="font-bold text-base">
-                    <span className="text-black">Inda</span>
-                    <span className="text-orange-500">Street</span>
-                </div>
                 <div className="flex justify-center gap-4">
                     <button onClick={() => onTermsClick && onTermsClick()} className="text-sm text-orange-500 hover:text-orange-600 font-semibold">
                         Terms

@@ -1690,7 +1690,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                 if (!hasDeep) return false;
                                 break;
                             case 'home-service':
-                                if (!t.homeService && !t.mobileService) return false;
+                                // Show therapist if they offer home/mobile service OR if field is missing (legacy Appwrite docs)
+                                if (t.homeService === true || t.mobileService === true) break;
+                                if (t.homeService === false && t.mobileService === false) return false;
                                 break;
                         }
                     }
@@ -2310,48 +2312,19 @@ const HomePage: React.FC<HomePageProps> = ({
             
             {/* Directory footer: Brand */}
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
-                <div className="font-bold text-lg">
-                    <span className="text-black">Inda</span>
-                    <span className="text-orange-500">Street</span>
-                </div>
-                {/* Social Media Icons */}
-                <SocialMediaLinks className="mt-2" />
-
-                {/* Quick Links for SEO */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                    <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
-                    <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
-                        <button
-                            onClick={() => onNavigate?.('massage-types')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Massage Types
-                        </button>
-                        <button
-                            onClick={() => onNavigate?.('facial-types')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Facial Types
-                        </button>
-                        <button
-                            onClick={() => onNavigate?.('therapist-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Join as a Therapist Today
-                        </button>
-                        <button
-                            onClick={() => onNavigate?.('place-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Join Massage Place Today
-                        </button>
-                        <button
-                            onClick={() => onNavigate?.('facial-place-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Join Facial Place Today
-                        </button>
-                    </div>
+                {/* Social Media – link to app social section (IndaStreet Social) */}
+                <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => onNavigate?.('indonesia')}
+                        className="inline-flex flex-col items-center gap-1.5 text-gray-700 hover:text-orange-600 transition-colors"
+                    >
+                        <Globe className="w-6 h-6 text-orange-500" aria-hidden />
+                        <span className="font-semibold text-sm">{translationsObject?.home?.socialLinkTitle ?? 'IndaStreet Social'}</span>
+                        <span className="text-xs text-gray-500">{translationsObject?.home?.socialLinkSubtext ?? 'Connecting wellness communities across the globe'}</span>
+                    </button>
+                    {/* Social Media Icons – under IndaStreet Social */}
+                    <SocialMediaLinks className="mt-2" />
                 </div>
             </div>
             

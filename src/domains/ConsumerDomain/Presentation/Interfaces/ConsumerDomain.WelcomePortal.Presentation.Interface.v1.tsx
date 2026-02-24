@@ -1783,7 +1783,8 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 if (!hasDeep) return false;
                                 break;
                             case 'home-service':
-                                if (!t.homeService && !t.mobileService) return false;
+                                if (t.homeService === true || t.mobileService === true) break;
+                                if (t.homeService === false && t.mobileService === false) return false;
                                 break;
                         }
                     }
@@ -2462,10 +2463,6 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
             
             {/* Directory footer: Brand */}
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
-                <div className="font-bold text-lg">
-                    <span className="text-black">Inda</span>
-                    <span className="text-orange-500">Street</span>
-                </div>
                 {/* Social Media Icons */}
                 <SocialMediaLinks className="mt-2" />
 

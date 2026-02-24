@@ -1,6 +1,6 @@
 // 🎯 Smart Support Hub - State-of-the-art Contact & FAQ System
 import React, { useState, useMemo } from 'react';
-import { Mail, Phone, Clock, CheckCircle, ChevronDown, ChevronUp, User, Briefcase, Settings, Eye, Upload, Shield, Search, MessageCircle, CreditCard, UserCheck, Wrench, UserCog, Scale, List, Lightbulb } from 'lucide-react';
+import { Mail, Phone, Clock, CheckCircle, ChevronDown, ChevronUp, User, Briefcase, Settings, Eye, Upload, Shield, Search, MessageCircle, CreditCard, UserCheck, Wrench, UserCog, Scale, List, Lightbulb, Globe } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { useTranslations } from '../lib/useTranslations';
@@ -970,70 +970,23 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 )}
             </div>
 
-            {/* Footer - same as Home: brand, social, quick links; mobile-friendly */}
+            {/* Footer - same as Home: brand, social, link to social section */}
             <footer className="mt-10 sm:mt-12 mb-6 pb-6 flex flex-col items-center gap-2 px-3 sm:px-4">
                 <div className="font-bold text-lg">
                     <span className="text-black">Inda</span>
                     <span className="text-orange-500">Street</span>
                 </div>
                 <SocialMediaLinks className="mt-2" />
-                <div className="mt-8 pt-6 border-t border-gray-200 w-full max-w-2xl">
-                    <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
-                    <div className="flex flex-wrap justify-center gap-1">
-                        <button
-                            type="button"
-                            onClick={() => onNavigate?.('massage-types')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Massage Types
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onNavigate?.('facial-types')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Facial Types
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onNavigate?.('therapist-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Join as a Therapist Today
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onNavigate?.('place-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Join Massage Place Today
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onNavigate?.('facial-place-signup')}
-                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                        >
-                            Join Facial Place Today
-                        </button>
-                        {onTermsClick && (
-                            <button
-                                type="button"
-                                onClick={onTermsClick}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                            >
-                                Terms
-                            </button>
-                        )}
-                        {onPrivacyClick && (
-                            <button
-                                type="button"
-                                onClick={onPrivacyClick}
-                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
-                            >
-                                Privacy
-                            </button>
-                        )}
-                    </div>
+                <div className="mt-8 pt-6 border-t border-gray-200 w-full max-w-2xl flex flex-col items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => onNavigate?.('indonesia')}
+                        className="inline-flex flex-col items-center gap-1.5 text-gray-700 hover:text-orange-600 transition-colors"
+                    >
+                        <Globe className="w-6 h-6 text-orange-500" aria-hidden />
+                        <span className="font-semibold text-sm">IndaStreet Social</span>
+                        <span className="text-xs text-gray-500">Connecting wellness communities across the globe</span>
+                    </button>
                 </div>
             </footer>
         </div>

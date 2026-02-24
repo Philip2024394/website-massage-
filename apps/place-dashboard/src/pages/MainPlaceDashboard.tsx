@@ -8,7 +8,6 @@ import PlaceCalendar from './PlaceCalendar';
 import PlaceLegal from './PlaceLegal';
 import PlaceMenuPricing from './PlaceMenuPricing';
 import MoreCustomersPage from './MoreCustomersPage';
-import MoreCustomersPage from './MoreCustomersPage';
 
 interface MainPlaceDashboardProps {
   onSave?: (data: any) => void;

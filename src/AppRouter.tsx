@@ -141,6 +141,8 @@ const EmployerInfoPage = React.lazy(() => import('./pages/EmployerInfoPage'));
 const PaymentInfoPage = React.lazy(() => import('./pages/PaymentInfoPage'));
 const MobileTermsAndConditionsPage = React.lazy(() => import('./pages/MobileTermsAndConditionsPage'));
 const TherapistTermsAndConditions = React.lazy(() => import('./pages/TherapistTermsAndConditions'));
+const MassageCityPlacesSignupPage = React.lazy(() => import('./pages/auth/MassageCityPlacesSignupPage'));
+const IncreaseYourEarningsPage = React.lazy(() => import('./pages/place/IncreaseYourEarningsPage'));
 
 // Blog posts
 const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));
@@ -1332,6 +1334,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBack: () => props.onNavigate('home'),
                 language: props.language || 'id'
             });
+
+        case 'massage-city-places-signup':
+            // Massage City Places (Indonesia): no pricing shown, Name/Phone/WhatsApp/Business/City + OTP → dashboard
+            return renderRoute(MassageCityPlacesSignupPage, {
+                onNavigate: props.onNavigate,
+                onBack: () => props.onNavigate('home'),
+                onAuthSuccess: async () => {
+                    if (props.restoreUserSession) await props.restoreUserSession();
+                },
+            });
+            
+        case 'increase-your-earnings':
+            // Shown after place publishes listing (Step 4 – membership upsell)
+            return renderRoute(IncreaseYourEarningsPage, {
+                onBack: () => props.onNavigate?.('massage-place-dashboard'),
+                onSelectPlan: (planId: string) => {
+                    // TODO: wire to payment/plan upgrade
+                    props.onNavigate?.('massage-place-dashboard');
+                },
+                currentPlanId: 'free',
+            });
             
         case 'role-selection':
             return renderRoute(RoleSelectionPage, {
@@ -1782,6 +1805,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         place: resolvedMassagePlace,
                         onBack: () => props.setPage?.('home'),
                         userLocation: props.userLocation,
+                        loggedInCustomer: props.loggedInCustomer,
                         onLanguageChange: props.onLanguageChange,
                         language: props.language,
                         selectedCity: props.selectedCity,
@@ -1802,30 +1826,24 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onNavigate: props.onNavigate
                     });
             }
-            
-            return renderRoute(profileRoutes.massagePlace.component, {
-                place: props.selectedPlace,
-                onBack: () => props.setPage?.('home'),
-                userLocation: props.userLocation,
-                onLanguageChange: props.onLanguageChange,
-                language: props.language,
-                selectedCity: props.selectedCity,
-                onCityChange: props.onCityChange,
-                therapists: props.therapists,
-                places: props.places,
-                onMassageJobsClick: props.onMassageJobsClick,
-                onHotelPortalClick: props.onHotelPortalClick,
-                onVillaPortalClick: props.onVillaPortalClick,
-                onTherapistPortalClick: props.onTherapistPortalClick,
-                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
-                onFacialPortalClick: props.onFacialPortalClick,
-                onAgentPortalClick: props.onAgentPortalClick,
-                onCustomerPortalClick: props.onCustomerPortalClick,
-                onAdminPortalClick: props.onAdminPortalClick,
-                onTermsClick: props.onTermsClick,
-                onPrivacyClick: props.onPrivacyClick,
-                onNavigate: props.onNavigate
-            });
+
+            // No place resolved (no URL match and no selectedPlace): show inline fallback
+            // so we never mount MassagePlaceProfilePage without a place (avoids component load errors)
+            return (
+                <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center p-4">
+                    <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+                        <div className="text-6xl mb-4">🏨</div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Place not found</h2>
+                        <p className="text-gray-600 mb-4">This place may not exist or the link may be incorrect.</p>
+                        <button
+                            onClick={() => props.onNavigate?.('home')}
+                            className="bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 transition-colors"
+                        >
+                            Go to Home
+                        </button>
+                    </div>
+                </div>
+            );
         
         case 'facial-place-profile': {
             logger.debug('[FacialPlaceProfile] Rendering facial place profile page');
@@ -2451,6 +2469,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 childProps: {
                     place: massagePlaceUser,
                     onBack: () => props.onNavigate?.('home'),
+                    onNavigate: props.onNavigate,
                     language: props.language
                 }
             });

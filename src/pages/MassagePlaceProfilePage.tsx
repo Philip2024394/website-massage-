@@ -1,13 +1,16 @@
-// 🎯 AUTO-FIXED: Mobile scroll architecture violations (5 fixes)
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, lazy, Suspense } from 'react';
 import CityPlaceCard from '../components/CityPlaceCard';
-import { FloatingChatWindow } from '../chat';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { Globe, LayoutGrid } from 'lucide-react';
 import { customLinksService } from '../lib/appwrite/services/customLinks.service';
 import { useChatProviderOptional } from '../hooks/useChatProvider';
+import { ChatContext } from '../context/ChatProvider';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import SocialMediaLinks from '../components/SocialMediaLinks';
+
+const FloatingChatWindowLazy = lazy(() =>
+    import('../chat').then((m) => ({ default: m.FloatingChatWindow }))
+);
 import AdditionalServiceCard, { type AdditionalService } from '../components/AdditionalServiceCard';
 import { VERIFIED_BADGE_IMAGE_URL, ADDITIONAL_SERVICES_TIERS, type AdditionalServicesTierLimit } from '../constants/appConstants';
 
@@ -35,7 +38,7 @@ interface Place {
     description?: string;
     mainImage?: string;
     profilePicture?: string;
-    location: string;
+    location?: string;
     whatsappNumber?: string;
     email?: string;
     pricing?: any;
@@ -59,8 +62,8 @@ interface Place {
 }
 
 interface MassagePlaceProfilePageProps {
-    place: Place;
-    onBack: () => void;
+    place: Place | null;
+    onBack?: () => void;
     onBook?: () => void;
     userLocation?: { lat: number; lng: number } | null;
     loggedInCustomer?: any; // Customer user object
@@ -133,6 +136,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     const [calculatedDistance, setCalculatedDistance] = useState<number | undefined>(place?.distance);
 
     const { addNotification } = useChatProviderOptional();
+    const hasChatContext = useContext(ChatContext) != null;
 
     useEffect(() => {
         customLinksService.getAll()
@@ -177,21 +181,19 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     // Guard: Return early if place is null or undefined (after all hooks)
     if (!place) {
         console.log('❌ MASSAGE PLACE PROFILE: No place provided!');
+        const goBack = () => { onBack?.(); onNavigate?.('home'); };
         return (
-            <>
             <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-100 flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-gray-600 mb-4">Place not found</p>
                     <button 
-                        onClick={onBack}
+                        onClick={goBack}
                         className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
                     >
                         Go Back
                     </button>
                 </div>
             </div>
-            <FloatingChatWindow userId={"guest"} userName={"Guest User"} userRole="customer" />
-            </>
         );
     }
 
@@ -412,25 +414,6 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         }
     };
 
-    // Handle missing place
-    if (!place) {
-        return (
-            <>
-            <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Place not found</h2>
-                    <button onClick={onBack} className="px-6 py-3 bg-amber-500 text-white rounded-lg">
-                        Go Back
-                    </button>
-                </div>
-            </div>
-            {/* Floating Chat Window */}
-            <FloatingChatWindow userId={"guest"} userName={"Guest User"} userRole="customer" />
-            </>
-
-        );
-    }
-
     return (
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full">
             {/* Universal Header */}
@@ -442,9 +425,12 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
             {/* Content below fixed header: top padding = header height so hero/location are not hidden */}
             <div className="pt-[60px] sm:pt-[64px]">
-            {/* Hero area – full-width banner with place image, name, location */}
-            <section className="w-full max-w-full overflow-hidden bg-gray-200">
-                <div className="relative w-full aspect-[21/9] min-h-[160px] max-h-[280px]">
+            {/* Hero + main image: one image from place dashboard (mainImage). Same image used for hero and for the card below; editable in massage city place dashboard. */}
+            <section className="w-full max-w-full overflow-visible bg-gray-200 rounded-t-2xl">
+                <div className="relative w-full pt-2 bg-gray-200 rounded-t-2xl overflow-visible">
+                    {/* Top amber line – same as home page massage city places card (CityPlaceCard): rounded-t-2xl to match container */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 opacity-90 pointer-events-none rounded-t-2xl" />
+                    <div className="relative w-full aspect-[21/9] min-h-[160px] max-h-[280px]">
                     <img
                         src={(place as any).mainImage || (place as any).image || (place as any).profilePicture || 'https://ik.imagekit.io/7grri5v7d/ma%201.png'}
                         alt=""
@@ -454,6 +440,8 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                         }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    {/* Amber line over main image – same as massage city home card */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-amber-500 pointer-events-none" />
                     {isPlaceVerified() && (
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1.5">
                             <img
@@ -473,6 +461,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             </svg>
                             <span>{(place as any).location || (place as any).address || (place as any).city || 'Indonesia'}</span>
                         </p>
+                    </div>
                     </div>
                 </div>
             </section>
@@ -499,9 +488,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             <main className="w-full max-w-full mx-auto px-4 py-6 pb-24 ">
                 <div className="max-w-full">
                     <div className="mb-3 text-center">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-1">Featured Massage Spas</h3>
-                        <p className="text-gray-600">
-                            {cityState && cityState !== 'all' ? `Find the best massage places in ${cityState}` : 'Find the best massage places across Indonesia'}
+                        <h3 className="text-2xl font-bold text-gray-900 mb-1">Welcome to {place.name}</h3>
+                        <p className="text-sm text-gray-600 animate-in slide-in-from-right duration-500 delay-200">
+                            Please Reach Out For Services Not Listed
                         </p>
                     </div>
                     <div className="space-y-4">
@@ -629,7 +618,11 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 </div>
             </footer>
             </div>
-            <FloatingChatWindow userId="guest" userName="Guest User" userRole="customer" />
+            {hasChatContext && (
+                <Suspense fallback={null}>
+                    <FloatingChatWindowLazy userId="guest" userName="Guest User" userRole="customer" />
+                </Suspense>
+            )}
         </div>
     );
 };

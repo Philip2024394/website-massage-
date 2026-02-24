@@ -46,6 +46,7 @@ import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVilla
 import PlaceCalendar from './PlaceCalendar';
 import PlaceVerifiedPage from './PlaceVerifiedPage';
 import PlaceAdditionalServicesUpgrade from './PlaceAdditionalServicesUpgrade';
+import { STORAGE_MCP_ONBOARDING, MCP_DEFAULT_FREE_COMMISSION_PERCENT } from '../../../../src/config/massageCityPlacesPlans';
 
 
 interface PlaceDashboardPageProps {
@@ -201,6 +202,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [isAppInstalled, setIsAppInstalled] = useState(false);
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
+    const [showMCPOnboarding, setShowMCPOnboarding] = useState(false);
+    const [publishingListing, setPublishingListing] = useState(false);
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
     const [showNotificationsView, setShowNotificationsView] = useState(false);
     
@@ -290,6 +293,26 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         document.addEventListener('visibilitychange', onVisible);
         return () => document.removeEventListener('visibilitychange', onVisible);
     }, [_placeId]);
+
+    // Massage City Places onboarding: show create-listing flow until they publish
+    useEffect(() => {
+        if (typeof sessionStorage === 'undefined') return;
+        try {
+            const flag = sessionStorage.getItem(STORAGE_MCP_ONBOARDING);
+            if (flag === '1' && place && !(place as any).isLive) {
+                setShowMCPOnboarding(true);
+            } else {
+                setShowMCPOnboarding(false);
+            }
+        } catch {
+            setShowMCPOnboarding(false);
+        }
+    }, [place]);
+
+    // When in MCP onboarding, keep them on profile tab
+    useEffect(() => {
+        if (showMCPOnboarding && activeTab !== 'profile') setActiveTab('profile');
+    }, [showMCPOnboarding]);
 
     // PWA Install functionality
     useEffect(() => {
@@ -740,7 +763,95 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             console.warn('Failed to clear auto-saved place data:', error);
         }
     };
-    
+
+    // Massage City Places: Publish listing (go live under Free Plan, then redirect to Increase Your Earnings)
+    const handlePublishListing = async () => {
+        if (!place || !placeId) return;
+        const missingFields: string[] = [];
+        if (!name || name.trim() === '') missingFields.push('• Business name');
+        if (!contactNumber || contactNumber.trim() === '') missingFields.push('• Contact number');
+        if (!location || location.trim() === '') missingFields.push('• Address / location');
+        if (!description || description.trim() === '') missingFields.push('• Description');
+        if (!mainImage || mainImage.trim() === '') missingFields.push('• Main photo');
+        if (!openingTime || openingTime.trim() === '') missingFields.push('• Opening time');
+        if (!closingTime || closingTime.trim() === '') missingFields.push('• Closing time');
+        const hasPricing = Object.values(pricing).some((p: number) => p > 0);
+        if (!hasPricing) missingFields.push('• At least one service price');
+        if (!massageTypes || massageTypes.length === 0) missingFields.push('• At least one massage type');
+        if (missingFields.length > 0) {
+            setValidationMissingFields(missingFields);
+            setShowValidationPopup(true);
+            return;
+        }
+        const safeGalleryImages = galleryImages || [];
+        const filteredGallery = safeGalleryImages
+            .filter((img: any) => img && img.imageUrl && String(img.imageUrl).trim() !== '')
+            .slice(0, 5);
+        setPublishingListing(true);
+        try {
+            const rawData: any = {
+                placeId: placeId,
+                status: 'Open',
+                category: 'wellness',
+                password: place?.password,
+                islive: true,
+                name,
+                email: place?.email || '',
+                description,
+                whatsappnumber: contactNumber,
+                mainimage: mainImage,
+                profilePicture: profilePicture || mainImage,
+                galleryImages: JSON.stringify(filteredGallery),
+                pricing: JSON.stringify(pricing),
+                location,
+                coordinates: Array.isArray(coordinates) ? coordinates : [coordinates?.lng ?? 106.8456, coordinates?.lat ?? -6.2088],
+                city: coordinates?.lat && coordinates?.lng ? deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng }) : null,
+                locationId: coordinates?.lat && coordinates?.lng ? deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng }) : null,
+                openingtime: openingTime,
+                closingtime: closingTime,
+                massagetypes: JSON.stringify(massageTypes),
+                languages: JSON.stringify(languages || []),
+                additionalServices: JSON.stringify(additionalServices || []),
+                yearsEstablished: Number(yearsEstablished) || 1,
+                websiteUrl: websiteUrl || '',
+                websiteTitle: websiteTitle || '',
+                websiteDescription: websiteDescription || '',
+                discountpercentage: 0,
+                discountduration: 0,
+                isdiscountactive: false,
+                discountendtime: '',
+            };
+            const saveData = sanitizePlacePayload(rawData);
+            await placeService.update(String(place.$id || place.id), saveData);
+            try {
+                sessionStorage.removeItem(STORAGE_MCP_ONBOARDING);
+            } catch (_) {}
+            setPlace((prev: any) => (prev ? { ...prev, isLive: true } : prev));
+            setShowMCPOnboarding(false);
+            if (onNavigate) onNavigate('increase-your-earnings');
+        } catch (err: any) {
+            console.error('Publish listing failed:', err);
+            setToast({ message: err?.message || 'Failed to publish. Try again.', type: 'error' });
+        } finally {
+            setPublishingListing(false);
+        }
+    };
+
+    const mcpListingCompletePercent = (() => {
+        if (!showMCPOnboarding) return 0;
+        let n = 0;
+        if (name?.trim()) n++;
+        if (mainImage?.trim()) n++;
+        const galleryCount = (galleryImages || []).filter((img: any) => img?.imageUrl?.trim()).length;
+        if (galleryCount > 0) n++;
+        if (Object.values(pricing || {}).some((p: number) => p > 0)) n++;
+        if (description?.trim()) n++;
+        if (openingTime && closingTime) n++;
+        if (location?.trim()) n++;
+        if (massageTypes?.length) n++;
+        return Math.min(100, Math.round((n / 9) * 100));
+    })();
+
     // Handle Plus plan activation (profile goes live, then show payment modal)
     const handlePlusActivation = async () => {
         if (!place) return;
@@ -2183,7 +2294,38 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         )}
                     </div>
                 ) : (
-                    renderContent()
+                    <>
+                        {showMCPOnboarding && (
+                            <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-2xl">
+                                <p className="text-sm font-medium text-amber-900 mb-2">Your listing is {mcpListingCompletePercent}% complete</p>
+                                <div className="h-2 bg-amber-200 rounded-full overflow-hidden mb-4">
+                                    <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${mcpListingCompletePercent}%` }} />
+                                </div>
+                                <p className="text-sm text-amber-800 mb-4">Complete the fields below. Free plan: up to 5 photos.</p>
+                                {mcpListingCompletePercent >= 80 && (
+                                    <div className="pt-2 border-t border-amber-200">
+                                        <p className="text-base font-semibold text-amber-900 mb-2">Your listing is ready to go live!</p>
+                                        <button
+                                            type="button"
+                                            onClick={handlePublishListing}
+                                            disabled={publishingListing}
+                                            className="w-full py-3 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 disabled:opacity-70 flex items-center justify-center gap-2"
+                                        >
+                                            {publishingListing ? (
+                                                <>
+                                                    <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                                                    Publishing...
+                                                </>
+                                            ) : (
+                                                'Publish My Listing'
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {renderContent()}
+                    </>
                 )}
             </main>
 

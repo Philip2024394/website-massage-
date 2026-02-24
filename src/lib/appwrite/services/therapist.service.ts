@@ -213,6 +213,30 @@ export const therapistService = {
                 console.warn('[APPWRITE therapists] documents array is empty. DATABASE_ID:', databaseId, 'THERAPISTS_COLLECTION_ID:', collectionId, 'total:', total, 'filters:', filterDescription);
             }
 
+            // Empty result with city filter: retry without city and filter client-side (same as throw fallback).
+            // Therapists may use primary_city/city instead of locationId, so server-side locationId can return 0.
+            if (primaryCityForFallback && docs.length === 0) {
+                const baselineQueries = queries.filter((q) => {
+                    const s = String(q);
+                    return !s.includes('locationId') && !s.includes('country');
+                });
+                if (baselineQueries.length > 0) {
+                    try {
+                        const fallbackResponse = await rateLimitedDb.listDocuments(databaseId, collectionId, baselineQueries);
+                        const filtered = (fallbackResponse?.documents ?? []).filter((d: any) => {
+                            const pc = (d.locationId ?? d.primary_city ?? d.city ?? d.location_id ?? '').toString().toLowerCase().trim();
+                            const c = (d.country ?? '').toString().trim();
+                            return pc === primaryCityForFallback && (!c || c === 'Indonesia');
+                        });
+                        response = { ...fallbackResponse, documents: filtered };
+                        if (isDev) console.warn('[APPWRITE therapists] City filter returned 0; used client-side city fallback:', filtered.length, 'therapists.');
+                        if (!isDev && filtered.length > 0) console.warn('[APPWRITE therapists] City filter returned 0 but client-side fallback found', filtered.length, 'therapists. Consider setting locationId on therapist documents.');
+                    } catch (fallbackErr) {
+                        if (isDev) console.warn('[APPWRITE therapists] Client-side city fallback failed:', fallbackErr);
+                    }
+                }
+            }
+
             // After each step: log first document values + typeof for approved/status/availability
             if (isDev) {
                 if (docs.length > 0 && docs[0]) {

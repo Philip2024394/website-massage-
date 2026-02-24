@@ -49,6 +49,11 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         />
     );
 
+    // Home button: different icon when on home vs not (user requested URLs)
+    const HOME_ICON_ON_HOME = 'https://ik.imagekit.io/7grri5v7d/home%20icon.png';
+    const HOME_ICON_NOT_ON_HOME = 'https://ik.imagekit.io/7grri5v7d/home%20icons.png';
+    const homeIconSrc = isActive('home') ? HOME_ICON_ON_HOME : HOME_ICON_NOT_ON_HOME;
+
     // Navigation items configuration - Always show notifications instead of search
     const getSecondButton = () => ({
         key: 'notifications',
@@ -61,7 +66,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
     let navigationItems = [
         {
             key: 'home',
-            icon: imageIcon('home', 'https://ik.imagekit.io/7grri5v7d/home%20button.png', 'Home'),
+            icon: <img src={homeIconSrc} alt="Home" loading="lazy" className={`w-7 h-7 object-contain transition-opacity ${isActive('home') ? 'opacity-100' : 'opacity-60'}`} />,
             label: 'Home',
             onClick: () => onNavigate('home'),
             badgeCount: 0

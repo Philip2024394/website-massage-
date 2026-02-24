@@ -32,12 +32,28 @@ export const useDataFetching = () => {
                 robustCollectionQuery(() => facialPlaceService.getAll(), 'facial_places', [] as Place[]),
                 robustCollectionQuery(() => hotelService.getHotels(), 'hotels', [] as any[])
             ]);
-            if (import.meta.env.DEV) {
-                console.log('✅ [fetchPublicData] Parallel fetch:', { therapists: therapistsData?.length ?? 0, places: placesData?.length ?? 0, facialPlaces: facialPlacesData?.length ?? 0, hotels: hotelsData?.length ?? 0 });
+            let finalTherapistsData = therapistsData ?? [];
+            if (finalTherapistsData.length === 0) {
+                console.warn('[fetchPublicData] getTherapists returned 0. Trying getAll() fallback for massage home service.');
+                try {
+                    // Fetch ALL therapists (no city filter) so client-side city filter can still show results
+                    // if server-side locationId/country query returned 0 (e.g. docs use primary_city instead of locationId)
+                    const allTherapists = await therapistService.getAll(undefined, undefined, { liveOnly: false });
+                    if (Array.isArray(allTherapists) && allTherapists.length > 0) {
+                        finalTherapistsData = allTherapists;
+                        console.warn('[fetchPublicData] Using getAll() fallback:', allTherapists.length, 'therapists for home page (city filter will be applied client-side).');
+                    }
+                } catch (fallbackErr) {
+                    console.error('[fetchPublicData] getAll() fallback failed:', fallbackErr);
+                }
             }
-            
+            console.log('[fetchPublicData] Therapists from Appwrite:', finalTherapistsData.length, '| places:', (placesData ?? []).length, '| facial:', (facialPlacesData ?? []).length);
+            if (finalTherapistsData.length === 0) {
+                console.warn('[fetchPublicData] No therapists to display. Check Appwrite: collection ID, read permission (Role: Any), and therapist documents.');
+                console.warn('[fetchPublicData] Fix: Set VITE_THERAPISTS_COLLECTION_ID in .env to your exact Appwrite collection ID (Appwrite Console → Database → therapists). Run the "Audit Therapist Live Display" on the Appwrite Diagnostic page (/appwrite-diagnostic) to verify.');
+            }
             // Initialize review data for new accounts
-            const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) =>
+            const therapistsWithReviews = (finalTherapistsData || []).map((therapist: Therapist) =>
                 reviewService.initializeProvider(therapist) as Therapist
             );
             

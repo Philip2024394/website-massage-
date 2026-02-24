@@ -67,7 +67,17 @@ function getConfig() {
       bucketId: requireEnv('VITE_APPWRITE_BUCKET_ID', '68f76bdd002387590584'),
       collections: {
         // Core collections - REQUIRED (Appwrite collection ID for therapists)
-        therapists: requireEnv('VITE_THERAPISTS_COLLECTION_ID', 'therapists_collection_id'),
+        therapists: (() => {
+          const envId = import.meta.env.VITE_THERAPISTS_COLLECTION_ID;
+          const v = envId && String(envId).trim() !== '' ? envId : requireEnv('VITE_THERAPISTS_COLLECTION_ID', 'therapists_collection_id');
+          // Only warn when env is missing (using fallback) and fallback might be wrong for their project
+          if (envId === undefined || envId === '') {
+            console.warn(
+              '[APPWRITE CONFIG] VITE_THERAPISTS_COLLECTION_ID not set; using fallback "therapists_collection_id". If your Appwrite collection has a different ID, set it in .env.'
+            );
+          }
+          return v;
+        })(),
         places: requireEnv('VITE_PLACES_COLLECTION_ID', 'places_collection_id'),
         facial_places: requireEnv('VITE_FACIAL_PLACES_COLLECTION_ID', 'facial_places_collection'),
         bookings: requireEnv('VITE_BOOKINGS_COLLECTION_ID', 'bookings'), // ✅ VERIFIED: Actual collection ID is 'bookings'

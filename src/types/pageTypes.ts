@@ -292,6 +292,8 @@ export type Page =
     | 'admin-live-listings'
     | 'massage-place-dashboard'
     | 'facial-place-dashboard'
+    | 'massage-city-places-signup'
+    | 'increase-your-earnings'
     // Therapist Routes
     | 'therapist-how-it-works'
     | 'customers'

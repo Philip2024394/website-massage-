@@ -373,32 +373,40 @@ export const therapistAuth = {
 
 // Place Authentication - Streamlined with only required attributes
 export const placeAuth = {
-    async signUp(email: string, password: string, name?: string, whatsappNumber?: string): Promise<AuthResponse> {
+    async signUp(
+        email: string,
+        password: string,
+        name?: string,
+        whatsappNumber?: string,
+        options?: { businessName?: string; city?: string }
+    ): Promise<AuthResponse> {
         try {
             const user = await createAccountRateLimited(email, password);
             const generatedPlaceId = ID.unique();
-            
+            const displayName = options?.businessName || name || email.split('@')[0];
+
             console.log('🏢 Creating massage place with required attributes only...');
-            
+
             const placeData = {
                 // CORE REQUIRED ATTRIBUTES (verified to exist in Appwrite)
-                id: generatedPlaceId,                          // ✅ Required: Document identifier
-                placeId: generatedPlaceId,                     // ✅ Required: Place-specific ID field
-                userId: user.$id,                              // ✅ ALWAYS link place to auth user ID
-                name: name || email.split('@')[0],             // ✅ Required: Business name
-                category: 'massage-place',                     // ✅ Required: Business category
-                email,                                         // ✅ Required: Email address
-                whatsappNumber: whatsappNumber || '',          // ✅ WhatsApp number with +62 prefix
-                password: '',                                  // ✅ Required: Managed by Appwrite auth
-                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }), // ✅ Required: Pricing structure
-                status: 'Closed',                             // ✅ Required: Open/Closed status
-                isLive: false,                                // ✅ Required: Admin approval
-                openingTime: '09:00',                         // ✅ Required: Opening time
-                closingTime: '21:00',                         // ✅ Required: Closing time
-                coordinates: [106.8456, -6.2088],             // ✅ Required: Point format [lng, lat] for Jakarta
-                hotelId: '',                                  // ✅ Required: Empty for independent massage places
-                profilePicture: '',                           // ✅ Required: Profile picture (lowercase in DB)
-                therapistGender: 'Unisex',                    // ✅ Required: Booking gender preference
+                id: generatedPlaceId,
+                placeId: generatedPlaceId,
+                userId: user.$id,
+                name: displayName,
+                category: 'massage-place',
+                email,
+                whatsappNumber: whatsappNumber || '',
+                password: '',
+                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                status: 'Closed',
+                isLive: false,
+                openingTime: '09:00',
+                closingTime: '21:00',
+                coordinates: [106.8456, -6.2088],
+                hotelId: '',
+                profilePicture: '',
+                therapistGender: 'Unisex',
+                ...(options?.city && { location: options.city, city: options.city }),
             };
             
             console.log('📊 Place data (required only):', placeData);
@@ -416,16 +424,13 @@ export const placeAuth = {
             try {
                 console.log('🔗 [Place Sign-Up] Auto-generating share link...');
                 const { shareLinkService } = await import('../lib/services/shareLinkService');
-                const placeName = email.split('@')[0];
-                // ⚠️ NO defaultCity - place must set location via GPS in dashboard
-                // IP-based location intentionally disabled due to inaccuracy in Indonesia.
-                const defaultCity = 'unknown'; // Will be updated when place sets GPS location
+                const defaultCity = 'unknown';
                 
                 const shareLink = await shareLinkService.createShareLink(
                     'place',
                     generatedPlaceId,
-                    placeName,
-                    defaultCity
+                    displayName,
+                    options?.city || defaultCity
                 );
                 
                 console.log('✅ [Place Sign-Up] Share link created:', {

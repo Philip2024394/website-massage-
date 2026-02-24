@@ -18,6 +18,12 @@ import { isBookingUseAdminCountry, normalizeWhatsAppToDigits } from '../config/w
 
 const DEFAULT_PLACE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
 
+/** App-set image for massage city place cards on the home page listing. Profile hero/main image uses member-uploaded image from dashboard. */
+const MASSAGE_PLACE_LISTING_CARD_IMAGE = 'https://ik.imagekit.io/7grri5v7d/ma%201.png';
+
+/** Branch icon shown to the right of the Open button on massage city places home card. */
+const BRANCH_ICON_URL = 'https://ik.imagekit.io/7grri5v7d/branch%206s.png';
+
 export type CityPlaceCategory = 'massage' | 'facial' | 'beauty';
 
 /** Admin WhatsApp for Indonesia booking flow (send to admin; admin coordinates). */
@@ -113,7 +119,10 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
     variant = 'listing',
     userCountryCode = 'ID',
 }) => {
-    const mainImage = getPlaceMainImage(place);
+    const mainImage =
+        category === 'massage' && variant === 'listing'
+            ? MASSAGE_PLACE_LISTING_CARD_IMAGE
+            : getPlaceMainImage(place);
     const profileImage = getPlaceProfileImage(place);
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -263,17 +272,23 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                 }}
                 className="bg-white rounded-2xl overflow-visible border border-slate-200 hover:border-orange-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
             >
-                {/* Image Container – same height/ratio as Beauty Home Service card */}
-                <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
+                {/* Image Container – same height/ratio as Beauty Home Service card. Top amber line: same as profile page main image. */}
+                <div className="relative rounded-t-2xl pt-2 bg-white overflow-visible">
+                    {/* Top amber line – same as MassagePlaceProfilePage hero: rounded-t-2xl to match container */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 opacity-90 pointer-events-none rounded-t-2xl" />
+                    <div className="relative h-56 overflow-hidden bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                     <img
                         src={mainImage}
                         alt={placeName}
-                        className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl group-hover:scale-105"
+                        className="w-full h-full object-cover rounded-t-2xl"
                         style={{ aspectRatio: '400/224', minHeight: '224px' }}
                         onError={(e) => {
                             (e.target as HTMLImageElement).src = DEFAULT_PLACE_IMAGE;
                         }}
                     />
+
+                    {/* Amber line over main image – same as massage city profile */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-amber-500 pointer-events-none rounded-b-2xl" />
 
                     <div className="absolute top-3 left-3 shadow-lg flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5">
                         <StarIcon className="w-4 h-4 text-orange-500" />
@@ -299,8 +314,11 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                         </div>
                     )}
 
-                    <div className="absolute bottom-3 left-3 bg-orange-500/90 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md">
-                        {getCategoryBadgeText(category)}
+                    {variant !== 'profile' && category !== 'massage' && (
+                        <div className="absolute bottom-3 left-3 bg-orange-500/90 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md">
+                            {getCategoryBadgeText(category)}
+                        </div>
+                    )}
                     </div>
                 </div>
 
@@ -338,8 +356,8 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                     </div>
                 </div>
 
-                {/* Name and Status – same offset ml-[75px] */}
-                <div className="px-4 mt-[2px] mb-3 relative z-40">
+                {/* Name and Status – same offset ml-[75px]; overflow-visible + high z so branch image is not covered */}
+                <div className="px-4 mt-[2px] mb-3 relative z-50 overflow-visible">
                     <div className="mb-2 ml-[75px]">
                         <div className="flex items-center gap-2">
                             {(() => {
@@ -359,7 +377,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                             <h3 className="text-lg font-bold text-gray-900 truncate">{placeName}</h3>
                         </div>
                     </div>
-                    <div className="overflow-visible flex justify-start ml-[75px]">
+                    <div className="overflow-visible flex justify-start items-center gap-2 ml-[75px] relative w-full">
                         <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`} style={{ paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)' }}>
                             <span className="relative inline-flex mr-1.5" style={{ width: '32px', height: '32px', minWidth: '32px', minHeight: '32px' }}>
                                 <span className={`absolute rounded-full ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'} z-10`} style={{ width: '8px', height: '8px', left: '12px', top: '12px' }} />
@@ -372,6 +390,23 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                             </span>
                             <span className="text-xs">{statusStyle.label}</span>
                         </div>
+                        {category === 'massage' && (
+                            <div
+                                className="absolute top-1/2 right-0 flex items-center justify-end pointer-events-none overflow-visible"
+                                style={{
+                                    zIndex: 10,
+                                    transform: 'translateY(calc(-50% + 13px))',
+                                    right: 62
+                                }}
+                            >
+                                <img
+                                    src={BRANCH_ICON_URL}
+                                    alt=""
+                                    className="w-[236px] h-[236px] sm:w-[348px] sm:h-[348px] object-contain object-right flex-shrink-0"
+                                    loading="lazy"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 
