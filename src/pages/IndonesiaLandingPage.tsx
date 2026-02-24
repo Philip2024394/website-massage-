@@ -375,6 +375,7 @@ function likeEventsToFeedPosts(language: string): FeedPost[] {
         ? `${e.placeName} dapat like — profil mereka sedang dapat perhatian!`
         : `${e.placeName} is getting love! Their profile is getting attention.`,
       mediaUrl: e.placeImageUrl || defaultImage,
+      mediaUrls: [e.placeImageUrl || defaultImage],
       mediaAlt: e.placeName,
       likes: 0,
       comments: 0,
@@ -3342,7 +3343,7 @@ const IndonesiaLandingPage: React.FC<IndonesiaLandingPageProps> = ({
   const displayPosts = (() => {
     const combined = pendingPost ? [pendingPost, ...feedPosts] : feedPosts;
     const sorted = [...combined].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
-    return sorted.filter((p) => p.videoLink || (p.mediaUrls && p.mediaUrls.length > 0));
+    return sorted.filter((p) => p.videoLink || (p.mediaUrls && p.mediaUrls.length > 0) || p.mediaUrl);
   })();
 
   const filteredDisplayPosts = (() => {

@@ -25,6 +25,20 @@ import type { Therapist, UserLocation } from '../types';
 import { useTherapistDisplayImage } from '../utils/therapistImageUtils';
 import { getTherapistDisplayName } from '../utils/therapistCardHelpers';
 import { HERO_WELCOME_TEXT } from '../config/heroImages';
+import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
+
+/** Same verified logic as massage city places: isVerified or activeMembershipDate at least 3 months ago. */
+function isTherapistVerified(therapist: Therapist | Record<string, unknown>): boolean {
+  const t = therapist as any;
+  if (t?.isVerified === true || t?.verifiedBadge) return true;
+  if (t?.activeMembershipDate) {
+    const membershipDate = new Date(t.activeMembershipDate);
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    if (membershipDate <= threeMonthsAgo) return true;
+  }
+  return false;
+}
 
 // SEO Hashtag Generator for different business types
 const generateSEOHashtags = (therapist: Therapist, city: string) => {
@@ -231,36 +245,68 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     const heroSubtitle = welcomeText.subtitle.replace(/{city}/g, cityUpper);
 
     return (
-        <div className="bg-white">
-            {/* Hero Banner - Only in shared mode */}
+        <div className="min-h-screen bg-gray-50">
+            {/* Hero – same theme as massage city place profile: full-width image, amber lines, verified badge, name + location */}
             {mode === 'shared' && (
-                <div className="w-full bg-white pt-0 pb-8 px-4">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <div className="mb-2">
-                            <img 
-                                src={heroImage}
+                <section className="w-full max-w-full overflow-visible bg-gray-200 rounded-t-2xl">
+                    <div className="relative w-full pt-2 bg-gray-200 rounded-t-2xl overflow-visible">
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 opacity-90 pointer-events-none rounded-t-2xl" />
+                        <div className="relative w-full aspect-[21/9] min-h-[160px] max-h-[280px] overflow-visible">
+                            <img
+                                src={providerDisplayImage || 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258'}
                                 alt={heroImageAlt}
-                                className="w-64 h-64 object-contain mx-auto"
+                                className="absolute inset-0 w-full h-full object-cover z-0"
                                 loading="eager"
                                 fetchPriority="high"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258';
+                                }}
                             />
+                            <div className="absolute inset-0 z-[1] bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-amber-500 pointer-events-none z-[1]" />
+                            <div className="absolute top-4 left-0 right-0 flex justify-between items-start px-4 z-[2] pointer-events-none">
+                                <p className="text-white text-sm font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95)' }}>
+                                    {(therapist as any).viewingNow ?? 3} {language === 'id' ? 'orang melihat sekarang' : 'people viewing now'}
+                                </p>
+                                <p className="text-white text-sm font-medium text-right" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95)' }}>
+                                    {language === 'id' ? 'Terapis pijat panggilan' : 'Home service therapist'}
+                                </p>
+                            </div>
+                            {isTherapistVerified(therapist) && (
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 z-[2] flex flex-col items-center gap-1.5">
+                                    <img src={VERIFIED_BADGE_IMAGE_URL} alt="Verified" className="w-10 h-10 sm:w-12 sm:h-12 object-contain drop-shadow-md" />
+                                    <span className="text-white text-xs sm:text-sm font-semibold drop-shadow-lg bg-black/30 px-2 py-0.5 rounded">Verified</span>
+                                </div>
+                            )}
+                            <div className="absolute bottom-0 left-0 right-0 z-[2]">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                                <div className="relative p-4 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{getTherapistDisplayName(therapist.name)}</h1>
+                                    <p className="text-sm text-white/95 mt-0.5 flex items-center gap-1.5">
+                                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /></svg>
+                                        <span>{locationStr || (therapist as any).city || 'Indonesia'}</span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Legacy hero (logo + title) – only in authenticated mode when no shared hero */}
+            {mode === 'authenticated' && (
+                <div className="w-full bg-white pt-0 pb-6 px-4">
+                    <div className="max-w-4xl mx-auto text-center">
                         <div className="space-y-2">
-                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 uppercase">
-                                {heroTitle}
-                            </h1>
-                            <p className="text-base md:text-lg text-gray-700 uppercase">
-                                {heroSubtitle}
-                            </p>
-                            <p className="text-lg font-semibold text-gray-800 uppercase">
-                                {getTherapistDisplayName(therapist.name)}
-                            </p>
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{heroTitle}</h1>
+                            <p className="text-base text-gray-700">{heroSubtitle}</p>
+                            <p className="text-lg font-semibold text-gray-800">{getTherapistDisplayName(therapist.name)}</p>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Therapist Card */}
+            {/* Therapist Card & content */}
             <div className="max-w-4xl mx-auto px-4 py-6">
                 {/* Avoid lazy loading for critical shared route reliability */}
                 <TherapistCard

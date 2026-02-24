@@ -132,7 +132,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         hasPlace: !!place,
         placeId: place?.id || place?.$id,
         placeName: place?.name,
-        urlPath: window.location.pathname
+        urlPath: typeof window !== 'undefined' ? window.location.pathname : ''
     });
 
     // All hooks must run before any early return (Rules of Hooks)
@@ -755,15 +755,14 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             {/* Footer: social text then icons */}
             <footer className="w-full mt-8 py-6 px-4 border-t border-gray-200 bg-gray-50/80">
                 <div className="max-w-full flex flex-col items-center gap-2">
-                    <a
-                        href="https://www.indastreet.com/social"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <button
+                        type="button"
+                        onClick={() => onNavigate?.('indonesia')}
                         className="inline-flex flex-col items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
                     >
                         <Globe className="w-5 h-5 text-amber-500" aria-hidden />
                         <span className="font-medium text-sm">Social – Connecting wellness communities across the globe – Indastreet Social</span>
-                    </a>
+                    </button>
                     <SocialMediaLinks className="mt-2" />
                 </div>
             </footer>

@@ -26,20 +26,33 @@ const FALLBACK_ADMIN_DIGITS = '6281392000050';
 
 /**
  * For booking (Book Now, Order Now, Scheduled booking):
- * - Indonesia (ID) → always use admin WhatsApp.
- * - Other countries → use provider's own WhatsApp number (saved in dashboard).
- * Safe when adminNumber is undefined/empty (returns fallback for Indonesia).
+ * - Free tier (or no tier) in Indonesia (ID) → use admin WhatsApp (30% commission).
+ * - Paid tiers (plus, premium, elite) in any country → use provider's own WhatsApp (direct contact).
+ * - Other countries (non-ID) → use provider's own WhatsApp.
+ * Same system as massage city places: free = admin booking, paid = direct.
  */
 export function getBookingWhatsAppNumber(
-  provider: { country?: string; countryCode?: string; whatsappNumber?: string; contactNumber?: string },
+  provider: {
+    country?: string;
+    countryCode?: string;
+    whatsappNumber?: string;
+    contactNumber?: string;
+    membershipTier?: string;
+    plan?: string;
+  },
   adminNumber: string | undefined
 ): string {
   const country = provider.country ?? (provider as any).countryCode ?? '';
   const adminDigits = adminNumber ? normalizePhone(adminNumber) || String(adminNumber).replace(/\D/g, '') : '';
-  if (isBookingUseAdminCountry(country)) return adminDigits || FALLBACK_ADMIN_DIGITS;
-  const raw = provider.whatsappNumber ?? (provider as any).contactNumber ?? '';
-  const num = normalizePhone(raw);
-  return num || adminDigits || FALLBACK_ADMIN_DIGITS;
+  const tier = (provider.membershipTier ?? (provider as any).plan ?? '').toLowerCase();
+  const isPaidTier = tier === 'plus' || tier === 'premium' || tier === 'elite' || tier === 'pro';
+  const useDirect = isPaidTier || !isBookingUseAdminCountry(country);
+  if (useDirect) {
+    const raw = provider.whatsappNumber ?? (provider as any).contactNumber ?? '';
+    const num = normalizePhone(raw);
+    if (num) return num;
+  }
+  return adminDigits || FALLBACK_ADMIN_DIGITS;
 }
 
 /**
