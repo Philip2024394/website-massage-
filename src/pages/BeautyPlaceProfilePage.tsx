@@ -7,7 +7,7 @@ const MAX_GALLERY_ITEMS = 5;
 import React, { useState, useMemo, useEffect } from 'react';
 import {
     Clock, MapPin, Phone, Star, CheckCircle, X, Calendar, MessageCircle,
-    ChevronLeft, ChevronRight, Sparkles
+    ChevronLeft, ChevronRight, Sparkles, FingerprintPattern
 } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { PricesButton } from '../components/PricesButton';
@@ -103,6 +103,7 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
     const [heroIndex, setHeroIndex] = useState(0);
     const [selectedImage, setSelectedImage] = useState<{ imageUrl: string; caption?: string; header?: string; description?: string } | null>(null);
     const [showPriceModal, setShowPriceModal] = useState(false);
+    const [selectedPriceKey, setSelectedPriceKey] = useState<'60' | '90' | '120' | null>(null);
 
     useEffect(() => {
         if (placeProp) {
@@ -205,7 +206,14 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
         if (onBook) {
             onBook();
         } else if (bookingPhone) {
-            const msg = `Hi! I'd like to book at ${place.name}. When are you available?`;
+            let msg: string;
+            if (selectedPriceKey && pricing[selectedPriceKey] > 0) {
+                const mins = selectedPriceKey;
+                const price = pricing[selectedPriceKey];
+                msg = `Hi! I'd like to book at ${place.name}.\nService: Beauty · ${mins} min\nPrice: IDR ${formatPrice(price)}\nWhen are you available?`;
+            } else {
+                msg = `Hi! I'd like to book at ${place.name}. When are you available?`;
+            }
             window.open(buildWhatsAppUrl(bookingPhone, msg) || `https://wa.me/${bookingPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
     };
@@ -439,45 +447,90 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
                     </div>
                 </section>
 
+                {/* Treatments Trending – same system, color and design as therapist profile price containers */}
                 {hasPricing && (
                     <section className="mt-6 px-4">
-                        <div className="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4">
-                            <h2 className="text-lg font-bold text-gray-900 mb-3">
-                                {language === 'id' ? 'Harga' : 'Pricing'}
-                            </h2>
-                            <div className="grid grid-cols-3 gap-2">
-                                {pricing['60'] > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPriceModal(true)}
-                                        className="p-3 rounded-xl border-2 border-slate-300 bg-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
-                                    >
-                                        <p className="text-xs text-gray-700 font-semibold">60 min</p>
-                                        <p className="text-base font-bold text-gray-900 mt-1">IDR {formatPrice(pricing['60'])}</p>
-                                    </button>
-                                )}
-                                {pricing['90'] > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPriceModal(true)}
-                                        className="p-3 rounded-xl border-2 border-orange-400 bg-orange-100 text-center"
-                                    >
-                                        <p className="text-xs text-orange-800 font-semibold">90 min</p>
-                                        <p className="text-base font-bold text-orange-900 mt-1">IDR {formatPrice(pricing['90'])}</p>
-                                    </button>
-                                )}
-                                {pricing['120'] > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPriceModal(true)}
-                                        className="p-3 rounded-xl border-2 border-slate-300 bg-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
-                                    >
-                                        <p className="text-xs text-gray-700 font-semibold">120 min</p>
-                                        <p className="text-base font-bold text-gray-900 mt-1">IDR {formatPrice(pricing['120'])}</p>
-                                    </button>
-                                )}
-                            </div>
+                        <style>{`
+                            @keyframes beautician-glow-card {
+                              0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
+                              50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
+                            }
+                            .beauty-treatments-container-highlight {
+                              border-color: rgb(249 115 22);
+                              box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
+                              animation: beautician-glow-card 2.5s ease-in-out infinite;
+                            }
+                            @keyframes book-now-heartbeat {
+                              0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+                              50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.25), 0 0 16px 4px rgba(245, 158, 11, 0.3); }
+                            }
+                            .price-container-heartbeat {
+                              animation: book-now-heartbeat 1.2s ease-in-out infinite;
+                            }
+                        `}</style>
+                        <div className="text-center mb-3">
+                            <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
+                                <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
+                                Treatments Trending
+                            </h3>
+                            <p className="text-[10px] text-gray-500 mt-0.5">
+                                {language === 'id' ? 'Harga tetap • Pilih container lalu tekan Book Now' : 'Fixed prices • Select container and press Book Now'}
+                            </p>
                         </div>
+                        <div className="space-y-2">
+                            {[
+                                { key: '60' as const, label: '60 min', minutes: 60, isMostPopular: false },
+                                { key: '90' as const, label: '90 min', minutes: 90, isMostPopular: true },
+                                { key: '120' as const, label: '120 min', minutes: 120, isMostPopular: false },
+                            ]
+                                .filter((row) => pricing[row.key] > 0)
+                                .map(({ key, label, minutes, isMostPopular }) => {
+                                    const isSelected = selectedPriceKey === key;
+                                    return (
+                                        <div
+                                            key={key}
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() => setSelectedPriceKey(isSelected ? null : key)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    setSelectedPriceKey(isSelected ? null : key);
+                                                }
+                                            }}
+                                            className={`beauty-treatments-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 cursor-pointer select-none ${isMostPopular ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-500 ring-1 ring-amber-200' : 'bg-orange-50/80 border-orange-400'} ${isSelected ? 'price-container-heartbeat' : ''}`}
+                                        >
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-0.5">
+                                                    <h4 className="text-xs font-bold text-gray-900 line-clamp-2">
+                                                        {language === 'id' ? 'Layanan Kecantikan' : 'Beauty Service'} · {label}
+                                                    </h4>
+                                                    {isMostPopular && (
+                                                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold flex-shrink-0">
+                                                            <Sparkles className="w-2.5 h-2.5" />
+                                                            {language === 'id' ? 'Paling Banyak' : 'Most Booked'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-[10px] text-gray-600">
+                                                    {language === 'id' ? 'Perkiraan waktu' : 'Estimated time'}: {minutes} {language === 'id' ? 'menit' : 'minutes'}
+                                                </p>
+                                                <p className="text-xs font-semibold text-gray-800 mt-0.5 flex items-center gap-2">
+                                                    {language === 'id' ? 'Harga' : 'Price'}: IDR {formatPrice(pricing[key])} (fixed)
+                                                </p>
+                                            </div>
+                                            {isSelected && (
+                                                <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
+                                                    <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                        <p className="text-center text-[10px] text-gray-500 mt-2">
+                            {language === 'id' ? 'Tarif profesional • Profil terverifikasi' : 'Professional rates • Verified profile'}
+                        </p>
                     </section>
                 )}
 
@@ -513,7 +566,7 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
                     <button
                         type="button"
                         onClick={handleBookNow}
-                        className="flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full bg-amber-500 text-white hover:bg-amber-600 active:scale-95 shadow-md min-h-[48px]"
+                        className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 px-2 rounded-full bg-amber-500 text-white hover:bg-amber-600 active:scale-95 shadow-md min-h-[48px] ${selectedPriceKey ? 'price-container-heartbeat' : ''}`}
                     >
                         <MessageCircle className="w-4 h-4" />
                         <span className="text-sm">Book</span>
@@ -542,7 +595,7 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
                     <button
                         type="button"
                         onClick={handleBookNow}
-                        className="flex-1 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 flex items-center justify-center gap-2"
+                        className={`flex-1 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 flex items-center justify-center gap-2 ${selectedPriceKey ? 'price-container-heartbeat' : ''}`}
                     >
                         <Calendar className="w-5 h-5" />
                         {language === 'id' ? 'Pesan Sekarang' : 'Book Now'}

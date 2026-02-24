@@ -96,15 +96,18 @@ function roundToNearest5000(price: number): number {
 }
 
 /**
- * Generate 5 sample menu items for a therapist (display-only).
+ * Generate sample menu items for a therapist (display-only).
  * Base prices with ±10% random variation per therapist per duration, rounded to 5,000 IDR.
  * Each item gets its own variation so price containers differ within the same therapist.
+ * @param therapistId - Member ID for deterministic variation
+ * @param count - Number of items (default 5; use 4 for free-plan sample display)
  */
-export function getSampleMenuItems(therapistId: string): SampleMenuItem[] {
+export function getSampleMenuItems(therapistId: string, count: number = 5): SampleMenuItem[] {
   const seed = createSeed(therapistId);
   const items: SampleMenuItem[] = [];
+  const n = Math.min(Math.max(1, count), SAMPLE_MASSAGE_NAMES.length);
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < n; i++) {
     const itemSeed = seed + i * 7919;
 
     const var60 = variationPercent(itemSeed);

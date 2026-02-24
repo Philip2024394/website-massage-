@@ -12,8 +12,9 @@ const SUPPORT_EMAIL = 'indastreet.id@gmail.com';
 
 export interface ContactFormData {
   fullName?: string;
-  email: string;
+  email?: string; // Optional on Contact Us form; sent as empty string if omitted
   phone?: string;
+  address?: string;
   country?: string;
   message: string;
   subject?: string;
@@ -45,8 +46,9 @@ export async function submitContactForm(data: ContactFormData): Promise<ContactS
   try {
     const payload = {
       fullName: (data.fullName || '').trim(),
-      email: data.email.trim(),
+      email: (data.email || '').trim(),
       phone: (data.phone || '').trim(),
+      address: (data.address || '').trim(),
       country: (data.country || 'ID').trim(),
       subject: (data.subject || '').trim(),
       message: data.message.trim(),
@@ -89,12 +91,13 @@ export function getContactMailtoUrl(data: ContactFormData): string {
   const subject = data.subject || 'IndaStreet Support Request';
   const body = [
     `Full Name: ${data.fullName || 'Not provided'}`,
+    `Phone: ${data.phone || 'Not provided'}`,
+    `Address: ${data.address || 'Not provided'}`,
     `Message: ${data.message}`,
     `Subject: ${data.subject || 'Not specified'}`,
     `Department: ${data.department || 'Not specified'}`,
     `Role: ${data.userRole || 'Not specified'}`,
     `Category: ${data.issueCategory || 'Not specified'}`,
-    `Phone: ${data.phone || 'Not provided'}`,
     `Country: ${data.country || 'ID'}`,
   ].join('\n\n');
   return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

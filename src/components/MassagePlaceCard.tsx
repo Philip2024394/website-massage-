@@ -12,6 +12,7 @@ import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
 import MassagePlaceJoinPopup from './MassagePlaceJoinPopup';
 import { getAuthAppUrl, getUniqueMenuItemsByName, getUniqueMassageTypes } from '../utils/therapistCardHelpers';
+import { getSampleMenuItems } from '../utils/samplePriceUtils';
 import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing, generatePlaceShareableURL } from '../constants/cardConstants.tsx';
 import { useChatProvider } from '../hooks/useChatProvider';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
@@ -630,10 +631,18 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                             </div>
                         </div>
 
-                        {/* Price List Content - Scrollable (deduplicated by service name so same type is not shown twice) */}
+                        {/* Price List Content - Scrollable. Connected to dashboard menu when paid/has data; 4 sample items when free plan or no menu. */}
                         <div className="flex-1  p-4" style={{ height: 'calc(100vh - 180px)' }}>
                             {(() => {
-                                const uniqueMenu = getUniqueMenuItemsByName(menuData);
+                                const placeId = String((place as any).$id ?? (place as any).id ?? '');
+                                const rawMenu = menuData.length > 0 ? menuData : getSampleMenuItems(placeId, 4).map((item) => ({
+                                    serviceName: item.name,
+                                    name: item.name,
+                                    price60: Math.round(item.price60 / 1000),
+                                    price90: Math.round(item.price90 / 1000),
+                                    price120: Math.round(item.price120 / 1000),
+                                }));
+                                const uniqueMenu = getUniqueMenuItemsByName(rawMenu);
                                 return uniqueMenu.length > 0 ? (
                                 <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                                     {/* Table Header - Hidden on mobile */}

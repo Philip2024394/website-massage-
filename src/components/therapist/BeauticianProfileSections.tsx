@@ -12,6 +12,7 @@ import {
 import {
   BEAUTICIAN_CHART_TYPES,
   BEAUTICIAN_CHART_IDS,
+  BEAUTICIAN_CHART_LIMITS,
   CHART_FIELD_LEGACY,
   type BeauticianChartId,
 } from '../../constants/beauticianChartTypes';
@@ -104,21 +105,17 @@ const BeauticianProfileSections: React.FC<BeauticianProfileSectionsProps> = ({
   const categories = BEAUTICIAN_SERVICE_CATEGORIES.filter((c) => categoryIds.includes(c.id));
   const customDisclaimer = (therapist as any).beauticianDisclaimers as string | undefined;
 
-  // Which chart dropdowns to show: Nail and Hair Styles always; others when their category is selected
+  // Plan-based chart limit: free 3, standard (140k IDR) 10, premium (200k IDR) 15
+  const planRaw = String((therapist as any).plan ?? (therapist as any).membershipPlan ?? (therapist as any).membershipTier ?? '').toLowerCase();
+  const planKey = planRaw === 'premium' || planRaw === 'elite' || planRaw === 'pro' ? 'premium' : planRaw === 'middle' || planRaw === 'plus' || planRaw === 'trusted' ? 'middle' : 'free';
+  const maxCharts = BEAUTICIAN_CHART_LIMITS[planKey];
+
+  // Which chart dropdowns to show: only those whose category is selected, in defined order, capped by plan limit
   const activeCharts = BEAUTICIAN_CHART_TYPES.filter((ct) => categoryIds.includes(ct.categoryId));
-  const nailChartType = BEAUTICIAN_CHART_TYPES.find((ct) => ct.id === BEAUTICIAN_CHART_IDS.NAIL_COLOUR);
-  const hairStylesChartType = BEAUTICIAN_CHART_TYPES.find((ct) => ct.id === BEAUTICIAN_CHART_IDS.HAIR_STYLES);
-  const restCharts = activeCharts.filter(
-    (c) => c.id !== BEAUTICIAN_CHART_IDS.NAIL_COLOUR && c.id !== BEAUTICIAN_CHART_IDS.HAIR_STYLES
-  );
-  const chartsToShow = [
-    ...(nailChartType ? [nailChartType] : []),
-    ...(hairStylesChartType ? [hairStylesChartType] : []),
-    ...restCharts,
-  ];
-  const [openChartId, setOpenChartId] = useState<BeauticianChartId | null>(
-    chartsToShow.length > 0 ? chartsToShow[0].id : null
-  );
+  const chartsToShow = activeCharts.slice(0, maxCharts);
+
+  // All chart dropdowns (Nail Colors, Hair Styles, etc.) start closed; user opens by selecting the drop down arrow
+  const [openChartId, setOpenChartId] = useState<BeauticianChartId | null>(null);
 
   if (categories.length === 0 && chartsToShow.length === 0 && !customDisclaimer) {
     return null;

@@ -59,14 +59,21 @@ interface UseEnhancedMenuDataResult {
 /** Profile prices from dashboard (60/90/120 in thousands). When set, "Traditional Massage" is added to slider from these. */
 export type ProfilePrices = { price60: number; price90: number; price120: number } | null | undefined;
 
+export interface UseEnhancedMenuDataOptions {
+  /** When false, dashboard menu is not loaded; 4 sample items that fit category are shown (free plan). */
+  isPaidPlan?: boolean;
+}
+
 /**
  * 🎯 ENHANCED MENU DATA HOOK
  * Provides comprehensive menu management with default fallback and badge integration.
  * When profilePrices is provided (from dashboard 3 prices), "Traditional Massage" is injected into the slider with those prices.
+ * When isPaidPlan is false, only 4 sample menu items (that fit category and upload page category) are shown.
  */
 export function useEnhancedMenuData(
   therapistId: string,
-  profilePrices?: ProfilePrices
+  profilePrices?: ProfilePrices,
+  options?: UseEnhancedMenuDataOptions
 ): UseEnhancedMenuDataResult {
   const [menuLoadResult, setMenuLoadResult] = useState<MenuLoadResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,11 +101,12 @@ export function useEnhancedMenuData(
         Number(profilePrices.price90) > 0 &&
         Number(profilePrices.price120) > 0;
       
-      console.log(`📋 useEnhancedMenuData: Loading enhanced menu for therapist: ${therapistId}`, hasProfilePrices ? '(with profile Traditional Massage)' : '');
+      console.log(`📋 useEnhancedMenuData: Loading enhanced menu for therapist: ${therapistId}`, hasProfilePrices ? '(with profile Traditional Massage)' : '', options?.isPaidPlan === false ? '(free plan: 4 samples)' : '');
       
       const result = await EnhancedMenuDataService.getTherapistMenu(
         therapistId,
-        hasProfilePrices ? profilePrices! : undefined
+        hasProfilePrices ? profilePrices! : undefined,
+        { isPaidPlan: options?.isPaidPlan }
       );
       
       console.log(`✅ useEnhancedMenuData: Menu loaded successfully:`, {
@@ -126,7 +134,7 @@ export function useEnhancedMenuData(
     } finally {
       setIsLoading(false);
     }
-  }, [therapistId, profilePrices]);
+  }, [therapistId, profilePrices, options?.isPaidPlan]);
   
   // 🎯 GOLD STANDARD: Initial load with unmount cleanup
   useEffect(() => {
@@ -302,10 +310,11 @@ export function useEnhancedMenuData(
  * Provides backward compatibility with existing useTherapistCardState.
  * When therapist is provided, their dashboard 3 prices (price60/90/120) are used to inject
  * "Traditional Massage" into the price slider; if it is the lowest, it is shown on profile.
+ * Free plan (plan === 'free'): Menu Prices shows 4 sample items that fit category and upload page category; dashboard menu is not loaded.
  */
 export function useCompatibleMenuData(
   therapistId: string,
-  therapist?: { price60?: string | number; price90?: string | number; price120?: string | number } | null
+  therapist?: { price60?: string | number; price90?: string | number; price120?: string | number; plan?: string; membershipPlan?: string; membershipTier?: string } | null
 ) {
   const profilePrices = useMemo(() => {
     if (!therapist) return undefined;
@@ -315,8 +324,15 @@ export function useCompatibleMenuData(
     if (p60 > 0 && p90 > 0 && p120 > 0) return { price60: p60, price90: p90, price120: p120 };
     return undefined;
   }, [therapist?.price60, therapist?.price90, therapist?.price120]);
+
+  const isPaidPlan = useMemo(() => {
+    if (!therapist) return true;
+    const p = String((therapist as any).plan ?? (therapist as any).membershipPlan ?? (therapist as any).membershipTier ?? '').toLowerCase();
+    if (p === 'free' || p === '') return false;
+    return true;
+  }, [(therapist as any)?.plan, (therapist as any)?.membershipPlan, (therapist as any)?.membershipTier]);
   
-  const enhancedMenuData = useEnhancedMenuData(therapistId, profilePrices);
+  const enhancedMenuData = useEnhancedMenuData(therapistId, profilePrices, { isPaidPlan });
   
   // Transform to legacy format
   const legacyFormat = useMemo(() => {

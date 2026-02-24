@@ -8,7 +8,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import type { Therapist } from '../types';
 import TherapistCard from './TherapistCard';
 import { useTherapistDisplayImage } from '../utils/therapistImageUtils';
-import { getTherapistDisplayName, getLanguageFlag, parseTherapistLanguages, getCombinedMenuForDisplay } from '../utils/therapistCardHelpers';
+import { getTherapistDisplayName, getLanguageFlag, parseTherapistLanguages, getCombinedMenuForDisplay, getCheapestServiceByTotalPrice } from '../utils/therapistCardHelpers';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import { getBookingWhatsAppNumber, buildBookNowMessage, getFirstMassageType, getDefaultDurationAndPrice } from '../utils/whatsappBookingMessages';
@@ -16,6 +16,7 @@ import { MessageCircle, Star, MapPin, LayoutGrid, Eye, ShieldCheck, Gift, Quote,
 import { APP_CONSTANTS } from '../constants/appConstants';
 import AdditionalServiceCard, { type AdditionalService } from './AdditionalServiceCard';
 import { getOtherServiceLabel, OTHER_SERVICES_DEFAULT_IMAGES } from '../constants/otherServicesOffered';
+import { therapistOffersService, SERVICE_TYPES } from '../constants/serviceTypes';
 import SocialMediaLinks from './SocialMediaLinks';
 import GiftVoucherSlider from './GiftVoucherSlider';
 
@@ -129,11 +130,11 @@ function getTherapistPlan(therapist: Therapist | Record<string, any>): Therapist
 function getPlanLimits(plan: TherapistPlan) {
   switch (plan) {
     case 'premium':
-      return { profileImages: 1, treatments: 15, gallery: 20, reviews: true, showAvailability: true, showVideoIntro: true };
+      return { profileImages: 1, treatments: 15, gallery: 20, reviews: true, showAvailability: true, showVideoIntro: true, maxColorCharts: 15 };
     case 'middle':
-      return { profileImages: 1, treatments: 8, gallery: 10, reviews: true, showAvailability: true, showVideoIntro: false };
+      return { profileImages: 1, treatments: 8, gallery: 10, reviews: true, showAvailability: true, showVideoIntro: false, maxColorCharts: 10 };
     default:
-      return { profileImages: 1, treatments: 4, gallery: 5, reviews: false, showAvailability: false, showVideoIntro: false };
+      return { profileImages: 1, treatments: 4, gallery: 5, reviews: false, showAvailability: false, showVideoIntro: false, maxColorCharts: 3 };
   }
 }
 
@@ -180,6 +181,8 @@ export default function TherapistProfilePlaceStyle({
 }: TherapistProfilePlaceStyleProps) {
   const isIncompleteProfile = !therapist?.name?.trim?.() && !isLoading;
   const [selectedTreatment, setSelectedTreatment] = useState<{ name: string; duration: number; price: number } | null>(null);
+  /** Selected price container (60/90/120) so sticky Book Now sends correct duration/price/service to admin */
+  const [selectedPriceKey, setSelectedPriceKey] = useState<'60' | '90' | '120' | null>(null);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [showGiftVoucherSlider, setShowGiftVoucherSlider] = useState(false);
 
@@ -367,6 +370,20 @@ export default function TherapistProfilePlaceStyle({
   const bookingNumberDigits = bookingNumber.replace(/\D/g, '').replace(/^0/, '62');
 
   const buildBookNowMessageText = () => {
+    const cheapest = combinedMenu.length > 0 ? getCheapestServiceByTotalPrice(combinedMenu) : null;
+    if (selectedPriceKey && cheapest) {
+      const duration = Number(selectedPriceKey);
+      const priceThou = Number((cheapest as any)[`price${selectedPriceKey}`]) || 0;
+      const price = priceThou > 0 ? Math.round(priceThou * 1000) : getDefaultDurationAndPrice(therapist).price;
+      const serviceName = (cheapest as any).name ?? (cheapest as any).serviceName ?? getFirstMassageType(therapist);
+      return buildBookNowMessage({
+        therapistName: getTherapistDisplayName(therapist.name),
+        therapistId: String(therapist.$id ?? therapist.id),
+        massageType: serviceName,
+        durationMin: duration,
+        price,
+      }) + `\nMy Location:\nPreferred Time:`;
+    }
     const treatment = selectedTreatment ?? (treatmentList[0] ? {
       name: treatmentList[0].name,
       duration: treatmentList[0].duration,
@@ -537,6 +554,8 @@ export default function TherapistProfilePlaceStyle({
               onNavigate={(page) => onNavigate?.(page)}
               isCustomerLoggedIn={false}
               t={{}}
+              selectedPriceKey={selectedPriceKey}
+              onSelectPriceKey={setSelectedPriceKey}
             />
           </div>
 
@@ -558,8 +577,8 @@ export default function TherapistProfilePlaceStyle({
               : defaultTherapists;
             const defaultServices: AdditionalService[] = [
               { id: 'mock-hair', name: 'Hair Salon', description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.', imageUrl: mockImage, details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }], bookLabel: 'Book' as const },
-              { id: 'mock-beauty', name: 'Beautician', description: 'Nails, lashes and skin treatments. Manicure, pedicure, lash extensions and facials available by appointment.', imageUrl: mockImage, details: [{ label: 'Manicure & pedicure', price: 'IDR 200K', duration: '60 min' }], bookLabel: 'Schedule' as const },
-              { id: 'mock-spa', name: 'Spa & Wellness', description: 'Body scrubs, wraps and aromatherapy. Relax and recharge with our signature treatments in a calm environment.', imageUrl: mockImage, details: [{ label: 'Body scrub & wrap', price: 'IDR 350K', duration: '90 min' }], bookLabel: 'Book' as const },
+              { id: 'mock-eyelashes', name: 'Eye Lashes', description: 'Eyelash extensions, lifts and tints. Classic, volume and hybrid styles available. Professional application for a natural or dramatic look.', imageUrl: mockImage, details: [{ label: 'Lash extensions', price: 'IDR 200K', duration: '60 min' }], bookLabel: 'Book' as const },
+              { id: 'mock-nailart', name: 'Nail Art', description: 'Creative nail art, gel manicure, pedicure and nail care. Custom designs and long-lasting finishes.', imageUrl: mockImage, details: [{ label: 'Gel manicure & nail art', price: 'IDR 180K', duration: '45 min' }], bookLabel: 'Book' as const },
             ];
             const nameNormForServices = (therapist?.name ?? '').trim().toLowerCase();
             const isWiwidProfile = nameNormForServices === 'wiwid' || nameNormForServices.startsWith('wiwid ');
@@ -572,24 +591,35 @@ export default function TherapistProfilePlaceStyle({
             const placeName = getTherapistDisplayName(therapist.name);
             const placeWhatsApp = (therapist as any).whatsappNumber ?? (therapist as any).contactNumber;
             const defaultAvatar = 'https://ik.imagekit.io/7grri5v7d/default-avatar.png';
+            const isBeauticianProfile = therapist ? therapistOffersService(therapist, SERVICE_TYPES.BEAUTICIAN) : false;
+            const sectionTitle = isBeauticianProfile
+              ? (isId ? "Beautician's Tren Saat Ini" : "Beautician's Trending Now")
+              : (isId ? 'Terapis Tren Saat Ini' : 'Therapist Trending Now');
+            const sectionSubtitle = isBeauticianProfile
+              ? (isId ? 'Kenali beautician dan layanan mereka' : 'Meet Beauticians and explore their services')
+              : (isId ? 'Kenali terapis dan layanan mereka' : 'Meet therapists and explore their services');
+            const hideBeauticianTrendingSection = isBeauticianProfile && isPaidPlan;
             return (
-              <div className="mt-6">
+              <div className="mt-6 px-4" style={{ paddingLeft: 'max(1rem, env(safe-area-inset-left))', paddingRight: 'max(1rem, env(safe-area-inset-right))' }}>
+                {/* Beautician's Trending Now: hidden on paid plans (all paid plans remove this section) */}
+                {!hideBeauticianTrendingSection && (
                 <div className="text-center mb-4">
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <LayoutGrid className="w-3.5 h-3.5 text-orange-500" aria-hidden />
                     <h3 className="text-lg font-bold text-gray-900">
-                      {isId ? 'Terapis Tren Saat Ini' : 'Therapist Trending Now'}
+                      {sectionTitle}
                     </h3>
                   </div>
                   <p className="text-xs text-gray-500">
-                    {isId ? 'Kenali terapis dan layanan mereka' : 'Meet therapists and explore their services'}
+                    {sectionSubtitle}
                   </p>
                 </div>
+                )}
 
                 {/* Free: show therapist carousel; Paid: hide it (therapist chose to remove by upgrading) */}
-                {!isPaidPlan && (
-                <div className="mb-6">
-                  <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+                {!isPaidPlan && !hideBeauticianTrendingSection && (
+                <div className="mb-6 overflow-visible">
+                  <div className="flex gap-4 overflow-x-auto overflow-y-visible pb-2 pl-4 pr-4 snap-x snap-mandatory" style={{ paddingLeft: 'max(1rem, env(safe-area-inset-left))', paddingRight: 'max(1rem, env(safe-area-inset-right))' }}>
                     {displayTherapists.map((t: any, index: number) => {
                       const isRealTherapist = hasSameCity;
                       const displayPhoto = isRealTherapist

@@ -89,7 +89,7 @@ import BeauticianTreatmentCards from './therapist/BeauticianTreatmentCards';
 import BeauticianPriceListModal from '../modules/therapist/BeauticianPriceListModal';
 import { therapistOffersService } from '../constants/serviceTypes';
 import { SERVICE_TYPES } from '../constants/serviceTypes';
-import { parseBeauticianTreatments, getCombinedBeauticianTreatmentsForDisplay } from '../constants/beauticianTreatments';
+import { parseBeauticianTreatments, getCombinedBeauticianTreatmentsForDisplay, getSampleBeauticianTreatments } from '../constants/beauticianTreatments';
 import TherapistModalsContainer from '../modules/therapist/TherapistModalsContainer';
 import TherapistProfile from '../modules/therapist/TherapistProfile';
 import TherapistSpecialties from '../modules/therapist/TherapistSpecialties';
@@ -131,6 +131,10 @@ interface TherapistCardProps {
     shareCount?: number;
     avatarOffsetPx?: number; // Fine-tune avatar overlap in pixels
     selectedCity?: string; // Selected city for location display override
+    /** Controlled selected price key (60/90/120) when parent owns selection state (e.g. profile page sticky bar) */
+    selectedPriceKey?: '60' | '90' | '120' | null;
+    /** Called when user selects a price container; use with selectedPriceKey for controlled mode */
+    onSelectPriceKey?: (key: '60' | '90' | '120' | null) => void;
 }
 
 /**
@@ -259,14 +263,20 @@ interface BookViaWhatsAppRowProps {
     busyUntil?: string | null;
     /** When true, Book via WhatsApp button shows heartbeat animation (e.g. beautician treatment selected) */
     bookButtonFlash?: boolean;
+    /** When user has selected a price container (60/90/120), use these for the WhatsApp message */
+    selectedDuration?: number;
+    selectedPrice?: number;
+    selectedServiceName?: string;
 }
 
-function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, onPriceSlider, dynamicSpacing, isBusy = false, busyUntil, bookButtonFlash = false }: BookViaWhatsAppRowProps) {
+function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, onPriceSlider, dynamicSpacing, isBusy = false, busyUntil, bookButtonFlash = false, selectedDuration, selectedPrice, selectedServiceName }: BookViaWhatsAppRowProps) {
     const [showBusyPopup, setShowBusyPopup] = useState(false);
     const adminDigits = ADMIN_WHATSAPP_DIGITS;
     const phoneForUrl = getBookingWhatsAppNumber(therapist, ADMIN_WHATSAPP || undefined) || adminDigits;
-    const { durationMin, price } = getDefaultDurationAndPrice(therapist);
-    const massageType = getFirstMassageType(therapist);
+    const defaultData = getDefaultDurationAndPrice(therapist);
+    const durationMin = selectedDuration != null && selectedPrice != null && selectedServiceName ? selectedDuration : defaultData.durationMin;
+    const price = selectedDuration != null && selectedPrice != null && selectedServiceName ? selectedPrice : defaultData.price;
+    const massageType = selectedServiceName || getFirstMassageType(therapist);
     const message = buildBookNowMessage({
         therapistName: therapist.name || 'Therapist',
         therapistId: String(therapist.$id || therapist.id || 'N/A'),
@@ -305,14 +315,14 @@ function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, 
                 <BookNowButton
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowBusyPopup(true); }}
                     disabled
-                    className="flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 rounded-full touch-manipulation"
+                    className="flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 !rounded-lg touch-manipulation"
                     ariaLabel="Book via WhatsApp"
                 />
             ) : (
                 <BookNowButton
                     href={whatsappHref}
                     onClick={handleBookClick}
-                    className={`flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 rounded-full touch-manipulation ${bookButtonFlash ? 'book-button-flash' : ''}`}
+                    className={`flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 !rounded-lg touch-manipulation ${bookButtonFlash ? 'book-now-heartbeat' : ''}`}
                     ariaLabel="Book via WhatsApp"
                 />
             )}
@@ -322,7 +332,7 @@ function BookViaWhatsAppRow({ therapist, locationAreaDisplayName, selectedCity, 
                     e.stopPropagation();
                     onPriceSlider();
                 }}
-                className="flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 rounded-full touch-manipulation"
+                className="flex-1 flex items-center justify-center min-h-[48px] min-w-[44px] py-2 px-2 !rounded-lg touch-manipulation"
                 ariaLabel="Menu Prices"
             />
         </div>
@@ -348,7 +358,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     shareCount,
     loggedInProviderId,
     avatarOffsetPx = 0,
-    selectedCity
+    selectedCity,
+    selectedPriceKey: selectedPriceKeyProp,
+    onSelectPriceKey: onSelectPriceKeyProp
 }) => {
     // Use the translations prop
     const t = _t;
@@ -397,7 +409,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Beautician: when user selects a treatment container, Book button flashes
     const [selectedBeauticianTreatmentIndex, setSelectedBeauticianTreatmentIndex] = useState<number | null>(null);
     // Massage price container selection: fingerprint in container, Book Now heartbeat (same as massage city places)
-    const [selectedPriceKey, setSelectedPriceKey] = useState<'60' | '90' | '120' | null>(null);
+    const [internalPriceKey, setInternalPriceKey] = useState<'60' | '90' | '120' | null>(null);
+    const selectedPriceKey = selectedPriceKeyProp !== undefined ? selectedPriceKeyProp : internalPriceKey;
+    const setSelectedPriceKey = onSelectPriceKeyProp ?? setInternalPriceKey;
 
     const {
         menuData,
@@ -908,12 +922,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Beautician: combined treatments for slider (real 1–3 + sample fill to 4), same pattern as therapist menu.
     const therapistIdForBeautician = String((therapist as any)?.$id ?? (therapist as any)?.id ?? '');
     const therapistCountry = (therapist as any)?.country ?? (therapist as any)?.countryCode ?? '';
-    const combinedBeauticianTreatments = getCombinedBeauticianTreatmentsForDisplay(
-        (therapist as any)?.beauticianTreatments,
-        therapistIdForBeautician,
-        therapistCountry
-    );
+    const isPaidPlanForMenu = (() => {
+        const p = String((therapist as any)?.plan ?? (therapist as any)?.membershipPlan ?? (therapist as any)?.membershipTier ?? '').toLowerCase();
+        return p !== 'free' && p !== '';
+    })();
     const isBeauticianWithTreatments = therapistOffersService(therapist, SERVICE_TYPES.BEAUTICIAN);
+    /** Free plan: Menu Prices shows 4 sample treatments that fit category. Paid: dashboard menu (real + sample fill to 4). */
+    const combinedBeauticianTreatments = !isBeauticianWithTreatments ? [] : isPaidPlanForMenu
+        ? getCombinedBeauticianTreatmentsForDisplay((therapist as any)?.beauticianTreatments, therapistIdForBeautician, therapistCountry)
+        : getSampleBeauticianTreatments(therapistIdForBeautician, therapistCountry);
 
     // Parse pricing - use combined menu so profile shows same cheapest as menu slider
     const getPricing = (): { "60": number; "90": number; "120": number } => {
@@ -964,6 +981,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     };
 
     const pricing = getPricing();
+    const cheapestService = combinedMenu.length > 0 ? getCheapestServiceByTotalPrice(combinedMenu) : null;
+    const cheapestServiceName = cheapestService?.name || (cheapestService as any)?.serviceName || getFirstMassageType(therapist);
 
     const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
     const effectiveRating = rawRating > 0 ? rawRating : 4.8;
@@ -1294,6 +1313,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     isBusy={displayStatus === AvailabilityStatus.Busy}
                     busyUntil={(therapist as any).busyUntil ?? (therapist as any).bookedUntil ?? undefined}
                     bookButtonFlash={isBeauticianWithTreatments && selectedBeauticianTreatmentIndex !== null || !!selectedPriceKey}
+                    selectedDuration={selectedPriceKey ? Number(selectedPriceKey) : undefined}
+                    selectedPrice={selectedPriceKey && pricing[selectedPriceKey] ? pricing[selectedPriceKey] : undefined}
+                    selectedServiceName={selectedPriceKey ? cheapestServiceName : undefined}
                 />
             ) : (
                 <>
@@ -1301,7 +1323,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         therapist={therapist}
                         onBookNow={() => {
                             logger.debug('📱 [BOOK NOW] Opening WhatsApp with prefilled message');
-                            openWhatsAppBookNow();
+                            if (selectedPriceKey && pricing[selectedPriceKey]) {
+                                openWhatsAppBookNow({ serviceName: cheapestServiceName, durationMin: Number(selectedPriceKey), price: pricing[selectedPriceKey] });
+                            } else {
+                                openWhatsAppBookNow();
+                            }
                         }}
                         onSchedule={() => {
                             logger.debug('📱 [SCHEDULE] Opening WhatsApp with prefilled scheduled message');

@@ -68,30 +68,40 @@ export class EnhancedMenuDataService {
   /**
    * Profile prices from dashboard (60/90/120) - when set, become "Traditional Massage" in slider.
    * Values in thousands (e.g. 100 = Rp 100,000). Only used when all three > 0.
+   * When isPaidPlan is false: do not load dashboard menu; show 4 sample items that fit category and upload page category.
    */
   static async getTherapistMenu(
     therapistId: string,
-    profilePrices?: { price60: number; price90: number; price120: number } | null
+    profilePrices?: { price60: number; price90: number; price120: number } | null,
+    options?: { isPaidPlan?: boolean }
   ): Promise<MenuLoadResult> {
+    const isPaidPlan = options?.isPaidPlan !== false;
+    const freePlanSampleCount = 4;
     try {
-      console.log(`📋 Loading menu for therapist ${therapistId}`, profilePrices ? '(with profile prices)' : '');
+      console.log(`📋 Loading menu for therapist ${therapistId}`, profilePrices ? '(with profile prices)' : '', isPaidPlan ? '' : '(free plan: 4 sample items only)');
       
-      // 1. Load real menu from Appwrite (therapist_menus collection)
-      const realMenuData = await this.loadRealMenuData(therapistId);
+      // 1. Load real menu from Appwrite only for paid plan (dashboard menu)
+      const realMenuData = isPaidPlan ? await this.loadRealMenuData(therapistId) : [];
       
-      // 2. Get default/sample menu (5 items). When profile has 3 prices, first = "Traditional Massage" from dashboard.
-      const defaultMenuData = await this.getDefaultMenuData(therapistId, profilePrices || undefined);
+      // 2. Get default/sample menu. Free plan: 4 items (1 upload + 3 samples, or 4 samples). Paid: 5 items as before.
+      const defaultMenuData = await this.getDefaultMenuData(
+        therapistId,
+        profilePrices || undefined,
+        isPaidPlan ? undefined : { maxTotal: freePlanSampleCount }
+      );
       
-      // 3. Combine: real items + (5 - realCount) samples. When realCount >= 5, samples = 0
+      // 3. Combine: real items + samples. Free plan: only defaultMenuData (4). Paid: real + (5 - realCount) samples.
       const combinedServices = await this.combineAndEnhanceServices(
         realMenuData,
         defaultMenuData,
-        therapistId
+        therapistId,
+        isPaidPlan ? 5 : freePlanSampleCount
       );
       
       // 4. Sort by priority (real first, then by popularity/category)
       const sortedServices = this.sortServices(combinedServices);
-      const samplesIncluded = Math.max(0, 5 - realMenuData.length);
+      const targetCount = isPaidPlan ? 5 : freePlanSampleCount;
+      const samplesIncluded = Math.max(0, targetCount - realMenuData.length);
       
       const result: MenuLoadResult = {
         services: sortedServices,
@@ -171,25 +181,28 @@ export class EnhancedMenuDataService {
   }
 
   /**
-   * Get exactly 5 menu items for the slider. Each item has: massage type name + 60min / 90min / 120min prices.
-   * When profilePrices set: 1 = upload profile type (name Traditional Massage, dashboard 60/90/120) + 4 sample types (each with name + 60/90/120).
-   * When no profile prices: 5 sample types (each with name + 60/90/120). Lowest of the 5 drives card/profile display.
+   * Get menu items for the slider. Each item has: massage type name + 60min / 90min / 120min prices.
+   * When profilePrices set: 1 = upload profile type (Traditional Massage, dashboard 60/90/120) + (maxTotal-1) sample types.
+   * When no profile prices: maxTotal sample types. options.maxTotal = 4 for free plan (4 sample items that fit category).
    */
   private static async getDefaultMenuData(
     therapistId: string,
-    profilePrices?: { price60: number; price90: number; price120: number }
+    profilePrices?: { price60: number; price90: number; price120: number },
+    options?: { maxTotal?: number }
   ): Promise<MenuService[]> {
+    const maxTotal = options?.maxTotal ?? 5;
     const hasProfilePrices =
       profilePrices &&
       Number(profilePrices.price60) > 0 &&
       Number(profilePrices.price90) > 0 &&
       Number(profilePrices.price120) > 0;
 
+    const sampleCount = hasProfilePrices ? maxTotal - 1 : maxTotal;
     const defaultServices = DefaultMenuManager.getDefaultMenuForTherapist(
       therapistId,
-      hasProfilePrices ? 4 : 5
+      sampleCount
     );
-    const samplePrices = getSampleMenuItems(therapistId);
+    const samplePrices = getSampleMenuItems(therapistId, sampleCount);
 
     const p60 = (v: number) => Math.max(100, Math.round(Number(v)));
     const p90 = (v: number) => Math.max(100, Math.round(Number(v)));
@@ -221,7 +234,7 @@ export class EnhancedMenuDataService {
         isDefault: true
       } as MenuService;
       const rest = defaultServices.map((service, index) => {
-        const sample = samplePrices[index + 1] || samplePrices[0];
+        const sample = samplePrices[index] ?? samplePrices[0];
         const price60 = Math.round(sample.price60 / 1000);
         const price90 = Math.round(sample.price90 / 1000);
         const price120 = Math.round(sample.price120 / 1000);
@@ -278,24 +291,25 @@ export class EnhancedMenuDataService {
   }
 
   /**
-   * Get samples to show: 5 - realCount (minimum 0)
-   * When realCount >= 5, show 0 samples. When realCount > 5, only real items display.
+   * Get samples to show: maxTotal - realCount (minimum 0)
+   * Paid plan: maxTotal 5. Free plan: maxTotal 4 (samples only).
    */
-  private static getSamplesToShow(realCount: number, allSamples: MenuService[]): MenuService[] {
-    const count = Math.max(0, 5 - realCount);
+  private static getSamplesToShow(realCount: number, allSamples: MenuService[], maxTotal: number = 5): MenuService[] {
+    const count = Math.max(0, maxTotal - realCount);
     return allSamples.slice(0, count);
   }
 
   /**
    * Combine real and default services with badge enhancement
-   * Logic: real items first, then up to (5 - realCount) samples
+   * Logic: real items first, then up to (maxTotal - realCount) samples
    */
   private static async combineAndEnhanceServices(
     realServices: MenuService[],
     defaultServices: MenuService[],
-    therapistId: string
+    therapistId: string,
+    maxTotal: number = 5
   ): Promise<MenuService[]> {
-    const samplesToInclude = this.getSamplesToShow(realServices.length, defaultServices);
+    const samplesToInclude = this.getSamplesToShow(realServices.length, defaultServices, maxTotal);
     const combined = [...realServices, ...samplesToInclude];
     return await this.enhanceWithBadges(combined, therapistId);
   }

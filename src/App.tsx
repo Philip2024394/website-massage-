@@ -649,12 +649,20 @@ const App = () => {
     // Close modals and reset temporary UI state on route change
     useEffect(() => {
         logger.debug('Route changed', { page: state.page });
-        
-        // Scroll to top so every page is viewed from the top
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-        if (document.documentElement) document.documentElement.scrollTop = 0;
-        if (document.body) document.body.scrollTop = 0;
-        
+
+        // Scroll to top so the next page shows from the top (window + any internal scroll container)
+        const scrollToTop = () => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            if (document.documentElement) document.documentElement.scrollTop = 0;
+            if (document.body) document.body.scrollTop = 0;
+            const scrollable = document.querySelector('.scrollable, .home-page-container, [data-scroll-root]');
+            if (scrollable && typeof scrollable.scrollTo === 'function') scrollable.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        };
+        scrollToTop();
+        requestAnimationFrame(scrollToTop);
+        setTimeout(scrollToTop, 50);
+        setTimeout(scrollToTop, 150);
+
         // Close all modals on route change
         setIsStatusTrackerOpen(false);
         

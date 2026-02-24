@@ -632,8 +632,8 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                                 const mockImage = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
                                 list = [
                                     { id: 'mock-hair', name: 'Hair Salon', description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.', imageUrl: mockImage, details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }], bookLabel: 'Book' as const },
-                                    { id: 'mock-beauty', name: 'Beautician', description: 'Nails, lashes and skin treatments. Manicure, pedicure, lash extensions and facials available by appointment.', imageUrl: mockImage, details: [{ label: 'Manicure & pedicure', price: 'IDR 200K', duration: '60 min' }], bookLabel: 'Schedule' as const },
-                                    { id: 'mock-spa', name: 'Spa & Wellness', description: 'Body scrubs, wraps and aromatherapy. Relax and recharge with our signature treatments in a calm environment.', imageUrl: mockImage, details: [{ label: 'Body scrub & wrap', price: 'IDR 350K', duration: '90 min' }], bookLabel: 'Book' as const },
+                                    { id: 'mock-eyelashes', name: 'Eye Lashes', description: 'Eyelash extensions, lifts and tints. Classic, volume and hybrid styles available. Professional application for a natural or dramatic look.', imageUrl: mockImage, details: [{ label: 'Lash extensions', price: 'IDR 200K', duration: '60 min' }], bookLabel: 'Book' as const },
+                                    { id: 'mock-nailart', name: 'Nail Art', description: 'Creative nail art, gel manicure, pedicure and nail care. Custom designs and long-lasting finishes.', imageUrl: mockImage, details: [{ label: 'Gel manicure & nail art', price: 'IDR 180K', duration: '45 min' }], bookLabel: 'Book' as const },
                                 ];
                             }
                             const displayList = list.slice(0, tierLimit);
@@ -647,17 +647,24 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             const hasAnyServices = displayList.length > 0;
                             if (displayTherapists.length === 0 && !hasAnyServices) return null;
                             const isId = language === 'id';
+                            const isBeautyPlace = (place as any)?.category === 'beauty';
+                            const sectionTitle = isBeautyPlace
+                                ? (isId ? "Layanan & Beautician's Tren Saat Ini" : "Services & Beautician's Trending Now")
+                                : (isId ? 'Layanan & Terapis Tren Saat Ini' : 'Services & Therapist Trending Now');
+                            const sectionSubtitle = isBeautyPlace
+                                ? (isId ? 'Kenali beautician dan layanan mereka' : 'Meet Beauticians and explore their services')
+                                : (isId ? 'Kenali terapis kami dan layanan tambahan' : 'Meet our therapists and explore add-on services');
                             return (
                                 <div className="mt-6">
                                     <div className="text-center mb-4">
                                         <div className="flex items-center justify-center gap-2 mb-1">
                                             <LayoutGrid className="w-3.5 h-3.5 text-orange-500" aria-hidden />
                                             <h3 className="text-lg font-bold text-gray-900">
-                                                {isId ? 'Layanan & Terapis Tren Saat Ini' : 'Services & Therapist Trending Now'}
+                                                {sectionTitle}
                                             </h3>
                                         </div>
                                         <p className="text-xs text-gray-500">
-                                            {isId ? 'Kenali terapis kami dan layanan tambahan' : 'Meet our therapists and explore add-on services'}
+                                            {sectionSubtitle}
                                         </p>
                                     </div>
 

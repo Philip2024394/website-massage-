@@ -1041,6 +1041,8 @@ export const therapistService = {
             if ((data as any).nailChartImageUrl !== undefined) (mappedData as any).nailChartImageUrl = (data as any).nailChartImageUrl;
             if ((data as any).hairColorChartImageUrl !== undefined) (mappedData as any).hairColorChartImageUrl = (data as any).hairColorChartImageUrl;
             if ((data as any).hairStylesChartImageUrl !== undefined) (mappedData as any).hairStylesChartImageUrl = (data as any).hairStylesChartImageUrl;
+            if ((data as any).nailArtChartImageUrl !== undefined) (mappedData as any).nailArtChartImageUrl = (data as any).nailArtChartImageUrl;
+            if ((data as any).eyelashesChartImageUrl !== undefined) (mappedData as any).eyelashesChartImageUrl = (data as any).eyelashesChartImageUrl;
             if ((data as any).beauticianChartImages !== undefined) (mappedData as any).beauticianChartImages = typeof (data as any).beauticianChartImages === 'string' ? (data as any).beauticianChartImages : JSON.stringify((data as any).beauticianChartImages || {});
             if ((data as any).beauticianDisclaimers !== undefined) (mappedData as any).beauticianDisclaimers = (data as any).beauticianDisclaimers;
 

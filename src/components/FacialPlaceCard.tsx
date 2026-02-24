@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import type { Place, Analytics } from '../types';
-import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
-import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
+import { parsePricing, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
+import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { bookingService, reviewService } from '../lib/appwriteService';
-import DistanceDisplay from './DistanceDisplay';
+import { logger } from '../utils/logger';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
 import { getAuthAppUrl } from '../utils/therapistCardHelpers';
-import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing } from '../constants/cardConstants.tsx';
-import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
-import { Share2 } from 'lucide-react';
+import { discountStyles, isDiscountActive } from '../constants/cardConstants.tsx';
+import { useChatProvider } from '../hooks/useChatProvider';
+import PlaceHeader from '../modules/massage-place/PlaceHeader';
+import PlaceProfile from '../modules/massage-place/PlaceProfile';
+import PlaceServices from '../modules/massage-place/PlaceServices';
+import PlacePricing from '../modules/massage-place/PlacePricing';
 
 interface FacialPlaceCardProps {
     place: Place;
@@ -24,7 +27,7 @@ interface FacialPlaceCardProps {
     userLocation?: { lat: number; lng: number } | null;
 }
 
-// Inject styles if they don't exist
+// Inject styles if they don't exist (same as massage place card)
 if (typeof document !== 'undefined' && !document.getElementById('facial-place-discount-styles')) {
     const styleSheet = document.createElement('style');
     styleSheet.id = 'facial-place-discount-styles';
@@ -32,9 +35,9 @@ if (typeof document !== 'undefined' && !document.getElementById('facial-place-di
     document.head.appendChild(styleSheet);
 }
 
-const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({ 
-    place, 
-    onRate, 
+const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
+    place,
+    onRate,
     onSelectPlace,
     onNavigate,
     onIncrementAnalytics,
@@ -44,11 +47,14 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
     t: _t,
     userLocation
 }) => {
+    const { addNotification } = useChatProvider();
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
-    // Orders count derived from persisted analytics JSON or actual bookings
+    const [showPriceListModal, setShowPriceListModal] = useState(false);
+    const [selectedGalleryPhoto, setSelectedGalleryPhoto] = useState<{ url: string; title: string; description: string } | null>(null);
+
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
             if ((place as any).analytics) {
@@ -65,15 +71,14 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                 const providerId = String((place as any).id || (place as any).$id || '');
                 if (!providerId) return;
                 const docs = await bookingService.getByProvider(providerId, 'place');
-                if (Array.isArray(docs)) {
-                    setBookingsCount(docs.length);
-                }
-            } catch (e) {
+                if (Array.isArray(docs)) setBookingsCount(docs.length);
+            } catch {
                 // silent
             }
         };
         loadBookingsCount();
     }, [place]);
+
     const joinedDateRaw = (place as any).activeMembershipDate || (place as any).membershipStartDate || (place as any).$createdAt;
     const joinedDisplay = (() => {
         if (!joinedDateRaw) return '—';
@@ -85,34 +90,25 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
             return '—';
         }
     })();
-    
-    // Countdown timer for active discount
+
     useEffect(() => {
         if (!activeDiscount) return;
-        
         const interval = setInterval(() => {
             const now = new Date().getTime();
             const distance = activeDiscount.expiresAt.getTime() - now;
-            
             if (distance < 0) {
                 setDiscountTimeLeft('EXPIRED');
                 clearInterval(interval);
                 return;
             }
-            
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
             setDiscountTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
         }, 1000);
-        
         return () => clearInterval(interval);
     }, [activeDiscount]);
-    
 
-
-    // Handle anonymous review submission
     const handleAnonymousReviewSubmit = async (reviewData: {
         name: string;
         whatsappNumber: string;
@@ -129,11 +125,8 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                 reviewerName: reviewData.name,
                 whatsappNumber: reviewData.whatsappNumber
             });
-            
             setShowReviewModal(false);
             alert('Thank you for your review! 🌟');
-            
-            // Soft refresh to show updated rating without losing state
             setTimeout(async () => {
                 try {
                     const { softRecover } = await import('../utils/softNavigation');
@@ -147,61 +140,34 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
             throw error;
         }
     };
-    
-    // Parse pricing - multiply by 1000 to get full IDR amounts for consistent display
+
     const parsedPricing = parsePricing(place.pricing) || { "60": 0, "90": 0, "120": 0 };
     const pricing = {
         "60": parsedPricing["60"] * 1000,
         "90": parsedPricing["90"] * 1000,
         "120": parsedPricing["120"] * 1000
     };
-    
-    // Price formatting function matching TherapistCard format (XXXk)
+
     const formatPrice = (price: number | string): string => {
         const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-        
-        if (!numPrice || numPrice === 0 || isNaN(numPrice)) {
-            return "Contact"; // Show "Contact" instead of "0k" when no price is set
-        }
-        
-        // Convert to thousands and ensure 3-digit format (100-999)
+        if (!numPrice || numPrice === 0 || isNaN(numPrice)) return "Contact";
         let priceInThousands = Math.round(numPrice / 1000);
-        
-        // Ensure 3-digit display (100k-999k range)
-        if (priceInThousands < 100) {
-            priceInThousands = 100; // Minimum 100k
-        } else if (priceInThousands > 999) {
-            priceInThousands = 999; // Maximum 999k for 4-char display
-        }
-        
-        // Always return exactly 4 characters: 3 digits + "k"
+        if (priceInThousands < 100) priceInThousands = 100;
+        else if (priceInThousands > 999) priceInThousands = 999;
         return `${priceInThousands}k`;
     };
-    
-    // Get main image - check mainImage first, then images array, then fallback
+
     const getMainImage = () => {
-        // Priority 1: mainImage property
-        if ((place as any).mainImage) {
-            return (place as any).mainImage;
-        }
-        
-        // Priority 2: First image from images array
+        if ((place as any).mainImage) return (place as any).mainImage;
         const images = (place as any).images;
-        if (Array.isArray(images) && images.length > 0) {
-            return images[0];
-        }
-        
-        // Priority 3: Fallback
+        if (Array.isArray(images) && images.length > 0) return images[0];
         return 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
     };
-    
     const mainImage = getMainImage();
-    
-    // Get amenities if available
+
     const amenities = (place as any).amenities || [];
     const displayAmenities = Array.isArray(amenities) ? amenities.slice(0, 3) : [];
 
-    // Dynamic data sourcing for description & specializations
     const rawDescription = (place as any).description || '';
     const description = rawDescription && rawDescription.trim().length > 0
         ? rawDescription.trim()
@@ -213,7 +179,6 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
     const parsedLanguages = parseLanguages((place as any).languages) || [];
     const languagesDisplay = Array.isArray(parsedLanguages) ? parsedLanguages.slice(0, 5) : [];
 
-    // Years of experience: prefer explicit yearsOfExperience, fallback to membership duration
     const yearsOfExperience = (() => {
         const direct = (place as any).yearsOfExperience;
         if (typeof direct === 'number' && direct > 0) return direct;
@@ -222,37 +187,57 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
             if (!startRaw) return undefined;
             const startDate = new Date(startRaw);
             if (isNaN(startDate.getTime())) return undefined;
-            const diffMs = Date.now() - startDate.getTime();
-            const years = diffMs / (1000 * 60 * 60 * 24 * 365);
+            const years = (Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
             return years >= 1 ? Math.floor(years) : undefined;
         } catch { return undefined; }
     })();
 
-
+    // Gallery photos: same shape as massage place (url, title, description)
+    const galleryPhotos = (() => {
+        const gallery = (place as any).galleryImages || (place as any).galleryPhotos || (place as any).photos || [];
+        let list: { url: string; title: string; description: string }[] = [];
+        if (Array.isArray(gallery)) {
+            list = gallery.slice(0, 4).map((item: any) => ({
+                url: (item.imageUrl || item.url || '').trim() || mainImage,
+                title: item.header || item.caption || item.title || 'Photo',
+                description: item.description || item.caption || ''
+            }));
+        }
+        if (list.length === 0) {
+            list = [
+                { url: mainImage, title: 'Treatment Room', description: 'Professional facial and skin care environment.' },
+            ];
+        }
+        return list;
+    })();
 
     const handleViewDetails = () => {
-        logger.debug('🏨 FacialPlaceCard - View Details clicked:', {
-            place: place,
-            placeName: place.name,
-            placeId: place.id || (place as any).$id,
-            onNavigate: !!onNavigate,
-            onSelectPlace: !!onSelectPlace
-        });
-        
+        logger.debug('FacialPlaceCard - View Details clicked', { placeName: place.name, placeId: place.$id || place.id });
         onIncrementAnalytics('views');
         onSelectPlace(place);
-        
         if (onNavigate) {
-            logger.debug('🏨 Navigating to facial-place-profile');
-            onNavigate('facial-place-profile');
+            logger.debug('Navigating to facial-place-profile');
+            setTimeout(() => onNavigate('facial-place-profile'), 0);
         } else {
-            logger.error('❌ onNavigate is not defined!');
+            logger.error('onNavigate is not defined');
         }
     };
 
+    const displayRating = (place.averageRating ?? 0) > 0
+        ? Number((place.averageRating ?? 0).toFixed(1))
+        : (place.staticRating || 4.8);
+
     return (
         <>
-            {/* External meta bar (Joined Date / Free / Orders) */}
+            <style>{`
+                @keyframes priceRimFade {
+                    0%, 100% { border-color: rgb(251, 146, 60); box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.3), 0 4px 6px -1px rgba(251, 146, 60, 0.5); }
+                    50% { border-color: rgba(251, 146, 60, 0.3); box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.1), 0 4px 6px -1px rgba(251, 146, 60, 0.2); }
+                }
+                .price-rim-fade { animation: priceRimFade 2s ease-in-out infinite; }
+            `}</style>
+
+            {/* External meta bar – same layout and colors as MassagePlaceCard */}
             <div className="flex justify-between items-center mb-2 px-2">
                 <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,7 +248,6 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        // Redirect to auth-app for facial place signup
                         localStorage.setItem('selectedPortalType', 'facial_place');
                         localStorage.setItem('selected_membership_plan', 'pro');
                         window.location.href = `${getAuthAppUrl()}/signup`;
@@ -275,424 +259,94 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                     </svg>
                     Facial Spa Join Free
                 </button>
-                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                    Orders: {bookingsCount}
-                </span>
             </div>
-            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative active:shadow-lg transition-shadow touch-manipulation pb-8 border-t-4 border-t-amber-400">
-                {/* Main Image Banner + Lazy Loading (full-width cover) */}
-                <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl">
-                    <img 
-                        src={mainImage} 
-                        alt={`${place.name} cover`} 
-                        className="w-full h-full object-cover rounded-t-xl"
-                        loading="lazy"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
-                        }}
-                    />
-                    
 
+            <div
+                onClick={handleViewDetails}
+                className="w-full bg-white rounded-xl shadow-lg border border-gray-200 border-t-4 border-t-amber-400 overflow-hidden relative active:shadow-xl transition-all touch-manipulation pb-8 cursor-pointer hover:shadow-xl"
+            >
+                <PlaceHeader
+                    place={place}
+                    mainImage={mainImage}
+                    displayRating={displayRating}
+                    onNavigate={onNavigate}
+                    formatRating={formatRating}
+                    getDisplayRating={getDisplayRating}
+                    t={_t}
+                    onShare={() => setShowSharePopup(true)}
+                    activeDiscount={activeDiscount}
+                    discountTimeLeft={discountTimeLeft}
+                />
 
-                {/* Discount Badge - Database driven discount */}
-                {isDiscountActive(place) && (
-                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
-                        <div 
-                            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-bounce"
-                            style={{
-                                animation: 'discountFade 2s ease-in-out infinite',
-                                filter: 'drop-shadow(0 0 8px rgba(249, 115, 22, 0.6))'
-                            }}
-                        >
-                            <span className="font-bold text-white text-xl">{(place as any).discountPercentage}% OFF</span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
-                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-xs text-white font-semibold">
-                                {(() => {
-                                    const endTime = new Date((place as any).discountEndTime);
-                                    const now = new Date();
-                                    const diff = endTime.getTime() - now.getTime();
-                                    
-                                    if (diff <= 0) return 'EXPIRED';
-                                    
-                                    const hours = Math.floor(diff / (1000 * 60 * 60));
-                                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                                    return `${hours}h ${minutes}m`;
-                                })()}
-                            </span>
-                        </div>
-                    </div>
-                )}
-
-                {/* Opening/Closing Time Badge - Shows when NO discount is active */}
-                {!isDiscountActive(place) && !activeDiscount && place.openingTime && place.closingTime && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/80 backdrop-blur-md rounded-full px-3 py-2 shadow-lg">
-                        <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                {/* Location – below image, same as MassagePlaceCard */}
+                <div className="px-4 mt-2 mb-1 flex justify-end">
+                    <div className="flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span className="text-xs text-white font-semibold">
-                            {place.openingTime} - {place.closingTime}
-                        </span>
-                    </div>
-                )}
-
-                {/* Active Discount Badge - External discount prop (fallback) */}
-                {!isDiscountActive(place) && activeDiscount && discountTimeLeft !== 'EXPIRED' && (
-                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
-                            <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
-                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-xs text-white font-semibold">{discountTimeLeft}</span>
-                        </div>
-                    </div>
-                )}
-                
-                {/* Share Button - Bottom Right Corner */}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setShowSharePopup(true);
-                    }}
-                    className="absolute bottom-2 right-2 w-11 h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
-                    title="Share this facial place"
-                    aria-label="Share profile"
-                    style={{ minWidth: '44px', minHeight: '44px' }}
-                >
-                    <Share2 className="w-5 h-5 text-white" color="white" strokeWidth={2.5} />
-                </button>
-            </div>
-            
-            {/* Profile Section - Flexbox layout for stable positioning */}
-            <div className="px-4 -mt-10 pb-6 relative z-[2000] overflow-visible">
-                <div className="flex items-start justify-between gap-4">
-                    {/* Left side: Profile + Name + Status */}
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                        {/* Profile Picture */}
-                        <div className="flex-shrink-0">
-                            <div className="relative w-20 h-20 aspect-square">
-                                <img 
-                                    className="w-20 h-20 aspect-square rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                                    src={(place as any).profilePicture || (place as any).logo || mainImage}
-                                    alt={place.name}
-                                    onError={(e) => {
-                                        e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
-                                    }}
-                                />
-                                {/* Verified Badge - Same ImageKit asset as therapists & other places */}
-                                {((place as any).isVerified || (place as any).verifiedBadge || (place as any).ktpPhotoUrl || (place as any).ktpVerified) && (
-                                    <img
-                                        src={VERIFIED_BADGE_IMAGE_URL}
-                                        alt="Verified"
-                                        className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md object-contain bg-white/90"
-                                        title="Verified Place"
-                                    />
-                                )}
-                                
-                                {/* Star Rating Badge */}
-                                <button
-                                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-[2000]"
-                                    onClick={() => onRate(place)}
-                                    aria-label={`Rate ${place.name}`}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="#eab308">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pt-12 pb-2">
-                            <div className="flex items-center gap-2">
-                                {/* Verified Badge - Show if place has both bank details and KTP */}
-                                {(() => {
-                                    const hasVerifiedBadge = (place as any).verifiedBadge || (place as any).isVerified;
-                                    const hasBankDetails = place.bankName && place.accountName && place.accountNumber;
-                                    const hasKtpUploaded = place.ktpPhotoUrl;
-                                    const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded);
-                                    
-                                    return shouldShowBadge && (
-                                        <img 
-                                            src={VERIFIED_BADGE_IMAGE_URL}
-                                            alt="Verified"
-                                            className="w-5 h-5 flex-shrink-0"
-                                            title="Verified Place - Complete Profile"
-                                        />
-                                    );
-                                })()}
-                                
-                                <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
-                            </div>
-                            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1">
-                                <span className="relative mr-1.5">
-                                    {/* Static ring glow effect */}
-                                    <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-300 opacity-40"></span>
-                                    <span className="absolute inset-0 w-3 h-3 -left-0.5 -top-0.5 rounded-full bg-green-400 opacity-30"></span>
-                                    <span className="w-2 h-2 rounded-full block bg-green-500"></span>
-                                </span>
-                                Open Now
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-2 mt-12">
-                        <DistanceDisplay
-                            userLocation={userLocation}
-                            providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}
-                            className="text-sm"
-                            showTravelTime={true}
-                            showIcon={true}
-                            size="sm"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Facial Place Bio - Natural flow with proper margin (increased for star badge clearance) */}
-            <div className="mt-12 facial-place-bio-section mx-4 relative z-0">
-                <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4 flex-1">
-                        {description}
-                    </p>
-                    {/* Opening/Closing Time Text - Shows when discount IS active */}
-                    {(isDiscountActive(place) || activeDiscount) && place.openingTime && place.closingTime && (
-                        <div className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap">
-                            <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="font-medium">{place.openingTime}-{place.closingTime}</span>
-                        </div>
-                    )}
-                </div>
-                {/* Website Link */}
-                {(place as any).websiteUrl && (
-                    <a
-                        href={(place as any).websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 mt-2 text-xs text-orange-600 hover:text-orange-700 font-medium hover:underline transition-colors"
-                    >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
-                        Visit Website
-                    </a>
-                )}
-            </div>
-            
-            {/* Content */}
-            <div className="p-4 flex flex-col gap-4 w-full">
-                <div className="flex items-start gap-4 w-full">
-                    <div className="flex-grow">
-                        {/* Content starts below the positioned elements */}
+                        <span className="text-xs font-medium text-gray-700">{(place.location || 'Bali').split(',')[0].trim()}</span>
                     </div>
                 </div>
 
-                {/* Facial Treatments - dynamic */}
-                {facialTypesDisplay.length > 0 && (
-                    <div className="mt-4">
-                        <div className="mb-2 flex items-center justify-between gap-2">
-                            <h4 className="text-xs font-semibold text-gray-700 whitespace-nowrap">Facial Treatments</h4>
-                            {(place as any).therapistGender && (place as any).therapistGender !== 'Unisex' && (
-                                <span className="text-xs font-medium text-orange-600 flex items-center gap-1 whitespace-nowrap">
-                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
-                                    </svg>
-                                    Bookings: {(place as any).therapistGender} Only
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                            {facialTypesDisplay.map((mt: string) => (
-                                <span key={mt} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">{mt}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                <PlaceProfile place={place} mainImage={mainImage} userLocation={userLocation} />
 
-                {/* Languages & Experience - dynamic */}
-                {(languagesDisplay.length > 0 || yearsOfExperience) && (
-                    <div className="mt-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
-                            {yearsOfExperience && (
-                                <div className="flex items-center gap-1">
-                                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span className="text-xs font-semibold text-gray-700">{yearsOfExperience}+ Years Experience</span>
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                            {languagesDisplay.map((lang: string) => (
-                                <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                    <span className="text-xs">🌐</span>
-                                    <span className="text-xs">{lang}</span>
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                <PlaceServices
+                    place={place}
+                    description={description}
+                    isDiscountActive={isDiscountActive}
+                    activeDiscount={activeDiscount}
+                    galleryPhotos={galleryPhotos}
+                    massageTypesDisplay={facialTypesDisplay}
+                    languagesDisplay={languagesDisplay}
+                    yearsOfExperience={yearsOfExperience ?? 0}
+                    displayAmenities={displayAmenities}
+                    t={_t}
+                    onGalleryPhotoClick={(photo) => setSelectedGalleryPhoto(photo)}
+                    onNavigate={onNavigate}
+                    setShowPriceListModal={setShowPriceListModal}
+                    amenities={amenities}
+                />
 
+                <PlacePricing
+                    place={place}
+                    pricing={pricing}
+                    displayRating={displayRating}
+                    formatPrice={formatPrice}
+                    t={_t}
+                    addNotification={addNotification}
+                    onIncrementAnalytics={onIncrementAnalytics}
+                />
 
-
-                {/* Amenities */}
-                {displayAmenities.length > 0 && (
-                    <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-1">Amenities</h4>
-                        <p className="text-xs text-gray-500 mb-2">Additional services provided during your massage session</p>
-                        <div className="flex flex-wrap gap-2">
-                            {displayAmenities.map((amenity: string) => (
-                                <span key={amenity} className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
-                                    {amenity}
-                                </span>
-                            ))}
-                            {amenities.length > 3 && (
-                                <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
-                                    +{amenities.length - 3} more
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-            {/* Indastreet Verification Standards Link */}
-            <div className="text-center mb-2 mt-2">
-                <button
-                    onClick={() => onNavigate?.('verifiedProBadge')}
-                    className="text-sm font-medium hover:underline"
-                >
-                    <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
-                </button>
-            </div>
-
-            {/* Discounted Prices Header */}
-            {isDiscountActive(place) && (
-                <div className={`text-center mb-1 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1')}`}>
-                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
-                        🔥 Discounted Price's Displayed
-                    </p>
-                </div>
-            )}
-
-            {/* Pricing */}
-            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 w-full">
-                {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
-                }`} 
-                style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite',
-                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
-                } : {}}>
-                    <p className="text-gray-600 text-xs">120 min</p>
-                    {isDiscountActive(place) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {formatPrice(Number(pricing["120"]))}
-                            </p>
-                            <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (place as any).discountPercentage / 100)))}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["120"]))}</p>
-                    )}
-                </div>
-                    
-                {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
-                }`} 
-                style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite',
-                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
-                } : {}}>
-                    <p className="text-gray-600 text-xs">60 min</p>
-                    {isDiscountActive(place) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {formatPrice(Number(pricing["60"]))}
-                            </p>
-                            <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (place as any).discountPercentage / 100)))}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["60"]))}</p>
-                    )}
-                </div>
-                    
-                {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
-                }`} 
-                style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite',
-                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
-                } : {}}>
-                    <p className="text-gray-600 text-xs">90 min</p>
-                    {isDiscountActive(place) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {formatPrice(Number(pricing["90"]))}
-                            </p>
-                            <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (place as any).discountPercentage / 100)))}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["90"]))}</p>
-                    )}
-                </div>
-            </div>
-
-                {/* Action Button - View Details Only */}
-                <button
-                    onClick={handleViewDetails}
-                    className="w-full flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
-                >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <span>View Facial Clinic</span>
-                </button>
-
-                {/* Refer Friend, Massage Directory and Leave Review Links */}
-                <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-1">
+                {/* Terms and Conditions – same as MassagePlaceCard */}
+                <div className="text-center mt-3 px-4">
                     <button
+                        type="button"
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            setShowSharePopup(true);
+                            const baseUrl = window.location.origin;
+                            const isSharedProfile = window.location.pathname.includes('/share/');
+                            if (isSharedProfile) {
+                                window.open(`${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(window.location.href)}`, '_blank');
+                            } else {
+                                window.open(`${baseUrl}/mobile-terms-and-conditions`, '_blank');
+                            }
                         }}
-                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                        aria-label="Share profile"
+                        className="text-xs text-gray-500 hover:text-gray-700 underline font-medium cursor-pointer bg-transparent border-none p-0"
                     >
-                        <Share2 className="w-4 h-4 text-gray-600" strokeWidth={2} />
-                        <span>Share</span>
+                        Terms And Conditions
                     </button>
-                    {onNavigate && (
+                </div>
+
+                {/* Directory link – same layout as MassagePlaceCard, Facial Types */}
+                {onNavigate && (
+                    <div className="flex justify-center items-center gap-2 mt-3 px-1 pt-3 border-t border-gray-200">
                         <button
                             type="button"
-                            onClick={(event) => {
-                                event.preventDefault();
-                                event.stopPropagation();
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 onNavigate('facialTypes');
                             }}
                             title={_t?.home?.facialDirectoryTitle || 'Go to Facial Types Directory'}
@@ -703,38 +357,21 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                             </svg>
                             <span>{_t?.home?.facialDirectory || 'Facial Types'}</span>
                         </button>
-                    )}
-                    {onNavigate && (
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onNavigate(`reviews-place-${place.$id || place.id}`);
-                            }}
-                            className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                        >
-                            <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <span>Reviews</span>
-                        </button>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
-            
-            {/* Anonymous Review Modal */}
+
             {showReviewModal && (
                 <AnonymousReviewModal
                     providerName={place.name}
                     providerId={place.$id || place.id}
                     providerType="place"
-                    providerImage={(place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382'}
+                    providerImage={(place as any).mainImage || mainImage}
                     onClose={() => setShowReviewModal(false)}
                     onSubmit={handleAnonymousReviewSubmit}
                 />
             )}
 
-            {/* Login Required Modal */}
             {showLoginRequiredModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowLoginRequiredModal(false)}>
                     <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
@@ -759,72 +396,17 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                     </div>
                 </div>
             )}
-            
-            <style>{`
-                @keyframes coin-fall-1 {
-                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                    10% { opacity: 0.8; }
-                    90% { transform: translateY(85px) rotate(360deg); opacity: 0.8; }
-                    100% { transform: translateY(90px) rotate(360deg); opacity: 0.6; }
-                }
-                @keyframes coin-fall-2 {
-                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                    10% { opacity: 0.8; }
-                    90% { transform: translateY(88px) rotate(360deg); opacity: 0.8; }
-                    100% { transform: translateY(93px) rotate(360deg); opacity: 0.6; }
-                }
-                @keyframes coin-fall-3 {
-                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                    10% { opacity: 0.8; }
-                    90% { transform: translateY(82px) rotate(360deg); opacity: 0.8; }
-                    100% { transform: translateY(87px) rotate(360deg); opacity: 0.6; }
-                }
-                @keyframes coin-fall-4 {
-                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                    10% { opacity: 0.8; }
-                    90% { transform: translateY(86px) rotate(360deg); opacity: 0.8; }
-                    100% { transform: translateY(91px) rotate(360deg); opacity: 0.6; }
-                }
-                @keyframes coin-fall-5 {
-                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                    10% { opacity: 0.8; }
-                    90% { transform: translateY(84px) rotate(360deg); opacity: 0.8; }
-                    100% { transform: translateY(89px) rotate(360deg); opacity: 0.6; }
-                }
-                @keyframes coin-fall-6 {
-                    0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                    10% { opacity: 0.8; }
-                    90% { transform: translateY(87px) rotate(360deg); opacity: 0.8; }
-                    100% { transform: translateY(92px) rotate(360deg); opacity: 0.6; }
-                }
-                @keyframes coin-float {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(-3px); }
-                }
-                .animate-coin-fall-1 { animation: coin-fall-1 3s ease-in forwards, coin-float 2s ease-in-out 3s infinite; }
-                .animate-coin-fall-2 { animation: coin-fall-2 3s ease-in forwards, coin-float 2s ease-in-out 3.3s infinite; }
-                .animate-coin-fall-3 { animation: coin-fall-3 3s ease-in forwards, coin-float 2s ease-in-out 3.6s infinite; }
-                .animate-coin-fall-4 { animation: coin-fall-4 3s ease-in forwards, coin-float 2s ease-in-out 3.9s infinite; }
-                .animate-coin-fall-5 { animation: coin-fall-5 3s ease-in forwards, coin-float 2s ease-in-out 4.2s infinite; }
-                .animate-coin-fall-6 { animation: coin-fall-6 3s ease-in forwards, coin-float 2s ease-in-out 4.5s infinite; }
-            `}</style>
-        </div>
 
-        {/* Social Share Popup */}
-        <SocialSharePopup
-            isOpen={showSharePopup}
-            onClose={() => setShowSharePopup(false)}
-            title={place.name}
-            description={`Discover ${place.name} on IndaStreet! ${place.description || 'Professional facial and beauty services.'}`}
-            url={window.location.href}
-            type="facial"
-        />
+            <SocialSharePopup
+                isOpen={showSharePopup}
+                onClose={() => setShowSharePopup(false)}
+                title={place.name}
+                description={`Discover ${place.name} on IndaStreet! ${place.description || 'Professional facial and beauty services.'}`}
+                url={window.location.href}
+                type="facial"
+            />
         </>
     );
 };
 
 export default FacialPlaceCard;
-// Force rebuild
-
-
-
