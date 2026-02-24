@@ -57,7 +57,7 @@ export default function LoadingGate() {
           <span style={{ color: "#ffffff" }}>Street</span>
         </h1>
         <p style={{ color: "#ffffff", fontSize: "18px", fontWeight: "500", opacity: 1, textShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
-          Professional Massage Services
+          Professional Wellness Services
         </p>
       </div>
       

@@ -139,7 +139,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   onClose,
   isHome = true,
   t,
-  language = 'en',
+  language = 'id',
   onMassageJobsClick,
   onHotelPortalClick,
   onVillaPortalClick,

@@ -162,6 +162,8 @@ export interface TherapistProfilePlaceStyleProps {
   isProfileOwner?: boolean;
   /** Navigate to another therapist's profile (updates URL and calls onNavigate). */
   onNavigateToTherapist?: (therapist: any) => void;
+  /** When true, show skeleton (hero + card + pricing shape) while profile data loads. */
+  isLoading?: boolean;
 }
 
 export default function TherapistProfilePlaceStyle({
@@ -174,7 +176,9 @@ export default function TherapistProfilePlaceStyle({
   therapists: allTherapists = [],
   isProfileOwner = false,
   onNavigateToTherapist,
+  isLoading = false,
 }: TherapistProfilePlaceStyleProps) {
+  const isIncompleteProfile = !therapist?.name?.trim?.() && !isLoading;
   const [selectedTreatment, setSelectedTreatment] = useState<{ name: string; duration: number; price: number } | null>(null);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [showGiftVoucherSlider, setShowGiftVoucherSlider] = useState(false);
@@ -386,8 +390,54 @@ export default function TherapistProfilePlaceStyle({
     window.open(url, '_blank');
   };
 
+  /** Response time for display (e.g. "Replies within ~2h"); optional on therapist. Supports minutes or hours from backend. */
+  const responseTimeLabel = useMemo(() => {
+    const hours = (therapist as any).averageResponseHours;
+    const minutes = (therapist as any).averageResponseMinutes ?? (therapist as any).responseTime;
+    if (hours != null && Number(hours) > 0) {
+      const h = Number(hours);
+      if (h < 24) return isId ? `Balas dalam ~${Math.round(h)} jam` : `Replies within ~${Math.round(h)}h`;
+      return isId ? `Balas dalam ~${Math.round(h / 24)} hari` : `Replies within ~${Math.round(h / 24)} day(s)`;
+    }
+    if (minutes == null) return null;
+    const n = Number(minutes);
+    if (Number.isNaN(n) || n <= 0) return null;
+    if (n < 60) return isId ? `Balas dalam ~${Math.round(n)} mnt` : `Replies within ~${Math.round(n)} min`;
+    const h = n / 60;
+    if (h < 24) return isId ? `Balas dalam ~${Math.round(h)} jam` : `Replies within ~${Math.round(h)}h`;
+    return isId ? `Balas dalam ~${Math.round(h / 24)} hari` : `Replies within ~${Math.round(h / 24)} day(s)`;
+  }, [therapist, isId]);
+
+  const displayReviewCount = therapist?.reviewCount ?? 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full" aria-busy="true" aria-label={isId ? 'Memuat profil' : 'Loading profile'}>
+        <div className={`w-full ${HERO_ASPECT} bg-gray-200 rounded-t-2xl animate-pulse`} />
+        <main className="w-full max-w-full mx-auto px-4 py-6">
+          <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse mx-auto mb-4" />
+          <div className="rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-md">
+            <div className="h-48 sm:h-56 bg-gray-100 animate-pulse" />
+            <div className="p-4 space-y-3">
+              <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse" />
+              <div className="h-12 w-full bg-gray-100 rounded-xl animate-pulse mt-4" />
+              <div className="h-12 w-full bg-gray-100 rounded-xl animate-pulse" />
+              <div className="h-12 w-full bg-gray-100 rounded-xl animate-pulse" />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-gray-50 w-full max-w-full">
+      {isIncompleteProfile && (
+        <div className="mx-4 mt-4 py-2.5 px-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm text-center" role="status">
+          {isId ? 'Profil sedang diperbarui.' : 'Profile updating.'}
+        </div>
+      )}
       {/* Hero – same as Massage City Places profile */}
       <section className="w-full max-w-full overflow-visible bg-gray-200 rounded-t-2xl">
         <div className="relative w-full pt-2 bg-gray-200 rounded-t-2xl overflow-visible">
@@ -395,7 +445,7 @@ export default function TherapistProfilePlaceStyle({
           <div className={`relative w-full ${HERO_ASPECT} overflow-visible`}>
             <img
               src={displayImage || (therapist.mainImage ?? therapist.profilePicture) || 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png'}
-              alt=""
+              alt={getTherapistDisplayName(therapist.name) || (isId ? 'Foto profil terapis' : 'Therapist profile photo')}
               className="absolute inset-0 w-full h-full object-cover z-0"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png';
@@ -427,15 +477,21 @@ export default function TherapistProfilePlaceStyle({
                   <MapPin className="w-4 h-4 flex-shrink-0" />
                   <span>{locationStr}</span>
                 </p>
-                <div className="flex items-center gap-3 mt-2">
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
                   <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" aria-hidden />
                     <span className="text-sm font-semibold">{ratingStr}</span>
+                    {displayReviewCount > 0 && (
+                      <span className="text-xs text-white/90">({displayReviewCount} {isId ? 'ulasan' : 'reviews'})</span>
+                    )}
                   </div>
+                  {responseTimeLabel && (
+                    <span className="text-xs text-white/90">{responseTimeLabel}</span>
+                  )}
                   {(therapist as any).yearsOfExperience != null && (
                     <span className="text-xs text-white/90">{therapist.yearsOfExperience} {isId ? 'tahun pengalaman' : 'years experience'}</span>
                   )}
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isAvailable ? 'bg-green-500/80 text-white' : 'bg-orange-500/80 text-white'}`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isAvailable ? 'bg-green-500/80 text-white' : 'bg-orange-500/80 text-white'}`} aria-label={isAvailable ? (isId ? 'Tersedia' : 'Available') : (isId ? 'Sibuk' : 'Busy')}>
                     {isAvailable ? (isId ? 'Tersedia' : 'Available') : (isId ? 'Sibuk' : 'Busy')}
                   </span>
                 </div>
@@ -445,8 +501,8 @@ export default function TherapistProfilePlaceStyle({
         </div>
       </section>
 
-      {/* Main content – same padding and card style as place profile (no tab bar) */}
-      <main className="w-full max-w-full mx-auto px-4 py-6 pb-24">
+      {/* Main content – extra bottom padding so sticky bar doesn't cover content (safe area aware) */}
+      <main className="w-full max-w-full mx-auto px-4 py-6 pb-24" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))' }}>
         <style>{`
           @keyframes therapist-subtitle-slide-in {
             from { opacity: 0; transform: translateX(100%); }
@@ -464,14 +520,14 @@ export default function TherapistProfilePlaceStyle({
           }
         `}</style>
         <div className="max-w-full space-y-4">
-          <div className="mb-3 text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">Welcome To My Profile</h3>
+          <div className="mb-3 text-center border-b border-gray-200 pb-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-1" id="profile-welcome">Welcome To My Profile</h3>
             <p className="text-sm text-gray-600 therapist-subtitle-slide-in">
               {isId ? 'Silakan hubungi untuk layanan yang belum tercantum' : 'Please reach out for any services not listed'}
             </p>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-4 pt-2" role="region" aria-labelledby="profile-welcome">
             <TherapistCard
               therapist={therapist}
               userLocation={userLocation}
@@ -483,6 +539,9 @@ export default function TherapistProfilePlaceStyle({
               t={{}}
             />
           </div>
+
+          {/* Section divider */}
+          <div className="border-t border-gray-200 pt-4" />
 
           {/* Services & Therapist Trending Now – free: show 3 therapists; paid: section hidden (therapist can remove by upgrading) */}
           {(() => {
@@ -650,7 +709,9 @@ export default function TherapistProfilePlaceStyle({
                       </h4>
                       <ul className="space-y-2">
                         {[
-                          isId ? 'Terverifikasi aman masuk hotel, rumah & villa' : 'Verified safe to enter hotel, home & villa',
+                          ...((therapist as any).hotelVillaSafePassStatus === 'active'
+                            ? [isId ? 'Terverifikasi aman masuk hotel, rumah & villa' : 'Verified safe to enter hotel, home & villa']
+                            : []),
                           isId ? 'Berperilaku profesional & standar layanan' : 'Professional conduct & service standards',
                           ...((therapist as any).hotelVillaSafePassStatus === 'active'
                             ? [isId ? 'Sertifikasi Hotel & Villa Safe Pass' : 'Hotel & Villa Safe Pass certified']
@@ -668,11 +729,19 @@ export default function TherapistProfilePlaceStyle({
                       <h5 className="text-sm font-bold text-gray-900 mt-4 mb-1">
                         IndaStreet
                       </h5>
-                      <p className="text-[10px] text-gray-600 leading-relaxed mb-3">
-                        {isId
-                          ? 'Terapis berikut telah menjalani pemeriksaan oleh terapis pijat IndaStreet yang berpengalaman, yang mengonfirmasi bahwa terapis mampu menawarkan pijat profesional serta memiliki kebersihan dan sikap profesional dalam karier mereka. Pemeriksaan latar belakang tidak menemukan aktivitas kriminal atau berbahaya, sehingga terapis ini diizinkan mengakses hotel, villa, atau rumah.'
-                          : 'The following therapist has undergone examination with an experienced IndaStreet massage therapist, that confirmed that the therapist is fully capable to offer professional massage and has hygiene and professional manner towards their career. Background check resulted in no criminal or dangerous activity, allowing this therapist access to hotels, villas or homes.'}
-                      </p>
+                      {certificationImages.length > 0 ? (
+                        <p className="text-[10px] text-gray-600 leading-relaxed mb-3">
+                          {isId
+                            ? 'Terapis berikut telah menjalani pemeriksaan oleh terapis pijat IndaStreet yang berpengalaman, yang mengonfirmasi bahwa terapis mampu menawarkan pijat profesional serta memiliki kebersihan dan sikap profesional dalam karier mereka. Pemeriksaan latar belakang tidak menemukan aktivitas kriminal atau berbahaya, sehingga terapis ini diizinkan mengakses hotel, villa, atau rumah.'
+                            : 'The following therapist has undergone examination with an experienced IndaStreet massage therapist, that confirmed that the therapist is fully capable to offer professional massage and has hygiene and professional manner towards their career. Background check resulted in no criminal or dangerous activity, allowing this therapist access to hotels, villas or homes.'}
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-gray-600 leading-relaxed mb-3">
+                          {isId
+                            ? 'Profil ini belum menampilkan pencapaian atau IndaStreet Safe Hotel, Villa & Home Pass. Dapatkan sertifikasi Safe Pass untuk menandakan bahwa Anda terverifikasi aman masuk hotel, rumah & villa—dan tampilkan kepercayaan lebih kepada klien.'
+                            : 'This profile has not yet added achievements or the IndaStreet Safe Hotel, Villa & Home Pass. Get certified with Safe Pass to show you’re verified safe to enter hotel, home and villa—and stand out to clients who look for that trust.'}
+                        </p>
+                      )}
                       {/* Certification Achieved – up to 5 thumbnails; click opens same lightbox/blur as massage city places */}
                       <h5 className="text-xs font-bold text-gray-900 mt-2 mb-2">
                         {isId ? 'Sertifikasi yang Dicapai' : 'Certification Achieved'}
@@ -754,7 +823,7 @@ export default function TherapistProfilePlaceStyle({
                             key={testimonial.id}
                             type="button"
                             onClick={() => setTestimonialIndex(i)}
-                            className={`review-flag-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 border-2 border-amber-200 bg-white/90 shadow-md hover:scale-105 transition-transform ${i === testimonialIndex ? 'active ring-2 ring-amber-400' : 'opacity-80 hover:opacity-100'}`}
+                            className={`review-flag-circle w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 border-2 border-amber-200 bg-white/90 shadow-md hover:scale-105 transition-transform ${i === testimonialIndex ? 'active ring-2 ring-amber-400' : 'opacity-80 hover:opacity-100'}`}
                             aria-label={isId ? `Testimoni dari ${(testimonial as any).country || 'pelanggan'}` : `Review from ${(testimonial as any).country || 'customer'}`}
                             title={(testimonial as any).country ? `${(testimonial as any).country} – ${testimonial.customerName}` : testimonial.customerName}
                           >
@@ -777,6 +846,9 @@ export default function TherapistProfilePlaceStyle({
             );
           })()}
 
+          {/* Section divider before Reviews */}
+          <div className="border-t border-gray-200 pt-4" />
+
           {/* Reviews */}
           {limits.reviews && (
             <div className={CARD_CLASS}>
@@ -796,6 +868,27 @@ export default function TherapistProfilePlaceStyle({
 
         </div>
       </main>
+
+      {/* Sticky primary CTA – safe area padding so bar doesn't cover content on notched devices */}
+      <div
+        className="fixed left-0 right-0 bottom-0 z-50 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] px-4 pt-3"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
+        role="complementary"
+        aria-label={isId ? 'Pesan sekarang' : 'Book now'}
+      >
+        <button
+          type="button"
+          onClick={handleBookNow}
+          className={`${STICKY_BTN_CLASS} min-h-[48px] focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:outline-none`}
+          aria-label={isId ? 'Book Now via WhatsApp' : 'Book Now via WhatsApp'}
+        >
+          <MessageCircle className="w-5 h-5 flex-shrink-0" aria-hidden />
+          {isId ? 'Book Now' : 'Book Now'}
+        </button>
+        <p className="text-[11px] text-gray-500 text-center mt-2 leading-tight">
+          {isId ? 'Batalkan atau ubah minimal 2 jam sebelumnya. Hubungi untuk pesanan same-day.' : 'Cancel or reschedule at least 2 hours in advance. Contact for same-day booking.'}
+        </p>
+      </div>
 
       {/* IndaStreet Social – text link, icon and social media images at end of profile */}
       <div className="w-full max-w-full mx-auto px-4 pb-8 pt-4 border-t border-gray-200 bg-gray-50">

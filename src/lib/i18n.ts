@@ -94,7 +94,7 @@ i18n
   .init({
     resources,
     lng: getStoredLanguage(),
-    fallbackLng: 'en',
+    fallbackLng: 'en', // Missing keys in id fall back to English
     defaultNS: 'common',
     interpolation: {
       escapeValue: false, // React already escapes values

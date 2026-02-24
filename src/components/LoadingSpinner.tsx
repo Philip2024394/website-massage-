@@ -51,7 +51,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
                     IndaStreet
                 </h1>
                 <p className="text-white/90 text-lg font-medium">
-                    Professional Massage Services
+                    Professional Wellness Services
                 </p>
             </div>
             

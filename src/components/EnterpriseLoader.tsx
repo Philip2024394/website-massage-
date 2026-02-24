@@ -137,7 +137,7 @@ export const EnterpriseLoader: React.FC<EnterpriseLoaderProps> = ({
             IndaStreet
           </h1>
           <p className="text-lg font-medium" style={{ color: "#ffffff", opacity: 1, textShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
-            Professional Massage Services
+            Professional Wellness Services
           </p>
         </div>
         

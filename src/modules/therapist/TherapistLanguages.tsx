@@ -1,12 +1,10 @@
 /**
  * TherapistLanguages Component
- * 
- * Extracted from TherapistCard.tsx as part of Phase 2 modularization.
- * Handles the display of therapist languages and years of experience.
- * 
+ *
+ * Displays therapist languages (flags + codes). Years of experience are shown in the hero only.
+ *
  * Features:
  * - Language flags with 2-letter codes
- * - Years of experience display
  * - Shows up to 3 languages with "+N" indicator
  * - Dynamic spacing based on description length
  */
@@ -82,17 +80,7 @@ const TherapistLanguages: React.FC<TherapistLanguagesProps> = ({
 
     return (
         <div className={`px-4 mb-6 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-2', translatedDescriptionLength)}`}>
-            <div className="flex justify-between items-center mb-2">
-                <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
-                {therapist.yearsOfExperience && (
-                    <span className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                        </svg>
-                        {therapist.yearsOfExperience} years experience
-                    </span>
-                )}
-            </div>
+            <h4 className="text-xs font-semibold text-gray-700 mb-2">Languages</h4>
             <div className="flex flex-wrap gap-1">
                 {languages.slice(0, 3).map((lang: string) => {
                     const langKey = lang.toLowerCase();

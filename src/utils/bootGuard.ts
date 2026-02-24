@@ -265,7 +265,7 @@ class BootGuard {
       <body>
         <div class="container">
           <h1>IndaStreet</h1>
-          <p>Professional Massage Services</p>
+          <p>Professional Wellness Services</p>
           <p>Loading your experience...</p>
           <div class="loading-dots">
             <div class="dot"></div>

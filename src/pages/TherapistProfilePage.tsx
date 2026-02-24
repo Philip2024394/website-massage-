@@ -256,13 +256,13 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
             {usePlaceStyleProfile ? (
                 <div className="pt-[60px] sm:pt-[64px]">
                     <TherapistProfilePlaceStyle
-                        therapist={therapist}
+                        therapist={therapist ?? ({} as any)}
                         language={(language || 'id') as 'en' | 'id' | 'gb'}
                         userLocation={userLocation}
                         onBack={onBack}
                         onNavigate={(page) => onNavigate?.(page)}
                         therapists={therapists}
-                        isProfileOwner={loggedInProvider?.type === 'therapist' && String(loggedInProvider?.id) === String(therapist?.$id ?? therapist?.id)}
+                        isProfileOwner={!!therapist && loggedInProvider?.type === 'therapist' && String(loggedInProvider?.id) === String(therapist?.$id ?? therapist?.id)}
                         onNavigateToTherapist={(selectedTherapist) => {
                             const therapistId = selectedTherapist.$id ?? selectedTherapist.id;
                             const slug = (selectedTherapist.name || 'therapist').toString().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -270,6 +270,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             window.history.pushState({}, '', profileUrl);
                             onNavigate?.('shared-therapist-profile');
                         }}
+                        isLoading={!therapist}
                     />
                 </div>
             ) : (

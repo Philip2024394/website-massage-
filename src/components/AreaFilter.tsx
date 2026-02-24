@@ -19,7 +19,7 @@ export const AreaFilter: React.FC<AreaFilterProps> = ({
 }) => {
   try {
     const context = useLanguageContext();
-    const language = context?.language || 'en';
+    const language = context?.language || 'id';
     
     // Defensive: Ensure city is valid
     if (!city || typeof city !== 'string') {

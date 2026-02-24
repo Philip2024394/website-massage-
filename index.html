@@ -519,7 +519,7 @@
     <!-- PWA Splash Screen - Indastreet Loading -->
     <div id="pwa-splash">
       <div class="brand-title"><span class="inda">Inda</span><span class="street">street</span></div>
-      <div class="loading-label">Professional Massage Services</div>
+      <div class="loading-label">Professional Wellness Services</div>
       <div class="dots-container">
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
@@ -663,30 +663,61 @@
     <!-- CACHE BUSTER: 2024-10-31-10:05:00 -->
     <script type="module" src="/src/index.tsx?v=20241031100500"></script>
     <script>
-      // 🔥🔥🔥 TEMPORARY P0 FIX: Force-kill all service workers to fix stuck loading issue
-      // Remove this after 48 hours once all users have received new build
-      // Date activated: February 8, 2026
-      if ('serviceWorker' in navigator) {
-        console.log('🔥 [P0 FIX] Force-killing all service workers...');
-        navigator.serviceWorker.getRegistrations().then((regs) => {
-          regs.forEach((reg) => {
-            reg.unregister();
-            console.log('🧹 [P0 FIX] Unregistered service worker:', reg.scope);
+      // 🔥 P0 FIX: Force-kill service workers + caches, then reload once so index.html and assets match
+      // Fixes 404 on JS/CSS and "MIME type text/html" when cached index pointed at old build hashes
+      (function() {
+        var isLocal = /^localhost$|^127\.0\.0\.1$/.test(window.location.hostname);
+        if (isLocal) return;
+
+        var didReload = sessionStorage.getItem('p0_cleared_reload') === '1';
+        if (didReload) {
+          sessionStorage.removeItem('p0_cleared_reload');
+          return;
+        }
+
+        var hadWork = false;
+
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            if (regs.length) {
+              hadWork = true;
+              console.log('🔥 [P0 FIX] Force-killing all service workers...');
+            }
+            regs.forEach(function(reg) {
+              reg.unregister();
+              console.log('🧹 [P0 FIX] Unregistered service worker:', reg.scope);
+            });
+            tryClearCaches();
+          }).catch(function(err) {
+            console.error('❌ [P0 FIX] Failed to unregister service workers:', err);
+            tryClearCaches();
           });
-        }).catch((err) => {
-          console.error('❌ [P0 FIX] Failed to unregister service workers:', err);
-        });
-        
-        // Clear all caches
-        if ('caches' in window) {
-          caches.keys().then((names) => {
-            names.forEach(name => {
+        } else {
+          tryClearCaches();
+        }
+
+        function tryClearCaches() {
+          if (!('caches' in window)) {
+            maybeReload();
+            return;
+          }
+          caches.keys().then(function(names) {
+            if (names.length) hadWork = true;
+            names.forEach(function(name) {
               caches.delete(name);
               console.log('🧹 [P0 FIX] Deleted cache:', name);
             });
-          });
+            maybeReload();
+          }).catch(maybeReload);
         }
-      }
+
+        function maybeReload() {
+          if (!hadWork) return;
+          sessionStorage.setItem('p0_cleared_reload', '1');
+          console.log('🔄 [P0 FIX] Reloading to load fresh index and assets');
+          window.location.reload();
+        }
+      })();
       
       // 🆔 App version tracking for cache busting
       window.APP_VERSION = '2026.02.08.001';

@@ -30,7 +30,7 @@ export const SharedPlaceProfile: React.FC<SharedPlaceProfileProps> = ({
     loggedInCustomer,
     handleQuickBookWithChat,
     onNavigate,
-    language = 'en'
+    language = 'id'
 }) => {
     const { provider: place, loading, error, providerId } = useSharedProfile({
         providers: places,

@@ -27,7 +27,7 @@
 
 import { DefaultMenuService, DefaultMenuManager } from './defaultMenuService';
 import { BadgeType } from '../components/badges/ServiceBadges';
-import { getSampleMenuItems } from '../utils/samplePriceUtils';
+import { getSampleMenuItems, UPLOAD_PROFILE_MASSAGE_TYPE_NAME } from '../utils/samplePriceUtils';
 
 export interface MenuService extends DefaultMenuService {
   // Extended properties for enhanced functionality
@@ -171,10 +171,9 @@ export class EnhancedMenuDataService {
   }
 
   /**
-   * Get exactly 5 menu items for therapists without their own menu.
-   * When profilePrices is set (dashboard 3 prices): first item = "Traditional Massage" with those prices;
-   * remaining 4 = sample items. Otherwise 5 sample items (first sample can be "Traditional Massage" with sample price).
-   * Traditional Massage is the standard name used only for dashboard-set prices and in this default/slider list.
+   * Get exactly 5 menu items for the slider. Each item has: massage type name + 60min / 90min / 120min prices.
+   * When profilePrices set: 1 = upload profile type (name Traditional Massage, dashboard 60/90/120) + 4 sample types (each with name + 60/90/120).
+   * When no profile prices: 5 sample types (each with name + 60/90/120). Lowest of the 5 drives card/profile display.
    */
   private static async getDefaultMenuData(
     therapistId: string,
@@ -199,8 +198,8 @@ export class EnhancedMenuDataService {
     if (hasProfilePrices) {
       const traditionalFromProfile: MenuService = {
         id: `${therapistId}-traditional-profile`,
-        name: 'Traditional Massage',
-        serviceName: 'Traditional Massage',
+        name: UPLOAD_PROFILE_MASSAGE_TYPE_NAME,
+        serviceName: UPLOAD_PROFILE_MASSAGE_TYPE_NAME,
         description: '',
         category: 'relaxation',
         price60: p60(profilePrices.price60),

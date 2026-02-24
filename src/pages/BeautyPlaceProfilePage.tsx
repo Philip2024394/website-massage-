@@ -94,7 +94,7 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
     onPrivacyClick,
     therapists = [],
     places = [],
-    language = 'en',
+    language = 'id',
     onLanguageChange
 }) => {
     const [place, setPlace] = useState<Place | null>(placeProp);

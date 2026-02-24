@@ -11,7 +11,7 @@ export const APP_CONFIG = {
     },
     
     // App settings
-    DEFAULT_LANGUAGE: 'en' as 'en' | 'id',
+    DEFAULT_LANGUAGE: 'id' as 'en' | 'id', // Indonesian first across therapist home service, massage city places, facial & beauty
     DEFAULT_CONTACT_NUMBER: '6281392000050',
     
     // Feature flags

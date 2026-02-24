@@ -723,9 +723,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </div>
                     </div>
 
-                    {/* Status Badge and branch image - status left, image across (right) */}
-                    <div className="overflow-visible flex justify-between items-center ml-[75px]">
-                        <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
+                    {/* Status Badge and branch image - status left, image right; on mobile image is smaller so it never covers status */}
+                    <div className="overflow-visible flex justify-between items-center gap-3 min-w-0 ml-[75px]">
+                        <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${statusStyle.bg} ${statusStyle.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
                             <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
                                 <span key={`${therapist.$id || therapist.id}-dot`} className={`absolute rounded-full ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
                                 {statusStyle.isAvailable && (
@@ -740,7 +740,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         <img
                             src="https://ik.imagekit.io/7grri5v7d/branch%205.png"
                             alt=""
-                            className="h-[80px] w-auto object-contain flex-shrink-0 translate-x-[10px]"
+                            className="h-[48px] sm:h-[80px] w-auto object-contain flex-shrink-0 translate-x-[10px] min-w-0"
                             aria-hidden
                         />
                     </div>

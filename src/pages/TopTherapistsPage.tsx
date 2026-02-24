@@ -36,7 +36,7 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
     userCity
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [currentLanguage, setCurrentLanguage] = useState<'en' | 'id'>(language || 'en');
+    const [currentLanguage, setCurrentLanguage] = useState<'en' | 'id'>(language || 'id');
     const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
     const handleLanguageChange = (newLang: 'en' | 'id') => {

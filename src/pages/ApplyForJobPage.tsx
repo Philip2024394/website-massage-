@@ -52,7 +52,7 @@ const ApplyForJobPage: React.FC<ApplyForJobPageProps> = ({
     jobId: jobIdProp,
     onBack,
     onNavigate,
-    language = 'en',
+    language = 'id',
     onLanguageChange,
     onMassageJobsClick,
     onTermsClick,

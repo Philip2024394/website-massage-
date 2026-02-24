@@ -20,7 +20,7 @@ const CountryMassagePage: React.FC<CountryMassagePageProps> = ({
     onNavigate,
     onLoginClick,
     t,
-    language = 'en'
+    language = 'id'
 }) => {
     const countryContent = getCountryContent(countryCode);
     const massageType = countryContent?.massageTypes.find(mt => mt.id === massageTypeId);

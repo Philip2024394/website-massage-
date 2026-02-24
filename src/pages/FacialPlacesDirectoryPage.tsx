@@ -57,7 +57,7 @@ const FacialPlacesDirectoryPage: React.FC<FacialPlacesDirectoryPageProps> = ({
   onShowRegisterPrompt,
   onNavigate,
   t,
-  language = 'en',
+  language = 'id',
   onLanguageChange,
   onMassageJobsClick,
   onHotelPortalClick,

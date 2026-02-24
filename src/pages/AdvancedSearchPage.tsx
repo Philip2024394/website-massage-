@@ -16,7 +16,7 @@ interface AdvancedSearchPageProps {
 
 const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [currentLanguage, setCurrentLanguage] = useState<'en' | 'id'>(language || 'en');
+    const [currentLanguage, setCurrentLanguage] = useState<'en' | 'id'>(language || 'id');
     const { city: contextCity, setCity } = useCityContext();
     // Use local state for selected city, initialized from context
     const [selectedCity, setSelectedCity] = useState<string>(contextCity || 'all');

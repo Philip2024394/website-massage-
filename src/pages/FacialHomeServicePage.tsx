@@ -29,7 +29,7 @@ interface FacialHomeServicePageProps {
 const FacialHomeServicePage: React.FC<FacialHomeServicePageProps> = ({
   onNavigate,
   t,
-  language = 'en',
+  language = 'id',
   onLanguageChange,
   onMassageJobsClick,
   onHotelPortalClick,

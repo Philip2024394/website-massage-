@@ -136,7 +136,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     loggedInCustomer,
     handleQuickBookWithChat,
     onNavigate,
-    language = 'en'
+    language = 'id'
 }) => {
     console.log('\n' + '🧩'.repeat(40));
     console.log('🧩 [COMPONENT LIFECYCLE] SharedTherapistProfile MOUNTED');

@@ -47,7 +47,7 @@ class AppwriteTranslationService {
     /**
      * Get translation by key
      */
-    async getTranslation(key: string, lang: 'en' | 'id' = 'en'): Promise<string> {
+    async getTranslation(key: string, lang: 'en' | 'id' = 'id'): Promise<string> {
         // Check cache
         if (this.cache[key] && Date.now() - this.lastFetch < this.cacheExpiry) {
             return this.cache[key][lang] || key;
@@ -76,7 +76,7 @@ class AppwriteTranslationService {
     /**
      * Get all translations for a category (optimized)
      */
-    async getCategoryTranslations(category: string, lang: 'en' | 'id' = 'en'): Promise<Record<string, string>> {
+    async getCategoryTranslations(category: string, lang: 'en' | 'id' = 'id'): Promise<Record<string, string>> {
         const cacheKey = `${category}_${lang}_${Date.now()}`;
         
         // Check if cache is still valid
@@ -177,7 +177,7 @@ class AppwriteTranslationService {
     /**
      * Get fallback translations (for when Appwrite is not available)
      */
-    getFallbackTranslations(category: string, lang: 'en' | 'id' = 'en'): Record<string, any> {
+    getFallbackTranslations(category: string, lang: 'en' | 'id' = 'id'): Record<string, any> {
         const fallbacks: Record<string, Record<string, any>> = {
             membership: {
                 en: {

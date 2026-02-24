@@ -9,7 +9,7 @@ export interface LanguageContextValue {
 }
 
 const defaultValue: LanguageContextValue = {
-  language: 'en', // Default to English
+  language: 'id', // Indonesian first (therapist home, massage places, facial, beauty)
   setLanguage: () => {}
 };
 

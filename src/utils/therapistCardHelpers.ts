@@ -1,7 +1,7 @@
 import type { Therapist } from '../types';
 import { AvailabilityStatus } from '../types';
 import { devLog } from './devMode';
-import { getSampleMenuItems } from './samplePriceUtils';
+import { getSampleMenuItems, UPLOAD_PROFILE_MASSAGE_TYPE_NAME } from './samplePriceUtils';
 
 /** Map language name to flag emoji for therapist/place cards. */
 export const LANGUAGE_FLAG_MAP: Record<string, string> = {
@@ -243,7 +243,7 @@ export const formatCountdown = (seconds: number): string => {
  */
 export const getMenuItemDisplayName = (item: { name?: string; serviceName?: string; title?: string }): string => {
   const raw = (item?.name ?? item?.serviceName ?? item?.title ?? '').toString().trim();
-  return raw || 'Traditional Massage';
+  return raw || UPLOAD_PROFILE_MASSAGE_TYPE_NAME;
 };
 
 /**
@@ -304,9 +304,9 @@ export interface CombinedMenuItem {
 }
 
 /**
- * Build the same combined list as the menu slider: real saved items first, then fill to 5 with
- * default items (Traditional from profile when set, then sample items). When realCount >= 5, no
- * samples. Used so profile/home/shared pick cheapest from this full set.
+ * Build the same combined list as the menu slider. Each item has: massage type name + 60/90/120 prices.
+ * When no real menu: 4 sample types (each with name + 60/90/120) + 1 upload-profile type (name = Traditional Massage, prices from dashboard).
+ * When realCount >= 5, no samples. Used so profile/home/shared pick cheapest from this full set.
  */
 export function getCombinedMenuForDisplay(
   menuData: any[] | null | undefined,
@@ -351,15 +351,17 @@ export function getCombinedMenuForDisplay(
       price60: Math.max(100, Math.round(Number(therapist.price60))),
       price90: Math.max(100, Math.round(Number(therapist.price90))),
       price120: Math.max(100, Math.round(Number(therapist.price120))),
-      name: 'Traditional Massage',
-      serviceName: 'Traditional Massage',
-      title: 'Traditional Massage'
+      name: UPLOAD_PROFILE_MASSAGE_TYPE_NAME,
+      serviceName: UPLOAD_PROFILE_MASSAGE_TYPE_NAME,
+      title: UPLOAD_PROFILE_MASSAGE_TYPE_NAME
     });
   }
   const samples = getSampleMenuItems(therapistId);
+  // 4 sample types (each with name + 60/90/120) + 1 upload type (Traditional Massage). Same indices as profile slider (1–4 when profile prices set).
+  const sampleStartIndex = hasProfilePrices ? 1 : 0;
   const sampleCount = hasProfilePrices ? 4 : 5;
-  for (let i = 0; i < sampleCount && i < samples.length; i++) {
-    const s = samples[i];
+  for (let i = 0; i < sampleCount && sampleStartIndex + i < samples.length; i++) {
+    const s = samples[sampleStartIndex + i];
     defaultItems.push({
       price60: Math.round(s.price60 / 1000),
       price90: Math.round(s.price90 / 1000),

@@ -83,7 +83,7 @@ const HelpFaqPage: React.FC<HelpFaqPageProps> = ({ t, language, onNavigate }) =>
         <div className="min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] bg-white">
             {/* Universal Header */}
             <UniversalHeader 
-                language={language || 'en'}
+                language={language || 'id'}
                 onLanguageChange={() => {}}
                 onMenuClick={() => setIsMenuOpen(true)}
             />
@@ -138,7 +138,7 @@ const HelpFaqPage: React.FC<HelpFaqPageProps> = ({ t, language, onNavigate }) =>
 
             {/* Footer */}
             <FloatingPageFooter 
-                currentLanguage={language || 'en'}
+                currentLanguage={language || 'id'}
                 onNavigate={onNavigate}
             />
 
@@ -147,7 +147,7 @@ const HelpFaqPage: React.FC<HelpFaqPageProps> = ({ t, language, onNavigate }) =>
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onNavigate={onNavigate || (() => {})}
-                currentLanguage={language || 'en'}
+                currentLanguage={language || 'id'}
                 onLanguageChange={() => {}}
             />
         </div>

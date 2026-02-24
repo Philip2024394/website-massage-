@@ -110,7 +110,7 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
     const handleLanguageToggle = () => {
         if (!onLanguageChange) return;
         
-        const currentLang = language || 'en';
+        const currentLang = language || 'id';
         
         // Language rules: non-English locales get option to view in English (Indonesia ↔ EN, Vietnam ↔ EN, etc.)
         const englishOnlyCountries = ['US', 'GB', 'AU', 'SG'];

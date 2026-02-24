@@ -30,7 +30,7 @@ export const SharedFacialProfile: React.FC<SharedFacialProfileProps> = ({
     loggedInCustomer,
     handleQuickBookWithChat,
     onNavigate,
-    language = 'en'
+    language = 'id'
 }) => {
     const { provider: place, loading, error, providerId } = useSharedProfile({
         providers: facialPlaces,

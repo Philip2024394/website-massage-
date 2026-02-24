@@ -42,7 +42,7 @@ const BlogIndexContent: React.FC<BlogIndexContentProps> = ({
   hideHero = false,
   hideCategoryFilter = false,
   introText,
-  language = 'en',
+  language = 'id',
   t,
   onNavigate,
 }) => {
