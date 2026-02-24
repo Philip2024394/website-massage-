@@ -1,10 +1,22 @@
 /**
  * ELITE Floating Action Buttons – WhatsApp Quick Chat & Save to Favorites.
  * Fixed position floating buttons for premium spa profile pages.
+ * Favorites: amber infill, white heart, floating white hearts animation.
  */
 
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, X } from 'lucide-react';
+
+/* Scoped keyframes so floating hearts always work (no Tailwind purge risk) */
+const floatHeartStyles = `
+  @keyframes elite-float-heart {
+    0% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 0.95; }
+    100% { transform: translate(-50%, -50%) translateY(-52px) scale(0.4); opacity: 0; }
+  }
+  .elite-float-heart {
+    animation: elite-float-heart 2.2s ease-out infinite;
+  }
+`;
 
 export interface EliteFloatingActionsProps {
   placeId: string;
@@ -79,21 +91,44 @@ export default function EliteFloatingActions({
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: floatHeartStyles }} />
       {/* Floating buttons container - fixed bottom right */}
-      <div className="fixed bottom-24 right-4 z-[9999] flex flex-col gap-3">
-        {/* Save to Favorites */}
-        <button
-          type="button"
-          onClick={handleSaveToggle}
-          className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-95 ${
-            isSaved
-              ? 'bg-red-500 text-white'
-              : 'bg-white text-gray-600 border border-gray-200 hover:border-red-200 hover:text-red-500'
-          }`}
-          aria-label={isSaved ? 'Remove from favorites' : 'Save to favorites'}
-        >
-          <Heart className={`w-5 h-5 ${isSaved ? 'fill-white' : ''}`} />
-        </button>
+      <div className="fixed bottom-24 right-4 z-[9999] flex flex-col gap-3 overflow-visible">
+        {/* Save to Favorites – amber infill, white heart, floating hearts on top */}
+        <div className="relative w-12 h-12 overflow-visible">
+          <button
+            type="button"
+            onClick={handleSaveToggle}
+            className="relative w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-95 bg-amber-500 hover:bg-amber-600 text-white overflow-visible"
+            aria-label={isSaved ? 'Remove from favorites' : 'Save to favorites'}
+          >
+            <Heart className="w-5 h-5 flex-shrink-0 fill-white text-white" />
+          </button>
+          {/* Floating hearts – on top so visible, emanating from button */}
+          <span
+            className="absolute inset-0 pointer-events-none overflow-visible flex items-center justify-center"
+            style={{ zIndex: 10 }}
+            aria-hidden
+          >
+            {[
+              { delay: 0, x: 0 },
+              { delay: 350, x: -8 },
+              { delay: 700, x: 8 },
+              { delay: 175, x: -4 },
+              { delay: 525, x: 4 },
+            ].map(({ delay, x }, i) => (
+              <Heart
+                key={i}
+                className="elite-float-heart w-3 h-3 text-white fill-white absolute"
+                style={{
+                  animationDelay: `${delay}ms`,
+                  left: `calc(50% + ${x}px)`,
+                  top: '50%',
+                }}
+              />
+            ))}
+          </span>
+        </div>
 
         {/* WhatsApp Quick Chat */}
         {whatsappNumber && (

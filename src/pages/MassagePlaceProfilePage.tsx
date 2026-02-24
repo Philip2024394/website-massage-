@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, lazy, Suspense } from 'react';
 import CityPlaceCard from '../components/CityPlaceCard';
 import { AppDrawer } from '../components/AppDrawerClean';
-import { Globe, LayoutGrid } from 'lucide-react';
+import { Globe, LayoutGrid, Users, Star } from 'lucide-react';
 import { customLinksService } from '../lib/appwrite/services/customLinks.service';
 import { useChatProviderOptional } from '../hooks/useChatProvider';
 import { ChatContext } from '../context/ChatProvider';
@@ -527,9 +527,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             userCountryCode={language === 'id' ? 'ID' : undefined}
                         />
 
-                        {/* Additional services – 3 included; upgrade to 10 (200K IDR/year) or 15 (250K IDR/year).
-                            Schema: place.additionalServices = array of { id, name, description, imageUrl?, details: [{ label, price, duration? }], bookLabel? }.
-                            place.additionalServicesLimit = 3 | 10 | 15 (default 3). */}
+                        {/* Services & Therapist Trending Now – therapists carousel first, then additional services dropdowns */}
                         {(() => {
                             const raw = (place as any).additionalServices;
                             const tierLimit = ((): AdditionalServicesTierLimit => {
@@ -554,59 +552,78 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                                     : [],
                                 bookLabel: s.bookLabel === 'Schedule' ? 'Schedule' as const : 'Book' as const,
                             }));
-                            // Mock 3 additional services when place has none (for demo)
                             if (list.length === 0) {
                                 const mockImage = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
                                 list = [
-                                    {
-                                        id: 'mock-hair',
-                                        name: 'Hair Salon',
-                                        description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.',
-                                        imageUrl: mockImage,
-                                        details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }],
-                                        bookLabel: 'Book',
-                                    },
-                                    {
-                                        id: 'mock-beauty',
-                                        name: 'Beautician',
-                                        description: 'Nails, lashes and skin treatments. Manicure, pedicure, lash extensions and facials available by appointment.',
-                                        imageUrl: mockImage,
-                                        details: [{ label: 'Manicure & pedicure', price: 'IDR 200K', duration: '60 min' }],
-                                        bookLabel: 'Schedule',
-                                    },
-                                    {
-                                        id: 'mock-spa',
-                                        name: 'Spa & Wellness',
-                                        description: 'Body scrubs, wraps and aromatherapy. Relax and recharge with our signature treatments in a calm environment.',
-                                        imageUrl: mockImage,
-                                        details: [{ label: 'Body scrub & wrap', price: 'IDR 350K', duration: '90 min' }],
-                                        bookLabel: 'Book',
-                                    },
+                                    { id: 'mock-hair', name: 'Hair Salon', description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.', imageUrl: mockImage, details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }], bookLabel: 'Book' as const },
+                                    { id: 'mock-beauty', name: 'Beautician', description: 'Nails, lashes and skin treatments. Manicure, pedicure, lash extensions and facials available by appointment.', imageUrl: mockImage, details: [{ label: 'Manicure & pedicure', price: 'IDR 200K', duration: '60 min' }], bookLabel: 'Schedule' as const },
+                                    { id: 'mock-spa', name: 'Spa & Wellness', description: 'Body scrubs, wraps and aromatherapy. Relax and recharge with our signature treatments in a calm environment.', imageUrl: mockImage, details: [{ label: 'Body scrub & wrap', price: 'IDR 350K', duration: '90 min' }], bookLabel: 'Book' as const },
                                 ];
                             }
                             const displayList = list.slice(0, tierLimit);
+                            const therapists = (place as any).therapists;
+                            const hasTherapists = Array.isArray(therapists) && therapists.length > 0;
                             const hasAnyServices = displayList.length > 0;
-                            if (!hasAnyServices) return null;
+                            if (!hasTherapists && !hasAnyServices) return null;
+                            const isId = language === 'id';
                             return (
                                 <div className="mt-6">
                                     <div className="text-center mb-4">
                                         <div className="flex items-center justify-center gap-2 mb-1">
                                             <LayoutGrid className="w-3.5 h-3.5 text-orange-500" aria-hidden />
-                                            <h3 className="text-lg font-bold text-gray-900">Additional services</h3>
+                                            <h3 className="text-lg font-bold text-gray-900">
+                                                {isId ? 'Layanan & Terapis Tren Saat Ini' : 'Services & Therapist Trending Now'}
+                                            </h3>
                                         </div>
-                                        <p className="text-xs text-gray-500">Services Trending This Month</p>
+                                        <p className="text-xs text-gray-500">
+                                            {isId ? 'Kenali terapis kami dan layanan tambahan' : 'Meet our therapists and explore add-on services'}
+                                        </p>
                                     </div>
-                                    <div className="space-y-3">
-                                        {displayList.map((svc) => (
-                                            <AdditionalServiceCard
-                                                key={svc.id}
-                                                service={svc}
-                                                placeName={place.name || 'Massage Place'}
-                                                placeWhatsApp={(place as any).whatsappNumber ?? (place as any).whatsappnumber}
-                                                userCountryCode={language === 'id' ? 'ID' : undefined}
-                                            />
-                                        ))}
-                                    </div>
+
+                                    {/* Featured Therapists carousel – first */}
+                                    {hasTherapists && (
+                                        <div className="mb-6">
+                                            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+                                                {therapists.slice(0, 3).map((t: { id: string; name: string; photo: string; specialty: string; yearsExperience: number; rating?: number }) => (
+                                                    <div
+                                                        key={t.id}
+                                                        className="flex-shrink-0 w-32 snap-start rounded-xl border-2 bg-orange-50/60 border-orange-300 p-4 text-center"
+                                                    >
+                                                        <div className="w-16 h-16 mx-auto rounded-full bg-white border-2 border-amber-200 overflow-hidden mb-2">
+                                                            <img
+                                                                src={t.photo}
+                                                                alt={t.name}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => { (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/default-avatar.png'; }}
+                                                            />
+                                                        </div>
+                                                        <p className="text-sm font-bold text-gray-900 truncate">{t.name}</p>
+                                                        <p className="text-[10px] text-gray-600 truncate leading-tight">{t.specialty}</p>
+                                                        <div className="flex items-center justify-center gap-1 mt-2">
+                                                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                                                            <span className="text-xs font-semibold text-gray-800">{t.rating ?? '—'}</span>
+                                                            <span className="text-[10px] text-gray-500">• {t.yearsExperience}y</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Additional services – dropdown containers below */}
+                                    {hasAnyServices && (
+                                        <div className="space-y-3">
+                                            {displayList.map((svc) => (
+                                                <AdditionalServiceCard
+                                                    key={svc.id}
+                                                    service={svc}
+                                                    placeName={place.name || 'Massage Place'}
+                                                    placeWhatsApp={(place as any).whatsappNumber ?? (place as any).whatsappnumber}
+                                                    userCountryCode={language === 'id' ? 'ID' : undefined}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })()}

@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { MapPin, Phone, ShieldCheck, Car, Navigation, Sparkles } from 'lucide-react';
+import { MapPin, Phone, ShieldCheck, Car, Navigation, Sparkles, ShowerHead, Coffee, Wifi, Lock, CreditCard, Banknote, Smartphone, Building2 } from 'lucide-react';
 
 const INDONESIA_TZ = 'Asia/Jakarta';
 
@@ -182,6 +182,27 @@ export default function VisitUsElite({ place, language = 'id', userLocation }: V
   const isVerified = p.isVerified ?? p.verified ?? false;
   const parking = p.parkingAvailability || p.parking || '';
 
+  const whatsIncludedList = p.whatsIncluded || [
+    'Complimentary welcome drink',
+    'Hot towel service',
+    'Shower facilities',
+    'Locker & storage',
+    'Aromatherapy oils',
+    'Post-massage tea',
+  ];
+  const amenityConfig = [
+    { icon: ShowerHead, label: 'Shower', labelId: 'Shower' },
+    { icon: Coffee, label: 'Tea & Coffee', labelId: 'Teh & Kopi' },
+    { icon: Wifi, label: 'Free WiFi', labelId: 'WiFi Gratis' },
+    { icon: Lock, label: 'Locker', labelId: 'Loker' },
+  ];
+  const paymentConfig = [
+    { icon: CreditCard, label: 'Card', labelId: 'Kartu' },
+    { icon: Banknote, label: 'Cash', labelId: 'Tunai' },
+    { icon: Smartphone, label: 'QRIS', labelId: 'QRIS' },
+    { icon: Building2, label: 'Transfer', labelId: 'Transfer' },
+  ];
+
   return (
     <section className="mt-8 rounded-2xl bg-white shadow-md border border-gray-100 overflow-hidden">
       <div className="p-4 sm:p-6">
@@ -238,33 +259,34 @@ export default function VisitUsElite({ place, language = 'id', userLocation }: V
           )}
         </div>
 
-        {/* What's Included – under address */}
-        {(() => {
-          const list = p.whatsIncluded || [
-            'Complimentary welcome drink',
-            'Hot towel service',
-            'Shower facilities',
-            'Locker & storage',
-            'Aromatherapy oils',
-            'Post-massage tea',
-          ];
-          return (
-            <div className="mb-4">
-              <h4 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-2">
-                <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" aria-hidden />
-                {isId ? 'Termasuk dalam Perawatan' : "What's Included"}
-              </h4>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                {list.map((item: string, i: number) => (
-                  <li key={i} className="flex items-center gap-2 text-xs text-gray-700">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" aria-hidden />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })()}
+        {/* Your Visit Includes + Spa Amenities – under address */}
+        <div className="mb-4 p-4 rounded-xl border-2 bg-orange-50/80 border-orange-400">
+          <h4 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-2">
+            <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" aria-hidden />
+            {isId ? 'Termasuk dalam Kunjungan Anda' : 'Your Visit Includes'}
+          </h4>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-4">
+            {whatsIncludedList.map((item: string, i: number) => (
+              <li key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" aria-hidden />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <h4 className="text-sm font-bold text-gray-900 mb-3 pt-2 border-t border-orange-200">
+            {isId ? 'Fasilitas Spa' : 'Spa Amenities'}
+          </h4>
+          <div className="flex flex-nowrap justify-between gap-2">
+            {amenityConfig.map(({ icon: Icon, label, labelId }, i: number) => (
+              <div key={i} className="flex flex-1 min-w-0 flex-col items-center gap-1">
+                <div className="w-10 h-10 flex-shrink-0 rounded-full bg-white border border-amber-200 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-amber-600" />
+                </div>
+                <span className="text-[10px] text-gray-600 font-medium text-center">{isId ? labelId : label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
         {/* 3. Business Hours + Live Status – styled like price container */}
         <div className="mb-4 p-3 rounded-xl border-2 bg-orange-50/80 border-orange-400">
           <div className="flex items-start justify-between gap-3">
@@ -323,6 +345,21 @@ export default function VisitUsElite({ place, language = 'id', userLocation }: V
               {isId ? 'Telepon Spa' : 'Call Spa'}
             </a>
           )}
+        </div>
+
+        {/* 5. Payment methods – one line under buttons */}
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <p className="text-[10px] text-gray-500 mb-2 text-center">{isId ? 'Metode pembayaran' : 'Payment methods'}</p>
+          <div className="flex flex-nowrap justify-center gap-4">
+            {paymentConfig.map(({ icon: Icon, label, labelId }, i: number) => (
+              <div key={i} className="flex flex-col items-center gap-0.5">
+                <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-gray-600" />
+                </div>
+                <span className="text-[10px] text-gray-600 font-medium">{isId ? labelId : label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

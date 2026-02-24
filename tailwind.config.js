@@ -33,8 +33,15 @@ export default {
       maxWidth: {
         'md': '448px',
       },
+      keyframes: {
+        'float-heart': {
+          '0%': { transform: 'translate(-50%, -50%) translateY(0) scale(0.8)', opacity: '0.9' },
+          '100%': { transform: 'translate(-50%, -50%) translateY(-44px) scale(0.35)', opacity: '0' },
+        },
+      },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'float-heart': 'float-heart 2s ease-out infinite',
       },
     },
   },
