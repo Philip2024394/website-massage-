@@ -47,6 +47,19 @@ function getCityKey(t: any): string {
   return String(v).trim().toLowerCase();
 }
 
+/** True when therapist is available/online for booking (same logic as carousel dot). */
+function isTherapistAvailable(t: any): boolean {
+  const statusStr = String(t?.status ?? '').toLowerCase();
+  const availStr = String(t?.availability ?? '').toLowerCase();
+  return (
+    t?.isOnline === true ||
+    statusStr === 'online' ||
+    statusStr === 'available' ||
+    availStr === 'available' ||
+    t?.availability === 'Available'
+  );
+}
+
 /** Shuffle array (Fisher–Yates) and return new array. */
 function shuffle<T>(arr: T[]): T[] {
   const out = [...arr];
@@ -294,21 +307,29 @@ export default function TherapistProfilePlaceStyle({
     return [...new Set(urls)].slice(0, 5);
   }, [therapist]);
 
-  /** Random therapists from same city for "Services & Therapist Trending Now" – new random set each mount/refresh. */
+  /** Therapist Trending Now: prefer available/online therapists only; if none available, show same-city and display as online so section stays active. */
   const sameCityDisplay = useMemo(() => {
     if (!Array.isArray(allTherapists) || allTherapists.length === 0) {
-      return { list: [] as any[], showViewProfile: false };
+      return { list: [] as any[], showViewProfile: false, displayAsOnlineFallback: false };
     }
     const currentId = String(therapist.$id ?? therapist.id ?? '');
     const cityKey = getCityKey(therapist);
-    if (!cityKey) return { list: [], showViewProfile: false };
+    if (!cityKey) return { list: [], showViewProfile: false, displayAsOnlineFallback: false };
     const sameCity = allTherapists.filter((t: any) => {
       const id = String(t.$id ?? t.id ?? '');
       if (id === currentId) return false;
       return getCityKey(t) === cityKey;
     });
-    const shuffled = shuffle(sameCity);
-    return { list: shuffled.slice(0, 3), showViewProfile: true };
+    const available = sameCity.filter((t: any) => isTherapistAvailable(t));
+    const useAvailableOnly = available.length > 0;
+    const source = useAvailableOnly ? available : sameCity;
+    const shuffled = shuffle(source);
+    return {
+      list: shuffled.slice(0, 3),
+      showViewProfile: true,
+      /** When true, no available therapists in same city – show therapists but display green (online) so section has content. */
+      displayAsOnlineFallback: !useAvailableOnly && sameCity.length > 0,
+    };
   }, [allTherapists, therapist]);
 
   /** Default testimonials for Safety & Comfort section (same as Massage City Places). */
@@ -437,7 +458,7 @@ export default function TherapistProfilePlaceStyle({
         `}</style>
         <div className="max-w-full space-y-4">
           <div className="mb-3 text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">Hi I'm {getTherapistDisplayName(therapist.name)}</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-1">Welcome To My Profile</h3>
             <p className="text-sm text-gray-600 therapist-subtitle-slide-in">
               {isId ? 'Silakan hubungi untuk layanan yang belum tercantum' : 'Please reach out for any services not listed'}
             </p>
@@ -536,7 +557,7 @@ export default function TherapistProfilePlaceStyle({
                       const statusStr = String((t as any).status ?? '').toLowerCase();
                       const availStr = String(t.availability ?? '').toLowerCase();
                       const isOnline = isRealTherapist
-                        ? (t.isOnline === true || statusStr === 'online' || statusStr === 'available' || availStr === 'available' || t.availability === 'Available')
+                        ? (sameCityDisplay.displayAsOnlineFallback || isTherapistAvailable(t))
                         : true;
                       return (
                         <div

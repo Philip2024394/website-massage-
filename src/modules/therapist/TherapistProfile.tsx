@@ -103,8 +103,8 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                         </div>
                     </div>
 
-                    {/* Status Badge - Left aligned with offset */}
-                    <div className="overflow-visible flex justify-start ml-[75px]">
+                    {/* Status Badge and branch image - status left, image across (right) */}
+                    <div className="overflow-visible flex justify-between items-center ml-[75px]">
                         <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
                             {/* Pulsing satellite broadcast ring for Available status */}
                             <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
@@ -141,6 +141,12 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                                 <span className="text-xs">{displayStatus}</span>
                             )}
                         </div>
+                        <img
+                            src="https://ik.imagekit.io/7grri5v7d/branch%205.png"
+                            alt=""
+                            className="h-[80px] w-auto object-contain flex-shrink-0 translate-x-[10px]"
+                            aria-hidden
+                        />
                     </div>
                 </div>
             </div>

@@ -85,6 +85,8 @@ const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
     const [showScheduleForm, setShowScheduleForm] = useState(false);
     const [scheduledDate, setScheduledDate] = useState(() => new Date().toISOString().slice(0, 10));
     const [scheduledTime, setScheduledTime] = useState('10:00');
+    /** Selected price option index (single selection). When set, only that container shows fingerprint + heartbeat; Book button gets heartbeat. */
+    const [selectedDetailIndex, setSelectedDetailIndex] = useState<number | null>(null);
     const imageUrl = service.imageUrl || DEFAULT_SERVICE_IMAGE;
     const useAdmin = useAdminForBooking || isBookingUseAdminCountry(userCountryCode);
 
@@ -208,27 +210,40 @@ const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
                               animation: book-now-heartbeat 1.2s ease-in-out infinite;
                             }
                         `}</style>
-                        {/* Price container(s) – fingerprint on all, heartbeat glow (Book Now below) */}
+                        {/* Price container(s) – select one; fingerprint + heartbeat only on selected; Book button heartbeat when selected */}
                         <div className="space-y-2 mb-4">
-                            {(service.details?.length > 1 ? service.details : (service.details?.length ? [service.details[0]] : [])).map((d, i) => (
-                                <div key={i} className="additional-service-price-glow additional-service-price-heartbeat w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400">
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2 flex items-center gap-1.5">
-                                            <Sparkles className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" aria-hidden />
-                                            {d?.label || service.name}
-                                        </h4>
-                                        {d?.duration && (
-                                            <p className="text-[10px] text-gray-600">Duration: {d.duration}</p>
+                            {(service.details?.length > 1 ? service.details : (service.details?.length ? [service.details[0]] : [])).map((d, i) => {
+                                const isSelected = selectedDetailIndex === i;
+                                const isSelectable = !showInquireOnly;
+                                return (
+                                    <div
+                                        key={i}
+                                        role={isSelectable ? 'button' : undefined}
+                                        tabIndex={isSelectable ? 0 : undefined}
+                                        onClick={() => isSelectable && setSelectedDetailIndex(isSelected ? null : i)}
+                                        onKeyDown={(e) => isSelectable && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSelectedDetailIndex(isSelected ? null : i))}
+                                        className={`additional-service-price-glow w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400 ${isSelectable ? 'cursor-pointer select-none' : ''} ${isSelected ? 'additional-service-price-heartbeat' : ''}`}
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2 flex items-center gap-1.5">
+                                                <Sparkles className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" aria-hidden />
+                                                {d?.label || service.name}
+                                            </h4>
+                                            {d?.duration && (
+                                                <p className="text-[10px] text-gray-600">Duration: {d.duration}</p>
+                                            )}
+                                            <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                                {d?.price || 'Contact for price'}
+                                            </p>
+                                        </div>
+                                        {isSelected && (
+                                            <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
+                                                <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
+                                            </span>
                                         )}
-                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                            {d?.price || 'Contact for price'}
-                                        </p>
                                     </div>
-                                    <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
-                                        <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
-                                    </span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         <p className="text-xs text-gray-600 mb-4 text-center">
@@ -254,7 +269,7 @@ const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
                                     <button
                                         type="button"
                                         onClick={handleBookNow}
-                                        className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors flex items-center justify-center gap-2"
+                                        className={`flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors flex items-center justify-center gap-2 ${selectedDetailIndex !== null ? 'additional-service-price-heartbeat' : ''}`}
                                         aria-label="Book Now"
                                     >
                                         <Clock className="w-4 h-4" />
@@ -263,7 +278,7 @@ const AdditionalServiceCard: React.FC<AdditionalServiceCardProps> = ({
                                     <button
                                         type="button"
                                         onClick={handleScheduleClick}
-                                        className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-gray-600 hover:bg-gray-700 text-white transition-colors flex items-center justify-center gap-2"
+                                        className={`flex-1 py-2.5 rounded-lg font-semibold text-sm bg-gray-600 hover:bg-gray-700 text-white transition-colors flex items-center justify-center gap-2 ${selectedDetailIndex !== null ? 'additional-service-price-heartbeat' : ''}`}
                                         aria-label="Schedule"
                                     >
                                         <Calendar className="w-4 h-4" />

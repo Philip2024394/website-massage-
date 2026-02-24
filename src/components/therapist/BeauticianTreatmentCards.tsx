@@ -85,7 +85,7 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
               type="button"
               key={index}
               onClick={() => handleSelect(index)}
-              className={`w-full text-center rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 beautician-container-heartbeat ${
+              className={`w-full text-center rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 ${isSelected ? 'beautician-container-heartbeat' : ''} ${
                 isSelected
                   ? 'beautician-container-selected bg-orange-50/80 border-orange-400'
                   : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
@@ -104,9 +104,11 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
                   Price: {formatPrice(t)} (fixed)
                 </p>
               </div>
-              <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
-                <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
-              </span>
+              {isSelected && (
+                <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
+                  <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
+                </span>
+              )}
             </button>
           );
         })}

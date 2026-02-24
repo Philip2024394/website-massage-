@@ -674,9 +674,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
              * Name and status positioning finalized
              * 75px offset from left is intentional
              * ======================================== */}
-            {/* Name and Status - Below main image, left aligned with 75px offset */}
-            <div className="px-4 mt-[2px] mb-3 relative z-40">
-                <div className="flex-shrink-0">
+            {/* Name and Status - Below main image, left aligned with 75px offset; overflow-visible so branch image (right of status) is not clipped */}
+            <div className="px-4 mt-[2px] mb-3 relative z-40 overflow-visible">
+                <div className="flex-shrink-0 overflow-visible">
                     {/* Name left aligned with offset */}
                     <div className="mb-2 ml-[75px]">
                         <div className="flex items-center gap-2">
@@ -723,8 +723,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </div>
                     </div>
 
-                    {/* Status Badge - Left aligned with offset */}
-                    <div className="overflow-visible flex justify-start ml-[75px]">
+                    {/* Status Badge and branch image - status left, image across (right) */}
+                    <div className="overflow-visible flex justify-between items-center ml-[75px]">
                         <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
                             <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
                                 <span key={`${therapist.$id || therapist.id}-dot`} className={`absolute rounded-full ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
@@ -737,6 +737,12 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             </span>
                             <span className="text-xs">{statusStyle.label}</span>
                         </div>
+                        <img
+                            src="https://ik.imagekit.io/7grri5v7d/branch%205.png"
+                            alt=""
+                            className="h-[80px] w-auto object-contain flex-shrink-0 translate-x-[10px]"
+                            aria-hidden
+                        />
                     </div>
                 </div>
             </div>

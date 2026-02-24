@@ -579,7 +579,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                                             setSelectedPriceKey(isSelected ? null : key);
                                         }
                                     }}
-                                    className={`beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 ${isMostPopular ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-500 ring-1 ring-amber-200' : 'bg-orange-50/80 border-orange-400'} ${variant === 'profile' && category === 'massage' ? 'cursor-pointer select-none book-now-heartbeat' : ''}`}
+                                    className={`beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 ${isMostPopular ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-500 ring-1 ring-amber-200' : 'bg-orange-50/80 border-orange-400'} ${variant === 'profile' && category === 'massage' ? 'cursor-pointer select-none' : ''} ${isSelected ? 'book-now-heartbeat' : ''}`}
                                 >
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
@@ -603,7 +603,7 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                                             )}
                                         </p>
                                     </div>
-                                    {variant === 'profile' && category === 'massage' && (
+                                    {variant === 'profile' && category === 'massage' && isSelected && (
                                         <span className="flex-shrink-0 flex items-center justify-center text-amber-600" aria-hidden>
                                             <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9" strokeWidth={1.8} />
                                         </span>
