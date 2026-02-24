@@ -5,8 +5,8 @@
 
 import React from 'react';
 import { Check, ArrowRight } from 'lucide-react';
-import { MCP_PLANS } from '../../../src/config/massageCityPlacesPlans';
-import { useLanguage } from '../../../src/hooks/useLanguage';
+import { MCP_PLANS } from '../../../../src/config/massageCityPlacesPlans';
+import { useLanguage } from '../../../../src/hooks/useLanguage';
 
 interface MembershipPlansPageProps {
   onBack: () => void;
