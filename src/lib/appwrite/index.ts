@@ -17,6 +17,7 @@ export { hotelService } from './services/hotel.service';
 export { facialPlaceService } from './services/facial.service';
 export { customLinksService } from './services/customLinks.service';
 export { translationsService } from './services/translation.service';
+export { directoryMassageTypesService } from './services/directoryMassageTypes.service';
 export { messagingService } from './services/messaging.service';
 export { pricingService } from './services/pricing.service';
 export { verificationService } from './services/verification.service';

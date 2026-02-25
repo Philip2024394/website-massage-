@@ -57,6 +57,7 @@ import BannerDiscountPage from '../../pages/therapist/BannerDiscountPage.tsx';
 import TherapistSafePassWrapper from '../../pages/therapist/TherapistSafePassWrapper';
 import TherapistJobApplicationsPage from '../../pages/therapist/TherapistJobApplicationsPage';
 import TherapistMembershipPlansPage from '../../pages/therapist/TherapistMembershipPlansPage';
+import MassageTypesDirectoryPage from '../../pages/therapist/MassageTypesDirectoryPage';
 
 export const therapistRoutes = {
   dashboard: {
@@ -135,6 +136,12 @@ export const therapistRoutes = {
     path: '/therapist/menu',
     component: TherapistMenuPage,
     name: 'therapist-menu',
+    requiresAuth: true
+  },
+  massageTypesDirectory: {
+    path: '/therapist/massage-types-directory',
+    component: MassageTypesDirectoryPage,
+    name: 'therapist-massage-types-directory',
     requiresAuth: true
   },
   premium: {

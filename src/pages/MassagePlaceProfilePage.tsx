@@ -13,6 +13,7 @@ const FloatingChatWindowLazy = lazy(() =>
 );
 import AdditionalServiceCard, { type AdditionalService } from '../components/AdditionalServiceCard';
 import { VERIFIED_BADGE_IMAGE_URL, ADDITIONAL_SERVICES_TIERS, type AdditionalServicesTierLimit } from '../constants/appConstants';
+import { OTHER_SERVICES_DEFAULT_IMAGES } from '../constants/otherServicesOffered';
 import VisitUsElite from '../components/VisitUsElite';
 import ElitePremiumFeatures from '../components/ElitePremiumFeatures';
 import EliteFloatingActions from '../components/EliteFloatingActions';
@@ -631,7 +632,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             if (list.length === 0) {
                                 const mockImage = 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328';
                                 list = [
-                                    { id: 'mock-hair', name: 'Hair Salon', description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.', imageUrl: mockImage, details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }], bookLabel: 'Book' as const },
+                                    { id: 'mock-hair', name: 'Hair Salon', description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.', imageUrl: OTHER_SERVICES_DEFAULT_IMAGES.hair_salon, details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }], bookLabel: 'Book' as const },
                                     { id: 'mock-eyelashes', name: 'Eye Lashes', description: 'Eyelash extensions, lifts and tints. Classic, volume and hybrid styles available. Professional application for a natural or dramatic look.', imageUrl: mockImage, details: [{ label: 'Lash extensions', price: 'IDR 200K', duration: '60 min' }], bookLabel: 'Book' as const },
                                     { id: 'mock-nailart', name: 'Nail Art', description: 'Creative nail art, gel manicure, pedicure and nail care. Custom designs and long-lasting finishes.', imageUrl: mockImage, details: [{ label: 'Gel manicure & nail art', price: 'IDR 180K', duration: '45 min' }], bookLabel: 'Book' as const },
                                 ];

@@ -61,23 +61,59 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
         console.log('⚠️ No therapist data available');
         return;
       }
-      
+
+      const PENDING_KEY = 'pendingDirectoryMenuEntry';
+
       setLoading(true);
       try {
         const therapistId = String(therapist.$id || therapist.id);
         console.log('🔄 Loading menu for therapist:', therapistId);
-        
+
         const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
         console.log('📄 Menu document received:', menuDoc);
-        
+
+        let nextServices: MenuService[];
         if (menuDoc?.menuData) {
           const parsed = JSON.parse(menuDoc.menuData);
           console.log('✅ Parsed menu data:', parsed);
-          setServices(parsed || []);
+          nextServices = parsed || [];
         } else {
           console.log('ℹ️ No existing menu found - starting fresh');
-          setServices([]);
+          nextServices = [];
         }
+
+        const pendingRaw = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(PENDING_KEY) : null;
+        if (pendingRaw) {
+          try {
+            const pending = JSON.parse(pendingRaw) as {
+              serviceName?: string;
+              min60?: string;
+              price60?: string;
+              min90?: string;
+              price90?: string;
+              min120?: string;
+              price120?: string;
+            };
+            const fromDirectory: MenuService = {
+              id: Date.now().toString(),
+              serviceName: pending.serviceName || 'From directory',
+              min60: pending.min60 || '60',
+              price60: pending.price60 || '100',
+              min90: pending.min90 || '90',
+              price90: pending.price90 || '150',
+              min120: pending.min120 || '120',
+              price120: pending.price120 || '200',
+            };
+            nextServices = [...nextServices, fromDirectory];
+            sessionStorage.removeItem(PENDING_KEY);
+            showToast(`✅ "${fromDirectory.serviceName}" ditambahkan dari direktori. Simpan menu untuk mengkonfirmasi.`, 'success');
+          } catch (e) {
+            console.warn('Failed to parse pending directory entry', e);
+            sessionStorage.removeItem(PENDING_KEY);
+          }
+        }
+
+        setServices(nextServices);
       } catch (e) {
         console.error('❌ Failed to load menu:', e);
         if (e instanceof Error) {

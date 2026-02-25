@@ -27,7 +27,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  Home, User, Calendar, DollarSign, Bell, Settings, Search, Plus, Star, Clock, TrendingUp, Zap, Play as ChevronRight, ChevronDown, Star as Bookmark, History, Zap as Command, Users, CreditCard, BarChart, Shield, FileText, Gift, FileText as Clipboard, DollarSign as Wallet, MessageCircle, Briefcase, HelpCircle, Scale } from 'lucide-react';
+  Home, User, Calendar, DollarSign, Bell, Settings, Search, Plus, Star, Clock, TrendingUp, Zap, Play as ChevronRight, ChevronDown, Star as Bookmark, History, Zap as Command, Users, CreditCard, BarChart, Shield, FileText, Gift, FileText as Clipboard, DollarSign as Wallet, MessageCircle, Briefcase, HelpCircle, Scale, BookOpen } from 'lucide-react';
 import { getTherapistSidebarPage } from '../../config/therapistSidebarConfig';
 
 export interface NavigationItem {
@@ -157,6 +157,15 @@ const NAVIGATION_CATEGORIES: NavigationCategory[] = [
         category: 'bookings',
         priority: 'low',
         description: 'Customize your services'
+      },
+      {
+        id: 'massage-types-directory',
+        label: 'Massage Types Directory',
+        icon: BookOpen,
+        color: 'text-orange-500',
+        category: 'bookings',
+        priority: 'low',
+        description: 'View types, descriptions, prices, and popularity'
       }
     ]
   },

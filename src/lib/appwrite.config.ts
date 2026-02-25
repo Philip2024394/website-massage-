@@ -101,6 +101,8 @@ export const APPWRITE_CONFIG = {
         contactInquiries: 'contact_inquiries', // Contact/support form submissions
         indastreetNews: 'indastreet_news', // Indastreet News – massage & skin clinic headlines
         indastreetBlog: 'indastreet_blog', // Indastreet Blog – articles for blog index & view post
+        /** Massage Types Directory – all categories (Traditional, Sports, Therapeutic, Wellness). Collection ID: directory_massage_types_ */
+        directoryMassageTypes: 'directory_massage_types_',
         seoPosts: SchemaValidator.getCollectionId('SEO_POSTS'), // Auto-published SEO posts (/post/:slug)
         autoPostJobs: SchemaValidator.getCollectionId('AUTO_POST_JOBS'), // Auto-post scheduler queue
         countries: '699a58950004864d1bf2', // Appwrite collection: countries (side drawer + linked websites)
@@ -119,6 +121,8 @@ export const APPWRITE_CONFIG = {
     bucketId: '68f76bdd002387590584', // Main storage bucket
     facialPlacesBucketId: '6932f43700113926eb80', // Facial places images bucket
     blogImagesBucketId: getEnvVar('VITE_APPWRITE_BLOG_BUCKET_ID', 'bogimages'), // Blog hero/in-article images (Appwrite Storage bucket)
+    /** Directory massage types thumbnails: use main bucket (or create a dedicated bucket and set via env). */
+    directoryThumbnailsBucketId: getEnvVar('VITE_APPWRITE_DIRECTORY_THUMBNAILS_BUCKET_ID', '68f76bdd002387590584'),
     
     // Google Maps Integration
     googleMaps: {

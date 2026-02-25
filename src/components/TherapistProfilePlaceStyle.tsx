@@ -119,11 +119,13 @@ function formatLastBooked(bookedAt: Date, now: Date, isId: boolean): string {
 
 export type TherapistPlan = 'free' | 'middle' | 'premium';
 
+/** Plan is only "paid" when explicitly set by admin (e.g. after payment confirmation). Empty/missing = free → show 3 trending therapists. */
 function getTherapistPlan(therapist: Therapist | Record<string, any>): TherapistPlan {
   const p = (therapist as any).plan ?? (therapist as any).membershipPlan ?? (therapist as any).membershipTier ?? '';
-  const v = String(p).toLowerCase();
+  const v = String(p).trim().toLowerCase();
+  if (!v) return 'free';
   if (v === 'premium' || v === 'elite' || v === 'pro') return 'premium';
-  if (v === 'middle' || v === 'plus' || v === 'trusted') return 'middle';
+  if (v === 'middle' || v === 'plus' || v === 'standard' || v === 'trusted') return 'middle';
   return 'free';
 }
 
@@ -212,7 +214,9 @@ export default function TherapistProfilePlaceStyle({
   const verified = isTherapistVerified(therapist);
   const nameNormHero = (therapist?.name ?? '').trim().toLowerCase();
   const isWiwidProfile = nameNormHero === 'wiwid' || nameNormHero.startsWith('wiwid ');
-  const showVerifiedOnHero = verified || isWiwidProfile;
+  const isSurtiningsihProfile = nameNormHero === 'surtiningsih' || nameNormHero.startsWith('surtiningsih ');
+  /** When true, show verified badge in hero (right side) with "Verified"/"Terverifikasi" text. Any profile with verified badge shows here. */
+  const showVerifiedOnHero = verified || isWiwidProfile || isSurtiningsihProfile;
   const isId = language === 'id';
 
   const locationStr = typeof therapist.location === 'string'
@@ -286,8 +290,10 @@ export default function TherapistProfilePlaceStyle({
   const WINDA_CERTIFICATION_IMAGE = 'https://ik.imagekit.io/7grri5v7d/winda.png';
   /** Certification image URL for Wiwid – "Certification Achieved" (shown on profile and in dashboard). */
   const WIWID_CERTIFICATION_IMAGE = 'https://ik.imagekit.io/7grri5v7d/windas.png';
+  /** Certification image URL for Surtiningsih – "Certification Achieved" (shown on profile). */
+  const SURTININGSIH_CERTIFICATION_IMAGE = 'https://ik.imagekit.io/7grri5v7d/windasu.png?updatedAt=1771923207534';
 
-  /** Up to 5 certification/license/achievement image URLs for Safety & Comfort. Includes achievementsDocuments from dashboard and Winda/Wiwid cert when applicable. */
+  /** Up to 5 certification/license/achievement image URLs for Safety & Comfort. Includes achievementsDocuments from dashboard and Winda/Wiwid/Surtiningsih cert when applicable. */
   const certificationImages = useMemo(() => {
     const raw = (therapist as any).certificationImages ?? (therapist as any).licenseImages ?? (therapist as any).achievementImages ?? [];
     const list = Array.isArray(raw) ? raw : [];
@@ -303,13 +309,16 @@ export default function TherapistProfilePlaceStyle({
         }
       } catch (_) { /* ignore */ }
     }
-    // Therapist Winda / Wiwid: ensure "Certification Achieved" image is included
+    // Therapist Winda / Wiwid / Surtiningsih: ensure "Certification Achieved" image is included
     const nameNorm = (therapist?.name ?? '').trim().toLowerCase();
     if (nameNorm === 'winda' || nameNorm.startsWith('winda ')) {
       if (!urls.includes(WINDA_CERTIFICATION_IMAGE)) urls = [WINDA_CERTIFICATION_IMAGE, ...urls];
     }
     if (nameNorm === 'wiwid' || nameNorm.startsWith('wiwid ')) {
       if (!urls.includes(WIWID_CERTIFICATION_IMAGE)) urls = [WIWID_CERTIFICATION_IMAGE, ...urls];
+    }
+    if (nameNorm === 'surtiningsih' || nameNorm.startsWith('surtiningsih ')) {
+      if (!urls.includes(SURTININGSIH_CERTIFICATION_IMAGE)) urls = [SURTININGSIH_CERTIFICATION_IMAGE, ...urls];
     }
     return [...new Set(urls)].slice(0, 5);
   }, [therapist]);
@@ -576,7 +585,7 @@ export default function TherapistProfilePlaceStyle({
               ? sameCityDisplay.list
               : defaultTherapists;
             const defaultServices: AdditionalService[] = [
-              { id: 'mock-hair', name: 'Hair Salon', description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.', imageUrl: mockImage, details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }], bookLabel: 'Book' as const },
+              { id: 'mock-hair', name: 'Hair Salon', description: 'Professional haircut, styling and treatments at our in-house salon. Our stylists are trained in the latest trends and use quality products.', imageUrl: OTHER_SERVICES_DEFAULT_IMAGES.hair_salon, details: [{ label: 'Haircut & styling', price: 'IDR 150K', duration: '45 min' }], bookLabel: 'Book' as const },
               { id: 'mock-eyelashes', name: 'Eye Lashes', description: 'Eyelash extensions, lifts and tints. Classic, volume and hybrid styles available. Professional application for a natural or dramatic look.', imageUrl: mockImage, details: [{ label: 'Lash extensions', price: 'IDR 200K', duration: '60 min' }], bookLabel: 'Book' as const },
               { id: 'mock-nailart', name: 'Nail Art', description: 'Creative nail art, gel manicure, pedicure and nail care. Custom designs and long-lasting finishes.', imageUrl: mockImage, details: [{ label: 'Gel manicure & nail art', price: 'IDR 180K', duration: '45 min' }], bookLabel: 'Book' as const },
             ];

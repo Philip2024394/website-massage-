@@ -2683,6 +2683,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             logger.debug('[ROUTER OK] therapist-menu component bound successfully');
             return menuComponent;
 
+        case 'therapist-massage-types-directory':
+            return renderRoute(therapistRoutes.massageTypesDirectory.component, {
+                variant: 'therapist',
+                provider: props.user,
+                onBackToStatus: () => props.onNavigate?.('therapist-status'),
+                onNavigate: props.onNavigate,
+                language: props.language || 'id'
+            });
+
         // 🚫 DO NOT REDIRECT — Membership plans (post profile-save live)
         case 'therapist-membership-plans':
             logger.debug('[ROUTE RESOLVE] therapist-membership-plans → TherapistMembershipPlansPage');

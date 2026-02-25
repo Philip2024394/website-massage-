@@ -119,6 +119,45 @@ export const PlacesManager: React.FC = () => {
       setError(err.message || 'Failed to deactivate');
     }
   };
+
+  /** Plan: Free = show trending section on profile; Standard/Premium = paid (hide trending when applicable). */
+  const getDisplayPlan = (p: any) => {
+    const v = (p.plan ?? p.membershipPlan ?? p.membershipTier ?? '').toString().toLowerCase();
+    if (v === 'premium' || v === 'elite' || v === 'pro') return 'Premium';
+    if (v === 'middle' || v === 'plus' || v === 'standard' || v === 'trusted') return 'Standard';
+    return 'Free';
+  };
+
+  const handlePlanChange = async (placeId: string, planLabel: 'Free' | 'Standard' | 'Premium') => {
+    try {
+      const planValue = planLabel === 'Free' ? '' : planLabel === 'Standard' ? 'middle' : 'premium';
+      await adminPlacesService.update(placeId, {
+        plan: planValue,
+        membershipPlan: planValue,
+        membershipTier: planValue
+      });
+      await loadPlaces();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update plan');
+    }
+  };
+
+  /** Confirm payment and activate paid plan for place. Same as therapists: removes trending section when plan is paid. */
+  const handleConfirmPaymentActivatePaid = async (place: any) => {
+    if (!window.confirm(`Confirm payment and activate paid plan for ${place.name || 'this place'}?`)) return;
+    try {
+      await adminPlacesService.update(place.$id, {
+        plan: 'middle',
+        membershipPlan: 'middle',
+        membershipTier: 'middle',
+        paymentConfirmed: true,
+        subscriptionConfirmed: true
+      });
+      await loadPlaces();
+    } catch (err: any) {
+      setError(err.message || 'Failed to confirm payment / activate paid');
+    }
+  };
   
   // ============================================================================
   // 🎨 RENDER COMPONENTS
@@ -263,6 +302,9 @@ export const PlacesManager: React.FC = () => {
                     Pricing
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Plan
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -331,6 +373,28 @@ export const PlacesManager: React.FC = () => {
                           <span className="text-gray-500">No pricing</span>
                         )}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <select
+                        value={getDisplayPlan(place)}
+                        onChange={(e) => handlePlanChange(place.$id, e.target.value as 'Free' | 'Standard' | 'Premium')}
+                        className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                        title="Free = show trending on profile; Standard/Premium = paid"
+                      >
+                        <option value="Free">Free</option>
+                        <option value="Standard">Standard</option>
+                        <option value="Premium">Premium</option>
+                      </select>
+                      {getDisplayPlan(place) === 'Free' && (
+                        <button
+                          type="button"
+                          onClick={() => handleConfirmPaymentActivatePaid(place)}
+                          className="ml-2 mt-1 text-xs bg-amber-600 text-white px-2 py-1 rounded hover:bg-amber-700"
+                          title="Confirm payment and activate paid plan"
+                        >
+                          Confirm payment & activate paid
+                        </button>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex flex-col space-y-2">

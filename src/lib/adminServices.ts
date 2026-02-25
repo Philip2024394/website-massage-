@@ -109,7 +109,8 @@ export const adminTherapistService = {
                 'availability', 'experience', 'price60', 'price90', 'price120', 'ktpVerified',
                 'ktpRejected', 'ktpRejectionReason', 'ktpVerifiedAt', 'ktpVerifiedBy',
                 'bankName', 'accountName', 'accountNumber', 'ktpPhotoUrl', 'hotelVillaSafePassStatus',
-                'hasSafePassVerification', 'profileWentLiveAt', 'isLive'
+                'hasSafePassVerification', 'profileWentLiveAt', 'isLive',
+                'plan', 'membershipPlan', 'membershipTier', 'paymentConfirmed', 'subscriptionConfirmed'
             ];
             
             for (const key of allowedFields) {
@@ -231,7 +232,8 @@ export const adminPlacesService = {
                 'name', 'description', 'location', 'city', 'country', 'phone', 'email',
                 'website', 'status', 'isVerified', 'profileImage', 'images',
                 'services', 'amenities', 'serviceType', 'price60', 'price90', 'price120',
-                'availability', 'isLive'
+                'availability', 'isLive',
+                'plan', 'membershipPlan', 'membershipTier', 'paymentConfirmed', 'subscriptionConfirmed'
             ];
             
             for (const key of allowedFields) {

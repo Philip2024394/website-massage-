@@ -8,6 +8,7 @@ import PlaceCalendar from './PlaceCalendar';
 import PlaceLegal from './PlaceLegal';
 import PlaceMenuPricing from './PlaceMenuPricing';
 import MoreCustomersPage from './MoreCustomersPage';
+import MassageTypesDirectoryPage from '../../../../src/pages/therapist/MassageTypesDirectoryPage';
 
 interface MainPlaceDashboardProps {
   onSave?: (data: any) => void;
@@ -51,6 +52,16 @@ const MainPlaceDashboard: React.FC<MainPlaceDashboardProps> = ({
 
   const renderPage = () => {
     switch (activePage) {
+      case 'massage-types-directory':
+        return (
+          <MassageTypesDirectoryPage
+            variant="place"
+            language="id"
+            onBackToStatus={() => setActivePage('dashboard')}
+            onNavigate={(page) => { if (page === 'dashboard') setActivePage('dashboard'); if (onNavigate) onNavigate(page); }}
+            provider={place}
+          />
+        );
       case 'more-customers':
         return <MoreCustomersPage place={place} onBack={() => setActivePage('dashboard')} language="id" />;
       
@@ -138,9 +149,21 @@ const MainPlaceDashboard: React.FC<MainPlaceDashboardProps> = ({
   };
 
   return (
-    <PlaceLayout activePage={activePage} onNavigate={handleNavigate}>
-      {renderPage()}
-    </PlaceLayout>
+    <>
+      {activePage === 'massage-types-directory' ? (
+        <MassageTypesDirectoryPage
+          variant="place"
+          language="id"
+          onBackToStatus={() => setActivePage('dashboard')}
+          onNavigate={(page) => { if (page === 'dashboard') setActivePage('dashboard'); if (onNavigate) onNavigate(page); }}
+          provider={place}
+        />
+      ) : (
+        <PlaceLayout activePage={activePage} onNavigate={handleNavigate}>
+          {renderPage()}
+        </PlaceLayout>
+      )}
+    </>
   );
 };
 

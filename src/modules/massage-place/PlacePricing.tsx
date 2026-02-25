@@ -12,16 +12,18 @@
  * - Animated price rim effects for discounts
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { BookNowButton } from '../../components/BookNowButton';
 import { isDiscountActive, getDynamicSpacing } from '../../constants/cardConstants';
 import type { Analytics } from '../../types';
+import PriceCardInfoPopover from '../../components/PriceCardInfoPopover';
+import { Info } from 'lucide-react';
 
 interface PlacePricingProps {
     place: any;
     pricing: {
         "60": number;
-        "90": number; 
+        "90": number;
         "120": number;
     };
     displayRating: number;
@@ -29,6 +31,8 @@ interface PlacePricingProps {
     t: any;
     addNotification: (type: string, title: string, message: string, options?: any) => void;
     onIncrementAnalytics: (metric: keyof Analytics) => void;
+    /** Language for info popover (what to expect). */
+    language?: 'en' | 'id';
 }
 
 const PlacePricing: React.FC<PlacePricingProps> = ({
@@ -38,8 +42,15 @@ const PlacePricing: React.FC<PlacePricingProps> = ({
     formatPrice,
     t,
     addNotification,
-    onIncrementAnalytics
+    onIncrementAnalytics,
+    language = 'en',
 }) => {
+    const [infoPopupKey, setInfoPopupKey] = useState<'60' | '90' | '120' | null>(null);
+    const isId = language === 'id';
+    const serviceName = (place as any)?.serviceType || 'Traditional Massage';
+    const DEFAULT_PRICE_IMAGE = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
+    const thumbnailUrl = (place as any)?.mainImage ?? (place as any)?.profilePicture ?? (place as any)?.imageUrl ?? DEFAULT_PRICE_IMAGE;
+
     return (
         <>
             {/* Discounted Prices Header */}
@@ -54,11 +65,25 @@ const PlacePricing: React.FC<PlacePricingProps> = ({
             {/* Pricing — same design as beauty profile price containers */}
             <div className="grid grid-cols-3 gap-2 mb-3 px-1">
                 {pricing["60"] > 0 && (
-                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-col justify-center ${
+                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-row items-center gap-2 ${
                         isDiscountActive(place)
                             ? 'bg-amber-50/80 border-amber-400 price-rim-fade'
                             : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
                     }`}>
+                        {/* 1) Thumbnail on left (starts the container) — same image shown in description popup when user taps (i) */}
+                        <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 min-w-12 min-h-12 sm:min-w-14 sm:min-h-14 rounded-xl overflow-hidden bg-gray-100 border-2 border-amber-200">
+                            <img src={thumbnailUrl || DEFAULT_PRICE_IMAGE} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PRICE_IMAGE; }} />
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setInfoPopupKey(infoPopupKey === '60' ? null : '60'); }}
+                            className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center hover:bg-amber-300 transition-colors shadow-sm"
+                            aria-label={isId ? 'Info sesi' : 'Session info'}
+                            title={isId ? 'Apa yang bisa Anda harapkan' : 'What to expect'}
+                        >
+                            <Info className="w-2.5 h-2.5" strokeWidth={2.5} />
+                        </button>
                         {displayRating && (
                             <div className="absolute -top-2.5 left-2 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                                 <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
@@ -82,14 +107,29 @@ const PlacePricing: React.FC<PlacePricingProps> = ({
                                 Rp {formatPrice(pricing["60"])}
                             </p>
                         )}
+                        </div>
                     </div>
                 )}
                 {pricing["90"] > 0 && (
-                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-col justify-center ${
+                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-row items-center gap-2 ${
                         isDiscountActive(place)
                             ? 'bg-amber-50/80 border-amber-400 price-rim-fade'
                             : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
                     }`}>
+                        {/* 1) Thumbnail on left (starts the container) — same image shown in description popup when user taps (i) */}
+                        <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-gray-100 border-2 border-amber-200">
+                            <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720'; }} />
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setInfoPopupKey(infoPopupKey === '90' ? null : '90'); }}
+                            className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center hover:bg-amber-300 transition-colors shadow-sm"
+                            aria-label={isId ? 'Info sesi' : 'Session info'}
+                            title={isId ? 'Apa yang bisa Anda harapkan' : 'What to expect'}
+                        >
+                            <Info className="w-2.5 h-2.5" strokeWidth={2.5} />
+                        </button>
                         {displayRating && (
                             <div className="absolute -top-2.5 left-2 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                                 <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
@@ -113,14 +153,29 @@ const PlacePricing: React.FC<PlacePricingProps> = ({
                                 Rp {formatPrice(pricing["90"])}
                             </p>
                         )}
+                        </div>
                     </div>
                 )}
                 {pricing["120"] > 0 && (
-                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-col justify-center ${
+                    <div className={`rounded-xl border-2 p-3 relative transition-all duration-200 min-h-[72px] flex flex-row items-center gap-2 ${
                         isDiscountActive(place)
                             ? 'bg-amber-50/80 border-amber-400 price-rim-fade'
                             : 'border-gray-200 bg-gray-100 hover:border-gray-300 hover:bg-gray-50'
                     }`}>
+                        {/* 1) Thumbnail on left (starts the container) — same image shown in description popup when user taps (i) */}
+                        <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 min-w-12 min-h-12 sm:min-w-14 sm:min-h-14 rounded-xl overflow-hidden bg-gray-100 border-2 border-amber-200">
+                            <img src={thumbnailUrl || DEFAULT_PRICE_IMAGE} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PRICE_IMAGE; }} />
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setInfoPopupKey(infoPopupKey === '120' ? null : '120'); }}
+                            className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center hover:bg-amber-300 transition-colors shadow-sm"
+                            aria-label={isId ? 'Info sesi' : 'Session info'}
+                            title={isId ? 'Apa yang bisa Anda harapkan' : 'What to expect'}
+                        >
+                            <Info className="w-2.5 h-2.5" strokeWidth={2.5} />
+                        </button>
                         {displayRating && (
                             <div className="absolute -top-2.5 left-2 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                                 <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
@@ -144,9 +199,19 @@ const PlacePricing: React.FC<PlacePricingProps> = ({
                                 Rp {formatPrice(pricing["120"])}
                             </p>
                         )}
+                        </div>
                     </div>
                 )}
             </div>
+
+            <PriceCardInfoPopover
+                isOpen={infoPopupKey !== null}
+                onClose={() => setInfoPopupKey(null)}
+                duration={infoPopupKey === '60' ? 60 : infoPopupKey === '90' ? 90 : 120}
+                serviceName={serviceName}
+                isId={isId}
+                thumbnailImageUrl={thumbnailUrl || DEFAULT_PRICE_IMAGE}
+            />
 
             {/* Action Buttons - Book Now & Schedule Booking (matching therapist card) */}
             <div className="flex gap-2 px-4 mt-4">

@@ -3,6 +3,7 @@ import { authService } from '../../../src/lib/appwriteService';
 import PlaceDashboard from './pages/PlaceDashboard';
 import PlaceChat from './pages/PlaceChat';
 import PlacePaymentInfo from './pages/PlacePaymentInfo';
+import MassageTypesDirectoryPage from '../../../src/pages/therapist/MassageTypesDirectoryPage';
 import { LanguageProvider } from '../../../src/context/LanguageContext';
 
 interface PlaceAppProps {

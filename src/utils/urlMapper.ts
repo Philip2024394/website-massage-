@@ -59,6 +59,7 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'therapist-payment-status': '/#/dashboard/therapist/payment-status',
     'therapistMenu': '/#/dashboard/therapist/menu',
     'therapist-menu': '/#/dashboard/therapist/menu',
+    'therapist-massage-types-directory': '/#/dashboard/therapist/massage-types-directory',
     'therapist-commission': '/#/dashboard/therapist/commission',
     'therapist-schedule': '/#/dashboard/therapist/schedule',
     'therapist-package-terms': '/#/dashboard/therapist/package-terms',

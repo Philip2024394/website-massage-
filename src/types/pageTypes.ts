@@ -304,6 +304,8 @@ export type Page =
     | 'therapist-analytics'
     | 'banner-discount'
     | 'therapist-banner-discount'
+    | 'therapist-massage-types-directory'
+    | 'place-massage-types-directory'
     | 'therapist-hotel-villa-safe-pass'
     | 'therapist-safe-pass-apply'
     | 'therapist-safepass-apply'

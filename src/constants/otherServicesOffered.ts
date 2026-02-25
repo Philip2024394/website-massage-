@@ -60,6 +60,7 @@ export function getOtherServiceLabel(serviceId: string, language: 'en' | 'id' = 
 
 /** Default image URLs for Other Services when shown in the profile (e.g. dropdown cards). Used for any member who has that service selected. */
 export const OTHER_SERVICES_DEFAULT_IMAGES: Record<string, string> = {
+  hair_salon: 'https://ik.imagekit.io/7grri5v7d/salon.png',
   coin_rube: 'https://ik.imagekit.io/7grri5v7d/coin%20rub.png',
   sports_enjury: 'https://ik.imagekit.io/7grri5v7d/sports%20injurys.png',
   nerve_damage: 'https://ik.imagekit.io/7grri5v7d/sports%20injuryss.png',

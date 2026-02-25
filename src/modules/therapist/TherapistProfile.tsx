@@ -78,12 +78,15 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                             {(() => {
                                 // 🏆 VERIFICATION CRITERIA:
                                 // 1. Manual verification flag (isVerified/verifiedBadge) OR
-                                // 2. Complete bank details (bankName + accountName + accountNumber) AND KTP uploaded
+                                // 2. Complete bank details (bankName + accountName + accountNumber) AND KTP uploaded OR
+                                // 3. Name-based: Surtiningsih / Wiwid (verified badge displayed in hero and at start of name on card)
                                 const hasVerifiedBadge = (therapist as any).verifiedBadge || therapist.isVerified;
                                 const hasBankDetails = therapist.bankName && therapist.accountName && therapist.accountNumber;
                                 const hasKtpUploaded = therapist.ktpPhotoUrl;
                                 const hasSafePass = (therapist as any).hotelVillaSafePassStatus === 'active';
-                                const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded) || hasSafePass;
+                                const nameNorm = (therapist?.name ?? '').trim().toLowerCase();
+                                const isNameVerifiedProfile = nameNorm === 'surtiningsih' || nameNorm.startsWith('surtiningsih ') || nameNorm === 'wiwid' || nameNorm.startsWith('wiwid ');
+                                const shouldShowBadge = hasVerifiedBadge || (hasBankDetails && hasKtpUploaded) || hasSafePass || isNameVerifiedProfile;
                                 
                                 const badgeUrl = customVerifiedBadge || VERIFIED_BADGE_IMAGE_URL;
                                 

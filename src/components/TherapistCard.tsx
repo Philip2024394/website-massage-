@@ -1296,6 +1296,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         logger.debug('💰 Price grid clicked - opening price modal');
                         setShowPriceListModal(true);
                     }}
+                    language={chatLang}
                 />
             ) : null}
 

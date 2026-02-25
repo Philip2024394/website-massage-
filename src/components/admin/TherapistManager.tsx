@@ -209,6 +209,47 @@ export const TherapistManager: React.FC = () => {
     }
   };
 
+  /** Plan: Free = show 3 trending therapists on profile; Standard/Premium = hide trending (paid). */
+  const getDisplayPlan = (t: any) => {
+    const p = (t.plan ?? t.membershipPlan ?? t.membershipTier ?? '').toString().toLowerCase();
+    if (p === 'premium' || p === 'elite' || p === 'pro') return 'Premium';
+    if (p === 'middle' || p === 'plus' || p === 'standard' || p === 'trusted') return 'Standard';
+    return 'Free';
+  };
+
+  const handlePlanChange = async (therapistId: string, planLabel: 'Free' | 'Standard' | 'Premium') => {
+    try {
+      const planValue = planLabel === 'Free' ? '' : planLabel === 'Standard' ? 'middle' : 'premium';
+      await adminTherapistService.update(therapistId, {
+        plan: planValue,
+        membershipPlan: planValue,
+        membershipTier: planValue
+      });
+      await loadTherapists();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update plan');
+    }
+  };
+
+  /** Confirm payment and activate paid plan: sets plan to Standard (middle) and paymentConfirmed. Hides "3 trending therapists" on public profile. */
+  const handleConfirmPaymentActivatePaid = async (therapist: any) => {
+    if (!window.confirm(`Confirm payment and activate paid plan for ${therapist.name || 'this therapist'}? This will remove the "Trending therapists" section from their public profile.`)) return;
+    try {
+      const current = getDisplayPlan(therapist);
+      const planValue = current === 'Premium' ? 'premium' : 'middle';
+      await adminTherapistService.update(therapist.$id, {
+        plan: planValue,
+        membershipPlan: planValue,
+        membershipTier: planValue,
+        paymentConfirmed: true,
+        subscriptionConfirmed: true
+      });
+      await loadTherapists();
+    } catch (err: any) {
+      setError(err.message || 'Failed to confirm payment / activate paid');
+    }
+  };
+
   /** Full deactivate: set offline and no longer available. */
   const handleDeactivate = async (therapistId: string) => {
     if (!window.confirm('Deactivate this therapist? They will no longer appear as available.')) return;
@@ -363,6 +404,9 @@ export const TherapistManager: React.FC = () => {
                     KTP
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Plan
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -421,6 +465,28 @@ export const TherapistManager: React.FC = () => {
                       }`}>
                         {(therapist.ktpVerified || therapist.isKTPVerified) ? 'Verified' : 'Not Verified'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <select
+                        value={getDisplayPlan(therapist)}
+                        onChange={(e) => handlePlanChange(therapist.$id, e.target.value as 'Free' | 'Standard' | 'Premium')}
+                        className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                        title="Free = show 3 trending therapists on profile; Standard/Premium = hide trending"
+                      >
+                        <option value="Free">Free</option>
+                        <option value="Standard">Standard</option>
+                        <option value="Premium">Premium</option>
+                      </select>
+                      {(getDisplayPlan(therapist) === 'Free') && (
+                        <button
+                          type="button"
+                          onClick={() => handleConfirmPaymentActivatePaid(therapist)}
+                          className="ml-2 text-xs bg-amber-600 text-white px-2 py-1 rounded hover:bg-amber-700"
+                          title="Confirm payment and activate paid plan (hides trending section on profile)"
+                        >
+                          Confirm payment & activate paid
+                        </button>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex flex-wrap gap-2">
