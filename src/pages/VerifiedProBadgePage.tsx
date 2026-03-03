@@ -82,7 +82,7 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({
           onPrivacyClick={onNavigate ? () => onNavigate('privacy') : undefined}
           therapists={therapists}
           places={places}
-          language={language}
+          language={language as any}
         />
       </React19SafeWrapper>
 

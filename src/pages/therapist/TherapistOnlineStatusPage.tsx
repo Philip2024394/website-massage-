@@ -1,7 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (7 fixes)
 // 🔧 FIX: Optimized card padding p-6 → p-4 for better mobile experience
 // 🚫 PROTECTED: Therapist online status core functionality remains unchanged
-// @ts-expect-error - React 19 type compatibility issue with lucide-react icons, will be resolved in future version
+// React 19 + Lucide icons: runtime OK; types handled by module override.
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X, Lock } from "lucide-react";
 import { therapistService } from '../../lib/appwriteService';
@@ -36,7 +36,7 @@ interface TherapistOnlineStatusProps {
   language?: 'en' | 'id';
 }
 
-type OnlineStatus = 'available' | 'busy' | 'active'; // No offline: logout/app close sets Busy
+type OnlineStatus = 'available' | 'busy' | 'active' | 'offline'; // No offline in app, but keep for legacy UI helpers
 
 const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, onLogout, language: propLanguage = 'id' }) => {
   try {
@@ -381,7 +381,7 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
     // Check if app is already installed
     const checkIfInstalled = () => {
       // const pwaStatus = PWAInstallationEnforcer.checkInstallationStatus();
-      const pwaStatus = { canInstall: false, isInstalled: false }; // Fallback
+      const pwaStatus = { canInstall: false, isInstalled: false, canBypass: false } as const; // Fallback
       setIsAppInstalled(pwaStatus.isInstalled);
       setPwaEnforcementActive(!pwaStatus.isInstalled && !pwaStatus.canBypass);
       
@@ -868,18 +868,19 @@ const TherapistOnlineStatusPage: React.FC<TherapistOnlineStatusProps> = ({ thera
         '• Click OK to FORCE REINSTALL\n' +
         '• This ensures you have the latest notification sounds\n' +
         '• Cancel if notifications are working fine',
-        {
-          onConfirm: () => {
+        (() => {
+          // Some versions of showConfirmationToast accept either a callback or an options object.
+          // Use the callback form for widest compatibility.
+          const doConfirm = () => {
             setForceReinstall(true);
             setIsAppInstalled(false);
             localStorage.removeItem('pwa-installed');
             localStorage.removeItem('pwa-install-completed');
             // PWAInstallationEnforcer.forceRefreshStatus(); // Temporarily disabled
             showToast('⚙️ Now tap the DOWNLOAD button again to reinstall with enhanced notifications!', 'info');
-          },
-          confirmText: 'Force Reinstall',
-          cancelText: 'Keep Current App'
-        }
+          };
+          return doConfirm as any;
+        })()
       );
       return;
     }

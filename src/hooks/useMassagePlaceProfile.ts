@@ -181,7 +181,17 @@ export const useMassagePlaceProfile = (place: Place | null): UseMassagePlaceProf
             adminNumber
         );
         if (bookingPhone) {
-            window.open(`https://wa.me/${bookingPhone.replace(/[^0-9]/g, '')}`, '_blank');
+            const placeName = place?.name ?? 'this place';
+            const placeId   = (place as any)?.$id ?? (place as any)?.id ?? '';
+            const msg = [
+                `Hi Indastreet Admin, I would like to book a massage at ${placeName}.`,
+                placeId ? `Place ID: ${placeId}` : '',
+                `Please coordinate my visit. Thank you.`,
+            ].filter(Boolean).join('\n');
+            window.open(
+                `https://wa.me/${bookingPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`,
+                '_blank'
+            );
         }
     };
 

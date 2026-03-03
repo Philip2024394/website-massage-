@@ -183,7 +183,7 @@ export default function TherapistProfilePlaceStyle({
 }: TherapistProfilePlaceStyleProps) {
   const isIncompleteProfile = !therapist?.name?.trim?.() && !isLoading;
   const [selectedTreatment, setSelectedTreatment] = useState<{ name: string; duration: number; price: number } | null>(null);
-  /** Selected price container (60/90/120) so sticky Book Now sends correct duration/price/service to admin */
+  /** Selected price container (60/90/120) so sticky Book Now sends correct duration/price/service to admin. Starts null so fingerprint only shows after user selects. */
   const [selectedPriceKey, setSelectedPriceKey] = useState<'60' | '90' | '120' | null>(null);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [showGiftVoucherSlider, setShowGiftVoucherSlider] = useState(false);

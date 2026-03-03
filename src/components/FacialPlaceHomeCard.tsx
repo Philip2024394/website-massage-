@@ -490,7 +490,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 </div>
             )}
 
-            {/* Price containers – same design as beautician home service: Treatments Trending, fixed prices, list layout */}
+            {/* Price containers – same design as beautician home service: Massage's Trending, fixed prices, list layout */}
             <div className="mx-4 mb-4">
                 <style>{`
                     @keyframes beautician-glow-card {
@@ -506,32 +506,38 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 <div className="text-center mb-3">
                     <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
                         <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
-                        Treatments Trending
+                        Massage's Trending
                     </h3>
                     <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • View profile to book</p>
                 </div>
                 <div className="space-y-2">
-                    {[
-                        { label: '60 min', minutes: 60, key: '60' as const },
-                        { label: '90 min', minutes: 90, key: '90' as const },
-                        { label: '120 min', minutes: 120, key: '120' as const },
-                    ].map(({ label, minutes, key }) => (
-                        <div
-                            key={key}
-                            className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400"
-                            role="presentation"
-                        >
-                            <div className="flex-1 min-w-0">
-                                <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">{label}</h4>
-                                <p className="text-[10px] text-gray-600">
-                                    Estimated time: {minutes} minutes
-                                </p>
-                                <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                    Price: {pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])} (fixed)` : 'Call'}
-                                </p>
+                    <div className="beautician-card-container-highlight w-full text-left rounded-xl border-2 flex flex-row items-start gap-3 p-3 bg-orange-50/80 border-orange-400">
+                        <div className="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 border-2 border-amber-200">
+                            <img
+                                src={displayImage}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_FACIAL_IMAGE; }}
+                            />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-nowrap">
+                                <h4 className="text-xs font-bold text-gray-900 truncate" title="Facial">Facial</h4>
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold flex-shrink-0">
+                                    <Sparkles className="w-2.5 h-2.5" aria-hidden />
+                                    Popular Choice
+                                </span>
+                            </div>
+                            <div className="grid min-w-0 w-full grid-cols-3 grid-rows-2 gap-x-1 gap-y-0 items-start justify-items-center text-center">
+                                <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">60min</span>
+                                <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">90min</span>
+                                <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">120min</span>
+                                <span className="text-[10px] sm:text-xs font-semibold text-gray-800 whitespace-nowrap">{pricing['60'] > 0 ? `IDR ${formatPrice(pricing['60'])}` : '—'}</span>
+                                <span className="text-[10px] sm:text-xs font-semibold text-gray-800 whitespace-nowrap">{pricing['90'] > 0 ? `IDR ${formatPrice(pricing['90'])}` : '—'}</span>
+                                <span className="text-[10px] sm:text-xs font-semibold text-gray-800 whitespace-nowrap">{pricing['120'] > 0 ? `IDR ${formatPrice(pricing['120'])}` : '—'}</span>
                             </div>
                         </div>
-                    ))}
+                    </div>
                 </div>
                 <p className="text-center text-[10px] text-gray-500 mt-2">
                     Professional rates • Verified profile

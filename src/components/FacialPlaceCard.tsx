@@ -53,6 +53,7 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
     const [showPriceListModal, setShowPriceListModal] = useState(false);
+    const [menuData, setMenuData] = useState<any[]>([]);
     const [selectedGalleryPhoto, setSelectedGalleryPhoto] = useState<{ url: string; title: string; description: string } | null>(null);
 
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
@@ -316,6 +317,7 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                     t={_t}
                     addNotification={addNotification}
                     onIncrementAnalytics={onIncrementAnalytics}
+                    menuData={menuData}
                 />
 
                 {/* Terms and Conditions – same as MassagePlaceCard */}

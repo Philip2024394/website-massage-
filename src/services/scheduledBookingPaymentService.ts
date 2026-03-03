@@ -78,7 +78,7 @@ class ScheduledBookingPaymentService {
     message: string;
   }> {
     try {
-      logger.info('🏦 Processing scheduled booking acceptance:', request.bookingId);
+      logger.info('🏦 Processing scheduled booking acceptance', { bookingId: request.bookingId });
 
       // 1. Get provider's bank details
       const bankDetails = await this.getProviderBankDetails(request.providerId, request.providerType);
@@ -240,7 +240,7 @@ class ScheduledBookingPaymentService {
     file: File
   ): Promise<{ success: boolean; screenshot?: PaymentScreenshot; message: string }> {
     try {
-      logger.info('📸 Uploading payment screenshot for booking:', bookingId);
+      logger.info('📸 Uploading payment screenshot for booking', { bookingId });
 
       // Upload file to Appwrite storage
       const fileResponse = await storage.createFile(
@@ -461,7 +461,7 @@ class ScheduledBookingPaymentService {
         }
       );
 
-      logger.info('🔔 Appointment reminders sent:', calendarEntry.bookingId);
+      logger.info('🔔 Appointment reminders sent', { bookingId: calendarEntry.bookingId });
 
     } catch (error) {
       logger.error('❌ Failed to send appointment reminder:', error);

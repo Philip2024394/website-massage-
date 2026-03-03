@@ -80,7 +80,9 @@ export default defineConfig({
       manifest: false, // Use public/manifest.json instead
       
       devOptions: {
-        enabled: true,
+        // IMPORTANT: Keep disabled in dev to prevent stale UI from SW caching.
+        // If you need to test PWA behavior locally, temporarily set to true.
+        enabled: false,
         type: 'module'
       }
     }),

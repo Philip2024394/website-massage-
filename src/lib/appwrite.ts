@@ -34,7 +34,11 @@ export const COLLECTIONS = {
     TRANSLATIONS: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
     COMMISSION_RECORDS: '', // ⚠️ DISABLED - Collection doesn't exist
     ATTRIBUTES: '', // ⚠️ DISABLED - Collection doesn't exist
-    EMPLOYER_PROFILES: 'employer_profiles' // ✅ Job posting employers
+    EMPLOYER_PROFILES: 'employer_profiles', // ✅ Job posting employers
+    // ── Indastreet Warehouse (Shop) ──────────────────────────────────────────
+    SHOP_PRODUCTS: 'shop_products',           // ✅ Product catalogue
+    SHOP_ORDERS:   'shop_orders',             // ✅ Customer orders
+    SHOP_CONFIG:   'shop_config',             // ✅ Bank details & WhatsApp number
 };
 
 // Initialize client (safe for client-side only apps)
@@ -60,7 +64,8 @@ export { functions as appwriteFunctions };
 // Storage bucket IDs
 export const STORAGE_BUCKETS = {
     PARTNER_IMAGES: 'partner_images_bucket',
-    THERAPIST_DOCUMENTS: '697b3ca50023d08ec335' // KTP, certificates, documents
+    THERAPIST_DOCUMENTS: '697b3ca50023d08ec335', // KTP, certificates, documents
+    SHOP_PAYMENTS: 'shop_payments_bucket',        // Proof of payment uploads
 };
 
 // ⚠️ APPWRITE_CONFIG has been moved to appwrite.config.ts to avoid circular dependencies

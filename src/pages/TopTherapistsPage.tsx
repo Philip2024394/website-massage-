@@ -387,7 +387,7 @@ const TopTherapistsPage: React.FC<TopTherapistsPageProps> = ({
                 onClose={() => setIsMenuOpen(false)}
                 onNavigate={onNavigate || (() => {})}
                 currentLanguage={currentLanguage}
-                onLanguageChange={handleLanguageChange}
+                    onLanguageChange={handleLanguageChange as any}
             />
         </div>
     );

@@ -110,6 +110,17 @@ declare module 'lucide-react' {
   const BarChart: any;
   const Edit3: any;
   const UserCheck: any;
+  const Percent: any;
+  const ArrowUpDown: any;
+  const SlidersHorizontal: any;
+  const FingerprintPattern: any;
+  const Camera: any;
+  const ChevronRight: any;
+  const ChevronDown: any;
+  const BarChart3: any;
+  const PieChart: any;
+  const Lightbulb: any;
+  const Smartphone: any;
   
   // Export everything
   export {
@@ -124,6 +135,8 @@ declare module 'lucide-react' {
     CreditCard, Landmark, Edit, Plus, Check, Globe, TrendingUp, Target, Download,
     Facebook, Instagram, Linkedin, Copy, Power, Bike, Car, ExternalLink, Send,
     Gift, Database, Save, FileText, Image, Hotel, ZoomIn, ZoomOut, Badge, Printer,
-    Filter, ToggleLeft, ToggleRight, BarChart, Edit3, UserCheck
+    Filter, ToggleLeft, ToggleRight, BarChart, Edit3, UserCheck,
+    Percent, ArrowUpDown, SlidersHorizontal, FingerprintPattern,
+    Camera, ChevronRight, ChevronDown, BarChart3, PieChart, Lightbulb, Smartphone
   };
 }

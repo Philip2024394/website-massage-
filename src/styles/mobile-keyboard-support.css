@@ -38,6 +38,12 @@ button {
   touch-action: manipulation; /* Removes 300ms tap delay */
 }
 
+/* Exception: small icon-only trigger (e.g. description popup eye) - allow reduced size */
+button.description-popup-trigger {
+  min-height: unset !important;
+  min-width: unset !important;
+}
+
 /* Remove default iOS input styling */
 input[type="text"],
 input[type="tel"],

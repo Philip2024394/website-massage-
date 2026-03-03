@@ -215,6 +215,12 @@ export const useAppState = () => {
         devLog('🏠 Direct /home');
         return 'home';
       }
+
+      // 🛒 Shop route: direct /shop navigation
+      if (pathname === '/shop') {
+        devLog('🛒 Direct /shop');
+        return 'shop';
+      }
       
       if (isPageReload && !pageParam && isRootPath) {
         devLog('🔄 Fresh ROOT - clearing session');
@@ -239,6 +245,10 @@ export const useAppState = () => {
       }
       
       // Allow specific pages via URL parameter
+      if (pageParam === 'shop') {
+        devLog('🎯 URL param: shop');
+        return 'shop';
+      }
       if (pageParam === 'company-profile') {
         devLog('🎯 URL param: company-profile');
         return 'company-profile' as Page;

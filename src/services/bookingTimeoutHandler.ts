@@ -36,7 +36,7 @@ class BookingTimeoutHandler {
    */
   async handleBookingTimeout(request: BookingTimeoutRequest): Promise<TimeoutHandlerResult> {
     try {
-      logger.info('⏰ Handling booking timeout:', request.bookingId);
+      logger.info('⏰ Handling booking timeout', { bookingId: request.bookingId });
       
       // Get user location if not provided
       let userLocation = request.location;
@@ -113,7 +113,7 @@ class BookingTimeoutHandler {
           });
         },
         (error) => {
-          logger.warn('⚠️ Geolocation failed:', error.message);
+          logger.warn('⚠️ Geolocation failed', { message: error.message });
           resolve(null);
         },
         { 

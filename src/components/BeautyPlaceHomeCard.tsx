@@ -10,6 +10,7 @@ import { Share2 } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import { ViewProfileButton } from './ViewProfileButton';
+import UnifiedPriceContainer from './UnifiedPriceContainer';
 
 const DEFAULT_BEAUTY_IMG = 'https://ik.imagekit.io/7grri5v7d/hait%20styles%20browns.png';
 
@@ -291,23 +292,22 @@ const BeautyPlaceHomeCard: React.FC<BeautyPlaceHomeCardProps> = ({
 
                 <div className="mx-4 mb-4">
                     <h4 className="text-sm font-semibold text-slate-800 mb-3">Service packages</h4>
-                    <div className="grid grid-cols-3 gap-2">
-                        <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
-                            <div className="text-xs font-medium text-pink-700 mb-1">60 min</div>
-                            <div className="text-sm font-bold text-slate-900">{pricing["60"] > 0 ? formatPrice(pricing["60"]) : 'Call'}</div>
-                            <div className="text-[10px] text-slate-600 mt-1">Basic</div>
-                        </div>
-                        <div className="bg-pink-50 border border-pink-300 rounded-lg p-3 text-center">
-                            <div className="text-xs font-medium text-pink-700 mb-1">90 min</div>
-                            <div className="text-sm font-bold text-slate-900">{pricing["90"] > 0 ? formatPrice(pricing["90"]) : 'Call'}</div>
-                            <div className="text-[10px] text-slate-600 mt-1">Premium</div>
-                        </div>
-                        <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
-                            <div className="text-xs font-medium text-pink-700 mb-1">120 min</div>
-                            <div className="text-sm font-bold text-slate-900">{pricing["120"] > 0 ? formatPrice(pricing["120"]) : 'Call'}</div>
-                            <div className="text-[10px] text-slate-600 mt-1">Full</div>
-                        </div>
-                    </div>
+                    <UnifiedPriceContainer
+                        className="rounded-xl border-2 py-3 pr-3 pl-1 relative transition-all duration-200 border-pink-200 bg-pink-50"
+                        thumbnailUrl={String(mainImg || DEFAULT_BEAUTY_IMG)}
+                        thumbnailFallbackUrl={DEFAULT_BEAUTY_IMG}
+                        thumbnailAlt={place.name || 'Beauty salon'}
+                        title="Beauty"
+                        badgeLabel="Packages"
+                        showBadgeSparkles={false}
+                        renderPrice={(key) =>
+                            (pricing as any)[key] > 0 ? (
+                                <span className="whitespace-nowrap">{formatPrice((pricing as any)[key])}</span>
+                            ) : (
+                                <span className="text-gray-400 font-normal whitespace-nowrap">Call</span>
+                            )
+                        }
+                    />
                 </div>
 
                 <div className="mx-4 mb-3">

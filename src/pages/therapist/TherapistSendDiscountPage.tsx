@@ -16,6 +16,7 @@ import HelpTooltip from '../../components/therapist/HelpTooltip';
 import { sendDiscountHelp } from './constants/helpContent';
 import { showErrorToast } from '../../lib/toastUtils';
 import { generateTherapistDiscount } from '../../services/therapistDiscountService';
+import { enterpriseChatIntegrationService } from '../../services/enterpriseChatIntegrationService';
 
 interface Customer {
   id: string;
@@ -302,7 +303,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
       });
 
       if (!discountResult.success) {
-        return { success: false, error: discountResult.error };
+        return { success: false, error: (discountResult as any).error };
       }
 
       const discountCode = discountResult.code.code;
@@ -310,21 +311,28 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
 
       // Find or create chat room for therapist and customer
       // We'll use a synthetic bookingId for discount-only chats if needed
-      let chatRoomId = null;
-      if (typeof enterpriseChatIntegrationService !== 'undefined') {
-        // Try to find an existing chat room
-        const therapistChatRooms = enterpriseChatIntegrationService.activeChatRooms;
-        chatRoomId = Array.from(therapistChatRooms.values()).find(
-          (room: any) => room.participants.some((p: any) => p.id === customerId) && room.participants.some((p: any) => p.id === therapistId)
-        )?.id;
-        if (!chatRoomId) {
-          // Create a new chat room (synthetic bookingId for discount)
-          chatRoomId = await enterpriseChatIntegrationService.createBookingChatRoom(
-            `discount_${therapistId}_${customerId}_${Date.now()}`,
-            customerId,
-            therapistId
-          );
-        }
+      let chatRoomId: string | null = null;
+      try {
+        const rooms = enterpriseChatIntegrationService.getChatRoomsForParticipant(therapistId);
+        chatRoomId =
+          rooms.find(
+            (room: any) =>
+              Array.isArray(room.participants) &&
+              room.participants.some((p: any) => p.id === customerId) &&
+              room.participants.some((p: any) => p.id === therapistId)
+          )?.id ?? null;
+      } catch {
+        // If chat service isn't initialized yet, we'll still succeed generating the discount.
+        chatRoomId = null;
+      }
+
+      if (!chatRoomId) {
+        // Create a new chat room (synthetic bookingId for discount)
+        chatRoomId = await enterpriseChatIntegrationService.createBookingChatRoom(
+          `discount_${therapistId}_${customerId}_${Date.now()}`,
+          customerId,
+          therapistId
+        );
       }
 
       // Compose the message
@@ -333,7 +341,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
         : `🎁 Thank you for your past massage booking! Please accept this ${percentage}% discount for your next booking within 7 days.\n\n✨ Discount Code: *${discountCode}*\n⏰ Valid until: ${new Date(expiresAt).toLocaleDateString('en-US')}\n\n👉 Enter this code during booking to get automatic discount. Code can only be used once with me.`;
 
       // Send the message to chat
-      if (chatRoomId && typeof enterpriseChatIntegrationService !== 'undefined') {
+      if (chatRoomId) {
         await enterpriseChatIntegrationService.sendMessage(
           chatRoomId,
           therapistId,

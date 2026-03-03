@@ -27,9 +27,11 @@ import { shareLinkService } from '../lib/services/shareLinkService';
 import TherapistJoinPopup from './TherapistJoinPopup';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
+import TherapistPricingGrid from '../modules/therapist/TherapistPricingGrid';
 import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
-import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
-import { Share2, Sparkles } from 'lucide-react';
+import { VERIFIED_BADGE_IMAGE_URL, APP_CONSTANTS } from '../constants/appConstants';
+import { getBookingWhatsAppNumber, buildWhatsAppUrl } from '../utils/whatsappBookingMessages';
+import { Share2, Sparkles, Eye, X, FingerprintPattern } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { getSamplePricing, hasActualPricing } from '../utils/samplePriceUtils';
 import SafePassModal from './modals/SafePassModal';
@@ -89,6 +91,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
     const [showJoinPopup, setShowJoinPopup] = useState(false);
     const [showPriceModal, setShowPriceModal] = useState(false);
+    const [showServiceDescriptionModal, setShowServiceDescriptionModal] = useState(false);
+    const [selectedContainerIndex, setSelectedContainerIndex] = useState<number | null>(null);
     const [showSafePassModal, setShowSafePassModal] = useState(false);
     const [menuData, setMenuData] = useState<any[]>([]);
     const [selectedServiceIndex, setSelectedServiceIndex] = useState<number | null>(null);
@@ -474,10 +478,29 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 }
             }
         }
-        return 'Traditional Massage';
+        return 'Service';
     };
 
     const serviceName = getServiceName();
+
+    // Up to 3 services (different massage types) for price containers on home card
+    const displayServices: { serviceName: string; pricing: { '60': number; '90': number; '120': number } }[] = (() => {
+        const withFull = combinedMenu.filter((item: any) => {
+            const p60 = Number(item.price60) > 0;
+            const p90 = Number(item.price90) > 0;
+            const p120 = Number(item.price120) > 0;
+            return p60 && p90 && p120;
+        });
+        if (withFull.length === 0) return [{ serviceName, pricing }];
+        return withFull.slice(0, 3).map((item: any) => ({
+            serviceName: (item.name ?? item.serviceName ?? item.title ?? 'Service')?.trim() || 'Service',
+            pricing: {
+                '60': Number(item.price60) * 1000,
+                '90': Number(item.price90) * 1000,
+                '120': Number(item.price120) * 1000,
+            },
+        }));
+    })();
 
     const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
     const effectiveRating = rawRating > 0 ? rawRating : 4.8;
@@ -796,19 +819,24 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                           box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
                           animation: beautician-glow-card 2.5s ease-in-out infinite;
                         }
+                        @keyframes bookNowGlow {
+                          0%, 100% { box-shadow: 0 0 8px rgba(251,146,60,0.5), 0 0 0px rgba(251,146,60,0); }
+                          50%       { box-shadow: 0 0 18px rgba(251,146,60,0.85), 0 0 6px rgba(251,146,60,0.4); }
+                        }
                     `}</style>
                     <div className="text-center mb-3">
                         <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
                             <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
-                            Treatments Trending
+                            Massage's Trending
                         </h3>
+                        <p className="text-[9px] text-gray-500 mt-0.5">Select window below and Book Now</p>
                         <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • View profile to book</p>
                     </div>
                     <div className="space-y-2">
                         {beauticianTreatments.slice(0, 3).map((t, idx) => (
                             <div
                                 key={`${therapist.$id || therapist.id || 'beautician'}-t-${idx}`}
-                                className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400"
+                                className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-row items-start gap-3 p-3 bg-orange-50/80 border-orange-400 sm:items-center"
                                 role="presentation"
                             >
                                 <div className="flex-1 min-w-0">
@@ -831,78 +859,167 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </p>
                 </div>
             ) : pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 ? (
-                <div className="mx-4 mb-4">
-                    <style>{`
-                        @keyframes beautician-glow-card {
-                          0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
-                          50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
-                        }
-                        .beautician-card-container-highlight {
-                          border-color: rgb(249 115 22);
-                          box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
-                          animation: beautician-glow-card 2.5s ease-in-out infinite;
-                        }
-                    `}</style>
-                    <div className="text-center mb-3">
-                        <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
-                            <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
-                            Treatments Trending
-                        </h3>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • View profile to book</p>
-                    </div>
-                    <div className="space-y-2">
-                        {[
-                            { label: '60 min', minutes: 60, key: '60' as const },
-                            { label: '90 min', minutes: 90, key: '90' as const },
-                            { label: '120 min', minutes: 120, key: '120' as const },
-                        ].map(({ label, minutes, key }) => (
-                            <div
-                                key={key}
-                                className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400"
-                                role="presentation"
-                            >
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">{serviceName} · {label}</h4>
-                                    <p className="text-[10px] text-gray-600">
-                                        Estimated time: {minutes} minutes
-                                    </p>
-                                    <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                        Price: {pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])} (fixed)` : 'Call'}
-                                    </p>
+                <div className="mx-4 mb-4 space-y-2">
+                    {displayServices.map((svc, idx) => (
+                        <div
+                            key={`${therapist.$id || therapist.id}-price-${idx}-${svc.serviceName}`}
+                            role="button"
+                            tabIndex={0}
+                            onClick={(e) => { e.stopPropagation(); setSelectedContainerIndex((prev) => (prev === idx ? null : idx)); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setSelectedContainerIndex((prev) => (prev === idx ? null : idx)); } }}
+                            className={`relative w-full rounded-xl border-2 p-3 cursor-pointer select-none transition-all duration-200 ${
+                                selectedContainerIndex === idx
+                                    ? 'border-orange-500 bg-orange-100/90 shadow-[0_0_14px_rgba(251,146,60,0.55)] scale-[1.012]'
+                                    : 'border-orange-400 bg-orange-50/80 hover:border-orange-500 hover:shadow-[0_0_6px_rgba(251,146,60,0.25)]'
+                            }`}
+                            aria-pressed={selectedContainerIndex === idx}
+                            aria-label={`Select ${svc.serviceName} price container`}
+                        >
+                            {therapist.description && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setShowServiceDescriptionModal(true); }}
+                                    className="absolute top-2 right-2 z-10 rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm ring-1 ring-amber-600/30 p-0 description-popup-trigger"
+                                    style={{ width: 22, height: 22, minWidth: 22, minHeight: 22 }}
+                                    title={therapist.description}
+                                    aria-label="Service description"
+                                >
+                                    <Eye className="text-white flex-shrink-0" style={{ width: 14, height: 14 }} strokeWidth={2.5} aria-hidden />
+                                </button>
+                            )}
+                            <div className="flex items-start gap-4 w-full">
+                                <div className="relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-100 border-2 border-amber-200">
+                                    <img
+                                        src={(displayImage || (therapist as any).mainImage || (therapist as any).profilePicture || 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720').trim() || 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720'}
+                                        alt=""
+                                        className="w-full h-full object-cover rounded-lg"
+                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720'; }}
+                                    />
+                                    {selectedContainerIndex === idx && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg" aria-hidden>
+                                            <FingerprintPattern className="w-8 h-8 sm:w-9 sm:h-9 text-white" strokeWidth={1.8} />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-[180px] overflow-visible">
+                                    <h4 className="text-base font-bold text-gray-800 truncate mb-2" title={svc.serviceName}>{svc.serviceName}</h4>
+                                    <div className="grid grid-cols-[auto_auto_auto] gap-x-2 justify-items-center text-center mb-1">
+                                        <span className="text-[10px] sm:text-sm font-semibold text-gray-700 whitespace-nowrap">60 min</span>
+                                        <span className="text-[10px] sm:text-sm font-semibold text-gray-700 whitespace-nowrap">90 min</span>
+                                        <span className="text-[10px] sm:text-sm font-semibold text-gray-700 whitespace-nowrap">120 min</span>
+                                    </div>
+                                    <div className="grid grid-cols-[auto_auto_auto] gap-x-2 justify-items-center text-center">
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-800 whitespace-nowrap">{svc.pricing['60'] > 0 ? formatPrice(svc.pricing['60']) : '—'}</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-800 whitespace-nowrap">{svc.pricing['90'] > 0 ? formatPrice(svc.pricing['90']) : '—'}</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-800 whitespace-nowrap">{svc.pricing['120'] > 0 ? formatPrice(svc.pricing['120']) : '—'}</span>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                    <p className="text-center text-[10px] text-gray-500 mt-2">
-                        Professional rates • Verified profile
-                    </p>
+                        </div>
+                    ))}
                 </div>
             ) : null}
 
-            {/* View Profile + Menu prices — two buttons side by side under price containers */}
+            {/* View Profile / Book Now + Scheduled / Menu prices */}
             <div className="px-4 pb-4 flex gap-2">
-                <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); if (!readOnly) { onClick(therapist); onIncrementAnalytics('views'); } }}
-                    disabled={readOnly}
-                    className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-colors ${readOnly ? 'bg-gray-300 cursor-not-allowed text-gray-500' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
-                    aria-label={readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
-                >
-                    {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
-                </button>
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (readOnly) return;
-                        setShowPriceModal(true);
-                    }}
-                    disabled={readOnly}
-                    className={`flex-1 py-3 rounded-lg font-semibold text-sm border-2 transition-colors ${readOnly ? 'border-gray-300 text-gray-500 cursor-not-allowed' : 'border-amber-500 text-amber-600 hover:bg-amber-50'}`}
-                    aria-label="Menu prices"
-                >
-                    Menu prices
-                </button>
+                {selectedContainerIndex !== null && !readOnly ? (
+                    /* ── When a price container is selected: Book Now + Scheduled open WhatsApp directly ── */
+                    <>
+                        {/* Book Now — immediate WhatsApp to admin with service details */}
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const svc = displayServices[selectedContainerIndex];
+                                if (!svc) { onClick(therapist); return; }
+                                const name   = getTherapistDisplayName(therapist.name);
+                                const id     = (therapist as any).$id ?? (therapist as any).id ?? '';
+                                const p60    = svc.pricing['60']  > 0 ? `IDR ${Math.round(svc.pricing['60']  / 1000)}K` : null;
+                                const p90    = svc.pricing['90']  > 0 ? `IDR ${Math.round(svc.pricing['90']  / 1000)}K` : null;
+                                const p120   = svc.pricing['120'] > 0 ? `IDR ${Math.round(svc.pricing['120'] / 1000)}K` : null;
+                                const durations = [p60 && `60 min – ${p60}`, p90 && `90 min – ${p90}`, p120 && `120 min – ${p120}`].filter(Boolean).join(' / ');
+                                const msg = [
+                                    `Hi Indastreet Admin, I would like to book a massage.`,
+                                    `Therapist: ${name}`,
+                                    id ? `ID: ${id}` : '',
+                                    `Service: ${svc.serviceName}`,
+                                    durations ? `Duration & Price: ${durations}` : '',
+                                    `Please coordinate my booking. Thank you.`,
+                                ].filter(Boolean).join('\n');
+                                const phone = getBookingWhatsAppNumber(
+                                    { country: (therapist as any).country, countryCode: (therapist as any).countryCode, whatsappNumber: (therapist as any).whatsappNumber, membershipTier: (therapist as any).membershipTier ?? (therapist as any).plan },
+                                    APP_CONSTANTS.DEFAULT_CONTACT_NUMBER
+                                ) || APP_CONSTANTS.DEFAULT_CONTACT_NUMBER;
+                                window.open(buildWhatsAppUrl(phone, msg) || `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+                                onIncrementAnalytics('views');
+                            }}
+                            className="flex-1 py-3 rounded-lg font-bold text-sm text-white bg-orange-500 transition-all duration-200 hover:bg-orange-600"
+                            aria-label="Book Now"
+                            style={{ animation: 'bookNowGlow 1.8s ease-in-out infinite', boxShadow: '0 0 14px rgba(251,146,60,0.7)' }}
+                        >
+                            Book Now
+                        </button>
+
+                        {/* Scheduled — WhatsApp to admin with date/time TBC */}
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const svc = displayServices[selectedContainerIndex];
+                                if (!svc) { onClick(therapist); return; }
+                                const name   = getTherapistDisplayName(therapist.name);
+                                const id     = (therapist as any).$id ?? (therapist as any).id ?? '';
+                                const p60    = svc.pricing['60']  > 0 ? `IDR ${Math.round(svc.pricing['60']  / 1000)}K` : null;
+                                const p90    = svc.pricing['90']  > 0 ? `IDR ${Math.round(svc.pricing['90']  / 1000)}K` : null;
+                                const p120   = svc.pricing['120'] > 0 ? `IDR ${Math.round(svc.pricing['120'] / 1000)}K` : null;
+                                const durations = [p60 && `60 min – ${p60}`, p90 && `90 min – ${p90}`, p120 && `120 min – ${p120}`].filter(Boolean).join(' / ');
+                                const msg = [
+                                    `Hi Indastreet Admin, I would like to schedule a massage.`,
+                                    `Therapist: ${name}`,
+                                    id ? `ID: ${id}` : '',
+                                    `Service: ${svc.serviceName}`,
+                                    durations ? `Duration & Price: ${durations}` : '',
+                                    `Date: To be confirmed`,
+                                    `Time: To be confirmed`,
+                                    `I understand a 30% deposit is required, payable to admin for booking confirmation. Thank you.`,
+                                ].filter(Boolean).join('\n');
+                                const phone = getBookingWhatsAppNumber(
+                                    { country: (therapist as any).country, countryCode: (therapist as any).countryCode, whatsappNumber: (therapist as any).whatsappNumber, membershipTier: (therapist as any).membershipTier ?? (therapist as any).plan },
+                                    APP_CONSTANTS.DEFAULT_CONTACT_NUMBER
+                                ) || APP_CONSTANTS.DEFAULT_CONTACT_NUMBER;
+                                window.open(buildWhatsAppUrl(phone, msg) || `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+                                onIncrementAnalytics('views');
+                            }}
+                            className="flex-1 py-3 rounded-lg font-bold text-sm border-2 border-orange-500 text-orange-600 bg-orange-50 hover:bg-orange-100 transition-all duration-200"
+                            aria-label="Schedule Booking"
+                            style={{ animation: 'bookNowGlow 1.8s ease-in-out infinite 0.4s', boxShadow: '0 0 10px rgba(251,146,60,0.4)' }}
+                        >
+                            Scheduled
+                        </button>
+                    </>
+                ) : (
+                    /* ── Default: View Profile + Menu prices ── */
+                    <>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); if (!readOnly) { onClick(therapist); onIncrementAnalytics('views'); } }}
+                            disabled={readOnly}
+                            className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-colors ${readOnly ? 'bg-gray-300 cursor-not-allowed text-gray-500' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
+                            aria-label={readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
+                        >
+                            {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); if (readOnly) return; setShowPriceModal(true); }}
+                            disabled={readOnly}
+                            className={`flex-1 py-3 rounded-lg font-semibold text-sm border-2 transition-colors ${readOnly ? 'border-gray-300 text-gray-500 cursor-not-allowed' : 'border-amber-500 text-amber-600 hover:bg-amber-50'}`}
+                            aria-label="Menu prices"
+                        >
+                            Menu prices
+                        </button>
+                    </>
+                )}
             </div>
             </div>
 
@@ -950,6 +1067,57 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 onClose={() => setShowSafePassModal(false)}
                 therapist={therapist}
             />
+
+            {/* Service description popup: main image + service details (only when price container is shown) */}
+            {showServiceDescriptionModal && pricing["60"] > 0 && pricing["90"] > 0 && pricing["120"] > 0 && (
+                <div
+                    className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Service details"
+                >
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setShowServiceDescriptionModal(false)} aria-hidden />
+                    <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            type="button"
+                            onClick={() => setShowServiceDescriptionModal(false)}
+                            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center z-10"
+                            aria-label="Close"
+                        >
+                            <X className="w-4 h-4 text-gray-600" strokeWidth={2} />
+                        </button>
+                        <div className="aspect-video w-full bg-gray-100 rounded-t-2xl overflow-hidden">
+                            <img
+                                src={(displayImage || (therapist as any).mainImage || (therapist as any).profilePicture || 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720').trim() || 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720'}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720'; }}
+                            />
+                        </div>
+                        <div className="p-4 space-y-3">
+                            <h3 className="text-lg font-bold text-gray-900 pr-10">{serviceName}</h3>
+                            <div className="min-w-[200px] overflow-visible py-2 px-2 bg-amber-50 rounded-xl border border-amber-200">
+                                <div className="grid grid-cols-[auto_auto_auto] gap-x-4 justify-items-center mb-1">
+                                    <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">60 min</span>
+                                    <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">90 min</span>
+                                    <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">120 min</span>
+                                </div>
+                                <div className="grid grid-cols-[auto_auto_auto] gap-x-4 justify-items-center">
+                                    <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{pricing['60'] > 0 ? formatPrice(pricing['60']) : '—'}</span>
+                                    <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{pricing['90'] > 0 ? formatPrice(pricing['90']) : '—'}</span>
+                                    <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{pricing['120'] > 0 ? formatPrice(pricing['120']) : '—'}</span>
+                                </div>
+                            </div>
+                            {therapist.description && (
+                                <div>
+                                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Description</h4>
+                                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{therapist.description}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

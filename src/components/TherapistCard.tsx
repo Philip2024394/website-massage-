@@ -406,6 +406,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // SafePass modal state
     const [showSafePassModal, setShowSafePassModal] = useState(false);
+    const auth = useAuth();
+    const bookingUserName = (auth as any)?.user?.name ?? undefined;
     // Beautician: when user selects a treatment container, Book button flashes
     const [selectedBeauticianTreatmentIndex, setSelectedBeauticianTreatmentIndex] = useState<number | null>(null);
     // Massage price container selection: fingerprint in container, Book Now heartbeat (same as massage city places)
@@ -984,6 +986,29 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const cheapestService = combinedMenu.length > 0 ? getCheapestServiceByTotalPrice(combinedMenu) : null;
     const cheapestServiceName = cheapestService?.name || (cheapestService as any)?.serviceName || getFirstMassageType(therapist);
 
+    // Up to 3 services (different massage types) for price containers
+    const displayServices: { serviceName: string; pricing: { '60': number; '90': number; '120': number } }[] = (() => {
+        const withFull = combinedMenu.filter((item: any) => {
+            const p60 = Number(item.price60) > 0;
+            const p90 = Number(item.price90) > 0;
+            const p120 = Number(item.price120) > 0;
+            return p60 && p90 && p120;
+        });
+        if (withFull.length === 0) return [{ serviceName: cheapestServiceName, pricing }];
+        return withFull.slice(0, 3).map((item: any) => ({
+            serviceName: item.name ?? item.serviceName ?? item.title ?? 'Traditional Massage',
+            pricing: {
+                '60': Number(item.price60) * 1000,
+                '90': Number(item.price90) * 1000,
+                '120': Number(item.price120) * 1000,
+            },
+        }));
+    })();
+
+    const selectedDisplayService = selectedServiceIndex != null && displayServices[selectedServiceIndex] ? displayServices[selectedServiceIndex] : null;
+    const effectiveServiceName = selectedDisplayService?.serviceName ?? cheapestServiceName;
+    const effectivePricing = selectedDisplayService?.pricing ?? pricing;
+
     const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
     const effectiveRating = rawRating > 0 ? rawRating : 4.8;
     const displayRating = formatRating(effectiveRating);
@@ -1290,6 +1315,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     getDynamicSpacing={getDynamicSpacing}
                     translatedDescriptionLength={translatedDescription.length}
                     menuData={combinedMenu}
+                    services={displayServices}
+                    selectedServiceIndex={selectedServiceIndex}
+                    onSelectServiceIndex={(index) => {
+                        setSelectedServiceIndex(index);
+                        setSelectedPriceKey(index != null ? '90' : null);
+                    }}
                     selectedPriceKey={selectedPriceKey}
                     onSelectPriceKey={setSelectedPriceKey}
                     onPriceClick={() => {
@@ -1315,8 +1346,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     busyUntil={(therapist as any).busyUntil ?? (therapist as any).bookedUntil ?? undefined}
                     bookButtonFlash={isBeauticianWithTreatments && selectedBeauticianTreatmentIndex !== null || !!selectedPriceKey}
                     selectedDuration={selectedPriceKey ? Number(selectedPriceKey) : undefined}
-                    selectedPrice={selectedPriceKey && pricing[selectedPriceKey] ? pricing[selectedPriceKey] : undefined}
-                    selectedServiceName={selectedPriceKey ? cheapestServiceName : undefined}
+                    selectedPrice={selectedPriceKey && effectivePricing[selectedPriceKey] ? effectivePricing[selectedPriceKey] : undefined}
+                    selectedServiceName={selectedPriceKey ? effectiveServiceName : undefined}
                 />
             ) : (
                 <>
@@ -1324,8 +1355,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         therapist={therapist}
                         onBookNow={() => {
                             logger.debug('📱 [BOOK NOW] Opening WhatsApp with prefilled message');
-                            if (selectedPriceKey && pricing[selectedPriceKey]) {
-                                openWhatsAppBookNow({ serviceName: cheapestServiceName, durationMin: Number(selectedPriceKey), price: pricing[selectedPriceKey] });
+                            if (selectedPriceKey && effectivePricing[selectedPriceKey]) {
+                                openWhatsAppBookNow({ serviceName: effectiveServiceName, durationMin: Number(selectedPriceKey), price: effectivePricing[selectedPriceKey] });
                             } else {
                                 openWhatsAppBookNow();
                             }

@@ -513,6 +513,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 t={_t}
                 addNotification={addNotification}
                 onIncrementAnalytics={onIncrementAnalytics}
+                menuData={menuData}
             />
 
             {/* Terms and Conditions Link - Below booking buttons */}
@@ -802,33 +803,37 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                                 <div className="text-[10px] sm:text-xs text-gray-500 mt-1 truncate">Traditional therapeutic massage</div>
                                             </div>
 
-                                            {/* Price buttons - 3 columns for 60, 90, 120 min */}
-                                            {['60', '90', '120'].map((duration) => {
-                                                const price = pricing[duration as '60' | '90' | '120'];
-                                                return (
-                                                    <div key={duration} className="col-span-2 flex flex-col items-center gap-1 min-w-0">
-                                                        {price > 0 ? (
+                                            {/* Pricing grid: 60/90/120 on one line, prices directly under */}
+                                            <div className="col-span-6">
+                                                <div className="grid grid-cols-3 gap-x-2 gap-y-1 items-start justify-items-center text-center">
+                                                    <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">60min</span>
+                                                    <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">90min</span>
+                                                    <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">120min</span>
+                                                    {(['60', '90', '120'] as const).map((duration) => {
+                                                        const price = pricing[duration];
+                                                        const isSelected = selectedServiceIndex === 0 && selectedDuration === duration;
+                                                        return price > 0 ? (
                                                             <button
+                                                                key={duration}
+                                                                type="button"
                                                                 onClick={() => {
                                                                     setSelectedServiceIndex(0);
-                                                                    setSelectedDuration(duration as '60' | '90' | '120');
+                                                                    setSelectedDuration(duration);
                                                                 }}
-                                                                className={`w-full px-0.5 sm:px-1 py-1 rounded text-[9px] sm:text-xs transition-all border-2 min-w-0 overflow-hidden ${
-                                                                    selectedServiceIndex === 0 && selectedDuration === duration
+                                                                className={`w-full px-1 py-1 rounded text-[9px] sm:text-xs transition-all border-2 whitespace-nowrap ${
+                                                                    isSelected
                                                                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
                                                                         : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
                                                                 }`}
                                                             >
-                                                                <span className="block truncate w-full">
-                                                                    {formatPrice(price)}
-                                                                </span>
+                                                                {formatPrice(price)}
                                                             </button>
                                                         ) : (
-                                                            <span className="text-xs text-gray-400">-</span>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
+                                                            <span key={duration} className="text-xs text-gray-400">-</span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
 
                                             {/* Action Button */}
                                             <div className="col-span-2 text-center min-w-0 flex items-center justify-center">

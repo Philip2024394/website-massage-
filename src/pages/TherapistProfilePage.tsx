@@ -339,7 +339,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
             <TherapistProfileBase
                 therapist={therapist}
                 mode="authenticated"
-                userLocation={userLocation ? { ...userLocation, address: userLocation.address || 'Unknown' } : null}
+                userLocation={userLocation ? ({ ...userLocation, address: (userLocation as any).address || 'Unknown' } as any) : null}
                 showHeader={false}
                 showSEOFooter={isSharedView}
                 selectedCity={cityState}
@@ -352,7 +352,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 loggedInProviderId={loggedInProvider?.id}
                 onNavigate={onNavigate}
                 t={t || {}}
-                language={language}
+                language={language as any}
             />
 
             {/* Footer: IndaStreet Social + social media icons – same style as home page */}

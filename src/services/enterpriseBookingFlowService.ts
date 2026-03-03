@@ -413,7 +413,7 @@ class EnterpriseBookingFlowService {
       logger.info('🔍 Searching for available therapists...');
       
       const city = this.extractCityFromAddress(request.location.address);
-      const serviceType = request.services?.[0]?.type === 'facial' ? 'facial' : 'massage';
+      const serviceType = (request.services?.[0] as any)?.type === 'facial' ? 'facial' : 'massage';
       
       const availableTherapists = await therapistService.getAvailableTherapistsByLocation(
         city || '',

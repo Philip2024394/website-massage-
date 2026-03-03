@@ -209,7 +209,7 @@ const TherapistSchedulePage: React.FC<TherapistScheduleProps> = ({ therapist, on
     const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
     const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     
-    const days: JSX.Element[] = [];
+    const days: React.ReactElement[] = [];
     
     // Empty cells for days before month starts
     for (let i = 0; i < startingDayOfWeek; i++) {

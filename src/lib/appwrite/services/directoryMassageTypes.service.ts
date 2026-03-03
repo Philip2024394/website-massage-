@@ -10,7 +10,7 @@
 
 import { databases } from '../config';
 import { APPWRITE_CONFIG } from '../../appwrite.config';
-import { Query } from 'appwrite';
+import { ID, Query } from 'appwrite';
 
 export type DirectoryMassageCategory = 'traditional' | 'sports' | 'therapeutic' | 'wellness' | 'couples' | 'body_scrub' | 'prenatal' | 'head_scalp';
 
@@ -161,7 +161,127 @@ export async function getDirectoryMassageTypeByName(
 export const directoryMassageTypesService = {
   listDirectoryMassageTypes,
   getDirectoryMassageTypeByName,
+  createDirectoryMassageTypeDocument,
+  updateDirectoryMassageTypeDocument,
+  upsertDirectoryMassageTypeByName,
 };
+
+/** Payload for create/update. Use snake_case for Appwrite attributes. */
+export interface DirectoryMassageTypePayload {
+  name: string;
+  category: DirectoryMassageCategory;
+  short_description?: string;
+  recommended_duration?: string;
+  pressure_level?: string;
+  focus_areas?: string;
+  ideal_for?: string;
+  suggested_frequency?: string;
+  technique_style?: string;
+  post_treatment_notes?: string;
+  recommended_add_ons?: string;
+  what_to_expect?: string;
+  image_thumbnail?: string;
+  place_only?: boolean;
+}
+
+/**
+ * Creates a new directory massage type document in Appwrite.
+ * Returns the created entry or null if collection is not configured or request fails.
+ */
+export async function createDirectoryMassageTypeDocument(
+  payload: DirectoryMassageTypePayload
+): Promise<DirectoryMassageTypeEntry | null> {
+  if (!COLLECTION_ID || !DATABASE_ID) return null;
+  try {
+    const docId = ID.unique();
+    const data: Record<string, unknown> = {
+      name: payload.name,
+      category: payload.category,
+      ...(payload.short_description != null && { short_description: payload.short_description }),
+      ...(payload.recommended_duration != null && { recommended_duration: payload.recommended_duration }),
+      ...(payload.pressure_level != null && { pressure_level: payload.pressure_level }),
+      ...(payload.focus_areas != null && { focus_areas: payload.focus_areas }),
+      ...(payload.ideal_for != null && { ideal_for: payload.ideal_for }),
+      ...(payload.suggested_frequency != null && { suggested_frequency: payload.suggested_frequency }),
+      ...(payload.technique_style != null && { technique_style: payload.technique_style }),
+      ...(payload.post_treatment_notes != null && { post_treatment_notes: payload.post_treatment_notes }),
+      ...(payload.recommended_add_ons != null && { recommended_add_ons: payload.recommended_add_ons }),
+      ...(payload.what_to_expect != null && { what_to_expect: payload.what_to_expect }),
+      ...(payload.image_thumbnail != null && payload.image_thumbnail !== '' && { image_thumbnail: payload.image_thumbnail }),
+      ...(payload.place_only != null && { place_only: payload.place_only }),
+    };
+    const doc = await databases.createDocument(
+      DATABASE_ID,
+      COLLECTION_ID,
+      docId,
+      data as any
+    );
+    return mapDocToEntry(doc as unknown as DirectoryMassageTypeDoc);
+  } catch (err) {
+    if (import.meta.env?.DEV) console.warn('[DirectoryMassageTypes] create failed:', err);
+    return null;
+  }
+}
+
+/**
+ * Updates an existing directory massage type document.
+ * Only provided payload fields are updated (partial update).
+ */
+export async function updateDirectoryMassageTypeDocument(
+  documentId: string,
+  payload: Partial<DirectoryMassageTypePayload>
+): Promise<DirectoryMassageTypeEntry | null> {
+  if (!COLLECTION_ID || !DATABASE_ID || !documentId) return null;
+  try {
+    const data: Record<string, unknown> = {};
+    if (payload.name != null) data.name = payload.name;
+    if (payload.category != null) data.category = payload.category;
+    if (payload.short_description != null) data.short_description = payload.short_description;
+    if (payload.recommended_duration != null) data.recommended_duration = payload.recommended_duration;
+    if (payload.pressure_level != null) data.pressure_level = payload.pressure_level;
+    if (payload.focus_areas != null) data.focus_areas = payload.focus_areas;
+    if (payload.ideal_for != null) data.ideal_for = payload.ideal_for;
+    if (payload.suggested_frequency != null) data.suggested_frequency = payload.suggested_frequency;
+    if (payload.technique_style != null) data.technique_style = payload.technique_style;
+    if (payload.post_treatment_notes != null) data.post_treatment_notes = payload.post_treatment_notes;
+    if (payload.recommended_add_ons != null) data.recommended_add_ons = payload.recommended_add_ons;
+    if (payload.what_to_expect != null) data.what_to_expect = payload.what_to_expect;
+    if (payload.image_thumbnail != null) data.image_thumbnail = payload.image_thumbnail;
+    if (payload.place_only != null) data.place_only = payload.place_only;
+    if (Object.keys(data).length === 0) {
+      const existing = await databases.getDocument(DATABASE_ID, COLLECTION_ID, documentId);
+      return mapDocToEntry(existing as unknown as DirectoryMassageTypeDoc);
+    }
+    const doc = await databases.updateDocument(
+      DATABASE_ID,
+      COLLECTION_ID,
+      documentId,
+      data as any
+    );
+    return mapDocToEntry(doc as unknown as DirectoryMassageTypeDoc);
+  } catch (err) {
+    if (import.meta.env?.DEV) console.warn('[DirectoryMassageTypes] update failed:', err);
+    return null;
+  }
+}
+
+/**
+ * Upserts a directory massage type by name: updates existing document or creates a new one.
+ * Use this to save default thumbnail URLs to Appwrite so they persist.
+ */
+export async function upsertDirectoryMassageTypeByName(
+  name: string,
+  payload: DirectoryMassageTypePayload
+): Promise<DirectoryMassageTypeEntry | null> {
+  if (!name?.trim()) return null;
+  const normalizedName = name.trim();
+  const list = await listDirectoryMassageTypes();
+  const existing = list.find((e) => e.name.toLowerCase().trim() === normalizedName.toLowerCase());
+  if (existing) {
+    return updateDirectoryMassageTypeDocument(existing.id, { ...payload, name: normalizedName });
+  }
+  return createDirectoryMassageTypeDocument({ ...payload, name: normalizedName });
+}
 
 /**
  * Builds the Appwrite Storage view URL for a directory thumbnail file.

@@ -15,7 +15,7 @@ export async function generateTherapistShareLink(
     city?: string
 ): Promise<string> {
     try {
-        logger.debug('🔗 Generating share link for therapist:', name);
+        logger.debug('🔗 Generating share link for therapist', { name, therapistId, city });
         
         const shareLink = await shareLinkService.createShareLink(
             'therapist',
@@ -26,7 +26,7 @@ export async function generateTherapistShareLink(
         
         const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.slug}/${therapistId}`;
         
-        logger.debug('✅ Share link created:', {
+        logger.debug('✅ Share link created', {
             displayId: `#${shareLink.shortId}`,
             slug: shareLink.slug,
             url: shortUrl
@@ -34,7 +34,7 @@ export async function generateTherapistShareLink(
         
         return shareLink.shortId;
     } catch (error) {
-        logger.error('❌ Failed to generate therapist share link:', error);
+        logger.error('❌ Failed to generate therapist share link', error, { therapistId, name, city });
         throw error;
     }
 }
@@ -48,7 +48,7 @@ export async function generatePlaceShareLink(
     city?: string
 ): Promise<string> {
     try {
-        logger.debug('🔗 Generating share link for place:', name);
+        logger.debug('🔗 Generating share link for place', { name, placeId, city });
         
         const shareLink = await shareLinkService.createShareLink(
             'place',
@@ -59,7 +59,7 @@ export async function generatePlaceShareLink(
         
         const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.slug}/${placeId}`;
         
-        logger.debug('✅ Share link created:', {
+        logger.debug('✅ Share link created', {
             displayId: `#${shareLink.shortId}`,
             slug: shareLink.slug,
             url: shortUrl
@@ -67,7 +67,7 @@ export async function generatePlaceShareLink(
         
         return shareLink.shortId;
     } catch (error) {
-        logger.error('❌ Failed to generate place share link:', error);
+        logger.error('❌ Failed to generate place share link', error, { placeId, name, city });
         throw error;
     }
 }
@@ -81,7 +81,7 @@ export async function generateFacialShareLink(
     city?: string
 ): Promise<string> {
     try {
-        logger.debug('🔗 Generating share link for facial place:', name);
+        logger.debug('🔗 Generating share link for facial place', { name, facialPlaceId, city });
         
         const shareLink = await shareLinkService.createShareLink(
             'facial',
@@ -92,7 +92,7 @@ export async function generateFacialShareLink(
         
         const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.slug}/${facialPlaceId}`;
         
-        logger.debug('✅ Share link created:', {
+        logger.debug('✅ Share link created', {
             displayId: `#${shareLink.shortId}`,
             slug: shareLink.slug,
             url: shortUrl
@@ -100,7 +100,7 @@ export async function generateFacialShareLink(
         
         return shareLink.shortId;
     } catch (error) {
-        logger.error('❌ Failed to generate facial place share link:', error);
+        logger.error('❌ Failed to generate facial place share link', error, { facialPlaceId, name, city });
         throw error;
     }
 }
@@ -131,7 +131,7 @@ export async function getOrCreateShareLink(
             url: `https://www.indastreetmassage.com/share/${shareLink.slug}/${shareLink.entityId}`
         };
     } catch (error) {
-        logger.error('❌ Failed to get/create share link:', error);
+        logger.error('❌ Failed to get/create share link', error, { entityType, entityId, name, city });
         throw error;
     }
 }

@@ -7,6 +7,8 @@
  * DEFAULT: Sound enabled (ON)
  */
 
+import { logger } from '../utils/logger';
+
 export interface NotificationSoundSettings {
   enabled: boolean;
   volume: number; // 0.0 to 1.0

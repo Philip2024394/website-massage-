@@ -14,6 +14,7 @@
 
 import React, { Suspense, ComponentType, LazyExoticComponent } from 'react';
 import { trackCustomMetric } from '../services/enterprisePerformanceService';
+import { logger } from '../utils/logger';
 
 export interface CodeSplitOptions {
   fallback?: React.ComponentType;
@@ -232,7 +233,7 @@ export const EnterpriseSuspense: React.FC<{
  * Higher-order component for automatic code splitting
  */
 export function withCodeSplitting<P extends object>(
-  importFn: () => Promise<{ default: ComponentType<P> }>,
+  importFn: () => Promise<{ default: ComponentType<any> }>,
   options: CodeSplitOptions = {}
 ) {
   const SplitComponent = codeSplitting.createSplitComponent(importFn, options);
@@ -255,7 +256,7 @@ export function withCodeSplitting<P extends object>(
  * Utility to create code-split routes
  */
 export const createSplitRoute = <P extends object>(
-  importFn: () => Promise<{ default: ComponentType<P> }>,
+  importFn: () => Promise<{ default: ComponentType<any> }>,
   chunkName: string,
   preload = false
 ) => {
@@ -349,7 +350,8 @@ export const SplitHomePage = withCodeSplitting(
 );
 
 export const SplitTherapistDashboard = withCodeSplitting(
-  () => import('../../apps/therapist-dashboard/src/App'),
+  // Therapist dashboard app was removed; fall back to main therapist page.
+  () => import('../pages/TherapistProfilePage').then((m: any) => ({ default: m.default || m.TherapistProfilePage || m })),
   {
     chunkName: 'therapist-dashboard',
     preload: false,
@@ -384,7 +386,7 @@ export const SplitBookingPopup = withCodeSplitting(
 );
 
 export const SplitChatWindow = withCodeSplitting(
-  () => import('../chat/FloatingChatWindow'),
+  () => import('../chat/FloatingChatWindow').then((m: any) => ({ default: m.default || m.FloatingChatWindow || m })),
   {
     chunkName: 'chat-window',
     preload: false,

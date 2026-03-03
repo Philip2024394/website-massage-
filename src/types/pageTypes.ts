@@ -48,6 +48,7 @@ export type Page =
     | 'therapist-premium-upgrade'
     | 'therapist-membership-plans'
     | 'therapist-menu'
+    | 'therapistMenu'
     | 'therapist-chat'
     | 'therapist-notifications'
     | 'therapist-calendar'
@@ -322,7 +323,9 @@ export type Page =
     | 'admin-ktp'
     | 'admin-achievements'
     | 'admin-system-health'
-    | 'admin-settings';
+    | 'admin-settings'
+    // Shop
+    | 'shop';
 
 export type Language = 'en' | 'id' | 'gb' | 'th' | 'vi' | 'ms' | 'tl' | 'zh' | 'ja' | 'ko' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ru' | 'ar' | 'hi' | 'nl' | 'tr' | 'pl' | 'sv' | 'da';
 

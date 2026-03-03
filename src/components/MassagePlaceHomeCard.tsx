@@ -7,7 +7,7 @@ import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
-import { Share2, Sparkles } from 'lucide-react';
+import { Share2 } from 'lucide-react';
 import SafePassModal from './modals/SafePassModal';
 import { logger } from '../utils/logger';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
@@ -499,57 +499,32 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                 </div>
             )}
 
-            {/* Content */}
+            {/* PRICE CONTAINER — thumbnail left, duration row, price row */}
             <div className="px-4 pb-4">
-                {/* Pricing — same design as beautician home service: Treatments Trending, fixed prices, list layout */}
-                <div className="mb-4">
-                    <style>{`
-                        @keyframes beautician-glow-card {
-                          0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
-                          50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
-                        }
-                        .beautician-card-container-highlight {
-                          border-color: rgb(249 115 22);
-                          box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
-                          animation: beautician-glow-card 2.5s ease-in-out infinite;
-                        }
-                    `}</style>
-                    <div className="text-center mb-3">
-                        <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
-                            <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
-                            Treatments Trending
-                        </h3>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • View profile to book</p>
+                <div className="flex items-start gap-4 mt-3">
+                    <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 border-2 border-amber-200">
+                        <img
+                            src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || '/default-place.jpg'}
+                            alt={place.name || 'Place'}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/default-place.jpg'; }}
+                        />
                     </div>
-                    <div className="space-y-2">
-                        {[
-                            { label: '60 min', minutes: 60, key: '60' as const },
-                            { label: '90 min', minutes: 90, key: '90' as const },
-                            { label: '120 min', minutes: 120, key: '120' as const },
-                        ].map(({ label, minutes, key }) => (
-                            <div
-                                key={key}
-                                className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-orange-50/80 border-orange-400"
-                                role="presentation"
-                            >
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">Massage · {label}</h4>
-                                    <p className="text-[10px] text-gray-600">
-                                        Estimated time: {minutes} minutes
-                                    </p>
-                                    <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                        Price: {pricing[key] > 0 ? `IDR ${formatPrice(pricing[key])} (fixed)` : 'Call'}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="flex-1 min-w-0">
+                        <div className="grid grid-cols-3 text-sm font-medium text-gray-500 mb-1">
+                            <div className="whitespace-nowrap">60 min</div>
+                            <div className="whitespace-nowrap">90 min</div>
+                            <div className="whitespace-nowrap">120 min</div>
+                        </div>
+                        <div className="grid grid-cols-3 text-base font-semibold text-gray-900">
+                            <div className="whitespace-nowrap">{pricing['60'] > 0 ? formatPrice(pricing['60']) : '—'}</div>
+                            <div className="whitespace-nowrap">{pricing['90'] > 0 ? formatPrice(pricing['90']) : '—'}</div>
+                            <div className="whitespace-nowrap">{pricing['120'] > 0 ? formatPrice(pricing['120']) : '—'}</div>
+                        </div>
                     </div>
-                    <p className="text-center text-[10px] text-gray-500 mt-2">
-                        Professional rates • Verified profile
-                    </p>
                 </div>
 
-                {/* View Profile + Menu prices — two buttons side by side under price containers */}
+                {/* View Profile + Menu prices — two buttons side by side under price container */}
                 <div className="flex gap-2">
                     <button
                         type="button"

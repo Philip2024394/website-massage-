@@ -73,7 +73,7 @@ const BeauticianTreatmentCards: React.FC<BeauticianTreatmentCardsProps> = ({ the
       <div className="text-center mb-3">
         <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
           <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
-          Treatments Trending
+          Massage's Trending
         </h3>
         <p className="text-[10px] text-gray-500 mt-0.5">Select container and press Book Now</p>
       </div>

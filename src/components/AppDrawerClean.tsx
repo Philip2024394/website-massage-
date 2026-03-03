@@ -1,7 +1,7 @@
 // 🎯 AUTO-FIXED: Mobile scroll architecture violations (1 fixes)
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles, Hotel, Globe } from 'lucide-react';
+import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles, Hotel, Globe, ShoppingCart } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
 import type { Page } from '../types/pageTypes';
 import { getSafeDrawerPage, DRAWER_NAV_ITEMS } from '../config/drawerConfig';
@@ -21,6 +21,7 @@ const DRAWER_ICON_MAP = {
   BookOpen,
   Heart,
   Sparkles,
+  ShoppingCart,
 } as const;
 
 // Helper function to get auth app URL for development and production
@@ -67,6 +68,7 @@ interface AppDrawerProps {
 // Default translations for drawer
 const drawerTranslations = {
   en: {
+    shop: 'Indastreet Warehouse',
     partners: 'Partners',
     joinIndaStreet: 'Join Indastreet Today',
     massageJobs: 'Job Positions',
@@ -100,6 +102,7 @@ const drawerTranslations = {
     indonesia: 'Indonesia',
   },
   id: {
+    shop: 'Gudang Indastreet',
     partners: 'Mitra',
     joinIndaStreet: 'Gabung Indastreet Hari Ini',
     massageJobs: 'Lowongan Kerja',

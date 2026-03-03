@@ -210,7 +210,7 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
     const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
     const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     
-    const days: JSX.Element[] = [];
+    const days: React.ReactElement[] = [];
     
     // Empty cells for days before month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
@@ -331,7 +331,7 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
             <h2 className="text-lg font-bold text-gray-900">Jadwal Saya</h2>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
+              <span className="text-sm font-semibold text-gray-700">{(((therapist as any)?.onlineHoursThisMonth ?? 0) as number).toFixed(1)}j</span>
               <span className="text-xs text-gray-500">bulan ini</span>
             </div>
           </div>
@@ -341,18 +341,21 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
             <button
               onClick={() => console.log('Status change: available')}
               className={`p-4 rounded-xl border-2 transition-all ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
+                String((therapist as any)?.status || '').toLowerCase() === 'available' &&
+                String((therapist as any)?.availability || '').toLowerCase() === 'online'
                   ? 'bg-green-50 border-green-500'
                   : 'border-gray-200 hover:border-green-300'
               }`}
             >
               <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
+                String((therapist as any)?.status || '').toLowerCase() === 'available' &&
+                String((therapist as any)?.availability || '').toLowerCase() === 'online'
                   ? 'text-green-600'
                   : 'text-gray-400'
               }`} />
               <p className={`text-sm font-semibold ${
-                therapist?.status === 'available' && therapist?.availability === 'online'
+                String((therapist as any)?.status || '').toLowerCase() === 'available' &&
+                String((therapist as any)?.availability || '').toLowerCase() === 'online'
                   ? 'text-green-700'
                   : 'text-gray-600'
               }`}>Tersedia</p>

@@ -436,7 +436,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             <div className="text-center mb-3">
                                 <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
                                     <Sparkles className="w-3.5 h-3.5 text-amber-500" aria-hidden />
-                                    Treatments Trending
+                                    Massage's Trending
                                 </h3>
                                 <p className="text-[10px] text-gray-500 mt-0.5">
                                     Massage · Fixed prices
@@ -446,31 +446,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 </p>
                             </div>
                             <div className="space-y-2">
-                                {rows.map(({ label, minutes, key }) => {
-                                    const val = Number(pricing[key] ?? 0);
-                                    const displayPrice = val <= 0 ? null : hasDiscount
-                                        ? formatShort(Math.round(val * (1 - discountPct / 100)))
-                                        : formatShort(val);
-                                    return (
-                                        <div
-                                            key={key}
-                                            className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-amber-50/80 border-amber-400 relative"
-                                        >
-                                            {hasDiscount && (
-                                                <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-7 h-7 flex items-center justify-center shadow">
-                                                    -{discountPct}%
+                                <div className="beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col gap-2 p-3 bg-amber-50/80 border-amber-400 relative">
+                                    {hasDiscount && (
+                                        <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-7 h-7 flex items-center justify-center shadow">
+                                            -{discountPct}%
+                                        </span>
+                                    )}
+                                    <div className="grid grid-cols-3 gap-x-2 gap-y-1 items-start justify-items-center text-center">
+                                        <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">60min</span>
+                                        <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">90min</span>
+                                        <span className="text-[10px] font-semibold text-gray-700 whitespace-nowrap">120min</span>
+                                        {(['60', '90', '120'] as const).map((key) => {
+                                            const val = Number(pricing[key] ?? 0);
+                                            if (val <= 0) return <span key={key} className="text-[10px] sm:text-xs font-semibold text-gray-400 whitespace-nowrap">—</span>;
+                                            if (!hasDiscount) return <span key={key} className="text-[10px] sm:text-xs font-semibold text-gray-800 whitespace-nowrap">IDR {formatShort(val)}</span>;
+                                            const discounted = Math.round(val * (1 - discountPct / 100));
+                                            return (
+                                                <span key={key} className="inline-flex flex-col items-center leading-tight whitespace-nowrap text-[10px] sm:text-xs font-semibold text-gray-800">
+                                                    <span>IDR {formatShort(discounted)}</span>
+                                                    <span className="text-[10px] text-gray-500 line-through font-normal">IDR {formatShort(val)}</span>
                                                 </span>
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="text-xs font-bold text-gray-900 mb-0.5 line-clamp-2">Massage · {label}</h4>
-                                                <p className="text-[10px] text-gray-600">Estimated time: {minutes} minutes</p>
-                                                <p className="text-xs font-semibold text-gray-800 mt-0.5">
-                                                    Price: {displayPrice == null ? 'Contact' : `IDR ${displayPrice} (fixed)`}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             </div>
                             <p className="text-center text-[10px] text-gray-500 mt-2">
                                 Professional rates • Verified profile

@@ -1,8 +1,8 @@
 import { calculateDistance, extractGeopoint } from './geoDistance';
 import { convertLocationStringToId } from './locationNormalizationV2';
-import type { TherapistData } from '../types';
+import type { Therapist } from '../types';
 
-type Therapist = TherapistData & Record<string, any>;
+type TherapistAny = Therapist & Record<string, any>;
 
 type NormalizedStatus = 'available' | 'busy' | 'offline' | 'unknown';
 type MatchType = 'distance' | 'city' | 'placeholder';
@@ -21,7 +21,7 @@ export interface MatchOptions {
   maxResults?: number;
 }
 
-export interface MatchedTherapist<T = Therapist> extends T {
+export type MatchedTherapist<T = TherapistAny> = T & {
   _matchType: MatchType;
   _distanceKm: number | null;
   _locationArea: string | null;
@@ -29,7 +29,7 @@ export interface MatchedTherapist<T = Therapist> extends T {
   _statusNormalized: NormalizedStatus;
   _isPlaceholder?: boolean;
   _reason?: string;
-}
+};
 
 export interface MatchOutcome {
   matches: MatchedTherapist[];
@@ -63,12 +63,12 @@ const toBoolean = (value: unknown, fallback = false): boolean => {
   return fallback;
 };
 
-const getTherapistId = (therapist: Therapist): string | null => {
+const getTherapistId = (therapist: TherapistAny): string | null => {
   const raw = therapist.$id || therapist.id || therapist.uuid || therapist.slug || null;
   return raw ? String(raw) : null;
 };
 
-const isAccountActive = (therapist: Therapist): boolean => {
+const isAccountActive = (therapist: TherapistAny): boolean => {
   if (therapist == null) return false;
   if ('accountActive' in therapist) {
     return toBoolean((therapist as any).accountActive, true);
@@ -82,7 +82,7 @@ const isAccountActive = (therapist: Therapist): boolean => {
   return true;
 };
 
-const normalizeStatus = (therapist: Therapist): NormalizedStatus => {
+const normalizeStatus = (therapist: TherapistAny): NormalizedStatus => {
   const raw =
     therapist.status ??
     therapist.displayStatus ??
@@ -100,7 +100,7 @@ const normalizeStatus = (therapist: Therapist): NormalizedStatus => {
   return 'unknown';
 };
 
-const parseLocationId = (therapist: Therapist): string | null => {
+const parseLocationId = (therapist: TherapistAny): string | null => {
   const raw =
     therapist.locationId ??
     therapist.location_id ??
@@ -114,7 +114,7 @@ const parseLocationId = (therapist: Therapist): string | null => {
 };
 
 const buildMatchEntry = (
-  therapist: Therapist,
+  therapist: TherapistAny,
   matchType: MatchType,
   locationId: string | null,
   status: NormalizedStatus,
@@ -123,7 +123,7 @@ const buildMatchEntry = (
 ): MatchedTherapist => {
   const isBookable = accountActive && status === 'available';
   const entry: MatchedTherapist = {
-    ...(therapist as Therapist),
+    ...(therapist as TherapistAny),
     _matchType: matchType,
     _distanceKm: distanceKm,
     _locationArea: locationId,
@@ -319,16 +319,18 @@ export function matchTherapistsForUser(
       .map((entry) => {
         const sample: MatchedTherapist = {
           ...entry,
-          status: 'Busy',
-          displayStatus: 'Busy',
-          availability: 'Busy',
-          availabilityStatus: 'BUSY',
+          ...(entry as any),
           _bookable: false,
           _statusNormalized: 'busy' as NormalizedStatus,
           _isPlaceholder: true,
           _matchType: 'placeholder',
           _reason: 'sample-from-other-city'
         };
+        // Ensure downstream UI treats it as busy/offline, without requiring strict field typing here.
+        (sample as any).status = 'Busy';
+        (sample as any).displayStatus = 'Busy';
+        (sample as any).availability = 'Busy';
+        (sample as any).availabilityStatus = 'BUSY';
         (sample as any).chatDisabled = true;
         if ((sample as any).displayStatus == null) (sample as any).displayStatus = 'Busy';
         return sample;

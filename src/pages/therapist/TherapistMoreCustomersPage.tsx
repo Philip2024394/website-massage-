@@ -2,8 +2,7 @@
 /**
  * MoreCustomersPage - Comprehensive guide for therapists to increase bookings
  * 
- * @ts-expect-error - Temporary: lucide-react ForwardRefExoticComponent incompatible with React 19 types
- * This file works correctly at runtime. Type fix pending lucide-react or @types/react update.
+ * Note: This file intentionally uses many Lucide icons.
  */
 import React, { useState } from 'react';
 import { 

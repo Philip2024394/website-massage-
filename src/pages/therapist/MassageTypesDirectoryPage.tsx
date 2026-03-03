@@ -43,9 +43,15 @@ import {
   HEAD_SCALP_MASSAGE_DIRECTORY_NAMES,
   getHeadScalpMassageEntry,
 } from '../../constants/massageDirectoryHeadScalp';
-import { listDirectoryMassageTypes, type DirectoryMassageTypeEntry } from '../../lib/appwrite/services/directoryMassageTypes.service';
+import { getDefaultThumbnailForDirectory, type DirectoryThumbnailCategory } from '../../constants/directoryThumbnailUrls';
+import {
+  listDirectoryMassageTypes,
+  upsertDirectoryMassageTypeByName,
+  type DirectoryMassageTypeEntry,
+  type DirectoryMassageTypePayload,
+} from '../../lib/appwrite/services/directoryMassageTypes.service';
 import TherapistSimplePageLayout from '../../components/therapist/TherapistSimplePageLayout';
-import { BookOpen, Eye, Clock, ChevronLeft, Image as ImageIcon, Search, Filter, PlusCircle, MapPin } from 'lucide-react';
+import { BookOpen, Eye, Clock, ChevronLeft, Image as ImageIcon, Search, Filter, PlusCircle, MapPin, CloudUpload } from 'lucide-react';
 
 /** Recommended price ranges (×1000 IDR) for therapist/place location. Keys: 60, 90, 120 min. */
 const RECOMMENDED_PRICE_RANGES: Record<'60' | '90' | '120', { min: number; max: number }> = {
@@ -161,6 +167,190 @@ function getInitialThumbnail(realName: string): string {
   return (couples?.imageThumbnail ?? getBodyScrubMassageEntry(realName)?.imageThumbnail ?? getPrenatalMassageEntry(realName)?.imageThumbnail ?? getHeadScalpMassageEntry(realName)?.imageThumbnail ?? '').trim();
 }
 
+/** Resolve directory category for default thumbnail selection. */
+function getCategoryForThumbnail(realName: string): DirectoryThumbnailCategory | null {
+  const lower = (realName || '').toLowerCase().trim();
+  if (TRADITIONAL_SET.has(lower)) return 'traditional';
+  if (SPORTS_SET.has(lower)) return 'sports';
+  if (THERAPEUTIC_SET.has(lower)) return 'therapeutic';
+  if (WELLNESS_SET.has(lower)) return 'wellness';
+  if (COUPLES_SET.has(lower)) return 'couples';
+  if (BODY_SCRUB_SET.has(lower)) return 'body_scrub';
+  if (PRENATAL_SET.has(lower)) return 'prenatal';
+  if (HEAD_SCALP_SET.has(lower)) return 'head_scalp';
+  return null;
+}
+
+/** Thumbnail URL to show: stored value or high-quality default by category. */
+function getDisplayThumbnail(entry: DirectoryEntry): string {
+  if (entry.imageThumbnail?.trim()) return entry.imageThumbnail.trim();
+  const category = getCategoryForThumbnail(entry.realName);
+  if (category) return getDefaultThumbnailForDirectory(entry.realName, category);
+  return '';
+}
+
+/** Build Appwrite payload for an entry. Returns null if realName is not in any static directory. */
+function getStaticPayloadForRealName(
+  realName: string,
+  imageThumbnailToSave: string
+): DirectoryMassageTypePayload | null {
+  const category = getCategoryForThumbnail(realName);
+  if (!category) return null;
+  const traditional = getTraditionalMassageEntry(realName);
+  if (traditional) {
+    return {
+      name: realName,
+      category,
+      short_description: traditional.shortDescription,
+      recommended_duration: traditional.recommendedDuration,
+      pressure_level: traditional.pressureLevel,
+      focus_areas: traditional.focusAreas,
+      ideal_for: traditional.idealFor,
+      suggested_frequency: traditional.suggestedFrequency,
+      technique_style: traditional.techniqueStyle,
+      post_treatment_notes: traditional.postTreatmentNotes,
+      recommended_add_ons: traditional.recommendedAddOns,
+      what_to_expect: traditional.whatToExpect,
+      image_thumbnail: imageThumbnailToSave || getDefaultThumbnailForDirectory(realName, category),
+      place_only: false,
+    };
+  }
+  const sports = getSportsMassageEntry(realName);
+  if (sports) {
+    return {
+      name: realName,
+      category,
+      short_description: sports.shortDescription,
+      recommended_duration: sports.recommendedDuration,
+      pressure_level: sports.pressureLevel,
+      focus_areas: sports.focusAreas,
+      ideal_for: sports.idealFor,
+      suggested_frequency: sports.suggestedFrequency,
+      technique_style: sports.techniqueStyle,
+      post_treatment_notes: sports.postTreatmentNotes,
+      recommended_add_ons: sports.recommendedAddOns,
+      what_to_expect: sports.whatToExpect,
+      image_thumbnail: imageThumbnailToSave || getDefaultThumbnailForDirectory(realName, category),
+      place_only: false,
+    };
+  }
+  const therapeutic = getTherapeuticMassageEntry(realName);
+  if (therapeutic) {
+    return {
+      name: realName,
+      category,
+      short_description: therapeutic.shortDescription,
+      recommended_duration: therapeutic.recommendedDuration,
+      pressure_level: therapeutic.pressureLevel,
+      focus_areas: therapeutic.focusAreas,
+      ideal_for: therapeutic.idealFor,
+      suggested_frequency: therapeutic.suggestedFrequency,
+      technique_style: therapeutic.techniqueStyle,
+      post_treatment_notes: therapeutic.postTreatmentNotes,
+      recommended_add_ons: therapeutic.recommendedAddOns,
+      what_to_expect: therapeutic.whatToExpect,
+      image_thumbnail: imageThumbnailToSave || getDefaultThumbnailForDirectory(realName, category),
+      place_only: false,
+    };
+  }
+  const wellness = getWellnessMassageEntry(realName);
+  if (wellness) {
+    return {
+      name: realName,
+      category,
+      short_description: wellness.shortDescription,
+      recommended_duration: wellness.recommendedDuration,
+      pressure_level: wellness.pressureLevel,
+      focus_areas: wellness.focusAreas,
+      ideal_for: wellness.idealFor,
+      suggested_frequency: wellness.suggestedFrequency,
+      technique_style: wellness.techniqueStyle,
+      post_treatment_notes: wellness.postTreatmentNotes,
+      recommended_add_ons: wellness.recommendedAddOns,
+      what_to_expect: wellness.whatToExpect,
+      image_thumbnail: imageThumbnailToSave || getDefaultThumbnailForDirectory(realName, category),
+      place_only: false,
+    };
+  }
+  const couples = getCouplesMassageEntry(realName);
+  if (couples) {
+    return {
+      name: realName,
+      category,
+      short_description: couples.shortDescription,
+      recommended_duration: couples.recommendedDuration,
+      pressure_level: couples.pressureLevel,
+      focus_areas: couples.focusAreas,
+      ideal_for: couples.idealFor,
+      suggested_frequency: couples.suggestedFrequency,
+      technique_style: couples.techniqueStyle,
+      post_treatment_notes: couples.postTreatmentNotes,
+      recommended_add_ons: couples.recommendedAddOns,
+      what_to_expect: couples.whatToExpect,
+      image_thumbnail: imageThumbnailToSave || getDefaultThumbnailForDirectory(realName, category),
+      place_only: true,
+    };
+  }
+  const bodyScrub = getBodyScrubMassageEntry(realName);
+  if (bodyScrub) {
+    return {
+      name: realName,
+      category,
+      short_description: bodyScrub.shortDescription,
+      recommended_duration: bodyScrub.recommendedDuration,
+      pressure_level: bodyScrub.pressureLevel,
+      focus_areas: bodyScrub.focusAreas,
+      ideal_for: bodyScrub.idealFor,
+      suggested_frequency: bodyScrub.suggestedFrequency,
+      technique_style: bodyScrub.techniqueStyle,
+      post_treatment_notes: bodyScrub.postTreatmentNotes,
+      recommended_add_ons: bodyScrub.recommendedAddOns,
+      what_to_expect: bodyScrub.whatToExpect,
+      image_thumbnail: imageThumbnailToSave || getDefaultThumbnailForDirectory(realName, category),
+      place_only: true,
+    };
+  }
+  const prenatal = getPrenatalMassageEntry(realName);
+  if (prenatal) {
+    return {
+      name: realName,
+      category,
+      short_description: prenatal.shortDescription,
+      recommended_duration: prenatal.recommendedDuration,
+      pressure_level: prenatal.pressureLevel,
+      focus_areas: prenatal.focusAreas,
+      ideal_for: prenatal.idealFor,
+      suggested_frequency: prenatal.suggestedFrequency,
+      technique_style: prenatal.techniqueStyle,
+      post_treatment_notes: prenatal.postTreatmentNotes,
+      recommended_add_ons: prenatal.recommendedAddOns,
+      what_to_expect: prenatal.whatToExpect,
+      image_thumbnail: imageThumbnailToSave || getDefaultThumbnailForDirectory(realName, category),
+      place_only: false,
+    };
+  }
+  const headScalp = getHeadScalpMassageEntry(realName);
+  if (headScalp) {
+    return {
+      name: realName,
+      category,
+      short_description: headScalp.shortDescription,
+      recommended_duration: headScalp.recommendedDuration,
+      pressure_level: headScalp.pressureLevel,
+      focus_areas: headScalp.focusAreas,
+      ideal_for: headScalp.idealFor,
+      suggested_frequency: headScalp.suggestedFrequency,
+      technique_style: headScalp.techniqueStyle,
+      post_treatment_notes: headScalp.postTreatmentNotes,
+      recommended_add_ons: headScalp.recommendedAddOns,
+      what_to_expect: headScalp.whatToExpect,
+      image_thumbnail: imageThumbnailToSave || getDefaultThumbnailForDirectory(realName, category),
+      place_only: false,
+    };
+  }
+  return null;
+}
+
 // Mock view count (0–100). Replace with analytics when available.
 function mockViewCount(name: string): number {
   let n = 0;
@@ -232,6 +422,8 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [durationFilter, setDurationFilter] = useState<'all' | '60' | '90' | '120'>('all');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'traditional' | 'sports' | 'therapeutic' | 'wellness' | 'couples' | 'bodyScrub' | 'prenatal' | 'headScalp'>('all');
+  const [syncingThumbnails, setSyncingThumbnails] = useState(false);
+  const [syncThumbnailsError, setSyncThumbnailsError] = useState<string | null>(null);
 
   useEffect(() => {
     listDirectoryMassageTypes()
@@ -361,6 +553,32 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
     );
   };
 
+  /** Save current thumbnail URLs (including defaults) to Appwrite so they persist. */
+  const handleSaveDefaultThumbnailsToAppwrite = async () => {
+    setSyncThumbnailsError(null);
+    setSyncingThumbnails(true);
+    const BATCH_SIZE = 5;
+    try {
+      const toSync = entries.filter((e) => getStaticPayloadForRealName(e.realName, getDisplayThumbnail(e)) !== null);
+      for (let i = 0; i < toSync.length; i += BATCH_SIZE) {
+        const batch = toSync.slice(i, i + BATCH_SIZE);
+        await Promise.all(
+          batch.map(async (entry) => {
+            const payload = getStaticPayloadForRealName(entry.realName, getDisplayThumbnail(entry));
+            if (payload) await upsertDirectoryMassageTypeByName(entry.realName, payload);
+          })
+        );
+      }
+      const next = await listDirectoryMassageTypes();
+      setAppwriteEntries(next);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setSyncThumbnailsError(msg);
+    } finally {
+      setSyncingThumbnails(false);
+    }
+  };
+
   /** Add this directory entry to the therapist/place menu and go to menu page. */
   const handleAddToMenu = (entry: DirectoryEntry) => {
     const serviceName = (entry.displayedName || entry.realName).trim() || entry.realName;
@@ -448,6 +666,20 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
               <p className="text-xs text-gray-500">
                 {isId ? `Menampilkan ${filteredEntries.length} dari ${entries.length} jenis` : `Showing ${filteredEntries.length} of ${entries.length} types`}
               </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSaveDefaultThumbnailsToAppwrite}
+                  disabled={syncingThumbnails}
+                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-medium text-white shadow hover:bg-amber-600 disabled:opacity-60"
+                >
+                  <CloudUpload className="w-4 h-4" />
+                  {syncingThumbnails ? (isId ? 'Menyimpan...' : 'Saving...') : (isId ? 'Simpan thumbnail ke Appwrite' : 'Save thumbnails to Appwrite')}
+                </button>
+                {syncThumbnailsError && (
+                  <p className="text-xs text-red-600">{syncThumbnailsError}</p>
+                )}
+              </div>
             </div>
             {categoryFilter === 'wellness' && (
               <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4 text-amber-900">
@@ -495,13 +727,15 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
                   <p className="font-medium">{isId ? 'Tidak ada hasil. Coba ubah filter atau pencarian.' : 'No results. Try changing filters or search.'}</p>
                 </div>
               ) : (
-              filteredEntries.map((entry) => (
+              filteredEntries.map((entry) => {
+                const thumb = getDisplayThumbnail(entry);
+                return (
                 <div key={entry.realName} className="bg-white rounded-2xl border border-gray-200/90 shadow-lg shadow-gray-200/50 overflow-hidden hover:shadow-xl hover:shadow-orange-100/30 transition-all duration-300">
                   <div className="p-5 sm:p-6 space-y-4">
                     <div className="flex gap-4">
                       <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 shadow-inner">
-                        {entry.imageThumbnail ? (
-                          <img src={entry.imageThumbnail} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_THUMB; }} />
+                        {thumb ? (
+                          <img src={thumb} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_THUMB; }} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400" title={isId ? 'Gambar nanti' : 'Image to be added'}>
                             <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -572,7 +806,8 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
                     </button>
                   </div>
                 </div>
-              )))}
+              );
+              }) )}
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
               <p className="font-semibold mb-1">{isId ? 'Fitur lain yang bisa ditambahkan' : 'Other features you could add'}</p>
@@ -649,6 +884,20 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
             <p className="text-xs text-gray-500 font-medium">
               {isId ? `Menampilkan ${filteredEntries.length} dari ${entries.length} jenis` : `Showing ${filteredEntries.length} of ${entries.length} types`}
             </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSaveDefaultThumbnailsToAppwrite}
+                disabled={syncingThumbnails}
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-medium text-white shadow hover:bg-amber-600 disabled:opacity-60"
+              >
+                <CloudUpload className="w-4 h-4" />
+                {syncingThumbnails ? (isId ? 'Menyimpan...' : 'Saving...') : (isId ? 'Simpan thumbnail ke Appwrite' : 'Save thumbnails to Appwrite')}
+              </button>
+              {syncThumbnailsError && (
+                <p className="text-xs text-red-600">{syncThumbnailsError}</p>
+              )}
+            </div>
           </div>
 
         {/* Original massage type notice when viewing a category */}
@@ -693,7 +942,9 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
               </p>
             </div>
           ) : (
-          filteredEntries.map((entry) => (
+          filteredEntries.map((entry) => {
+            const thumb = getDisplayThumbnail(entry);
+            return (
             <div
               key={entry.realName}
               className="bg-white rounded-2xl border border-gray-200/90 shadow-lg shadow-gray-200/50 overflow-hidden hover:shadow-xl hover:shadow-orange-100/30 transition-all duration-300"
@@ -701,8 +952,8 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
               <div className="p-5 sm:p-6 space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 shadow-inner">
-                    {entry.imageThumbnail ? (
-                      <img src={entry.imageThumbnail} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_THUMB; }} />
+                    {thumb ? (
+                      <img src={thumb} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_THUMB; }} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400" title={isId ? 'Gambar nanti' : 'Image to be added'}>
                         <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -832,7 +1083,8 @@ const MassageTypesDirectoryPage: React.FC<MassageTypesDirectoryPageProps> = ({
                 </button>
               </div>
             </div>
-          )))}
+          );
+          }) )}
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">

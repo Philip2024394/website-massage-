@@ -8,7 +8,7 @@ export const SUPPORT_CONFIG = {
   email: 'indastreet.id@gmail.com',
   
   // WhatsApp support (format: country code + number)
-  whatsapp: '+62 XXX-XXXX-XXXX', // Update with actual number when available
+  whatsapp: '+62 813-9200-0050',
   
   // Support response time
   responseTime: '48-72 business hours',
@@ -32,8 +32,8 @@ export const SUPPORT_CONFIG = {
   contactStrings: {
     email: 'indastreet.id@gmail.com',
     emailLink: 'mailto:indastreet.id@gmail.com',
-    whatsappLink: 'https://wa.me/62XXXXXXXXXX', // Update with actual number
-    fullContact: 'Email: indastreet.id@gmail.com | WhatsApp: +62 XXX-XXXX-XXXX',
+    whatsappLink: 'https://wa.me/6281392000050',
+    fullContact: 'Email: indastreet.id@gmail.com | WhatsApp: +62 813-9200-0050',
   }
 } as const;
 

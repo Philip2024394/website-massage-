@@ -48,6 +48,7 @@ export const DRAWER_PAGE_IDS = [
   'admin',
   'adminDashboard',
   'agentPortal',
+  'shop',
 ] as const satisfies readonly Page[];
 
 export type DrawerPageId = (typeof DRAWER_PAGE_IDS)[number];
@@ -56,10 +57,11 @@ export type DrawerPageId = (typeof DRAWER_PAGE_IDS)[number];
 export const DRAWER_NAV_ITEMS: ReadonlyArray<{
   id: DrawerPageId;
   labelKey: string;
-  icon: 'Home' | 'Users' | 'Briefcase' | 'HelpCircle' | 'Info' | 'Building' | 'Phone' | 'Hotel' | 'BookOpen' | 'Heart' | 'Sparkles';
+  icon: 'Home' | 'Users' | 'Briefcase' | 'HelpCircle' | 'Info' | 'Building' | 'Phone' | 'Hotel' | 'BookOpen' | 'Heart' | 'Sparkles' | 'ShoppingCart';
   sectionBreak?: boolean;
   labelOverride?: string;
 }> = [
+  { id: 'shop', labelKey: 'shop', icon: 'ShoppingCart', labelOverride: 'Indastreet Warehouse' },
   { id: 'indastreet-partners', labelKey: 'partners', icon: 'Home' },
   { id: 'partnership-application', labelKey: 'joinIndaStreet', icon: 'Users' },
   { id: 'how-it-works', labelKey: 'howItWorks', icon: 'HelpCircle' },

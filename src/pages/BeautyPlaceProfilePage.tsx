@@ -195,6 +195,13 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
         return String(n);
     };
 
+    const DEFAULT_PRICE_THUMBNAIL = 'https://ik.imagekit.io/7grri5v7d/hait%20styles%20browns.png';
+    const priceThumbnailUrl =
+        (place as any)?.profilePicture ||
+        (place as any)?.mainImage ||
+        heroImages?.[0] ||
+        DEFAULT_PRICE_THUMBNAIL;
+
     const adminNumber = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER ?? '';
     const bookingPhone = place ? getBookingWhatsAppNumber(
         { country: (place as any).country, countryCode: (place as any).countryCode, whatsappNumber: place.whatsappNumber, contactNumber: place.whatsappNumber },
@@ -447,7 +454,7 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
                     </div>
                 </section>
 
-                {/* Treatments Trending – same system, color and design as therapist profile price containers */}
+                {/* Massage's Trending – same system, color and design as therapist profile price containers */}
                 {hasPricing && (
                     <section className="mt-6 px-4">
                         <style>{`
@@ -471,7 +478,7 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
                         <div className="text-center mb-3">
                             <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
                                 <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
-                                Treatments Trending
+                                Massage's Trending
                             </h3>
                             <p className="text-[10px] text-gray-500 mt-0.5">
                                 {language === 'id' ? 'Harga tetap • Pilih container lalu tekan Book Now' : 'Fixed prices • Select container and press Book Now'}
@@ -498,8 +505,17 @@ const BeautyPlaceProfilePage: React.FC<BeautyPlaceProfilePageProps> = ({
                                                     setSelectedPriceKey(isSelected ? null : key);
                                                 }
                                             }}
-                                            className={`beauty-treatments-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 cursor-pointer select-none ${isMostPopular ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-500 ring-1 ring-amber-200' : 'bg-orange-50/80 border-orange-400'} ${isSelected ? 'price-container-heartbeat' : ''}`}
+                                            className={`beauty-treatments-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-row items-start gap-3 p-3 cursor-pointer select-none sm:items-center ${isMostPopular ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-500 ring-1 ring-amber-200' : 'bg-orange-50/80 border-orange-400'} ${isSelected ? 'price-container-heartbeat' : ''}`}
                                         >
+                                            <div className="-ml-2 sm:ml-0 flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 border-2 border-amber-200">
+                                                <img
+                                                    src={String(priceThumbnailUrl || DEFAULT_PRICE_THUMBNAIL)}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                    loading="lazy"
+                                                    onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PRICE_THUMBNAIL; }}
+                                                />
+                                            </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-0.5">
                                                     <h4 className="text-xs font-bold text-gray-900 line-clamp-2">

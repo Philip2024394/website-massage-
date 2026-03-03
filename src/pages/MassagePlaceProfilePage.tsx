@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, lazy, Suspense } from 'react';
 import CityPlaceCard from '../components/CityPlaceCard';
 import { AppDrawer } from '../components/AppDrawerClean';
+import { getBookingWhatsAppNumber, buildWhatsAppUrl } from '../utils/whatsappBookingMessages';
+import { APP_CONSTANTS } from '../constants/appConstants';
 import { Globe, LayoutGrid, Users, Star } from 'lucide-react';
 import { customLinksService } from '../lib/appwrite/services/customLinks.service';
 import { useChatProviderOptional } from '../hooks/useChatProvider';
@@ -287,105 +289,52 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         }
     };
 
-    // Handle Book Now - open chat window in immediate mode (same as therapist booking)
+    // Resolve booking WhatsApp number: Indonesia free-tier → admin, paid/abroad → provider own number
+    const _massagePlaceBookingPhone = (() => {
+        const admin = APP_CONSTANTS.DEFAULT_CONTACT_NUMBER;
+        return getBookingWhatsAppNumber(
+            {
+                country:        (place as any).country,
+                countryCode:    (place as any).countryCode,
+                whatsappNumber: (place as any).whatsappNumber,
+                contactNumber:  (place as any).whatsappNumber,
+                membershipTier: (place as any).membershipTier ?? (place as any).plan,
+            },
+            admin
+        ) || admin;
+    })();
+
+    // Handle Book Now — opens WhatsApp with pre-filled immediate-booking message
     const handleBookNowClick = () => {
-        console.log('📱 Massage Place Profile Book Now clicked - opening chat window');
-        
-        // Parse pricing from place data - same structure as therapist pricing
-        const parsePricing = (pricingData: any) => {
-            if (!pricingData) return { "60": 200000, "90": 300000, "120": 400000 };
-            if (typeof pricingData === 'object' && pricingData !== null) return pricingData;
-            try {
-                const parsed = JSON.parse(pricingData);
-                // Convert to proper format if needed (assuming place pricing might be in different units)
-                return {
-                    "60": parsed["60"] && parsed["60"] < 1000 ? parsed["60"] * 1000 : parsed["60"] || 200000,
-                    "90": parsed["90"] && parsed["90"] < 1000 ? parsed["90"] * 1000 : parsed["90"] || 300000,
-                    "120": parsed["120"] && parsed["120"] < 1000 ? parsed["120"] * 1000 : parsed["120"] || 400000
-                };
-            } catch {
-                return { "60": 200000, "90": 300000, "120": 400000 };
-            }
-        };
-        
-        const pricing = parsePricing(place.pricing);
-        console.log('💰 Place pricing for chat:', pricing);
-        
-        // Calculate active discount for chat window
-        const activeDiscountData = (() => {
-            // Mock discount data for testing - same logic as HeroSection
-            const hasDiscount = place && ((place.id === '1' || place.$id === '1') || (place.name && place.name.toLowerCase().includes('relax')));
-            if (!hasDiscount) return null;
-            
-            // Match HomePage discount logic based on place ID/index
-            let percentage = 20; // Default to 20% (first place)
-            if (place.id === '2' || place.$id === '2') percentage = 15;
-            else if (place.id === '3' || place.$id === '3') percentage = 10;
-            else if (place.id === '4' || place.$id === '4') percentage = 5;
-            
-            return {
-                percentage: percentage,
-                expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000) // Expires in 3 hours
-            };
-        })();
-        
-        // Show notification instead of dispatching event
-        addNotification(
-            'info',
-            'Instant Booking',
-            `Please complete booking with ${place.name} to start chatting`,
-            { duration: 4000 }
+        const placeId = (place as any).$id ?? (place as any).id ?? '';
+        const msg = [
+            `Hi Indastreet Admin, I would like to book a massage at ${place.name}.`,
+            placeId ? `Place ID: ${placeId}` : '',
+            `Please coordinate my visit. Thank you.`,
+        ].filter(Boolean).join('\n');
+        window.open(
+            buildWhatsAppUrl(_massagePlaceBookingPhone, msg) ||
+            `https://wa.me/${_massagePlaceBookingPhone}?text=${encodeURIComponent(msg)}`,
+            '_blank',
+            'noopener,noreferrer'
         );
     };
-    
-    // Handle Schedule booking - open chat window in scheduled mode (same as therapist booking)
+
+    // Handle Schedule — opens WhatsApp with pre-filled scheduled-booking message
     const handleBookingClick = () => {
-        console.log('📅 Massage Place Profile Schedule clicked - opening chat in scheduled mode');
-        
-        // Parse pricing from place data - same structure as therapist pricing
-        const parsePricing = (pricingData: any) => {
-            if (!pricingData) return { "60": 200000, "90": 300000, "120": 400000 };
-            if (typeof pricingData === 'object' && pricingData !== null) return pricingData;
-            try {
-                const parsed = JSON.parse(pricingData);
-                // Convert to proper format if needed (assuming place pricing might be in different units)
-                return {
-                    "60": parsed["60"] && parsed["60"] < 1000 ? parsed["60"] * 1000 : parsed["60"] || 200000,
-                    "90": parsed["90"] && parsed["90"] < 1000 ? parsed["90"] * 1000 : parsed["90"] || 300000,
-                    "120": parsed["120"] && parsed["120"] < 1000 ? parsed["120"] * 1000 : parsed["120"] || 400000
-                };
-            } catch {
-                return { "60": 200000, "90": 300000, "120": 400000 };
-            }
-        };
-        
-        const pricing = parsePricing(place.pricing);
-        console.log('💰 Place pricing for scheduled chat:', pricing);
-        
-        // Calculate active discount for chat window
-        const activeDiscountData = (() => {
-            // Mock discount data for testing - same logic as HeroSection
-            const hasDiscount = place && ((place.id === '1' || place.$id === '1') || (place.name && place.name.toLowerCase().includes('relax')));
-            if (!hasDiscount) return null;
-            
-            // Match HomePage discount logic based on place ID/index
-            let percentage = 20; // Default to 20% (first place)
-            if (place.id === '2' || place.$id === '2') percentage = 15;
-            else if (place.id === '3' || place.$id === '3') percentage = 10;
-            else if (place.id === '4' || place.$id === '4') percentage = 5;
-            
-            return {
-                percentage: percentage,
-                expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000) // Expires in 3 hours
-            };
-        })();
-        
-        // Show notification instead of dispatching event
-        addNotification(
-            'info',
-            'Scheduled Booking',
-            `Please complete booking with ${place.name} to start chatting`,
-            { duration: 4000 }
+        const placeId = (place as any).$id ?? (place as any).id ?? '';
+        const msg = [
+            `Hi Indastreet Admin, I would like to schedule a massage at ${place.name}.`,
+            placeId ? `Place ID: ${placeId}` : '',
+            `Date: To be confirmed`,
+            `Time: To be confirmed`,
+            `I understand a 30% deposit is required, payable to admin for booking confirmation. Thank you.`,
+        ].filter(Boolean).join('\n');
+        window.open(
+            buildWhatsAppUrl(_massagePlaceBookingPhone, msg) ||
+            `https://wa.me/${_massagePlaceBookingPhone}?text=${encodeURIComponent(msg)}`,
+            '_blank',
+            'noopener,noreferrer'
         );
     };
 

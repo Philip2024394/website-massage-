@@ -12,7 +12,7 @@ import { bookingService } from '../lib/bookingService';
 import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { shareLinkService } from '../lib/services/shareLinkService';
-import { Share2, Sparkles, FingerprintPattern, Calendar, Clock } from 'lucide-react';
+import { Share2, Calendar, Clock } from 'lucide-react';
 import { VERIFIED_BADGE_IMAGE_URL } from '../constants/appConstants';
 import { isBookingUseAdminCountry, normalizeWhatsAppToDigits } from '../config/whatsappCountryPrefix';
 import { getMassagePlaceCardImage } from '../constants/massagePlaceCardImages';
@@ -526,96 +526,30 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                     </div>
                 )}
 
-                {/* Price containers – same design as Beauty Home Service: Treatments Trending, 3 containers. On profile variant, selecting a container shows fingerprint here and Book Now heartbeat. */}
+                {/* PRICE CONTAINER — thumbnail left, duration row, price row */}
                 <div className="mx-4 mb-4">
-                    <style>{`
-                        @keyframes beautician-glow-card {
-                          0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
-                          50% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2), 0 0 12px 2px rgba(249, 115, 22, 0.15); }
-                        }
-                        .beautician-card-container-highlight {
-                          border-color: rgb(249 115 22);
-                          box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25), 0 0 16px 4px rgba(249, 115, 22, 0.12);
-                          animation: beautician-glow-card 2.5s ease-in-out infinite;
-                        }
-                        @keyframes book-now-heartbeat {
-                          0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
-                          50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.25), 0 0 16px 4px rgba(245, 158, 11, 0.3); }
-                        }
-                        .book-now-heartbeat {
-                          animation: book-now-heartbeat 1.2s ease-in-out infinite;
-                        }
-                    `}</style>
-                    <div className="text-center mb-3">
-                        <h3 className="text-gray-800 font-bold text-sm tracking-wide inline-flex items-center gap-1.5 justify-center">
-                            <Sparkles className="w-3.5 h-3.5 text-orange-500" aria-hidden />
-                            Treatments Trending
-                        </h3>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Fixed prices • Select container and press Book Now</p>
+                    <div className="flex items-start gap-4 mt-3">
+                        <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 border-2 border-amber-200">
+                            <img
+                                src={profileImage}
+                                alt={placeName}
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PLACE_IMAGE; }}
+                            />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="grid grid-cols-3 text-sm font-medium text-gray-500 mb-1">
+                                <div className="whitespace-nowrap">60 min</div>
+                                <div className="whitespace-nowrap">90 min</div>
+                                <div className="whitespace-nowrap">120 min</div>
+                            </div>
+                            <div className="grid grid-cols-3 text-base font-semibold text-gray-900">
+                                <div className="whitespace-nowrap">{pricing['60'] > 0 ? formatPrice(pricing['60']) : '—'}</div>
+                                <div className="whitespace-nowrap">{pricing['90'] > 0 ? formatPrice(pricing['90']) : '—'}</div>
+                                <div className="whitespace-nowrap">{pricing['120'] > 0 ? formatPrice(pricing['120']) : '—'}</div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        {[
-                            { label: '60 min', minutes: 60, key: '60' as const, isMostPopular: false, originalPriceMultiplier: null },
-                            { label: '90 min', minutes: 90, key: '90' as const, isMostPopular: true, originalPriceMultiplier: 1.15 },
-                            { label: '120 min', minutes: 120, key: '120' as const, isMostPopular: false, originalPriceMultiplier: null },
-                        ].map(({ label, minutes, key, isMostPopular, originalPriceMultiplier }) => {
-                            const isSelected = variant === 'profile' && category === 'massage' && selectedPriceKey === key;
-                            const currentPrice = pricing[key];
-                            const originalPrice = originalPriceMultiplier && currentPrice > 0 ? Math.round(currentPrice * originalPriceMultiplier) : null;
-                            return (
-                                <div
-                                    key={key}
-                                    role={variant === 'profile' && category === 'massage' ? 'button' : undefined}
-                                    tabIndex={variant === 'profile' && category === 'massage' ? 0 : undefined}
-                                    onClick={(e) => {
-                                        if (variant === 'profile' && category === 'massage') {
-                                            e.stopPropagation();
-                                            setSelectedPriceKey(isSelected ? null : key);
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (variant === 'profile' && category === 'massage' && (e.key === 'Enter' || e.key === ' ')) {
-                                            e.preventDefault();
-                                            setSelectedPriceKey(isSelected ? null : key);
-                                        }
-                                    }}
-                                    className={`beautician-card-container-highlight w-full text-left rounded-xl border-2 overflow-hidden flex flex-col sm:flex-row sm:items-center gap-2 p-3 relative ${isMostPopular ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-500 ring-1 ring-amber-200' : 'bg-orange-50/80 border-orange-400'} ${variant === 'profile' && category === 'massage' ? 'cursor-pointer select-none' : ''} ${isSelected ? 'book-now-heartbeat' : ''}`}
-                                >
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-0.5">
-                                            <h4 className="text-xs font-bold text-gray-900 line-clamp-2">{getTreatmentRowTitle(category, label, key)}</h4>
-                                            {isMostPopular && (
-                                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold flex-shrink-0">
-                                                    <Sparkles className="w-2.5 h-2.5" />
-                                                    Most Booked
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-[10px] text-gray-600">
-                                            Estimated time: {minutes} minutes
-                                        </p>
-                                        <p className="text-xs font-semibold text-gray-800 mt-0.5 flex items-center gap-2">
-                                            Price: {currentPrice > 0 ? `IDR ${formatPrice(currentPrice)} (fixed)` : 'Call'}
-                                            {originalPrice && currentPrice > 0 && (
-                                                <span className="text-[10px] text-gray-400 line-through font-normal">
-                                                    IDR {formatPrice(originalPrice)}
-                                                </span>
-                                            )}
-                                        </p>
-                                    </div>
-                                    {/* Fingerprint under the price area (lower left of container when selected) */}
-                                    {variant === 'profile' && category === 'massage' && isSelected && (
-                                        <span className="absolute bottom-2 left-2 flex items-center justify-center text-amber-600" aria-hidden>
-                                            <FingerprintPattern className="w-7 h-7 sm:w-8 sm:h-8" strokeWidth={1.8} />
-                                        </span>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <p className="text-center text-[10px] text-gray-500 mt-2">
-                        Professional rates • Verified profile
-                    </p>
                 </div>
 
                 {/* Book Now + Menu prices (profile) or View Profile + Menu prices (listing) */}
@@ -628,12 +562,21 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                                     e.stopPropagation();
                                     const placeName = (place as any).name || getMetaBarLabel(category);
                                     const placeId = String((place as any).id ?? (place as any).$id ?? '');
+                                    const p60  = pricing['60']  > 0 ? `60 min – IDR ${formatPrice(pricing['60'])}` : null;
+                                    const p90  = pricing['90']  > 0 ? `90 min – IDR ${formatPrice(pricing['90'])}` : null;
+                                    const p120 = pricing['120'] > 0 ? `120 min – IDR ${formatPrice(pricing['120'])}` : null;
+                                    const durLine = [p60, p90, p120].filter(Boolean).join(' / ');
                                     const useAdmin = isBookingUseAdminCountry(userCountryCode);
                                     let waNumber: string;
                                     let text: string;
                                     if (useAdmin) {
                                         waNumber = ADMIN_WHATSAPP_DIGITS;
-                                        text = `Hi IndaStreet Admin, I would like to book at ${placeName}. Please coordinate my visit. Thank you.`;
+                                        text = [
+                                            `Hi IndaStreet Admin, I would like to book a massage at ${placeName}.`,
+                                            placeId ? `Place ID: ${placeId}` : '',
+                                            durLine ? `Duration & Price: ${durLine}` : '',
+                                            `Please coordinate my visit. Thank you.`,
+                                        ].filter(Boolean).join('\n');
                                     } else {
                                         const raw = (place as any).whatsappNumber ?? (place as any).whatsappnumber ?? '';
                                         const digits = normalizeWhatsAppToDigits(raw);
@@ -642,10 +585,13 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                                             return;
                                         }
                                         waNumber = digits;
-                                        text = `Hi, I would like to book at ${placeName}. Thank you.`;
+                                        text = [
+                                            `Hi, I would like to book a massage at ${placeName}.`,
+                                            durLine ? `Duration & Price: ${durLine}` : '',
+                                            `Thank you.`,
+                                        ].filter(Boolean).join('\n');
                                     }
-                                    const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-                                    window.open(url, '_blank');
+                                    window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`, '_blank');
                                 }}
                                 className={`flex-1 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-white transition-colors ${selectedPriceKey ? 'book-now-heartbeat' : ''}`}
                                 aria-label="Book Now"
@@ -826,12 +772,22 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                                                     onClick={() => {
                                                         setShowMenuSlider(false);
                                                         const placeName = (place as any).name || getMetaBarLabel(category);
+                                                        const placeId = String((place as any).id ?? (place as any).$id ?? '');
+                                                        const p60  = pricing['60']  > 0 ? `60 min – IDR ${formatPrice(pricing['60'])}` : null;
+                                                        const p90  = pricing['90']  > 0 ? `90 min – IDR ${formatPrice(pricing['90'])}` : null;
+                                                        const p120 = pricing['120'] > 0 ? `120 min – IDR ${formatPrice(pricing['120'])}` : null;
+                                                        const durLine = [p60, p90, p120].filter(Boolean).join(' / ');
                                                         const useAdmin = isBookingUseAdminCountry(userCountryCode);
                                                         let waNumber: string;
                                                         let text: string;
                                                         if (useAdmin) {
                                                             waNumber = ADMIN_WHATSAPP_DIGITS;
-                                                            text = `Hi IndaStreet Admin, I would like to book at ${placeName}. Please coordinate my visit. Thank you.`;
+                                                            text = [
+                                                                `Hi IndaStreet Admin, I would like to book a massage at ${placeName}.`,
+                                                                placeId ? `Place ID: ${placeId}` : '',
+                                                                durLine ? `Duration & Price: ${durLine}` : '',
+                                                                `Please coordinate my visit. Thank you.`,
+                                                            ].filter(Boolean).join('\n');
                                                         } else {
                                                             const raw = (place as any).whatsappNumber ?? (place as any).whatsappnumber ?? '';
                                                             const digits = normalizeWhatsAppToDigits(raw);
@@ -840,7 +796,11 @@ const CityPlaceCard: React.FC<CityPlaceCardProps> = ({
                                                                 return;
                                                             }
                                                             waNumber = digits;
-                                                            text = `Hi, I would like to book at ${placeName}. Thank you.`;
+                                                            text = [
+                                                                `Hi, I would like to book a massage at ${placeName}.`,
+                                                                durLine ? `Duration & Price: ${durLine}` : '',
+                                                                `Thank you.`,
+                                                            ].filter(Boolean).join('\n');
                                                         }
                                                         window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`, '_blank');
                                                     }}

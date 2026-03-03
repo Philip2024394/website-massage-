@@ -143,6 +143,7 @@ const MobileTermsAndConditionsPage = React.lazy(() => import('./pages/MobileTerm
 const TherapistTermsAndConditions = React.lazy(() => import('./pages/TherapistTermsAndConditions'));
 const MassageCityPlacesSignupPage = React.lazy(() => import('./pages/auth/MassageCityPlacesSignupPage'));
 const IncreaseYourEarningsPage = React.lazy(() => import('./pages/place/IncreaseYourEarningsPage'));
+const ShopPage = React.lazy(() => import('./pages/ShopPage'));
 
 // Blog posts
 const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));
@@ -615,6 +616,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'company':
             return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.company.component));
+
+        case 'shop':
+            return (
+                <Suspense fallback={<LoadingSpinner />}>
+                    <ShopPage />
+                </Suspense>
+            );
         
         case 'how-it-works':
             return wrapWithUserTermsIfNeeded(page, renderRoute(publicRoutes.howItWorks.component));
